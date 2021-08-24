@@ -190,10 +190,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 .Should()
                 .ExitWith(0);
 
-            var jObjectV1 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")));
-            Assert.Equal("TestAuthor", jObjectV1["PackToTemplateMap"].Children<JProperty>().Single(p => p.Name.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value["Owners"].Values().Single());
-            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")));
-            Assert.Equal("TestAuthor", jObjectV2["TemplatePackages"][0]["Owners"].Value<string>());
+            var jObjectV1 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json")))!;
+            Assert.Equal("TestAuthor", jObjectV1!["PackToTemplateMap"]!.Children<JProperty>().Single(p => p.Name.StartsWith("Microsoft.TemplateEngine.TestTemplates")).Value["Owners"]!.Values().Single());
+            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
+            Assert.Equal("TestAuthor", jObjectV2!["TemplatePackages"]![0]!["Owners"]!.Value<string>());
         }
     }
 }
