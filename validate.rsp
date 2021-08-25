@@ -1,12 +1,7 @@
 ./format.sln
---fix-whitespace
---fix-style
-warn
---fix-analyzers
-warn
 --exclude
 ./tests/projects/
---check
+--verify-no-changes
 --report
 ./artifacts/log/
 -v
