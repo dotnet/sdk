@@ -54,12 +54,13 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
             foreach (var dependency in Dependencies.Select(dep => 
                 new {
                     Name = dep.GetMetadata("Name"),
+                    SourceBuildRepoName = dep.GetMetadata("SourceBuildRepoName"),
                     Version = dep.GetMetadata("ExactVersion"),
                     Sha = dep.GetMetadata("Sha"),
                     Uri = dep.GetMetadata("Uri")
                 }))
             {
-                string repoName = GetDefaultRepoNameFromUrl(dependency.Uri);
+                string repoName = dependency.SourceBuildRepoName;
                 string safeRepoName = repoName.Replace("-", "").Replace(".", "");
                 string propsPath = Path.Combine(SourceBuildMetadataDir, $"{repoName.Replace(".", "-")}.props");
                 DerivedVersion derivedVersion = GetVersionInfo(dependency.Version, "0");
@@ -145,15 +146,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
             }
 
             throw new FormatException($"Can't derive a build ID from version {version} (commit count {commitCount}, release {string.Join(";", nugetVersion.Release.Split('-', '.'))})");
-        }
-
-        private static string GetDefaultRepoNameFromUrl(string repoUrl)
-        {
-            if (repoUrl.EndsWith(".git"))
-            {
-                repoUrl = repoUrl.Substring(0, repoUrl.Length - ".git".Length);
-            }
-            return repoUrl.Substring(repoUrl.LastIndexOf("/") + 1);
         }
 
         private static void UpdatePropsFile(string filePath, Dictionary<string, string> properties)
