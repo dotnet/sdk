@@ -18,7 +18,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         // Metadata for the scraper to skip packs known to not contain templates.
         internal const string NonTemplatePacksFileName = "nonTemplatePacks.json";
 
-        internal static void WriteResults(DirectoryInfo outputBasePath, PackSourceCheckResult packSourceCheckResults)
+        internal static (string MetadataPath, string LegacyMetadataPath) WriteResults(DirectoryInfo outputBasePath, PackSourceCheckResult packSourceCheckResults)
         {
             string reportPath = Path.Combine(outputBasePath.FullName, CacheContentDirectory);
 
@@ -27,18 +27,22 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 Directory.CreateDirectory(reportPath);
                 Console.WriteLine($"Created directory:{reportPath}");
             }
+
+            string legacyMetadataFilePath = Path.Combine(reportPath, SearchMetadataFilename);
+            string metadataFilePath = Path.Combine(reportPath, SearchMetadataFilenameVer2);
+
             WriteNonTemplatePackList(reportPath, packSourceCheckResults.PackCheckData);
-            LegacyMetadataWriter.WriteLegacySearchMetadata(packSourceCheckResults, Path.Combine(reportPath, SearchMetadataFilename));
-            WriteSearchMetadata(packSourceCheckResults, Path.Combine(reportPath, SearchMetadataFilenameVer2));
+            LegacyMetadataWriter.WriteLegacySearchMetadata(packSourceCheckResults, legacyMetadataFilePath);
+            WriteSearchMetadata(packSourceCheckResults, metadataFilePath);
+            return (metadataFilePath, legacyMetadataFilePath);
 
         }
 
-        private static string WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
+        private static void WriteSearchMetadata(PackSourceCheckResult packSourceCheckResults, string outputFileName)
         {
             TemplateSearchCache searchMetadata = CreateSearchMetadata(packSourceCheckResults);
             File.WriteAllText(outputFileName, searchMetadata.ToJObject().ToString(Formatting.None));
             Console.WriteLine($"Search cache file created: {outputFileName}");
-            return outputFileName;
         }
 
         private static TemplateSearchCache CreateSearchMetadata(PackSourceCheckResult packSourceCheckResults)

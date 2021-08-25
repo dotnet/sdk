@@ -7,6 +7,7 @@ using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking.Reporting;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
+using Microsoft.TemplateSearch.TemplateDiscovery.Test;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
@@ -28,6 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             bool savePacks,
             bool noTemplateJsonFilter,
             bool verbose,
+            bool test,
             IEnumerable<SupportedQueries>? queries,
             DirectoryInfo? packagesPath)
         {
@@ -47,7 +49,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             try
             {
                 PackSourceCheckResult checkResults = await packSourceChecker.CheckPackagesAsync(cts.Token).ConfigureAwait(false);
-                PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
+                (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
+                if (test)
+                {
+                    CacheFileTestsBefore60.RunTests(legacyMetadataPath);
+                    CacheFileTests60.RunTests(legacyMetadataPath);
+                    CacheFileTests60.RunTests(metadataPath);
+                }
                 return 0;
             }
             catch (TaskCanceledException)
@@ -97,6 +105,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 Description = "Verbose output for template processing.",
             };
 
+            Option<bool> testOption = new Option<bool>(new[] { "-t", "--test" })
+            {
+                Description = "Run tests on generated metadata files.",
+            };
+
             Option<SupportedQueries[]> queriesOption = new Option<SupportedQueries[]>("--queries")
             {
                 Arity = ArgumentArity.OneOrMore,
@@ -119,6 +132,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 savePacksOption,
                 noTemplateJsonFilterOption,
                 verboseOption,
+                testOption,
                 queriesOption,
                 packagesPathOption
             };
@@ -132,6 +146,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 savePacksOption,
                 noTemplateJsonFilterOption,
                 verboseOption,
+                testOption,
                 queriesOption,
                 packagesPathOption,
                 ExecuteAsync);
