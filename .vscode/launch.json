@@ -10,10 +10,10 @@
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
       "args": [
         "@validate.rsp",
-        "--check"
+        "--verify-no-changes"
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -22,17 +22,37 @@
       "justMyCode": false
     },
     {
-      "name": "format -f --check",
+      "name": "format format.sln --verify-no-changes",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
       "args": [
-        "-f",
+        "format.sln",
         "-v",
         "diag",
-        "--check"
+        "--verify-no-changes"
+      ],
+      "cwd": "${workspaceFolder}",
+      // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+      "console": "internalConsole",
+      "stopAtEntry": false,
+      "justMyCode": false
+    },
+    {
+      "name": "format whitespace --folder --verify-no-changes",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      // If you have changed target frameworks, make sure to update the program path.
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
+      "args": [
+        "whitespace",
+        "--folder",
+        "-v",
+        "diag",
+        "--verify-no-changes"
       ],
       "cwd": "${workspaceFolder}/src",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -41,17 +61,18 @@
       "justMyCode": false
     },
     {
-      "name": "format format.sln --check",
+      "name": "format whitespace format.sln --verify-no-changes",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
       "args": [
+        "whitespace",
         "format.sln",
         "-v",
         "diag",
-        "--check"
+        "--verify-no-changes"
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -60,20 +81,18 @@
       "justMyCode": false
     },
     {
-      "name": "format format.sln --fix-style warn --check",
+      "name": "format style format.sln --verify-no-changes",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
       "args": [
+        "style",
         "format.sln",
-        "--fix-whitespace",
-        "--fix-style",
-        "warn",
         "-v",
         "diag",
-        "--check"
+        "--verify-no-changes"
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -82,19 +101,18 @@
       "justMyCode": false
     },
     {
-      "name": "format format.sln --fix-analyzers warn --check",
+      "name": "format analyzers format.sln --verify-no-changes",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
       // If you have changed target frameworks, make sure to update the program path.
-      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/netcoreapp3.1/dotnet-format.dll",
+      "program": "${workspaceFolder}/artifacts/bin/dotnet-format/Debug/net6.0/dotnet-format.dll",
       "args": [
+        "analyzers",
         "format.sln",
-        "--fix-analyzers",
-        "warn",
         "-v",
         "diag",
-        "--check"
+        "--verify-no-changes"
       ],
       "cwd": "${workspaceFolder}",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
