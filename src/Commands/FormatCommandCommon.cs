@@ -63,50 +63,34 @@ namespace Microsoft.CodeAnalysis.Tools
 
         internal static async Task<int> FormatAsync(FormatOptions formatOptions, ILogger<Program> logger, CancellationToken cancellationToken)
         {
-            var currentDirectory = Environment.CurrentDirectory;
-
-            try
+            if (formatOptions.WorkspaceType != WorkspaceType.Folder)
             {
-                var workspaceDirectory = formatOptions.WorkspaceType == WorkspaceType.Folder
-                    ? formatOptions.WorkspaceFilePath
-                    : Path.GetDirectoryName(formatOptions.WorkspaceFilePath)!;
+                var runtimeVersion = GetRuntimeVersion();
+                logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
 
-                if (formatOptions.WorkspaceType != WorkspaceType.Folder)
+                if (!TryGetDotNetCliVersion(out var dotnetVersion))
                 {
-                    var runtimeVersion = GetRuntimeVersion();
-                    logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
-
-                    // Load MSBuild
-                    Environment.CurrentDirectory = workspaceDirectory;
-
-                    if (!TryGetDotNetCliVersion(out var dotnetVersion))
-                    {
-                        logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
-                        return UnableToLocateDotNetCliExitCode;
-                    }
-
-                    logger.LogTrace(Resources.The_dotnet_CLI_version_is_0, dotnetVersion);
-
-                    if (!TryLoadMSBuild(out var msBuildPath))
-                    {
-                        logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
-                        return UnableToLocateMSBuildExitCode;
-                    }
-
-                    logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
+                    logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
+                    return UnableToLocateDotNetCliExitCode;
                 }
 
-                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
-                    formatOptions,
-                    logger,
-                    cancellationToken,
-                    binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
-                return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
+                logger.LogTrace(Resources.The_dotnet_CLI_version_is_0, dotnetVersion);
+
+                if (!TryLoadMSBuild(out var msBuildPath))
+                {
+                    logger.LogError(Resources.Unable_to_locate_MSBuild_Ensure_the_NET_SDK_was_installed_with_the_official_installer);
+                    return UnableToLocateMSBuildExitCode;
+                }
+
+                logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
             }
-            finally
-            {
-                Environment.CurrentDirectory = currentDirectory;
-            }
+
+            var formatResult = await CodeFormatter.FormatWorkspaceAsync(
+                formatOptions,
+                logger,
+                cancellationToken,
+                binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
+            return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 
         public static void AddCommonOptions(this Command command)
@@ -361,9 +345,17 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             try
             {
-                // Since we are running as a dotnet tool we should be able to find an instance of
-                // MSBuild in a .NET Core SDK.
-                var msBuildInstance = Build.Locator.MSBuildLocator.RegisterDefaults();
+                // Get the latest .NET 6 SDK instance.
+                var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
+                    .Where(instance => instance.Version.Major == 6)
+                    .MaxBy(instance => instance.Version);
+                if (msBuildInstance is null)
+                {
+                    msBuildPath = null;
+                    return false;
+                }
+
+                Build.Locator.MSBuildLocator.RegisterInstance(msBuildInstance);
                 msBuildPath = msBuildInstance.MSBuildPath;
                 return true;
             }
