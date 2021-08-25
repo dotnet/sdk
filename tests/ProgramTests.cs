@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Commands;
 using Xunit;
@@ -48,10 +49,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Act
             var result = sut.Parse(new[] {
-                "--folder",
+                "--no-restore",
                 "--include", "include1", "include2",
                 "--exclude", "exclude1", "exclude2",
-                "--check",
+                "--verify-no-changes",
+                "--binarylog", "binary-log-path",
                 "--report", "report",
                 "--verbosity", "detailed",
                 "--include-generated"});
@@ -60,14 +62,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnparsedTokens.Count);
-            Assert.True(result.GetValueForOption<bool>("--folder"));
+            result.GetValueForOption<bool>("--no-restore");
             Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--include"),
                 i0 => Assert.Equal("include1", i0),
                 i1 => Assert.Equal("include2", i1));
             Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--exclude"),
                 i0 => Assert.Equal("exclude1", i0),
                 i1 => Assert.Equal("exclude2", i1));
-            Assert.True(result.GetValueForOption<bool>("--check"));
+            Assert.True(result.GetValueForOption<bool>("--verify-no-changes"));
+            Assert.Equal("binary-log-path", result.GetValueForOption<string>("--binarylog"));
             Assert.Equal("report", result.GetValueForOption<string>("--report"));
             Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
             Assert.True(result.GetValueForOption<bool>("--include-generated"));
@@ -84,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
         }
 
         [Fact]
@@ -98,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
             Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
         }
 
@@ -113,7 +116,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>("workspace"));
+            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
             Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
         }
 
@@ -163,23 +166,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = RootFormatCommand.GetCommand();
 
             // Act
-            var result = sut.Parse(new[] { "--folder", "--no-restore" });
+            var result = sut.Parse(new[] { "whitespace", "--folder", "--no-restore" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);
-        }
-
-        [Fact]
-        public void CommandLine_AnalyzerOptions_CanSpecifyBothWithDefaults()
-        {
-            // Arrange
-            var sut = RootFormatCommand.GetCommand();
-
-            // Act
-            var result = sut.Parse(new[] { "--fix-analyzers", "--fix-style" });
-
-            // Assert
-            Assert.Equal(0, result.Errors.Count);
         }
 
         [Fact]
@@ -217,7 +207,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var sut = RootFormatCommand.GetCommand();
 
             // Act
-            var result = sut.Parse(new[] { "--folder", "--binarylog" });
+            var result = sut.Parse(new[] { "whitespace", "--folder", "--binarylog" });
 
             // Assert
             Assert.Equal(1, result.Errors.Count);
