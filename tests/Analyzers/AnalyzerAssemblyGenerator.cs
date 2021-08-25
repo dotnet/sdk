@@ -19,8 +19,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     public static class AnalyzerAssemblyGenerator
     {
-        private static readonly string s_basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
         private static async Task<IEnumerable<MetadataReference>> GetReferencesAsync()
         {
             var references = new List<MetadataReference>()

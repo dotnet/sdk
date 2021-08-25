@@ -9,7 +9,6 @@ namespace Microsoft.CodeAnalysis.Tools
 {
     internal class Program
     {
-
         private static async Task<int> Main(string[] args)
         {
             var rootCommand = RootFormatCommand.GetCommand();

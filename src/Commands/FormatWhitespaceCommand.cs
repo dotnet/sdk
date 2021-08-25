@@ -68,19 +68,10 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 var logger = context.Console.SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
-                if (parseResult.HasOption(FolderOption))
-                {
-                    formatOptions = formatOptions with { WorkspaceType = WorkspaceType.Folder };
-                }
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace };
 
-                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
-                    formatOptions,
-                    logger,
-                    context.GetCancellationToken(),
-                    binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
-                return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
+                return await FormatAsync(formatOptions, logger, context.GetCancellationToken()).ConfigureAwait(false);
             }
         }
     }

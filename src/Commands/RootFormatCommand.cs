@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
@@ -55,24 +54,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
-                var formatResult = await CodeFormatter.FormatWorkspaceAsync(
-                    formatOptions,
-                    logger,
-                    context.GetCancellationToken(),
-                    binaryLogPath: formatOptions.BinaryLogPath).ConfigureAwait(false);
-                return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
-
-                static DiagnosticSeverity GetSeverity(string? severity)
-                {
-                    return severity?.ToLowerInvariant() switch
-                    {
-                        "" => DiagnosticSeverity.Error,
-                        FixSeverity.Error => DiagnosticSeverity.Error,
-                        FixSeverity.Warn => DiagnosticSeverity.Warning,
-                        FixSeverity.Info => DiagnosticSeverity.Info,
-                        _ => throw new ArgumentOutOfRangeException(nameof(severity)),
-                    };
-                }
+                return await FormatAsync(formatOptions, logger, context.GetCancellationToken()).ConfigureAwait(false);
             }
         }
     }
