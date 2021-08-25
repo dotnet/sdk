@@ -12,20 +12,23 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     public abstract class UseOrdinalStringComparisonAnalyzer : AbstractGlobalizationDiagnosticAnalyzer
     {
         internal const string RuleId = "CA1309";
 
-        private static readonly LocalizableString s_localizableMessageAndTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseOrdinalStringComparisonDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableMessageAndTitle,
-                                                                             s_localizableMessageAndTitle,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        private static readonly LocalizableString s_localizableMessageAndTitle = CreateLocalizableResourceString(nameof(UseOrdinalStringComparisonTitle));
+
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableMessageAndTitle,
+            s_localizableMessageAndTitle,
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(UseOrdinalStringComparisonDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         internal const string CompareMethodName = "Compare";
         internal const string EqualsMethodName = "Equals";

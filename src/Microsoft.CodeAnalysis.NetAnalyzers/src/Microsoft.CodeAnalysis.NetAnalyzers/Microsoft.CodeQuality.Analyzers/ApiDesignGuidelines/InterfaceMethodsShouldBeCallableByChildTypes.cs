@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1033: Interface methods should be callable by child types
     /// <para>
@@ -27,18 +29,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1033";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                          s_localizableTitle,
-                                                                          s_localizableMessage,
-                                                                          DiagnosticCategory.Design,
-                                                                          RuleLevel.Disabled,
-                                                                          description: s_localizableDescription,
-                                                                          isPortedFxCopRule: true,
-                                                                          isDataflowRule: false);
+        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(InterfaceMethodsShouldBeCallableByChildTypesTitle)),
+            CreateLocalizableResourceString(nameof(InterfaceMethodsShouldBeCallableByChildTypesMessage)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(InterfaceMethodsShouldBeCallableByChildTypesDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

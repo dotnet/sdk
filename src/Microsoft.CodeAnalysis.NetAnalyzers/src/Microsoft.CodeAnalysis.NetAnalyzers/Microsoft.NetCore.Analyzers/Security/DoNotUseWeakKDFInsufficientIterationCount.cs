@@ -20,29 +20,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseWeakKDFInsufficientIterationCount : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DefinitelyUseWeakKDFInsufficientIterationCountRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DefinitelyUseWeakKDFInsufficientIterationCountRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5387",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseWeakKDFInsufficientIterationCount),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseWeakKDFInsufficientIterationCountMessage),
+            nameof(DefinitelyUseWeakKDFInsufficientIterationCount),
+            nameof(DefinitelyUseWeakKDFInsufficientIterationCountMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakKDFInsufficientIterationCountDescription));
-        internal static DiagnosticDescriptor MaybeUseWeakKDFInsufficientIterationCountRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(DoNotUseWeakKDFInsufficientIterationCountDescription));
+
+        internal static readonly DiagnosticDescriptor MaybeUseWeakKDFInsufficientIterationCountRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5388",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseWeakKDFInsufficientIterationCount),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseWeakKDFInsufficientIterationCountMessage),
+            nameof(MaybeUseWeakKDFInsufficientIterationCount),
+            nameof(MaybeUseWeakKDFInsufficientIterationCountMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakKDFInsufficientIterationCountDescription));
+            descriptionResourceStringName: nameof(DoNotUseWeakKDFInsufficientIterationCountDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
                                                                                         DefinitelyUseWeakKDFInsufficientIterationCountRule,

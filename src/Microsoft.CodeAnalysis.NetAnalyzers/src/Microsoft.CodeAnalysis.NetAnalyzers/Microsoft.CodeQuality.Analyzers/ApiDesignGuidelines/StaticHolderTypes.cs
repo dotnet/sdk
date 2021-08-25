@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1052: Static holder classes should be marked static, and should not have default
     /// constructors.
@@ -40,20 +42,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         public const string RuleId = "CA1052";
 
-        private static readonly LocalizableString s_title = new LocalizableResourceString(
-            nameof(MicrosoftCodeQualityAnalyzersResources.StaticHolderTypesShouldBeStaticOrNotInheritable),
-            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-            typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_messageFormat = new LocalizableResourceString(
-            nameof(MicrosoftCodeQualityAnalyzersResources.StaticHolderTypeIsNotStatic),
-            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-            typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_title,
-            s_messageFormat,
+            CreateLocalizableResourceString(nameof(StaticHolderTypesShouldBeStaticOrNotInheritable)),
+            CreateLocalizableResourceString(nameof(StaticHolderTypeIsNotStatic)),
             DiagnosticCategory.Design,
             RuleLevel.Disabled,
             description: null,

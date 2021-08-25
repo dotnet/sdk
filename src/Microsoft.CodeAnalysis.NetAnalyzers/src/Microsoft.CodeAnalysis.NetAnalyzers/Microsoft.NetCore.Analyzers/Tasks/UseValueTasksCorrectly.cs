@@ -15,45 +15,51 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>CA2012: Use ValueTasks correctly.</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseValueTasksCorrectlyAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2012";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyDescription));
 
-        internal static readonly DiagnosticDescriptor GeneralRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor GeneralRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
             s_localizableTitle,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_General), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyMessage_General)),
             DiagnosticCategory.Reliability,
             RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor UnconsumedRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UnconsumedRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
             s_localizableTitle,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_Unconsumed), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyMessage_Unconsumed)),
             DiagnosticCategory.Reliability,
             RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor DoubleConsumptionRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor DoubleConsumptionRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
             s_localizableTitle,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_DoubleConsumption), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyMessage_DoubleConsumption)),
             DiagnosticCategory.Reliability,
             RuleLevel.IdeSuggestion,
             s_localizableDescription,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor AccessingIncompleteResultRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor AccessingIncompleteResultRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
             s_localizableTitle,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValueTasksCorrectlyMessage_AccessingIncompleteResult), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseValueTasksCorrectlyMessage_AccessingIncompleteResult)),
             DiagnosticCategory.Reliability,
             RuleLevel.IdeSuggestion,
             s_localizableDescription,

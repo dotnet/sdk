@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2242: Test for NaN correctly
     /// </summary>
@@ -18,19 +20,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2242";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarningCandidate,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(TestForNaNCorrectlyTitle)),
+            CreateLocalizableResourceString(nameof(TestForNaNCorrectlyMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.BuildWarningCandidate,
+            description: CreateLocalizableResourceString(nameof(TestForNaNCorrectlyDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -19,29 +19,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotInstallRootCert : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DefinitelyInstallRootCertRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DefinitelyInstallRootCertRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5380",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyInstallRootCert),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyInstallRootCertMessage),
+            nameof(DefinitelyInstallRootCert),
+            nameof(DefinitelyInstallRootCertMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription));
-        internal static DiagnosticDescriptor MaybeInstallRootCertRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(DoNotInstallRootCertDescription));
+
+        internal static readonly DiagnosticDescriptor MaybeInstallRootCertRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5381",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeInstallRootCert),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeInstallRootCertMessage),
+            nameof(MaybeInstallRootCert),
+            nameof(MaybeInstallRootCertMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotInstallRootCertDescription));
+            descriptionResourceStringName: nameof(DoNotInstallRootCertDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
                                                                                         DefinitelyInstallRootCertRule,

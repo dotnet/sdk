@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2216: Disposable types should declare finalizer
     /// </summary>
@@ -19,19 +21,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2216";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposableTypesShouldDeclareFinalizerTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposableTypesShouldDeclareFinalizerMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposableTypesShouldDeclareFinalizerDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.CandidateForRemoval,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DisposableTypesShouldDeclareFinalizerTitle)),
+            CreateLocalizableResourceString(nameof(DisposableTypesShouldDeclareFinalizerMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(DisposableTypesShouldDeclareFinalizerDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

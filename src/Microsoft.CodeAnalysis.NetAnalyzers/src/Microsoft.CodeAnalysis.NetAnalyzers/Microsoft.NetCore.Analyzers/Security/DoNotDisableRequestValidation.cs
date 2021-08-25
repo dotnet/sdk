@@ -9,32 +9,22 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDisableRequestValidation : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5363";
-        private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableRequestValidation),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableRequestValidationMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableRequestValidationDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
-                DiagnosticId,
-                s_Title,
-                s_Message,
-                DiagnosticCategory.Security,
-                RuleLevel.IdeHidden_BulkConfigurable,
-                description: s_Description,
-                isPortedFxCopRule: false,
-                isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            DiagnosticId,
+            CreateLocalizableResourceString(nameof(DoNotDisableRequestValidation)),
+            CreateLocalizableResourceString(nameof(DoNotDisableRequestValidationMessage)),
+            DiagnosticCategory.Security,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(DoNotDisableRequestValidationDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

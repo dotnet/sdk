@@ -19,6 +19,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting potentially insecure deserialization settings with <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/>.
     /// </summary>
@@ -29,17 +31,18 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor DefinitelyInsecureSettings =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2327",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSettingsTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSettingsMessage),
+                nameof(JsonNetInsecureSettingsTitle),
+                nameof(JsonNetInsecureSettingsMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
+
         internal static readonly DiagnosticDescriptor MaybeInsecureSettings =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2328",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSettingsTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSettingsMessage),
+                nameof(JsonNetMaybeInsecureSettingsTitle),
+                nameof(JsonNetMaybeInsecureSettingsMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,

@@ -10,18 +10,21 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>CA1837: Use Environment.ProcessId.</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseEnvironmentProcessId : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1837";
 
-        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdTitle)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 

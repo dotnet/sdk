@@ -11,6 +11,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For using a <see cref="T:Newtonsoft.Json.TypeNameHandling"/> values other than None.
     /// </summary>
@@ -21,13 +23,13 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor Rule =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2326",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingMessage),
+                nameof(JsonNetTypeNameHandlingTitle),
+                nameof(JsonNetTypeNameHandlingMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false,
-                descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingDescription));
+                descriptionResourceStringName: nameof(JsonNetTypeNameHandlingDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create<DiagnosticDescriptor>(Rule);

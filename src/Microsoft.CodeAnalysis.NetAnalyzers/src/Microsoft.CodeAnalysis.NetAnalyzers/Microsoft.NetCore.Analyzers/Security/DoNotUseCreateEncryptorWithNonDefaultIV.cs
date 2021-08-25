@@ -17,27 +17,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseCreateEncryptorWithNonDefaultIV : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DefinitelyUseCreateEncryptorWithNonDefaultIVRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DefinitelyUseCreateEncryptorWithNonDefaultIVRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5401",
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseCreateEncryptorWithNonDefaultIV),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyUseCreateEncryptorWithNonDefaultIVMessage),
+            nameof(DefinitelyUseCreateEncryptorWithNonDefaultIV),
+            nameof(DefinitelyUseCreateEncryptorWithNonDefaultIVMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription));
-        internal static DiagnosticDescriptor MaybeUseCreateEncryptorWithNonDefaultIVRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(DoNotUseCreateEncryptorWithNonDefaultIVDescription));
+
+        internal static readonly DiagnosticDescriptor MaybeUseCreateEncryptorWithNonDefaultIVRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5402",
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseCreateEncryptorWithNonDefaultIV),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeUseCreateEncryptorWithNonDefaultIVMessage),
+            nameof(MaybeUseCreateEncryptorWithNonDefaultIV),
+            nameof(MaybeUseCreateEncryptorWithNonDefaultIVMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCreateEncryptorWithNonDefaultIVDescription));
+            descriptionResourceStringName: nameof(DoNotUseCreateEncryptorWithNonDefaultIVDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
                                                                                         DefinitelyUseCreateEncryptorWithNonDefaultIVRule,

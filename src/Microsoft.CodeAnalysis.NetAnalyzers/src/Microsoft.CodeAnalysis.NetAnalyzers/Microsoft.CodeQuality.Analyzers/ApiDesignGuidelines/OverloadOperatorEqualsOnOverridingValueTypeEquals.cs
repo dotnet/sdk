@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2231: A value type overrides Equals but does not implement the equality operator.
     /// </summary>
@@ -16,18 +18,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA2231";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                         s_localizableTitle,
-                                                                         s_localizableMessage,
-                                                                         DiagnosticCategory.Usage,
-                                                                         RuleLevel.IdeSuggestion,
-                                                                         description: s_localizableDescription,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle)),
+            CreateLocalizableResourceString(nameof(OverloadOperatorEqualsOnOverridingValueTypeEqualsMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(OverloadOperatorEqualsOnOverridingValueTypeEqualsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

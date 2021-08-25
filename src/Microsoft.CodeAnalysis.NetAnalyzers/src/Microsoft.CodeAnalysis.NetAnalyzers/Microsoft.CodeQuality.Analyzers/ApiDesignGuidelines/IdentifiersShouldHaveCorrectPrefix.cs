@@ -10,33 +10,35 @@ using System.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldHaveCorrectPrefixAnalyzer : DiagnosticAnalyzer
     {
         public const string RuleId = "CA1715";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectPrefixTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectPrefixDescription));
 
-        private static readonly LocalizableString s_localizableMessageInterfaceRule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageInterface), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        public static readonly DiagnosticDescriptor InterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                    s_localizableTitle,
-                                                                                    s_localizableMessageInterfaceRule,
-                                                                                    DiagnosticCategory.Naming,
-                                                                                    RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                    description: s_localizableDescription,
-                                                                                    isPortedFxCopRule: true,
-                                                                                    isDataflowRule: false);
+        public static readonly DiagnosticDescriptor InterfaceRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectPrefixMessageInterface)),
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessageTypeParameterRule = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectPrefixMessageTypeParameter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        public static readonly DiagnosticDescriptor TypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableMessageTypeParameterRule,
-                                                                                      DiagnosticCategory.Naming,
-                                                                                      RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: true,
-                                                                                      isDataflowRule: false);
+        public static readonly DiagnosticDescriptor TypeParameterRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectPrefixMessageTypeParameter)),
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(InterfaceRule, TypeParameterRule);
 

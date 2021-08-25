@@ -13,30 +13,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2239";
 
-        /*private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        /*private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(ProvideDeserializationMethodsForOptionalFieldsTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(ProvideDeserializationMethodsForOptionalFieldsDescription));
 
-        private static readonly LocalizableString s_localizableMessageOnDeserialized = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageOnDeserializing = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideDeserializationMethodsForOptionalFieldsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor OnDeserializedRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized)),
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);
 
-        internal static DiagnosticDescriptor OnDeserializedRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageOnDeserialized,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);
-        internal static DiagnosticDescriptor OnDeserializingRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageOnDeserializing,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);*/
+        internal static readonly DiagnosticDescriptor OnDeserializingRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing)),
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);*/
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //ImmutableArray.Create(OnDeserializedRule, OnDeserializingRule);

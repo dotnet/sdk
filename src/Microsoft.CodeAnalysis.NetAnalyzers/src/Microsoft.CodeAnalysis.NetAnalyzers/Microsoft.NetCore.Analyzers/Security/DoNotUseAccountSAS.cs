@@ -9,32 +9,22 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseAccountSAS : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5375";
-        private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseAccountSAS),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseAccountSASMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseAccountSASDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
-                DiagnosticId,
-                s_Title,
-                s_Message,
-                DiagnosticCategory.Security,
-                RuleLevel.Disabled,
-                description: s_Description,
-                isPortedFxCopRule: false,
-                isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            DiagnosticId,
+            CreateLocalizableResourceString(nameof(DoNotUseAccountSAS)),
+            CreateLocalizableResourceString(nameof(DoNotUseAccountSASMessage)),
+            DiagnosticCategory.Security,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(DoNotUseAccountSASDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2007: Do not directly await a Task in libraries. Append ConfigureAwait(false) to the task.
     /// </summary>
@@ -19,17 +21,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA2007";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
         public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskTitle)),
+            CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskMessage)),
             DiagnosticCategory.Reliability,
             RuleLevel.Disabled,
-            description: s_localizableDescription,
+            description: CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 

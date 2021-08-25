@@ -11,24 +11,25 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseDeprecatedSecurityProtocols : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DeprecatedRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DeprecatedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5364",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocols),
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsMessage),
+            nameof(DoNotUseDeprecatedSecurityProtocols),
+            nameof(DoNotUseDeprecatedSecurityProtocolsMessage),
             RuleLevel.IdeHidden_BulkConfigurable,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: false,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseDeprecatedSecurityProtocolsDescription));
-        internal static DiagnosticDescriptor HardCodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(DoNotUseDeprecatedSecurityProtocolsDescription));
+
+        internal static readonly DiagnosticDescriptor HardCodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5386",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.HardCodedSecurityProtocolTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.HardCodedSecurityProtocolMessage),
+            nameof(HardCodedSecurityProtocolTitle),
+            nameof(HardCodedSecurityProtocolMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,

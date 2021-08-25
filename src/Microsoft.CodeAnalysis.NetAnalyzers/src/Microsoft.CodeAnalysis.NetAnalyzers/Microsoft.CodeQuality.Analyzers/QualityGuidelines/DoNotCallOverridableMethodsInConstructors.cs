@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2214: Do not call overridable methods in constructors
     ///
@@ -22,17 +24,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     public sealed class DoNotCallOverridableMethodsInConstructorsAnalyzer : DiagnosticAnalyzer
     {
         public const string RuleId = "CA2214";
-        private static readonly LocalizableString s_localizableMessageAndTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructors), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotCallOverridableMethodsInConstructorsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageAndTitle = CreateLocalizableResourceString(nameof(DoNotCallOverridableMethodsInConstructors));
 
-        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                         s_localizableMessageAndTitle,
-                                                                         s_localizableMessageAndTitle,
-                                                                         DiagnosticCategory.Usage,
-                                                                         RuleLevel.Disabled,
-                                                                         description: s_localizableDescription,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+        public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableMessageAndTitle,
+            s_localizableMessageAndTitle,
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(DoNotCallOverridableMethodsInConstructorsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

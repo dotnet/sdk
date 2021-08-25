@@ -16,19 +16,20 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class SetHttpOnlyForHttpCookie : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5396",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookie),
-            nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookieMessage),
+            nameof(SetHttpOnlyForHttpCookie),
+            nameof(SetHttpOnlyForHttpCookieMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.SetHttpOnlyForHttpCookieDescription));
+            descriptionResourceStringName: nameof(SetHttpOnlyForHttpCookieDescription));
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(

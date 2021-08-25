@@ -311,15 +311,5 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
             }
             return new Version(4, 0);
         }
-
-        public static LocalizableResourceString GetLocalizableResourceString(string resourceName)
-        {
-            return new LocalizableResourceString(resourceName, MicrosoftNetFrameworkAnalyzersResources.ResourceManager, typeof(MicrosoftNetFrameworkAnalyzersResources));
-        }
-
-        public static LocalizableResourceString GetLocalizableResourceString(string resourceName, params string[] formatArguments)
-        {
-            return new LocalizableResourceString(resourceName, MicrosoftNetFrameworkAnalyzersResources.ResourceManager, typeof(MicrosoftNetFrameworkAnalyzersResources), formatArguments);
-        }
     }
 }

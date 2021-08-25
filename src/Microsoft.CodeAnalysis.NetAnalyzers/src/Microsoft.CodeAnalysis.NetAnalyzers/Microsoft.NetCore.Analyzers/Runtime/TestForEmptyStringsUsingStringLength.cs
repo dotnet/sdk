@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1820: Test for empty strings using string length.
     /// <para>
@@ -27,17 +29,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string RuleId = "CA1820";
         private const string StringEmptyFieldName = "Empty";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly DiagnosticDescriptor s_rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.Disabled,    // Benefits provided might not outweight noise in test code.
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        private static readonly DiagnosticDescriptor s_rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(TestForEmptyStringsUsingStringLengthTitle)),
+            CreateLocalizableResourceString(nameof(TestForEmptyStringsUsingStringLengthMessage)),
+            DiagnosticCategory.Performance,
+            RuleLevel.Disabled,    // Benefits provided might not outweight noise in test code.
+            description: CreateLocalizableResourceString(nameof(TestForEmptyStringsUsingStringLengthDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(s_rule);
 

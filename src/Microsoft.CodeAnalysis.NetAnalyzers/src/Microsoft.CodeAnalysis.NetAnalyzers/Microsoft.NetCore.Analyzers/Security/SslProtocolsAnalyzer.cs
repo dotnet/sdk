@@ -12,27 +12,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SslProtocolsAnalyzer : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DeprecatedRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DeprecatedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5397",
-            nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsMessage),
+            nameof(DeprecatedSslProtocolsTitle),
+            nameof(DeprecatedSslProtocolsMessage),
             RuleLevel.IdeHidden_BulkConfigurable,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: false,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DeprecatedSslProtocolsDescription));
-        internal static DiagnosticDescriptor HardcodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(DeprecatedSslProtocolsDescription));
+
+        internal static readonly DiagnosticDescriptor HardcodedRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5398",
-            nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsMessage),
+            nameof(HardcodedSslProtocolsTitle),
+            nameof(HardcodedSslProtocolsMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: false,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.HardcodedSslProtocolsDescription));
+            descriptionResourceStringName: nameof(HardcodedSslProtocolsDescription));
 
         private readonly ImmutableHashSet<string> HardcodedSslProtocolsMetadataNames = ImmutableHashSet.Create(
             StringComparer.Ordinal,

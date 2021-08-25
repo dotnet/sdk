@@ -16,29 +16,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseAutoValidateAntiforgeryToken : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor UseAutoValidateAntiforgeryTokenRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor UseAutoValidateAntiforgeryTokenRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5391",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.UseAutoValidateAntiforgeryToken),
-            nameof(MicrosoftNetCoreAnalyzersResources.UseAutoValidateAntiforgeryTokenMessage),
+            nameof(UseAutoValidateAntiforgeryToken),
+            nameof(UseAutoValidateAntiforgeryTokenMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.UseAutoValidateAntiforgeryTokenDescription));
-        internal static DiagnosticDescriptor MissHttpVerbAttributeRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(UseAutoValidateAntiforgeryTokenDescription));
+
+        internal static readonly DiagnosticDescriptor MissHttpVerbAttributeRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5395",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.MissHttpVerbAttribute),
-            nameof(MicrosoftNetCoreAnalyzersResources.MissHttpVerbAttributeMessage),
+            nameof(MissHttpVerbAttribute),
+            nameof(MissHttpVerbAttributeMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.MissHttpVerbAttributeDescription));
+            descriptionResourceStringName: nameof(MissHttpVerbAttributeDescription));
 
         private static readonly Regex s_AntiForgeryAttributeRegex = new("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*Attribute$", RegexOptions.Compiled);
         private static readonly Regex s_AntiForgeryRegex = new("^[a-zA-Z]*Validate[a-zA-Z]*Anti[Ff]orgery[a-zA-Z]*$", RegexOptions.Compiled);

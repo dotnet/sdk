@@ -9,6 +9,8 @@ using System.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1044: Properties should not be write only
     /// </summary>
@@ -17,27 +19,28 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1044";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageAddGetter = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyMessageAddGetter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageMakeMoreAccessible = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PropertiesShouldNotBeWriteOnlyDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PropertiesShouldNotBeWriteOnlyTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(PropertiesShouldNotBeWriteOnlyDescription));
 
-        internal static DiagnosticDescriptor AddGetterRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageAddGetter,
-                                                                             DiagnosticCategory.Design,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-        internal static DiagnosticDescriptor MakeMoreAccessibleRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageMakeMoreAccessible,
-                                                                             DiagnosticCategory.Design,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor AddGetterRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PropertiesShouldNotBeWriteOnlyMessageAddGetter)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
+
+        internal static readonly DiagnosticDescriptor MakeMoreAccessibleRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PropertiesShouldNotBeWriteOnlyMessageMakeMoreAccessible)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AddGetterRule, MakeMoreAccessibleRule);
 

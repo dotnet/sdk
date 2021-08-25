@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2002: Do not lock on objects with weak identities
     ///
@@ -24,18 +26,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class DoNotLockOnObjectsWithWeakIdentityAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2002";
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotLockOnObjectsWithWeakIdentityTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotLockOnObjectsWithWeakIdentityMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotLockOnObjectsWithWeakIdentityDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                         s_localizableTitle,
-                                                                         s_localizableMessage,
-                                                                         DiagnosticCategory.Reliability,
-                                                                         RuleLevel.CandidateForRemoval,     // .NET core only has one appdomain
-                                                                         description: s_localizableDescription,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DoNotLockOnObjectsWithWeakIdentityTitle)),
+            CreateLocalizableResourceString(nameof(DoNotLockOnObjectsWithWeakIdentityMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.CandidateForRemoval,     // .NET core only has one appdomain
+            description: CreateLocalizableResourceString(nameof(DoNotLockOnObjectsWithWeakIdentityDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

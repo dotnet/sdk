@@ -14,32 +14,22 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseContainerLevelAccessPolicy : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5377";
-        private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseContainerLevelAccessPolicy),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseContainerLevelAccessPolicyMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseContainerLevelAccessPolicyDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
-                DiagnosticId,
-                s_Title,
-                s_Message,
-                DiagnosticCategory.Security,
-                RuleLevel.Disabled,
-                description: s_Description,
-                isPortedFxCopRule: false,
-                isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            DiagnosticId,
+            CreateLocalizableResourceString(nameof(UseContainerLevelAccessPolicy)),
+            CreateLocalizableResourceString(nameof(UseContainerLevelAccessPolicyMessage)),
+            DiagnosticCategory.Security,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(UseContainerLevelAccessPolicyDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
         internal static ImmutableArray<(string nspace, string policyIdentifierName)> NamespaceAndPolicyIdentifierNamePairs = ImmutableArray.Create(
                                                                                                     ("Blob", "groupPolicyIdentifier"),

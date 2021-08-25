@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2119: Seal methods that satisfy private interfaces
     /// </summary>
@@ -17,19 +19,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     {
         internal const string RuleId = "CA2119";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.SealMethodsThatSatisfyPrivateInterfacesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.SealMethodsThatSatisfyPrivateInterfacesMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.SealMethodsThatSatisfyPrivateInterfacesDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Security,
-                                                                             RuleLevel.CandidateForRemoval,     // Need confirmation from security team if this is no longer a security concern.
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(SealMethodsThatSatisfyPrivateInterfacesTitle)),
+            CreateLocalizableResourceString(nameof(SealMethodsThatSatisfyPrivateInterfacesMessage)),
+            DiagnosticCategory.Security,
+            RuleLevel.CandidateForRemoval,     // Need confirmation from security team if this is no longer a security concern.
+            description: CreateLocalizableResourceString(nameof(SealMethodsThatSatisfyPrivateInterfacesDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

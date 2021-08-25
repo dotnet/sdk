@@ -13,20 +13,16 @@ namespace Microsoft.NetFramework.Analyzers
     {
         internal const string RuleId = "CA2232";
 
-        /*private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.MarkWindowsFormsEntryPointsWithStaThreadTitle), MicrosoftNetFrameworkAnalyzersResources.ResourceManager, typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.MarkWindowsFormsEntryPointsWithStaThreadMessage), MicrosoftNetFrameworkAnalyzersResources.ResourceManager, typeof(MicrosoftNetFrameworkAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.MarkWindowsFormsEntryPointsWithStaThreadDescription), MicrosoftNetFrameworkAnalyzersResources.ResourceManager, typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isEnabledByDefaultInFxCopAnalyzers: false);*/
+        /*internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(MarkWindowsFormsEntryPointsWithStaThreadTitle)),
+            CreateLocalizableResourceString(nameof(MarkWindowsFormsEntryPointsWithStaThreadMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(MarkWindowsFormsEntryPointsWithStaThreadDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInFxCopAnalyzers: false);*/
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
         //ImmutableArray.Create(Rule);

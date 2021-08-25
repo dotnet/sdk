@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2008: Do not create tasks without passing a TaskScheduler
     /// </summary>
@@ -18,19 +20,15 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     {
         internal const string RuleId = "CA2008";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTasksWithoutPassingATaskSchedulerDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Reliability,
-                                                                             RuleLevel.CandidateForRemoval,     // Superseded by VS threading analyzers
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DoNotCreateTasksWithoutPassingATaskSchedulerTitle)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTasksWithoutPassingATaskSchedulerMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.CandidateForRemoval,     // Superseded by VS threading analyzers
+            description: CreateLocalizableResourceString(nameof(DoNotCreateTasksWithoutPassingATaskSchedulerDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 

@@ -23,7 +23,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             // Fixer not yet implemented.
             return Task.CompletedTask;
-
         }
     }
 }

@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1305: Specify IFormatProvider
     /// </summary>
@@ -20,46 +22,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1305";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(SpecifyIFormatProviderTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(SpecifyIFormatProviderDescription));
 
-        private static readonly LocalizableString s_localizableMessageIFormatProviderAlternateString = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderMessageIFormatProviderAlternateString), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageIFormatProviderAlternate = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderMessageIFormatProviderAlternate), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageUICultureString = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderMessageUICultureString), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageUICulture = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderMessageUICulture), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyIFormatProviderDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor IFormatProviderAlternateStringRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(SpecifyIFormatProviderMessageIFormatProviderAlternateString)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor IFormatProviderAlternateStringRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageIFormatProviderAlternateString,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-        internal static DiagnosticDescriptor IFormatProviderAlternateRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageIFormatProviderAlternate,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-        internal static DiagnosticDescriptor UICultureStringRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageUICultureString,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-        internal static DiagnosticDescriptor UICultureRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageUICulture,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor IFormatProviderAlternateRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(SpecifyIFormatProviderMessageIFormatProviderAlternate)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
+
+        internal static readonly DiagnosticDescriptor UICultureStringRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(SpecifyIFormatProviderMessageUICultureString)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
+
+        internal static readonly DiagnosticDescriptor UICultureRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(SpecifyIFormatProviderMessageUICulture)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         private static readonly ImmutableArray<string> s_dateInvariantFormats = ImmutableArray.Create("o", "O", "r", "R", "s", "u");
 

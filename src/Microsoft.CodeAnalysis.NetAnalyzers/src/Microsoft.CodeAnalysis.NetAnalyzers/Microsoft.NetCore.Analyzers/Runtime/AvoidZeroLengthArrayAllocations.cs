@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>Base type for an analyzer that looks for empty array allocations and recommends their replacement.</summary>
     public abstract class AvoidZeroLengthArrayAllocationsAnalyzer : DiagnosticAnalyzer
     {
@@ -27,14 +29,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidZeroLengthArrayAllocationsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidZeroLengthArrayAllocationsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
         /// <summary>The diagnostic descriptor used when Array.Empty should be used instead of a new array allocation.</summary>
         internal static readonly DiagnosticDescriptor UseArrayEmptyDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(AvoidZeroLengthArrayAllocationsTitle)),
+            CreateLocalizableResourceString(nameof(AvoidZeroLengthArrayAllocationsMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
             description: null,

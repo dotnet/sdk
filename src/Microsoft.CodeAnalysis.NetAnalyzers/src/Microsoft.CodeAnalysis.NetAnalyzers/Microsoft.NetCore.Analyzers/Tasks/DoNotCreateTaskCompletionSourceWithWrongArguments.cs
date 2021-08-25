@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>CA2012: Use ValueTasks correctly.</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotCreateTaskCompletionSourceWithWrongArguments : DiagnosticAnalyzer
@@ -16,11 +18,11 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         internal const string RuleId = "CA2247";
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
