@@ -70,7 +70,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected AbstractFormatterTest()
         {
-            TestState = new SolutionState(DefaultFilePathPrefix, DefaultFileExt);
+            TestState = new SolutionState("Test", Language, DefaultFilePathPrefix, DefaultFileExt);
         }
 
         /// <summary>
