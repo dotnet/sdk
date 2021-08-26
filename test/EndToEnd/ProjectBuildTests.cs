@@ -366,8 +366,9 @@ namespace EndToEnd.Tests
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
 
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 6)
+            if (latestMajorVersion == 7)
             {
+                // TODO: Update 
                 return "net6.0";
             }
             throw new Exception("Unsupported version of SDK");
