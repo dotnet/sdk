@@ -49,6 +49,18 @@ namespace Microsoft.TemplateSearch.Common.Providers
             _logger = _environmentSettings.Host.LoggerFactory.CreateLogger<NuGetMetadataSearchProvider>();
         }
 
+        /// <summary>
+        /// Test constructor allowing override search cache uris.
+        /// </summary>
+        internal NuGetMetadataSearchProvider(
+            ITemplateSearchProviderFactory factory,
+            IEngineEnvironmentSettings environmentSettings,
+            IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders,
+            IEnumerable<string> searchCacheUri) : this (factory, environmentSettings, additionalDataReaders)
+        {
+            _searchMetadataUris = searchCacheUri.Select(s => new Uri(s)).ToArray();
+        }
+
         public ITemplateSearchProviderFactory Factory { get; }
 
         public async Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> SearchForTemplatePackagesAsync(
