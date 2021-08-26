@@ -92,7 +92,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/net6.0/dotnet-format.dll"  whitespace -folder $repoPath -v diag --verify-no-changes | Out-String
+        $output = dotnet.exe "$currentLocation/artifacts/bin/dotnet-format/Release/net6.0/dotnet-format.dll" whitespace $repoPath --folder -v diag --verify-no-changes | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
