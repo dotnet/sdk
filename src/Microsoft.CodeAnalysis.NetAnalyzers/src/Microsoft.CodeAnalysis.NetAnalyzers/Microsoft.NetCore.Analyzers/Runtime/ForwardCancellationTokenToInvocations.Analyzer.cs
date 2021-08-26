@@ -56,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string ArgumentName = "ArgumentName";
         internal const string ParameterName = "ParameterName";
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(ForwardCancellationTokenToInvocationsRule);
 
         public override void Initialize(AnalysisContext context)

@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(DoNotDisableHttpClientCRLCheckDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyDisableHttpClientCRLCheckRule,
                 MaybeDisableHttpClientCRLCheckRule);

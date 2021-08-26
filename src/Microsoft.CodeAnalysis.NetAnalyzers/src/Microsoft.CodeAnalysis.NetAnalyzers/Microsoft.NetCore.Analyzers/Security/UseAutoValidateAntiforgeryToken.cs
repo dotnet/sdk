@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         // It is used to translate ConcurrentDictionary into ConcurrentHashset, which is not provided.
         private const bool placeholder = true;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             UseAutoValidateAntiforgeryTokenRule,
             MissHttpVerbAttributeRule);
 

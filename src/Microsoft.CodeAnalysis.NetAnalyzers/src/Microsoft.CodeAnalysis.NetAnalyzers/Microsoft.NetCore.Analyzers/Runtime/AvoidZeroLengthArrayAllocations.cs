@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isDataflowRule: false);
 
         /// <summary>Gets the set of supported diagnostic descriptors from this analyzer.</summary>
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UseArrayEmptyDescriptor);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(UseArrayEmptyDescriptor);
 
         public sealed override void Initialize(AnalysisContext context)
         {

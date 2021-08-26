@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(DoNotUseWeakKDFInsufficientIterationCountDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
                                                                                         DefinitelyUseWeakKDFInsufficientIterationCountRule,
                                                                                         MaybeUseWeakKDFInsufficientIterationCountRule);
 

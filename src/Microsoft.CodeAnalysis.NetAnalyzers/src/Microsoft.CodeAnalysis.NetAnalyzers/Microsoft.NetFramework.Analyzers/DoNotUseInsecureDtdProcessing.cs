@@ -61,8 +61,8 @@ namespace Microsoft.NetFramework.Analyzers
         internal static readonly DiagnosticDescriptor RuleReviewDtdProcessingProperties =
             CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(ReviewDtdProcessingPropertiesMessage)));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+            = ImmutableArray.Create(
                 RuleXmlDocumentWithNoSecureResolver,
                 RuleXmlTextReaderConstructedWithNoSecureResolution,
                 RuleDoNotUseDtdProcessingOverloads,

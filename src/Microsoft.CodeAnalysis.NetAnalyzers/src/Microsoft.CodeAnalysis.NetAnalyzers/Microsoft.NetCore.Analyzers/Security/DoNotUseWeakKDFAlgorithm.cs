@@ -27,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         private static readonly ImmutableHashSet<string> s_WeakHashAlgorithmNames = ImmutableHashSet.Create("MD5", "SHA1");
 

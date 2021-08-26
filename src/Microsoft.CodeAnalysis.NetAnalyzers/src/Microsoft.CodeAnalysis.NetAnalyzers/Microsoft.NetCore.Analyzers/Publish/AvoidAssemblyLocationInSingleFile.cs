@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Publish
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(LocationRule, GetFilesRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(LocationRule, GetFilesRule);
 
         public override void Initialize(AnalysisContext context)
         {

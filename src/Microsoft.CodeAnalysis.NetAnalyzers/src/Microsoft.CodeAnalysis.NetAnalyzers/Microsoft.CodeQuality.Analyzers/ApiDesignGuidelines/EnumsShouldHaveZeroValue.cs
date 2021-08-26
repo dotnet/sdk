@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             isDataflowRule: false,
             additionalCustomTags: RuleNoZeroCustomTag);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
 
         public override void Initialize(AnalysisContext context)
         {

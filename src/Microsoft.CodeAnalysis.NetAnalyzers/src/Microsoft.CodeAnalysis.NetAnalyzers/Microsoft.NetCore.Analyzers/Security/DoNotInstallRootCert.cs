@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(DoNotInstallRootCertDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
                                                                                         DefinitelyInstallRootCertRule,
                                                                                         MaybeInstallRootCertRule);
 

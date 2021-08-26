@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             isReportedAtCompilationEnd: true,
             descriptionResourceStringName: nameof(SetHttpOnlyForHttpCookieDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 Rule);
 

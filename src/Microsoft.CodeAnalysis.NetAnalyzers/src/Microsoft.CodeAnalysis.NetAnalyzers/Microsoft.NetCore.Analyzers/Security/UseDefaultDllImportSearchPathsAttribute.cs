@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         private const int UnsafeBits = 2 | 256 | 512;
         private const int LegacyBehavior = 0;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             UseDefaultDllImportSearchPathsAttributeRule,
             DoNotUseUnsafeDllImportSearchPathRule);
 

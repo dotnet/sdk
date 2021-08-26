@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected abstract Location GetMethodNameLocation(SyntaxNode invocationNode);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {

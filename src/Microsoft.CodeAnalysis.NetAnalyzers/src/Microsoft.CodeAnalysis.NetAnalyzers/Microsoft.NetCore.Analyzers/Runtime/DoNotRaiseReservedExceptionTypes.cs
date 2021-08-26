@@ -76,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static readonly SymbolDisplayFormat s_symbolDisplayFormat = new(typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TooGenericRule, ReservedRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(TooGenericRule, ReservedRule);
 
         public override void Initialize(AnalysisContext context)
         {

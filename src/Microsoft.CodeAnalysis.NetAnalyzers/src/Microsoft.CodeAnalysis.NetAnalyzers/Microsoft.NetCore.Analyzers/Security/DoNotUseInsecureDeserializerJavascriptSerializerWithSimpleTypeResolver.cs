@@ -47,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyWithSimpleTypeResolver,
                 MaybeWithSimpleTypeResolver);

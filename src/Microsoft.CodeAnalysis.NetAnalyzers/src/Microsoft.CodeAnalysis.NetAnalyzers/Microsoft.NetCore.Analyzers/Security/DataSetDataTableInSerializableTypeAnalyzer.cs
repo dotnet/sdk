@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 RceSerializableContainsDangerousType,
                 SerializableContainsDangerousType,

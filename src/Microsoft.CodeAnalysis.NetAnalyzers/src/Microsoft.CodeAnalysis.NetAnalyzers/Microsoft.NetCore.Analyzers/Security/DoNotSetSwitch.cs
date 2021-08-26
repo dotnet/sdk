@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 }.Select(
                     (o) => new KeyValuePair<string, (bool, DiagnosticDescriptor)>(o.Item1, o.Item2)));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             DoNotDisableSchUseStrongCryptoRule,
             DoNotDisableSpmSecurityProtocolsRule);
 

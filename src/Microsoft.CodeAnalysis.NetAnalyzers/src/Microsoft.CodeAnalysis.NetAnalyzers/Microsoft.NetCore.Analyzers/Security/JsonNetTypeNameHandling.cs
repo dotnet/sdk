@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 isReportedAtCompilationEnd: false,
                 descriptionResourceStringName: nameof(JsonNetTypeNameHandlingDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create<DiagnosticDescriptor>(Rule);
 
         public override void Initialize(AnalysisContext context)

@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             isDataflowRule: false,
             isEnabledByDefaultInFxCopAnalyzers: false);*/
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray<DiagnosticDescriptor>.Empty;
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray<DiagnosticDescriptor>.Empty;
         //ImmutableArray.Create(Rule);
 
 #pragma warning disable RS1025 // Configure generated code analysis

@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         private const int HardcodedBits = 3072 | 12288;    // SslProtocols Tls12 Tls13
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DeprecatedRule, HardcodedRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DeprecatedRule, HardcodedRule);
 
         public override void Initialize(AnalysisContext context)
         {

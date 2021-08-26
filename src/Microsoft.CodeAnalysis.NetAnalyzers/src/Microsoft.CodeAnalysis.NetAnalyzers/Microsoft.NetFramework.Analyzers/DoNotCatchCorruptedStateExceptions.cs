@@ -26,7 +26,7 @@ namespace Microsoft.NetFramework.Analyzers
              isPortedFxCopRule: false,
              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         // for now there doesn't seem to be any way to annotate lambdas with attributes, so there is no way for them to catch corrupted state exceptions
         public DoNotCatchCorruptedStateExceptionsAnalyzer() : base(shouldCheckLambdas: false, enablingMethodAttributeFullyQualifiedName: MethodAttributeTypeName)

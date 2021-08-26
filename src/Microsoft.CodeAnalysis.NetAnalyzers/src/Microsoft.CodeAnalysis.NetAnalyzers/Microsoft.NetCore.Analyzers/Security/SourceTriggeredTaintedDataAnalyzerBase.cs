@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// </summary>
         protected abstract SinkKind SinkKind { get; }
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(TaintedDataEnteringSinkDescriptor);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(TaintedDataEnteringSinkDescriptor);
 
         public override void Initialize(AnalysisContext context)
         {

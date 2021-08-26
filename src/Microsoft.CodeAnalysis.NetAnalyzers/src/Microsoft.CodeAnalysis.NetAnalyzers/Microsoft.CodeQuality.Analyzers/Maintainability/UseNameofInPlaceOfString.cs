@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleWithSuggestion);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleWithSuggestion);
 
         protected abstract bool IsApplicableToLanguageVersion(ParseOptions options);
 

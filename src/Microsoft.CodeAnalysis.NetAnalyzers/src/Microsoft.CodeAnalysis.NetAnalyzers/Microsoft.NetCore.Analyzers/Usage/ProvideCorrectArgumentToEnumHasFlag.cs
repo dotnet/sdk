@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DifferentTypeRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DifferentTypeRule);
 
         public override void Initialize(AnalysisContext context)
         {

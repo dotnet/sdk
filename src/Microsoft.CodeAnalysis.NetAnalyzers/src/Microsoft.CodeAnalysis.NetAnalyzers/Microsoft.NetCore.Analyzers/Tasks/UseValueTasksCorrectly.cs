@@ -66,7 +66,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(GeneralRule, UnconsumedRule, DoubleConsumptionRule, AccessingIncompleteResultRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(GeneralRule, UnconsumedRule, DoubleConsumptionRule, AccessingIncompleteResultRule);
 
         public sealed override void Initialize(AnalysisContext context)
         {

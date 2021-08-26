@@ -40,7 +40,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA1401, RuleCA2101);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleCA1401, RuleCA2101);
 
         public override void Initialize(AnalysisContext context)
         {

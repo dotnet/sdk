@@ -26,7 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DefaultRule);
 
         /// <summary>
         /// Special-case `null!`/`default!` to not warn about it, as it's often used to suppress nullable warnings on fields.

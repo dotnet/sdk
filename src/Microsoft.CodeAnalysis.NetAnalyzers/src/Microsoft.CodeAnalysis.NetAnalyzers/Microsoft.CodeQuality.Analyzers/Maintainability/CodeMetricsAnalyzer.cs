@@ -108,7 +108,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
             isEnabledByDefaultInAggressiveMode: false,
             isReportedAtCompilationEnd: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
         public override void Initialize(AnalysisContext context)
         {
