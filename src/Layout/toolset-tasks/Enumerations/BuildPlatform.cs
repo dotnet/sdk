@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.Build.Framework
         Debian = 8,
         Fedora = 9,
         OpenSuse = 10,
-        FreeBSD = 11
+        FreeBSD = 11,
+        Rocky = 12
     }
 }
