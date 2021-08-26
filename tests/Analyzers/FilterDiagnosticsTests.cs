@@ -113,11 +113,17 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var text = SourceText.From("");
             TestState.Sources.Add(text);
 
+            var editorConfig = $@"
+root = true
+[*.cs]
+dotnet_diagnostic.DiagnosticAnalyzerId.severity = warning
+";
+
             return GetSolutionAsync(
                 TestState.Sources.ToArray(),
                 TestState.AdditionalFiles.ToArray(),
                 TestState.AdditionalReferences.ToArray(),
-                "root = true");
+                editorConfig);
         }
 
         private async Task<ImmutableDictionary<ProjectId, AnalyzersAndFixers>> GetProjectAnalyzersAndFixersAsync(Solution solution)
