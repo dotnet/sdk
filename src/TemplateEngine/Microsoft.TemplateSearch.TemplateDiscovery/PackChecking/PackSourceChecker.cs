@@ -49,12 +49,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                         }
                         alreadySeenPacks.Add(sourceInfo);
 
-                        IDownloadedPackInfo? packInfo = await packProvider.DownloadPackageAsync(sourceInfo, token).ConfigureAwait(false);
-                        if (packInfo == null)
-                        {
-                            Console.WriteLine($"Package {sourceInfo.Name}::{sourceInfo.Version} is not processed.");
-                            continue;
-                        }
+                        IDownloadedPackInfo packInfo = await packProvider.DownloadPackageAsync(sourceInfo, token).ConfigureAwait(false);
 
                         PackCheckResult preFilterResult = PrefilterPackInfo(packInfo);
                         if (preFilterResult.PreFilterResults.ShouldBeFiltered)

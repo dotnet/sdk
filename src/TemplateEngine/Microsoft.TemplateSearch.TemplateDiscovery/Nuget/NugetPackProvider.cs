@@ -97,7 +97,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             while (!done && !_runOnlyOnePage);
         }
 
-        public async Task<IDownloadedPackInfo?> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token)
+        public async Task<IDownloadedPackInfo> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token)
         {
             string packageFileName = string.Format(DownloadPackageFileNameFormat, packinfo.Name, packinfo.Version);
             string outputPackageFileNameFullPath = Path.Combine(_packageTempPath, packageFileName);
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             catch (Exception e)
             {
                 Console.WriteLine($"Failed to download package {packinfo.Name} {packinfo.Version}, reason: {e}.");
-                return null;
+                throw;
             }
         }
 

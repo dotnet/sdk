@@ -11,7 +11,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackProviders
 
         IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync(CancellationToken token);
 
-        Task<IDownloadedPackInfo?> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token);
+        Task<IDownloadedPackInfo> DownloadPackageAsync(ITemplatePackageInfo packinfo, CancellationToken token);
 
         Task<int> GetPackageCountAsync(CancellationToken token);
 
