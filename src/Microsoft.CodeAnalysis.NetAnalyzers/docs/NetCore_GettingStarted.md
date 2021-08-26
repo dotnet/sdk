@@ -18,7 +18,6 @@
 |[release/6.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/6.0.1xx)| .NET SDK 6.0.0xx | Servicing branch for the .NET 6 SDK. Currently accepting targeting fixes until the .NET 6 SDK ships
 |[release/7.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/7.0.1xx)| .NET SDK 7.0.0xx | Currently active release branch. New SDK analyzer should target this branch.
 
-
 ## Definition of done
 
 - Analyzer implemented to work for C# and VB.
