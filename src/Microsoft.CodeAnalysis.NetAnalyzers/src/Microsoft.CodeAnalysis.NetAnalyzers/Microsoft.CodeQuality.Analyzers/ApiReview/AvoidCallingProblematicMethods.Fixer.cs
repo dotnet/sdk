@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiReview
     /// </summary>
     public abstract class AvoidCallingProblematicMethodsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray<string>.Empty;
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

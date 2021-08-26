@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         /// <remarks>The string format message argument is the method signature.</remarks>
         protected abstract DiagnosticDescriptor BinderMaybeNotSetDescriptor { get; }
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create<DiagnosticDescriptor>(
                 this.BinderDefinitelyNotSetDescriptor,
                 this.BinderMaybeNotSetDescriptor);

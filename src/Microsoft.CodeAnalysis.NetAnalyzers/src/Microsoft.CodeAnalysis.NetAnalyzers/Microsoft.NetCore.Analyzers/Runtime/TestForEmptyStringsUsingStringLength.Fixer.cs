@@ -17,7 +17,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class TestForEmptyStringsUsingStringLengthFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(TestForEmptyStringsUsingStringLengthAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForEmptyStringsUsingStringLengthAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

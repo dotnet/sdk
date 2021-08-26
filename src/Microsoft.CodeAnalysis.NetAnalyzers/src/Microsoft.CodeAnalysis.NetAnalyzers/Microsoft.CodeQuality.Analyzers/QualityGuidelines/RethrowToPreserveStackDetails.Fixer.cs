@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = RethrowToPreserveStackDetailsAnalyzer.RuleId), Shared]
     public sealed class RethrowToPreserveStackDetailsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(RethrowToPreserveStackDetailsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(RethrowToPreserveStackDetailsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class UseNameOfInPlaceOfStringFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseNameofInPlaceOfStringAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseNameofInPlaceOfStringAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

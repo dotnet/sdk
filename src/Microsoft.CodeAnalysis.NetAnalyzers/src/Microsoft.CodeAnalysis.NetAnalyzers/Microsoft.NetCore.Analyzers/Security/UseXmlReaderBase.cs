@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         protected abstract DiagnosticDescriptor Rule { get; }
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
         protected static LocalizableString Description { get; } = CreateLocalizableResourceString(nameof(UseXmlReaderDescription));
 

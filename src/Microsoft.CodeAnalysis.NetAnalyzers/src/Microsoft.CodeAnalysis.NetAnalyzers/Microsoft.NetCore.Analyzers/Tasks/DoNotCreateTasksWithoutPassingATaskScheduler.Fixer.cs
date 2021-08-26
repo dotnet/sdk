@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
     /// </summary>
     public abstract class DoNotCreateTasksWithoutPassingATaskSchedulerFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray<string>.Empty;
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

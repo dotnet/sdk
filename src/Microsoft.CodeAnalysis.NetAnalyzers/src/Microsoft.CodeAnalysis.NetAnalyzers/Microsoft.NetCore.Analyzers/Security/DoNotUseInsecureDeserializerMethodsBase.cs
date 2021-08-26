@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             return MethodUsedDescriptor;
         }
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create<DiagnosticDescriptor>(
                 this.MethodUsedDescriptor);
 

@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public abstract class InitializeStaticFieldsInlineFixer<TLanguageKindEnum> : CodeFixProvider
         where TLanguageKindEnum : struct
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray<string>.Empty;
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
