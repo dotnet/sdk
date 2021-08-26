@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NETCore.Compilers" Version="4.0.0-4.21424.5">
+    <Dependency Name="Microsoft.NETCore.Compilers" Version="4.0.0-4.21426.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>8893e64d4a9f4ba78aae83e6c87f302ab14a60e9</Sha>
+      <Sha>47f9542af99c0077f1d694152d000510a24fddaa</Sha>
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21364.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
@@ -15,9 +15,9 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21424.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.21425.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>3dd12f0a1d25fa29b84e38b7d2345a693f4ae45e</Sha>
+      <Sha>809cbb58dea1d1e477ab0e12855d1758d50844a8</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
