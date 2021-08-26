@@ -61,9 +61,25 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             bool done = false;
             int packCount = 0;
 
+            int totalPackCount = 0;
+            int pageSize = _pageSize;
+
             do
             {
-                string queryString = string.Format(_searchUriFormat, skip, _pageSize);
+                //NuGet search API limit is 3000, so try to get all the packages exceeding the limit.
+                if (skip + pageSize > 3000)
+                {
+                    //get all the packages up to 3000
+                    pageSize = skip + pageSize - 3000;
+                }
+                if (skip >= 3000)
+                {
+                    //try to get all remaining packages
+                    skip = 3000;
+                    pageSize = totalPackCount - 3000;
+                }
+                string queryString = string.Format(_searchUriFormat, skip, pageSize);
+
                 Uri queryUri = new Uri(queryString);
                 using (HttpClient client = new HttpClient())
                 using (HttpResponseMessage response = await client.GetAsync(queryUri, token).ConfigureAwait(false))
@@ -73,24 +89,31 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                         string responseText = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
 
                         NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
-
+                        totalPackCount = resultsForPage.TotalHits;
                         if (resultsForPage.Data.Count > 0)
                         {
-                            skip += _pageSize;
+                            skip += pageSize;
                             packCount += resultsForPage.Data.Count;
                             foreach (NuGetPackageSourceInfo sourceInfo in resultsForPage.Data)
                             {
                                 yield return sourceInfo;
                             }
                         }
-                        else
+                        if (totalPackCount == packCount)
                         {
                             done = true;
                         }
+                        else if (skip > 3000 || skip >= totalPackCount)
+                        {
+                            Console.WriteLine($"Failed to get all search results from NuGet: expected {totalPackCount}, retrieved: {packCount}.");
+                            throw new Exception("Failed to get search results from NuGet search API.");
+                        }
+
                     }
                     else
                     {
-                        done = true;
+                        Console.WriteLine($"Unexpected response from NuGet: code {response.StatusCode}, details: {response.ToString()}.");
+                        throw new Exception("Failed to get search results from NuGet search API.");
                     }
                 }
             }
