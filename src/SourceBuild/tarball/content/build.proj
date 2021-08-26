@@ -138,14 +138,12 @@
                    Overwrite="true" />
   </Target>
 
-  <!-- TODO:  Disabled until tarball build size requirements can be reduced. -->
   <Target Name="CreatePrebuiltsTarball"
-          AfterTargets="Build"
-          Condition = "false">
+          AfterTargets="Build">
 
     <PropertyGroup>
       <TarballFileVersion>$(PrivateSourceBuiltPrebuiltsPackageVersionPrefix)$([MSBuild]::Add($(PrivateSourceBuiltPrebuiltsPackageVersionSuffix), 1))</TarballFileVersion>
-      <TarballFilePath>$(PackageReportDir)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 
