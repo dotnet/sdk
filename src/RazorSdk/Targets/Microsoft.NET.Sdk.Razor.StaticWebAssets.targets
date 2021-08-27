@@ -430,6 +430,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
+      <FileWrites Include="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" />
     </ItemGroup>
     
   </Target>
