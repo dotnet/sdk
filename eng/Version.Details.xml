@@ -149,9 +149,9 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>e72fc1f2050f2f7c9ecc47e768e85646e40efb25</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.0-rc.2.21427.10" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.0-rc.2.21427.15" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>c3440bf45ce506a3487faa26c7d38c3f857ac75b</Sha>
+      <Sha>6da54b149128f18711c8549772e30ac43e30c309</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="6.0.0-rc.2.21427.9">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
