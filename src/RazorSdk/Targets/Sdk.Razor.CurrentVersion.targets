@@ -94,10 +94,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         '$(RazorLangVersion)' == 'Experimental' OR
         ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' >= '3.0')">true</_Targeting30OrNewerRazorLangVersion>
 
-    <!-- Disable static web assets completely when running as part of the outside build -->
-    <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == '' and '$(IsCrossTargetingBuild)' == 'true'">false</StaticWebAssetsEnabled>
-        <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
-            applications and RazorLangVersion 3 or above. -->
+    <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
+        applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
 
     <UseStaticWebAssetsV2>$(_TargetingNET60OrLater)</UseStaticWebAssetsV2>
