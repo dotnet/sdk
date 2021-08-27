@@ -487,6 +487,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
+      <_UsingV2ForPacking Condition="Exists('$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel')">true</_UsingV2ForPacking>
     </PropertyGroup>
 
     <!-- Validate that there are no path conflicts between the assets we are about to pack. -->
@@ -500,6 +501,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateStaticWebAsssetsPropsFile
       Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
       StaticWebAssets="@(_CurrentProjectStaticWebAsset)"
+      AllowEmptySourceType="true"
       TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)" />
 
     <!-- Generates a props file the goes in build\$(PackageId).props and that simply imports
@@ -535,7 +537,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- All files that go into the nuget package -->
-    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'">
+    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true' and '$(_UsingV2ForPacking)' != 'true'">
 
       <!-- MSBuild prop files -->
 

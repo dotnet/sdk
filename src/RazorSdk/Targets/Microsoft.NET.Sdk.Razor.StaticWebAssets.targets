@@ -425,6 +425,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
+    <WriteLinesToFile File="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" Lines="2.0" WriteOnlyWhenDifferent="true" />
+
     <ItemGroup>
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
