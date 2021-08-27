@@ -94,14 +94,16 @@ Copyright (c) .NET Foundation. All rights reserved.
         '$(RazorLangVersion)' == 'Experimental' OR
         ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' >= '3.0')">true</_Targeting30OrNewerRazorLangVersion>
 
-    <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
-        applications and RazorLangVersion 3 or above. -->
+    <!-- Disable static web assets completely when running as part of the outside build -->
+    <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == '' and '$(IsCrossTargetingBuild)' == 'true'">false</StaticWebAssetsEnabled>
+        <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
+            applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
 
     <UseStaticWebAssetsV2>$(_TargetingNET60OrLater)</UseStaticWebAssetsV2>
 
-    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net6.0 applications and RazorLangVersion 5 or above -->
-    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_Targeting30OrNewerRazorLangVersion)</ScopedCssEnabled>
+    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net5.0 applications and RazorLangVersion 5 or above -->
+    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET50OrLater)</ScopedCssEnabled>
 
     <JSModulesEnabled Condition="'$(JSModulesEnabled)' == '' and '$(StaticWebAssetsEnabled)' == 'true'">$(_TargetingNET60OrLater)</JSModulesEnabled>
   </PropertyGroup>

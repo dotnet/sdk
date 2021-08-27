@@ -1039,6 +1039,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net5.0</TargetFrameworks>
+    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>
