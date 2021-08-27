@@ -296,7 +296,7 @@ Integration with static web assets:
 
 <Target Name="_RemoveApplicationBundleForPack" BeforeTargets="_CreateStaticWebAssetsCustomPropsCacheFile" Condition="'$(DisableScopedCssBundling)' != 'true'">
   <ItemGroup>
-    <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
+    <StaticWebAsset Remove="@(_AppBundleStaticWebAsset)" />
   </ItemGroup>
 </Target>
 

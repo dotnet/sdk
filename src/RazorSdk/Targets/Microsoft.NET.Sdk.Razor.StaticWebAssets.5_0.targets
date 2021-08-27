@@ -487,8 +487,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
-      <_UsingV2ForPacking Condition="Exists('$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel')">true</_UsingV2ForPacking>
+      <!-- When multitargeting, nuget will call many times with each target framework to pack. We must include our assets only once.
+        For that reason, we will emit a sentinel file the first time we run to make sure other target frameworks don't try to
+        include the pack content again. -->
+      <_AlreadyIncludedByAnotherTfm Condition="Exists('$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel')">true</_AlreadyIncludedByAnotherTfm>
     </PropertyGroup>
+
+    <WriteLinesToFile 
+      Condition="'$(_AlreadyIncludedByAnotherTfm)' != 'true'"
+      File="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel"
+      Lines="1.0"
+      WriteOnlyWhenDifferent="true" />
 
     <!-- Validate that there are no path conflicts between the assets we are about to pack. -->
     <ValidateStaticWebAssetsUniquePaths Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
@@ -537,7 +546,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- All files that go into the nuget package -->
-    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true' and '$(_UsingV2ForPacking)' != 'true'">
+    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true' and '$(_AlreadyIncludedByAnotherTfm)' != 'true'">
 
       <!-- MSBuild prop files -->
 
@@ -573,7 +582,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
   </Target>
-
 
   <!--
     ============================================================
