@@ -61,6 +61,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             catch (TaskCanceledException)
             {
                 Console.WriteLine("Operation was cancelled.");
+                return 2;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error occured: {e}");
                 return 1;
             }
 
