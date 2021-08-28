@@ -81,6 +81,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? systemObsoleteAttribute);
 
+                if (systemObsoleteAttribute is null)
+                {
+                    return;
+                }
+
                 context.RegisterOperationAction(context =>
                 {
                     if (context.Operation is IInvocationOperation invocationOperation && IsInTaskReturningMethodOrDelegate(context, syncBlockingTypes))
@@ -174,6 +179,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 syncBlockingTypes.AddOrUpdate(key, typeValue, (k, v) => v);
             }
         }
+
         private static void GetSymbolAndAddToList(string symbolName, string Namespace, SymbolKind kind, List<SyncBlockingSymbol> syncBlockingSymbols, Compilation compilation)
         {
             if (compilation.TryGetOrCreateTypeByMetadataName(Namespace, out INamedTypeSymbol? typeValue))
@@ -211,21 +217,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             ISymbol returnType = methodSymbol.ReturnType;
 
-            static bool CheckReturnTypeMatch(ISymbol targetSymbol, ISymbol returnType)
-                => targetSymbol.Equals(returnType.OriginalDefinition);
+            static bool CheckReturnTypeMatch(string targetType, ISymbol returnType, ConcurrentDictionary<string, ISymbol> syncBlockingTypes)
+                => syncBlockingTypes.TryGetValue(targetType, out ISymbol? targetTypeValue)
+                && targetTypeValue.Equals(returnType.OriginalDefinition);
 
-            bool isTask = (syncBlockingTypes.TryGetValue("Task", out ISymbol? taskTypeValue) && CheckReturnTypeMatch(taskTypeValue, returnType)) ||
-                (syncBlockingTypes.TryGetValue("TaskGeneric", out ISymbol? taskTypeGenericValue) && CheckReturnTypeMatch(taskTypeGenericValue, returnType));
-
-            bool isValueTask = syncBlockingTypes.TryGetValue("ValueTask", out ISymbol? valueTaskTypeValue) && CheckReturnTypeMatch(valueTaskTypeValue, returnType);
-
-            bool isIAsyncEnumerable = syncBlockingTypes.TryGetValue("IAsyncEnumerableGeneric", out ISymbol? genericIAsyncEnumberableTypeValue) &&
-                CheckReturnTypeMatch(genericIAsyncEnumberableTypeValue, returnType);
-
-            bool isAsyncMethodBuilderAttribute = syncBlockingTypes.TryGetValue("AsyncMethodBuilderAttribute", out ISymbol? asyncMethodBuilderAttributeTypeValue) &&
-                returnType.HasAttribute((INamedTypeSymbol)asyncMethodBuilderAttributeTypeValue);
-
-            return isTask || isValueTask || isIAsyncEnumerable || isAsyncMethodBuilderAttribute;
+            return CheckReturnTypeMatch("Task", returnType, syncBlockingTypes)
+                || CheckReturnTypeMatch("TaskGeneric", returnType, syncBlockingTypes)
+                || CheckReturnTypeMatch("ValueTask", returnType, syncBlockingTypes)
+                || CheckReturnTypeMatch("IAsyncEnumerableGeneric", returnType, syncBlockingTypes)
+                || (syncBlockingTypes.TryGetValue("AsyncMethodBuilderAttribute", out ISymbol? asyncMethodBuilderAttributeTypeValue)
+                && returnType.HasAttribute((INamedTypeSymbol)asyncMethodBuilderAttributeTypeValue));
         }
 
         private static IMethodSymbol? GetParentMethodOrDelegate(OperationAnalysisContext context)
