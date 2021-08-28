@@ -12,6 +12,7 @@ Here is a list (alpha sorted) of templates which are available for use with `dot
 | [Blazor](http://blazor.net) - Full stack web development with C# and WebAssembly | `dotnet new -i "Microsoft.AspNetCore.Blazor.Templates::3.0.0-*"`|
 | [Cake.Frosting](https://github.com/cake-build/cake) | `dotnet new -i "Cake.Frosting.Template::*"` |
 | [Carter](https://github.com/CarterCommunity/Carter) - Carter is a library that allows Nancy-esque routing for use with ASP.Net Core. | `dotnet new -i "CarterTemplate::*"`|
+| [CleanBlazor](https://github.com/fvilches17/CleanBlazor) - Minimal Blazor projects. Standard Blazor project templates minus any boilerplate assets (e.g. Bootstrap, Counter.razor, etc.)  | `dotnet new -i "FriscoVInc.DotNet.Templates.CleanBlazor::*"` |
 | [cloudscribe](https://www.cloudscribe.com/docs/introduction) | `dotnet new -i "cloudscribe.templates::*"` |
 | [DotVVM](https://github.com/riganti/dotvvm) - Open source MVVM framework for line of business web applications | `dotnet new -i "DotVVM.Templates::*"` |
 | [Eto.Forms](https://github.com/picoe/Eto) | `dotnet new -i "Eto.Forms.Templates::*"` |
