@@ -417,6 +417,21 @@
         <target state="translated">Add 메서드의 이 오버로드는 위험한 외부 참조를 확인할 수 있으므로 잠재적으로 안전하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegates">
+        <source>Do Not Always Skip Token Validation In Delegates</source>
+        <target state="new">Do Not Always Skip Token Validation In Delegates</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
+        <source>By setting critical TokenValidationParameter validations delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</source>
+        <target state="new">By setting critical TokenValidationParameter validations delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesMessage">
+        <source>The {0} is set to a function that is always returning true. By setting the validation delegate you are overriding default validation and by always returning true, this validation is completely disabled.</source>
+        <target state="new">The {0} is set to a function that is always returning true. By setting the validation delegate you are overriding default validation and by always returning true, this validation is completely disabled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
         <source>Do Not Call Dangerous Methods In Deserialization</source>
         <target state="translated">역직렬화에서 위험한 메서드를 호출하면 안 됨</target>
@@ -550,6 +565,21 @@
       <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
         <source>{0} disables TLS 1.2 and enables SSLv3</source>
         <target state="translated">{0}이(가) TLS 1.2를 사용하지 않도록, SSLv3를 사용하도록 설정합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecks">
+        <source>Do Not Disable Token Validation Checks</source>
+        <target state="new">Do Not Disable Token Validation Checks</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksDescription">
+        <source>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</source>
+        <target state="new">Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksMessage">
+        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation.</source>
+        <target state="new">TokenValidationParameters.{0} should not be set to false as it disables important validation.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
