@@ -34,12 +34,14 @@
     <MakeDir Directories="$(RpmLayoutSDK)"/>
     <MakeDir Directories="$(RpmLayoutDocs)"/>
     <MakeDir Directories="$(RpmLayoutTemplates)"/>
+    <MakeDir Directories="$(RpmLayoutManifestFiles)"/>
     <MakeDir Directories="$(RpmLayoutScripts)"/>
 
     <!-- Copy files to rpm layout -->
     <ItemGroup>
       <SDKFiles Include="$(InputRoot)/**/*"/>
       <DotnetNewTemplatesFiles Include="$(DotnetNewTemplatesRoot)**/*" />
+      <SDKManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
       <SDKManpages Include="$(ManPagesDir)/**/*"/>
       <SDKTemplatesFiles Include="$(TemplatesDir)/**/*"/>
       <SDKScriptsFiles Include="$(ScriptsDir)/after_remove_host.sh"/>
@@ -53,6 +55,12 @@
 
     <Copy SourceFiles="@(DotnetNewTemplatesFiles)"
           DestinationFiles="@(DotnetNewTemplatesFiles->'$(RpmLayoutDotnetNewTemplates)/%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False"/>
+
+    <Copy SourceFiles="@(SDKManifestFiles)"
+          DestinationFiles="@(SDKManifestFiles->'$(RpmLayoutManifestFiles)/%(RecursiveDir)%(Filename)%(Extension)')"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False"/>
@@ -198,6 +206,7 @@
       <RpmLayoutPackageRoot>$(RpmLayoutDirectory)package_root</RpmLayoutPackageRoot>
       <RpmLayoutSDK>$(RpmLayoutPackageRoot)/sdk</RpmLayoutSDK>
       <RpmLayoutDotnetNewTemplates>$(RpmLayoutPackageRoot)/templates</RpmLayoutDotnetNewTemplates>
+      <RpmLayoutManifestFiles>$(RpmLayoutPackageRoot)/sdk-manifests</RpmLayoutManifestFiles>
       <RpmLayoutDocs>$(RpmLayoutDirectory)docs</RpmLayoutDocs>                <!-- Man Pages -->
       <RpmLayoutTemplates>$(RpmLayoutDirectory)templates</RpmLayoutTemplates> <!-- Copyright, Changelog -->
       <RpmLayoutScripts>$(RpmLayoutDirectory)scripts</RpmLayoutScripts>
