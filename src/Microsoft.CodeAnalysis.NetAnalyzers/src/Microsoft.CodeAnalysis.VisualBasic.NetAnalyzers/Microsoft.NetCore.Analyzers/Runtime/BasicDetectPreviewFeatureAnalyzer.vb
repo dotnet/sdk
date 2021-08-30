@@ -14,6 +14,26 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Protected Overrides Function GetPreviewInterfaceNodeForTypeImplementingPreviewInterface(typeSymbol As ISymbol, previewInterfaceSymbol As ISymbol) As SyntaxNode
             Return Nothing
         End Function
+
+        Protected Overrides Function GetConstraintSyntaxNodeForTypeConstrainedByPreviewTypes(typeOrMethodSymbol As ISymbol, previewInterfaceConstraintSymbol As ISymbol) As SyntaxNode
+            Return Nothing
+        End Function
+
+        Protected Overrides Function GetPreviewReturnTypeSyntaxNodeForMethodOrProperty(methodOrPropertySymbol As ISymbol, previewReturnTypeSymbol As ISymbol) As SyntaxNode
+            Return Nothing
+        End Function
+
+        Protected Overrides Function GetPreviewParameterSyntaxNodeForMethod(methodSymbol As IMethodSymbol, parameterSymbol As ISymbol) As SyntaxNode
+            Return Nothing
+        End Function
+
+        Protected Overrides Function GetPreviewTypeArgumentSyntaxNodeForMethod(methodSymbol As IMethodSymbol, parameterSymbol As ISymbol) As SyntaxNode
+            Return Nothing
+        End Function
+
+        Protected Overrides Function GetPreviewSyntaxNodeForFieldsOrEvents(fieldOrEventSymbol As ISymbol, previewSymbol As ISymbol) As SyntaxNode
+            Return Nothing
+        End Function
     End Class
 
 End Namespace

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -46,6 +47,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     definition = definition.Parent;
                 }
+
                 if (definition is VariableDeclarationSyntax fieldDeclaration)
                 {
                     TypeSyntax parameterType = fieldDeclaration.Type;
@@ -60,8 +62,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
                     else if (parameterType is GenericNameSyntax genericName)
                     {
-                        SyntaxNode? previewNode = MatchGenericSyntaxNodeWithGivenSymbol(genericName, previewSymbol);
-                        if (previewNode != null)
+                        if (TryMatchGenericSyntaxNodeWithGivenSymbol(genericName, previewSymbol, out SyntaxNode? previewNode))
                         {
                             return previewNode;
                         }
@@ -91,8 +92,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         }
                         else if (parameterType is GenericNameSyntax genericName)
                         {
-                            SyntaxNode? previewNode = MatchGenericSyntaxNodeWithGivenSymbol(genericName, parameterSymbol);
-                            if (previewNode != null)
+                            if (TryMatchGenericSyntaxNodeWithGivenSymbol(genericName, parameterSymbol, out SyntaxNode? previewNode))
                             {
                                 return previewNode;
                             }
@@ -129,8 +129,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
                     else if (returnType is GenericNameSyntax genericName)
                     {
-                        SyntaxNode? previewNode = MatchGenericSyntaxNodeWithGivenSymbol(genericName, previewReturnTypeSymbol);
-                        if (previewNode != null)
+                        if (TryMatchGenericSyntaxNodeWithGivenSymbol(genericName, previewReturnTypeSymbol, out SyntaxNode? previewNode))
                         {
                             return previewNode;
                         }
@@ -141,27 +140,31 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return null;
         }
 
-        private SyntaxNode? MatchGenericSyntaxNodeWithGivenSymbol(GenericNameSyntax genericName, ISymbol previewReturnTypeSymbol)
+        private bool TryMatchGenericSyntaxNodeWithGivenSymbol(GenericNameSyntax genericName, ISymbol previewReturnTypeSymbol, [NotNullWhen(true)] out SyntaxNode? syntaxNode)
         {
             TypeArgumentListSyntax typeArgumentList = genericName.TypeArgumentList;
             foreach (TypeSyntax typeArgument in typeArgumentList.Arguments)
             {
                 if (typeArgument is GenericNameSyntax innerGenericName)
                 {
-                    return MatchGenericSyntaxNodeWithGivenSymbol(innerGenericName, previewReturnTypeSymbol);
+                    if (TryMatchGenericSyntaxNodeWithGivenSymbol(innerGenericName, previewReturnTypeSymbol, out syntaxNode))
+                    {
+                        return true;
+                    }
                 }
                 if (IsIdentifierNameSyntax(typeArgument, previewReturnTypeSymbol))
                 {
-                    return typeArgument;
+                    syntaxNode = typeArgument;
+                    return true;
                 }
             }
 
-            return null;
+            syntaxNode = null;
+            return false;
         }
 
         protected override SyntaxNode? GetConstraintSyntaxNodeForTypeConstrainedByPreviewTypes(ISymbol typeOrMethodSymbol, ISymbol previewInterfaceConstraintSymbol)
         {
-            SyntaxNode? ret = null;
             ImmutableArray<SyntaxReference> typeSymbolDeclaringReferences = typeOrMethodSymbol.DeclaringSyntaxReferences;
 
             foreach (SyntaxReference? syntaxReference in typeSymbolDeclaringReferences)
@@ -171,8 +174,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 {
                     // For ex: class A<T> where T : IFoo, new() // where IFoo is preview
                     SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses = classDeclaration.ConstraintClauses;
-                    ret = HandleConstraintClauses(constraintClauses, previewInterfaceConstraintSymbol);
-                    if (ret != null)
+                    if (TryGetConstraintClauseNode(constraintClauses, previewInterfaceConstraintSymbol, out SyntaxNode? ret))
                     {
                         return ret;
                     }
@@ -180,17 +182,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 else if (typeOrMethodDefinition is MethodDeclarationSyntax methodDeclaration)
                 {
                     SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses = methodDeclaration.ConstraintClauses;
-                    ret = HandleConstraintClauses(constraintClauses, previewInterfaceConstraintSymbol);
-                    if (ret != null)
+                    if (TryGetConstraintClauseNode(constraintClauses, previewInterfaceConstraintSymbol, out SyntaxNode? ret))
                     {
                         return ret;
                     }
                 }
             }
-            return ret;
+
+            return null;
         }
 
-        private SyntaxNode? HandleConstraintClauses(SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, ISymbol previewInterfaceConstraintSymbol)
+        private static bool TryGetConstraintClauseNode(SyntaxList<TypeParameterConstraintClauseSyntax> constraintClauses, ISymbol previewInterfaceConstraintSymbol, [NotNullWhen(true)] out SyntaxNode? syntaxNode)
         {
             foreach (TypeParameterConstraintClauseSyntax constraintClause in constraintClauses)
             {
@@ -201,16 +203,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     {
                         if (typeConstraintSyntax.Type is IdentifierNameSyntax identifier)
                         {
-                            if (identifier.Identifier.ValueText == previewInterfaceConstraintSymbol.Name)
+                            if (IsSyntaxToken(identifier.Identifier, previewInterfaceConstraintSymbol))
                             {
-                                return constraint;
+                                syntaxNode = constraint;
+                                return true;
                             }
                         }
                     }
                 }
             }
 
-            return null;
+            syntaxNode = null;
+            return false;
         }
 
         protected override SyntaxNode? GetPreviewInterfaceNodeForTypeImplementingPreviewInterface(ISymbol typeSymbol, ISymbol previewInterfaceSymbol)
@@ -249,7 +253,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 if (baseTypeSyntax is SimpleBaseTypeSyntax simpleBaseTypeSyntax)
                 {
                     TypeSyntax type = simpleBaseTypeSyntax.Type;
-                    if (type is IdentifierNameSyntax identifier && identifier.Identifier.ValueText == previewInterfaceSymbol.Name)
+                    if (type is IdentifierNameSyntax identifier && IsSyntaxToken(identifier.Identifier, previewInterfaceSymbol))
                     {
                         previewInterfaceNode = simpleBaseTypeSyntax;
                         return true;
@@ -261,7 +265,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-        private bool IsSyntaxToken(SyntaxToken identifier, ISymbol previewInterfaceSymbol)
+        private static bool IsSyntaxToken(SyntaxToken identifier, ISymbol previewInterfaceSymbol)
         {
             if (identifier.ValueText == previewInterfaceSymbol.Name)
             {
@@ -271,7 +275,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-        private bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol)
+        private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol)
         {
             if (identifier is IdentifierNameSyntax identifierName)
             {
