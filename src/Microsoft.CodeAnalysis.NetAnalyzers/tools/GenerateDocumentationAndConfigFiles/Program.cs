@@ -1361,7 +1361,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                 var effectiveAnalysisLevelPropName = "EffectiveAnalysisLevel";
                 var targetCondition = "'$(SkipGlobalAnalyzerConfigForPackage)' != 'true'";
                 var afterTargets = string.Empty;
-                var trimmedPackageName = packageName.Replace(".", string.Empty, StringComparison.Ordinal);
+                var trimmedPackageName = packageName.Replace(".", string.Empty, StringComparison.Ordinal).ToLowerInvariant();
 
                 if (!string.IsNullOrEmpty(category))
                 {
