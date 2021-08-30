@@ -25,7 +25,7 @@ Add the StyleCop analyzer package to a simple console project file.
 
 ## How to configure analyzer severity
 
-The options specified in .editorconfig files are recognized by the pattern `dotnet_diagnostic.<diagnostic-id>.severity = <value>`. `<diagnostic-id>` represents the diagnostic ID matched by the compiler, case-insensitively, to be configured. `<value>` must be one of the following: error, warn, info, hidden, suppress.
+The options specified in .editorconfig files are recognized by the pattern `dotnet_diagnostic.<diagnostic-id>.severity = <value>`. `<diagnostic-id>` represents the diagnostic ID matched by the compiler, case-insensitively, to be configured. `<value>` must be one of the following: error, warn, info, hidden, suppress. Please read the [Code Analysis documentation](https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/configuration-options#severity-level) for more details.
 
 *Example:*
 

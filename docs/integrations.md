@@ -29,32 +29,32 @@ These instructions originally authored by [randulakoralage82](https://medium.com
 Add following to your build file:
 
 ```yaml
-- task: DotNetCoreCLI@2
-  displayName: 'Install dotnet tools'
+- task: UseDotNet@2
+  displayName: 'Use .NET 6 sdk'
   inputs:
-    command: 'custom'
-    custom: 'tool'
-    arguments: 'restore'
+    packageType: 'sdk'
+    version: '6.0.x'
+    includePreviewVersions: true
 
 - task: DotNetCoreCLI@2
   displayName: 'dotnet-format'
   inputs:
     command: 'custom'
     custom: 'format'
-    arguments: '--check'
+    arguments: '--verify-no-changes'
 ```
 
 
 These instructions originally authored by [leotsarev](https://github.com/joinrpg/joinrpg-net/).
 
 
-## [pre-commit.com](https://pre-commit.com/) hook to reformat 
+## [pre-commit.com](https://pre-commit.com/) hook to reformat
 
 Add the following block to the `repos` section of your `.pre-commit-config.yaml` file:
 
 ```yaml
 -   repo: https://github.com/dotnet/format
-    rev: ""  # Specify a tag or sha here, or run "pre-commit autoupdate" 
+    rev: ""  # Specify a tag or sha here, or run "pre-commit autoupdate"
     hooks:
     -   id: dotnet-format
 ```
