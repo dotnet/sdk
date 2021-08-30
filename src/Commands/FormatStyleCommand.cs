@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
@@ -17,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
         {
             var command = new Command("style", Resources.Run_code_style_analyzers_and_apply_fixes)
             {
+                DiagnosticsOption,
                 SeverityOption,
             };
             command.AddCommonOptions();
@@ -38,6 +40,12 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                     parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
                 {
                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(styleSeverity) };
+                }
+
+                if (parseResult.HasOption(DiagnosticsOption) &&
+                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                {
+                    formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
                 }
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.CodeStyle };
