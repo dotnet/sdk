@@ -228,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             class Publisher
             {
-                public event EventHandler<PreviewEventArgs> {|#0:RaiseCustomEvent|};
+                public event EventHandler<{|#0:PreviewEventArgs|}> RaiseCustomEvent;
          
                 public void DoSomething()
                 {

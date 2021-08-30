@@ -43,6 +43,7 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
             await test.RunAsync();
         }
+
         [Fact]
         public async Task TestGenericMethodWithPreviewClass()
         {
@@ -53,8 +54,8 @@ namespace Preview_Feature_Scratch
 
     class Program
     {
-        public bool {|#0:GenericMethod|}<T>()
-            where T : Foo
+        public bool GenericMethod<T>()
+            where T : {|#0:Foo|}
         {
             return true;
         }
@@ -202,7 +203,7 @@ namespace Preview_Feature_Scratch
         }
     }
 
-class {|#1:A|}<T> where T : IFoo, new()
+class A<T> where T : {|#1:IFoo|}, new()
 {
     public A()
     {
@@ -224,6 +225,56 @@ interface IFoo
 }";
 
             var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Bar"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("A", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(2).WithArguments("Foo", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(3).WithArguments("Bar", "IFoo.Bar"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestGenericClassWithPreviewDependency()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using Library;
+namespace Preview_Feature_Scratch
+{
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = new A<Foo>();
+        }
+    }
+class A<T> where T : {|#1:IFoo|}, new()
+{
+    public A()
+    {
+        IFoo foo = new T();
+        {|#0:foo.Bar()|};
+    }
+}
+}";
+            string csDependencyCode = @"
+using System.Runtime.Versioning; using System;
+namespace Library
+{
+public class Foo : {|#2:IFoo|}
+{
+    public void {|#3:Bar|}() { }
+}
+
+[RequiresPreviewFeatures]
+public interface IFoo
+{
+    void Bar();
+}
+}";
+
+            var test = SetupDependencyAndTestCSWithOneSourceFile(csInput, csDependencyCode);
+
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Bar"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("A", "IFoo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(2).WithArguments("Foo", "IFoo"));

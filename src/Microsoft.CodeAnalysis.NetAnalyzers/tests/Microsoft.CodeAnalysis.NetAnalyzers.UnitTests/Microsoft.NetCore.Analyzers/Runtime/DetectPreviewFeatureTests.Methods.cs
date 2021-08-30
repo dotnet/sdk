@@ -21,7 +21,40 @@ namespace Preview_Feature_Scratch
 
     class Program
     {
-        public Dictionary<int, Foo> {|#1:Getter|}(Dictionary<int, Foo> {|#0:foo|}) // Highlight Foo in the parameter list and return type here
+        public Dictionary<int, {|#1:Foo|}> Getter(Dictionary<int, {|#0:Foo|}> foo)
+        {
+            return foo;
+        }
+
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestNestedGenericPreviewParametersToPreviewMethod()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using System.Collections.Generic;
+namespace Preview_Feature_Scratch
+{
+
+    class Program
+    {
+        public List<List<List<{|#1:Foo|}>>> Getter(List<List<List<{|#0:Foo|}>>> foo)
         {
             return foo;
         }
@@ -86,7 +119,7 @@ namespace Preview_Feature_Scratch
 
     class Program
     {
-        public Foo {|#2:Getter|}(Foo {|#0:foo|})
+        public {|#2:Foo|} Getter({|#0:Foo|} foo)
         {
             return foo;
         }

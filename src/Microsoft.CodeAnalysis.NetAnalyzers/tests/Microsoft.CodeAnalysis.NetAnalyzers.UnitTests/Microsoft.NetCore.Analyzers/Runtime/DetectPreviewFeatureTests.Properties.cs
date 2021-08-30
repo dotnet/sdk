@@ -18,14 +18,14 @@ using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
 
-    class {|#2:AFoo|}<T> where T : Foo, new() // Highlight Foo
+    class AFoo<T> where T : {|#2:Foo|}, new()
     {
         [RequiresPreviewFeatures]
         private Foo _value;
 
-        public Foo Value // Highlight Foo. Nice to have to collapse 0 and 1 into Value itself
+        public {|#0:Foo|} Value
         {
-            {|#0:get|}
+            get
             {
                 return {|#4:_value|};
             }
@@ -35,7 +35,7 @@ namespace Preview_Feature_Scratch
             }
         }
 
-        public Foo AnotherGetter => {|#6:{|#3:_value|}|};
+        public {|#3:Foo|} AnotherGetter => {|#6:_value|};
     }
 
     class Program
@@ -153,13 +153,13 @@ using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
 
-    class {|#0:AFoo|}<T> where T : Foo, new()
+    class AFoo<T> where T : {|#0:Foo|}, new()
     {
-        private Foo {|#1:_value|};
+        private {|#1:Foo|} _value;
 
-        public Foo Value // Highlight Foo. Nice to have: Collapse 0 and 1 into Value itself, though this might lead to 2 diagnostics on Value.
+        public {|#2:Foo|} Value // Highlight Foo. Nice to have: Collapse 0 and 1 into Value itself, though this might lead to 2 diagnostics on Value.
         {
-            {|#2:get|}
+            get
             {
                 return _value;
             }
@@ -169,7 +169,7 @@ namespace Preview_Feature_Scratch
             }
         }
 
-        public Foo AnotherGetter => {|#4:_value|};
+        public {|#4:Foo|} AnotherGetter => _value;
     }
 
     [RequiresPreviewFeatures]

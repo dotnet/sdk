@@ -115,7 +115,7 @@ namespace Preview_Feature_Scratch
         namespace Preview_Feature_Scratch
         {
 
-            class {|#0:Program|} : AbClass
+            class Program : {|#0:AbClass|}
             {
                 static void Main(string[] args)
                 {
