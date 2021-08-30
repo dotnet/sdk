@@ -36,18 +36,18 @@ jobs:
         _targetSolution: "sdk.sln"
         _branchName: "master"
         _sha: "1404c8ebdfb5d7590fb7335e5cb5a2267de125c5"
-      project-system:
-        _repo: "https://github.com/dotnet/project-system"
-        _repoName: "dotnet/project-system"
-        _targetSolution: "ProjectSystem.sln"
-        _branchName: "main"
-        _sha: "33c2c7d21f18e06731b59e9b2b5788d535768e59"
-      msbuild:
-        _repo: "https://github.com/dotnet/msbuild"
-        _repoName: "dotnet/msbuild"
-        _targetSolution: "MSBuild.sln"
-        _branchName: "main"
-        _sha: "0be0490bd1261ff4a6ad64267879b36a63a33faf"
+#      project-system:
+#        _repo: "https://github.com/dotnet/project-system"
+#        _repoName: "dotnet/project-system"
+#        _targetSolution: "ProjectSystem.sln"
+#        _branchName: "main"
+#        _sha: "33c2c7d21f18e06731b59e9b2b5788d535768e59"
+#      msbuild:
+#        _repo: "https://github.com/dotnet/msbuild"
+#        _repoName: "dotnet/msbuild"
+#        _targetSolution: "MSBuild.sln"
+#        _branchName: "main"
+#        _sha: "0be0490bd1261ff4a6ad64267879b36a63a33faf"
       aspnetcore:
         _repo: "https://github.com/dotnet/aspnetcore"
         _repoName: "dotnet/aspnetcore"
@@ -60,12 +60,12 @@ jobs:
         _targetSolution: "All.sln"
         _branchName: "main"
         _sha: "717ee2c6e6a2bfc40a200e2adb66c6ed4180962b"
-      ef6:
-        _repo: "https://github.com/dotnet/ef6"
-        _repoName: "dotnet/ef6"
-        _targetSolution: "EntityFramework.sln"
-        _branchName: "main"
-        _sha: "df31fde50966a117180459313024d95c0a004162"
+#      ef6:
+#        _repo: "https://github.com/dotnet/ef6"
+#        _repoName: "dotnet/ef6"
+#        _targetSolution: "EntityFramework.sln"
+#        _branchName: "main"
+#        _sha: "df31fde50966a117180459313024d95c0a004162"
   timeoutInMinutes: 60
   steps:
     - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
