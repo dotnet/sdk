@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.DetectPreviewFeatureAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -211,7 +211,7 @@ class {|#1:A|}<T> where T : IFoo, new()
     }
 }
 
-class {|#2:Foo|} : IFoo
+class Foo : {|#2:IFoo|}
 {
     public void {|#3:Bar|}() { }
 }

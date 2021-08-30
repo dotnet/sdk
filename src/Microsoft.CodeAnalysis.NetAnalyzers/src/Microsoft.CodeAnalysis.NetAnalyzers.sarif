@@ -304,6 +304,25 @@
             ]
           }
         },
+        "CA2252": {
+          "id": "CA2252",
+          "shortDescription": "This API requires opting into preview features",
+          "fullDescription": "An assembly has to opt into preview features before using them.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpDetectPreviewFeatureAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2352": {
           "id": "CA2352",
           "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
@@ -3610,26 +3629,6 @@
             ]
           }
         },
-        "CA2252": {
-          "id": "CA2252",
-          "shortDescription": "This API requires opting into preview features",
-          "fullDescription": "An assembly has to opt into preview features before using them.",
-          "defaultLevel": "note",
-          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "DetectPreviewFeatureAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2253": {
           "id": "CA2253",
           "shortDescription": "Named placeholders should not be numeric values",
@@ -5795,6 +5794,25 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2252": {
+          "id": "CA2252",
+          "shortDescription": "This API requires opting into preview features",
+          "fullDescription": "An assembly has to opt into preview features before using them.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "BasicDetectPreviewFeatureAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
