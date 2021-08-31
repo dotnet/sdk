@@ -136,12 +136,12 @@
     <comment>Do not localize: "template.json", "--recursive"</comment>
   </data>
   <data name="command_export_log_cancelled" xml:space="preserve">
-    <value>"--export" command for the following file was cancelled: "{0}".</value>
-    <comment>Do not localize: "--export"</comment>
+    <value>"export" command for the following file was cancelled: "{0}".</value>
+    <comment>Do not localize: "export"</comment>
   </data>
   <data name="command_export_log_executionEnded" xml:space="preserve">
-    <value>Execution of "--export" command has completed. {0} files were processed.</value>
-    <comment>{0} is the number of files. Do not localize "--export"</comment>
+    <value>Execution of "export" command has completed. {0} files were processed.</value>
+    <comment>{0} is the number of files. Do not localize "export"</comment>
   </data>
   <data name="command_export_log_templateExportFailedWithError" xml:space="preserve">
     <value>Generating localization files for a template.json has failed.
@@ -162,7 +162,7 @@ Do not localize: "template.json"</comment>
     <comment>Do not localize: "template.json"</comment>
   </data>
   <data name="generic_log_commandExecutionFailed" xml:space="preserve">
-    <value>"--{0}" command has encountered an error. See the logs for more details.</value>
+    <value>"{0}" command has encountered an error. See the logs for more details.</value>
     <comment>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</comment>
   </data>
   <data name="generic_log_commandExecutionFailedWithErrorMessage" xml:space="preserve">
