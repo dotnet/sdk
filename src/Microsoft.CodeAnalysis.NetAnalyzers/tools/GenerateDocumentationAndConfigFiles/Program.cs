@@ -1398,6 +1398,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
