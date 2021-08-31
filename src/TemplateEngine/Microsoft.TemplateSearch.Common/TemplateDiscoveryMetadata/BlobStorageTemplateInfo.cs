@@ -279,6 +279,7 @@ namespace Microsoft.TemplateSearch.Common
                         defaultValue: paramObj.ToString("defaultValue"),
                         defaultIfOptionWithoutValue: paramObj.ToString("defaultIfOptionWithoutValue"));
                 }
+                info.CacheParameters = legacyParams;
             }
 
             info.TagsCollection = tags;

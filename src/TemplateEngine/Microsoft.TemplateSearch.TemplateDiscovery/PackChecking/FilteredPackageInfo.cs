@@ -8,60 +8,40 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     internal class FilteredPackageInfo : ITemplatePackageInfo
     {
-        private readonly ITemplatePackageInfo _baseInfo;
-
         internal FilteredPackageInfo(ITemplatePackageInfo info, string reason)
         {
             Reason = reason;
-            _baseInfo = info;
+            Name = info.Name;
+            Version = info.Version;
+            Owners = info.Owners;
+            TotalDownloads = info.TotalDownloads;
+            Verified = info.Verified;
         }
 
         [JsonConstructor]
-        private FilteredPackageInfo(string name, string reason, string? version, long totalDownloads, IEnumerable<string> owners, bool verified)
+        private FilteredPackageInfo(string name, string reason)
         {
+            Name = name;
             Reason = reason;
-            _baseInfo = new InnerPackInfo(name, version, totalDownloads, owners, verified);
         }
 
         [JsonProperty]
-        public string Name => _baseInfo.Name;
+        public string Name { get; private set; }
 
         [JsonProperty]
-        public string? Version => _baseInfo.Version;
+        public string? Version { get; private set; }
 
         [JsonProperty]
         public string Reason { get; private set; }
 
         [JsonProperty]
-        public long TotalDownloads => _baseInfo.TotalDownloads;
+        public long TotalDownloads { get; private set; }
 
         [JsonProperty]
-        public IReadOnlyList<string> Owners => _baseInfo.Owners;
+        public IReadOnlyList<string> Owners { get; private set; } = Array.Empty<string>();
 
         [JsonProperty]
-        public bool Verified => _baseInfo.Verified;
-
-        private class InnerPackInfo : ITemplatePackageInfo
-        {
-            internal InnerPackInfo(string name, string? version, long totalDownloads, IEnumerable<string> owners, bool verified)
-            {
-                Name = name;
-                Version = version;
-                TotalDownloads = totalDownloads;
-                Owners = owners?.ToArray() ?? Array.Empty<string>();
-                Verified = verified;
-            }
-
-            public string Name { get; }
-
-            public string? Version { get; }
-
-            public long TotalDownloads { get; }
-
-            public IReadOnlyList<string> Owners { get; }
-
-            public bool Verified { get; }
-        }
+        public bool Verified { get; private set; }
     }
 }
 

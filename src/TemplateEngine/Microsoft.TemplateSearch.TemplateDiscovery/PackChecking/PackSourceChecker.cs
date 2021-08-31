@@ -60,12 +60,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             {
                 if (!_saveCandidatePacks)
                 {
-                    Console.WriteLine("Removing downloaded packs");
-                    foreach (IPackProvider provider in _packProviders)
+                    try
                     {
-                        await provider.DeleteDownloadedPacksAsync().ConfigureAwait(false);
+                        Console.WriteLine("Removing downloaded packs");
+                        foreach (IPackProvider provider in _packProviders)
+                        {
+                            await provider.DeleteDownloadedPacksAsync().ConfigureAwait(false);
+                        }
+                        Console.WriteLine("Downloaded packs were removed");
                     }
-                    Console.WriteLine("Downloaded packs were removed");
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to remove downloaded packs, details: {ex}");
+                    }
                 }
             }
         }

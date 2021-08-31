@@ -59,24 +59,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public object? CreateDataForTemplatePackage(ITemplatePackageInfo packInfo) => null;
 
-        public object? GetDataForPack(ITemplatePackageInfo packInfo)
-        {
-            return null;
-        }
-
-        public object? GetDataForTemplate(ITemplatePackageInfo packInfo, string templateIdentity)
-        {
-            if (!_hostDataForPack.TryGetValue(packInfo, out Dictionary<string, HostSpecificTemplateData>? packData))
-            {
-                return null;
-            }
-            if (!packData.TryGetValue(templateIdentity, out HostSpecificTemplateData? data))
-            {
-                return null;
-            }
-            return data;
-        }
-
         private class ITemplatePackageInfoComparer : IEqualityComparer<ITemplatePackageInfo>
         {
             public bool Equals(ITemplatePackageInfo? x, ITemplatePackageInfo? y)

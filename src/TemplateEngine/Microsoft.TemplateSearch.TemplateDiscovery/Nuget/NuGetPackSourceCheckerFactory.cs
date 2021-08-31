@@ -52,19 +52,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 new CliHostDataProducer()
             };
 
-            TemplateSearchCache? existingCache = await LoadExistingCacheAsync(config, cancellationToken).ConfigureAwait(false);
-            IEnumerable<FilteredPackageInfo>? knownPackages = await LoadKnownPackagesListAsync(config, cancellationToken).ConfigureAwait(false);
+            TemplateSearchCache? existingCache = config.DiffMode ? await LoadExistingCacheAsync(config, cancellationToken).ConfigureAwait(false) : null;
+            IEnumerable<FilteredPackageInfo>? knownPackages = config.DiffMode ? await LoadKnownPackagesListAsync(config, cancellationToken).ConfigureAwait(false) : null;
 
             return new PackSourceChecker(providers, preFilterer, additionalDataProducers, config.SaveCandidatePacks, existingCache, knownPackages);
         }
 
         private static async Task<IEnumerable<FilteredPackageInfo>?> LoadKnownPackagesListAsync (CommandArgs config, CancellationToken cancellationToken)
         {
-            if (!config.DiffMode)
-            {
-                return null;
-            }
-
             Verbose.WriteLine($"Loading existing non-packages information.");
             const string uri = "https://dotnettemplating.blob.core.windows.net/search/nonTemplatePacks_test.json";
 
@@ -86,13 +81,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
         private static async Task<TemplateSearchCache?> LoadExistingCacheAsync(CommandArgs config, CancellationToken cancellationToken)
         {
-            if (!config.DiffMode)
-            {
-                return null;
-            }
-
             Verbose.WriteLine($"Loading existing cache information.");
-            const string uri = "https://dotnettemplating.blob.core.windows.net/search/NuGetTemplateSearchInfoVer2.json";
+            const string uri = "https://dotnet-templating.azureedge.net/search/NuGetTemplateSearchInfoVer2.json";
 
             FileInfo? cacheFileLocation = config.DiffOverrideSearchCacheLocation;
 

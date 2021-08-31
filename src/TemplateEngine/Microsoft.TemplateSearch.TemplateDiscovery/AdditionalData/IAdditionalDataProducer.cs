@@ -20,12 +20,5 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         [Obsolete]
         void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templates, IEngineEnvironmentSettings environment);
-
-        [Obsolete]
-        object? GetDataForPack(ITemplatePackageInfo packInfo);
-
-        [Obsolete]
-        object? GetDataForTemplate(ITemplatePackageInfo packInfo, string templateIdentity);
-
     }
 }
