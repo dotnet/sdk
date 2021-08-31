@@ -1437,8 +1437,8 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
            and an implied numerical option (such as '4') -->
       <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">5.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">7.0</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
