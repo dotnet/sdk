@@ -64,6 +64,54 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
+        public async Task TestGenericPreviewPropertyGetterAndSetters()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using System.Collections.Generic;
+namespace Preview_Feature_Scratch
+{
+
+    class AFoo<T> where T : {|#2:Foo|}, new()
+    {
+        private List<{|#6:Foo|}> _value;
+
+        public List<{|#0:Foo|}> Value
+        {
+            get
+            {
+                return _value;
+            }
+            {|#1:set|}
+            {
+                _value = value;
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Program prog = new Program();
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(0).WithArguments("get_Value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("set_Value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(2).WithArguments("AFoo", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(6).WithArguments("_value", "Foo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestPreviewPropertySetter()
         {
             var csInput = @" 
@@ -157,7 +205,7 @@ namespace Preview_Feature_Scratch
     {
         private {|#1:Foo|} _value;
 
-        public {|#2:Foo|} Value // Highlight Foo. Nice to have: Collapse 0 and 1 into Value itself, though this might lead to 2 diagnostics on Value.
+        public {|#2:Foo|} Value
         {
             get
             {

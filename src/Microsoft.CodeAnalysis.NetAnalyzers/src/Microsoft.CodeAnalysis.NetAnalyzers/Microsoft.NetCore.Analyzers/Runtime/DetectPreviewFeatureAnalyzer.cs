@@ -258,17 +258,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 symbolType = arrayType.ElementType;
             }
 
-            // continue from here. Test TEstPreviewTypeArrayOfGeneric... unit test. Also, create another unit test with a preview generic type taking a non preview type. Does this change still work?
             ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
-
-            //if (symbolType is INamedTypeSymbol outerNamedType)
-            //{
-            //    ISymbol? innerSymbolType = GetPreviewSymbolForGenericTypesFromTypeArguments(outerNamedType.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
-            //    if (innerSymbolType != null)
-            //    {
-            //        ProcessFieldOrEventSymbolAttributes(context, symbol, innerSymbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
-            //    }
-            //}
         }
 
         private void ProcessFieldOrEventSymbolAttributes(SymbolAnalysisContext context, ISymbol symbol, ISymbol symbolType,
@@ -287,6 +277,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     context.ReportDiagnostic(symbol.CreateDiagnostic(FieldOrEventIsPreviewTypeRule, symbol.Name, symbolType.Name));
                 }
             }
+
             if (SymbolContainsGenericTypesWithPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol, out SyntaxNode? syntaxNode, fieldSymbolForGenericParameterSyntaxNode: symbol is IFieldSymbol fieldSymbol ? fieldSymbol : null, eventSymbolForGenericParameterSyntaxNode: symbol is IEventSymbol eventSymbol ? eventSymbol : null))
             {
                 if (syntaxNode != null)
@@ -400,7 +391,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 case IEventSymbol:
                     return GetPreviewSyntaxNodeForFieldsOrEvents(symbol, previewType);
                 case IMethodSymbol methodSymbol:
-                    // symbol is not really a method symbol. It is a parameter to a method
                     return GetPreviewParameterSyntaxNodeForMethod(methodSymbol, previewType);
                 case IPropertySymbol:
                 case ITypeSymbol: // Methods/Properties/Types cannot have a type argument that is Preview. Only type parameters can be Preview

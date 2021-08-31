@@ -119,6 +119,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     {
                         return returnType;
                     }
+                    else if (returnType is GenericNameSyntax genericName)
+                    {
+                        if (TryMatchGenericSyntaxNodeWithGivenSymbol(genericName, previewReturnTypeSymbol, out SyntaxNode? previewNode))
+                        {
+                            return previewNode;
+                        }
+                    }
                 }
                 else if (methodOrPropertyDefinition is MethodDeclarationSyntax methodDeclaration)
                 {
