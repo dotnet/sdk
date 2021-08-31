@@ -120,6 +120,12 @@ namespace Microsoft.NET.Build.Tasks
         public string ProjectLanguage { get; set; }
 
         /// <summary>
+        /// Optional version of the compiler API (E.g. 'roslyn3.9', 'roslyn4.0')
+        /// Impacts applicability of analyzer assets.
+        /// </summary>
+        public string CompilerApiVersion { get; set; }
+
+        /// <summary>
         /// Check that there is at least one package dependency in the RID graph that is not in the RID-agnostic graph.
         /// Used as a heuristic to detect invalid RIDs.
         /// </summary>
@@ -425,6 +431,7 @@ namespace Microsoft.NET.Build.Tasks
                         }
                     }
                     writer.Write(ProjectLanguage ?? "");
+                    writer.Write(CompilerApiVersion ?? "");
                     writer.Write(ProjectPath);
                     writer.Write(RuntimeIdentifier ?? "");
                     if (ShimRuntimeIdentifiers != null)
@@ -848,6 +855,8 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteAnalyzers()
             {
+                HashSet<string>? excludedAnalyzers = NuGetUtils.GetExcludedAnalyzers(_lockFile, _task.ProjectLanguage, _task.CompilerApiVersion);
+
                 Dictionary<(string, NuGetVersion), LockFileTargetLibrary> targetLibraries = null;
 
                 foreach (var library in _lockFile.Libraries)
@@ -859,7 +868,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     foreach (var file in library.Files)
                     {
-                        if (!NuGetUtils.IsApplicableAnalyzer(file, _task.ProjectLanguage))
+                        if (!NuGetUtils.IsApplicableAnalyzer(file, _task.ProjectLanguage, excludedAnalyzers))
                         {
                             continue;
                         }
