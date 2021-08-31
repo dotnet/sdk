@@ -37,6 +37,27 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Fact]
+        public void It_Uses_Multiple_Frameworks()
+        {
+            ResolveTargetingPackAssets task = InitializeTask(out string mockPackageDirectory);
+
+            // Add two RuntimeFrameworks that both point to the default targeting pack.
+            task.RuntimeFrameworks = new[] {
+                new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>{ ["FrameworkName"] = "Microsoft.Windows.SDK.NET.Ref"}),
+                new MockTaskItem("RuntimeFramework2", new Dictionary<string, string>{ ["FrameworkName"] = "Microsoft.Windows.SDK.NET.Ref"}),
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.UsedRuntimeFrameworks.Select(item => item.ItemSpec)
+                .Should().BeEquivalentTo(new[]
+                {
+                    "RuntimeFramework1",
+                    "RuntimeFramework2",
+                });
+        }
+
+            [Fact]
         public void Given_Passing_ResolvedTargetingPacks_It_Passes_Again_With_Cached_Results()
         {
             ResolveTargetingPackAssets task1 = InitializeTask(out string packageDirectory);
