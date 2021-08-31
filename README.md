@@ -47,7 +47,7 @@
 
 ### How To Use
 
-Dotnet-format is now part of the .NET 6 SDK. Invoking the `dotnet format` command will fix whitespace, code style, and analyzer issues by default. `dotnet format` will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory, you will need to specify the workspace to format. You can control how verbose the output will be by using the `--verbosity` option.
+dotnet-format is now part of the .NET 6 SDK. Invoking the `dotnet format` command will fix whitespace, code style, and analyzer issues by default. dotnet-format will look in the current directory for a project or solution file and use that as the workspace to format. If more than one project or solution file is present in the current directory, you will need to specify the workspace to format. You can control how verbose the output will be by using the `--verbosity` option.
 
 There are also 3 subcommands to target specific scenarios:
 - `dotnet format whitespace`: fixes whitespace
@@ -71,7 +71,7 @@ There are also 3 subcommands to target specific scenarios:
 Note: if the user specifies a severity here it is used for both style and analyzers.
 
 #### Unique options for `dotnet format whitespace`
- - `--folder`:
+ - `--folder`: Whether to treat the workspace argument as a simple folder of files.
 
 #### Unique options for `dotnet format style`
  - `--diagnostics`: A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.
