@@ -1,14 +1,14 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Sdk.Android.Manifest-6.0.100" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Android" />
-    <BundledManifests Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.iOS" />
-    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.MacCatalyst" />
-    <BundledManifests Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.macOS" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.100" Version="$(MauiWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Maui" />
-    <BundledManifests Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.tvOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="$(MonoWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Mono.ToolChain" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="$(EmscriptenWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Emscripten" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Android.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Android" />
+    <BundledManifests Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.iOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinMacCatalystWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.MacCatalyst" />
+    <BundledManifests Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.macOS" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(MauiWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Maui" />
+    <BundledManifests Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.tvOS" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(MonoWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Mono.ToolChain" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(EmscriptenWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Emscripten" />
   </ItemGroup>
 
   <!-- Restore workload manifests via PackageReference -->
@@ -33,7 +33,7 @@
           DependsOnTargets="SetupBundledComponents;GenerateManifestVersions">
     
     <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(RedistLayoutPath)sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+          DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(DestinationPath)"/>
   
   </Target>
 
@@ -42,7 +42,7 @@
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
 
     <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(BaseOutputPath)$(Configuration)\sdk-manifests\sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+          DestinationFolder="$(BaseOutputPath)$(Configuration)\sdk-manifests\sdk-manifests/%(DestinationPath)"/>
     
   </Target>
   
@@ -70,11 +70,11 @@
     <ItemGroup>
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\**\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/"/>
+                       DestinationPath="%(BundledManifests.SdkFeatureBand)/$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/"/>
 
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
                        Condition="!Exists('%(BundledManifests.RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(BundledManifests.WorkloadManifestId)', '').ToLower())/"/>
+                       DestinationPath="%(BundledManifests.SdkFeatureBand)/$([MSBuild]::ValueOrDefault('%(BundledManifests.WorkloadManifestId)', '').ToLower())/"/>
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
