@@ -42,6 +42,7 @@
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="deployment-tools" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

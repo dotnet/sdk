@@ -1,0 +1,23 @@
+From 44e69209ab5f641104815da7fcad063e923115af Mon Sep 17 00:00:00 2001
+From: Logan Bussell <36081148+lbussell@users.noreply.github.com>
+Date: Thu, 19 Aug 2021 22:37:59 +0000
+Subject: [PATCH] remove unnecessary pvp import
+
+---
+ eng/Versions.props | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index aa896af..2a62eb2 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -142,6 +142,4 @@
+     <MicrosoftNETCoreTargetsPackage>Microsoft.NETCore.Targets</MicrosoftNETCoreTargetsPackage>
+     <MicrosoftNETCoreRuntimeCoreCLRPackage>Microsoft.NETCore.Runtime.CoreCLR</MicrosoftNETCoreRuntimeCoreCLRPackage>
+   </PropertyGroup>
+-  <!-- Override isolated build dependency versions with versions from Repo API. -->
+-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+ </Project>
+-- 
+2.30.2
+
