@@ -113,7 +113,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0")]
         public void It_supports_framework_dependent_publishing(string targetFramework)
         {
-            TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, emitNativeSymbols:true, identifier: targetFramework);
+            TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, composite: false, emitNativeSymbols:true, identifier: targetFramework);
         }
 
         [Theory]
@@ -200,7 +200,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0")]
         public void It_can_publish_readytorun_for_library_projects(string targetFramework)
         {
-            TestProjectPublishing_Internal("LibraryProject1", targetFramework, isSelfContained: false, makeExeProject: false, identifier: targetFramework);
+            TestProjectPublishing_Internal("LibraryProject1", targetFramework, isSelfContained: false, composite: false, makeExeProject: false, identifier: targetFramework);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -209,7 +209,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0")]
         public void It_can_publish_readytorun_for_selfcontained_library_projects(string targetFramework)
         {
-            TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained:true, makeExeProject: false, identifier: targetFramework);
+            TestProjectPublishing_Internal("LibraryProject2", targetFramework, isSelfContained:true, composite: true, makeExeProject: false, identifier: targetFramework);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
