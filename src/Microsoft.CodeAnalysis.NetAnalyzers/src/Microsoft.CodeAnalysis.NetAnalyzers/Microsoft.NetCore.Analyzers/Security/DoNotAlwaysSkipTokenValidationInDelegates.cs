@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -127,6 +128,10 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                                     var targetOperations = blockOperation.Descendants().ToImmutableArray().WithoutFullyImplicitOperations();
                                     alwaysReturnTrue = AlwaysReturnTrue(targetOperations);
+                                    break;
+
+                                default:
+                                    Debug.Fail("Unhandled OperationKind " + delegateCreationOperation.Target.Kind);
                                     break;
                             }
 
