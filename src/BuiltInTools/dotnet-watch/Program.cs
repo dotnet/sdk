@@ -49,7 +49,8 @@ Remarks:
 
   Even though '--verbose' is an option dotnet-watch supports, the use of '--'
   indicates that '--verbose' should be treated instead as an argument for
-  dotnet-run.
+  dotnet-run. And because '--verbose' is not a valid argument for dotnet-run,
+  this command would fail.
 
 Examples:
   dotnet watch run
