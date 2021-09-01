@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
@@ -86,8 +87,8 @@ namespace Microsoft.NET.Publish.Tests
                 NuGetFramework framework = NuGetFramework.Parse(targetFramework);
 
                 publishDirectory.Should().NotHaveFiles(new[] {
-                    GetPDBFileName(mainProjectDll, framework),
-                    GetPDBFileName(classLibDll, framework),
+                    GetPDBFileName(mainProjectDll, framework, testProject.RuntimeIdentifier),
+                    GetPDBFileName(classLibDll, framework, testProject.RuntimeIdentifier),
                 });
             }
 
@@ -264,6 +265,67 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute().Should().Pass();
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "nonComposite", "nonselfcontained")]
+        [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
+        [InlineData("net6.0", "win-x64", "windows", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
+        [InlineData("net6.0", "osx-arm64", "windows,linux,osx", "X64,Arm64", "nonComposite", "nonselfcontained")]
+        // In .NET 6.0 building targetting Windows doesn't support emitting native symbols.
+        [InlineData("net6.0", "win-x86", "windows", "X86,X64,Arm64,Arm", "nonComposite", "nonselfcontained")]
+        public void It_supports_crossos_arch_compilation(string targetFramework, string runtimeIdentifier, string sdkSupportedOs, string sdkSupportedArch, string composite, string selfcontained)
+        {
+            var projectName = $"FrameworkDependentUsingCrossArchTest";// {targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";
+            string sdkOs = "NOTHING";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                sdkOs = "linux";
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                sdkOs = "windows";
+            }
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                sdkOs = "osx";
+            }
+
+            Assert.NotEqual("NOTHING", sdkOs); // We should know which OS we are running on
+            if (!sdkSupportedOs.Contains(sdkOs))
+            {
+                // Running test on OS that doesn't support this cross platform build
+                return;
+            }
+
+            string sdkArch = RuntimeInformation.ProcessArchitecture.ToString();
+            Assert.Contains(sdkArch, new string[]{"Arm", "Arm64", "X64", "X86"}); // Assert that the Architecture in use is a known architecture
+            if (!sdkSupportedArch.Split(',').Contains(sdkArch))
+            {
+                // Running test on processor architecture that doesn't support this cross platform build
+                return;
+            }
+
+            TestProjectPublishing_Internal(projectName, targetFramework, isSelfContained: selfcontained == "selfcontained", emitNativeSymbols: true, useCrossgen2: true, composite: composite == "composite", identifier: targetFramework, runtimeIdentifier: runtimeIdentifier);
+        }
+
+        private static bool IsTargetOsOsX(string runtimeIdentifier)
+        {
+            if (runtimeIdentifier.Contains("osx") || runtimeIdentifier.Contains("macOs"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static bool IsTargetOsWindows(string runtimeIdentifier)
+        {
+            return runtimeIdentifier.Contains("win");
+        }
+
+        private static bool IsTargetOsLinux(string runtimeIdentifier)
+        {
+            return runtimeIdentifier.Contains("linux");
+        }
+
         private void TestProjectPublishing_Internal(string projectName,
             string targetFramework,
             bool makeExeProject = true,
@@ -272,13 +334,15 @@ namespace Microsoft.NET.Publish.Tests
             bool useCrossgen2 = false,
             bool composite = true,
             [CallerMemberName] string callingMethod = "",
-            string identifier = null)
+            string identifier = null,
+            string runtimeIdentifier = null)
         {
             var testProject = CreateTestProjectForR2RTesting(
                 targetFramework,
                 projectName,
                 "ClassLib",
-                isExeProject: makeExeProject);
+                isExeProject: makeExeProject,
+                runtimeIdentifier: runtimeIdentifier);
 
             testProject.AdditionalProperties["PublishReadyToRun"] = "True";
             testProject.AdditionalProperties["PublishReadyToRunEmitSymbols"] = emitNativeSymbols ? "True" : "False";
@@ -307,18 +371,34 @@ namespace Microsoft.NET.Publish.Tests
             else
                 publishDirectory.Should().NotHaveFile("System.Private.CoreLib.dll");
 
-            if (emitNativeSymbols && !RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (emitNativeSymbols && !IsTargetOsOsX(testProject.RuntimeIdentifier))
             {
                 NuGetFramework framework = NuGetFramework.Parse(targetFramework);
+                Log.WriteLine("Checking for symbol files");
+                IEnumerable<string> pdbFiles;
 
-                publishDirectory.Should().HaveFiles(new[] {
-                    GetPDBFileName(mainProjectDll, framework),
-                    GetPDBFileName(classLibDll, framework),
-                });
+                if (composite)
+                {
+                    pdbFiles = new[] { GetPDBFileName(Path.ChangeExtension(mainProjectDll, "r2r.dll"), framework, testProject.RuntimeIdentifier) };
+                }
+                else
+                {
+                    pdbFiles = new[] {
+                        GetPDBFileName(mainProjectDll, framework, testProject.RuntimeIdentifier),
+                        GetPDBFileName(classLibDll, framework, testProject.RuntimeIdentifier),
+                    };
+                }
+
+                foreach (string s in pdbFiles)
+                {
+                    Log.WriteLine($"{publishDirectory.FullName} {s}");
+                }
+
+                publishDirectory.Should().HaveFiles(pdbFiles);
             }
         }
 
-        private TestProject CreateTestProjectForR2RTesting(string targetFramework, string mainProjectName, string referenceProjectName, bool isExeProject = true)
+        private TestProject CreateTestProjectForR2RTesting(string targetFramework, string mainProjectName, string referenceProjectName, bool isExeProject = true, string runtimeIdentifier = null)
         {
             var referenceProject = new TestProject()
             {
@@ -340,7 +420,7 @@ public class Classlib
                 Name = mainProjectName,
                 TargetFrameworks = targetFramework,
                 IsExe = isExeProject,
-                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework),
+                RuntimeIdentifier = runtimeIdentifier ?? EnvironmentInfo.GetCompatibleRid(targetFramework),
                 ReferencedProjects = { referenceProject },
             };
             testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
@@ -356,14 +436,14 @@ public class Program
             return testProject;
         }
 
-        public static string GetPDBFileName(string assemblyFile, NuGetFramework framework)
+        public static string GetPDBFileName(string assemblyFile, NuGetFramework framework, string runtimeIdentifier)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (IsTargetOsWindows(runtimeIdentifier))
             {
                 return Path.GetFileName(Path.ChangeExtension(assemblyFile, "ni.pdb"));
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            if (IsTargetOsLinux(runtimeIdentifier))
             {
                 if (framework.Version.Major >= 6)
                 {
