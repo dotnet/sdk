@@ -19,7 +19,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
-    <RuntimeFrameworkVersion>6.0.0-preview.2.21154.6</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>6.0.0-preview.7.21317.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
