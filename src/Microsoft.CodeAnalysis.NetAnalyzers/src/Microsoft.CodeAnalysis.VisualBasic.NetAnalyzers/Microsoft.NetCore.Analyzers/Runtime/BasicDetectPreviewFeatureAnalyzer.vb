@@ -27,10 +27,6 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             Return Nothing
         End Function
 
-        Protected Overrides Function GetPreviewTypeArgumentSyntaxNodeForMethod(methodSymbol As IMethodSymbol, parameterSymbol As ISymbol) As SyntaxNode
-            Return Nothing
-        End Function
-
         Protected Overrides Function GetPreviewSyntaxNodeForFieldsOrEvents(fieldOrEventSymbol As ISymbol, previewSymbol As ISymbol) As SyntaxNode
             Return Nothing
         End Function

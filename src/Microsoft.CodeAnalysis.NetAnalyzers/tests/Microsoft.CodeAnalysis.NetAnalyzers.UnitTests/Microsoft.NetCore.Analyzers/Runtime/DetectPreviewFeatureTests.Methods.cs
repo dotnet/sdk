@@ -176,6 +176,34 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
+        public async Task TestSyntaxNodeNameComparison()
+        {
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
+            [RequiresPreviewFeatures]
+            public class T { }
+
+            public class C
+            {
+                public void M1<T>(Preview_Feature_Scratch.T {|#0:t|}) // Doesn't use the type parameter. The location detection logic for syntax node doesn't work here.
+                {
+                }
+
+                public void M2<T>(T t) // Uses the type parameter.
+                {
+                }
+            }
+        }
+        ";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("M1", "T"));
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestPreviewMethodCallingPreviewMethod()
         {
             var csInput = @" 

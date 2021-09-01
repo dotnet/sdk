@@ -152,11 +152,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        protected virtual SyntaxNode? GetPreviewTypeArgumentSyntaxNodeForMethod(IMethodSymbol methodSymbol, ISymbol parameterSymbol)
-        {
-            return null;
-        }
-
         protected virtual SyntaxNode? GetPreviewSyntaxNodeForFieldsOrEvents(ISymbol fieldOrEventSymbol, ISymbol previewSymbol)
         {
             return null;
@@ -278,7 +273,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            if (SymbolContainsGenericTypesWithPreviewAttributes(symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol, out SyntaxNode? syntaxNode, fieldSymbolForGenericParameterSyntaxNode: symbol is IFieldSymbol fieldSymbol ? fieldSymbol : null, eventSymbolForGenericParameterSyntaxNode: symbol is IEventSymbol eventSymbol ? eventSymbol : null))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbolType,
+                                                                requiresPreviewFeaturesSymbols,
+                                                                previewFeatureAttributeSymbol,
+                                                                out ISymbol? previewSymbol,
+                                                                out SyntaxNode? syntaxNode,
+                                                                methodOrFieldOrEventSymbolForGenericParameterSyntaxNode: symbol))
             {
                 if (syntaxNode != null)
                 {
@@ -326,7 +326,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol, out SyntaxNode? syntaxNode))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol,
+                                                                requiresPreviewFeaturesSymbols,
+                                                                previewFeatureAttributeSymbol,
+                                                                out ISymbol? previewSymbol,
+                                                                out SyntaxNode? syntaxNode))
             {
                 if (syntaxNode != null)
                 {
@@ -392,37 +396,28 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return GetPreviewSyntaxNodeForFieldsOrEvents(symbol, previewType);
                 case IMethodSymbol methodSymbol:
                     return GetPreviewParameterSyntaxNodeForMethod(methodSymbol, previewType);
-                case IPropertySymbol:
-                case ITypeSymbol: // Methods/Properties/Types cannot have a type argument that is Preview. Only type parameters can be Preview
                 default:
                     return null;
             }
         }
 
         private bool SymbolContainsGenericTypesWithPreviewAttributes(ISymbol symbol,
-            ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
-            INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol,
-            out SyntaxNode? previewSyntaxNode, bool checkTypeParametersForPreviewFeatures = true,
-            IMethodSymbol? methodSymbolForGenericParameterSyntaxNode = null,
-            IFieldSymbol? fieldSymbolForGenericParameterSyntaxNode = null,
-            IEventSymbol? eventSymbolForGenericParameterSyntaxNode = null)
+                                                                     ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+                                                                     INamedTypeSymbol previewFeatureAttribute,
+                                                                     [NotNullWhen(true)] out ISymbol? previewSymbol,
+                                                                     out SyntaxNode? previewSyntaxNode,
+                                                                     bool checkTypeParametersForPreviewFeatures = true,
+                                                                     ISymbol? methodOrFieldOrEventSymbolForGenericParameterSyntaxNode = null)
         {
             if (symbol is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
             {
                 ISymbol? previewTypeArgument = GetPreviewSymbolForGenericTypesFromTypeArguments(typeSymbol.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttribute);
                 if (previewTypeArgument != null)
                 {
-                    if (fieldSymbolForGenericParameterSyntaxNode != null)
+                    if (methodOrFieldOrEventSymbolForGenericParameterSyntaxNode != null)
                     {
-                        previewSyntaxNode = GetPreviewSyntaxNodeFromSymbols(fieldSymbolForGenericParameterSyntaxNode, previewTypeArgument);
-                    }
-                    else if (eventSymbolForGenericParameterSyntaxNode != null)
-                    {
-                        previewSyntaxNode = GetPreviewSyntaxNodeFromSymbols(eventSymbolForGenericParameterSyntaxNode, previewTypeArgument);
-                    }
-                    else if (methodSymbolForGenericParameterSyntaxNode != null)
-                    {
-                        previewSyntaxNode = GetPreviewSyntaxNodeFromSymbols(methodSymbolForGenericParameterSyntaxNode, previewTypeArgument);
+
+                        previewSyntaxNode = GetPreviewSyntaxNodeFromSymbols(methodOrFieldOrEventSymbolForGenericParameterSyntaxNode, previewTypeArgument);
                     }
                     else
                     {
@@ -554,7 +549,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                     }
 
-                    if (SymbolContainsGenericTypesWithPreviewAttributes(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? referencedPreviewSymbol, out SyntaxNode? syntaxNode, methodSymbolForGenericParameterSyntaxNode: method))
+                    if (SymbolContainsGenericTypesWithPreviewAttributes(parameter.Type,
+                                                                        requiresPreviewFeaturesSymbols,
+                                                                        previewFeatureAttributeSymbol,
+                                                                        out ISymbol? referencedPreviewSymbol,
+                                                                        out SyntaxNode? syntaxNode,
+                                                                        methodOrFieldOrEventSymbolForGenericParameterSyntaxNode: method))
                     {
                         if (syntaxNode != null)
                         {
@@ -568,7 +568,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            if (SymbolContainsGenericTypesWithPreviewAttributes(propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out ISymbol? previewSymbol, out SyntaxNode? referencedPreviewTypeSyntaxNode))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(propertyOrMethodSymbol,
+                                                                requiresPreviewFeaturesSymbols,
+                                                                previewFeatureAttributeSymbol,
+                                                                out ISymbol? previewSymbol,
+                                                                out SyntaxNode? referencedPreviewTypeSyntaxNode))
             {
                 if (referencedPreviewTypeSyntaxNode != null)
                 {
@@ -634,7 +638,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return true;
             }
 
-            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol, out SyntaxNode? _, checkTypeParametersForPreviewFeatures: false))
+            if (SymbolContainsGenericTypesWithPreviewAttributes(symbol,
+                                                                requiresPreviewFeaturesSymbols,
+                                                                previewFeatureAttributeSymbol,
+                                                                out referencedPreviewSymbol,
+                                                                out SyntaxNode? _,
+                                                                checkTypeParametersForPreviewFeatures: false))
             {
                 return true;
             }
@@ -735,7 +744,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return ret;
         }
 
-        private bool TypeParametersHavePreviewAttribute(ISymbol namedTypeSymbolOrMethodSymbol, ImmutableArray<ITypeParameterSymbol> typeParameters, ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols, INamedTypeSymbol previewFeatureAttribute, [NotNullWhen(true)] out ISymbol? previewSymbol, out SyntaxNode? previewSyntaxNode)
+        private bool TypeParametersHavePreviewAttribute(ISymbol namedTypeSymbolOrMethodSymbol,
+                                                        ImmutableArray<ITypeParameterSymbol> typeParameters,
+                                                        ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
+                                                        INamedTypeSymbol previewFeatureAttribute,
+                                                        [NotNullWhen(true)] out ISymbol? previewSymbol,
+                                                        out SyntaxNode? previewSyntaxNode)
         {
             foreach (ITypeParameterSymbol typeParameter in typeParameters)
             {

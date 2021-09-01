@@ -89,14 +89,6 @@ namespace Preview_Feature_Scratch
         }
     }
 
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Program prog = new Program();
-        }
-    }
-
     [RequiresPreviewFeatures]
     public class Foo
     {

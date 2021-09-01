@@ -12,29 +12,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class CSharpDetectPreviewFeatureAnalyzer : DetectPreviewFeatureAnalyzer
     {
-        protected override SyntaxNode? GetPreviewTypeArgumentSyntaxNodeForMethod(IMethodSymbol methodSymbol, ISymbol parameterSymbol)
-        {
-            ImmutableArray<SyntaxReference> methodReferences = methodSymbol.DeclaringSyntaxReferences;
-
-            foreach (SyntaxReference? methodReference in methodReferences)
-            {
-                SyntaxNode definition = methodReference.GetSyntax();
-                if (definition is MethodDeclarationSyntax methodDeclaration)
-                {
-                    TypeParameterListSyntax? parameterList = methodDeclaration.TypeParameterList;
-                    foreach (TypeParameterSyntax? parameter in parameterList.Parameters)
-                    {
-                        if (IsSyntaxToken(parameter.Identifier, parameterSymbol))
-                        {
-                            return parameter;
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
         protected override SyntaxNode? GetPreviewSyntaxNodeForFieldsOrEvents(ISymbol fieldOrEventSymbol, ISymbol previewSymbol)
         {
             ImmutableArray<SyntaxReference> fieldOrEventReferences = fieldOrEventSymbol.DeclaringSyntaxReferences;
@@ -86,6 +63,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     foreach (ParameterSyntax? parameter in parameters.Parameters)
                     {
                         TypeSyntax parameterType = parameter.Type;
+                        if (parameterType.ToString() == parameterSymbol.Name)
+                        {
+                            return parameterType;
+                        }
+
                         if (IsIdentifierNameSyntax(parameterType, parameterSymbol))
                         {
                             return parameterType;
@@ -206,16 +188,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints = constraintClause.Constraints;
                 foreach (TypeParameterConstraintSyntax? constraint in constraints)
                 {
-                    if (constraint is TypeConstraintSyntax typeConstraintSyntax)
+                    if (constraint is TypeConstraintSyntax typeConstraintSyntax
+                        && typeConstraintSyntax.Type is IdentifierNameSyntax identifier
+                        && IsSyntaxToken(identifier.Identifier, previewInterfaceConstraintSymbol))
                     {
-                        if (typeConstraintSyntax.Type is IdentifierNameSyntax identifier)
-                        {
-                            if (IsSyntaxToken(identifier.Identifier, previewInterfaceConstraintSymbol))
-                            {
-                                syntaxNode = constraint;
-                                return true;
-                            }
-                        }
+                        syntaxNode = constraint;
+                        return true;
                     }
                 }
             }
@@ -272,27 +250,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return false;
         }
 
-        private static bool IsSyntaxToken(SyntaxToken identifier, ISymbol previewInterfaceSymbol)
-        {
-            if (identifier.ValueText == previewInterfaceSymbol.Name)
-            {
-                return true;
-            }
+        private static bool IsSyntaxToken(SyntaxToken identifier, ISymbol previewInterfaceSymbol) => identifier.ValueText == previewInterfaceSymbol.Name;
 
-            return false;
-        }
-
-        private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol)
-        {
-            if (identifier is IdentifierNameSyntax identifierName)
-            {
-                if (identifierName.Identifier.ValueText == previewInterfaceSymbol.Name)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol) => identifier is IdentifierNameSyntax identifierName && identifierName.Identifier.ValueText == previewInterfaceSymbol.Name;
     }
 }
