@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotAlwaysSkipTokenValidationInDelegates : DiagnosticAnalyzer
     {
-        internal const string DiagnosticId = "CA5405"; // TODO: Somewhere in documentation I saw I need to create a CA5405.md file, don't recall where.
+        internal const string DiagnosticId = "CA5405";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotAlwaysSkipTokenValidationInDelegates),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
@@ -48,9 +48,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
             context.RegisterCompilationStartAction(
-                (CompilationStartAnalysisContext compilationStartAnalysisContext) =>
+                (CompilationStartAnalysisContext context) =>
                 {
-                    var compilation = compilationStartAnalysisContext.Compilation;
+                    var compilation = context.Compilation;
                     var microsoftIdentityModelTokensAudienceValidatorTypeSymbol =
                         compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensAudienceValidator);
                     var microsoftIdentityModelTokensLifetimeValidatorTypeSymbol =
@@ -73,15 +73,16 @@ namespace Microsoft.NetCore.Analyzers.Security
                         return;
                     }
 
-                    compilationStartAnalysisContext.RegisterOperationAction(
-                        (OperationAnalysisContext operationAnalysisContext) =>
+                    context.RegisterOperationAction(
+                        (OperationAnalysisContext context) =>
                         {
                             var delegateCreationOperation =
-                                (IDelegateCreationOperation)operationAnalysisContext.Operation;
+                                (IDelegateCreationOperation)context.Operation;
                             Func<IMethodSymbol, bool> isCorrectFunction;
 
                             var alwaysReturnTrue = false;
 
+                            // Performing ienumString null check even though GetSpecialType should never return null to satisfy null checks in static analysis.
                             if (microsoftIdentityModelTokensAudienceValidatorTypeSymbol != null && ienumString != null &&
                                 microsoftIdentityModelTokensAudienceValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
                             {
@@ -131,7 +132,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             if (alwaysReturnTrue)
                             {
-                                operationAnalysisContext.ReportDiagnostic(
+                                context.ReportDiagnostic(
                                     delegateCreationOperation.CreateDiagnostic(
                                         Rule,
                                         delegateCreationOperation.Type.Name));
