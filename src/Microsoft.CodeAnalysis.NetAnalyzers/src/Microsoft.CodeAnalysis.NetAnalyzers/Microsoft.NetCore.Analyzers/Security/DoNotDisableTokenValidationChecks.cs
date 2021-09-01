@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             "ValidateLifetime",
         };
 
-        internal const string DiagnosticId = "CA5404";  // TODO: Somewhere in documentation I saw I need to create a CA5404.md file, don't recall where.
+        internal const string DiagnosticId = "CA5404";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
             nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecks),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
@@ -55,9 +55,9 @@ namespace Microsoft.NetCore.Analyzers.Security
             // Security analyzer - analyze and report diagnostics on generated code.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
+            context.RegisterCompilationStartAction(context =>
             {
-                var compilation = compilationStartAnalysisContext.Compilation;
+                var compilation = context.Compilation;
                 var tokenValidationParamsTypeSymbol = compilation.GetOrCreateTypeByMetadataName(
                     WellKnownTypeNames.MicrosoftIdentityModelTokensTokenValidationParameters);
 
@@ -66,9 +66,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                     return;
                 }
 
-                compilationStartAnalysisContext.RegisterOperationAction(operationAnalysisContext =>
+                context.RegisterOperationAction(context =>
                 {
-                    var simpleAssignmentOperation = (ISimpleAssignmentOperation)operationAnalysisContext.Operation;
+                    var simpleAssignmentOperation = (ISimpleAssignmentOperation)context.Operation;
 
                     if (simpleAssignmentOperation.Target is IPropertyReferenceOperation propertyReferenceOperation)
                     {
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                             simpleAssignmentOperation.Value.ConstantValue.Value.Equals(false) &&
                             PropertiesWhichShouldNotBeFalse.Contains(property.Name))
                         {
-                            operationAnalysisContext.ReportDiagnostic(
+                            context.ReportDiagnostic(
                                     simpleAssignmentOperation.CreateDiagnostic(
                                         Rule, property.Name));
                         }
