@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.DetectPreviewFeatureAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -194,7 +194,7 @@ namespace Preview_Feature_Scratch
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
-    public class {|#0:Foo|} : IFoo
+    public class Foo : {|#0:IFoo|}
     {
         [RequiresPreviewFeatures]
         public decimal Value => 1.1m;
@@ -219,7 +219,7 @@ namespace Preview_Feature_Scratch
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
-    public class {|#0:Foo|} : IFoo
+    public class Foo : {|#0:IFoo|}
     {
         [RequiresPreviewFeatures]
         decimal IFoo.Value => 1.1m;
@@ -244,7 +244,7 @@ namespace Preview_Feature_Scratch
 using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
-    public class {|#0:Foo|} : IFoo
+    public class Foo : {|#0:IFoo|}
     {
         [RequiresPreviewFeatures]
         decimal IFoo.Value

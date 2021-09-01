@@ -15,8 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// <summary>
     /// Detect the use of [RequiresPreviewFeatures] in assemblies that have not opted into preview features
     /// </summary>
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class DetectPreviewFeatureAnalyzer : DiagnosticAnalyzer
+    public abstract class DetectPreviewFeatureAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2252";
         private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
@@ -132,6 +131,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             MethodUsesPreviewTypeAsParameterRule,
             FieldOrEventIsPreviewTypeRule,
             StaticAbstractIsPreviewFeatureRule);
+
+        protected virtual SyntaxNode? GetPreviewInterfaceNodeForTypeImplementingPreviewInterface(ISymbol typeSymbol, ISymbol previewInterfaceSymbol)
+        {
+            return null;
+        }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -270,7 +274,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ProcessFieldOrEventSymbolAttributes(context, symbol, symbolType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
         }
 
-        private static void ProcessTypeSymbolAttributes(SymbolAnalysisContext context, ITypeSymbol symbol,
+        private void ProcessTypeSymbolAttributes(SymbolAnalysisContext context, ITypeSymbol symbol,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
             INamedTypeSymbol previewFeatureAttributeSymbol)
         {
@@ -280,7 +284,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 if (SymbolIsAnnotatedAsPreview(anInterface, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
-                    context.ReportDiagnostic(symbol.CreateDiagnostic(ImplementsPreviewInterfaceRule, symbol.Name, anInterface.Name));
+                    SyntaxNode? interfaceNode = GetPreviewInterfaceNodeForTypeImplementingPreviewInterface(symbol, anInterface);
+                    if (interfaceNode != null)
+                    {
+                        context.ReportDiagnostic(interfaceNode.CreateDiagnostic(ImplementsPreviewInterfaceRule, symbol.Name, anInterface.Name));
+                    }
+                    else
+                    {
+                        context.ReportDiagnostic(symbol.CreateDiagnostic(ImplementsPreviewInterfaceRule, symbol.Name, anInterface.Name));
+                    }
                 }
             }
 
@@ -446,7 +458,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context,
+        private void AnalyzeSymbol(SymbolAnalysisContext context,
             ConcurrentDictionary<ISymbol, bool> requiresPreviewFeaturesSymbols,
             IFieldSymbol? virtualStaticsInInterfaces,
             INamedTypeSymbol previewFeatureAttributeSymbol)
