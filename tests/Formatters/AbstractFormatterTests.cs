@@ -70,7 +70,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         protected AbstractFormatterTest()
         {
-            TestState = new SolutionState(DefaultFilePathPrefix, DefaultFileExt);
+            TestState = new SolutionState("Test", Language, DefaultFilePathPrefix, DefaultFileExt);
         }
 
         /// <summary>
@@ -226,19 +226,20 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var fileMatcher = SourceFileMatcher.CreateMatcher(new[] { document.FilePath! }, exclude: Array.Empty<string>());
             var formatOptions = new FormatOptions(
-                workspaceFilePath: project.FilePath!,
-                workspaceType: WorkspaceType.Solution,
-                noRestore: false,
-                logLevel: LogLevel.Trace,
+                WorkspaceFilePath: project.FilePath!,
+                WorkspaceType: WorkspaceType.Solution,
+                NoRestore: false,
+                LogLevel: LogLevel.Trace,
                 fixCategory,
                 codeStyleSeverity,
                 analyzerSeverity,
                 (diagnostics ?? Array.Empty<string>()).ToImmutableHashSet(),
-                saveFormattedFiles: true,
-                changesAreErrors: false,
+                SaveFormattedFiles: true,
+                ChangesAreErrors: false,
                 fileMatcher,
-                reportPath: string.Empty,
-                includeGeneratedFiles: false);
+                ReportPath: string.Empty,
+                IncludeGeneratedFiles: false,
+                BinaryLogPath: null);
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 

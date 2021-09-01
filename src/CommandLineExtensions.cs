@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -36,9 +37,29 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         [return: MaybeNull]
+        internal static T GetValueForArgument<T>(this ParseResult result, Argument<T> argument)
+        {
+            return GetValueForArgument<T>(result.CommandResult, argument);
+        }
+
+        [return: MaybeNull]
         internal static T GetValueForOption<T>(this ParseResult result, string alias)
         {
             return GetValueForOption<T>(result.CommandResult, alias);
+        }
+
+        [return: MaybeNull]
+        internal static T GetValueForArgument<T>(this CommandResult result, Argument<T> argumentDefinition)
+        {
+            var arguments = result.Children.Where(x => x.Symbol.Name == argumentDefinition.Name).ToArray();
+            if (arguments.Length == 1 &&
+                arguments.SingleOrDefault() is ArgumentResult argument &&
+                argument.GetValueOrDefault<T>() is T t)
+            {
+                return t;
+            }
+
+            return default;
         }
 
         [return: MaybeNull]

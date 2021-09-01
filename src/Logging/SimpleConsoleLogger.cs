@@ -79,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             _terminal.ResetColor();
         }
 
-        private void LogToConsole(IConsole console, string message, bool logToErrorStream)
+        private static void LogToConsole(IConsole console, string message, bool logToErrorStream)
         {
             if (logToErrorStream)
             {

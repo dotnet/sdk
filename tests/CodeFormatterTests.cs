@@ -572,7 +572,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var logger = new TestLogger();
             var msBuildPath = MSBuildRegistrar.RegisterInstance();
 
-            logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, Program.GetRuntimeVersion());
             logger.LogTrace(Resources.Using_msbuildexe_located_in_0, msBuildPath);
 
             var fileMatcher = SourceFileMatcher.CreateMatcher(include, exclude);
@@ -586,10 +585,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 analyzerSeverity,
                 diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
                 saveFormattedFiles,
-                changesAreErrors: false,
+                ChangesAreErrors: false,
                 fileMatcher,
-                reportPath: string.Empty,
-                includeGenerated);
+                ReportPath: string.Empty,
+                IncludeGeneratedFiles: includeGenerated,
+                BinaryLogPath: null);
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(formatOptions, logger, CancellationToken.None);
             Environment.CurrentDirectory = currentDirectory;
 

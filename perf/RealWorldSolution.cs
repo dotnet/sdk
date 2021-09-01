@@ -35,17 +35,18 @@ namespace Microsoft.CodeAnalysis.Tools.Perf.Real
             var options = new FormatOptions(
                 workspacePath,
                 workspaceType,
-                noRestore: false,
+                NoRestore: false,
                 LogLevel.Error,
-                fixCategory: FixCategory.Whitespace,
-                codeStyleSeverity: DiagnosticSeverity.Error,
-                analyzerSeverity: DiagnosticSeverity.Error,
-                diagnostics: ImmutableHashSet<string>.Empty,
-                saveFormattedFiles: false,
-                changesAreErrors: false,
+                FixCategory: FixCategory.Whitespace,
+                CodeStyleSeverity: DiagnosticSeverity.Error,
+                AnalyzerSeverity: DiagnosticSeverity.Error,
+                Diagnostics: ImmutableHashSet<string>.Empty,
+                SaveFormattedFiles: false,
+                ChangesAreErrors: false,
                 AllFileMatcher,
-                reportPath: string.Empty,
-                includeGeneratedFiles: false);
+                ReportPath: string.Empty,
+                IncludeGeneratedFiles: false,
+                BinaryLogPath: null);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }
 
@@ -56,17 +57,18 @@ namespace Microsoft.CodeAnalysis.Tools.Perf.Real
             var options = new FormatOptions(
                 workspacePath,
                 workspaceType,
-                noRestore: false,
+                NoRestore: false,
                 LogLevel.Error,
-                fixCategory: FixCategory.Whitespace,
-                codeStyleSeverity: DiagnosticSeverity.Error,
-                analyzerSeverity: DiagnosticSeverity.Error,
-                diagnostics: ImmutableHashSet<string>.Empty,
-                saveFormattedFiles: false,
-                changesAreErrors: false,
+                FixCategory: FixCategory.Whitespace,
+                CodeStyleSeverity: DiagnosticSeverity.Error,
+                AnalyzerSeverity: DiagnosticSeverity.Error,
+                Diagnostics: ImmutableHashSet<string>.Empty,
+                SaveFormattedFiles: false,
+                ChangesAreErrors: false,
                 AllFileMatcher,
-                reportPath: string.Empty,
-                includeGeneratedFiles: false);
+                ReportPath: string.Empty,
+                IncludeGeneratedFiles: false,
+                BinaryLogPath: null);
             _ = CodeFormatter.FormatWorkspaceAsync(options, EmptyLogger, default).GetAwaiter().GetResult();
         }
 

@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
 
