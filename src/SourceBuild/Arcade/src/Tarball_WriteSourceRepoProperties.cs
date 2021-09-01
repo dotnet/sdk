@@ -57,7 +57,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                     SourceBuildRepoName = dep.GetMetadata("SourceBuildRepoName"),
                     Version = dep.GetMetadata("ExactVersion"),
                     Sha = dep.GetMetadata("Sha"),
-                    Uri = dep.GetMetadata("Uri")
+                    Uri = dep.GetMetadata("Uri"),
+                    GitCommitCount = dep.GetMetadata("GitCommitCount")
                 }))
             {
                 string repoName = dependency.SourceBuildRepoName;
@@ -72,6 +73,10 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                     ["PreReleaseVersionLabel"] = derivedVersion.PreReleaseVersionLabel,
                     ["IsStable"] = string.IsNullOrWhiteSpace(derivedVersion.PreReleaseVersionLabel) ? "true" : "false",
                 };
+                if (!string.IsNullOrEmpty(dependency.GitCommitCount))
+                {
+                    repoProps.Add("GitCommitCount", dependency.GitCommitCount);
+                }                
                 WritePropsFile(propsPath, repoProps);
                 allRepoProps[$"{safeRepoName}GitCommitHash"] = dependency.Sha;
                 allRepoProps[$"{safeRepoName}OutputPackageVersion"] = dependency.Version;

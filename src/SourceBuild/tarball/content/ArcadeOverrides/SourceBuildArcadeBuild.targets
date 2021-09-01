@@ -98,13 +98,36 @@
   </Target>
 
   <!--
+    PrepareInnerSourceBuildRepoRoot either clones the source to the inner repo
+    or copies the source to the inner repo depending on CopySrcInsteadOfClone.
+    Repos take a dependency on PrepareInnerSourceBuildRepoRoot, so this target
+    exists to wait until either the source is cloned or copied.
+  -->
+  <Target Name="PrepareInnerSourceBuildRepoRoot"
+          DependsOnTargets="CopyInnerSourceBuildRepoRoot;CloneInnerSourceBuildRepoRoot">
+  </Target>
+
+  <Target Name="CopyInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' == 'true' ">
+    <ItemGroup>
+      <SourceBuildFilesToCopy Include="$(RepoRoot)/**/*" />
+      <SourceBuildFilesToCopy Include="$(RepoRoot)/**/.*" />
+      <SourceBuildFilesToCopy Remove="$(RepoRoot)/artifacts/**/*" />
+      <SourceBuildFilesToCopy Remove="$(RepoRoot)/artifacts/**/.*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(SourceBuildFilesToCopy)"
+      DestinationFolder="$(InnerSourceBuildRepoRoot)%(RecursiveDir)" />
+  </Target>
+
+  <!--
     Clone the repo to a new location. Source-build targets will change the source dynamically.
     Creating a fresh clone avoids overwriting existing work or making subtle changes that might
     accidentally get added to the user's existing work via a 'git add .'. Since the clone also has
     access to the git data, this also makes it easy to see what changes the source-build infra has
     made, for diagnosis or exploratory purposes.
   -->
-  <Target Name="PrepareInnerSourceBuildRepoRoot">
+  <Target Name="CloneInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' != 'true' ">
     <PropertyGroup>
       <!--
         By default, copy WIP. WIP copy helps with local machine dev work. Don't copy WIP if this is
