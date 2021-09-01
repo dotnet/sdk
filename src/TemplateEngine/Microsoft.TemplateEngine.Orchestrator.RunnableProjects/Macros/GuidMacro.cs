@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -18,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
-            GuidMacroConfig config = rawConfig as GuidMacroConfig;
+            var config = rawConfig as GuidMacroConfig;
 
             if (config == null)
             {
@@ -28,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             string guidFormats;
             if (!string.IsNullOrEmpty(config.Format))
             {
-                guidFormats = config.Format;
+                guidFormats = config.Format!;
             }
             else
             {
@@ -70,24 +72,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 };
             }
 
-            vars[config.VariableName] = g.ToString(config.DefaultFormat);
-            setter(pd, g.ToString(config.DefaultFormat));
+            string defaultValue = char.IsUpper(config.DefaultFormat[0]) ?
+                g.ToString(config.DefaultFormat).ToUpperInvariant() :
+                g.ToString(config.DefaultFormat).ToLowerInvariant();
+            vars[config.VariableName] = defaultValue;
+            setter(pd, defaultValue);
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+            var deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
             if (deferredConfig == null)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            deferredConfig.Parameters.TryGetValue("format", out JToken formatToken);
-            string format = formatToken?.ToString();
+            deferredConfig.Parameters.TryGetValue("format", out JToken? formatToken);
+            string? format = formatToken?.ToString();
 
             deferredConfig.Parameters.TryGetValue("defaultFormat", out JToken defaultFormatToken);
-            string defaultFormat = defaultFormatToken?.ToString();
+            string? defaultFormat = defaultFormatToken?.ToString();
 
             IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, format, defaultFormat);
             return realConfig;

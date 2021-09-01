@@ -78,5 +78,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 Assert.Equal(paramValue, testValue);
             }
         }
+
+        [Fact]
+        public void TestDefaultFormatIsCaseSensetive()
+        {
+            string paramNameLower = "TestGuidLower";
+            IMacroConfig macroConfigLower = new GuidMacroConfig(paramNameLower, "string", string.Empty, "d");
+            string paramNameUpper = "TestGuidUPPER";
+            IMacroConfig macroConfigUpper = new GuidMacroConfig(paramNameUpper, "string", string.Empty, "D");
+
+            IVariableCollection variables = new VariableCollection();
+            IRunnableProjectConfig config = new SimpleConfigModel(_engineEnvironmentSettings.Host.LoggerFactory);
+            IParameterSet parameters = new ParameterSet(config);
+            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
+
+            GuidMacro guidMacro = new GuidMacro();
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigLower, parameters, setter);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigUpper, parameters, setter);
+
+            // Logic of below might be a bit confusing...
+            // We are just making sure that no UPPER case char is present in lower case and vice-versa
+            // Reason is... In theory GUID could be all numbers, hence can't check if UPPER char is present in UPPER guid...
+
+            Assert.True(parameters.TryGetParameterDefinition(paramNameLower, out var setParamLower));
+            Assert.All(((string)parameters.ResolvedValues[setParamLower]).ToCharArray(), (c) =>
+            {
+                Assert.False(char.IsUpper(c));
+            });
+
+            Assert.True(parameters.TryGetParameterDefinition(paramNameUpper, out var setParamUpper));
+            Assert.All(((string)parameters.ResolvedValues[setParamUpper]).ToCharArray(), (c) =>
+            {
+                Assert.False(char.IsLower(c));
+            });
+        }
     }
 }
