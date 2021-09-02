@@ -70,8 +70,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CandidateConfigurations = new[] { CreateCandidateProjectConfiguration(Path.GetFullPath(referenceProjectFile)) },
                 ProjectReferences = new[] {
                     CreateProjectReference(
-                        project: Path.Combine("..", "MYRCL", "myRcl.csproj"),
-                        msBuildSourceProjectFile: Path.GetFullPath(referenceProjectFile),
+                        project: Path.Combine("..", "myRCL", "myRcl.csproj"),
+                        msBuildSourceProjectFile: Path.GetFullPath(referenceProjectFile).ToUpperInvariant(),
                         undefineProperties: Path.Combine(";TargetFramework;RuntimeIdentifier"))
                 }
             };
