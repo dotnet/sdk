@@ -63,10 +63,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     foreach (ParameterSyntax? parameter in parameters.Parameters)
                     {
                         TypeSyntax parameterType = parameter.Type;
-                        if (parameterType.ToString() == parameterSymbol.Name)
-                        {
-                            return parameterType;
-                        }
 
                         if (IsIdentifierNameSyntax(parameterType, parameterSymbol))
                         {
