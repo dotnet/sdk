@@ -9,7 +9,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -18,17 +18,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2250";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedTitle), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedDescription), Resx.ResourceManager, typeof(Resx));
-
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedTitle)),
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.IdeSuggestion,
-            s_localizableDescription,
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 

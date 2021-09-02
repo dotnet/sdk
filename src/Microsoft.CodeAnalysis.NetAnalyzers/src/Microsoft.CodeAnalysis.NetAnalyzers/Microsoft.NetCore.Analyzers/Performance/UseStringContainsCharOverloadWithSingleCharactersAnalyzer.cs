@@ -10,21 +10,20 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseStringContainsCharOverloadWithSingleCharactersAnalyzer : DiagnosticAnalyzer
     {
         internal const string CA1847 = nameof(CA1847);
-        private static readonly LocalizableString s_localizableTitle_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static readonly DiagnosticDescriptor s_rule_CA1847 = DiagnosticDescriptorHelper.Create(
             CA1847,
-            s_localizableTitle_CA1847,
-            s_localizableMessage_CA1847,
+            CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersTitle)),
+            CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1847,
+            description: CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 

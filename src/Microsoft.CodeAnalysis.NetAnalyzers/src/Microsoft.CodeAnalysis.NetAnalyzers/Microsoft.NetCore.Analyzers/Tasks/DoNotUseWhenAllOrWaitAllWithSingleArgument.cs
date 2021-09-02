@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgument : DiagnosticAnalyzer
     {
@@ -19,20 +21,20 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         internal const string WaitAllRuleId = "CA1843";
 
         internal static readonly DiagnosticDescriptor WhenAllRule = DiagnosticDescriptorHelper.Create(WhenAllRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotUseWhenAllWithSingleTaskTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseWhenAllWithSingleTaskTitle)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWhenAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotUseWhenAllWithSingleTaskDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor WaitAllRule = DiagnosticDescriptorHelper.Create(WaitAllRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotUseWaitAllWithSingleTaskTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseWaitAllWithSingleTaskTitle)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWaitAllWithSingleTaskDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotUseWaitAllWithSingleTaskDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
