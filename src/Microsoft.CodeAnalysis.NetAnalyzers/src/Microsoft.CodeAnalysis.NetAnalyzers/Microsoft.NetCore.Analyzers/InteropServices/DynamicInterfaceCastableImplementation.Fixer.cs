@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     public abstract class DynamicInterfaceCastableImplementationFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds =>
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(
                 DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
                 DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId);

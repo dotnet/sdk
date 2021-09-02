@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class ProvidePublicParameterlessSafeHandleConstructorFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.RuleId);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

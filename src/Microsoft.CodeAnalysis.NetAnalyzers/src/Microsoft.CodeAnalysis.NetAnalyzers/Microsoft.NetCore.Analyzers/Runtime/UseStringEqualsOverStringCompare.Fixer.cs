@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class UseStringEqualsOverStringCompareFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseStringEqualsOverStringCompare.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
