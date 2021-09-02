@@ -15,6 +15,9 @@
           <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
         </RegistryKey>
       </Component>
+      <!-- TODO: Determine the importance of setting these when they point to default path.
+                 Previously the bundle would set all of DOTNETHOME_* regardless of those being
+                 installed or not-->
       <Component Id="DotnetInstallLocation_arm64" Directory="TARGETDIR" Win64="no">
         <Condition>VersionNT64 AND DOTNETHOME_ARM64</Condition>
         <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\arm64">

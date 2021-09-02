@@ -32,5 +32,9 @@
         <Directory Id="DOTNETHOME" Name="dotnet"/>
       </Directory>
     </Directory>
+    
+    <?if $(var.Platform) = x64 ?>
+    <CustomActionRef Id="Set_DOTNETHOME_x64" />
+    <?endif?>
   </Fragment>
 </Wix>
