@@ -229,6 +229,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             class Publisher
             {
                 public event EventHandler<{|#0:PreviewEventArgs|}> RaiseCustomEvent;
+#nullable enable
+                public event EventHandler<{|#4:PreviewEventArgs?|}>? RaiseCustomEventNullable;
+#nullable disable
          
                 public void DoSomething()
                 {
@@ -282,6 +285,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("RaiseCustomEvent", "PreviewEventArgs"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(4).WithArguments("RaiseCustomEventNullable", "PreviewEventArgs"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("PreviewEventArgs"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("PreviewEventArgs"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(3).WithArguments("PreviewEventArgs"));

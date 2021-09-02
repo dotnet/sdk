@@ -26,6 +26,19 @@ namespace Preview_Feature_Scratch
             return foo;
         }
 
+#nullable enable
+        public Dictionary<int, {|#2:Foo?|}> GetterNullable(Dictionary<int, {|#3:Foo?|}> foo)
+        {
+            return foo;
+        }
+
+        public Dictionary<int, {|#4:Foo?[]|}> GetterNullableArray(Dictionary<int, {|#5:Foo?[]|}> foo)
+        {
+            return foo;
+        }
+
+#nullable disable
+
         static void Main(string[] args)
         {
         }
@@ -40,6 +53,10 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(2).WithArguments("GetterNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(3).WithArguments("GetterNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("GetterNullableArray", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("GetterNullableArray", "Foo"));
             await test.RunAsync();
         }
 
@@ -124,6 +141,13 @@ namespace Preview_Feature_Scratch
             return foo;
         }
 
+#nullable enable
+        public {|#4:Foo?|} GetterNullable({|#3:Foo?|} foo)
+        {
+            return foo;
+        }
+#nullable disable
+
         static void Main(string[] args)
         {
             Program prog = new Program();
@@ -141,6 +165,8 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("Getter", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(2).WithArguments("Getter", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(3).WithArguments("GetterNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("GetterNullable", "Foo"));
             await test.RunAsync();
         }
 

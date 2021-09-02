@@ -78,6 +78,70 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
+        public async Task TestGenericMethodWithNullablePreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+
+    class Program
+    {
+#nullable enable
+        public bool GenericMethod<T>()
+            where T : {|#0:Foo?|}
+        {
+            return true;
+        }
+#nullable disable
+
+        static void Main(string[] args)
+        {
+        }
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("GenericMethod", "Foo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestGenericClassWithNullablePreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+
+#nullable enable
+    class Program<T>
+        where T : {|#0:Foo?|}
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+#nullable disable
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Program", "Foo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestGenericMethodInsidePreviewClass()
         {
             var csInput = @" 

@@ -28,10 +28,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 if (definition is VariableDeclarationSyntax fieldDeclaration)
                 {
                     TypeSyntax parameterType = fieldDeclaration.Type;
-                    while (parameterType is ArrayTypeSyntax arrayType)
-                    {
-                        parameterType = arrayType.ElementType;
-                    }
+                    parameterType = GetElementTypeForNullableAndArrayTypeNodes(parameterType);
 
                     if (IsIdentifierNameSyntax(parameterType, previewSymbol))
                     {
@@ -50,6 +47,21 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return null;
         }
 
+        private static TypeSyntax GetElementTypeForNullableAndArrayTypeNodes(TypeSyntax parameterType)
+        {
+            while (parameterType is NullableTypeSyntax nullable)
+            {
+                parameterType = nullable.ElementType;
+            }
+
+            while (parameterType is ArrayTypeSyntax arrayType)
+            {
+                parameterType = arrayType.ElementType;
+            }
+
+            return parameterType;
+        }
+
         protected override SyntaxNode? GetPreviewParameterSyntaxNodeForMethod(IMethodSymbol methodSymbol, ISymbol parameterSymbol)
         {
             ImmutableArray<SyntaxReference> methodSymbolDeclaringReferences = methodSymbol.DeclaringSyntaxReferences;
@@ -63,6 +75,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     foreach (ParameterSyntax? parameter in parameters.Parameters)
                     {
                         TypeSyntax parameterType = parameter.Type;
+                        parameterType = GetElementTypeForNullableAndArrayTypeNodes(parameterType);
 
                         if (IsIdentifierNameSyntax(parameterType, parameterSymbol))
                         {
@@ -93,6 +106,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 if (methodOrPropertyDefinition is PropertyDeclarationSyntax propertyDeclaration)
                 {
                     TypeSyntax returnType = propertyDeclaration.Type;
+                    returnType = GetElementTypeForNullableAndArrayTypeNodes(returnType);
                     if (IsIdentifierNameSyntax(returnType, previewReturnTypeSymbol))
                     {
                         return returnType;
@@ -108,6 +122,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 else if (methodOrPropertyDefinition is MethodDeclarationSyntax methodDeclaration)
                 {
                     TypeSyntax returnType = methodDeclaration.ReturnType;
+                    returnType = GetElementTypeForNullableAndArrayTypeNodes(returnType);
                     if (IsIdentifierNameSyntax(returnType, previewReturnTypeSymbol))
                     {
                         return returnType;
@@ -125,7 +140,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             return null;
         }
 
-        private bool TryMatchGenericSyntaxNodeWithGivenSymbol(GenericNameSyntax genericName, ISymbol previewReturnTypeSymbol, [NotNullWhen(true)] out SyntaxNode? syntaxNode)
+        private static bool TryMatchGenericSyntaxNodeWithGivenSymbol(GenericNameSyntax genericName, ISymbol previewReturnTypeSymbol, [NotNullWhen(true)] out SyntaxNode? syntaxNode)
         {
             TypeArgumentListSyntax typeArgumentList = genericName.TypeArgumentList;
             foreach (TypeSyntax typeArgument in typeArgumentList.Arguments)
@@ -137,6 +152,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         return true;
                     }
                 }
+
                 if (IsIdentifierNameSyntax(typeArgument, previewReturnTypeSymbol))
                 {
                     syntaxNode = typeArgument;
@@ -184,12 +200,24 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 SeparatedSyntaxList<TypeParameterConstraintSyntax> constraints = constraintClause.Constraints;
                 foreach (TypeParameterConstraintSyntax? constraint in constraints)
                 {
-                    if (constraint is TypeConstraintSyntax typeConstraintSyntax
-                        && typeConstraintSyntax.Type is IdentifierNameSyntax identifier
-                        && IsSyntaxToken(identifier.Identifier, previewInterfaceConstraintSymbol))
+                    if (constraint is TypeConstraintSyntax typeConstraintSyntax)
                     {
-                        syntaxNode = constraint;
-                        return true;
+                        TypeSyntax typeConstraintSyntaxType = typeConstraintSyntax.Type;
+                        typeConstraintSyntaxType = GetElementTypeForNullableAndArrayTypeNodes(typeConstraintSyntaxType);
+                        if (typeConstraintSyntaxType is GenericNameSyntax generic)
+                        {
+                            if (TryMatchGenericSyntaxNodeWithGivenSymbol(generic, previewInterfaceConstraintSymbol, out SyntaxNode? previewConstraint))
+                            {
+                                syntaxNode = previewConstraint;
+                                return true;
+                            }
+                        }
+
+                        if (IsIdentifierNameSyntax(typeConstraintSyntaxType, previewInterfaceConstraintSymbol))
+                        {
+                            syntaxNode = constraint;
+                            return true;
+                        }
                     }
                 }
             }
@@ -248,6 +276,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         private static bool IsSyntaxToken(SyntaxToken identifier, ISymbol previewInterfaceSymbol) => identifier.ValueText == previewInterfaceSymbol.Name;
 
-        private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol) => identifier is IdentifierNameSyntax identifierName && identifierName.Identifier.ValueText == previewInterfaceSymbol.Name;
+        private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol) => identifier is IdentifierNameSyntax identifierName && IsSyntaxToken(identifierName.Identifier, previewInterfaceSymbol) ||
+          identifier is NullableTypeSyntax nullable && IsIdentifierNameSyntax(nullable.ElementType, previewInterfaceSymbol);
     }
 }

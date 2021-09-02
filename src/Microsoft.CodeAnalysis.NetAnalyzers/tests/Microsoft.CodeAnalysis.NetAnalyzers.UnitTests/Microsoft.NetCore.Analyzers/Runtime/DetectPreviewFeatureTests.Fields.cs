@@ -22,6 +22,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             class Program
             {
                 private Dictionary<int, {|#0:PreviewType|}> _genericPreviewFieldDictionary;
+#nullable enable
+                private Dictionary<int, {|#3:PreviewType?|}>? _genericPreviewFieldDictionaryWithNullable;
+#nullable disable
                 private List<List<List<List<{|#1:PreviewType|}>>>> _genericPreviewField;
                 private List<List<AGenericClass<Int32>>> _genericClassField;
                 private List<List<AGenericPreviewClass<Int32>>> {|#2:_genericPreviewClassField|};
@@ -55,6 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(0).WithArguments("_genericPreviewFieldDictionary", "PreviewType"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(3).WithArguments("_genericPreviewFieldDictionaryWithNullable", "PreviewType"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(1).WithArguments("_genericPreviewField", "PreviewType"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(2).WithArguments("_genericPreviewClassField", "AGenericPreviewClass"));
             await test.RunAsync();
@@ -139,6 +143,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
 
             }
+
+#nullable enable
+            public class AGenericClassWithNullable<T>
+                where T : {|#6:PreviewType?|}
+            {
+                private {|#7:PreviewType|}? _fieldNullable;
+                private {|#8:PreviewType|}[]? _fieldArrayNullable;
+                private {|#9:PreviewType|}[][]? _fieldArrayOfArrayNullable;
+            }
+#nullable disable
         }";
 
             var test = TestCS(csInput);
@@ -148,6 +162,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(3).WithArguments("AGenericClass", "PreviewType"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(4).WithArguments("_fieldArray", "PreviewType"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(5).WithArguments("_fieldArrayOfArray", "PreviewType"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(6).WithArguments("AGenericClassWithNullable", "PreviewType"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(7).WithArguments("_fieldNullable", "PreviewType"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(8).WithArguments("_fieldArrayNullable", "PreviewType"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(9).WithArguments("_fieldArrayOfArrayNullable", "PreviewType"));
             await test.RunAsync();
         }
 

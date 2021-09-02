@@ -74,7 +74,7 @@ namespace Preview_Feature_Scratch
 
     class AFoo<T> where T : {|#2:Foo|}, new()
     {
-        private List<{|#6:Foo|}> _value;
+        private List<{|#3:Foo|}> _value;
 
         public List<{|#0:Foo|}> Value
         {
@@ -87,6 +87,21 @@ namespace Preview_Feature_Scratch
                 _value = value;
             }
         }
+#nullable enable
+        private List<{|#6:Foo?|}>? _valueNullable;
+
+        public List<{|#4:Foo?|}>? ValueNullable
+        {
+            get
+            {
+                return _valueNullable;
+            }
+            {|#5:set|}
+            {
+                _valueNullable = value;
+            }
+        }
+#nullable disable
     }
 
     [RequiresPreviewFeatures]
@@ -99,7 +114,10 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(0).WithArguments("get_Value", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("set_Value", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(2).WithArguments("AFoo", "Foo"));
-            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(6).WithArguments("_value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(3).WithArguments("_value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(6).WithArguments("_valueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("get_ValueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("set_ValueNullable", "Foo"));
             await test.RunAsync();
         }
 
@@ -208,6 +226,21 @@ namespace Preview_Feature_Scratch
                 _value = value;
             }
         }
+#nullable enable
+        private {|#5:Foo[]?|} _valueNullable;
+
+        public {|#6:Foo[]?|} ValueNullable
+        {
+            get
+            {
+                return _valueNullable;
+            }
+            {|#7:set|}
+            {
+                _valueNullable = value;
+            }
+        }
+#nullable disable
 
         public {|#4:Foo|} AnotherGetter => _value;
     }
@@ -224,6 +257,9 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(2).WithArguments("get_Value", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(3).WithArguments("set_Value", "Foo"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("get_AnotherGetter", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(5).WithArguments("_valueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(6).WithArguments("get_ValueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(7).WithArguments("set_ValueNullable", "Foo"));
             await test.RunAsync();
         }
 
