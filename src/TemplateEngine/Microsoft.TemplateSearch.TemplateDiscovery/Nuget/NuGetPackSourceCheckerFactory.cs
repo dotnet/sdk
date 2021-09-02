@@ -61,7 +61,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         private static async Task<IEnumerable<FilteredPackageInfo>?> LoadKnownPackagesListAsync (CommandArgs config, CancellationToken cancellationToken)
         {
             Verbose.WriteLine($"Loading existing non-packages information.");
-            const string uri = "https://dotnettemplating.blob.core.windows.net/search/nonTemplatePacks_test.json";
+            const string uri = "https://dotnettemplating.blob.core.windows.net/search/nonTemplatePacks.json";
 
             FileInfo? fileLocation = config.DiffOverrideKnownPackagesLocation;
             if (fileLocation == null)

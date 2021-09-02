@@ -58,9 +58,11 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    sourceFolder: $(System.DefaultWorkingDirectory)/NugetDownloadDirectory/SearchCache/
-    contents: 'NuGetTemplateSearchInfo*.json'
-    targetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
+    SourceFolder: $(System.DefaultWorkingDirectory)/NugetDownloadDirectory/SearchCache/
+    Contents: | 
+      NuGetTemplateSearchInfo*.json
+      nonTemplatePacks.json
+    TargetFolder: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
 
 - publish: $(System.DefaultWorkingDirectory)/ArtifactsToPublish/
   artifact: outputs
@@ -91,3 +93,14 @@ steps:
       | tee upload-legacy.log
       && grep ".*Number of Transfers Completed: 1" upload-legacy.log || (echo ; echo "Legacy cache file upload failed"; false)
     displayName: Upload legacy file to blob storage
+
+  - bash: >
+      az storage azcopy blob upload 
+      -c $(NonTemplatePacksFileStorageContainer)
+      --account-name $(NonTemplatePacksFileStorageAccount) 
+      -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/nonTemplatePacks.json' 
+      --sas-token "$(NonTemplatePacksFileStorageSasToken)"
+      -d nonTemplatePacks.json
+      | tee upload-non-template-packs.log
+      && grep ".*Number of Transfers Completed: 1" upload-non-template-packs.log || (echo ; echo "Legacy cache file upload failed"; false)
+    displayName: Upload non template packages file to blob storage
