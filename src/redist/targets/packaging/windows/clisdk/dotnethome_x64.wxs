@@ -8,10 +8,10 @@
   <!-- The following match the expected values for PROCESSOR_ARCHITECTURE
           https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details -->
   <?if $(var.Platform)=x86?>
-    <?define InstallerArchitecture="X86"?>
+    <?define InstallerArchitecture~="X86"?>
   <?elseif $(var.Platform)=x64?>
-    <?define InstallerArchitecture="AMD64"?>
-  <?elseif $(var.Platform)=ARM64?>
+    <?define InstallerArchitecture~="AMD64"?>
+  <?elseif $(var.Platform)~=ARM64?>
     <?define InstallerArchitecture="ARM64"?>
   <?endif?>
 
