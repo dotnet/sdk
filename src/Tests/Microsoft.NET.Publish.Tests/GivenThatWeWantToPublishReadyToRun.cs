@@ -274,7 +274,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0", "win-x86", "windows", "X86,X64,Arm64,Arm", "nonComposite", "nonselfcontained")]
         public void It_supports_crossos_arch_compilation(string targetFramework, string runtimeIdentifier, string sdkSupportedOs, string sdkSupportedArch, string composite, string selfcontained)
         {
-            var projectName = $"FrameworkDependentUsingCrossArchTest";// {targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";
+            var projectName = $"FrameworkDependentUsingCrossArchTest{targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";
             string sdkOs = "NOTHING";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -309,7 +309,7 @@ namespace Microsoft.NET.Publish.Tests
 
         private static bool IsTargetOsOsX(string runtimeIdentifier)
         {
-            if (runtimeIdentifier.Contains("osx") || runtimeIdentifier.Contains("macOs"))
+            if (runtimeIdentifier.Contains("osx"))
             {
                 return true;
             }
