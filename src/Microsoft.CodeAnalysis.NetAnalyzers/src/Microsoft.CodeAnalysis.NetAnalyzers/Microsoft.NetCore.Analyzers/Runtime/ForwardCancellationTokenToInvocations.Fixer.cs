@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected abstract IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<TArgumentSyntax> newArguments);
         protected abstract SyntaxNode GetArrayCreationExpression(SyntaxGenerator generator, SyntaxNode typeSyntax, IEnumerable<SyntaxNode> expressions);
 
-        public override ImmutableArray<string> FixableDiagnosticIds =>
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(ForwardCancellationTokenToInvocationsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() =>

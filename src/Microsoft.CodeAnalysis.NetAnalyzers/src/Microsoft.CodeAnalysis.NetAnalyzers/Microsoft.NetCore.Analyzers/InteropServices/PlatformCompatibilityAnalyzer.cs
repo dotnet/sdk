@@ -20,6 +20,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1416: Analyzer that informs developers when they use platform-specific APIs from call sites where the API might not be available
     ///
@@ -34,15 +36,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         internal const string RuleId = "CA1416";
         private static readonly ImmutableArray<string> s_osPlatformAttributes = ImmutableArray.Create(SupportedOSPlatformAttribute, UnsupportedOSPlatformAttribute);
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableOnlySupportedCsAllPlatform = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityOnlySupportedCsAllPlatformMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableOnlySupporteCsReachable = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityOnlySupportedCsReachableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableOnlySupporteCsUnreachable = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityOnlySupportedCsUnreachableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizablSupporteCsAllPlatform = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilitySupportedCsAllPlatformMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizablSupporteCsReachable = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilitySupportedCsReachableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableUnsupportedCsAllPlatform = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityUnsupportedCsAllPlatformMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableUnsupportedCsReachable = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityUnsupportedCsReachableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PlatformCompatibilityTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(PlatformCompatibilityDescription));
 
         // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own
         // version of internal attribute type which will cause ambiguity, to avoid that we are comparing the attributes by their name
@@ -55,70 +50,77 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string OptionalSuffix = "VersionAtLeast";
         private const string Net = "net";
 
-        internal static DiagnosticDescriptor OnlySupportedCsReachable = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableOnlySupporteCsReachable,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor OnlySupportedCsReachable = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilityOnlySupportedCsReachableMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor OnlySupportedCsUnreachable = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableOnlySupporteCsUnreachable,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor OnlySupportedCsUnreachable = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilityOnlySupportedCsUnreachableMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor OnlySupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableOnlySupportedCsAllPlatform,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor OnlySupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilityOnlySupportedCsAllPlatformMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor SupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizablSupporteCsAllPlatform,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor SupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilitySupportedCsAllPlatformMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor SupportedCsReachable = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                              s_localizableTitle,
-                                                                              s_localizablSupporteCsReachable,
-                                                                              DiagnosticCategory.Interoperability,
-                                                                              RuleLevel.BuildWarning,
-                                                                              description: s_localizableDescription,
-                                                                              isPortedFxCopRule: false,
-                                                                              isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor SupportedCsReachable = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilitySupportedCsReachableMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor UnsupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableUnsupportedCsAllPlatform,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor UnsupportedCsAllPlatforms = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilityUnsupportedCsAllPlatformMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor UnsupportedCsReachable = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableUnsupportedCsReachable,
-                                                                                      DiagnosticCategory.Interoperability,
-                                                                                      RuleLevel.BuildWarning,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: false,
-                                                                                      isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor UnsupportedCsReachable = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(PlatformCompatibilityUnsupportedCsReachableMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(OnlySupportedCsReachable, OnlySupportedCsUnreachable,
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(OnlySupportedCsReachable, OnlySupportedCsUnreachable,
             OnlySupportedCsAllPlatforms, SupportedCsAllPlatforms, SupportedCsReachable, UnsupportedCsAllPlatforms, UnsupportedCsReachable);
 
         public override void Initialize(AnalysisContext context)
@@ -598,7 +600,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (callsite == Callsite.Reachable && IsDenyList(callsiteAttributes))
                 {
-                    callSitePlatforms.Add(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllPlatforms);
+                    callSitePlatforms.Add(PlatformCompatibilityAllPlatforms);
                 }
 
                 var rule = supportedRule ? SwitchSupportedRule(callsite) : SwitchRule(callsite, true);
@@ -629,12 +631,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 if (IsEmptyVersion(supportedVersion))
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore,
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndBefore,
                                         pName, pAttribute.UnsupportedFirst));
                                 }
                                 else
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion,
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityFromVersionToVersion,
                                         pName, supportedVersion, pAttribute.UnsupportedFirst));
                                 }
                             }
@@ -642,14 +644,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 if (csAttributes != null && HasSameVersionedPlatformSupport(csAttributes, pName, checkSupport: false))
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
                                 platformNames.Add($"'{pName}'");
                             }
                             else
                             {
-                                platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, supportedVersion));
+                                platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, supportedVersion));
                             }
                         }
                         else if (pAttribute.UnsupportedFirst != null)
@@ -658,14 +660,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 if (csAttributes != null && HasSameVersionedPlatformSupport(csAttributes, pName, checkSupport: true))
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
                                 platformNames.Add($"'{pName}'");
                             }
                             else
                             {
-                                platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater,
+                                platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater,
                                     pName, pAttribute.UnsupportedFirst));
                             }
                             supportedRule = false;
@@ -727,19 +729,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         unsupportedRule = true;
                                         if (IsEmptyVersion(pAttribute.UnsupportedFirst!))
                                         {
-                                            platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, pName, supportedVersion));
+                                            platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndBefore, pName, supportedVersion));
                                         }
                                         else
                                         {
-                                            platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion, pName, unsupportedVersion, supportedVersion));
+                                            platformNames.Add(GetFormattedString(PlatformCompatibilityFromVersionToVersion, pName, unsupportedVersion, supportedVersion));
                                         }
                                         continue;
                                     }
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, supportedVersion));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, supportedVersion));
                                 }
                                 else
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion,
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityFromVersionToVersion,
                                         pName, supportedVersion, unsupportedVersion));
                                 }
                             }
@@ -749,14 +751,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 {
                                     if (csAttributes != null && HasSameVersionedPlatformSupport(csAttributes, pName, checkSupport: true))
                                     {
-                                        platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
+                                        platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                         continue;
                                     }
                                     platformNames.Add($"'{pName}'");
                                 }
                                 else
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, unsupportedVersion));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, unsupportedVersion));
                                 }
                             }
                         }
@@ -769,7 +771,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             }
                             else
                             {
-                                platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, supportedVersion));
+                                platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, supportedVersion));
                             }
                         }
                     }
@@ -794,15 +796,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 if (IsEmptyVersion(supportedVersion))
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, pName, csAttribute.UnsupportedFirst));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndBefore, pName, csAttribute.UnsupportedFirst));
                                 }
                                 else if (supportedVersion > csAttribute.UnsupportedFirst)
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, supportedVersion));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, supportedVersion));
                                 }
                                 else
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion,
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityFromVersionToVersion,
                                         pName, supportedVersion, csAttribute.UnsupportedFirst));
                                 }
                             }
@@ -810,7 +812,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 if (HasSameVersionedPlatformSupport(attributes, pName, supported))
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                     continue;
                                 }
                                 platformNames.Add($"'{pName}'");
@@ -820,12 +822,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 var unsupportedVersion = csAttribute.UnsupportedSecond ?? csAttribute.UnsupportedFirst;
                                 if (unsupportedVersion != null && unsupportedVersion > supportedVersion)
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityFromVersionToVersion,
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityFromVersionToVersion,
                                         pName, supportedVersion, unsupportedVersion));
                                 }
                                 else
                                 {
-                                    platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, pName, supportedVersion));
+                                    platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater, pName, supportedVersion));
                                 }
                             }
                         }
@@ -840,7 +842,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 {
                                     if (HasSameVersionedPlatformSupport(attributes, pName, supported))
                                     {
-                                        platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, pName));
+                                        platformNames.Add(GetFormattedString(PlatformCompatibilityAllVersions, pName));
                                         continue;
                                     }
                                     platformNames.Add($"'{pName}'");
@@ -851,12 +853,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         (calledUnsupported == null || calledUnsupported < unsupportedVersion))
                                     {
                                         callsite = Callsite.Reachable;
-                                        platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore,
+                                        platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndBefore,
                                             pName, unsupportedVersion));
                                     }
                                     else
                                     {
-                                        platformNames.Add(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater,
+                                        platformNames.Add(GetFormattedString(PlatformCompatibilityVersionAndLater,
                                             pName, unsupportedVersion));
                                     }
                                 }
@@ -869,7 +871,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             static string GetFormattedString(string resource, params object[] args) => string.Format(CultureInfo.InvariantCulture, resource, args);
 
-            static string JoinNames(List<string> platformNames) => string.Join(MicrosoftNetCoreAnalyzersResources.CommaSeparator, platformNames);
+            static string JoinNames(List<string> platformNames) => string.Join(CommaSeparator, platformNames);
 
             static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
                 operation.Language == LanguageNames.CSharp ? SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;

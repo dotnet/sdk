@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
     /// </summary>
     public abstract class PreferIsEmptyOverCountFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseCountProperlyAnalyzer.CA1836);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseCountProperlyAnalyzer.CA1836);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

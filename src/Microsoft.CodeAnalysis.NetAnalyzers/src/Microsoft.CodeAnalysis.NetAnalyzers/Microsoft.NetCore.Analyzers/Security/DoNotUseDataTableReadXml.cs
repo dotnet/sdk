@@ -9,6 +9,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:System.Data.DataTable"/>.
     /// </summary>
@@ -19,8 +21,8 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor RealMethodUsedDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2350",
-                nameof(MicrosoftNetCoreAnalyzersResources.DataTableReadXmlTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.DataTableReadXmlMessage),
+                nameof(DataTableReadXmlTitle),
+                nameof(DataTableReadXmlMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,

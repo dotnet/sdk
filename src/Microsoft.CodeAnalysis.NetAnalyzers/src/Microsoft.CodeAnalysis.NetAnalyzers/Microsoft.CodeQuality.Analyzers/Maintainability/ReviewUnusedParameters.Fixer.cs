@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// </summary>
     public abstract class ReviewUnusedParametersFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ReviewUnusedParametersAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ReviewUnusedParametersAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

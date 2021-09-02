@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// </summary>
     public abstract class UseLiteralsWhereAppropriateFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseLiteralsWhereAppropriateAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseLiteralsWhereAppropriateAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

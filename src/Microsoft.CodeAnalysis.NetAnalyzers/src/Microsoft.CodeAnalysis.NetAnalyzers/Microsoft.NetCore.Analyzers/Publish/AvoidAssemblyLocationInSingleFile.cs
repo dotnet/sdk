@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Publish
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// IL3000, IL3001: Do not use Assembly file path in single-file publish
     /// </summary>
@@ -20,31 +22,29 @@ namespace Microsoft.NetCore.Analyzers.Publish
         public const string IL3000 = nameof(IL3000);
         public const string IL3001 = nameof(IL3001);
 
-        internal static DiagnosticDescriptor LocationRule = DiagnosticDescriptorHelper.Create(
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(AvoidAssemblyLocationInSingleFileTitle));
+
+        internal static readonly DiagnosticDescriptor LocationRule = DiagnosticDescriptorHelper.Create(
             IL3000,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyLocationInSingleFileTitle),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyLocationInSingleFileMessage),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(AvoidAssemblyLocationInSingleFileMessage)),
             DiagnosticCategory.Publish,
             RuleLevel.BuildWarning,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static DiagnosticDescriptor GetFilesRule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor GetFilesRule = DiagnosticDescriptorHelper.Create(
             IL3001,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyLocationInSingleFileTitle),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.AvoidAssemblyGetFilesInSingleFileMessage),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(AvoidAssemblyGetFilesInSingleFileMessage)),
             DiagnosticCategory.Publish,
             RuleLevel.BuildWarning,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(LocationRule, GetFilesRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(LocationRule, GetFilesRule);
 
         public override void Initialize(AnalysisContext context)
         {
