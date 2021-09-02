@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private protected abstract void ReplaceNamedArgumentName(SyntaxEditor editor, SyntaxNode invocation, string oldArgumentName, string newArgumentName);
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferAsSpanOverSubstring.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferAsSpanOverSubstring.RuleId);
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

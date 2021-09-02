@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     public abstract class UseOrdinalStringComparisonFixerBase : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseOrdinalStringComparisonAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseOrdinalStringComparisonAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

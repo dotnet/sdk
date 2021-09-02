@@ -12,6 +12,8 @@ using Analyzer.Utilities.PooledObjects;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldDifferByMoreThanCaseAnalyzer : DiagnosticAnalyzer
     {
@@ -21,20 +23,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public const string Member = "Members";
         public const string Parameter = "Parameters of";
 
-        private static readonly LocalizableResourceString s_localizableTitle = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableResourceString s_localizableMessage = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableResourceString s_localizableDescription = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseTitle)),
+            CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseMessage)),
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableMessage,
-                                                                                      DiagnosticCategory.Naming,
-                                                                                      RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: true,
-                                                                                      isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

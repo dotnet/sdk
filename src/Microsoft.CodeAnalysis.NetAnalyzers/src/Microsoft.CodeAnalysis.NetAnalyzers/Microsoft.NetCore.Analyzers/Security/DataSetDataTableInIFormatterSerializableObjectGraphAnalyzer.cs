@@ -11,6 +11,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization of <see cref="T:System.Data.DataSet"/> or <see cref="T:System.Data.DataTable"/> in an
     /// IFormatter deserialized object graph.
@@ -21,14 +23,14 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor ObjectGraphContainsDangerousTypeDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2354",
-                nameof(MicrosoftNetCoreAnalyzersResources.DataSetDataTableInRceDeserializableObjectGraphTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.DataSetDataTableInRceDeserializableObjectGraphMessage),
+                nameof(DataSetDataTableInRceDeserializableObjectGraphTitle),
+                nameof(DataSetDataTableInRceDeserializableObjectGraphMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(ObjectGraphContainsDangerousTypeDescriptor);
 
         protected abstract string ToString(TypedConstant typedConstant);

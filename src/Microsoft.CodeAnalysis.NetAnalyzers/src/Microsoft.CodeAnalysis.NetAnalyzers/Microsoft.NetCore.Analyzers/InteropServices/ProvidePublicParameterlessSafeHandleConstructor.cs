@@ -8,21 +8,20 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class ProvidePublicParameterlessSafeHandleConstructorAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1419";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvidePublicParameterlessSafeHandleConstructorDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                                                         RuleId,
-                                                        s_localizableTitle,
-                                                        s_localizableMessage,
+                                                        CreateLocalizableResourceString(nameof(ProvidePublicParameterlessSafeHandleConstructorTitle)),
+                                                        CreateLocalizableResourceString(nameof(ProvidePublicParameterlessSafeHandleConstructorMessage)),
                                                         DiagnosticCategory.Interoperability,
                                                         RuleLevel.IdeSuggestion,
-                                                        description: s_localizableDescription,
+                                                        description: CreateLocalizableResourceString(nameof(ProvidePublicParameterlessSafeHandleConstructorDescription)),
                                                         isPortedFxCopRule: false,
                                                         isDataflowRule: false);
 

@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private protected abstract bool IsNamedArgument(IArgumentOperation argumentOperation);
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(UseSpanBasedStringConcat.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseSpanBasedStringConcat.RuleId);
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

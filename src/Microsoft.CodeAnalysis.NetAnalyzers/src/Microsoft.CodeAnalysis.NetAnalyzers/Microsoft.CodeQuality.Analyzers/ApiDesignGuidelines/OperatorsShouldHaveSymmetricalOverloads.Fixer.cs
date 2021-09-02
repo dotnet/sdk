@@ -17,13 +17,15 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2226: Operators should have symmetrical overloads
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -36,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators,
                     c => CreateChangedDocumentAsync(context, c),
-                    nameof(MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators)),
+                    nameof(Generate_missing_operators)),
                 context.Diagnostics);
             return Task.FromResult(true);
         }

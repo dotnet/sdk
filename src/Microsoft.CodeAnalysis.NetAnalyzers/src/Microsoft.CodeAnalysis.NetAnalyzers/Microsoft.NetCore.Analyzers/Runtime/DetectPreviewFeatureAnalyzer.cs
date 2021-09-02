@@ -12,29 +12,21 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// Detect the use of [RequiresPreviewFeatures] in assemblies that have not opted into preview features
     /// </summary>
     public abstract class DetectPreviewFeatureAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2252";
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_implementsPreviewInterfaceMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementsPreviewInterfaceMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_implementsPreviewMethodMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementsPreviewMethodMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_overridesPreviewMethodMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.OverridesPreviewMethodMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_derivesFromPreviewClassMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DerivesFromPreviewClassMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_usesPreviewTypeParameterMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsesPreviewTypeParameterMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_methodReturnsPreviewTypeMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodReturnsPreviewTypeMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_methodUsesPreviewTypeAsParameterMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MethodUsesPreviewTypeAsParamaterMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_fieldOfPreviewTypeMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.FieldIsPreviewTypeMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_staticAbstractMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.StaticAndAbstractRequiresPreviewFeatures), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DetectPreviewFeaturesDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(DetectPreviewFeaturesTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(DetectPreviewFeaturesDescription));
         private static readonly ImmutableArray<SymbolKind> s_symbols = ImmutableArray.Create(SymbolKind.NamedType, SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event);
 
         internal static DiagnosticDescriptor GeneralPreviewFeatureAttributeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
-                                                                                                                    s_localizableMessage,
+                                                                                                                    CreateLocalizableResourceString(nameof(DetectPreviewFeaturesMessage)),
                                                                                                                     DiagnosticCategory.Usage,
                                                                                                                     RuleLevel.IdeSuggestion,
                                                                                                                     s_localizableDescription,
@@ -43,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor ImplementsPreviewInterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
-                                                                                                                s_implementsPreviewInterfaceMessage,
+                                                                                                                CreateLocalizableResourceString(nameof(ImplementsPreviewInterfaceMessage)),
                                                                                                                 DiagnosticCategory.Usage,
                                                                                                                 RuleLevel.IdeSuggestion,
                                                                                                                 s_localizableDescription,
@@ -52,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor ImplementsPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
-                                                                                                                s_implementsPreviewMethodMessage,
+                                                                                                                CreateLocalizableResourceString(nameof(ImplementsPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
                                                                                                                 RuleLevel.IdeSuggestion,
                                                                                                                 s_localizableDescription,
@@ -61,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor OverridesPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
-                                                                                                                s_overridesPreviewMethodMessage,
+                                                                                                                CreateLocalizableResourceString(nameof(OverridesPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
                                                                                                                 RuleLevel.IdeSuggestion,
                                                                                                                 s_localizableDescription,
@@ -70,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor DerivesFromPreviewClassRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                              s_localizableTitle,
-                                                                                                             s_derivesFromPreviewClassMessage,
+                                                                                                             CreateLocalizableResourceString(nameof(DerivesFromPreviewClassMessage)),
                                                                                                              DiagnosticCategory.Usage,
                                                                                                              RuleLevel.IdeSuggestion,
                                                                                                              s_localizableDescription,
@@ -79,7 +71,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor UsesPreviewTypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
-                                                                                                              s_usesPreviewTypeParameterMessage,
+                                                                                                              CreateLocalizableResourceString(nameof(UsesPreviewTypeParameterMessage)),
                                                                                                               DiagnosticCategory.Usage,
                                                                                                               RuleLevel.IdeSuggestion,
                                                                                                               s_localizableDescription,
@@ -88,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor MethodReturnsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
-                                                                                                              s_methodReturnsPreviewTypeMessage,
+                                                                                                              CreateLocalizableResourceString(nameof(MethodReturnsPreviewTypeMessage)),
                                                                                                               DiagnosticCategory.Usage,
                                                                                                               RuleLevel.IdeSuggestion,
                                                                                                               s_localizableDescription,
@@ -97,7 +89,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                       s_localizableTitle,
-                                                                                                                      s_methodUsesPreviewTypeAsParameterMessage,
+                                                                                                                      CreateLocalizableResourceString(nameof(MethodUsesPreviewTypeAsParamaterMessage)),
                                                                                                                       DiagnosticCategory.Usage,
                                                                                                                       RuleLevel.IdeSuggestion,
                                                                                                                       s_localizableDescription,
@@ -105,7 +97,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                       isDataflowRule: false);
         internal static DiagnosticDescriptor FieldOrEventIsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                         s_localizableTitle,
-                                                                                                        s_fieldOfPreviewTypeMessage,
+                                                                                                        CreateLocalizableResourceString(nameof(FieldIsPreviewTypeMessage)),
                                                                                                         DiagnosticCategory.Usage,
                                                                                                         RuleLevel.IdeSuggestion,
                                                                                                         s_localizableDescription,
@@ -114,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor StaticAbstractIsPreviewFeatureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
-                                                                                                                    s_staticAbstractMessage,
+                                                                                                                    CreateLocalizableResourceString(nameof(StaticAndAbstractRequiresPreviewFeatures)),
                                                                                                                     DiagnosticCategory.Usage,
                                                                                                                     RuleLevel.IdeSuggestion,
                                                                                                                     s_localizableDescription,
