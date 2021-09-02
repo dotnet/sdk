@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         protected abstract SyntaxNode? GetTargetNode(SyntaxNode node);
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(EnumStorageShouldBeInt32Analyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(EnumStorageShouldBeInt32Analyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

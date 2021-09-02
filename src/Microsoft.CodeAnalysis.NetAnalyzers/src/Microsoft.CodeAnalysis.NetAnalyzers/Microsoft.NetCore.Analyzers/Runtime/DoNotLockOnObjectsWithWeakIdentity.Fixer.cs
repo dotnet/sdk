@@ -11,7 +11,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class DoNotLockOnObjectsWithWeakIdentityFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray<string>.Empty;
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray<string>.Empty;
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -23,7 +23,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             // Fixer not yet implemented.
             return Task.CompletedTask;
-
         }
     }
 }

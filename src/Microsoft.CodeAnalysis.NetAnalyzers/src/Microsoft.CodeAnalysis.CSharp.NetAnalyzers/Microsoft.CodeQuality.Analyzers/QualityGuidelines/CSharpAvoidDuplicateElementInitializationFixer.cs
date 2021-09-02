@@ -21,8 +21,8 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpAvoidDuplicateElementInitializationFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds
-            => ImmutableArray.Create(AvoidDuplicateElementInitialization.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
+            ImmutableArray.Create(AvoidDuplicateElementInitialization.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
             => WellKnownFixAllProviders.BatchFixer;

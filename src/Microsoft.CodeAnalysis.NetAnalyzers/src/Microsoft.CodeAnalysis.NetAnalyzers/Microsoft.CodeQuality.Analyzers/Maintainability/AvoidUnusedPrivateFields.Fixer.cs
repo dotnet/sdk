@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = AvoidUnusedPrivateFieldsAnalyzer.RuleId), Shared]
     public sealed class AvoidUnusedPrivateFieldsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(AvoidUnusedPrivateFieldsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidUnusedPrivateFieldsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

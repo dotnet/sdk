@@ -9,6 +9,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter"/>.
     /// </summary>
@@ -19,13 +21,13 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor RealMethodUsedDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2300",
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedMessage),
+                nameof(BinaryFormatterMethodUsedTitle),
+                nameof(BinaryFormatterMethodUsedMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false,
-                descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterMethodUsedDescription));
+                descriptionResourceStringName: nameof(BinaryFormatterMethodUsedDescription));
 
         protected override string DeserializerTypeMetadataName =>
             WellKnownTypeNames.SystemRuntimeSerializationFormattersBinaryBinaryFormatter;
