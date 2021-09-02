@@ -463,8 +463,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegates">
-        <source>Do Not Always Skip Token Validation In Delegates</source>
-        <target state="new">Do Not Always Skip Token Validation In Delegates</target>
+        <source>Do not always skip token validation in delegates</source>
+        <target state="new">Do not always skip token validation in delegates</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
@@ -648,8 +648,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecks">
-        <source>Do Not Disable Token Validation Checks</source>
-        <target state="new">Do Not Disable Token Validation Checks</target>
+        <source>Do not disable token validation checks</source>
+        <target state="new">Do not disable token validation checks</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksDescription">
