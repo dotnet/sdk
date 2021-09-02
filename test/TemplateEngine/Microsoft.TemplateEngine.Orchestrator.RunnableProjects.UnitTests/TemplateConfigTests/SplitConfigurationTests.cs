@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
   ""author"": ""Microsoft"",
   ""classifications"": [""Common"", ""Console""],
-  ""name"": ""Test Split Config Console Application"",
+  ""name"": ""Test Split Config Console App"",
   ""generatorVersions"": ""[1.0.0.0-*)"",
   ""groupIdentity"": ""Testing.Split.Config.Console"",
   ""identity"": ""Testing.Framework.Versioned.Console.CSharp"",
