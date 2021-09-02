@@ -47,99 +47,100 @@ namespace Microsoft.NetCore.Analyzers.Security
             // Security analyzer - analyze and report diagnostics on generated code.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-            context.RegisterCompilationStartAction(
-                (CompilationStartAnalysisContext context) =>
-                {
-                    var compilation = context.Compilation;
-                    var microsoftIdentityModelTokensAudienceValidatorTypeSymbol =
-                        compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensAudienceValidator);
-                    var microsoftIdentityModelTokensLifetimeValidatorTypeSymbol =
-                        compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensLifetimeValidator);
-                    var nullableDateTime = compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(compilation.GetSpecialType(SpecialType.System_DateTime));
-                    var stringSymbol = compilation.GetSpecialType(SpecialType.System_String);
-                    var ienumString = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).Construct(stringSymbol);
-                    var securityToken = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensSecurityToken);
-                    var tokenValidationParameters = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensTokenValidationParameters);
+            context.RegisterCompilationStartAction(context =>
+            {
+                var compilation = context.Compilation;
+                var microsoftIdentityModelTokensAudienceValidatorTypeSymbol =
+                    compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensAudienceValidator);
+                var microsoftIdentityModelTokensLifetimeValidatorTypeSymbol =
+                    compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensLifetimeValidator);
+                var nullableDateTime = compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(compilation.GetSpecialType(SpecialType.System_DateTime));
+                var stringSymbol = compilation.GetSpecialType(SpecialType.System_String);
+                var ienumString = compilation.GetSpecialType(SpecialType.System_Collections_Generic_IEnumerable_T).Construct(stringSymbol);
+                var securityToken = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensSecurityToken);
+                var tokenValidationParameters = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensTokenValidationParameters);
 
-                    if ((microsoftIdentityModelTokensAudienceValidatorTypeSymbol == null
-                        || ienumString == null
-                        || securityToken == null
-                        || tokenValidationParameters == null) &&
-                        (microsoftIdentityModelTokensLifetimeValidatorTypeSymbol == null
-                        || nullableDateTime == null
-                        || securityToken == null
-                        || tokenValidationParameters == null))
+                if ((microsoftIdentityModelTokensAudienceValidatorTypeSymbol == null
+                    || ienumString == null
+                    || securityToken == null
+                    || tokenValidationParameters == null) &&
+                    (microsoftIdentityModelTokensLifetimeValidatorTypeSymbol == null
+                    || nullableDateTime == null
+                    || securityToken == null
+                    || tokenValidationParameters == null))
+                {
+                    return;
+                }
+
+                context.RegisterOperationAction(context =>
+                {
+                    var delegateCreationOperation = (IDelegateCreationOperation)context.Operation;
+                    Func<IMethodSymbol, bool> isCorrectFunction;
+
+                    var alwaysReturnTrue = false;
+
+                    // Performing ienumString null check even though GetSpecialType should never return null to satisfy null checks in static analysis.
+                    if (microsoftIdentityModelTokensAudienceValidatorTypeSymbol != null && ienumString != null &&
+                        microsoftIdentityModelTokensAudienceValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
+                    {
+                        isCorrectFunction = (method) => IsAudienceValidatorFunction(method, ienumString, securityToken, tokenValidationParameters);
+                    }
+                    else if (microsoftIdentityModelTokensLifetimeValidatorTypeSymbol != null &&
+                                microsoftIdentityModelTokensLifetimeValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
+                    {
+                        isCorrectFunction = (method) => IsLifetimeValidatorFunction(method, nullableDateTime, securityToken, tokenValidationParameters);
+                    }
+                    else
                     {
                         return;
                     }
 
-                    context.RegisterOperationAction(
-                        (OperationAnalysisContext context) =>
-                        {
-                            var delegateCreationOperation =
-                                (IDelegateCreationOperation)context.Operation;
-                            Func<IMethodSymbol, bool> isCorrectFunction;
-
-                            var alwaysReturnTrue = false;
-
-                            // Performing ienumString null check even though GetSpecialType should never return null to satisfy null checks in static analysis.
-                            if (microsoftIdentityModelTokensAudienceValidatorTypeSymbol != null && ienumString != null &&
-                                microsoftIdentityModelTokensAudienceValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
-                            {
-                                isCorrectFunction = (method) => IsAudienceValidatorFunction(method, ienumString, securityToken, tokenValidationParameters);
-                            }
-                            else if (microsoftIdentityModelTokensLifetimeValidatorTypeSymbol != null &&
-                                     microsoftIdentityModelTokensLifetimeValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
-                            {
-                                isCorrectFunction = (method) => IsLifetimeValidatorFunction(method, nullableDateTime, securityToken, tokenValidationParameters);
-                            }
-                            else
+                    switch (delegateCreationOperation.Target.Kind)
+                    {
+                        case OperationKind.AnonymousFunction:
+                            if (!isCorrectFunction(((IAnonymousFunctionOperation)delegateCreationOperation.Target).Symbol))
                             {
                                 return;
                             }
 
-                            switch (delegateCreationOperation.Target.Kind)
+                            alwaysReturnTrue = AlwaysReturnTrue(delegateCreationOperation.Target.Descendants());
+                            break;
+
+                        case OperationKind.MethodReference:
+                            var methodReferenceOperation = (IMethodReferenceOperation)delegateCreationOperation.Target;
+                            var methodSymbol = methodReferenceOperation.Method;
+
+                            if (!isCorrectFunction(methodSymbol))
                             {
-                                case OperationKind.AnonymousFunction:
-                                    if (!isCorrectFunction(((IAnonymousFunctionOperation)delegateCreationOperation.Target).Symbol))
-                                    {
-                                        return;
-                                    }
-
-                                    alwaysReturnTrue = AlwaysReturnTrue(delegateCreationOperation.Target.Descendants());
-                                    break;
-
-                                case OperationKind.MethodReference:
-                                    var methodReferenceOperation = (IMethodReferenceOperation)delegateCreationOperation.Target;
-                                    var methodSymbol = methodReferenceOperation.Method;
-
-                                    if (!isCorrectFunction(methodSymbol))
-                                    {
-                                        return;
-                                    }
-
-                                    var blockOperation = methodSymbol.GetTopmostOperationBlock(compilation);
-
-                                    if (blockOperation == null)
-                                    {
-                                        return;
-                                    }
-
-                                    var targetOperations = blockOperation.Descendants().ToImmutableArray().WithoutFullyImplicitOperations();
-                                    alwaysReturnTrue = AlwaysReturnTrue(targetOperations);
-                                    break;
+                                return;
                             }
 
-                            if (alwaysReturnTrue)
+                            var blockOperation = methodSymbol.GetTopmostOperationBlock(compilation);
+
+                            if (blockOperation == null)
                             {
-                                context.ReportDiagnostic(
-                                    delegateCreationOperation.CreateDiagnostic(
-                                        Rule,
-                                        delegateCreationOperation.Type.Name));
+                                return;
                             }
-                        },
-                        OperationKind.DelegateCreation);
-                });
+
+                            var targetOperations = blockOperation.Descendants().ToImmutableArray().WithoutFullyImplicitOperations();
+                            alwaysReturnTrue = AlwaysReturnTrue(targetOperations);
+                            break;
+
+                        default:
+                            Debug.Fail("Unhandled OperationKind " + delegateCreationOperation.Target.Kind);
+                            break;
+                    }
+
+                    if (alwaysReturnTrue)
+                    {
+                        context.ReportDiagnostic(
+                            delegateCreationOperation.CreateDiagnostic(
+                                Rule,
+                                delegateCreationOperation.Type.Name));
+                    }
+                },
+                OperationKind.DelegateCreation);
+            });
         }
 
         private static bool IsAudienceValidatorFunction(

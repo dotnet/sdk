@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -14,13 +13,11 @@ namespace Microsoft.NetCore.Analyzers.Security
     public sealed class DoNotDisableTokenValidationChecks : DiagnosticAnalyzer
     {
         // Set of properties on Microsoft.IdentityModel.Tokens.TokenValidationParameters which shouldn't be set to false.
-        private readonly string[] PropertiesWhichShouldNotBeFalse = new string[]
-        {
+        private ImmutableArray<string> PropertiesWhichShouldNotBeFalse = ImmutableArray.Create(
             "RequireExpirationTime",
             "ValidateAudience",
             "ValidateIssuer",
-            "ValidateLifetime",
-        };
+            "ValidateLifetime");
 
         internal const string DiagnosticId = "CA5404";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
@@ -80,8 +77,8 @@ namespace Microsoft.NetCore.Analyzers.Security
                             PropertiesWhichShouldNotBeFalse.Contains(property.Name))
                         {
                             context.ReportDiagnostic(
-                                    simpleAssignmentOperation.CreateDiagnostic(
-                                        Rule, property.Name));
+                                simpleAssignmentOperation.CreateDiagnostic(
+                                    Rule, property.Name));
                         }
                     }
                 }, OperationKind.SimpleAssignment);
