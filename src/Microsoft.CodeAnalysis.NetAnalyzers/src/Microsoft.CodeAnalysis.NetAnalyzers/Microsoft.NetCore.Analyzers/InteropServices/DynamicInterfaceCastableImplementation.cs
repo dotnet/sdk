@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal sealed class DynamicInterfaceCastableImplementationAnalyzer : DiagnosticAnalyzer
     {
@@ -16,11 +18,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly DiagnosticDescriptor DynamicInterfaceCastableImplementationUnsupported =
             DiagnosticDescriptorHelper.Create(
                 DynamicInterfaceCastableImplementationUnsupportedRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(DynamicInterfaceCastableImplementationUnsupportedTitle)),
+                CreateLocalizableResourceString(nameof(DynamicInterfaceCastableImplementationUnsupportedMessage)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DynamicInterfaceCastableImplementationUnsupportedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(DynamicInterfaceCastableImplementationUnsupportedDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
@@ -29,11 +31,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly DiagnosticDescriptor InterfaceMembersMissingImplementation =
             DiagnosticDescriptorHelper.Create(
                 InterfaceMembersMissingImplementationRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(InterfaceMembersMissingImplementationTitle)),
+                CreateLocalizableResourceString(nameof(InterfaceMembersMissingImplementationMessage)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.InterfaceMembersMissingImplementationDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(InterfaceMembersMissingImplementationDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
@@ -42,11 +44,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly DiagnosticDescriptor MembersDeclaredOnImplementationTypeMustBeStatic =
             DiagnosticDescriptorHelper.Create(
                 MembersDeclaredOnImplementationTypeMustBeStaticRuleId,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(MembersDeclaredOnImplementationTypeMustBeStaticTitle)),
+                CreateLocalizableResourceString(nameof(MembersDeclaredOnImplementationTypeMustBeStaticMessage)),
                 DiagnosticCategory.Usage,
                 RuleLevel.BuildWarning,
-                new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MembersDeclaredOnImplementationTypeMustBeStaticDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+                CreateLocalizableResourceString(nameof(MembersDeclaredOnImplementationTypeMustBeStaticDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 

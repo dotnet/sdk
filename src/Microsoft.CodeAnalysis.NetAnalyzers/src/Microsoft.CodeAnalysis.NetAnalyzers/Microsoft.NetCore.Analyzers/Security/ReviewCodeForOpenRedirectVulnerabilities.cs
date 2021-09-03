@@ -7,13 +7,15 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class ReviewCodeForOpenRedirectVulnerabilities : SourceTriggeredTaintedDataAnalyzerBase
     {
         internal static readonly DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA3007",
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForOpenRedirectVulnerabilitiesTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForOpenRedirectVulnerabilitiesMessage),
+            nameof(ReviewCodeForOpenRedirectVulnerabilitiesTitle),
+            nameof(ReviewCodeForOpenRedirectVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,

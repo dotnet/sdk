@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class OperatorOverloadsHaveNamedAlternatesFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(OperatorOverloadsHaveNamedAlternatesAnalyzer.RuleId);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorOverloadsHaveNamedAlternatesAnalyzer.RuleId);
 
         public override FixAllProvider GetFixAllProvider()
         {

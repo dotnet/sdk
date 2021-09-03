@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = RemoveEmptyFinalizersAnalyzer.RuleId), Shared]
     public sealed class RemoveEmptyFinalizersFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(RemoveEmptyFinalizersAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(RemoveEmptyFinalizersAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

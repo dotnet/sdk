@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public class CSharpStaticHolderTypesFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds =>
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(StaticHolderTypesAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() =>

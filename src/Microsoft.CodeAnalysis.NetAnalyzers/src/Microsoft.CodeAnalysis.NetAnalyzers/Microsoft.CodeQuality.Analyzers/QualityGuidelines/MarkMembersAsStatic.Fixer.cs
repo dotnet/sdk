@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         protected virtual SyntaxNode GetSyntaxNodeToReplace(IMemberReferenceOperation memberReference)
             => memberReference.Syntax;
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(MarkMembersAsStaticAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(MarkMembersAsStaticAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

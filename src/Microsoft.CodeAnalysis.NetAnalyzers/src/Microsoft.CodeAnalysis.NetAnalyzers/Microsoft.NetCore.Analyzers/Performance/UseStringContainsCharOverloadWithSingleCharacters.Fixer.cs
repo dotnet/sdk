@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 {
     public abstract class UseStringContainsCharOverloadWithSingleCharactersCodeFix : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
             UseStringContainsCharOverloadWithSingleCharactersAnalyzer.CA1847);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)

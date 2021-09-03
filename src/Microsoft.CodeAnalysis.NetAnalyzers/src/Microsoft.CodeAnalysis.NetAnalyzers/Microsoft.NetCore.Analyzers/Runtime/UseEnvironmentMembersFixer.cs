@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class UseEnvironmentMembersFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
             UseEnvironmentMembers.EnvironmentProcessIdRuleId,
             UseEnvironmentMembers.EnvironmentProcessPathRuleId,
             UseEnvironmentMembers.EnvironmentCurrentManagedThreadIdRuleId);

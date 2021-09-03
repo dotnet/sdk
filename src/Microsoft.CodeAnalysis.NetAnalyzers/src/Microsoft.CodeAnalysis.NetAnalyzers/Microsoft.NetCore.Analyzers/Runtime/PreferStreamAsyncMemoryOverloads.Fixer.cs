@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         // Ensures the member invocation is retrieved with the name and nullability.
         protected abstract SyntaxNode GetNamedMemberInvocation(SyntaxGenerator generator, SyntaxNode node, string memberName);
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds =>
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(PreferStreamAsyncMemoryOverloads.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() =>
