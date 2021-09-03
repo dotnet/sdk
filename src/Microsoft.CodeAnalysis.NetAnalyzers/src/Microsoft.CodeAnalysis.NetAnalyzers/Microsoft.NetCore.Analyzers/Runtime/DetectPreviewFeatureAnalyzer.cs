@@ -211,7 +211,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             for (int i = 0; i < typeArguments.Length; i++)
             {
                 ITypeSymbol typeParameter = typeArguments[i];
-                if (typeParameter is INamedTypeSymbol innerNamedType)
+                while (typeParameter is IArrayTypeSymbol array)
+                {
+                    typeParameter = array.ElementType;
+                }
+
+                if (typeParameter is INamedTypeSymbol innerNamedType && innerNamedType.Arity > 0)
                 {
                     ISymbol? previewSymbol = GetPreviewSymbolForGenericTypesFromTypeArguments(innerNamedType.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
                     if (previewSymbol != null)
@@ -488,20 +493,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (propertyOrMethodSymbol is IMethodSymbol method)
             {
-                if (SymbolIsAnnotatedAsPreview(method.ReturnType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                ITypeSymbol methodReturnType = method.ReturnType;
+                while (methodReturnType is IArrayTypeSymbol array)
                 {
-                    SyntaxNode? returnTypeNode = GetPreviewReturnTypeSyntaxNodeForMethodOrProperty(method.IsPropertyGetter() ? method.AssociatedSymbol : method, method.ReturnType);
+                    methodReturnType = array.ElementType;
+                }
+
+                if (SymbolIsAnnotatedAsPreview(methodReturnType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                {
+                    SyntaxNode? returnTypeNode = GetPreviewReturnTypeSyntaxNodeForMethodOrProperty(method.IsPropertyGetter() ? method.AssociatedSymbol : method, methodReturnType);
                     if (returnTypeNode != null)
                     {
-                        context.ReportDiagnostic(returnTypeNode.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, method.ReturnType.Name));
+                        context.ReportDiagnostic(returnTypeNode.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, methodReturnType.Name));
                     }
                     else
                     {
-                        context.ReportDiagnostic(method.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, method.ReturnType.Name));
+                        context.ReportDiagnostic(method.CreateDiagnostic(MethodReturnsPreviewTypeRule, propertyOrMethodSymbol.Name, methodReturnType.Name));
                     }
                 }
 
-                if (method.ReturnType is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
+                if (methodReturnType is INamedTypeSymbol typeSymbol && typeSymbol.Arity > 0)
                 {
                     ISymbol? innerPreviewSymbol = GetPreviewSymbolForGenericTypesFromTypeArguments(typeSymbol.TypeArguments, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol);
                     if (innerPreviewSymbol != null)
@@ -521,20 +532,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ImmutableArray<IParameterSymbol> parameters = method.Parameters;
                 foreach (IParameterSymbol parameter in parameters)
                 {
-                    if (SymbolIsAnnotatedAsPreview(parameter.Type, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                    var parameterType = parameter.Type;
+                    while (parameterType is IArrayTypeSymbol array)
                     {
-                        SyntaxNode? previewParameterNode = GetPreviewParameterSyntaxNodeForMethod(method, parameter.Type);
+                        parameterType = array.ElementType;
+                    }
+
+                    if (SymbolIsAnnotatedAsPreview(parameterType, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
+                    {
+                        SyntaxNode? previewParameterNode = GetPreviewParameterSyntaxNodeForMethod(method, parameterType);
                         if (previewParameterNode != null)
                         {
-                            context.ReportDiagnostic(previewParameterNode.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameter.Type.Name));
+                            context.ReportDiagnostic(previewParameterNode.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameterType.Name));
                         }
                         else
                         {
-                            context.ReportDiagnostic(parameter.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameter.Type.Name));
+                            context.ReportDiagnostic(parameter.CreateDiagnostic(MethodUsesPreviewTypeAsParameterRule, propertyOrMethodSymbol.Name, parameterType.Name));
                         }
                     }
 
-                    if (SymbolContainsGenericTypesWithPreviewAttributes(parameter.Type,
+                    if (SymbolContainsGenericTypesWithPreviewAttributes(parameterType,
                                                                         requiresPreviewFeaturesSymbols,
                                                                         previewFeatureAttributeSymbol,
                                                                         out ISymbol? referencedPreviewSymbol,

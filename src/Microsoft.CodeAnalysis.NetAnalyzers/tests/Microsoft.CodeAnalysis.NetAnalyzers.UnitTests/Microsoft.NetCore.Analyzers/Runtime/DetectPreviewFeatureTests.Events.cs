@@ -230,7 +230,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 public event EventHandler<{|#0:PreviewEventArgs|}> RaiseCustomEvent;
 #nullable enable
-                public event EventHandler<{|#4:PreviewEventArgs?|}>? RaiseCustomEventNullable;
+                public event EventHandler<{|#4:PreviewEventArgs|}?>? RaiseCustomEventNullable;
 #nullable disable
          
                 public void DoSomething()

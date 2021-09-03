@@ -23,11 +23,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 private Dictionary<int, {|#0:PreviewType|}> _genericPreviewFieldDictionary;
 #nullable enable
-                private Dictionary<int, {|#3:PreviewType?|}>? _genericPreviewFieldDictionaryWithNullable;
+                private Dictionary<int, {|#3:PreviewType|}?>? _genericPreviewFieldDictionaryWithNullable;
 #nullable disable
                 private List<List<List<List<{|#1:PreviewType|}>>>> _genericPreviewField;
                 private List<List<AGenericClass<Int32>>> _genericClassField;
-                private List<List<AGenericPreviewClass<Int32>>> {|#2:_genericPreviewClassField|};
+                private List<List<{|#2:AGenericPreviewClass<Int32>|}>> _genericPreviewClassField;
 
 
                 public Program()
@@ -180,7 +180,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             public class Program
             {
                 private {|#0:PreviewType|} _field;
-                private AGenericClass<{|#2:PreviewType|}>[] {|#3:_genericPreviewField|};
+                private {|#3:AGenericClass<{|#2:PreviewType|}>|}[] _genericPreviewField;
 
                 public Program()
                 {

@@ -27,12 +27,12 @@ namespace Preview_Feature_Scratch
         }
 
 #nullable enable
-        public Dictionary<int, {|#2:Foo?|}> GetterNullable(Dictionary<int, {|#3:Foo?|}> foo)
+        public Dictionary<int, {|#2:Foo|}?> GetterNullable(Dictionary<int, {|#3:Foo|}?> foo)
         {
             return foo;
         }
 
-        public Dictionary<int, {|#4:Foo?[]|}> GetterNullableArray(Dictionary<int, {|#5:Foo?[]|}> foo)
+        public Dictionary<int, {|#4:Foo?|}[]> GetterNullableArray(Dictionary<int, {|#5:Foo?|}[]> foo)
         {
             return foo;
         }
@@ -142,7 +142,7 @@ namespace Preview_Feature_Scratch
         }
 
 #nullable enable
-        public {|#4:Foo?|} GetterNullable({|#3:Foo?|} foo)
+        public {|#4:Foo|}? GetterNullable({|#3:Foo|}? foo)
         {
             return foo;
         }

@@ -297,6 +297,61 @@ interface IFoo
         }
 
         [Fact]
+        public async Task TestClassImplementsGenericInterface()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+class A : {|#0:IFoo<PreviewClass>|}
+{
+    static void Main(string[] args)
+    {
+    }
+}
+
+[RequiresPreviewFeatures]
+interface IFoo<T>
+{
+}
+
+[RequiresPreviewFeatures]
+class PreviewClass
+{
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("A", "IFoo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestClassExtendsGenericPreviewClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+class A : {|#0:PreviewClass<int>|}
+{
+    static void Main(string[] args)
+    {
+    }
+}
+
+[RequiresPreviewFeatures]
+class PreviewClass<T>
+{
+}
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(0).WithArguments("A", "PreviewClass"));
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestGenericClassWithPreviewDependency()
         {
             var csInput = @" 

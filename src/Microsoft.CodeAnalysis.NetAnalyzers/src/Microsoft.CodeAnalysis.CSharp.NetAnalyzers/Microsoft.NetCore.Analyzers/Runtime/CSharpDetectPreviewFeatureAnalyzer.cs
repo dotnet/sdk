@@ -142,10 +142,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         private static bool TryMatchGenericSyntaxNodeWithGivenSymbol(GenericNameSyntax genericName, ISymbol previewReturnTypeSymbol, [NotNullWhen(true)] out SyntaxNode? syntaxNode)
         {
+            if (IsSyntaxToken(genericName.Identifier, previewReturnTypeSymbol))
+            {
+                syntaxNode = genericName;
+                return true;
+            }
+
             TypeArgumentListSyntax typeArgumentList = genericName.TypeArgumentList;
             foreach (TypeSyntax typeArgument in typeArgumentList.Arguments)
             {
-                if (typeArgument is GenericNameSyntax innerGenericName)
+                TypeSyntax typeArgumentElementType = GetElementTypeForNullableAndArrayTypeNodes(typeArgument);
+                if (typeArgumentElementType is GenericNameSyntax innerGenericName)
                 {
                     if (TryMatchGenericSyntaxNodeWithGivenSymbol(innerGenericName, previewReturnTypeSymbol, out syntaxNode))
                     {
@@ -153,9 +160,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     }
                 }
 
-                if (IsIdentifierNameSyntax(typeArgument, previewReturnTypeSymbol))
+                if (IsIdentifierNameSyntax(typeArgumentElementType, previewReturnTypeSymbol))
                 {
-                    syntaxNode = typeArgument;
+                    syntaxNode = typeArgumentElementType;
                     return true;
                 }
             }
@@ -266,6 +273,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     {
                         previewInterfaceNode = simpleBaseTypeSyntax;
                         return true;
+                    }
+
+                    if (type is GenericNameSyntax generic)
+                    {
+                        if (TryMatchGenericSyntaxNodeWithGivenSymbol(generic, previewInterfaceSymbol, out SyntaxNode? previewConstraint))
+                        {
+                            previewInterfaceNode = previewConstraint;
+                            return true;
+                        }
                     }
                 }
             }
