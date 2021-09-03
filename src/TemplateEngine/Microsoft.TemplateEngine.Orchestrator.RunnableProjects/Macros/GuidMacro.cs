@@ -71,8 +71,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     Name = config.VariableName
                 };
             }
-
-            string defaultValue = char.IsUpper(config.DefaultFormat[0]) ?
+            var defaultFormat = string.IsNullOrEmpty(config.DefaultFormat) ? "D" : config.DefaultFormat!;
+            string defaultValue = char.IsUpper(defaultFormat[0]) ?
                 g.ToString(config.DefaultFormat).ToUpperInvariant() :
                 g.ToString(config.DefaultFormat).ToLowerInvariant();
             vars[config.VariableName] = defaultValue;

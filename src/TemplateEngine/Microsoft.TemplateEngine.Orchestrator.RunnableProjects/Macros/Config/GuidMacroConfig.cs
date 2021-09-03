@@ -17,17 +17,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
             VariableName = variableName;
             Type = "guid";
             Format = format;
-            DefaultFormat = string.IsNullOrWhiteSpace(defaultFormat) ? "D" : defaultFormat!;
+            DefaultFormat = defaultFormat;
         }
 
-        public string VariableName { get; private set; }
+        public string VariableName { get; }
 
-        public string Type { get; private set; }
+        public string Type { get; }
 
         internal string DataType { get; }
 
-        internal string DefaultFormat { get; private set; }
+        internal string? DefaultFormat { get; }
 
-        internal string? Format { get; private set; }
+        internal string? Format { get; }
     }
 }
