@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using FluentAssertions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -10,14 +8,14 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {
-    internal static class CacheFileTests60
+    internal static class CacheFileTestsForLatestSdk
     {
-        public static void RunTests(string cacheFileV2Path)
+        public static void RunTests(string cacheFileV2Path, string sdkVersion)
         {
             cacheFileV2Path = Path.GetFullPath(cacheFileV2Path);
-            Console.WriteLine($"Running tests on .NET 6.0 for: {cacheFileV2Path}.");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {cacheFileV2Path}.");
             string workingDirectory = TestUtils.CreateTemporaryFolder();
-            UseSdkVersion(workingDirectory, requestedSdkVersion: "6.0.100-rc.2.21420.30", resolvedVersionPattern: "6.0.", rollForward: "latestFeature");
+            UseSdkVersion(workingDirectory, sdkVersion, resolvedVersionPattern: string.Join('.', sdkVersion.Split('.', 3).Take(2)) + '.', rollForward: "latestFeature");
             CanSearch(workingDirectory, cacheFileV2Path);
             Console.WriteLine($"Tests succeeded.");
         }

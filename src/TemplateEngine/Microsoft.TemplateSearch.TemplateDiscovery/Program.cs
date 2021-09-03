@@ -31,6 +31,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             bool test,
             IEnumerable<SupportedQueries>? queries,
             DirectoryInfo? packagesPath,
+            string latestSdkToTest,
             bool diffMode,
             FileInfo? overridePreviousCachePath,
             FileInfo? overrideNonPackagesListPath)
@@ -45,6 +46,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 noTemplateJsonFilter,
                 queries,
                 packagesPath,
+                latestSdkToTest,
                 diffMode,
                 overridePreviousCachePath,
                 overrideNonPackagesListPath);
@@ -66,8 +68,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 if (test)
                 {
                     CacheFileTestsBefore60.RunTests(legacyMetadataPath);
-                    CacheFileTests60.RunTests(legacyMetadataPath);
-                    CacheFileTests60.RunTests(metadataPath);
+                    CacheFileTestsForLatestSdk.RunTests(legacyMetadataPath, config.LatestSdkToTest);
+                    CacheFileTestsForLatestSdk.RunTests(metadataPath, config.LatestSdkToTest);
                 }
                 return 0;
             }
@@ -141,6 +143,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 Description = $"Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org.",
             }.ExistingOnly());
 
+            Option<string> latestSdkToTestOption = (new Option<string>("--latestVersionToTest")
+            {
+                Description = $"Latest .NET SDK version to be tested.",
+            });
+
             Option<bool> diffOption = new Option<bool>("--diff", getDefaultValue: () => true)
             {
                 Description = $"The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
@@ -168,6 +175,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 testOption,
                 queriesOption,
                 packagesPathOption,
+                latestSdkToTestOption,
                 diffOption,
                 diffOverrideCacheOption,
                 diffOverrideNonPackagesOption
@@ -185,6 +193,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 testOption,
                 queriesOption,
                 packagesPathOption,
+                latestSdkToTestOption,
                 diffOption,
                 diffOverrideCacheOption,
                 diffOverrideNonPackagesOption,

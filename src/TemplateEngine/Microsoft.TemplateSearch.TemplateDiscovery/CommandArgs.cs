@@ -20,6 +20,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 bool noTemplateJsonFilter,
                 IEnumerable<SupportedQueries>? queries,
                 DirectoryInfo? packagesPath,
+                string latestSdkToTest,
                 bool diff,
                 FileInfo? diffOverrideCache,
                 FileInfo? diffOverrideNonPackages
@@ -33,6 +34,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             DontFilterOnTemplateJson = noTemplateJsonFilter;
             Queries = queries?.ToArray() ?? Array.Empty<SupportedQueries>();
             LocalPackagePath = packagesPath;
+            LatestSdkToTest = latestSdkToTest;
             DiffMode = diff;
             DiffOverrideSearchCacheLocation = diffOverrideCache;
             DiffOverrideKnownPackagesLocation = diffOverrideNonPackages;
@@ -53,6 +55,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
         internal bool DontFilterOnTemplateJson { get; }
 
         internal IReadOnlyList<SupportedQueries> Queries { get; }
+
+        internal string LatestSdkToTest { get; }
 
         internal bool DiffMode { get; }
 

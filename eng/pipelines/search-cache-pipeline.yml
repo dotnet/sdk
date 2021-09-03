@@ -23,6 +23,11 @@ steps:
 
 - script: '$(Build.SourcesDirectory)/build.sh'
 
+- bash: |
+    SdkVersion=$(dotnet msbuild $(Build.SourcesDirectory)/eng/Versions.props -verbosity:diagnostic | grep "VSRedistCommonNetCoreToolsetx64PackageVersion = " | xargs | cut -d' ' -f 3)
+    echo "##vso[task.setvariable variable=RepoSdkVersion;]$SdkVersion"
+  displayName: 'Determine SDK version'
+
 - task: UseDotNet@2
   displayName: 'Use .NET 3.1'
   inputs:
@@ -46,14 +51,14 @@ steps:
 
 - bash: >
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-    -Version 6.0.100-rc.2.21420.30
+    -Version $(RepoSdkVersion)
     -InstallDir $(Build.SourcesDirectory)/.dotnet
     -SkipNonVersionedFiles
   displayName: Install .NET 6.0
 
 - bash: >
     $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net6.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
-    --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test
+    --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --latestVersionToTest $(RepoSdkVersion)
   displayName: Run Cache Updater
 
 - task: CopyFiles@2
