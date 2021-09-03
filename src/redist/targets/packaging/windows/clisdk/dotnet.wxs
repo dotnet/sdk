@@ -54,8 +54,8 @@
       </Directory>
     </Directory>
     
-    <?if $(var.Platform) = x64 ?>
-    <CustomActionRef Id="Set_DOTNETHOME_x64" />
+    <?if $(var.Platform)~=x64?>
+    <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
     <?endif?>
   </Fragment>
   <Fragment>

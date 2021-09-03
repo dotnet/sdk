@@ -145,6 +145,9 @@
         Example:
             dotnet-sdk-3.0.100-alpha1-009719-win-x64.exe /install DOTNETHOME_X64="D:\dotnet\x64" DOTNETHOME_X86="D:\dotnet\x86" /log "installation.log" /quiet /norestart
     -->
+    <Variable Name="DOTNETHOME_X86" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_X64" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_ARM64" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="string" Value="[DOTNETHOME_$(var.PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(var.ProductMoniker)" bal:Overridable="no" />
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.NugetVersion)" bal:Overridable="no" />
