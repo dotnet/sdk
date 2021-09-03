@@ -266,15 +266,16 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "nonComposite", "nonselfcontained")]
+        [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "_", "_")]
         [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
+        // In .NET 6.0 building targetting Windows on linux or osx doesn't support emitting native symbols.
         [InlineData("net6.0", "win-x64", "windows", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
-        [InlineData("net6.0", "osx-arm64", "windows,linux,osx", "X64,Arm64", "nonComposite", "nonselfcontained")]
-        // In .NET 6.0 building targetting Windows doesn't support emitting native symbols.
-        [InlineData("net6.0", "win-x86", "windows", "X86,X64,Arm64,Arm", "nonComposite", "nonselfcontained")]
+        [InlineData("net6.0", "osx-arm64", "windows,linux,osx", "X64,Arm64", "_", "_")]
+        // In .NET 6.0 building targetting Windows on linux or osx doesn't support emitting native symbols.
+        [InlineData("net6.0", "win-x86", "windows", "X86,X64,Arm64,Arm", "_", "_")]
         public void It_supports_crossos_arch_compilation(string targetFramework, string runtimeIdentifier, string sdkSupportedOs, string sdkSupportedArch, string composite, string selfcontained)
         {
-            var projectName = $"FrameworkDependentUsingCrossArchTest{targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";
+            var projectName = $"CrossArchOs{targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";
             string sdkOs = "NOTHING";
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -290,40 +291,75 @@ namespace Microsoft.NET.Publish.Tests
             }
 
             Assert.NotEqual("NOTHING", sdkOs); // We should know which OS we are running on
+            Log.WriteLine($"sdkOs = {sdkOs}");
             if (!sdkSupportedOs.Contains(sdkOs))
             {
-                // Running test on OS that doesn't support this cross platform build
+                Log.WriteLine("Running test on OS that doesn't support this cross platform build");
                 return;
             }
 
             string sdkArch = RuntimeInformation.ProcessArchitecture.ToString();
+            Log.WriteLine($"sdkArch = {sdkArch}");
             Assert.Contains(sdkArch, new string[]{"Arm", "Arm64", "X64", "X86"}); // Assert that the Architecture in use is a known architecture
             if (!sdkSupportedArch.Split(',').Contains(sdkArch))
             {
-                // Running test on processor architecture that doesn't support this cross platform build
+                Log.WriteLine("Running test on processor architecture that doesn't support this cross platform build");
                 return;
             }
 
             TestProjectPublishing_Internal(projectName, targetFramework, isSelfContained: selfcontained == "selfcontained", emitNativeSymbols: true, useCrossgen2: true, composite: composite == "composite", identifier: targetFramework, runtimeIdentifier: runtimeIdentifier);
         }
 
-        private static bool IsTargetOsOsX(string runtimeIdentifier)
+        private enum TargetOSEnum
+        {
+            Windows,
+            Linux,
+            OsX
+        }
+
+        private static TargetOSEnum GetTargetOS(string runtimeIdentifier)
         {
             if (runtimeIdentifier.Contains("osx"))
             {
-                return true;
+                return TargetOSEnum.OsX;
             }
-            return false;
+            else if (runtimeIdentifier.Contains("win"))
+            {
+                return TargetOSEnum.Windows;
+            }
+            else if (runtimeIdentifier.Contains("linux") ||
+                     runtimeIdentifier.Contains("ubuntu") ||
+                     runtimeIdentifier.Contains("alpine") ||
+                     runtimeIdentifier.Contains("android") ||
+                     runtimeIdentifier.Contains("centos") ||
+                     runtimeIdentifier.Contains("debian") ||
+                     runtimeIdentifier.Contains("fedora") ||
+                     runtimeIdentifier.Contains("gentoo") ||
+                     runtimeIdentifier.Contains("suse") ||
+                     runtimeIdentifier.Contains("rhel") ||
+                     runtimeIdentifier.Contains("sles") ||
+                     runtimeIdentifier.Contains("tizen"))
+            {
+                return TargetOSEnum.Linux; 
+            }
+
+            Assert.True(false, $"{runtimeIdentifier} could not be converted into a known OS type. Adjust the if statement above until this does not happen");
+            return TargetOSEnum.Windows;
+        }
+
+        private static bool IsTargetOsOsX(string runtimeIdentifier)
+        {
+            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.OsX;
         }
 
         private static bool IsTargetOsWindows(string runtimeIdentifier)
         {
-            return runtimeIdentifier.Contains("win");
+            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Windows;
         }
 
         private static bool IsTargetOsLinux(string runtimeIdentifier)
         {
-            return runtimeIdentifier.Contains("linux");
+            return GetTargetOS(runtimeIdentifier) == TargetOSEnum.Linux;
         }
 
         private void TestProjectPublishing_Internal(string projectName,
