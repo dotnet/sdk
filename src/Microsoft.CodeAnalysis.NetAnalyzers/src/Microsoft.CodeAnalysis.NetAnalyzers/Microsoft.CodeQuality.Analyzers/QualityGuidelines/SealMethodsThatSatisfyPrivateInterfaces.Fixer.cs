@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp /*, LanguageNames.VisualBasic*/), Shared]  // note: disabled VB until SyntaxGenerator.WithStatements works
     public sealed class SealMethodsThatSatisfyPrivateInterfacesFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(SealMethodsThatSatisfyPrivateInterfacesAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(SealMethodsThatSatisfyPrivateInterfacesAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

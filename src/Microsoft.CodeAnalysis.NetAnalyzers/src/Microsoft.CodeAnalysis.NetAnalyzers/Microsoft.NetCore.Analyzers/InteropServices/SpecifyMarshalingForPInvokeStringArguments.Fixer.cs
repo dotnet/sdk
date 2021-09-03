@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         protected const string LPWStrText = "LPWStr";
         protected const string UnicodeText = "Unicode";
 
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PInvokeDiagnosticAnalyzer.RuleCA2101Id);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PInvokeDiagnosticAnalyzer.RuleCA2101Id);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {

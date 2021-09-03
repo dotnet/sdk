@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class TestForNaNCorrectlyFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

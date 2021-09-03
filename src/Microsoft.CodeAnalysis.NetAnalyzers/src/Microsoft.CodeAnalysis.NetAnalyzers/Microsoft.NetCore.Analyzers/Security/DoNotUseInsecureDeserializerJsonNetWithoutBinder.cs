@@ -19,6 +19,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:Newtonsoft.Json.JsonSerializer"/> when its TypeNameHandling != None
     /// and its Binder/SerializationBinder is null.
@@ -30,23 +32,24 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor DefinitelyInsecureSerializer =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2329",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSerializerTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetInsecureSerializerMessage),
-                RuleLevel.Disabled,
-                isPortedFxCopRule: false,
-                isDataflowRule: true,
-                isReportedAtCompilationEnd: true);
-        internal static readonly DiagnosticDescriptor MaybeInsecureSerializer =
-            SecurityHelpers.CreateDiagnosticDescriptor(
-                "CA2330",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSerializerTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetMaybeInsecureSerializerMessage),
+                nameof(JsonNetInsecureSerializerTitle),
+                nameof(JsonNetInsecureSerializerMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        internal static readonly DiagnosticDescriptor MaybeInsecureSerializer =
+            SecurityHelpers.CreateDiagnosticDescriptor(
+                "CA2330",
+                nameof(JsonNetMaybeInsecureSerializerTitle),
+                nameof(JsonNetMaybeInsecureSerializerMessage),
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true,
+                isReportedAtCompilationEnd: true);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyInsecureSerializer,
                 MaybeInsecureSerializer);

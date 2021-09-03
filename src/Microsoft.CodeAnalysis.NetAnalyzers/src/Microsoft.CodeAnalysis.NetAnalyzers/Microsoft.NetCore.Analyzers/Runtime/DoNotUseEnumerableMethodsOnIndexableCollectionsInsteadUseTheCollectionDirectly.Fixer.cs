@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private const string LastPropertyName = "Last";
         private const string CountPropertyName = "Count";
 
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

@@ -7,7 +7,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 {
     public abstract class PreferDictionaryContainsMethodsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferDictionaryContainsMethods.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferDictionaryContainsMethods.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
     }

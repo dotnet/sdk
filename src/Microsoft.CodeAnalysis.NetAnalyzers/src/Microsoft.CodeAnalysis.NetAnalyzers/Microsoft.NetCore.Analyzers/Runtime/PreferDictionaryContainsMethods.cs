@@ -8,7 +8,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -16,29 +16,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1841";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsMethodsTitle), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsKeyMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsKeyDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyDescription), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsValueMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsValueDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueDescription), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PreferDictionaryContainsMethodsTitle));
 
         internal static readonly DiagnosticDescriptor ContainsKeyRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_localizableContainsKeyMessage,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsKeyMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            s_localizableContainsKeyDescription,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsKeyDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor ContainsValueRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_localizableContainsValueMessage,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsValueMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            s_localizableContainsValueDescription,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsValueDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
