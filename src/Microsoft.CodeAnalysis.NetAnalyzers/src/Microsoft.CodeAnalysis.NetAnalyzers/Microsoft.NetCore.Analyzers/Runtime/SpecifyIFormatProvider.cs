@@ -185,10 +185,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (!oaContext.Options.IsConfiguredToSkipAnalysis(iformatProviderAlternateRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                 {
-                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType).ToList();
+                    IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType);
                     if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                     {
-                        var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, iformatProviderType).ToList();
+                        var correctOverloads = methodsWithSameNameAsTargetMethod.GetMethodOverloadsWithDesiredParameterAtLeadingOrTrailing(targetMethod, iformatProviderType);
 
                         // If there are two matching overloads, one with CultureInfo as the first parameter and one with CultureInfo as the last parameter,
                         // report the diagnostic on the overload with CultureInfo as the last parameter, to match the behavior of FxCop.
