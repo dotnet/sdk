@@ -1318,13 +1318,13 @@ namespace NS
 
             await csharpTest.RunAsync();
 
-var vbTest = new VerifyVB.Test
-{
-    TestState =
-                {
-                    Sources =
-                    {
-                        @"
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                            {
+                                Sources =
+                                {
+                                    @"
 Imports System
 
 Namespace NS
