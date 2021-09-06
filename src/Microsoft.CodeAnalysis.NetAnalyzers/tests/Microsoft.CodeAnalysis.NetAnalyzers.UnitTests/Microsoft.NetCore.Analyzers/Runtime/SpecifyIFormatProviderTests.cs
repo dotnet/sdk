@@ -1239,8 +1239,8 @@ End Namespace",
 [*]
 {editorConfigText}
 "), },
-            },
-};
+                },
+            };
 
             if (editorConfigText.Length == 0)
             {
@@ -1374,7 +1374,7 @@ End Namespace",
 {editorConfigText}
 "), },
                 },
-};
+            };
 
             if (editorConfigText.Length == 0)
             {
