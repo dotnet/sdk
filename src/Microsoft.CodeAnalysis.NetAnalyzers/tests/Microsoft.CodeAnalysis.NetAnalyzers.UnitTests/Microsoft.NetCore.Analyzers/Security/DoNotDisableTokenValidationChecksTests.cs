@@ -42,6 +42,25 @@ class TestClass
         }
 
         [Fact]
+        public async Task RegressionTestForPreventingNullRefDuringParsing()
+        {
+            await VerifyCSharpAnalyzerAsync(@"
+using System;
+using Microsoft.IdentityModel.Tokens;
+
+class TestClass
+{
+    public void TestMethod()
+    {
+        TokenValidationParameters parameters = new TokenValidationParameters();
+        parameters.RequireExpirationTime = false;
+        parameters.ValidAlgorithms = null;
+    }
+}",
+            GetCSharpResultAt(10, 9).WithArguments("RequireExpirationTime"));
+        }
+
+        [Fact]
         public async Task TestConstantDiagnostic()
         {
             await VerifyCSharpAnalyzerAsync(@"

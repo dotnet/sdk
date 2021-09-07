@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         internal const string DiagnosticId = "CA5404";
         private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecks),
+            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecksTitle),
             MicrosoftNetCoreAnalyzersResources.ResourceManager,
             typeof(MicrosoftNetCoreAnalyzersResources));
         private static readonly LocalizableString s_Message = new LocalizableResourceString(
@@ -55,6 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             context.RegisterCompilationStartAction(context =>
             {
                 var compilation = context.Compilation;
+
                 var tokenValidationParamsTypeSymbol = compilation.GetOrCreateTypeByMetadataName(
                     WellKnownTypeNames.MicrosoftIdentityModelTokensTokenValidationParameters);
 
@@ -73,6 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                         if (property.ContainingType.Equals(tokenValidationParamsTypeSymbol) &&
                             simpleAssignmentOperation.Value.ConstantValue.HasValue &&
+                            simpleAssignmentOperation.Value.ConstantValue.Value != null &&
                             simpleAssignmentOperation.Value.ConstantValue.Value.Equals(false) &&
                             PropertiesWhichShouldNotBeFalse.Contains(property.Name))
                         {
