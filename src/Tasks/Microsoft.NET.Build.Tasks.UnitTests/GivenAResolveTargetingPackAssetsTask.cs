@@ -125,9 +125,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         private ResolveTargetingPackAssets InitializeTask(out string mockPackageDirectory,
-            [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask))
+            [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask),
+            string identifier = null)
         {
-            mockPackageDirectory = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
+            mockPackageDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier).Path;
 
             string dataDir = Path.Combine(mockPackageDirectory, "data");
             Directory.CreateDirectory(dataDir);
