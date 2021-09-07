@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateSearch.ScraperOutputComparison", "src\Microsoft.TemplateSearch.ScraperOutputComparison\Microsoft.TemplateSearch.ScraperOutputComparison.csproj", "{95D28477-05FE-4450-86B8-D7384202AB90}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.6.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.6.0\Microsoft.DotNet.Common.ProjectTemplates.6.0.csproj", "{1DADD24C-5BEF-400D-9C96-8092857D346A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.7.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.7.0\Microsoft.DotNet.Common.ProjectTemplates.7.0.csproj", "{1DADD24C-5BEF-400D-9C96-8092857D346A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.TemplateEngine.TestTemplates", "test\Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj", "{FC7516FB-7F44-4786-ADF2-589EF06C2EDE}"
 EndProject
