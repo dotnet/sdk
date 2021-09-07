@@ -1386,6 +1386,94 @@ End Namespace",
             await vbTest.RunAsync();
         }
 
+        [Theory, WorkItem(5372, "https://github.com/dotnet/roslyn-analyzers/issues/5372")]
+        // Diagnostics
+        [InlineData("")]
+        // No diagnostics
+        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = Format")]
+        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
+        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = T:System.String")]
+        [InlineData("dotnet_code_quality.CA1305.excluded_symbol_names = N:System")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = Format")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = M:System.String.Format(System.String,System.Object)")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = T:System.String")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = N:System")]
+        public async Task CA1305_ExcludedSymbolsOption_CultureInfo(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Globalization;
+
+namespace NS
+{
+    public class C
+    {
+        public void M()
+        {
+            string name = ""Georgette"";
+            string example1 = String.Format(""Hello {0}"", name);
+            string example2 = String.Format(CultureInfo.CurrentCulture, ""Hello {0}"", name);
+        }
+    }
+}",
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
+                },
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleCSharpResultAt(12, 31, "string.Format(string, object)", "C.M()", "string.Format(IFormatProvider, string, params object[])"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var vbTest = new VerifyVB.Test
+            {
+                TestState =
+                            {
+                                Sources =
+                                {
+                                    @"
+Imports System
+Imports System.Globalization
+
+Namespace NS
+    Public Class C
+        Public Sub M()
+            Dim name As String = ""Georgette""
+            Dim example1 As String = String.Format(""Hello {0}"", name)
+            Dim example2 As String = String.Format(CultureInfo.CurrentCulture, ""Hello {0}"", name)
+        End Sub
+    End Class
+End Namespace",
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+"), },
+                },
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                vbTest.ExpectedDiagnostics.Add(GetIFormatProviderAlternateStringRuleBasicResultAt(9, 38, "String.Format(String, Object)", "C.M()", "String.Format(IFormatProvider, String, ParamArray Object())"));
+            }
+
+            await vbTest.RunAsync();
+        }
+
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>
 #pragma warning disable RS0030 // Do not used banned APIs
             VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateStringRule)
