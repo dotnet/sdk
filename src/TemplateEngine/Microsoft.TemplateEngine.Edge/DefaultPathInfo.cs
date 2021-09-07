@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Edge
         {
             UserProfileDir = GetUserProfileDir(engineEnvironmentSettings.Environment);
 
-            GlobalSettingsDir = settingsLocation ?? GetDefaultGlobalSettingsDir(UserProfileDir);
+            GlobalSettingsDir = string.IsNullOrWhiteSpace(settingsLocation) ? GetDefaultGlobalSettingsDir(UserProfileDir) : settingsLocation!;
             HostSettingsDir = GetDefaultHostSettingsDir(engineEnvironmentSettings.Host, globalDir: GlobalSettingsDir);
             HostVersionSettingsDir = GetDefaultHostVersionSettingsDir(engineEnvironmentSettings.Host, globalDir: GlobalSettingsDir);
         }
