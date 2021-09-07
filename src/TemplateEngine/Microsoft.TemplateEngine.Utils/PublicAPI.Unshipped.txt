@@ -1,1 +1,6 @@
-﻿
+﻿Microsoft.TemplateEngine.Utils.AsyncMutex
+Microsoft.TemplateEngine.Utils.AsyncMutex.Dispose() -> void
+Microsoft.TemplateEngine.Utils.AsyncMutex.IsLocked.get -> bool
+Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions
+static Microsoft.TemplateEngine.Utils.AsyncMutex.WaitAsync(string! mutexName, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Utils.AsyncMutex!>!
+static Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions.GetDisplayPath(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo! fileSystemInfo) -> string!

@@ -7,14 +7,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.TemplateEngine.Edge.Settings
+namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
     /// Helper class to work with <see cref="Mutex"/> in <c>async</c> method, since <c>await</c>
     /// can switch to different thread and <see cref="Mutex.ReleaseMutex"/> must be called from same thread.
     /// Hence this helper class.
     /// </summary>
-    internal sealed class AsyncMutex : IDisposable
+    public sealed class AsyncMutex : IDisposable
     {
         private readonly TaskCompletionSource<AsyncMutex> _taskCompletionSource;
         private readonly ManualResetEvent _blockReleasingMutex = new ManualResetEvent(false);
@@ -31,14 +31,26 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             new Thread(WaitLoop).Start();
         }
 
+        /// <summary>
+        /// Returns true if the mutex is acquired.
+        /// </summary>
         public bool IsLocked { get { return _isLocked; } }
 
+        /// <summary>
+        /// Creates the <see cref="AsyncMutex"/> and task for waiting until underlying <see cref="Mutex"/> is acquired.
+        /// </summary>
+        /// <param name="mutexName">The mutex name. The name is case-sensitive.</param>
+        /// <param name="token">The <see cref="CancellationToken"/> to observe.</param>
+        /// <returns>created <see cref="AsyncMutex"/>.</returns>
         public static Task<AsyncMutex> WaitAsync(string mutexName, CancellationToken token)
         {
             var mutex = new AsyncMutex(mutexName, token);
             return mutex._taskCompletionSource.Task;
         }
 
+        /// <summary>
+        /// Disposes the <see cref="AsyncMutex"/>. If disposed, the underlying <see cref="Mutex"/> is released.
+        /// </summary>
         public void Dispose()
         {
             if (_disposed)
