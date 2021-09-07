@@ -3,19 +3,30 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
+using Microsoft.NET.TestFramework;
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
 using Xunit;
+using Xunit.Abstractions;
+
 using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class GivenAResolveTargetingPackAssetsTask
+    public class GivenAResolveTargetingPackAssetsTask : SdkTest
     {
+        public GivenAResolveTargetingPackAssetsTask(ITestOutputHelper log)
+            : base(log)
+        {
+        }
+
         [Fact]
         public void Given_ResolvedTargetingPacks_with_valid_PATH_in_PlatformManifest_It_resolves_TargetingPack()
         {
@@ -113,9 +124,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 because: "there should be distinct results for C# and F#");
         }
 
-        private ResolveTargetingPackAssets InitializeTask(out string mockPackageDirectory)
+        private ResolveTargetingPackAssets InitializeTask(out string mockPackageDirectory,
+            [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask))
         {
-            mockPackageDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());
+            mockPackageDirectory = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             string dataDir = Path.Combine(mockPackageDirectory, "data");
             Directory.CreateDirectory(dataDir);
