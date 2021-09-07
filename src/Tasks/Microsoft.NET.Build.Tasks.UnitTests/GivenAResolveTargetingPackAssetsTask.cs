@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void Given_ResolvedTargetingPacks_with_valid_PATH_in_PlatformManifest_It_resolves_TargetingPack()
         {
-            ResolveTargetingPackAssets task = InitializeTask(out string mockPackageDirectory);
+            ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
 
             task.Execute().Should().BeTrue();
 
@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void It_Uses_Multiple_Frameworks()
         {
-            ResolveTargetingPackAssets task = InitializeTask(out string mockPackageDirectory);
+            ResolveTargetingPackAssets task = InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory);
 
             // Add two RuntimeFrameworks that both point to the default targeting pack.
             task.RuntimeFrameworks = new[] {
@@ -71,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             [Fact]
         public void Given_Passing_ResolvedTargetingPacks_It_Passes_Again_With_Cached_Results()
         {
-            ResolveTargetingPackAssets task1 = InitializeTask(out string packageDirectory);
+            ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
 
             // Save off that build engine to inspect and reuse
             MockBuildEngine4 buildEngine = (MockBuildEngine4)task1.BuildEngine;
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void Given_Passing_ResolvedTargetingPacks_A_Different_Language_Parses_Again()
         {
-            ResolveTargetingPackAssets task1 = InitializeTask(out string packageDirectory);
+            ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
 
             // Save off that build engine to inspect and reuse
             MockBuildEngine4 buildEngine = (MockBuildEngine4)task1.BuildEngine;
@@ -124,7 +124,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 because: "there should be distinct results for C# and F#");
         }
 
-        private ResolveTargetingPackAssets InitializeTask(out string mockPackageDirectory,
+        private ResolveTargetingPackAssets InitializeMockTargetingPackAssetsDirectory(out string mockPackageDirectory,
             [CallerMemberName] string testName = nameof(GivenAResolvePackageAssetsTask))
         {
             mockPackageDirectory = _testAssetsManager.CreateTestDirectory(testName: testName).Path;
@@ -213,7 +213,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             IEnumerable<PropertyInfo> inputProperties;
 
-            var task = InitializeTask(out inputProperties);
+            var task = InitializeTaskForHashTesting(out inputProperties);
 
             string oldHash;
             try
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        private ResolveTargetingPackAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)
+        private ResolveTargetingPackAssets InitializeTaskForHashTesting(out IEnumerable<PropertyInfo> inputProperties)
         {
             inputProperties = typeof(ResolveTargetingPackAssets)
                 .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
