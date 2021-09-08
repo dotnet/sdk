@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string PackagePathPrefix { get; set; } = "staticwebassets";
         
-        public bool AllowEmptySourceType { get; set; } = false;
+        public bool AllowEmptySourceType { get; set; }
 
         public override bool Execute()
         {

@@ -80,7 +80,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(ResolveStaticWebAssetsInputsDependsOn)
     </ResolveStaticWebAssetsInputsDependsOn>
 
-    <ResolveReferencedProjectsStaticWebAssetsDependsOn Condition="$(TargetFramework) != ''">
+    <ResolveReferencedProjectsStaticWebAssetsDependsOn Condition="'$(TargetFramework)' != ''">
       PrepareProjectReferences;
       $(ResolveReferencedProjectsStaticWebAssetsDependsOn)
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
