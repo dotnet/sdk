@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="NoSelfContainedOptionDescription">
         <source>Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</source>
-        <target state="translated">Hiermit wird Ihre Anwendung als Framework-abhängige Anwendung ohne .NET-Runtime veröffentlicht. Es muss eine unterstützte .NET-Runtime installiert sein, um Ihre Anwendung auszuführen.</target>
+        <target state="new">Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOption">
@@ -66,14 +66,14 @@ Standardmäßig wird eine Framework-abhängige Anwendung veröffentlicht.</targe
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</source>
-        <target state="translated">Die Optionen "--self-contained" und "--no-self-contained" stehen in Konflikt zueinander. Geben Sie nur eine der Optionen an.</target>
+        <target state="new">The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Hiermit wird die .NET-Runtime mit Ihrer Anwendung veröffentlicht, sodass die Runtime nicht auf dem Zielcomputer installiert werden muss.
-Der Standardwert lautet TRUE, wenn eine Runtime-ID angegeben wird.</target>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'true' if a runtime identifier is specified.</target>
         <note />
       </trans-unit>
     </body>
