@@ -56,7 +56,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
-        public void MergesProjectConfigurationWithProjectReference_UsesOSCasingForMathing()
+        public void MergesProjectConfigurationWithProjectReference_UsesOSCasingForMatching()
         {
             var errorMessages = new List<string>();
             var buildEngine = new Mock<IBuildEngine>();
@@ -68,7 +68,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 CandidateConfigurations = new[] { CreateCandidateProjectConfiguration(Path.GetFullPath(referenceProjectFile)) },
-                ProjectReferences = new[] {
+                ProjectReferences = new[] 
+                {
                     CreateProjectReference(
                         project: Path.Combine("..", "myRCL", "myRcl.csproj"),
                         msBuildSourceProjectFile: Path.GetFullPath(referenceProjectFile).ToUpperInvariant(),
