@@ -1,1 +1,1 @@
-The source and targets in the `src/SourceBuild/Arcade` directory are intended to move into the Arcade repo at some point.  They are added here for ease of development while developing the tarball generation process.  See https://github.com/dotnet/source-build/issues/2295
+The source and targets in the `src/SourceBuild/Arcade` directory are intended to move into the Arcade repo at some point.  They are added here for ease of development while developing the tarball generation process.   See https://github.com/dotnet/source-build/issues/2295
