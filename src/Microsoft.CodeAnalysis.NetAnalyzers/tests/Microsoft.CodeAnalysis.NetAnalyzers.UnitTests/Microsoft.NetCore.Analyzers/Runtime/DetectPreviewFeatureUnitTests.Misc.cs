@@ -598,11 +598,11 @@ namespace Preview_Feature_Scratch
 {" +
     @"
 
-    class {|#2:AFoo|}<T> where T : Foo, new()
+    class AFoo<T> where T : {|#2:Foo|}, new()
     {
-        public Foo[] {|#1:_fooArray|};
+        public {|#1:Foo|}[] _fooArray;
 
-        public void CallBackMethod(Action<Foo> {|#5:action|})
+        public void CallBackMethod(Action<{|#5:Foo|}> action)
         {
             foreach (var foo in _fooArray)
             {
