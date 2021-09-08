@@ -34,6 +34,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01c4028969fafb927762477d6991c483f3b3cc5c</Sha>
     </Dependency>
+    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.6.0" Version="6.0.0-rc.2.21458.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>01c4028969fafb927762477d6991c483f3b3cc5c</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="6.0.0-rc.2.21458.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>01c4028969fafb927762477d6991c483f3b3cc5c</Sha>
@@ -146,6 +150,10 @@
       <Sha>114c4162c1e9a916fe313f7d86aa663f6f5410dc</Sha>
     </Dependency>
     <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.0-rc.2.21457.12">
+      <Uri>https://github.com/dotnet/windowsdesktop</Uri>
+      <Sha>114c4162c1e9a916fe313f7d86aa663f6f5410dc</Sha>
+    </Dependency>
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.6.0" Version="6.0.0-rc.2.21457.12">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>114c4162c1e9a916fe313f7d86aa663f6f5410dc</Sha>
     </Dependency>
