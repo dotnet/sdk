@@ -220,4 +220,4 @@ CA5401 | Security | Disabled | DoNotUseCreateEncryptorWithNonDefaultIV, [Documen
 CA5402 | Security | Disabled | DoNotUseCreateEncryptorWithNonDefaultIV, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5402)
 CA5403 | Security | Disabled | DoNotHardCodeCertificate, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5403)
 CA5404 | Security | Warning | DoNotDisableTokenValidationChecks, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5404)
-CA5405 | Security | Warning | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5404)
+CA5405 | Security | Warning | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5405)
