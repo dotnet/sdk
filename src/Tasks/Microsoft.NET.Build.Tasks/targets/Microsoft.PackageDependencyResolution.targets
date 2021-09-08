@@ -175,29 +175,13 @@ Copyright (c) .NET Foundation. All rights reserved.
            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolvePackageAssets"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-
-  <!-- Reads the version of the compiler APIs that are currently being used in order to pick the correct Roslyn components. -->
-  <Target Name="_ResolveCompilerVersion"
-          Condition="'$(CompilerApiVersion)' == ''">
-    
-    <GetAssemblyIdentity AssemblyFiles="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll">
-      <Output TaskParameter="Assemblies" ItemName="_CodeAnalysisIdentity" />
-    </GetAssemblyIdentity>
-
-    <PropertyGroup>
-      <_RoslynApiVersion>$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Major).$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Minor)</_RoslynApiVersion>
-      <CompilerApiVersion>roslyn$(_RoslynApiVersion)</CompilerApiVersion>
-    </PropertyGroup>
-    
-  </Target>
   
   <!-- The condition on this target causes it to be skipped during design-time builds if
         the restore operation hasn't run yet.  This is to avoid displaying an error in
         the Visual Studio error list when a project is created before NuGet restore has
         run and created the assets file. -->
   <Target Name="RunResolvePackageDependencies"
-          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')"
-          DependsOnTargets="_ResolveCompilerVersion">
+          Condition=" '$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')">
 
     <!-- Verify that the assets file has a target for the right framework.  Otherwise, if we restored for the
          wrong framework, we'd end up finding no references to pass to the compiler, and we'd get a ton of
@@ -212,7 +196,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProjectPath="$(MSBuildProjectFullPath)"
       ProjectAssetsFile="$(ProjectAssetsFile)"
       ProjectLanguage="$(Language)"
-      CompilerApiVersion="$(CompilerApiVersion)"
       EmitLegacyAssetsFileItems="$(EmitLegacyAssetsFileItems)"
       TargetFramework="$(TargetFramework)"
       ContinueOnError="ErrorAndContinue">
@@ -226,6 +209,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="FileDependencies" ItemName="FileDependencies" />
     </ResolvePackageDependencies>
 
+  </Target>
+
+  <!-- Reads the version of the compiler APIs that are currently being used in order to pick the correct Roslyn components. -->
+  <Target Name="_ResolveCompilerVersion"
+          Condition="'$(CompilerApiVersion)' == ''">
+    
+    <GetAssemblyIdentity AssemblyFiles="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll">
+      <Output TaskParameter="Assemblies" ItemName="_CodeAnalysisIdentity" />
+    </GetAssemblyIdentity>
+
+    <PropertyGroup>
+      <_RoslynApiVersion>$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Major).$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Minor)</_RoslynApiVersion>
+      <CompilerApiVersion>roslyn$(_RoslynApiVersion)</CompilerApiVersion>
+    </PropertyGroup>
+    
   </Target>
 
   <Target Name="ResolvePackageAssets"

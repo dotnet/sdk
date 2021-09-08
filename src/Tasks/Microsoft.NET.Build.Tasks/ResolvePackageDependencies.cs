@@ -115,14 +115,6 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         /// <summary>
-        /// Optional version of the compiler API (E.g. 'roslyn3.9', 'roslyn4.0')
-        /// </summary>
-        public string CompilerApiVersion
-        {
-            get; set;
-        }
-
-        /// <summary>
         /// Setting this property restores pre-16.7 behaviour of populating <see cref="TargetDefinitions"/>,
         /// <see cref="FileDefinitions"/> and <see cref="FileDependencies"/> outputs.
         /// </summary>
@@ -184,8 +176,6 @@ namespace Microsoft.NET.Build.Tasks
         // get library and file definitions
         private void GetPackageAndFileDefinitions()
         {
-            HashSet<string>? excludedAnalyzers = NuGetUtils.GetExcludedAnalyzers(LockFile, ProjectLanguage, CompilerApiVersion);
-
             foreach (var package in LockFile.Libraries)
             {
                 var packageName = package.Name;
@@ -226,7 +216,7 @@ namespace Microsoft.NET.Build.Tasks
                     string resolvedPath = ResolveFilePath(file, resolvedPackagePath);
                     fileItem.SetMetadata(MetadataKeys.ResolvedPath, resolvedPath ?? string.Empty);
 
-                    if (NuGetUtils.IsApplicableAnalyzer(file, ProjectLanguage, excludedAnalyzers))
+                    if (NuGetUtils.IsApplicableAnalyzer(file, ProjectLanguage, excludedAnalyzers: null))
                     {
                         fileItem.SetMetadata(MetadataKeys.Analyzer, "true");
                         fileItem.SetMetadata(MetadataKeys.Type, "AnalyzerAssembly");
