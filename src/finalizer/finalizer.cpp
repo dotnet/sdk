@@ -317,7 +317,7 @@ int wmain(int argc, wchar_t* argv[])
     hr = ::DetectSdk(sczFeatureBandVersion, argv[3], &bSdkFeatureBandInstalled);
     ExitOnFailure(hr, "Failed to detect installed SDKs.");
 
-    if (bSdkFeatureBandInstalled)
+    if (!bSdkFeatureBandInstalled)
     {
         goto LExit;
     }
