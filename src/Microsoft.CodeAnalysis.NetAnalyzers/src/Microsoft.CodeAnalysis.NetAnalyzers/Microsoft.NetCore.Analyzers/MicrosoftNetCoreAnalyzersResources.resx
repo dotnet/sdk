@@ -1519,4 +1519,22 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="DoNotDisableTokenValidationChecksTitle" xml:space="preserve">
+    <value>Do not disable token validation checks</value>
+  </data>
+  <data name="DoNotDisableTokenValidationChecksDescription" xml:space="preserve">
+    <value>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</value>
+  </data>
+  <data name="DoNotDisableTokenValidationChecksMessage" xml:space="preserve">
+    <value>TokenValidationParameters.{0} should not be set to false as it disables important validation</value>
+  </data>
+  <data name="DoNotAlwaysSkipTokenValidationInDelegatesTitle" xml:space="preserve">
+    <value>Do not always skip token validation in delegates</value>
+  </data>
+  <data name="DoNotAlwaysSkipTokenValidationInDelegatesDescription" xml:space="preserve">
+    <value>By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</value>
+  </data>
+  <data name="DoNotAlwaysSkipTokenValidationInDelegatesMessage" xml:space="preserve">
+    <value>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</value>
+  </data>
 </root>
