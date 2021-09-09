@@ -18,14 +18,14 @@ using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
 
-    class {|#2:AFoo|}<T> where T : Foo, new() // Highlight Foo
+    class AFoo<T> where T : {|#2:Foo|}, new()
     {
         [RequiresPreviewFeatures]
         private Foo _value;
 
-        public Foo Value // Highlight Foo. Nice to have to collapse 0 and 1 into Value itself
+        public {|#0:Foo|} Value
         {
-            {|#0:get|}
+            get
             {
                 return {|#4:_value|};
             }
@@ -35,7 +35,7 @@ namespace Preview_Feature_Scratch
             }
         }
 
-        public Foo AnotherGetter => {|#6:{|#3:_value|}|};
+        public {|#3:Foo|} AnotherGetter => {|#6:_value|};
     }
 
     class Program
@@ -60,6 +60,64 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments("_value"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(5).WithArguments("_value"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(6).WithArguments("_value"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestGenericPreviewPropertyGetterAndSetters()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using System.Collections.Generic;
+namespace Preview_Feature_Scratch
+{
+
+    class AFoo<T> where T : {|#2:Foo|}, new()
+    {
+        private List<{|#3:Foo|}> _value;
+
+        public List<{|#0:Foo|}> Value
+        {
+            get
+            {
+                return _value;
+            }
+            {|#1:set|}
+            {
+                _value = value;
+            }
+        }
+#nullable enable
+        private List<{|#6:Foo|}?>? _valueNullable;
+
+        public List<{|#4:Foo|}?>? ValueNullable
+        {
+            get
+            {
+                return _valueNullable;
+            }
+            {|#5:set|}
+            {
+                _valueNullable = value;
+            }
+        }
+#nullable disable
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(0).WithArguments("get_Value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("set_Value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(2).WithArguments("AFoo", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(3).WithArguments("_value", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(6).WithArguments("_valueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("get_ValueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("set_ValueNullable", "Foo"));
             await test.RunAsync();
         }
 
@@ -146,6 +204,56 @@ namespace Preview_Feature_Scratch
         }
 
         [Fact]
+        public async Task TestNullablePropertyReturnTypePreviewGetterAndSetters()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+
+    class AFoo
+    {
+#nullable enable
+        private {|#5:Foo|}[]? _valueNullable;
+        private {|#8:Foo?|}[]? _valueNullableArray;
+        private {|#9:Foo?|}[] _valueNullableArrayInitialized;
+
+        public {|#6:Foo|}[]? ValueNullable
+        {
+            get
+            {
+                return _valueNullable;
+            }
+            {|#7:set|}
+            {
+                _valueNullable = value;
+            }
+        }
+
+        public AFoo()
+        {
+            _valueNullableArrayInitialized = {|#10:new Foo?[0]|};
+        }
+#nullable disable
+    }
+
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(5).WithArguments("_valueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(6).WithArguments("get_ValueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(7).WithArguments("set_ValueNullable", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(8).WithArguments("_valueNullableArray", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.FieldOrEventIsPreviewTypeRule).WithLocation(9).WithArguments("_valueNullableArrayInitialized", "Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(10).WithArguments("Foo"));
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestPropertyReturnTypePreviewGetterAndSetters()
         {
             var csInput = @" 
@@ -153,13 +261,13 @@ using System.Runtime.Versioning; using System;
 namespace Preview_Feature_Scratch
 {
 
-    class {|#0:AFoo|}<T> where T : Foo, new()
+    class AFoo<T> where T : {|#0:Foo|}, new()
     {
-        private Foo {|#1:_value|};
+        private {|#1:Foo|} _value;
 
-        public Foo Value // Highlight Foo. Nice to have: Collapse 0 and 1 into Value itself, though this might lead to 2 diagnostics on Value.
+        public {|#2:Foo|} Value
         {
-            {|#2:get|}
+            get
             {
                 return _value;
             }
@@ -169,7 +277,7 @@ namespace Preview_Feature_Scratch
             }
         }
 
-        public Foo AnotherGetter => {|#4:_value|};
+        public {|#4:Foo|} AnotherGetter => _value;
     }
 
     [RequiresPreviewFeatures]

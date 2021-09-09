@@ -115,7 +115,7 @@ namespace Preview_Feature_Scratch
         namespace Preview_Feature_Scratch
         {
 
-            class {|#0:Program|} : AbClass
+            class Program : {|#0:AbClass|}
             {
                 static void Main(string[] args)
                 {
@@ -280,7 +280,7 @@ namespace Preview_Feature_Scratch
             await test.RunAsync();
         }
 
-        [Fact(Skip = "Not implemented yet. Update DetectPreviewFeatureAnalyzer to support better diagnostic locations for base classes")]
+        [Fact]
         public async Task TestPartialClassDeclarationInterfacesAndAbstractClass()
         {
             var csInput = @" 
