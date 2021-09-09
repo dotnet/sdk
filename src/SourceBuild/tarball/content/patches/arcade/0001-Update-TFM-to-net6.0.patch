@@ -76,9 +76,9 @@ index 2f35e4aa..dfe69f4c 100644
    <PropertyGroup>
      <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
 +    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
-     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
      <PackageType>MSBuildSdk</PackageType>
      <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
 diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj b/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
 index 4405a1fe..a93edfaa 100644
 --- a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj

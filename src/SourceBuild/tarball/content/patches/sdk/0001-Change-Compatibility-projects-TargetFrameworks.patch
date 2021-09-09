@@ -1,0 +1,39 @@
+From b1e8b42bfe073813258e8143931199b5883e9123 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 8 Sep 2021 22:00:23 +0000
+Subject: [PATCH] Change Compatibility projects' TargetFrameworks
+
+Addresses the following errors:
+error NU1202: Package NuGet.Packaging 6.0.0-preview.4.32767 is not compatible with net472 (.NETFramework,Version=v4.7.2). Package NuGet.Packaging 6.0.0-preview.4.32767 supports: net6.0
+---
+ .../Microsoft.DotNet.Compatibility.csproj                        | 1 +
+ .../Microsoft.DotNet.PackageValidation.csproj                    | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj b/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
+index f9f8e4632..92624be84 100644
+--- a/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
++++ b/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
+@@ -2,6 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net6.0;net472</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+     <IsShippingPackage>true</IsShippingPackage>
+     <StrongNameKeyId>Open</StrongNameKeyId>
+diff --git a/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj b/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
+index 4241f4577..7a8b64865 100644
+--- a/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
++++ b/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
+@@ -2,6 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net6.0;net472</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
+     <StrongNameKeyId>Open</StrongNameKeyId>
+   </PropertyGroup>
+ 
+-- 
+2.29.2
+

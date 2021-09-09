@@ -1,0 +1,25 @@
+From b8e5f85d42b61d29701ace6907e3f320f868bae7 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 8 Sep 2021 15:22:00 +0000
+Subject: [PATCH] Exclude ILStrip from source-build
+
+Underlying issue is tracked by https://github.com/dotnet/source-build/issues/2438.  ExcludeFromSourceBuild as a temporary solution as the project is not currently required.
+---
+ src/tasks/ILStripTask/ILStrip.csproj | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/tasks/ILStripTask/ILStrip.csproj b/src/tasks/ILStripTask/ILStrip.csproj
+index 879c56f26ae..0ad46c08191 100644
+--- a/src/tasks/ILStripTask/ILStrip.csproj
++++ b/src/tasks/ILStripTask/ILStrip.csproj
+@@ -4,6 +4,7 @@
+     <OutputType>Library</OutputType>
+     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+     <NoWarn>$(NoWarn),CA1050,CS0618,CS0649,CS8604,CS8602,CS8632,SYSLIB0003</NoWarn>
+     <RunAnalyzers>false</RunAnalyzers>
+   </PropertyGroup>
+-- 
+2.29.2
+

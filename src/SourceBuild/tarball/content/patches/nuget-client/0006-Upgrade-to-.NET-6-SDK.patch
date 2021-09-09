@@ -7,11 +7,10 @@ Subject: [PATCH 2/2] Upgrade to .NET 6 SDK.
  .../NuGet.Commands/SignCommand/CertificateProvider.cs       | 4 ++--
  .../NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs | 2 ++
  src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs | 2 ++
- src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs  | 2 +-
  .../HttpSource/HttpRequestMessageExtensions.cs              | 6 +++---
  .../NuGet.Protocol/HttpSource/HttpRetryHandler.cs           | 2 +-
  .../HttpSource/HttpSourceAuthenticationHandler.cs           | 2 +-
- 7 files changed, 12 insertions(+), 8 deletions(-)
+ 6 files changed, 11 insertions(+), 7 deletions(-)
 
 diff --git a/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs b/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
 index c6ea71243..beac41889 100644
@@ -63,19 +62,6 @@ index 565ac60b7..d57e38a65 100644
              signerInfo.HashAlgorithm.pszObjId = cmsSigner.DigestAlgorithm.Value;
  
              if (cmsSigner.SignerIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier)
-diff --git a/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs b/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
-index 53fcd4cbd..b77b634fd 100644
---- a/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
-+++ b/src/NuGet.Core/NuGet.Protocol/Converters/JsonExtensions.cs
-@@ -23,7 +23,7 @@ public static class JsonExtensions
-             {
-                 new NuGetVersionConverter(),
-                 new VersionInfoConverter(),
--                new StringEnumConverter { CamelCaseText = false },
-+                new StringEnumConverter(),
-                 new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal },
-                 new FingerprintsConverter(),
-                 new VersionRangeConverter()
 diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
 index 7c9595268..1ca751850 100644
 --- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs

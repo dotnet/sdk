@@ -32,9 +32,9 @@ index 80433ed60..8acc4e0bb 100644
      <TargetFrameworksLibrary Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
 -    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
 +    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
+     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);netcoreapp5.0</TargetFrameworksLibraryForCrossVerificationTests>
      <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
      <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
-     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
 diff --git a/build/common.targets b/build/common.targets
 index cf5a70c62..8827686a7 100644
 --- a/build/common.targets

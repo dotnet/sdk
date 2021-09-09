@@ -5,7 +5,9 @@
     <!-- Package version is pinned to what CoreFX expects because CoreFX doesn't take an override property. -->
     <ILLinkTasksPackageId>Microsoft.NET.ILLink.Tasks</ILLinkTasksPackageId>
 
-    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <RepoApiImplemented>false</RepoApiImplemented>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
