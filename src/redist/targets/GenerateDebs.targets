@@ -86,6 +86,7 @@
       <CLISdkFiles Include="$(CLISdkRoot)**/*" />
       <TemplatesFiles Include="$(TemplatesRoot)**/*" />
       <SdkDebManPageFiles Include="$(ManpagesDirectory)/**/*" />
+      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
     </ItemGroup>
 
     <!-- Output Directories -->
@@ -230,7 +231,7 @@
       Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(DebuildPresent)'  == 'true' "
       DependsOnTargets="PrepareDotnetDebDirectories;
                         GetAspNetSharedFxInstallArgs;"
-      Inputs="@(CLISdkFiles);@(TemplatesFiles)"
+      Inputs="@(CLISdkFiles);@(TemplatesFiles);@(ManifestFiles)"
       Outputs="$(SdkDebInstallerFile)" >
       <!-- Install Shared Framework Packages -->
       <Exec Command="sudo dpkg -i $(DownloadedNetCoreAppHostPackInstallerFile)" />
@@ -255,6 +256,14 @@
       <Copy
         DestinationFiles="@(TemplatesFiles->'$(LayoutPackageRootDir)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
         SourceFiles="@(TemplatesFiles)"
+        OverwriteReadOnlyFiles="True"
+        SkipUnchangedFiles="False"
+        UseHardlinksIfPossible="False" />
+
+      <!-- Create layout: Workload Manifests -->
+      <Copy
+        DestinationFiles="@(ManifestFiles->'$(LayoutPackageRootDir)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+        SourceFiles="@(ManifestFiles)"
         OverwriteReadOnlyFiles="True"
         SkipUnchangedFiles="False"
         UseHardlinksIfPossible="False" />
