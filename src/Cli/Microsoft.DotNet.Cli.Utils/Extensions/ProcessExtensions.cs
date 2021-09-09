@@ -35,8 +35,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// <returns>The process ID of the parent process, or -1 if the parent process could not be found.</returns>
         public unsafe static int GetParentProcessId(this Process process)
         {
-            using SafeProcessHandle handle = new(process.Handle, ownsHandle: false);
-
+            SafeProcessHandle handle = process.SafeHandle;
             NativeMethods.Windows.PROCESS_BASIC_INFORMATION info;
 
             if (NativeMethods.Windows.NtQueryInformationProcess(handle, NativeMethods.Windows.ProcessBasicInformation,
