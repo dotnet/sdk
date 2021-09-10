@@ -336,7 +336,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             };
 
             var assets = Array.Empty<StaticWebAsset>();
-            var patterns = new[] 
+            var patterns = new[]
             {
                 CreatePattern(basePath: "_other/_project", source: "OtherProject", pattern: "*.js"),
                 CreatePattern(basePath: "_other/_project", source: "OtherProject", pattern: "*.css")
@@ -408,8 +408,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Source = "CurrentProjectId"
             };
 
-            var assets = new[] 
-            { 
+            var assets = new[]
+            {
                 CreateAsset(Path.Combine(Environment.CurrentDirectory, "css", "site.css"), "css/site.css"),
                 CreateAsset(Path.Combine(Environment.CurrentDirectory, "js", "index.js"), "js/index.js")
             };
