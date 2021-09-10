@@ -101,7 +101,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             var tagHelpersFromReferences = context.CompilationProvider
                 .Combine(razorSourceGeneratorOptions)
-                .WithLambdaComparer(static (a, b) => a.Left.References.SequenceEqual(b.Left.References), static a => a.Left.References.GetHashCode())
+                .WithLambdaComparer(
+                    static (a, b) => a.Right.SuppressRazorSourceGenerator == b.Right.SuppressRazorSourceGenerator && a.Left.References.SequenceEqual(b.Left.References),
+                    static a => a.Left.References.GetHashCode())
                 .Select(static (pair, _) =>
                 {
                     var (compilation, razorSourceGeneratorOptions) = pair;
