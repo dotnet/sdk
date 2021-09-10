@@ -129,8 +129,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 context.Options,
                 MultipleEnumerableDescriptor,
                 pessimisticAnalysis: false,
-                trackingMethodNames: s_executedImmediateMethods,
-                cancellationToken: context.CancellationToken);
+                trackingMethodNames: s_executedImmediateMethods);
             if (result == null)
             {
                 return;
