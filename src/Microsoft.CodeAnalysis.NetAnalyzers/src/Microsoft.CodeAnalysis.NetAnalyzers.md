@@ -3203,3 +3203,27 @@ Hard-coded certificates in source code are vulnerable to being exploited.
 |Severity|Warning|
 |CodeFix|False|
 ---
+
+## [CA5404](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5404): Do not disable token validation checks
+
+Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.
+
+|Item|Value|
+|-|-|
+|Category|Security|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA5405](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5405): Do not always skip token validation in delegates
+
+By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.
+
+|Item|Value|
+|-|-|
+|Category|Security|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
+---
