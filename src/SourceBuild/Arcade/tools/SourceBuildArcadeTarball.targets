@@ -19,6 +19,7 @@
       CreateTarballDir;
       SetupSelfGithubInfo;
       CloneRepoAndDependentsRecursive;
+      CleanClonedSource;
       CopyTarballContent;
       ">
 
@@ -194,6 +195,28 @@
       Targets="CloneRepoAndDependentsRecursive"
       Properties="SourceBuildRepoName=%(SourceBuildRepos.SourceBuildRepoName);RepoSha=%(SourceBuildRepos.Sha);RepoUri=%(SourceBuildRepos.Uri)" />
 
+  </Target>
+
+  <Target Name="CleanClonedSource">
+    <ItemGroup>
+      <TarballSrcBinaryExtension Include="
+        .dll;
+        .Dll;
+        .exe;
+        .pdb;
+        .mdb;
+        .zip;
+        .nupkg" />
+
+      <TarballSrcBinaryToRemove Include="$(TarballSourceDir)**\*%(TarballSrcBinaryExtension.Identity)" />
+
+      <!-- Runtime coreclr and installer parts have empty placeholder PDB files. Keep them. -->
+      <TarballSrcBinaryToRemove Remove="
+        $(TarballSourceDir)runtime*\src\coreclr\.nuget\**\*%(TarballSrcBinaryExtension.Identity);
+        $(TarballSourceDir)runtime*\src\installer\pkg\**\*%(TarballSrcBinaryExtension.Identity)" />
+    </ItemGroup>
+
+    <Delete Files="@(TarballSrcBinaryToRemove)" />
   </Target>
 
   <Target Name="CopyTarballContent">
