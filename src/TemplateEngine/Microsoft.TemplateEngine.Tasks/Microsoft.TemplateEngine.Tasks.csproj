@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
@@ -6,6 +6,7 @@
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(OutDir)/**/*" Visible="false">
-      <Pack>true</Pack>
-      <IncludeInPackage>true</IncludeInPackage>
-      <PackagePath>tasks</PackagePath>
-    </Content>
     <Content Include="build\*" PackagePath="build" />
   </ItemGroup>
 
@@ -40,4 +36,10 @@
       <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+    <ItemGroup>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference'))"/>
+    </ItemGroup>
+  </Target>
 </Project>

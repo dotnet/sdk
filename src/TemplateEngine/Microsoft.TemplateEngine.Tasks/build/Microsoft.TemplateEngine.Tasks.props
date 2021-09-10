@@ -1,0 +1,25 @@
+﻿<Project>
+  <PropertyGroup>
+
+    <!-- 
+      Set this to true to create and update your templatestrings.xx.json files based on the content of your templates.json files. 
+      If the value is not true, the rest of the properties related to localization are ignored.
+    -->
+    <LocalizeTemplates Condition="'$(LocalizeTemplates)' == ''">false</LocalizeTemplates>
+
+    <!-- 
+      The directory containing your templates to be localized.
+      All the folders under this directory will be searched for "/.template.config/template.json" files.
+      If not provided, the directory from which the build was initiated will be used.
+    -->
+    <LocalizableTemplatesPath Condition="'$(LocalizableTemplatesPath)' == ''">.</LocalizableTemplatesPath>
+
+    <!-- 
+      Languages to be supported by your templates. Example: "cs;pl;ru".
+      If not provided, the languages supported by .NET will be used (as of today: "cs;de;en;es;fr;it;ja;ko;pl;pt-BR;ru;tr;zh-Hans;zh-Hant").
+      Below line was added as a reference.
+    -->
+    <TemplateLanguages Condition="'$(TemplateLanguages)' == ''"></TemplateLanguages>
+
+  </PropertyGroup>
+</Project>
