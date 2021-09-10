@@ -24,21 +24,17 @@ class TestClass
     public void TestMethod()
     {
         TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.RequireExpirationTime = false;
-        parameters.ValidateAudience = false;
-        parameters.ValidateIssuer = false;
-        parameters.ValidateLifetime = false;
+        [|parameters.RequireExpirationTime = false|];
+        [|parameters.ValidateAudience = false|];
+        [|parameters.ValidateIssuer = false|];
+        [|parameters.ValidateLifetime = false|];
         parameters.RequireAudience = false;  // here and below are valid to be false, no warning expected.
         parameters.RequireSignedTokens = false;
         parameters.ValidateActor = false;
         parameters.ValidateIssuerSigningKey = false;
         parameters.ValidateTokenReplay = false;
     }
-}",
-            GetCSharpResultAt(10, 9).WithArguments("RequireExpirationTime"),
-            GetCSharpResultAt(11, 9).WithArguments("ValidateAudience"),
-            GetCSharpResultAt(12, 9).WithArguments("ValidateIssuer"),
-            GetCSharpResultAt(13, 9).WithArguments("ValidateLifetime"));
+}");
         }
 
         [Fact]
@@ -53,11 +49,10 @@ class TestClass
     public void TestMethod()
     {
         TokenValidationParameters parameters = new TokenValidationParameters();
-        parameters.RequireExpirationTime = false;
+        [|parameters.RequireExpirationTime = false|];
         parameters.ValidAlgorithms = null;
     }
-}",
-            GetCSharpResultAt(10, 9).WithArguments("RequireExpirationTime"));
+}");
         }
 
         [Fact]
@@ -73,21 +68,17 @@ class TestClass
     {
         const bool flag = false;
         var parameters = new TokenValidationParameters();
-        parameters.RequireExpirationTime = flag;
-        parameters.ValidateAudience = flag;
-        parameters.ValidateIssuer = flag;
-        parameters.ValidateLifetime = flag;
+        [|parameters.RequireExpirationTime = flag|];
+        [|parameters.ValidateAudience = flag|];
+        [|parameters.ValidateIssuer = flag|];
+        [|parameters.ValidateLifetime = flag|];
         parameters.RequireAudience = flag;  // here and below are valid to be false, no warning expected.
         parameters.RequireSignedTokens = flag;
         parameters.ValidateActor = flag;
         parameters.ValidateIssuerSigningKey = flag;
         parameters.ValidateTokenReplay = flag;
     }
-}",
-            GetCSharpResultAt(11, 9).WithArguments("RequireExpirationTime"),
-            GetCSharpResultAt(12, 9).WithArguments("ValidateAudience"),
-            GetCSharpResultAt(13, 9).WithArguments("ValidateIssuer"),
-            GetCSharpResultAt(14, 9).WithArguments("ValidateLifetime"));
+}");
         }
 
         [Fact]
@@ -103,10 +94,10 @@ class TestClass
     {
         var parameters = new TokenValidationParameters
         {
-            RequireExpirationTime = false,
-            ValidateAudience = false,
-            ValidateIssuer = false,
-            ValidateLifetime = false,
+            [|RequireExpirationTime = false|],
+            [|ValidateAudience = false|],
+            [|ValidateIssuer = false|],
+            [|ValidateLifetime = false|],
             RequireAudience = false, // here and below are valid to be false, no warning expected.
             RequireSignedTokens = false,
             ValidateActor = false,
@@ -114,11 +105,7 @@ class TestClass
             ValidateTokenReplay = false
         };
     }
-}",
-            GetCSharpResultAt(11, 13).WithArguments("RequireExpirationTime"),
-            GetCSharpResultAt(12, 13).WithArguments("ValidateAudience"),
-            GetCSharpResultAt(13, 13).WithArguments("ValidateIssuer"),
-            GetCSharpResultAt(14, 13).WithArguments("ValidateLifetime"));
+}");
         }
 
         //Ideally, we would generate a diagnostic in this case.
@@ -241,9 +228,5 @@ class TestClass
 
             await csharpTest.RunAsync();
         }
-
-        private static DiagnosticResult GetCSharpResultAt(int line, int column)
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column);
     }
 }
