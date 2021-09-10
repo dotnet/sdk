@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesTitle)),
-                CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesMessage)),,
+                CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesMessage)),
                 DiagnosticCategory.Security,
                 RuleLevel.Disabled,
                 description: CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesDescription)),
