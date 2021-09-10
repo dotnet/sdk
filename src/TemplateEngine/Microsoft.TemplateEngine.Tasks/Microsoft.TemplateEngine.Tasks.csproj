@@ -1,12 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
     <Description>MSBuild tasks to for template authoring.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
-    <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
   </PropertyGroup>
 
@@ -16,17 +14,17 @@
     <PackageReference Update="@(PackageReference)" PrivateAssets="All" />
 
     <ProjectReference Include="$(SrcDir)\Microsoft.TemplateEngine.TemplateLocalizer.Core\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj" />
-    <ProjectReference  Update="@(ProjectReference)" PrivateAssets="All" />
+    <ProjectReference Update="@(ProjectReference)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-      <Content Include="$(OutDir)/**/*" Visible="false">
-        <Pack>true</Pack>
-        <IncludeInPackage>true</IncludeInPackage>
-        <PackagePath>tasks\$(TargetFramework)</PackagePath>
-      </Content>
+    <Content Include="$(OutDir)/**/*" Visible="false">
+      <Pack>true</Pack>
+      <IncludeInPackage>true</IncludeInPackage>
+      <PackagePath>tasks</PackagePath>
+    </Content>
+    <Content Include="build\*" PackagePath="build" />
   </ItemGroup>
-
 
   <ItemGroup>
     <Compile Update="LocalizableStrings.Designer.cs">

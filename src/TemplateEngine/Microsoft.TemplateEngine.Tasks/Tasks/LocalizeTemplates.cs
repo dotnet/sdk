@@ -61,7 +61,8 @@ namespace Microsoft.TemplateEngine.Tasks
 
             using var loggerProvider = new MSBuildLoggerProvider(Log);
             ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
-            CancellationToken cancellationToken = GetOrCreateCancellationTokenSource().Token;
+            using CancellationTokenSource cancellationTokenSource = GetOrCreateCancellationTokenSource();
+            CancellationToken cancellationToken = cancellationTokenSource.Token;
 
             foreach (string templateJsonPath in templateJsonFiles)
             {
