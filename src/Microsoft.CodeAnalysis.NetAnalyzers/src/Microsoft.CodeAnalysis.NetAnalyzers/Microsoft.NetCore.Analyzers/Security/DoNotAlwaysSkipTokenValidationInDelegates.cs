@@ -1,8 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -11,30 +12,20 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotAlwaysSkipTokenValidationInDelegates : DiagnosticAnalyzer
     {
         internal const string DiagnosticId = "CA5405";
-        private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotAlwaysSkipTokenValidationInDelegatesTitle),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotAlwaysSkipTokenValidationInDelegatesMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotAlwaysSkipTokenValidationInDelegatesDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
-                s_Title,
-                s_Message,
+                CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesTitle)),
+                CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesMessage)),,
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
-                description: s_Description,
+                RuleLevel.Disabled,
+                description: CreateLocalizableResourceString(nameof(DoNotAlwaysSkipTokenValidationInDelegatesDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 

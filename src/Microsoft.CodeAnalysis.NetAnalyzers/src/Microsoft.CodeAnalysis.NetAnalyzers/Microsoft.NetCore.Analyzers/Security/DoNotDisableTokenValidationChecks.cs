@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotDisableTokenValidationChecks : DiagnosticAnalyzer
     {
@@ -20,26 +22,14 @@ namespace Microsoft.NetCore.Analyzers.Security
             "ValidateLifetime");
 
         internal const string DiagnosticId = "CA5404";
-        private static readonly LocalizableString s_Title = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecksTitle),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Message = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecksMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_Description = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableTokenValidationChecksDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
-                s_Title,
-                s_Message,
+                CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksTitle)),
+                CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksMessage)),
                 DiagnosticCategory.Security,
-                RuleLevel.BuildWarning,
-                description: s_Description,
+                RuleLevel.Disabled,
+                description: CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
