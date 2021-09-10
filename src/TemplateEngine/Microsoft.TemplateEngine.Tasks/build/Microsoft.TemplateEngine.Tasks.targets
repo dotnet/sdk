@@ -6,8 +6,6 @@
   <UsingTask TaskName="LocalizeTemplates" AssemblyFile="$(TemplatingTasksAssembly)" />
 
   <Target Name="LocalizeTemplatesAfterBuild" Condition="'$(LocalizeTemplates)' == 'true'" BeforeTargets="AfterBuild">
-    <Message Importance="High" Text="Localizing templates." />
     <LocalizeTemplates TemplateFolder="$(LocalizableTemplatesPath)" SearchSubfolders="true" Languages="$(TemplateLanguages)"/>
-    <Message Importance="High" Text="Template localizaion complete." />
   </Target>
 </Project>
