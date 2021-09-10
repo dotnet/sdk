@@ -78,6 +78,8 @@
       <InnerBuildArgs>$(InnerBuildArgs) /p:ArtifactsDir=$(CurrentRepoSourceBuildArtifactsDir)</InnerBuildArgs>
       <!-- Set a custom binlog location to avoid clashing over the currenly specified file. -->
       <InnerBuildArgs>$(InnerBuildArgs) /bl:$(CurrentRepoSourceBuildBinlogFile)</InnerBuildArgs>
+      <!-- Flow ContinuousIntegrationBuild to the inner build. -->
+      <InnerBuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(InnerBuildArgs) /p:ContinuousIntegrationBuild=true</InnerBuildArgs>
 
       <!-- The inner build needs to reference the overall output dir for nupkg transport etc. -->
       <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuildOutputDir=$(SourceBuildOutputDir)</InnerBuildArgs>
