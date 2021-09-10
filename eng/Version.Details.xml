@@ -259,6 +259,11 @@
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>de978c68b470123a2df3891f98ee9974c323c41f</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.257901">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>de978c68b470123a2df3891f98ee9974c323c41f</Sha>
+      <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build" Version="0.1.0-alpha.1.21475.1">
       <Uri>https://github.com/dotnet/source-build</Uri>
       <Sha>10d0f7e94aa45889155c312f51cfc01bf326b853</Sha>
