@@ -53,8 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
-        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</source>
-        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to.</target>
+        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</source>
+        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</target>
         <note>'IEnumerable' is a well-known interface name. It should not be translated</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">

@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
     public class AvoidMultipleEnumerationsTests
     {
         [Fact]
-        public Task TestFirst()
+        public async Task TestFirst()
         {
             var code = @"
 using System;
@@ -31,14 +31,14 @@ public class Bar
         var d = {|#2:i|}.First();
     }
 }";
-            return VerifyCS.VerifyAnalyzerAsync(
+            await VerifyCS.VerifyAnalyzerAsync(
                 code,
                 VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1),
                 VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(2));
         }
 
         [Fact]
-        public Task TestFirstInForLoop()
+        public async Task TestFirstInForLoop()
         {
             var code = @"
 using System;
@@ -56,13 +56,13 @@ public class Bar
         }
     }
 }";
-            return VerifyCS.VerifyAnalyzerAsync(
+            await VerifyCS.VerifyAnalyzerAsync(
                 code,
                 VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
         }
 
         [Fact]
-        public Task TestFirstInForEachLoop()
+        public async Task TestFirstInForEachLoop()
         {
             var code = @"
 using System;
@@ -80,13 +80,13 @@ public class Bar
         }
     }
 }";
-            return VerifyCS.VerifyAnalyzerAsync(
+            await VerifyCS.VerifyAnalyzerAsync(
                 code,
                 VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
         }
 
         [Fact]
-        public Task TestFirstInWhileLoop()
+        public async Task TestFirstInWhileLoop()
         {
             var code = @"
 using System;
@@ -104,13 +104,13 @@ public class Bar
         }
     }
 }";
-            return VerifyCS.VerifyAnalyzerAsync(
+            await VerifyCS.VerifyAnalyzerAsync(
                 code,
                 VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
         }
 
         [Fact]
-        public Task TestFirstAfterUnreachableCode()
+        public async Task TestFirstAfterUnreachableCode()
         {
             var code = @"
 using System;
@@ -130,7 +130,7 @@ public class Bar
         i.First();
     }
 }";
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
     }
 }

@@ -14,19 +14,24 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
+    public sealed class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
-        // TODO: Find a good rule id.
-        private const string RuleId = "HAA1838";
+        private const string RuleId = "CA1849";
 
-        // TODO: Polishing the text here.
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_description = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(
+            nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsTitle),
+            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
+            typeof(MicrosoftCodeQualityAnalyzersResources));
+
+        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(
+            nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsMessage),
+            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
+            typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_description,
+            s_localizableMessage,
             DiagnosticCategory.Performance,
             RuleLevel.Disabled,
             description: null,
@@ -34,33 +39,33 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             isDataflowRule: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-            ImmutableArray<DiagnosticDescriptor>.Empty.Add(MultipleEnumerableDescriptor);
+            ImmutableArray.Create(MultipleEnumerableDescriptor);
 
-        private static readonly ImmutableArray<string> s_executedImmediateMethods = ImmutableArray<string>.Empty
-            .Add("System.Linq.Enumerable.Aggregate")
-            .Add("System.Linq.Enumerable.All")
-            .Add("System.Linq.Enumerable.Any")
-            .Add("System.Linq.Enumerable.Average")
-            .Add("System.Linq.Enumerable.Contains")
-            .Add("System.Linq.Enumerable.Count")
-            .Add("System.Linq.Enumerable.ElementAt")
-            .Add("System.Linq.Enumerable.ElementAtOrDefault")
-            .Add("System.Linq.Enumerable.First")
-            .Add("System.Linq.Enumerable.FirstOrDefault")
-            .Add("System.Linq.Enumerable.Last")
-            .Add("System.Linq.Enumerable.LastOrDefault")
-            .Add("System.Linq.Enumerable.LongCount")
-            .Add("System.Linq.Enumerable.Max")
-            .Add("System.Linq.Enumerable.Min")
-            .Add("System.Linq.Enumerable.SequenceEqual")
-            .Add("System.Linq.Enumerable.Single")
-            .Add("System.Linq.Enumerable.SingleOrDefault")
-            .Add("System.Linq.Enumerable.Sum")
-            .Add("System.Linq.Enumerable.ToArray")
-            .Add("System.Linq.Enumerable.ToDictionary")
-            .Add("System.Linq.Enumerable.ToHashSet")
-            .Add("System.Linq.Enumerable.ToList")
-            .Add("System.Linq.Enumerable.ToLookup");
+        private static readonly ImmutableArray<string> s_immediateExecutedMethods = ImmutableArray.Create(
+            "System.Linq.Enumerable.Aggregate",
+            "System.Linq.Enumerable.All",
+            "System.Linq.Enumerable.Any",
+            "System.Linq.Enumerable.Average",
+            "System.Linq.Enumerable.Contains",
+            "System.Linq.Enumerable.Count",
+            "System.Linq.Enumerable.ElementAt",
+            "System.Linq.Enumerable.ElementAtOrDefault",
+            "System.Linq.Enumerable.First",
+            "System.Linq.Enumerable.FirstOrDefault",
+            "System.Linq.Enumerable.Last",
+            "System.Linq.Enumerable.LastOrDefault",
+            "System.Linq.Enumerable.LongCount",
+            "System.Linq.Enumerable.Max",
+            "System.Linq.Enumerable.Min",
+            "System.Linq.Enumerable.SequenceEqual",
+            "System.Linq.Enumerable.Single",
+            "System.Linq.Enumerable.SingleOrDefault",
+            "System.Linq.Enumerable.Sum",
+            "System.Linq.Enumerable.ToArray",
+            "System.Linq.Enumerable.ToDictionary",
+            "System.Linq.Enumerable.ToHashSet",
+            "System.Linq.Enumerable.ToList",
+            "System.Linq.Enumerable.ToLookup");
 
         public override void Initialize(AnalysisContext context)
         {
@@ -69,23 +74,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             context.RegisterCompilationStartAction(CompilationStartAction);
         }
 
-        private void CompilationStartAction(CompilationStartAnalysisContext context)
-        {
-            context.RegisterOperationBlockAction(OperationBlockAction);
-        }
+        private static void CompilationStartAction(CompilationStartAnalysisContext context) => context.RegisterOperationBlockAction(OperationBlockAction);
 
-        private void OperationBlockAction(OperationBlockAnalysisContext context)
-        {
-            var iEnumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
-            if (iEnumerableType != null)
-            {
-                Analyze(context, iEnumerableType);
-            }
-        }
+        private static void OperationBlockAction(OperationBlockAnalysisContext context) => Analyze(context);
 
-        private static void Analyze(OperationBlockAnalysisContext context, ITypeSymbol iEnumerableType)
+        private static void Analyze(OperationBlockAnalysisContext context)
         {
-            var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
             var cfg = context.OperationBlocks.GetControlFlowGraph();
             if (cfg == null)
             {
@@ -104,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 using var arrayBuilder = ArrayBuilder<IInvocationOperation>.GetInstance();
                 foreach (var operation in block.Operations)
                 {
-                    var immediateExecutedInvocationOperations = GetAllImmediateExecutedInvocationOperations(operation, iEnumerableType);
+                    var immediateExecutedInvocationOperations = GetAllImmediateExecutedInvocationOperations(operation);
                     if (immediateExecutedInvocationOperations.IsEmpty)
                     {
                         continue;
@@ -122,6 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             var blockToTargetInvocationOperationsMap = blockToTargetInvocationOperationsMapBuilder.ToImmutableDictionary();
+            var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
             var result = InvocationCountAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
@@ -129,7 +124,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 context.Options,
                 MultipleEnumerableDescriptor,
                 pessimisticAnalysis: false,
-                trackingMethodNames: s_executedImmediateMethods);
+                trackingMethodNames: s_immediateExecutedMethods);
             if (result == null)
             {
                 return;
@@ -150,6 +145,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
             }
 
+            // TODO: Find the Overload so that this can be static
             bool InvokedMoreThanOneTime(IInvocationOperation invocationOperation)
             {
                 var arguments = invocationOperation.Arguments;
@@ -163,24 +159,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
         }
 
-        private static ImmutableArray<IInvocationOperation> GetAllImmediateExecutedInvocationOperations(IOperation root, ITypeSymbol iEnumerableType)
-            => root.Descendants().OfType<IInvocationOperation>().WhereAsArray(op => IsImmediateExecutedLinqOperation(op, iEnumerableType));
+        private static ImmutableArray<IInvocationOperation> GetAllImmediateExecutedInvocationOperations(IOperation root)
+            => root.Descendants().OfType<IInvocationOperation>().WhereAsArray(IsImmediateExecutedLinqOperation);
 
-        private static bool IsImmediateExecutedLinqOperation(IInvocationOperation operation, ITypeSymbol iEnumerableType)
+        private static bool IsImmediateExecutedLinqOperation(IInvocationOperation operation)
         {
             var targetMethod = operation.TargetMethod;
             var arguments = operation.Arguments;
 
             return targetMethod.IsExtensionMethod
-                   && s_executedImmediateMethods.Contains(targetMethod.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
+                   && s_immediateExecutedMethods.Contains(targetMethod.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
                    && !arguments.IsEmpty
-                   && IsLocalIEnumerableOperation(arguments[0], iEnumerableType);
+                   && IsLocalIEnumerableOperation(arguments[0]);
         }
 
-        private static bool IsLocalIEnumerableOperation(IArgumentOperation argumentOperation, ITypeSymbol iEnumerableType)
+        private static bool IsLocalIEnumerableOperation(IArgumentOperation argumentOperation)
         {
             var value = argumentOperation.Value;
-            return value is ILocalReferenceOperation or IParameterReferenceOperation && value.Type.OriginalDefinition.Equals(iEnumerableType);
+            return value is ILocalReferenceOperation or IParameterReferenceOperation && value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
         }
     }
 }
