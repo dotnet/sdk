@@ -2060,7 +2060,7 @@ An assembly has to opt into preview features before using them.
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Info|
+|Severity|Error|
 |CodeFix|False|
 ---
 
