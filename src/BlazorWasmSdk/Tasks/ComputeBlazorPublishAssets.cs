@@ -579,7 +579,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 if (string.Equals(extension, ".pdb", StringComparison.Ordinal))
                 {
                     var candidateName = Path.GetFileName(candidate.GetMetadata("RelativePath"));
-                    if (resolvedSymbolsToPublish.ContainsKey(candidateName))
+                    if (!resolvedSymbolsToPublish.ContainsKey(candidateName))
                     {
                         resolvedSymbolsToPublish.Add(candidateName, candidate);
                     }
@@ -596,7 +596,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 if (string.Equals(candidate.GetMetadata("AssetType"), "native", StringComparison.Ordinal))
                 {
                     var candidateName = $"{candidate.GetMetadata("FileName")}{extension}";
-                    if (resolvedNativeAssetToPublish.ContainsKey(candidateName))
+                    if (!resolvedNativeAssetToPublish.ContainsKey(candidateName))
                     {
                         resolvedNativeAssetToPublish.Add(candidateName, candidate);
                     }
