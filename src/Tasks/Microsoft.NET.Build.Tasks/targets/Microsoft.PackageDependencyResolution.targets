@@ -213,7 +213,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Reads the version of the compiler APIs that are currently being used in order to pick the correct Roslyn components. -->
   <Target Name="_ResolveCompilerVersion"
-          Condition="'$(CompilerApiVersion)' == ''">
+          Condition="'$(CompilerApiVersion)' == '' And
+                     ('$(Language)' == 'C#' Or '$(Language)' == 'VB') And
+                     Exists('$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll')">
     
     <GetAssemblyIdentity AssemblyFiles="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll">
       <Output TaskParameter="Assemblies" ItemName="_CodeAnalysisIdentity" />
