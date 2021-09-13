@@ -1,0 +1,63 @@
+From 937bb35e1eaedd2a1030997ad8cb5c65f82eaff0 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Mon, 13 Sep 2021 15:09:22 +0000
+Subject: [PATCH] Exclude test projects from source-build
+
+---
+ .../Utilities/ReferenceAssemblies/ReferenceAssemblies.csproj     | 1 +
+ src/Test.Utilities/Test.Utilities.csproj                         | 1 +
+ src/TestReferenceAssembly/TestReferenceAssembly.csproj           | 1 +
+ src/Utilities.UnitTests/Analyzer.Utilities.UnitTests.csproj      | 1 +
+ 4 files changed, 4 insertions(+)
+
+diff --git a/src/PerformanceTests/Utilities/ReferenceAssemblies/ReferenceAssemblies.csproj b/src/PerformanceTests/Utilities/ReferenceAssemblies/ReferenceAssemblies.csproj
+index 802a57603..5d3a45354 100644
+--- a/src/PerformanceTests/Utilities/ReferenceAssemblies/ReferenceAssemblies.csproj
++++ b/src/PerformanceTests/Utilities/ReferenceAssemblies/ReferenceAssemblies.csproj
+@@ -4,6 +4,7 @@
+     <TargetFramework>net6.0</TargetFramework>
+     <IsPackable>false</IsPackable>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Test.Utilities/Test.Utilities.csproj b/src/Test.Utilities/Test.Utilities.csproj
+index 2ed633389..0540d0d09 100644
+--- a/src/Test.Utilities/Test.Utilities.csproj
++++ b/src/Test.Utilities/Test.Utilities.csproj
+@@ -3,6 +3,7 @@
+   <PropertyGroup>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+   <ItemGroup>
+     <PackageReference Include="Microsoft.VisualBasic" Version="$(MicrosoftVisualBasicVersion)" />
+diff --git a/src/TestReferenceAssembly/TestReferenceAssembly.csproj b/src/TestReferenceAssembly/TestReferenceAssembly.csproj
+index b1d18e913..614c58ef9 100644
+--- a/src/TestReferenceAssembly/TestReferenceAssembly.csproj
++++ b/src/TestReferenceAssembly/TestReferenceAssembly.csproj
+@@ -4,5 +4,6 @@
+     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+     <RootNamespace>OtherDll</RootNamespace>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/src/Utilities.UnitTests/Analyzer.Utilities.UnitTests.csproj b/src/Utilities.UnitTests/Analyzer.Utilities.UnitTests.csproj
+index 7aa61f992..baddd5d66 100644
+--- a/src/Utilities.UnitTests/Analyzer.Utilities.UnitTests.csproj
++++ b/src/Utilities.UnitTests/Analyzer.Utilities.UnitTests.csproj
+@@ -4,6 +4,7 @@
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+     <ServerGarbageCollection>true</ServerGarbageCollection>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+   <ItemGroup>
+     <ProjectReference Include="..\Test.Utilities\Test.Utilities.csproj" />
+-- 
+2.31.1
+
