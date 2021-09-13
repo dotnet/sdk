@@ -27,7 +27,7 @@
       <PayloadGroupRef Id="DotnetCoreBAPayloads" />
     </BootstrapperApplicationRef>
 
-    <swid:Tag Regid="microsoft.com" InstallPath="[DOTNETHOME]" />
+    <swid:Tag Regid="microsoft.com" InstallPath="[$(var.Program_Files)]dotnet" />
 
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
               Variable="DotnetInstallLocationExists_x86"
