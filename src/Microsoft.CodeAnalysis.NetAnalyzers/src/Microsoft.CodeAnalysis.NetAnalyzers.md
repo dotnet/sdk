@@ -1459,8 +1459,8 @@ When inside a Task-returning method, use the async version of methods, if they e
 |Item|Value|
 |-|-|
 |Category|Performance|
-|Enabled|True|
-|Severity|Info|
+|Enabled|False|
+|Severity|Warning|
 |CodeFix|False|
 ---
 

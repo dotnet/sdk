@@ -126,9 +126,7 @@ class Test {
 ";
             var csTestVerify = new VerifyCS.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
-                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))
-                ),
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = testCS,
@@ -154,9 +152,7 @@ End Module
 
             var vbTestVerify = new VerifyVB.Test
             {
-                ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
-                    ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))
-                ),
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9,
                 TestCode = testVB,

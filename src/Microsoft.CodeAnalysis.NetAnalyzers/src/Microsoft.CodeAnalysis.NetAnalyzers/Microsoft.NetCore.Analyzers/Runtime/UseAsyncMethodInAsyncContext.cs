@@ -34,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                       s_localizableTitle,
                                                                                       s_localizableMessage,
                                                                                       DiagnosticCategory.Performance,
-                                                                                      RuleLevel.IdeSuggestion,
+                                                                                      RuleLevel.Disabled,
                                                                                       s_localizableDescription,
                                                                                       isPortedFxCopRule: false,
                                                                                       isDataflowRule: false);
@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                               s_localizableTitle,
                                                                               s_localizableMessageNoAlternative,
                                                                               DiagnosticCategory.Performance,
-                                                                              RuleLevel.IdeSuggestion,
+                                                                              RuleLevel.Disabled,
                                                                               s_localizableDescription,
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
@@ -56,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterOperationBlockStartAction(context =>
             {
-                ConcurrentDictionary<string, ISymbol> syncBlockingTypes = new();
+                ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes = new();
                 GetTypeAndAddToDictionary("Task", WellKnownTypeNames.SystemThreadingTasksTask, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("TaskGeneric", WellKnownTypeNames.SystemThreadingTasksTask1, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("ValueTask", WellKnownTypeNames.SystemThreadingTasksValueTask, syncBlockingTypes, context.Compilation);
@@ -79,9 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? systemObsoleteAttribute);
-
-                if (systemObsoleteAttribute is null)
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? systemObsoleteAttribute))
                 {
                     return;
                 }
@@ -172,7 +170,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public ISymbol Value { get; set; }
         }
 
-        private static void GetTypeAndAddToDictionary(string key, string typeName, ConcurrentDictionary<string, ISymbol> syncBlockingTypes, Compilation compilation)
+        private static void GetTypeAndAddToDictionary(string key, string typeName, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes, Compilation compilation)
         {
             if (compilation.TryGetOrCreateTypeByMetadataName(typeName, out INamedTypeSymbol? typeValue))
             {
@@ -208,25 +206,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return candidateMethod.Parameters.All(candidateParameter => baselineMethod.Parameters.Any(baselineParameter => baselineParameter.Type?.Equals(candidateParameter.Type) ?? false));
         }
 
-        private static bool HasAsyncCompatibleReturnType([NotNullWhen(true)] IMethodSymbol? methodSymbol, ConcurrentDictionary<string, ISymbol> syncBlockingTypes)
+        private static bool HasAsyncCompatibleReturnType(IMethodSymbol methodSymbol, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes)
         {
-            if (methodSymbol?.ReturnType is null)
+            if (methodSymbol.ReturnType is null)
             {
                 return false;
             }
 
             ISymbol returnType = methodSymbol.ReturnType;
 
-            static bool CheckReturnTypeMatch(string targetType, ISymbol returnType, ConcurrentDictionary<string, ISymbol> syncBlockingTypes)
-                => syncBlockingTypes.TryGetValue(targetType, out ISymbol? targetTypeValue)
+            static bool CheckReturnTypeMatch(string targetType, ISymbol returnType, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes)
+                => syncBlockingTypes.TryGetValue(targetType, out INamedTypeSymbol? targetTypeValue)
                 && targetTypeValue.Equals(returnType.OriginalDefinition);
 
             return CheckReturnTypeMatch("Task", returnType, syncBlockingTypes)
                 || CheckReturnTypeMatch("TaskGeneric", returnType, syncBlockingTypes)
                 || CheckReturnTypeMatch("ValueTask", returnType, syncBlockingTypes)
                 || CheckReturnTypeMatch("IAsyncEnumerableGeneric", returnType, syncBlockingTypes)
-                || (syncBlockingTypes.TryGetValue("AsyncMethodBuilderAttribute", out ISymbol? asyncMethodBuilderAttributeTypeValue)
-                && returnType.HasAttribute((INamedTypeSymbol)asyncMethodBuilderAttributeTypeValue));
+                || (syncBlockingTypes.TryGetValue("AsyncMethodBuilderAttribute", out INamedTypeSymbol? asyncMethodBuilderAttributeTypeValue)
+                && returnType.HasAttribute(asyncMethodBuilderAttributeTypeValue));
         }
 
         private static IMethodSymbol? GetParentMethodOrDelegate(OperationAnalysisContext context)
@@ -237,17 +235,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return containingAnonymousFunction;
             }
 
-            ISymbol containingSymbol = context.ContainingSymbol;
-            while (containingSymbol is not null && containingSymbol is not IMethodSymbol)
+            var containingSymbol = context.ContainingSymbol;
+            while (containingSymbol is not null)
             {
+                if (containingSymbol is IMethodSymbol method)
+                {
+                    return method;
+                }
                 containingSymbol = containingSymbol.ContainingSymbol;
             }
 
-            IMethodSymbol? parentMethod = (IMethodSymbol?)containingSymbol;
-            return parentMethod;
+            return null;
         }
 
-        private static bool IsInTaskReturningMethodOrDelegate(OperationAnalysisContext context, ConcurrentDictionary<string, ISymbol> syncBlockingTypes)
+        private static bool IsInTaskReturningMethodOrDelegate(OperationAnalysisContext context, ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes)
         {
             // We want to scan invocations that occur inside Task and Task<T>-returning delegates or methods.
             // That is: methods that either are or could be made async.
