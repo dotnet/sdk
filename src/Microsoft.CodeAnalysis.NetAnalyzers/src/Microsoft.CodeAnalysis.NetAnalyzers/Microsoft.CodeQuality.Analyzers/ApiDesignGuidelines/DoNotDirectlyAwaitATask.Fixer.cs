@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2007: Do not directly await a Task in libraries.
     ///     1. Append ConfigureAwait(false) to the task.
@@ -20,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class DoNotDirectlyAwaitATaskFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotDirectlyAwaitATaskAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotDirectlyAwaitATaskAnalyzer.RuleId);
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -33,14 +35,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
                         async ct => await GetFixAsync(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse)),
+                        equivalenceKey: nameof(AppendConfigureAwaitFalse)),
                     context.Diagnostics);
 
                 title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
                         async ct => await GetFixAsync(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue)),
+                        equivalenceKey: nameof(AppendConfigureAwaitTrue)),
                     context.Diagnostics);
             }
         }
@@ -88,7 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
-                var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue);
+                var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(AppendConfigureAwaitTrue);
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
                 foreach (var diagnostic in diagnostics)
                 {

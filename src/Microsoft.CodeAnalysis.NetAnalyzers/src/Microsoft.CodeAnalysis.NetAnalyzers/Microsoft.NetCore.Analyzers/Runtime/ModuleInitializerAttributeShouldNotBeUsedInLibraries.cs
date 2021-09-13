@@ -6,6 +6,7 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -25,16 +26,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class ModuleInitializerAttributeShouldNotBeUsedInLibraries : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2255";
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                    s_localizableTitle,
-                                                                    s_localizableMessage,
+                                                                    CreateLocalizableResourceString(nameof(ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle)),
+                                                                    CreateLocalizableResourceString(nameof(ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage)),
                                                                     DiagnosticCategory.Usage,
                                                                     RuleLevel.BuildWarning,
-                                                                    s_localizableDescription,
+                                                                    CreateLocalizableResourceString(nameof(ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription)),
                                                                     isPortedFxCopRule: false,
                                                                     isDataflowRule: false);
 

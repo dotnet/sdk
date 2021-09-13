@@ -7,13 +7,15 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class ReviewCodeForSqlInjectionVulnerabilities : SourceTriggeredTaintedDataAnalyzerBase
     {
         internal static readonly DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA3001",
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForSqlInjectionVulnerabilitiesTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForSqlInjectionVulnerabilitiesMessage),
+            nameof(ReviewCodeForSqlInjectionVulnerabilitiesTitle),
+            nameof(ReviewCodeForSqlInjectionVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,

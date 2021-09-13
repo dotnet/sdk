@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class ImplementStandardExceptionConstructorsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ImplementStandardExceptionConstructorsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ImplementStandardExceptionConstructorsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

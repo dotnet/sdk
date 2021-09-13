@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// Check for the intended use of .Length on arrays passed into Buffer.BlockCopy
     /// </summary>
@@ -18,16 +20,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     public sealed class BufferBlockCopyLengthAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2018";
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.BufferBlockCopyLengthTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.BufferBlockCopyLengthMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.BufferBlockCopyDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableMessage,
+                                                                                      CreateLocalizableResourceString(nameof(BufferBlockCopyLengthTitle)),
+                                                                                      CreateLocalizableResourceString(nameof(BufferBlockCopyLengthMessage)),
                                                                                       DiagnosticCategory.Reliability,
                                                                                       RuleLevel.BuildWarning,
-                                                                                      s_localizableDescription,
+                                                                                      CreateLocalizableResourceString(nameof(BufferBlockCopyDescription)),
                                                                                       isPortedFxCopRule: false,
                                                                                       isDataflowRule: false);
 

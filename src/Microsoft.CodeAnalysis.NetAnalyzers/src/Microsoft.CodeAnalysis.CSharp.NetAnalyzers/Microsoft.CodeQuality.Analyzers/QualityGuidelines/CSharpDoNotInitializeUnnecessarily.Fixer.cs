@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDoNotInitializeUnnecessarilyFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotInitializeUnnecessarilyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotInitializeUnnecessarilyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 

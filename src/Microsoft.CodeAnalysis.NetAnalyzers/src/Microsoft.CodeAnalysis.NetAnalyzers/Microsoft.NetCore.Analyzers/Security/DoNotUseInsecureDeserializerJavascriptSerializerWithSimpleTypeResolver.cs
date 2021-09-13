@@ -18,6 +18,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:System.Web.Script.Serialization.JavaScriptSerializer"/>.
     /// </summary>
@@ -28,23 +30,24 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor DefinitelyWithSimpleTypeResolver =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2321",
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverMessage),
-                RuleLevel.Disabled,
-                isPortedFxCopRule: false,
-                isDataflowRule: true,
-                isReportedAtCompilationEnd: true);
-        internal static readonly DiagnosticDescriptor MaybeWithSimpleTypeResolver =
-            SecurityHelpers.CreateDiagnosticDescriptor(
-                "CA2322",
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverMessage),
+                nameof(JavaScriptSerializerWithSimpleTypeResolverTitle),
+                nameof(JavaScriptSerializerWithSimpleTypeResolverMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        internal static readonly DiagnosticDescriptor MaybeWithSimpleTypeResolver =
+            SecurityHelpers.CreateDiagnosticDescriptor(
+                "CA2322",
+                nameof(JavaScriptSerializerMaybeWithSimpleTypeResolverTitle),
+                nameof(JavaScriptSerializerMaybeWithSimpleTypeResolverMessage),
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true,
+                isReportedAtCompilationEnd: true);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyWithSimpleTypeResolver,
                 MaybeWithSimpleTypeResolver);

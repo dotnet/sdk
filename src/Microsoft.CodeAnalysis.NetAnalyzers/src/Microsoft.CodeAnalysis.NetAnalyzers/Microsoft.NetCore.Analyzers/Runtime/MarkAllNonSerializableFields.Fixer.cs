@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class MarkAllNonSerializableFieldsFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(SerializationRulesDiagnosticAnalyzer.RuleCA2235Id);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(SerializationRulesDiagnosticAnalyzer.RuleCA2235Id);
 
         protected abstract SyntaxNode? GetFieldDeclarationNode(SyntaxNode node);
 

@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class ExceptionsShouldBePublicFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(ExceptionsShouldBePublicAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ExceptionsShouldBePublicAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {

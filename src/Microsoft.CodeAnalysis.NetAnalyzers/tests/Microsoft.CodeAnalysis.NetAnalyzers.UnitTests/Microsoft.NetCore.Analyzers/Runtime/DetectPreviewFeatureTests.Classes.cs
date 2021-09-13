@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.DetectPreviewFeatureAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -115,7 +115,7 @@ namespace Preview_Feature_Scratch
         namespace Preview_Feature_Scratch
         {
 
-            class {|#0:Program|} : AbClass
+            class Program : {|#0:AbClass|}
             {
                 static void Main(string[] args)
                 {
@@ -156,6 +156,168 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("FooBar"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("BarImplemented"));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(3).WithArguments("Bar", "AbClass.Bar"));
+            await test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("class")]
+        [InlineData("struct")]
+        public async Task TestPartialClassOrStructDeclaration(string classOrStruct)
+        {
+            var csInput = @$" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{{
+    public partial {classOrStruct} Zoo"; // Zoo: IFoo
+
+            csInput += @": {|#0:IFoo|}
+    {
+        public void {|#1:Foo|}() { }
+    }
+";
+            csInput += $@"
+    public partial {classOrStruct} Zoo : NonPreviewInterface";
+
+            csInput += @"
+    {
+        public void Bar() { }
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        void Foo();
+    }
+
+    interface NonPreviewInterface
+    {
+        void Bar();
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Zoo", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(1).WithArguments("Foo", "IFoo.Foo"));
+            await test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("class")]
+        [InlineData("struct")]
+        public async Task TestPartialClassOrStructDeclarationEndOfList(string classOrStruct)
+        {
+            var csInput = @$" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{{
+    public partial {classOrStruct} Zoo";
+
+            csInput += @": NonPreviewInterface, {|#0:IFoo|}
+    {
+        public void {|#1:Foo|}() { }
+        public void Bar() { }
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        void Foo();
+    }
+
+    interface NonPreviewInterface
+    {
+        void Bar();
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Zoo", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(1).WithArguments("Foo", "IFoo.Foo"));
+            await test.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("class")]
+        [InlineData("struct")]
+        public async Task TestPartialClassOrStructImplementsMultiplePreviewInterfaces(string classOrStruct)
+        {
+            var csInput = @$" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{{
+    public partial {classOrStruct} Zoo";
+
+            csInput += @": {|#3:PreviewInterface|}, NonPreviewInterface, {|#0:IFoo|}
+    {
+        public void {|#1:Foo|}() { }
+        public void {|#2:Bar|}() { }
+        public void NonPreviewInterfaceMethod() { }
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        void Foo();
+    }
+
+    [RequiresPreviewFeatures]
+    interface PreviewInterface
+    {
+        void Bar();
+    }
+
+    interface NonPreviewInterface
+    {
+        void NonPreviewInterfaceMethod();
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Zoo", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(3).WithArguments("Zoo", "PreviewInterface"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(1).WithArguments("Foo", "IFoo.Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(2).WithArguments("Bar", "PreviewInterface.Bar"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestPartialClassDeclarationInterfacesAndAbstractClass()
+        {
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+    public partial class Zoo : NonPreviewInterface, {|#0:IFoo|}
+    {
+        public void {|#1:Foo|}() { }
+        public void Bar() { }
+    }
+
+    public partial class Zoo : {|#2:AbClass|}
+    {
+    }
+
+    [RequiresPreviewFeatures]
+    interface IFoo
+    {
+        void Foo();
+    }
+
+    interface NonPreviewInterface
+    {
+        void Bar();
+    }
+
+    [RequiresPreviewFeatures]
+    public abstract class AbClass
+    {
+    }
+}";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Zoo", "IFoo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(1).WithArguments("Foo", "IFoo.Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(2).WithArguments("Zoo", "AbClass"));
             await test.RunAsync();
         }
     }

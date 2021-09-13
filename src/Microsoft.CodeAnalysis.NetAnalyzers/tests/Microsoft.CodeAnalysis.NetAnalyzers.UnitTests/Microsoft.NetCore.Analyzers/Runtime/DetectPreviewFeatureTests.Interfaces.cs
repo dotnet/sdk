@@ -3,7 +3,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.DetectPreviewFeatureAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         namespace Preview_Feature_Scratch
         {
 
-            class {|#1:Program|} : IProgram
+            class Program : {|#1:IProgram|}
             {
                 static void Main(string[] args)
                 {
@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         namespace Preview_Feature_Scratch
         {
 
-            class {|#0:Program|} : IProgram
+            class Program : {|#0:IProgram|}
             {
                 static void Main(string[] args)
                 {

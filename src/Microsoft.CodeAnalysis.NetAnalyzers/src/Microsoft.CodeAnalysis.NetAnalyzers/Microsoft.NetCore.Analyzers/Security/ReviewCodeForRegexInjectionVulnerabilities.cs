@@ -7,13 +7,15 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class ReviewCodeForRegexInjectionVulnerabilities : SourceTriggeredTaintedDataAnalyzerBase
     {
         internal static readonly DiagnosticDescriptor Rule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA3012",
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForRegexInjectionVulnerabilitiesTitle),
-            nameof(MicrosoftNetCoreAnalyzersResources.ReviewCodeForRegexInjectionVulnerabilitiesMessage),
+            nameof(ReviewCodeForRegexInjectionVulnerabilitiesTitle),
+            nameof(ReviewCodeForRegexInjectionVulnerabilitiesMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,

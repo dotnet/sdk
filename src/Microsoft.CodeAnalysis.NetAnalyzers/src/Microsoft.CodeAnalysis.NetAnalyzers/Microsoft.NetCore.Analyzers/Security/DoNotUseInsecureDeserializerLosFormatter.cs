@@ -9,17 +9,19 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with LosFormatter, which can result in remote code execution.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseInsecureDeserializerLosFormatter : DoNotUseInsecureDeserializerMethodsBase
     {
-        internal static DiagnosticDescriptor RealMethodUsedDescriptor =
+        internal static readonly DiagnosticDescriptor RealMethodUsedDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2305",
-                nameof(MicrosoftNetCoreAnalyzersResources.LosFormatterMethodUsedTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.LosFormatterMethodUsedMessage),
+                nameof(LosFormatterMethodUsedTitle),
+                nameof(LosFormatterMethodUsedMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
