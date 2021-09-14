@@ -59,19 +59,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 GetTypeAndAddToDictionary("Task", WellKnownTypeNames.SystemThreadingTasksTask, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("TaskGeneric", WellKnownTypeNames.SystemThreadingTasksTask1, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("ValueTask", WellKnownTypeNames.SystemThreadingTasksValueTask, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("TaskAwaiter", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, syncBlockingTypes, context.Compilation);
-                GetTypeAndAddToDictionary("ValueTaskAwaiter", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("IAsyncEnumerableGeneric", WellKnownTypeNames.SystemCollectionsGenericIAsyncEnumerable1, syncBlockingTypes, context.Compilation);
                 GetTypeAndAddToDictionary("AsyncMethodBuilderAttribute", WellKnownTypeNames.SystemRuntimeCompilerServicesAsyncMethodBuilderAttribute, syncBlockingTypes, context.Compilation);
 
                 List<SyncBlockingSymbol> syncBlockingSymbols = new();
-                GetSymbolAndAddToList("Wait", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("Wait", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("WaitAll", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("WaitAny", WellKnownTypeNames.SystemThreadingTasksTask, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksTask1, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("Result", WellKnownTypeNames.SystemThreadingTasksValueTask, SymbolKind.Property, syncBlockingSymbols, context.Compilation);
                 GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
+                GetSymbolAndAddToList("GetResult", WellKnownTypeNames.SystemRuntimeCompilerServicesValueTaskAwaiter, SymbolKind.Method, syncBlockingSymbols, context.Compilation);
 
                 if (!syncBlockingTypes.Any())
                 {
@@ -85,71 +83,65 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 context.RegisterOperationAction(context =>
                 {
-                    if (context.Operation is IInvocationOperation invocationOperation && IsInTaskReturningMethodOrDelegate(context, syncBlockingTypes))
+                    if (IsInTaskReturningMethodOrDelegate(context, syncBlockingTypes))
                     {
-                        if (InspectMemberAccess(context, syncBlockingSymbols, SymbolKind.Method))
+                        if (context.Operation is IInvocationOperation invocationOperation)
                         {
-                            // Don't return double-diagnostics.
-                            return;
-                        }
-
-                        // Also consider all method calls to check for Async-suffixed alternatives.
-                        var semanticModel = context.Operation.SemanticModel;
-                        SymbolInfo symbolInfo = semanticModel.GetSymbolInfo(context.Operation.Syntax, context.CancellationToken);
-
-                        if (symbolInfo.Symbol is IMethodSymbol methodSymbol &&
-                            !methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
-                            !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))
-                        {
-                            string asyncMethodName = methodSymbol.Name + MandatoryAsyncSuffix;
-                            IEnumerable<IMethodSymbol> methodSymbols = semanticModel.LookupSymbols(
-                                context.Operation.Syntax.GetLocation().SourceSpan.Start,
-                                methodSymbol.ContainingType,
-                                asyncMethodName,
-                                includeReducedExtensionMethods: true)
-                                .OfType<IMethodSymbol>();
-
-                            string containingMethodName = "";
-                            if (context.ContainingSymbol is IMethodSymbol parentMethod)
+                            if (InspectAndReportBlockingMemberAccess(context, syncBlockingSymbols, SymbolKind.Method))
                             {
-                                containingMethodName = parentMethod.Name;
+                                // Don't return double-diagnostics.
+                                return;
                             }
 
-                            SyntaxNode invokedMethodName = context.Operation.Syntax;
+                            // Also consider all method calls to check for Async-suffixed alternatives.
+                            var semanticModel = context.Operation.SemanticModel;
+                            SymbolInfo symbolInfo = semanticModel.GetSymbolInfo(context.Operation.Syntax, context.CancellationToken);
 
-                            foreach (IMethodSymbol method in methodSymbols)
+                            if (symbolInfo.Symbol is IMethodSymbol methodSymbol &&
+                                !methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
+                                !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))
                             {
-                                if (!method.HasAttribute(systemObsoleteAttribute)
-                                    && HasSupersetOfParameterTypes(method, methodSymbol)
-                                    && method.Name != containingMethodName
-                                    && HasAsyncCompatibleReturnType(method, syncBlockingTypes))
+                                string asyncMethodName = methodSymbol.Name + MandatoryAsyncSuffix;
+                                IEnumerable<IMethodSymbol> methodSymbols = semanticModel.LookupSymbols(
+                                    context.Operation.Syntax.GetLocation().SourceSpan.Start,
+                                    methodSymbol.ContainingType,
+                                    asyncMethodName,
+                                    includeReducedExtensionMethods: true)
+                                    .OfType<IMethodSymbol>();
+
+                                string containingMethodName = "";
+                                if (context.ContainingSymbol is IMethodSymbol parentMethod)
                                 {
-                                    // An async alternative exists.
-                                    ImmutableDictionary<string, string?> properties = ImmutableDictionary<string, string?>.Empty
-                                        .Add(AsyncMethodKeyName, asyncMethodName);
+                                    containingMethodName = parentMethod.Name;
+                                }
 
-                                    Diagnostic diagnostic = invocationOperation.CreateDiagnostic(
-                                        Descriptor,
-                                        properties,
-                                        invokedMethodName.ToString(),
-                                        asyncMethodName);
+                                SyntaxNode invokedMethodName = context.Operation.Syntax;
 
-                                    context.ReportDiagnostic(diagnostic);
+                                foreach (IMethodSymbol method in methodSymbols)
+                                {
+                                    if (!method.HasAttribute(systemObsoleteAttribute)
+                                        && HasSupersetOfParameterTypes(method, methodSymbol)
+                                        && method.Name != containingMethodName
+                                        && HasAsyncCompatibleReturnType(method, syncBlockingTypes))
+                                    {
+                                        Diagnostic diagnostic = invocationOperation.CreateDiagnostic(
+                                            Descriptor,
+                                            invokedMethodName.ToString(),
+                                            asyncMethodName);
 
-                                    return;
+                                        context.ReportDiagnostic(diagnostic);
+
+                                        return;
+                                    }
                                 }
                             }
                         }
+                        else
+                        {
+                            InspectAndReportBlockingMemberAccess(context, syncBlockingSymbols, SymbolKind.Property);
+                        }
                     }
-                }, OperationKind.Invocation);
-
-                context.RegisterOperationAction(context =>
-                {
-                    if (IsInTaskReturningMethodOrDelegate(context, syncBlockingTypes))
-                    {
-                        InspectMemberAccess(context, syncBlockingSymbols, SymbolKind.Property);
-                    }
-                }, OperationKind.PropertyReference);
+                }, OperationKind.Invocation, OperationKind.PropertyReference);
             });
         }
 
@@ -261,7 +253,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return HasAsyncCompatibleReturnType(parentMethod, syncBlockingTypes);
         }
 
-        private static bool InspectMemberAccess(OperationAnalysisContext context, List<SyncBlockingSymbol> syncBlockingSymbols, SymbolKind kind)
+        private static bool InspectAndReportBlockingMemberAccess(OperationAnalysisContext context, List<SyncBlockingSymbol> syncBlockingSymbols, SymbolKind kind)
         {
             ISymbol? memberSymbol = context.Operation.SemanticModel.GetSymbolInfo(context.Operation.Syntax, context.CancellationToken).Symbol;
             if (memberSymbol is null)
@@ -274,13 +266,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (symbol.Kind != kind) continue;
                 if (symbol.Value.Equals(memberSymbol.OriginalDefinition))
                 {
-                    ImmutableDictionary<string, string?> properties = ImmutableDictionary<string, string?>.Empty;
-
-                    properties = properties.Add(AsyncMethodKeyName, string.Empty);
-
                     Diagnostic diagnostic = context.Operation.Syntax.CreateDiagnostic(
                         DescriptorNoAlternativeMethod,
-                        properties,
                         symbol.Value.Name,
                         string.Empty
                     );
