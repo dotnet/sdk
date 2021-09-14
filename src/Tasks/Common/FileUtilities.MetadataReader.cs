@@ -13,6 +13,8 @@
 #if NETCOREAPP || !EXTENSIONS
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -21,31 +23,57 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
+        private static Dictionary<string, (DateTime LastCheckedUtc, Version Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
+
         private static Version GetAssemblyVersion(string sourcePath)
         {
-            using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            // TODO: is there a way to assert that it's a full path?
+
+            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
+                && File.GetLastWriteTimeUtc(sourcePath) < cacheEntry.LastCheckedUtc)
             {
-                Version result = null;
-                try
+                return cacheEntry.Version;
+            }
+
+            DateTime checkTime = DateTime.UtcNow;
+
+            Version version = GetAssemblyVersionFromFile(sourcePath);
+
+            if (version is not null)
+            {
+                s_versionCache[sourcePath] = (checkTime, version);
+            }
+
+            // TODO: clear or prune cache sometimes?
+
+            return version;
+
+            static Version GetAssemblyVersionFromFile(string sourcePath)
+            {
+                using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {
-                    using (PEReader peReader = new PEReader(assemblyStream, PEStreamOptions.LeaveOpen))
+                    Version result = null;
+                    try
                     {
-                        if (peReader.HasMetadata)
+                        using (PEReader peReader = new PEReader(assemblyStream, PEStreamOptions.LeaveOpen))
                         {
-                            MetadataReader reader = peReader.GetMetadataReader();
-                            if (reader.IsAssembly)
+                            if (peReader.HasMetadata)
                             {
-                                result = reader.GetAssemblyDefinition().Version;
+                                MetadataReader reader = peReader.GetMetadataReader();
+                                if (reader.IsAssembly)
+                                {
+                                    result = reader.GetAssemblyDefinition().Version;
+                                }
                             }
                         }
                     }
-                }
-                catch (BadImageFormatException)
-                {
-                    // not a PE
-                }
+                    catch (BadImageFormatException)
+                    {
+                        // not a PE
+                    }
 
-                return result;
+                    return result;
+                }
             }
         }
     }
