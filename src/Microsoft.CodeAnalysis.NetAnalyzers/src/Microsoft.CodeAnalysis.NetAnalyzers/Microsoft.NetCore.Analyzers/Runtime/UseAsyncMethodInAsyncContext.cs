@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// This analyzer suggests using the async version of a method when inside a Task-returning method
     /// In addition, calling Task.Wait(), Task.Result or Task.GetAwaiter().GetResult() will produce a diagnostic
@@ -24,14 +26,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string AsyncMethodKeyName = "AsyncMethodName";
         internal const string MandatoryAsyncSuffix = "Async";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsyncMethodInAsyncContextTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsyncMethodInAsyncContextMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsyncMethodInAsyncContextDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageNoAlternative = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsyncMethodInAsyncContextMessage_NoAlternative), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextDescription));
 
         internal static DiagnosticDescriptor Descriptor = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
-                                                                                      s_localizableMessage,
+                                                                                      CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextMessage)),
                                                                                       DiagnosticCategory.Performance,
                                                                                       RuleLevel.Disabled,
                                                                                       s_localizableDescription,
@@ -40,7 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         internal static DiagnosticDescriptor DescriptorNoAlternativeMethod = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
-                                                                              s_localizableMessageNoAlternative,
+                                                                              CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextMessage_NoAlternative)),
                                                                               DiagnosticCategory.Performance,
                                                                               RuleLevel.Disabled,
                                                                               s_localizableDescription,
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterOperationBlockStartAction(context =>
+            context.RegisterCompilationStartAction(context =>
             {
                 ConcurrentDictionary<string, INamedTypeSymbol> syncBlockingTypes = new();
                 GetTypeAndAddToDictionary("Task", WellKnownTypeNames.SystemThreadingTasksTask, syncBlockingTypes, context.Compilation);
@@ -101,11 +101,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 !methodSymbol.Name.EndsWith(MandatoryAsyncSuffix, StringComparison.Ordinal) &&
                                 !HasAsyncCompatibleReturnType(methodSymbol, syncBlockingTypes))
                             {
-                                string asyncMethodName = methodSymbol.Name + MandatoryAsyncSuffix;
                                 IEnumerable<IMethodSymbol> methodSymbols = semanticModel.LookupSymbols(
                                     context.Operation.Syntax.GetLocation().SourceSpan.Start,
                                     methodSymbol.ContainingType,
-                                    asyncMethodName,
+                                    methodSymbol.Name + MandatoryAsyncSuffix,
                                     includeReducedExtensionMethods: true)
                                     .OfType<IMethodSymbol>();
 
@@ -114,8 +113,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 {
                                     containingMethodName = parentMethod.Name;
                                 }
-
-                                SyntaxNode invokedMethodName = context.Operation.Syntax;
 
                                 foreach (IMethodSymbol method in methodSymbols)
                                 {
@@ -126,8 +123,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     {
                                         Diagnostic diagnostic = invocationOperation.CreateDiagnostic(
                                             Descriptor,
-                                            invokedMethodName.ToString(),
-                                            asyncMethodName);
+                                            invocationOperation.TargetMethod.ToDisplayString(GetLanguageSpecificFormat(invocationOperation)),
+                                            method.ToDisplayString(GetLanguageSpecificFormat(invocationOperation)));
 
                                         context.ReportDiagnostic(diagnostic);
 
@@ -144,6 +141,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }, OperationKind.Invocation, OperationKind.PropertyReference);
             });
         }
+
+        private static SymbolDisplayFormat GetLanguageSpecificFormat(IOperation operation) =>
+                operation.Language == LanguageNames.CSharp ? SymbolDisplayFormat.CSharpShortErrorMessageFormat : SymbolDisplayFormat.VisualBasicShortErrorMessageFormat;
 
         internal class SyncBlockingSymbol
         {
@@ -268,8 +268,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 {
                     Diagnostic diagnostic = context.Operation.Syntax.CreateDiagnostic(
                         DescriptorNoAlternativeMethod,
-                        symbol.Value.Name,
-                        string.Empty
+                        symbol.Value.ToDisplayString(GetLanguageSpecificFormat(context.Operation))
                     );
 
                     context.ReportDiagnostic(diagnostic);

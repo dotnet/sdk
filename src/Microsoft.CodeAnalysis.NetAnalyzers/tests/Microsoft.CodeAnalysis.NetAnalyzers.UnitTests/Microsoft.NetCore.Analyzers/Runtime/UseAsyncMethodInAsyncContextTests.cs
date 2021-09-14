@@ -32,7 +32,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task.Wait()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -48,7 +48,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
         [Fact]
@@ -65,7 +65,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task.Wait()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -81,7 +81,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
         [Fact]
@@ -104,7 +104,7 @@ class Test {
             var csTestVerify = new VerifyCS.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
-                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task.Wait()") },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = testCS,
             };
@@ -130,7 +130,7 @@ End Module
             var vbTestVerify = new VerifyVB.Test
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
-                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait") },
+                ExpectedDiagnostics = { VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()") },
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9,
                 TestCode = testVB,
             };
@@ -151,7 +151,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -167,7 +167,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -188,7 +188,7 @@ static class Assert {
     internal static void NotNull(object value) => throw null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -210,7 +210,7 @@ Module Assert
     End Sub
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -230,7 +230,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System
@@ -248,7 +248,7 @@ Module Program
     End Sub
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -268,7 +268,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -286,7 +286,7 @@ Module Program
     End Sub
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -303,7 +303,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -317,7 +317,7 @@ Module Program
     End Sub
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -333,7 +333,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System
@@ -348,7 +348,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -368,7 +368,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task<TResult>.Result"));
 
             var testVB = @"
 Imports System
@@ -386,7 +386,7 @@ Module Program
     End Sub
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Result"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
         [Fact]
@@ -438,7 +438,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("GetResult"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("TaskAwaiter.GetResult()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -453,7 +453,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("GetResult"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub GetResult()"));
         }
 
         [Fact]
@@ -470,7 +470,7 @@ class Test {
     internal static Task FooAsync(int x, int y) => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15)", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Test.Foo(int, int)", "Test.FooAsync(int, int)"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -490,7 +490,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15)", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(x As Integer, y As Integer)", "Friend Function FooAsync(x As Integer, y As Integer) As Task"));
         }
 
         [Fact]
@@ -558,7 +558,7 @@ class Test {
     internal static Task FooAsync(int x, double y) => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15.0)", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Test.Foo(int, double)", "Test.FooAsync(int, double)"));
 
             var testVB = @"
 Imports System
@@ -586,7 +586,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(10, 15.0)", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(x As Integer, y As Double)", "Friend Function FooAsync(x As Integer, y As Double) As Task"));
         }
 
         [Fact]
@@ -605,7 +605,7 @@ class Test {
     internal static Task<int> FooAsync() => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Test.Foo()", "Test.FooAsync()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -626,7 +626,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Function Foo() As Integer", "Friend Function FooAsync() As Task(Of Integer)"));
         }
 
         [Fact]
@@ -647,7 +647,7 @@ class Util {
     internal static Task FooAsync() => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Util.Foo()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Util.Foo()", "Util.FooAsync()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -669,7 +669,7 @@ Module Util
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Util.Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -737,7 +737,7 @@ class Apple : Fruit {
     internal void Foo() { }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("a.Foo()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Apple.Foo()", "Fruit.FooAsync()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -763,7 +763,7 @@ Class Apple
     End Sub
 End Class
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("a.Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -788,7 +788,7 @@ static class FruitUtils {
     internal static Task FooAsync(this Fruit f) => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("f.Foo()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Fruit.Foo()", "Fruit.FooAsync()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -815,7 +815,7 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("f.Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -837,7 +837,7 @@ static class FruitUtils {
     internal static Task FooAsync() => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("FruitUtils.Foo()", "FruitUtils.FooAsync()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -860,7 +860,7 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -1009,7 +1009,7 @@ static class FruitUtils {
     internal static Task FooAsync<T>() => null;
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("FruitUtils.Foo<int>()", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("FruitUtils.Foo<int>()", "FruitUtils.FooAsync<T>()"));
 
             var testVB = @"
 Imports System.Threading.Tasks
@@ -1032,7 +1032,7 @@ Module FruitUtils
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(Of Integer)()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(Of Integer)()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -1056,7 +1056,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo(/*argcomment*/)", "FooAsync"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Test.Foo()", "Test.FooAsync()"));
 
             var testVB = @"
 Imports System
@@ -1080,7 +1080,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Foo()", "FooAsync"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
         [Fact]
@@ -1104,7 +1104,7 @@ class Test {
     }
 }
 ";
-            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateCSTestAndRunAsync(testCS, VerifyCS.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Task.Wait()"));
 
             var testVB = @"
 Imports System
@@ -1128,7 +1128,7 @@ Module Program
     End Function
 End Module
 ";
-            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Wait"));
+            await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
         [Fact]
