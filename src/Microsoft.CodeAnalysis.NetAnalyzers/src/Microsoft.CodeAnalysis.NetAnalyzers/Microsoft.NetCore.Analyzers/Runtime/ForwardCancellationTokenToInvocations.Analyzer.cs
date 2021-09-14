@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2016: Forward CancellationToken to invocations.
     /// 
@@ -39,19 +41,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         // Check if any of the other arguments is implicit or a named argument
         protected abstract bool ArgumentsImplicitOrNamed(INamedTypeSymbol cancellationTokenType, ImmutableArray<IArgumentOperation> arguments);
 
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ForwardCancellationTokenToInvocationsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ForwardCancellationTokenToInvocationsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ForwardCancellationTokenToInvocationsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor ForwardCancellationTokenToInvocationsRule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor ForwardCancellationTokenToInvocationsRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(ForwardCancellationTokenToInvocationsTitle)),
+            CreateLocalizableResourceString(nameof(ForwardCancellationTokenToInvocationsMessage)),
             DiagnosticCategory.Reliability,
             RuleLevel.IdeSuggestion,
-            s_localizableDescription,
+            CreateLocalizableResourceString(nameof(ForwardCancellationTokenToInvocationsDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false
         );
@@ -60,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string ArgumentName = "ArgumentName";
         internal const string ParameterName = "ParameterName";
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(ForwardCancellationTokenToInvocationsRule);
 
         public override void Initialize(AnalysisContext context)

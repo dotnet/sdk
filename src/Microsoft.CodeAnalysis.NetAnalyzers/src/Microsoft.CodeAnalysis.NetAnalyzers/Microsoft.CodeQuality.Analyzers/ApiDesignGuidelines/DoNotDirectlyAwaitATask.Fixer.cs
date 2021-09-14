@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2007: Do not directly await a Task in libraries.
     ///     1. Append ConfigureAwait(false) to the task.
@@ -20,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class DoNotDirectlyAwaitATaskFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotDirectlyAwaitATaskAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotDirectlyAwaitATaskAnalyzer.RuleId);
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -32,20 +34,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 string title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
-                        async ct => await GetFix(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse)),
+                        async ct => await GetFixAsync(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
+                        equivalenceKey: nameof(AppendConfigureAwaitFalse)),
                     context.Diagnostics);
 
                 title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue;
                 context.RegisterCodeFix(
                     new MyCodeAction(title,
-                        async ct => await GetFix(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue)),
+                        async ct => await GetFixAsync(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
+                        equivalenceKey: nameof(AppendConfigureAwaitTrue)),
                     context.Diagnostics);
             }
         }
 
-        private static async Task<Document> GetFix(Document document, SyntaxNode expression, bool argument, CancellationToken cancellationToken)
+        private static async Task<Document> GetFixAsync(Document document, SyntaxNode expression, bool argument, CancellationToken cancellationToken)
         {
             // Rewrite the expression to include a .ConfigureAwait() after it. We reattach trailing trivia to the end.
             // This is especially important for VB, as the end-of-line may be in the trivia
@@ -88,7 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
-                var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue);
+                var useConfigureAwaitTrue = fixAllContext.CodeActionEquivalenceKey == nameof(AppendConfigureAwaitTrue);
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
                 foreach (var diagnostic in diagnostics)
                 {

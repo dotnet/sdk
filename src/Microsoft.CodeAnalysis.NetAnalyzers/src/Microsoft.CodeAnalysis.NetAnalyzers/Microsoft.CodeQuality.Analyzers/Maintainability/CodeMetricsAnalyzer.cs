@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -16,6 +16,8 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1501: Avoid excessive inheritance
     /// CA1502: Avoid excessive complexity
@@ -46,82 +48,67 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
         // New rule for invalid entries in CodeMetricsConfigurationFile.
         internal const string CA1509RuleId = "CA1509";
 
-        private static readonly LocalizableString s_localizableTitleCA1501 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveInheritanceTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1501 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveInheritanceMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1501 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveInheritanceDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor CA1501Rule = DiagnosticDescriptorHelper.Create(
+            CA1501RuleId,
+            CreateLocalizableResourceString(nameof(AvoidExcessiveInheritanceTitle)),
+            CreateLocalizableResourceString(nameof(AvoidExcessiveInheritanceMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(AvoidExcessiveInheritanceDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizableTitleCA1502 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveComplexityTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1502 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveComplexityMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1502 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveComplexityDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor CA1502Rule = DiagnosticDescriptorHelper.Create(
+            CA1502RuleId,
+            CreateLocalizableResourceString(nameof(AvoidExcessiveComplexityTitle)),
+            CreateLocalizableResourceString(nameof(AvoidExcessiveComplexityMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(AvoidExcessiveComplexityDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizableTitleCA1505 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUnmantainableCodeTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1505 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUnmantainableCodeMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1505 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUnmantainableCodeDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor CA1505Rule = DiagnosticDescriptorHelper.Create(
+            CA1505RuleId,
+            CreateLocalizableResourceString(nameof(AvoidUnmantainableCodeTitle)),
+            CreateLocalizableResourceString(nameof(AvoidUnmantainableCodeMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(AvoidUnmantainableCodeDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizableTitleCA1506 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveClassCouplingTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1506 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveClassCouplingMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1506 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidExcessiveClassCouplingDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor CA1506Rule = DiagnosticDescriptorHelper.Create(
+            CA1506RuleId,
+            CreateLocalizableResourceString(nameof(AvoidExcessiveClassCouplingTitle)),
+            CreateLocalizableResourceString(nameof(AvoidExcessiveClassCouplingMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(AvoidExcessiveClassCouplingDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizableTitleCA1509 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1509 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1509 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.InvalidEntryInCodeMetricsConfigFileDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor InvalidEntryInCodeMetricsConfigFileRule = DiagnosticDescriptorHelper.Create(
+            CA1509RuleId,
+            CreateLocalizableResourceString(nameof(InvalidEntryInCodeMetricsConfigFileTitle)),
+            CreateLocalizableResourceString(nameof(InvalidEntryInCodeMetricsConfigFileMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(InvalidEntryInCodeMetricsConfigFileDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false,
+            isReportedAtCompilationEnd: true);
 
-        internal static DiagnosticDescriptor CA1501Rule = DiagnosticDescriptorHelper.Create(CA1501RuleId,
-                                                                     s_localizableTitleCA1501,
-                                                                     s_localizableMessageCA1501,
-                                                                     DiagnosticCategory.Maintainability,
-                                                                     RuleLevel.CandidateForRemoval,
-                                                                     description: s_localizableDescriptionCA1501,
-                                                                     isPortedFxCopRule: true,
-                                                                     isDataflowRule: false,
-                                                                     isEnabledByDefaultInAggressiveMode: false,
-                                                                     isReportedAtCompilationEnd: true);
-
-        internal static DiagnosticDescriptor CA1502Rule = DiagnosticDescriptorHelper.Create(CA1502RuleId,
-                                                                     s_localizableTitleCA1502,
-                                                                     s_localizableMessageCA1502,
-                                                                     DiagnosticCategory.Maintainability,
-                                                                     RuleLevel.CandidateForRemoval,
-                                                                     description: s_localizableDescriptionCA1502,
-                                                                     isPortedFxCopRule: true,
-                                                                     isDataflowRule: false,
-                                                                     isEnabledByDefaultInAggressiveMode: false,
-                                                                     isReportedAtCompilationEnd: true);
-
-        internal static DiagnosticDescriptor CA1505Rule = DiagnosticDescriptorHelper.Create(CA1505RuleId,
-                                                                     s_localizableTitleCA1505,
-                                                                     s_localizableMessageCA1505,
-                                                                     DiagnosticCategory.Maintainability,
-                                                                     RuleLevel.CandidateForRemoval,
-                                                                     description: s_localizableDescriptionCA1505,
-                                                                     isPortedFxCopRule: true,
-                                                                     isDataflowRule: false,
-                                                                     isEnabledByDefaultInAggressiveMode: false,
-                                                                     isReportedAtCompilationEnd: true);
-
-        internal static DiagnosticDescriptor CA1506Rule = DiagnosticDescriptorHelper.Create(CA1506RuleId,
-                                                                     s_localizableTitleCA1506,
-                                                                     s_localizableMessageCA1506,
-                                                                     DiagnosticCategory.Maintainability,
-                                                                     RuleLevel.CandidateForRemoval,
-                                                                     description: s_localizableDescriptionCA1506,
-                                                                     isPortedFxCopRule: true,
-                                                                     isDataflowRule: false,
-                                                                     isEnabledByDefaultInAggressiveMode: false,
-                                                                     isReportedAtCompilationEnd: true);
-
-        internal static DiagnosticDescriptor InvalidEntryInCodeMetricsConfigFileRule = DiagnosticDescriptorHelper.Create(CA1509RuleId,
-                                                                     s_localizableTitleCA1509,
-                                                                     s_localizableMessageCA1509,
-                                                                     DiagnosticCategory.Maintainability,
-                                                                     RuleLevel.CandidateForRemoval,
-                                                                     description: s_localizableDescriptionCA1509,
-                                                                     isPortedFxCopRule: false,
-                                                                     isDataflowRule: false,
-                                                                     isEnabledByDefaultInAggressiveMode: false,
-                                                                     isReportedAtCompilationEnd: true);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1501Rule, CA1502Rule, CA1505Rule, CA1506Rule, InvalidEntryInCodeMetricsConfigFileRule);
 
         public override void Initialize(AnalysisContext context)
         {

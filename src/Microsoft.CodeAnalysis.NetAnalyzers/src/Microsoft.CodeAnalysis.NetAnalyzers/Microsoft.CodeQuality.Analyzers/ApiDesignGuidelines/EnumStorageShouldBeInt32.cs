@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -8,6 +8,8 @@ using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1028: Enum Storage should be Int32
     /// Implementation slightly modified from original FxCop after discussing with Nick Guerrera
@@ -19,22 +21,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1028";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumStorageShouldBeInt32Title), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(EnumStorageShouldBeInt32Title)),
+            CreateLocalizableResourceString(nameof(EnumStorageShouldBeInt32Message)),
+            DiagnosticCategory.Design,
+            RuleLevel.CandidateForRemoval,
+            description: CreateLocalizableResourceString(nameof(EnumStorageShouldBeInt32Description)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessageNotInt32 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumStorageShouldBeInt32Message), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumStorageShouldBeInt32Description), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageNotInt32,
-                                                                             DiagnosticCategory.Design,
-                                                                             RuleLevel.CandidateForRemoval,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Tasks
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>CA2012: Use ValueTasks correctly.</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotCreateTaskCompletionSourceWithWrongArguments : DiagnosticAnalyzer
@@ -16,15 +18,15 @@ namespace Microsoft.NetCore.Analyzers.Tasks
         internal const string RuleId = "CA2247";
 
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.BuildWarning,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

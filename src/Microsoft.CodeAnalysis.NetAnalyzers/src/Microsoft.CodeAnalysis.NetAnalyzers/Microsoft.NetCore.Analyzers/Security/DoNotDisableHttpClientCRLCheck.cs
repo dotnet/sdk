@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,29 +18,32 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     internal class DoNotDisableHttpClientCRLCheck : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor DefinitelyDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor DefinitelyDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5399",
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyDisableHttpClientCRLCheck),
-            nameof(MicrosoftNetCoreAnalyzersResources.DefinitelyDisableHttpClientCRLCheckMessage),
+            nameof(DefinitelyDisableHttpClientCRLCheck),
+            nameof(DefinitelyDisableHttpClientCRLCheckMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: true,
             isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
-        internal static DiagnosticDescriptor MaybeDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
-            "CA5400",
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeDisableHttpClientCRLCheck),
-            nameof(MicrosoftNetCoreAnalyzersResources.MaybeDisableHttpClientCRLCheckMessage),
-            RuleLevel.Disabled,
-            isPortedFxCopRule: false,
-            isDataflowRule: true,
-            isReportedAtCompilationEnd: true,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotDisableHttpClientCRLCheckDescription));
+            descriptionResourceStringName: nameof(DoNotDisableHttpClientCRLCheckDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        internal static readonly DiagnosticDescriptor MaybeDisableHttpClientCRLCheckRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            "CA5400",
+            nameof(MaybeDisableHttpClientCRLCheck),
+            nameof(MaybeDisableHttpClientCRLCheckMessage),
+            RuleLevel.Disabled,
+            isPortedFxCopRule: false,
+            isDataflowRule: true,
+            isReportedAtCompilationEnd: true,
+            descriptionResourceStringName: nameof(DoNotDisableHttpClientCRLCheckDescription));
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyDisableHttpClientCRLCheckRule,
                 MaybeDisableHttpClientCRLCheckRule);

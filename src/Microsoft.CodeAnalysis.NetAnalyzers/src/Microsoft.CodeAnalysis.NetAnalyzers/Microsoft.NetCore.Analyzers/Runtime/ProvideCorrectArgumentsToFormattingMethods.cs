@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2241: Provide correct arguments to formatting methods
     /// </summary>
@@ -20,21 +22,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2241";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentsToFormattingMethodsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsTitle)),
+            CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.BuildWarningCandidate,
+            description: CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentsToFormattingMethodsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ProvideCorrectArgumentsToFormattingMethodsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.BuildWarningCandidate,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -57,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     IArgumentOperation formatStringArgument = invocation.Arguments[info.FormatStringIndex];
-                    if (!object.Equals(formatStringArgument?.Value?.Type, formatInfo.String) ||
+                    if (!Equals(formatStringArgument?.Value?.Type, formatInfo.String) ||
                         !(formatStringArgument?.Value?.ConstantValue.Value is string))
                     {
                         // wrong argument
@@ -95,7 +93,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     if (paramsArgument.Value is not IArrayCreationOperation arrayCreation ||
                         arrayCreation.GetElementType() is not ITypeSymbol elementType ||
-                        !object.Equals(elementType, formatInfo.Object) ||
+                        !Equals(elementType, formatInfo.Object) ||
                         arrayCreation.DimensionSizes.Length != 1)
                     {
                         // wrong format

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Resources
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1824: Mark assemblies with NeutralResourcesLanguageAttribute
     /// </summary>
@@ -23,24 +25,20 @@ namespace Microsoft.NetCore.Analyzers.Resources
         protected const string StronglyTypedResourceBuilder = "StronglyTypedResourceBuilder";
         private const string Designer = ".Designer.";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isReportedAtCompilationEnd: true);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageTitle)),
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageMessage)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: true);
 
         protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

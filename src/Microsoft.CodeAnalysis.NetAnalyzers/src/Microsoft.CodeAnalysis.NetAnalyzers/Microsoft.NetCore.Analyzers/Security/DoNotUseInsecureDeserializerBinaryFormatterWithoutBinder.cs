@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -9,6 +9,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:System.Runtime.Serialization.Formatters.Binary.BinaryFormatter"/> when its Binder property is not set.
     /// </summary>
@@ -19,17 +21,18 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor RealBinderDefinitelyNotSetDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2301",
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterDeserializeWithoutBinderSetTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterDeserializeWithoutBinderSetMessage),
+                nameof(BinaryFormatterDeserializeWithoutBinderSetTitle),
+                nameof(BinaryFormatterDeserializeWithoutBinderSetMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
+
         internal static readonly DiagnosticDescriptor RealBinderMaybeNotSetDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2302",
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterDeserializeMaybeWithoutBinderSetTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.BinaryFormatterDeserializeMaybeWithoutBinderSetMessage),
+                nameof(BinaryFormatterDeserializeMaybeWithoutBinderSetTitle),
+                nameof(BinaryFormatterDeserializeMaybeWithoutBinderSetMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,

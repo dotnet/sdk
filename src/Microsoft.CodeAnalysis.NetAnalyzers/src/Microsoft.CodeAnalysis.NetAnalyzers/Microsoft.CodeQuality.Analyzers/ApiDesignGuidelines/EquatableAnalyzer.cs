@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -9,41 +9,35 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EquatableAnalyzer : DiagnosticAnalyzer
     {
         internal const string ImplementIEquatableRuleId = "CA1066";
         internal const string OverrideObjectEqualsRuleId = "CA1067";
 
-        private static readonly LocalizableString s_localizableTitleImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionImplementIEquatable = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ImplementIEquatableWhenOverridingObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
         internal static readonly DiagnosticDescriptor ImplementIEquatableDescriptor = DiagnosticDescriptorHelper.Create(
             ImplementIEquatableRuleId,
-            s_localizableTitleImplementIEquatable,
-            s_localizableMessageImplementIEquatable,
+            CreateLocalizableResourceString(nameof(ImplementIEquatableWhenOverridingObjectEqualsTitle)),
+            CreateLocalizableResourceString(nameof(ImplementIEquatableWhenOverridingObjectEqualsMessage)),
             DiagnosticCategory.Design,
             RuleLevel.Disabled,
-            description: s_localizableDescriptionImplementIEquatable,
+            description: CreateLocalizableResourceString(nameof(ImplementIEquatableWhenOverridingObjectEqualsDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
-
-        private static readonly LocalizableString s_localizableTitleOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionOverridesObjectEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideObjectEqualsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
 
         internal static readonly DiagnosticDescriptor OverridesObjectEqualsDescriptor = DiagnosticDescriptorHelper.Create(
             OverrideObjectEqualsRuleId,
-            s_localizableTitleOverridesObjectEquals,
-            s_localizableMessageOverridesObjectEquals,
+            CreateLocalizableResourceString(nameof(OverrideObjectEqualsTitle)),
+            CreateLocalizableResourceString(nameof(OverrideObjectEqualsMessage)),
             DiagnosticCategory.Design,
             RuleLevel.BuildWarningCandidate,
-            description: s_localizableDescriptionOverridesObjectEquals,
+            description: CreateLocalizableResourceString(nameof(OverrideObjectEqualsDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ImplementIEquatableDescriptor, OverridesObjectEqualsDescriptor);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ImplementIEquatableDescriptor, OverridesObjectEqualsDescriptor);
 
         public override void Initialize(AnalysisContext context)
         {

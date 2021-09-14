@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
@@ -9,6 +9,8 @@ using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1725: Parameter names should match base declaration
     /// </summary>
@@ -18,22 +20,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string RuleId = "CA1725";
         internal const string NewNamePropertyName = "NewName";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ParameterNamesShouldMatchBaseDeclarationTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ParameterNamesShouldMatchBaseDeclarationMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.ParameterNamesShouldMatchBaseDeclarationDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Naming,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(ParameterNamesShouldMatchBaseDeclarationTitle)),
+            CreateLocalizableResourceString(nameof(ParameterNamesShouldMatchBaseDeclarationMessage)),
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(ParameterNamesShouldMatchBaseDeclarationDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         /// <inheritdoc/>
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         /// <inheritdoc/>
         public override void Initialize(AnalysisContext context)

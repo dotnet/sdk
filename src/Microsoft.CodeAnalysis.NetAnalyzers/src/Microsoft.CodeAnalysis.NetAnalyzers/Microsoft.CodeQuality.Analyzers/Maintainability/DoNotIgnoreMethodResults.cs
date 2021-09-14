@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1806: Do not ignore method results
     /// </summary>
@@ -60,81 +62,80 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 "ThrowsAnyAsync",
             });
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsDescription));
 
-        private static readonly LocalizableString s_localizableMessageObjectCreation = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageObjectCreation), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageStringCreation = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageStringCreation), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageHResultOrErrorCode = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageHResultOrErrorCode), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessagePureMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessagePureMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageTryParse = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageTryParse), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageLinqMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageLinqMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageUserDefinedMethod = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsMessageUserDefinedMethod), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotIgnoreMethodResultsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor ObjectCreationRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageObjectCreation)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor ObjectCreationRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageObjectCreation,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor StringCreationRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageStringCreation)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor StringCreationRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageStringCreation,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor HResultOrErrorCodeRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageHResultOrErrorCode)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor HResultOrErrorCodeRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageHResultOrErrorCode,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor PureMethodRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessagePureMethod)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor PureMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessagePureMethod,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor TryParseRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageTryParse)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor TryParseRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageTryParse,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor LinqMethodRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageLinqMethod)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor LinqMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageLinqMethod,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor UserDefinedMethodRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DoNotIgnoreMethodResultsMessageUserDefinedMethod)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor UserDefinedMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessageUserDefinedMethod,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ObjectCreationRule, StringCreationRule, HResultOrErrorCodeRule, TryParseRule, PureMethodRule);
 
         public override void Initialize(AnalysisContext context)
         {
