@@ -255,7 +255,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
             static bool IsDotNetJs(string key)
             {
                 var fileName = Path.GetFileName(key);
-                return fileName.StartsWith("dotnet", StringComparison.Ordinal) && fileName.EndsWith(".js", StringComparison.Ordinal);
+                return fileName.StartsWith("dotnet.", StringComparison.Ordinal) && fileName.EndsWith(".js", StringComparison.Ordinal);
             }
 
             static bool IsDotNetWasm(string key) => string.Equals("dotnet.wasm", Path.GetFileName(key), StringComparison.Ordinal);
