@@ -46,9 +46,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <VerifyDependencyInjectionOpenGenericServiceTrimmability Condition="'$(VerifyDependencyInjectionOpenGenericServiceTrimmability)' == ''">true</VerifyDependencyInjectionOpenGenericServiceTrimmability>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(SuppressTrimAnalysisWarnings)' == '' and '$(EnableTrimAnalyzer)' == 'true'">
     <!-- Unless separately configured, assume EnableTrimAnalyzers means warnings should be enabled. -->
-    <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == '' and '$(EnableTrimAnalyzer)' == 'true'">false</SuppressTrimAnalysisWarnings>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(SuppressTrimAnalysisWarnings)' == '' And '$(PublishTrimmed)' == 'true'">
