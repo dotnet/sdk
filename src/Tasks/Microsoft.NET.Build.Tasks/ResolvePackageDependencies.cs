@@ -216,7 +216,7 @@ namespace Microsoft.NET.Build.Tasks
                     string resolvedPath = ResolveFilePath(file, resolvedPackagePath);
                     fileItem.SetMetadata(MetadataKeys.ResolvedPath, resolvedPath ?? string.Empty);
 
-                    if (NuGetUtils.IsApplicableAnalyzer(file, ProjectLanguage, excludedAnalyzers: null))
+                    if (NuGetUtils.IsApplicableAnalyzer(file, ProjectLanguage))
                     {
                         fileItem.SetMetadata(MetadataKeys.Analyzer, "true");
                         fileItem.SetMetadata(MetadataKeys.Type, "AnalyzerAssembly");
