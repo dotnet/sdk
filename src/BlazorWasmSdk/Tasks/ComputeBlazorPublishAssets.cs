@@ -195,22 +195,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     ITaskItem newDotNetJs = null;
                     if (aotDotNetJs != null)
                     {
-                        var itemHash = FileHasher.GetFileHash(aotDotNetJs.ItemSpec);
-                        var cacheBustedDotNetJSFileName = $"dotnet.{BundledNETCoreAppPackageVersion}.{itemHash}.js";
-
-                        var originalFileFullPath = Path.GetFullPath(aotDotNetJs.ItemSpec);
-                        var originalFileDirectory = Path.GetDirectoryName(originalFileFullPath);
-
-                        var cacheBustedDotNetJSFullPath = Path.Combine(originalFileDirectory, cacheBustedDotNetJSFileName);
-
-                        newDotNetJs = new TaskItem(cacheBustedDotNetJSFullPath, asset.CloneCustomMetadata());
+                        newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
-
-                        var newRelativePath = $"_framework/{cacheBustedDotNetJSFileName}";
-                        newDotNetJs.SetMetadata("RelativePath", newRelativePath);
+                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet.{BundledNETCoreAppPackageVersion}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
 
                         updateMap.Add(asset.ItemSpec, newDotNetJs);
-                        Log.LogMessage("Replacing asset '{0}' with linked version '{1}'", asset.ItemSpec, newDotNetJs.ItemSpec);
+                        Log.LogMessage("Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetJs.ItemSpec);
                     }
                     else
                     {
@@ -236,7 +226,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         newDotNetWasm = new TaskItem(Path.GetFullPath(aotDotNetWasm.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetWasm.SetMetadata("OriginalItemSpec", aotDotNetWasm.ItemSpec);
                         updateMap.Add(asset.ItemSpec, newDotNetWasm);
-                        Log.LogMessage("Replacing asset '{0}' with linked version '{1}'", asset.ItemSpec, newDotNetWasm.ItemSpec);
+                        Log.LogMessage("Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetWasm.ItemSpec);
                     }
                     else
                     {
