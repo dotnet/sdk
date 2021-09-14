@@ -62,14 +62,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableSingleFileAnalyzer Condition="'$(EnableSingleFileAnalyzer)' == '' And
                                          '$(PublishSingleFile)' == 'true'">true</EnableSingleFileAnalyzer>
 
-    <EnableTrimAnalyzer Condition="'$(EnableTrimAnalyzer)' == '' And
-                                   ('$(IsTrimmable)' == 'true' Or '$(PublishTrimmed)' == 'true')">true</EnableTrimAnalyzer>
-
     <!-- Compiler warning level, defaulted to 4. We promote it to 5 if the user has set analysis level to 5 or higher
          NOTE: at this time only the C# compiler supports warning waves -->
     <WarningLevel Condition="'$(Language)' == 'C#'">5</WarningLevel>
   </PropertyGroup>
-  
+
   <!-- Set the default WarningLevel based on EffectiveAnalysisLevel
        For .NET 6 we want the Warning level to be 6 -->
   <PropertyGroup Condition="'$(EffectiveAnalysisLevel)' != '' And
