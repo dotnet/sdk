@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return new MatchInfo(MatchInfo.BuiltIn.Name, name, MatchKind.Partial);
                 }
 
-                int nameIndex = template.Name.IndexOf(name, StringComparison.OrdinalIgnoreCase);
+                int nameIndex = template.Name.IndexOf(name, StringComparison.CurrentCultureIgnoreCase);
 
                 if (nameIndex == 0 && template.Name.Length == name.Length)
                 {
@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Utils
                 {
                     return null;
                 }
-                if (template.Classifications?.Contains(classification, StringComparer.OrdinalIgnoreCase) ?? false)
+                if (template.Classifications?.Contains(classification, StringComparer.CurrentCultureIgnoreCase) ?? false)
                 {
                     return new MatchInfo(MatchInfo.BuiltIn.Classification, classification, MatchKind.Exact);
                 }
@@ -209,7 +209,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return new MatchInfo(MatchInfo.BuiltIn.Author, author, MatchKind.Mismatch);
                 }
 
-                int authorIndex = template.Author!.IndexOf(author, StringComparison.OrdinalIgnoreCase);
+                int authorIndex = template.Author!.IndexOf(author, StringComparison.CurrentCultureIgnoreCase);
 
                 if (authorIndex == 0 && template.Author.Length == author.Length)
                 {
