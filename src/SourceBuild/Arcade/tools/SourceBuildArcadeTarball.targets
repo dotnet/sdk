@@ -3,6 +3,12 @@
 
   <Import Project="./BuildTasks.props" />
   <Import Project="../tools/SourceBuild/SourceBuildArcadeTools.targets"  Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="$(RepoRoot)/src/redist/targets/Versions.targets" />
+  <Import Project="$(RepoRoot)/src/redist/targets/SetBuildDefaults.targets" />
+  <Import Project="$(RepoRoot)/src/redist/targets/FileExtensions.targets" />
+  <Import Project="$(RepoRoot)/src/redist/targets/GetRuntimeInformation.targets" />
+  <Import Project="$(RepoRoot)/src/redist/targets/GenerateLayout.targets" />
+
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_ReadSourceBuildIntermediateNupkgDependencies" AssemblyFile="$(SourceBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_WriteSourceRepoProperties" AssemblyFile="$(SourceBuildTasksAssembly)" />
 
@@ -16,6 +22,8 @@
 
   <Target Name="CreateSourceTarball"
     DependsOnTargets="
+      GenerateFullNuGetVersion;
+      GenerateVersionFile;
       CreateTarballDir;
       SetupSelfGithubInfo;
       CloneRepoAndDependentsRecursive;
