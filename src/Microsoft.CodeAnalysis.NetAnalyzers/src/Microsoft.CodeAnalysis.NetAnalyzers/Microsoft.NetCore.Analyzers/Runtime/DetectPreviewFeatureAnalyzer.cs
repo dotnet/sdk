@@ -684,6 +684,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     symbol = eventAssignment.Adds ? eventSymbol.AddMethod : eventSymbol.RemoveMethod;
                 }
 
+                if (symbol == null)
+                {
+                    referencedPreviewSymbol = null;
+                    return false;
+                }
+
                 if (symbol is IMethodSymbol methodSymbol && methodSymbol.IsConstructor())
                 {
                     if (SymbolIsAnnotatedOrUsesPreviewTypes(methodSymbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out referencedPreviewSymbol))
