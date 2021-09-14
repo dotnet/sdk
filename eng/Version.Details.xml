@@ -92,6 +92,10 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>2bfff7b9348e779628a06b86af04b5239d3a926d</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.0-4.21458.2">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>2bfff7b9348e779628a06b86af04b5239d3a926d</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.0.0-4.21458.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>2bfff7b9348e779628a06b86af04b5239d3a926d</Sha>
