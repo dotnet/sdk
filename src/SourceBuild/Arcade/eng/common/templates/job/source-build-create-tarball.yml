@@ -5,7 +5,12 @@ jobs:
   container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
   displayName: Source-Build Create Tarball
   pool:
-    vmImage: ubuntu-20.04
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: NetCorePublic-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64.Open
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64
   variables:
     _BuildConfig: Release
   workspace:
