@@ -262,7 +262,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             return nativeStaticWebAssets;
 
-            static bool IsDotNetJs(string key) => string.Equals("dotnet.js", Path.GetFileName(key), StringComparison.Ordinal);
+            static bool IsDotNetJs(string key)
+            {
+                var fileName = Path.GetFileName(key);
+                return fileName.StartsWith("dotnet", StringComparison.Ordinal) && fileName.EndsWith(".js", StringComparison.Ordinal);
+            }
 
             static bool IsDotNetWasm(string key) => string.Equals("dotnet.wasm", Path.GetFileName(key), StringComparison.Ordinal);
         }
