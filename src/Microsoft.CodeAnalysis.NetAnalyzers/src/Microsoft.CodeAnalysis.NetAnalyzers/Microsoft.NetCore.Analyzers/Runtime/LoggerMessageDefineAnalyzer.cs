@@ -247,7 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             switch (argumentExpression)
             {
-                case ILiteralOperation { ConstantValue: { HasValue: false, Value: string constantValue } }:
+                case ILiteralOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
                     return constantValue;
                 case IInterpolatedStringOperation interpolated:
                     var text = "";
@@ -256,6 +256,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         if (interpolatedStringContent is IInterpolatedStringTextOperation textSyntax)
                         {
                             text += textSyntax.Text;
+                        }
+                        else if (interpolatedStringContent is IInterpolationOperation { ConstantValue: { HasValue: true, Value: string constantValue } })
+                        {
+                            text += constantValue; // works for e.g. nameof
                         }
                         else
                         {
