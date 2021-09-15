@@ -23,25 +23,25 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        private static Dictionary<string, (DateTime LastCheckedUtc, Version Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
+        private static Dictionary<string, (DateTime LastKnownWriteTimeUtc, Version Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
         private static Version GetAssemblyVersion(string sourcePath)
         {
             // TODO: is there a way to assert that it's a full path?
 
+            DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
+
             if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
-                && File.GetLastWriteTimeUtc(sourcePath) < cacheEntry.LastCheckedUtc)
+                && lastWriteTimeUtc < cacheEntry.LastKnownWriteTimeUtc)
             {
                 return cacheEntry.Version;
             }
-
-            DateTime checkTime = DateTime.UtcNow;
 
             Version version = GetAssemblyVersionFromFile(sourcePath);
 
             if (version is not null)
             {
-                s_versionCache[sourcePath] = (checkTime, version);
+                s_versionCache[sourcePath] = (lastWriteTimeUtc, version);
             }
 
             // TODO: clear or prune cache sometimes?
