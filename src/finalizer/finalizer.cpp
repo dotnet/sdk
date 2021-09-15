@@ -38,6 +38,110 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitecture)
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczKeyName = NULL;
+    LPWSTR pszName = NULL;
+    LPWSTR sczSubKey = NULL;
+    HKEY hkWorkloadRecordsKey = NULL;
+    HKEY hkCurrentKey = NULL;
+    DWORD dwIndex = 0;
+    DWORD dwType = 0;
+    DWORD_PTR cbKeyName = 0;
+    DWORD cbSubKeys = 0;
+    DWORD cbValues = 0;
+    BOOL bDeleteKey = FALSE;
+
+    hr = StrAllocConcatFormatted(&sczKeyName, L"SOFTWARE\\Microsoft\\dotnet\\InstalledWorkloads\\Standalone\\%ls", sczArchitecture);
+    ExitOnFailure(hr, "Failed to allocate string for workload records registry path.");
+
+    hr = RegOpen(HKEY_LOCAL_MACHINE, sczKeyName, KEY_READ | KEY_WRITE, &hkWorkloadRecordsKey);
+
+    if (S_OK == hr)
+    {
+        // Delete the SDK feature band's workload records.
+        hr = RegDelete(hkWorkloadRecordsKey, sczSdkFeatureBandVersion, REG_KEY_DEFAULT, TRUE);
+        ExitOnFailure(hr, "Failed to delete workload records key under '%ls' for '%ls'.", sczKeyName, sczSdkFeatureBandVersion);
+        LogStringLine(REPORT_STANDARD, "Deleted workload records for '%ls'.", sczSdkFeatureBandVersion);
+    }
+    else if (E_FILENOTFOUND == hr)
+    {
+        // Ignore missing registry keys.
+        hr = S_OK;
+    }
+    ExitOnFailure(hr, "Failed to open workload records key: %ls.", sczKeyName);
+
+    // Clean out empty registry keys by walking backwards. Eventually we'll hit HKLM\SOFTWARE\Microsoft and stop.
+    for (;;)
+    {
+        bDeleteKey = TRUE;
+        LogStringLine(REPORT_STANDARD, "Processing '%ls'.", sczKeyName);
+        hr = RegOpen(HKEY_LOCAL_MACHINE, sczKeyName, KEY_READ | KEY_WRITE, &hkCurrentKey);
+
+        if (E_FILENOTFOUND != hr && S_OK != hr)
+        {
+            ExitOnFailure(hr, "Failed to open registry key: %ls", sczKeyName);
+        }
+
+        if (S_OK == hr)
+        {
+            hr = RegQueryKey(hkCurrentKey, &cbSubKeys, &cbValues);
+            ExitOnFailure(hr, "Failed to query key info.");
+
+            if (0 < cbSubKeys || 0 < cbValues)
+            {
+                // If the current key has any subkeys or values then we're done.
+                LogStringLine(REPORT_STANDARD, "Non-empty key found. '%ls' contains %d value(s) and %d subkey(s).", sczKeyName, cbValues, cbSubKeys);
+                break;
+            }
+
+            LogStringLine(REPORT_STANDARD, "'%ls' is empty and can be deleted.", sczKeyName);
+            ReleaseRegKey(hkCurrentKey);
+        }
+        else
+        {
+            // We want to continue traversing up the registry, but we can't delete a non-existing key.
+            LogStringLine(REPORT_STANDARD, "'%ls' does not exist, continuing.", sczKeyName);
+            bDeleteKey = FALSE;
+        }
+
+        // Move up one level and delete the current key. For example, if we looked at SOFTWARE\Microsoft\dotnet\InstalledWorkloads\Standalone\x64, we'll
+        // delete the x64 subkey.
+        hr = StrSize(sczKeyName, &cbKeyName);
+        ExitOnFailure(hr, "Failed to get size of key name.");
+
+        // Need to remove trailing backslash otherwise PathFile returns an empty string.
+        hr = PathCchRemoveBackslash(sczKeyName, cbKeyName);
+        ExitOnFailure(hr, "Failed to remove backslash.");
+
+        hr = StrAllocString(&sczSubKey, PathFile(sczKeyName), 0);
+        ExitOnFailure(hr, "Failed to allocate string for subkey.");
+
+        hr = PathGetParentPath(sczKeyName, &sczKeyName);
+        ExitOnFailure(hr, "Failed to get parent path of registry key.");
+
+        if (bDeleteKey)
+        {
+            hr = RegOpen(HKEY_LOCAL_MACHINE, sczKeyName, KEY_READ | KEY_WRITE, &hkCurrentKey);
+            ExitOnFailure(hr, "Failed to open registry key: %ls.", sczKeyName);
+
+            hr = RegDelete(hkCurrentKey, sczSubKey, REG_KEY_DEFAULT, FALSE);
+            ExitOnFailure(hr, "Failed to delete registry key '%ls' under '%ls'", sczSubKey, sczKeyName);
+
+            ReleaseRegKey(hkCurrentKey);
+        }
+    }
+
+LExit:
+    ReleaseStr(sczKeyName);
+    ReleaseStr(pszName);
+    ReleaseStr(sczSubKey);
+    ReleaseRegKey(hkCurrentKey);
+    ReleaseRegKey(hkWorkloadRecordsKey);
+    return hr;
+}
+
 extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL * pbRestartRequired)
 {
     HRESULT hr = S_OK;
@@ -54,6 +158,12 @@ extern "C" HRESULT RemoveDependent(LPWSTR sczDependent, BOOL * pbRestartRequired
 
     // Optional workloads are always per-machine installs, so we don't need to check HKCU. 
     hr = RegOpen(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Classes\\Installer\\Dependencies", KEY_READ, &hkInstallerDependenciesKey);
+    if (E_FILENOTFOUND == hr)
+    {
+        LogStringLine(REPORT_STANDARD, "Installer dependencies key does not exit.");
+        hr = S_OK;
+        goto LExit;
+    }
     ExitOnFailure(hr, "Failed to read installer dependencies key.");
 
     // This has to be an exhaustive search as we're not looking for a specific provider key, but for a specific dependent
@@ -319,13 +429,15 @@ int wmain(int argc, wchar_t* argv[])
 
     if (!bSdkFeatureBandInstalled)
     {
+        LogStringLine(REPORT_STANDARD, "SDK with feature band %ls could not be found.", sczFeatureBandVersion);
         goto LExit;
     }
 
-    LogStringLine(REPORT_STANDARD, "SDK with feature band %ls could not be found.", sczFeatureBandVersion);
-
     hr = ::RemoveDependent(sczDependent, &bRestartRequired);
     ExitOnFailure(hr, "Failed to remove dependent \"%ls\".", sczDependent);
+
+    hr = ::DeleteWorkloadRecords(sczFeatureBandVersion, argv[3]);
+    ExitOnFailure(hr, "Failed to remove workload records.");
 
     if (bRestartRequired)
     {
