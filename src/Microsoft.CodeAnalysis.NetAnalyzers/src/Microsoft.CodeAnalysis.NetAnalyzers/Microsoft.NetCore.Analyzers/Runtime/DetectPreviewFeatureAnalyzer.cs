@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     s_localizableTitle,
                                                                                                                     CreateLocalizableResourceString(nameof(DetectPreviewFeaturesMessage)),
                                                                                                                     DiagnosticCategory.Usage,
-                                                                                                                    RuleLevel.IdeSuggestion,
+                                                                                                                    RuleLevel.BuildError,
                                                                                                                     s_localizableDescription,
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewInterfaceMessage)),
                                                                                                                 DiagnosticCategory.Usage,
-                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                RuleLevel.BuildError,
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
-                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                RuleLevel.BuildError,
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(OverridesPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
-                                                                                                                RuleLevel.IdeSuggestion,
+                                                                                                                RuleLevel.BuildError,
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
@@ -64,7 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                              s_localizableTitle,
                                                                                                              CreateLocalizableResourceString(nameof(DerivesFromPreviewClassMessage)),
                                                                                                              DiagnosticCategory.Usage,
-                                                                                                             RuleLevel.IdeSuggestion,
+                                                                                                             RuleLevel.BuildError,
                                                                                                              s_localizableDescription,
                                                                                                              isPortedFxCopRule: false,
                                                                                                              isDataflowRule: false);
@@ -73,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(UsesPreviewTypeParameterMessage)),
                                                                                                               DiagnosticCategory.Usage,
-                                                                                                              RuleLevel.IdeSuggestion,
+                                                                                                              RuleLevel.BuildError,
                                                                                                               s_localizableDescription,
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
@@ -82,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(MethodReturnsPreviewTypeMessage)),
                                                                                                               DiagnosticCategory.Usage,
-                                                                                                              RuleLevel.IdeSuggestion,
+                                                                                                              RuleLevel.BuildError,
                                                                                                               s_localizableDescription,
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
@@ -91,7 +91,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                       s_localizableTitle,
                                                                                                                       CreateLocalizableResourceString(nameof(MethodUsesPreviewTypeAsParamaterMessage)),
                                                                                                                       DiagnosticCategory.Usage,
-                                                                                                                      RuleLevel.IdeSuggestion,
+                                                                                                                      RuleLevel.BuildError,
                                                                                                                       s_localizableDescription,
                                                                                                                       isPortedFxCopRule: false,
                                                                                                                       isDataflowRule: false);
@@ -99,7 +99,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                         s_localizableTitle,
                                                                                                         CreateLocalizableResourceString(nameof(FieldIsPreviewTypeMessage)),
                                                                                                         DiagnosticCategory.Usage,
-                                                                                                        RuleLevel.IdeSuggestion,
+                                                                                                        RuleLevel.BuildError,
                                                                                                         s_localizableDescription,
                                                                                                         isPortedFxCopRule: false,
                                                                                                         isDataflowRule: false);
@@ -108,7 +108,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     s_localizableTitle,
                                                                                                                     CreateLocalizableResourceString(nameof(StaticAndAbstractRequiresPreviewFeatures)),
                                                                                                                     DiagnosticCategory.Usage,
-                                                                                                                    RuleLevel.IdeSuggestion,
+                                                                                                                    RuleLevel.BuildError,
                                                                                                                     s_localizableDescription,
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
@@ -682,6 +682,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (operation is IEventAssignmentOperation eventAssignment && symbol is IEventSymbol eventSymbol)
                 {
                     symbol = eventAssignment.Adds ? eventSymbol.AddMethod : eventSymbol.RemoveMethod;
+                }
+
+                if (symbol == null)
+                {
+                    referencedPreviewSymbol = null;
+                    return false;
                 }
 
                 if (symbol is IMethodSymbol methodSymbol && methodSymbol.IsConstructor())

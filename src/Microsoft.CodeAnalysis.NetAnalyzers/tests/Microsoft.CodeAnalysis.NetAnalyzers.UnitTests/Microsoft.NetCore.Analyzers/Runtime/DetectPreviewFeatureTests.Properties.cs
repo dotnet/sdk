@@ -11,6 +11,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class DetectPreviewFeatureUnitTests
     {
         [Fact]
+        public async Task TestPropertyGetterSetInConstructor()
+        {
+            var csInput = @"
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+    class Program
+    {
+        public int Value { get; }
+        public Program()
+        {
+            Value = 1;
+        }
+
+        static void Main(string[] args)
+        {
+        }
+    }
+}";
+            var test = TestCS(csInput);
+            await test.RunAsync();
+        }
+
+        [Fact]
         public async Task TestPreviewPropertyGetterAndSetters()
         {
             var csInput = @" 
