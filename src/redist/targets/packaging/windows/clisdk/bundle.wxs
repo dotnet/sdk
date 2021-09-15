@@ -11,11 +11,16 @@
           Compressed="yes">
 
     <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
-        WixBundleInstalled OR ((NOT (DOTNETHOME_X64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+        WixBundleInstalled OR (NOT DOTNETHOME_X64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
     <bal:Condition Message="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
-        WixBundleInstalled OR ((NOT (DOTNETHOME_ARM64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+        WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
+    </bal:Condition>
+
+    <!-- Permit same path on non-ARM64 machines since past SDKs always wrote this value -->
+    <bal:Condition Message="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;">
+        WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X64) OR (NOT NativeProcessorArchitecture=&quot;ARM64&quot;) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
@@ -75,7 +80,6 @@
     <!-- Determine native OS architecture -->
     <util:RegistrySearch Id="CheckProcessorArchitecture_x64"
               After="DotnetInstallLocation_x64"
-              Condition="NOT DotnetInstallLocationExists_x64"
               Variable="NativeProcessorArchitecture"
               Result="value"
               Root="HKLM"
