@@ -31,7 +31,6 @@ namespace Microsoft.DotNet.Cli.Build
             "DOTNET_CLI_UI_LANGUAGE",
             "DOTNET_MULTILEVEL_LOOKUP",
             "DOTNET_RUNTIME_ID",
-            "DOTNET_SKIP_FIRST_TIME_EXPERIENCE",
             "NUGET_PACKAGES"
         };
 
