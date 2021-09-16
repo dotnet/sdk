@@ -56,11 +56,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SuppressTrimAnalysisWarnings Condition="'$(SuppressTrimAnalysisWarnings)' == ''">false</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnableTrimAnalyzer)' == '' And ('$(PublishTrimmed)' == 'true' Or '$(IsTrimmable)' == 'true')">
-    <!-- Enable the trim analyzer when any trimming settings are enabled. Warnings may suppressed based on other settings. -->
-    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-  </PropertyGroup>
-
   <!-- Suppress warnings produced by the linker or by the ILLink Roslyn analyzer. -->
   <PropertyGroup Condition="'$(SuppressTrimAnalysisWarnings)' == 'true'">
     <!-- RequiresUnreferenceCodeAttribute method called -->
