@@ -1131,6 +1131,49 @@ class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSX_GuardsMacOS()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            SupportsMacOS();
+            [|UnsupportsMacOS()|];
+            SupportsOSX();
+            [|UnsupportsOSX()|];
+        }
+        else
+        {
+            [|SupportsMacOS()|];
+            UnsupportsMacOS();
+            [|SupportsOSX()|];
+            UnsupportsOSX();
+        }
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    void SupportsMacOS() { }
+
+    [UnsupportedOSPlatform(""MacOS"")]
+    void UnsupportsMacOS() { }
+
+    [SupportedOSPlatform(""OSX"")]
+    void SupportsOSX() { }
+
+    [UnsupportedOSPlatform(""osx"")]
+    void UnsupportsOSX() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
         public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElseAsync()
         {
