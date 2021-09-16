@@ -26,8 +26,6 @@ namespace Microsoft.NET.Build.Tasks
 
         private static Version GetAssemblyVersion(string sourcePath)
         {
-            // TODO: is there a way to assert that it's a full path?
-
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
             if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
@@ -43,7 +41,12 @@ namespace Microsoft.NET.Build.Tasks
                 s_versionCache[sourcePath] = (lastWriteTimeUtc, version);
             }
 
-            // TODO: clear or prune cache sometimes?
+            // When introducing this cache, we decided that the cached
+            // data was small and likely to be basically finite for
+            // any given MSBuild process lifetime, so we did not implement
+            // a cache lifetime. If you're here because those assumptions
+            // don't hold, there's no reason the cache must be static
+            // and monotonically growing.
 
             return version;
 
