@@ -81,7 +81,6 @@
   <PropertyGroup>
     <SubmoduleDirectory Condition="'$(SubmoduleDirectory)' == ''">$(ProjectDir)src/</SubmoduleDirectory>
     <GitModulesPath>$(ProjectDir).gitmodules</GitModulesPath>
-    <ProdConFeedPath>$(ProjectDir)ProdConFeed.txt</ProdConFeedPath>
   </PropertyGroup>
 
   <PropertyGroup>
