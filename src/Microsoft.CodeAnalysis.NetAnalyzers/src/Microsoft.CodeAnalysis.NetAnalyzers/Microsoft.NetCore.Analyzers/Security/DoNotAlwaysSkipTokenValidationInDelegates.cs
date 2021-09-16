@@ -52,11 +52,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                 var tokenValidationParameters = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftIdentityModelTokensTokenValidationParameters);
 
                 if ((microsoftIdentityModelTokensAudienceValidatorTypeSymbol == null
-                    || ienumString == null
                     || securityToken == null
                     || tokenValidationParameters == null) &&
                     (microsoftIdentityModelTokensLifetimeValidatorTypeSymbol == null
-                    || nullableDateTime == null
                     || securityToken == null
                     || tokenValidationParameters == null))
                 {
@@ -70,8 +68,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                     var alwaysReturnTrue = false;
 
-                    // Performing ienumString null check even though GetSpecialType should never return null to satisfy null checks in static analysis.
-                    if (microsoftIdentityModelTokensAudienceValidatorTypeSymbol != null && ienumString != null &&
+                    if (microsoftIdentityModelTokensAudienceValidatorTypeSymbol != null &&
                         microsoftIdentityModelTokensAudienceValidatorTypeSymbol.Equals(delegateCreationOperation.Type))
                     {
                         isCorrectFunction = (method) => IsAudienceValidatorFunction(method, ienumString, securityToken, tokenValidationParameters);
