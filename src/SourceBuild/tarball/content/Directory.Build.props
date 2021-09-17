@@ -18,6 +18,7 @@
     <Platform Condition="'$(Platform)' == 'AnyCPU'"></Platform>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
     <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 'arm64'">$(BuildArchitecture)</Platform>
+    <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
 
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>
