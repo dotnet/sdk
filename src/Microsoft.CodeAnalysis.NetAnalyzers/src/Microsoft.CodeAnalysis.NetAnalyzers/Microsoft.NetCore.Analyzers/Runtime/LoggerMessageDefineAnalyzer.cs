@@ -229,30 +229,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             switch (argumentExpression)
             {
-                case ILiteralOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
-                    return constantValue;
-                case IInterpolatedStringOperation interpolated:
-                    var text = "";
-                    foreach (var interpolatedStringContent in interpolated.Parts)
-                    {
-                        if (interpolatedStringContent is IInterpolatedStringTextOperation textSyntax)
-                        {
-                            text += textSyntax.Text;
-                        }
-                        else if (interpolatedStringContent is IInterpolationOperation { ConstantValue: { HasValue: true, Value: string constantValue } })
-                        {
-                            text += constantValue; // works for e.g. nameof
-                        }
-                        else
-                        {
-                            return null;
-                        }
-                    }
-                    return text;
-                case INameOfOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
+                case IOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
                     return constantValue;
                 case INameOfOperation:
-                    // return placeholder from here because actual value is not required for analysis and is hard to get
                     return "NAMEOF";
                 case IParenthesizedOperation parenthesized:
                     return TryGetFormatText(parenthesized.Operand);
@@ -267,11 +246,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     return null;
                 default:
-                    var constant = argumentExpression.ConstantValue;
-                    if (constant.HasValue && constant.Value is string constantString)
-                    {
-                        return constantString;
-                    }
                     return null;
             }
         }
