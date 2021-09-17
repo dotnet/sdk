@@ -231,10 +231,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 case IOperation { ConstantValue: { HasValue: true, Value: string constantValue } }:
                     return constantValue;
-                case INameOfOperation:
-                    return "NAMEOF";
-                case IParenthesizedOperation parenthesized:
-                    return TryGetFormatText(parenthesized.Operand);
                 case IBinaryOperation { OperatorKind: BinaryOperatorKind.Add } binary:
                     var leftText = TryGetFormatText(binary.LeftOperand);
                     var rightText = TryGetFormatText(binary.RightOperand);
