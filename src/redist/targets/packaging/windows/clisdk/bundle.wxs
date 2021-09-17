@@ -11,11 +11,16 @@
           Compressed="yes">
 
     <bal:Condition Message="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
-        WixBundleInstalled OR ((NOT (DOTNETHOME_X64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+        WixBundleInstalled OR (NOT DOTNETHOME_X64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
     <bal:Condition Message="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;">
-        WixBundleInstalled OR ((NOT (DOTNETHOME_ARM64 ~= DOTNETHOME_X86)) OR DOTNETHOMESIMILARITYCHECKOVERRIDE)
+        WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
+    </bal:Condition>
+
+    <!-- Permit same path on non-ARM64 machines since past SDKs always wrote this value -->
+    <bal:Condition Message="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;">
+        WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X64) OR (NOT NativeProcessorArchitecture=&quot;ARM64&quot;) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
     <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.Foundation">
@@ -27,7 +32,7 @@
       <PayloadGroupRef Id="DotnetCoreBAPayloads" />
     </BootstrapperApplicationRef>
 
-    <swid:Tag Regid="microsoft.com" InstallPath="[DOTNETHOME]" />
+    <swid:Tag Regid="microsoft.com" InstallPath="[$(var.Program_Files)]dotnet" />
 
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
               Variable="DotnetInstallLocationExists_x86"
@@ -56,7 +61,7 @@
               Variable="DOTNETHOME_X86"
               Path="[ProgramFilesFolder]dotnet"/>
 
-    <?if $(var.Platform)=x64?>
+    <?if $(var.Platform)!=x86?>
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x64"
               Variable="DotnetInstallLocationExists_x64"
               Result="exists"
@@ -71,11 +76,21 @@
               Root="HKLM"
               Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64"
               Value="InstallLocation" />
-
-    <util:FileSearch Id="DotnetExeSearch_x64"
+    
+    <!-- Determine native OS architecture -->
+    <util:RegistrySearch Id="CheckProcessorArchitecture_x64"
               After="DotnetInstallLocation_x64"
+              Variable="NativeProcessorArchitecture"
+              Result="value"
+              Root="HKLM"
+              Key="SYSTEM\CurrentControlSet\Control\Session Manager\Environment"
+              Value="PROCESSOR_ARCHITECTURE" />
+
+    <!-- Check default location when on x64 OS-->
+    <util:FileSearch Id="DotnetExeSearch_x64"
+              After="CheckProcessorArchitecture_x64"
               Variable="DotnetExeExists_x64"
-              Condition="NOT DotnetInstallLocationExists_x64"
+              Condition="NOT DotnetInstallLocationExists_x64 AND NativeProcessorArchitecture=&quot;AMD64&quot;"
               Result="exists"
               Path="[ProgramFiles64Folder]dotnet\dotnet.exe"/>
     <util:DirectorySearch Id="DotnetExeLocation_x64"
@@ -84,7 +99,20 @@
               Variable="DOTNETHOME_X64"
               Path="[ProgramFiles64Folder]dotnet"/>
 
-    <?elseif $(var.Platform)=arm64?>
+    <!-- Check alternate location on non-x64 OS -->
+    <util:FileSearch Id="DotnetExeSearch_alt_x64"
+              After="CheckProcessorArchitecture_x64"
+              Variable="DotnetExeExists_alt_x64"
+              Condition="NOT DotnetInstallLocationExists_x64 AND NOT NativeProcessorArchitecture=&quot;AMD64&quot;"
+              Result="exists"
+              Path="[ProgramFiles64Folder]dotnet\x64\dotnet.exe"/>
+    <util:DirectorySearch Id="DotnetExeLocation_alt_x64"
+              After="DotnetExeSearch_alt_x64"
+              Condition="DotnetExeExists_alt_x64"
+              Variable="DOTNETHOME_X64"
+              Path="[ProgramFiles64Folder]dotnet\x64"/>
+    <?endif?>
+    <?if $(var.Platform)=arm64?>
     <util:RegistrySearch Id="CheckDotnetInstallLocation_arm64"
               Variable="DotnetInstallLocationExists_arm64"
               Result="exists"
@@ -121,9 +149,9 @@
         Example:
             dotnet-sdk-3.0.100-alpha1-009719-win-x64.exe /install DOTNETHOME_X64="D:\dotnet\x64" DOTNETHOME_X86="D:\dotnet\x86" /log "installation.log" /quiet /norestart
     -->
-    <Variable Name="DOTNETHOME_X86" Type="string" Value="[ProgramFilesFolder]dotnet" bal:Overridable="yes" />
-    <Variable Name="DOTNETHOME_X64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
-    <Variable Name="DOTNETHOME_ARM64" Type="string" Value="[ProgramFiles64Folder]dotnet" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_X86" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_X64" bal:Overridable="yes" />
+    <Variable Name="DOTNETHOME_ARM64" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="string" Value="[DOTNETHOME_$(var.PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(var.ProductMoniker)" bal:Overridable="no" />
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(var.NugetVersion)" bal:Overridable="no" />

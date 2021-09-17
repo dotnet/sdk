@@ -65,6 +65,7 @@ function RunCandle
         -ext WixDependencyExtension.dll `
         "$PSScriptRoot\manifests.wxs" `
         "$PSScriptRoot\provider.wxs" `
+        "$PSScriptRoot\dotnethome_x64.wxs" `
         $InstallFileswsx
 
     Write-Information "Candle output: $candleOutput"
@@ -91,6 +92,7 @@ function RunLight
         -cultures:en-us `
         manifests.wixobj `
         provider.wixobj `
+        dotnethome_x64.wixobj `
         $InstallFilesWixobj `
         -b "$inputDir" `
         -b "$PSScriptRoot" `
