@@ -1452,6 +1452,18 @@ For improved performance, use the LoggerMessage delegates.
 |CodeFix|False|
 ---
 
+## [CA1849](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1849): Call async methods when in an async method
+
+When inside a Task-returning method, use the async version of methods, if they exist.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
