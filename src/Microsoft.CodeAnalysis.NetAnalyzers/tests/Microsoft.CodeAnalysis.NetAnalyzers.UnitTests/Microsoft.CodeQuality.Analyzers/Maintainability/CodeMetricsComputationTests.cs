@@ -503,7 +503,7 @@ class C4 { public static C2 MyC2 = null; }
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 12, ExecutableLines: 3, MntIndex: 95, CycCxty: 5, CoupledTypes: {C1, C2, C3, C4}, DepthInherit: 2)
+Assembly: (Lines: 12, ExecutableLines: 3, MntIndex: 96, CycCxty: 5, CoupledTypes: {C1, C2, C3, C4}, DepthInherit: 2)
     C: (Lines: 8, ExecutableLines: 2, MntIndex: 86, CycCxty: 1, CoupledTypes: {C1, C2, C3, C4}, DepthInherit: 1)
         C.M(C1): (Lines: 5, ExecutableLines: 2, MntIndex: 86, CycCxty: 1, CoupledTypes: {C1, C2, C3, C4})
     C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit: 1)
@@ -813,7 +813,7 @@ class C4
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 21, ExecutableLines: 5, MntIndex: 92, CycCxty: 5, CoupledTypes: {C2, C3, CAttr, System.Attribute}, DepthInherit: 2)
+Assembly: (Lines: 21, ExecutableLines: 5, MntIndex: 93, CycCxty: 5, CoupledTypes: {C2, C3, CAttr, System.Attribute}, DepthInherit: 2)
     C1: (Lines: 8, ExecutableLines: 2, MntIndex: 93, CycCxty: 1, CoupledTypes: {C2, C3, CAttr}, DepthInherit: 1)
         C1.M(int): (Lines: 5, ExecutableLines: 2, MntIndex: 93, CycCxty: 1, CoupledTypes: {C2, C3, CAttr})
     C2: (Lines: 4, ExecutableLines: 1, MntIndex: 90, CycCxty: 1, DepthInherit: 1)
@@ -1252,7 +1252,7 @@ class C2
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 10, ExecutableLines: 4, MntIndex: 97, CycCxty: 4, CoupledTypes: {C1, C2}, DepthInherit: 1)
+Assembly: (Lines: 10, ExecutableLines: 4, MntIndex: 98, CycCxty: 4, CoupledTypes: {C1, C2}, DepthInherit: 1)
     C: (Lines: 5, ExecutableLines: 3, MntIndex: 100, CycCxty: 2, CoupledTypes: {C1, C2}, DepthInherit: 1)
         C.this[int]: (Lines: 2, ExecutableLines: 3, MntIndex: 100, CycCxty: 2, CoupledTypes: {C1, C2})
             C.this[int].get: (Lines: 1, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {C1})
@@ -1293,7 +1293,7 @@ class C4 { public static C2 MyC2 = null; }
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 20, ExecutableLines: 5, MntIndex: 95, CycCxty: 6, CoupledTypes: {C1, C2, C3, C4}, DepthInherit: 3)
+Assembly: (Lines: 20, ExecutableLines: 5, MntIndex: 96, CycCxty: 6, CoupledTypes: {C1, C2, C3, C4}, DepthInherit: 3)
     C: (Lines: 16, ExecutableLines: 4, MntIndex: 86, CycCxty: 2, CoupledTypes: {C2, C3, C4}, DepthInherit: 1)
         C.P: (Lines: 13, ExecutableLines: 4, MntIndex: 86, CycCxty: 2, CoupledTypes: {C2, C3, C4})
             C.P.get: (Lines: 5, ExecutableLines: 2, MntIndex: 86, CycCxty: 1, CoupledTypes: {C2, C3, C4})
@@ -1333,7 +1333,7 @@ class C2 : C1 { }
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 99, CycCxty: 5, CoupledTypes: {C1, C2, I}, DepthInherit: 2)
+Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledTypes: {C1, C2, I}, DepthInherit: 2)
     C: (Lines: 14, ExecutableLines: 2, MntIndex: 98, CycCxty: 2, CoupledTypes: {C2, I}, DepthInherit: 1)
         C.P: (Lines: 11, ExecutableLines: 2, MntIndex: 98, CycCxty: 2, CoupledTypes: {C2, I})
             C.P.get: (Lines: 4, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes: {I})
@@ -1525,8 +1525,8 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 62, ExecutableLines: 11, MntIndex: 87, CycCxty: 16, DepthInherit: 1)
-    C: (Lines: 62, ExecutableLines: 11, MntIndex: 87, CycCxty: 16, DepthInherit: 1)
+Assembly: (Lines: 62, ExecutableLines: 11, MntIndex: 86, CycCxty: 16, DepthInherit: 1)
+    C: (Lines: 62, ExecutableLines: 11, MntIndex: 86, CycCxty: 16, DepthInherit: 1)
         C.SimpleIf(bool): (Lines: 6, ExecutableLines: 1, MntIndex: 100, CycCxty: 2)
         C.SimpleIfElse(bool): (Lines: 9, ExecutableLines: 1, MntIndex: 100, CycCxty: 2)
         C.NestedIf(bool, bool): (Lines: 9, ExecutableLines: 2, MntIndex: 91, CycCxty: 3)
@@ -1565,8 +1565,8 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 21, ExecutableLines: 8, MntIndex: 81, CycCxty: 11, DepthInherit: 1)
-    C: (Lines: 21, ExecutableLines: 8, MntIndex: 81, CycCxty: 11, DepthInherit: 1)
+Assembly: (Lines: 21, ExecutableLines: 8, MntIndex: 78, CycCxty: 11, DepthInherit: 1)
+    C: (Lines: 21, ExecutableLines: 8, MntIndex: 78, CycCxty: 11, DepthInherit: 1)
         C.SimpleConditional(bool): (Lines: 4, ExecutableLines: 1, MntIndex: 93, CycCxty: 2)
         C.NestedConditional(bool, bool, bool, bool): (Lines: 4, ExecutableLines: 2, MntIndex: 84, CycCxty: 3)
         C.MultipleConditionals(bool, bool, bool, bool, bool): (Lines: 8, ExecutableLines: 5, MntIndex: 70, CycCxty: 6)
@@ -1603,8 +1603,8 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 21, ExecutableLines: 7, MntIndex: 79, CycCxty: 22, DepthInherit: 1)
-    C: (Lines: 21, ExecutableLines: 7, MntIndex: 79, CycCxty: 22, DepthInherit: 1)
+Assembly: (Lines: 21, ExecutableLines: 7, MntIndex: 77, CycCxty: 22, DepthInherit: 1)
+    C: (Lines: 21, ExecutableLines: 7, MntIndex: 77, CycCxty: 22, DepthInherit: 1)
         C.SimpleLogical(bool, bool, bool, bool): (Lines: 4, ExecutableLines: 1, MntIndex: 91, CycCxty: 3)
         C.NestedLogical(bool, bool, bool, bool): (Lines: 4, ExecutableLines: 1, MntIndex: 89, CycCxty: 4)
         C.MultipleLogicals(bool, bool, bool, bool, bool): (Lines: 8, ExecutableLines: 5, MntIndex: 67, CycCxty: 15)
@@ -1655,8 +1655,8 @@ class C2 { public readonly bool B = false; }
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 34, ExecutableLines: 11, MntIndex: 90, CycCxty: 26, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
-   C: (Lines: 33, ExecutableLines: 10, MntIndex: 87, CycCxty: 25, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
+Assembly: (Lines: 34, ExecutableLines: 11, MntIndex: 88, CycCxty: 26, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
+   C: (Lines: 33, ExecutableLines: 10, MntIndex: 82, CycCxty: 25, CoupledTypes: {C2, System.Nullable<T>}, DepthInherit: 1)
       C.c2: (Lines: 1, ExecutableLines: 1, MntIndex: 93, CycCxty: 0, CoupledTypes: {C2})
       C.b: (Lines: 1, ExecutableLines: 1, MntIndex: 93, CycCxty: 0)
       C.SimpleCoalesce(bool?): (Lines: 4, ExecutableLines: 1, MntIndex: 93, CycCxty: 2, CoupledTypes: {System.Nullable<T>})
@@ -1753,8 +1753,8 @@ class C
 ";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 75, ExecutableLines: 23, MntIndex: 74, CycCxty: 17, CoupledTypes: {System.Collections.IEnumerable, System.Console}, DepthInherit: 1)
-    C: (Lines: 75, ExecutableLines: 23, MntIndex: 74, CycCxty: 17, CoupledTypes: {System.Collections.IEnumerable, System.Console}, DepthInherit: 1)
+Assembly: (Lines: 75, ExecutableLines: 23, MntIndex: 73, CycCxty: 17, CoupledTypes: {System.Collections.IEnumerable, System.Console}, DepthInherit: 1)
+    C: (Lines: 75, ExecutableLines: 23, MntIndex: 73, CycCxty: 17, CoupledTypes: {System.Collections.IEnumerable, System.Console}, DepthInherit: 1)
         C.SimpleWhileLoop(bool, int): (Lines: 7, ExecutableLines: 2, MntIndex: 90, CycCxty: 2)
         C.SimpleForLoop(): (Lines: 7, ExecutableLines: 2, MntIndex: 84, CycCxty: 2, CoupledTypes: {System.Console})
         C.SimpleForEachLoop(int[]): (Lines: 7, ExecutableLines: 2, MntIndex: 90, CycCxty: 2, CoupledTypes: {System.Collections.IEnumerable, System.Console})
