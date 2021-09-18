@@ -466,6 +466,12 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="LayoutWorkloadUserLocalMarker">
+    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/userlocal"
+                      Overwrite="true" />
+  </Target>
+  
+
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
 
     <PropertyGroup>
@@ -535,6 +541,7 @@
                             LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutManifests;
+                            LayoutWorkloadUserLocalMarker;
                             LayoutBundledTools;
                             RetargetTools;
                             CrossgenLayout;
