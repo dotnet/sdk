@@ -466,8 +466,9 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="LayoutWorkloadUserLocalMarker">
-    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/userlocal"
+  <Target Name="LayoutWorkloadUserLocalMarker"
+          Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
                       Overwrite="true" />
   </Target>
   
