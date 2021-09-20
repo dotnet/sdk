@@ -242,6 +242,81 @@
         <target state="translated">Elimine el finalizador del tipo "{0}", reemplace el valor de "Dispose(bool disposing)" y coloque la lógica de finalización en la ruta de código de manera que el valor de "disposing" se establezca como falso. De lo contrario, se duplicarían las invocaciones de "Dispose" ya que el tipo Base "{1}" también ofrece un finalizador.</target>
         <note />
       </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
+        <source>The logging message template should not vary between calls.</source>
+        <target state="new">The logging message template should not vary between calls.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
+        <source>The logging message template should not vary between calls to '{0}'</source>
+        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
+        <source>Template should be a static expression</source>
+        <target state="new">Template should be a static expression</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
+        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
+        <source>Parameter count mismatch</source>
+        <target state="new">Parameter count mismatch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
+        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
+        <source>Named placeholders should not be numeric values</source>
+        <target state="new">Named placeholders should not be numeric values</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
+        <source>For improved performance, use the LoggerMessage delegates.</source>
+        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
+        <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
+        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
+        <source>Use the LoggerMessage delegates</source>
+        <target state="new">Use the LoggerMessage delegates</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
+        <source>Use PascalCase for named placeholders in the logging message template.</source>
+        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
+        <source>Use PascalCase for named placeholders in the logging message template</source>
+        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
+        <source>Use PascalCase for named placeholders</source>
+        <target state="new">Use PascalCase for named placeholders</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
         <target state="translated">Aplicar "AttributeUsageAttribute"</target>

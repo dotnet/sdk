@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 .WithArguments(propertyName);
 
         [Fact]
-        public async Task CSharp_CA2227_Test()
+        public async Task CSharp_CA2227_TestAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -43,7 +43,7 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public async Task CSharp_CA2227_Test_GenericCollection()
+        public async Task CSharp_CA2227_Test_GenericCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -56,7 +56,7 @@ public class A
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_CA2227_Test_Internal()
+        public async Task CSharp_CA2227_Test_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -87,7 +87,7 @@ public class A4
         }
 
         [Fact]
-        public async Task Basic_CA2227_Test()
+        public async Task Basic_CA2227_TestAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -99,7 +99,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task Basic_CA2227_Test_Internal()
+        public async Task Basic_CA2227_Test_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -143,7 +143,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CA2227_Inherited()
+        public async Task CSharp_CA2227_InheritedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -156,7 +156,7 @@ public class A<T>
         }
 
         [Fact]
-        public async Task CSharp_CA2227_NotPublic()
+        public async Task CSharp_CA2227_NotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -174,7 +174,7 @@ class A
         }
 
         [Fact]
-        public async Task CSharp_CA2227_Array()
+        public async Task CSharp_CA2227_ArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -187,7 +187,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharp_CA2227_Indexer()
+        public async Task CSharp_CA2227_IndexerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -204,7 +204,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharp_CA2227_NonCollection()
+        public async Task CSharp_CA2227_NonCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -219,7 +219,7 @@ public class A
         [Fact]
         [WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
         [WorkItem(3313, "https://github.com/dotnet/roslyn-analyzers/issues/3313")]
-        public async Task CA2227_ReadOnlyCollections()
+        public async Task CA2227_ReadOnlyCollectionsAsync()
         {
             // Readonly interfaces don't implement ICollection/ICollection<T> so won't report a diagnostic
 
@@ -252,7 +252,7 @@ End Class");
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public async Task CSharp_CA2227_ImmutableCollection()
+        public async Task CSharp_CA2227_ImmutableCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Immutable;
@@ -268,7 +268,7 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public async Task CSharp_CA2227_ImmutableCollection_02()
+        public async Task CSharp_CA2227_ImmutableCollection_02Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Immutable;
@@ -285,7 +285,7 @@ public class A
         }
 
         [Fact, WorkItem(1900, "https://github.com/dotnet/roslyn-analyzers/issues/1900")]
-        public async Task CSharp_CA2227_ImmutableCollection_03()
+        public async Task CSharp_CA2227_ImmutableCollection_03Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -415,7 +415,7 @@ public class CustomImmutableList : IImmutableList<int>, ICollection<int>
         }
 
         [Fact]
-        public async Task CSharp_CA2227_DataMember()
+        public async Task CSharp_CA2227_DataMemberAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -437,7 +437,7 @@ class A
         }
 
         [Fact, WorkItem(4461, "https://github.com/dotnet/roslyn-analyzers/issues/4461")]
-        public async Task CA2227_CSharp_InitPropertyRecord()
+        public async Task CA2227_CSharp_InitPropertyRecordAsync()
         {
             await new VerifyCS.Test
             {
@@ -451,7 +451,7 @@ public record MyRecord(IList<int> Items);",
         }
 
         [Fact, WorkItem(4461, "https://github.com/dotnet/roslyn-analyzers/issues/4461")]
-        public async Task CA2227_CSharp_InitProperty()
+        public async Task CA2227_CSharp_InitPropertyAsync()
         {
             await new VerifyCS.Test
             {

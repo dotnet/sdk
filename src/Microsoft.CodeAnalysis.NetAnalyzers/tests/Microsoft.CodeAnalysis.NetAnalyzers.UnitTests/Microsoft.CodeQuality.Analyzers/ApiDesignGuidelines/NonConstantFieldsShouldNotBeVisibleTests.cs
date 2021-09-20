@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class NonConstantFieldsShouldNotBeVisibleTests
     {
         [Fact]
-        public async Task DefaultVisibilityCS()
+        public async Task DefaultVisibilityCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -26,7 +26,7 @@ public class A
         }
 
         [Fact]
-        public async Task DefaultVisibilityVB()
+        public async Task DefaultVisibilityVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -35,7 +35,7 @@ End Class");
         }
 
         [Fact]
-        public async Task PublicVariableCS()
+        public async Task PublicVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -45,7 +45,7 @@ public class A
         }
 
         [Fact]
-        public async Task PublicVariableVB()
+        public async Task PublicVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -54,7 +54,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ExternallyVisibleStaticVariableCS()
+        public async Task ExternallyVisibleStaticVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -64,7 +64,7 @@ public class A
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task PublicNotExternallyVisibleStaticVariableCS()
+        public async Task PublicNotExternallyVisibleStaticVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class A
@@ -83,7 +83,7 @@ public class B
         }
 
         [Fact]
-        public async Task ExternallyVisibleStaticVariableVB()
+        public async Task ExternallyVisibleStaticVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -92,7 +92,7 @@ End Class", GetBasicResultAt(3, 19));
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task PublicNotExternallyVisibleStaticVariableVB()
+        public async Task PublicNotExternallyVisibleStaticVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class A
@@ -108,7 +108,7 @@ End Class
         }
 
         [Fact]
-        public async Task PublicStaticReadonlyVariableCS()
+        public async Task PublicStaticReadonlyVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -118,7 +118,7 @@ public class A
         }
 
         [Fact]
-        public async Task PublicStaticReadonlyVariableVB()
+        public async Task PublicStaticReadonlyVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -127,7 +127,7 @@ End Class");
         }
 
         [Fact]
-        public async Task PublicConstVariableCS()
+        public async Task PublicConstVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -137,7 +137,7 @@ public class A
         }
 
         [Fact]
-        public async Task PublicConstVariableVB()
+        public async Task PublicConstVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A

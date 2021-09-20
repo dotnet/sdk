@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForInformationDisclosureVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -51,7 +51,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -85,7 +85,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic()
+        public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -118,7 +118,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Solution_NoDiagnostic()
+        public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -148,7 +148,7 @@ End Class",
         }
 
         [Fact]
-        public async Task ExceptionToString_ConsoleOutWriteLine()
+        public async Task ExceptionToString_ConsoleOutWriteLineAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -172,7 +172,7 @@ public class Class
         }
 
         [Fact]
-        public async Task NullReferenceExceptionToString_HttpResponseWrite()
+        public async Task NullReferenceExceptionToString_HttpResponseWriteAsync()
         {
             await new VerifyCS.Test
             {
@@ -211,7 +211,7 @@ public class Class
         }
 
         [Fact]
-        public async Task NullReferenceExceptionMessage_HtmlSelectInnerHtml()
+        public async Task NullReferenceExceptionMessage_HtmlSelectInnerHtmlAsync()
         {
             await new VerifyCS.Test
             {
@@ -251,7 +251,7 @@ public class Class
         }
 
         [Fact]
-        public async Task NullReferenceExceptionStackTrace_BulletedListText()
+        public async Task NullReferenceExceptionStackTrace_BulletedListTextAsync()
         {
             await new VerifyCS.Test
             {
@@ -291,7 +291,7 @@ public class Class
         }
 
         [Fact]
-        public async Task TryUsingTryUsingTry_NoDiagnostic()
+        public async Task TryUsingTryUsingTry_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -355,7 +355,7 @@ public class Class
         }
 
         [Fact, WorkItem(2457, "https://github.com/dotnet/roslyn-analyzers/issues/2457")]
-        public async Task PredicateAnalysisAssert_PredicatedOnNonBoolEntity()
+        public async Task PredicateAnalysisAssert_PredicatedOnNonBoolEntityAsync()
         {
             await new VerifyCS.Test
             {

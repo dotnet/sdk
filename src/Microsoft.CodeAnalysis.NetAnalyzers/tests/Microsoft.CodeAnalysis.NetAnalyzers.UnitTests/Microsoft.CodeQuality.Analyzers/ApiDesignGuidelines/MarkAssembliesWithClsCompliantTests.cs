@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class MarkAssembliesWithCLSCompliantAttributeTests
     {
         [Fact]
-        public async Task CA1014CA1016BasicTestWithCLSCompliantAttributeNone()
+        public async Task CA1014CA1016BasicTestWithCLSCompliantAttributeNoneAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"
@@ -31,7 +31,7 @@ imports System.Reflection
         }
 
         [Fact]
-        public async Task CA1014BasicTestWithNoVersionAttribute()
+        public async Task CA1014BasicTestWithNoVersionAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"
@@ -48,7 +48,7 @@ imports System.Reflection
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithComplianceAttributeNotFromBCL()
+        public async Task CA1014CSharpTestWithComplianceAttributeNotFromBCLAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -71,7 +71,7 @@ class CLSCompliantAttribute : Attribute {
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithNoCLSComplianceAttribute()
+        public async Task CA1014CSharpTestWithNoCLSComplianceAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -89,7 +89,7 @@ class Program
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithCLSCompliantAttribute()
+        public async Task CA1014CSharpTestWithCLSCompliantAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -108,7 +108,7 @@ class Program
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithTwoFilesWithAttribute()
+        public async Task CA1014CSharpTestWithTwoFilesWithAttributeAsync()
         {
             await new VerifyCS.Test
             {
@@ -137,7 +137,7 @@ using System;
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithCLSCompliantAttributeTruncated()
+        public async Task CA1014CSharpTestWithCLSCompliantAttributeTruncatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -156,7 +156,7 @@ class Program
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithCLSCompliantAttributeFullyQualified()
+        public async Task CA1014CSharpTestWithCLSCompliantAttributeFullyQualifiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -173,7 +173,7 @@ class Program
         }
 
         [Fact]
-        public async Task CA1014CSharpTestWithCLSCompliantAttributeNone()
+        public async Task CA1014CSharpTestWithCLSCompliantAttributeNoneAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -189,7 +189,7 @@ class Program
         }
 
         [Fact, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
-        public async Task CA1014CSharpTestWithRazorCompiledItemAttribute()
+        public async Task CA1014CSharpTestWithRazorCompiledItemAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;

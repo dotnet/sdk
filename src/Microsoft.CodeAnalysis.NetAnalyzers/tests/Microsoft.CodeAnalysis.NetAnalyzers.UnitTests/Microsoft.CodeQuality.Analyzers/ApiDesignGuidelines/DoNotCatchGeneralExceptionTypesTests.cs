@@ -16,7 +16,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
     public class DoNotCatchGeneralExceptionTypesTests
     {
         [Fact]
-        public async Task CSharp_Diagnostic_GeneralCatch()
+        public async Task CSharp_Diagnostic_GeneralCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -44,7 +44,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GeneralCatch()
+        public async Task Basic_Diagnostic_GeneralCatchAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -64,7 +64,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GeneralCatchInGetAccessor()
+        public async Task CSharp_Diagnostic_GeneralCatchInGetAccessorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -96,7 +96,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GeneralCatchInGetAccessor()
+        public async Task Basic_Diagnostic_GeneralCatchInGetAccessorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -119,7 +119,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_GeneralCatchRethrow()
+        public async Task CSharp_NoDiagnostic_GeneralCatchRethrowAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -148,7 +148,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_GeneralCatchRethrow()
+        public async Task Basic_NoDiagnostic_GeneralCatchRethrowAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -169,7 +169,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_GeneralCatchThrowNew()
+        public async Task CSharp_NoDiagnostic_GeneralCatchThrowNewAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -198,7 +198,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_GeneralCatchThrowNew()
+        public async Task Basic_NoDiagnostic_GeneralCatchThrowNewAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -219,7 +219,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
+        public async Task CSharp_Diagnostic_GeneralCatchWithRethrowFromSpecificCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -248,7 +248,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GeneralCatchWithRethrowFromSpecificCatch()
+        public async Task Basic_Diagnostic_GeneralCatchWithRethrowFromSpecificCatchAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -269,7 +269,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GenericException()
+        public async Task CSharp_Diagnostic_GenericExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -294,7 +294,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GenericException()
+        public async Task Basic_Diagnostic_GenericExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
@@ -314,7 +314,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_GenericExceptionRethrown()
+        public async Task CSharp_NoDiagnostic_GenericExceptionRethrownAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -340,7 +340,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_GenericExceptionRethrown()
+        public async Task Basic_NoDiagnostic_GenericExceptionRethrownAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
@@ -361,7 +361,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_ThrowNewWrapped()
+        public async Task CSharp_NoDiagnostic_ThrowNewWrappedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -387,7 +387,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_ThrowNewWrapped()
+        public async Task Basic_NoDiagnostic_ThrowNewWrappedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
@@ -408,7 +408,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_SystemException()
+        public async Task CSharp_Diagnostic_SystemExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -433,7 +433,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_SystemException()
+        public async Task Basic_Diagnostic_SystemExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -452,7 +452,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GeneralCatchWithFilter()
+        public async Task CSharp_Diagnostic_GeneralCatchWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -476,7 +476,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GeneralCatchWithFilter()
+        public async Task Basic_Diagnostic_GeneralCatchWithFilterAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System.IO
@@ -494,7 +494,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GenericExceptionWithoutVariableWithFilter()
+        public async Task CSharp_Diagnostic_GenericExceptionWithoutVariableWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -518,7 +518,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_NoDiagnostic_GenericExceptionWithVariableWithFilter()
+        public async Task CSharp_NoDiagnostic_GenericExceptionWithVariableWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -542,7 +542,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_NoDiagnostic_GenericExceptionWithVariableWithFilter()
+        public async Task Basic_NoDiagnostic_GenericExceptionWithVariableWithFilterAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
@@ -561,7 +561,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_Diagnostic_GeneralCatchInLambdaExpression()
+        public async Task CSharp_Diagnostic_GeneralCatchInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -589,7 +589,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task Basic_Diagnostic_GeneralCatchInLambdaExpression()
+        public async Task Basic_Diagnostic_GeneralCatchInLambdaExpressionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
             Imports System
@@ -630,7 +630,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         }
 
         [Fact, WorkItem(2518, "https://github.com/dotnet/roslyn-analyzers/issues/2518")]
-        public async Task CSharp_NoDiagnostic_SpecificExceptionWithoutVariable()
+        public async Task CSharp_NoDiagnostic_SpecificExceptionWithoutVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -660,7 +660,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
         [InlineData("dotnet_code_quality." + DoNotCatchGeneralExceptionTypesAnalyzer.RuleId + ".disallowed_symbol_names = NullReferenceException")]
         // Match by type documentation ID
         [InlineData(@"dotnet_code_quality.disallowed_symbol_names = T:System.NullReferenceException")]
-        public async Task EditorConfigConfiguration_DisallowedExceptionTypes(string editorConfigText)
+        public async Task EditorConfigConfiguration_DisallowedExceptionTypesAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -737,7 +737,7 @@ End Class"
         // Check with wildcard signature
         [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1*")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = Tes*")]
-        public async Task CA1031_EditorConfig_ExcludedSymbolNames(string editorConfigText)
+        public async Task CA1031_EditorConfig_ExcludedSymbolNamesAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {

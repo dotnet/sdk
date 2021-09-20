@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public class AvoidUninstantiatedInternalClassesTests
     {
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClass()
+        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C { }
@@ -27,7 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClass()
+        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -36,14 +36,14 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalStruct()
+        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalStructAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal struct CInternal { }");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalStruct()
+        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalStructAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Structure CInternal
@@ -51,14 +51,14 @@ End Structure");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedPublicClass()
+        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"public class C { }");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedPublicClass()
+        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Public Class C
@@ -66,7 +66,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClass()
+        public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C { }
@@ -78,7 +78,7 @@ public class D
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClass()
+        public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -90,7 +90,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClass()
+        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"public class C
@@ -101,7 +101,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClass()
+        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Public Class C
@@ -112,7 +112,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClassNestedInPublicClass()
+        public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"public class C
@@ -124,7 +124,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClassNestedInPublicClass()
+        public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Public Class C
@@ -136,7 +136,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InternalModule()
+        public async Task CA1812_Basic_NoDiagnostic_InternalModuleAsync()
         {
             // No static classes in VB.
             await VerifyVB.VerifyAnalyzerAsync(
@@ -145,14 +145,14 @@ End Module");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InternalAbstractClass()
+        public async Task CA1812_CSharp_NoDiagnostic_InternalAbstractClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal abstract class A { }");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InternalAbstractClass()
+        public async Task CA1812_Basic_NoDiagnostic_InternalAbstractClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend MustInherit Class A
@@ -160,7 +160,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InternalDelegate()
+        public async Task CA1812_CSharp_NoDiagnostic_InternalDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N
@@ -170,7 +170,7 @@ namespace N
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InternalDelegate()
+        public async Task CA1812_Basic_NoDiagnostic_InternalDelegateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Namespace N
@@ -179,7 +179,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InternalEnum()
+        public async Task CA1812_CSharp_NoDiagnostic_InternalEnumAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"namespace N
@@ -189,7 +189,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InternalEnum()
+        public async Task CA1812_Basic_NoDiagnostic_InternalEnumAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Namespace N
@@ -200,7 +200,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_AttributeClass()
+        public async Task CA1812_CSharp_NoDiagnostic_AttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;
@@ -210,7 +210,7 @@ internal class MyOtherAttribute: MyAttribute {}");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_AttributeClass()
+        public async Task CA1812_Basic_NoDiagnostic_AttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System
@@ -225,7 +225,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoid()
+        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoidAsync()
         {
             await new VerifyCS.Test
             {
@@ -244,7 +244,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoid()
+        public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoidAsync()
         {
             await new VerifyVB.Test
             {
@@ -263,7 +263,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningInt()
+        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningIntAsync()
         {
             await new VerifyCS.Test
             {
@@ -282,7 +282,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningInt()
+        public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningIntAsync()
         {
             await new VerifyVB.Test
             {
@@ -302,7 +302,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTask()
+        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTaskAsync()
         {
             await new VerifyCS.Test
             {
@@ -323,7 +323,7 @@ internal static class C
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTaskInt()
+        public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTaskIntAsync()
         {
             await new VerifyCS.Test
             {
@@ -344,7 +344,7 @@ internal static class C
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_MainMethodIsNotStatic()
+        public async Task CA1812_CSharp_Diagnostic_MainMethodIsNotStaticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C
@@ -355,7 +355,7 @@ internal static class C
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_MainMethodIsNotStatic()
+        public async Task CA1812_Basic_Diagnostic_MainMethodIsNotStaticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -366,7 +366,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_MainMethodIsDifferentlyCased()
+        public async Task CA1812_Basic_NoDiagnostic_MainMethodIsDifferentlyCasedAsync()
         {
             await new VerifyVB.Test
             {
@@ -392,7 +392,7 @@ End Class",
         // The following tests are just to ensure that the messages are formatted properly
         // for types within namespaces.
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassInNamespace()
+        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"namespace N
@@ -403,7 +403,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassInNamespace()
+        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Namespace N
@@ -414,7 +414,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespace()
+        public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"namespace N
@@ -428,7 +428,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespace()
+        public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Namespace N
@@ -441,7 +441,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef1ExportedClass()
+        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef1ExportedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;
@@ -461,7 +461,7 @@ internal class C
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef1ExportedClass()
+        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef1ExportedClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System
@@ -479,7 +479,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef2ExportedClass()
+        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef2ExportedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;
@@ -499,7 +499,7 @@ internal class C
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef2ExportedClass()
+        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef2ExportedClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System
@@ -517,7 +517,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_ImplementsIConfigurationSectionHandler()
+        public async Task CA1812_CSharp_NoDiagnostic_ImplementsIConfigurationSectionHandlerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System.Configuration;
@@ -533,7 +533,7 @@ internal class C : IConfigurationSectionHandler
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_ImplementsIConfigurationSectionHandler()
+        public async Task CA1812_Basic_NoDiagnostic_ImplementsIConfigurationSectionHandlerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System.Configuration
@@ -548,7 +548,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromConfigurationSection()
+        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromConfigurationSectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System.Configuration;
@@ -566,7 +566,7 @@ internal class C : ConfigurationSection
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_DerivesFromConfigurationSection()
+        public async Task CA1812_Basic_NoDiagnostic_DerivesFromConfigurationSectionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System.Configuration
@@ -582,7 +582,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromSafeHandle()
+        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromSafeHandleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;
@@ -605,7 +605,7 @@ internal class MySafeHandle : SafeHandle
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_DerivesFromSafeHandle()
+        public async Task CA1812_Basic_NoDiagnostic_DerivesFromSafeHandleAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System
@@ -631,7 +631,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromTraceListener()
+        public async Task CA1812_CSharp_NoDiagnostic_DerivesFromTraceListenerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System.Diagnostics;
@@ -644,7 +644,7 @@ internal class MyTraceListener : TraceListener
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_DerivesFromTraceListener()
+        public async Task CA1812_Basic_NoDiagnostic_DerivesFromTraceListenerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System.Diagnostics
@@ -661,7 +661,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_InternalNestedTypeIsInstantiated()
+        public async Task CA1812_CSharp_NoDiagnostic_InternalNestedTypeIsInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C
@@ -679,7 +679,7 @@ public class D
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_InternalNestedTypeIsInstantiated()
+        public async Task CA1812_Basic_NoDiagnostic_InternalNestedTypeIsInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -693,7 +693,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_InternalNestedTypeIsNotInstantiated()
+        public async Task CA1812_CSharp_Diagnostic_InternalNestedTypeIsNotInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C
@@ -706,7 +706,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_InternalNestedTypeIsNotInstantiated()
+        public async Task CA1812_Basic_Diagnostic_InternalNestedTypeIsNotInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -717,7 +717,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_Diagnostic_PrivateNestedTypeIsInstantiated()
+        public async Task CA1812_CSharp_Diagnostic_PrivateNestedTypeIsInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal class C
@@ -731,7 +731,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_Basic_Diagnostic_PrivateNestedTypeIsInstantiated()
+        public async Task CA1812_Basic_Diagnostic_PrivateNestedTypeIsInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Class C
@@ -744,7 +744,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_StaticHolderClass()
+        public async Task CA1812_CSharp_NoDiagnostic_StaticHolderClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"internal static class C
@@ -754,7 +754,7 @@ End Class",
         }
 
         [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
-        public async Task CA1812_CSharp_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructor()
+        public async Task CA1812_CSharp_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -787,7 +787,7 @@ internal class D : C<int>
         }
 
         [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
-        public async Task CA1812_CSharp_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructor()
+        public async Task CA1812_CSharp_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -824,7 +824,7 @@ internal class D : C<int>
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_StaticHolderClass()
+        public async Task CA1812_Basic_NoDiagnostic_StaticHolderClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Friend Module C
@@ -834,13 +834,13 @@ End Module");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_EmptyInternalStaticClass()
+        public async Task CA1812_CSharp_NoDiagnostic_EmptyInternalStaticClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("internal static class S { }");
         }
 
         [Fact]
-        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssembly()
+        public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssemblyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System.Runtime.CompilerServices;
@@ -852,7 +852,7 @@ internal class C { }"
         }
 
         [Fact]
-        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssembly()
+        public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssemblyAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"Imports System.Runtime.CompilerServices
@@ -865,7 +865,7 @@ End Class"
         }
 
         [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
-        public async Task CA1812_Basic_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructor()
+        public async Task CA1812_Basic_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"
@@ -893,7 +893,7 @@ End Class");
         }
 
         [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
-        public async Task CA1812_Basic_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructor()
+        public async Task CA1812_Basic_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"
@@ -927,7 +927,7 @@ End Class");
         }
 
         [Fact, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
-        public async Task CA1812_CSharp_GenericInternalClass_InstanciatedNoDiagnostic()
+        public async Task CA1812_CSharp_GenericInternalClass_InstanciatedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -965,7 +965,7 @@ public static class X
         }
 
         [Fact, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
-        public async Task CA1812_Basic_GenericInternalClass_InstanciatedNoDiagnostic()
+        public async Task CA1812_Basic_GenericInternalClass_InstanciatedNoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1002,7 +1002,7 @@ End Module
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraint()
+        public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraintAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1030,7 +1030,7 @@ internal class Program
         }
 
         [Fact, WorkItem(1447, "https://github.com/dotnet/roslyn-analyzers/issues/1447")]
-        public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraintInvokedFromGenericMethod()
+        public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraintInvokedFromGenericMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class InstantiatedClass
@@ -1093,7 +1093,7 @@ internal static class C
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_Basic_NoDiagnostic_GenericMethodWithNewConstraint()
+        public async Task CA1812_Basic_NoDiagnostic_GenericMethodWithNewConstraintAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1113,7 +1113,7 @@ End Module");
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithNewConstraint()
+        public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithNewConstraintAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class InstantiatedType
@@ -1134,7 +1134,7 @@ internal class Program
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_Basic_NoDiagnostic_GenericTypeWithNewConstraint()
+        public async Task CA1812_Basic_NoDiagnostic_GenericTypeWithNewConstraintAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1153,7 +1153,7 @@ End Module");
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_CSharp_Diagnostic_NestedGenericTypeWithNoNewConstraint()
+        public async Task CA1812_CSharp_Diagnostic_NestedGenericTypeWithNoNewConstraintAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -1178,7 +1178,7 @@ internal class Program
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_Basic_Diagnostic_NestedGenericTypeWithNoNewConstraint()
+        public async Task CA1812_Basic_Diagnostic_NestedGenericTypeWithNoNewConstraintAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Collections.Generic
@@ -1199,7 +1199,7 @@ End Module",
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_CSharp_NoDiagnostic_NestedGenericTypeWithNewConstraint()
+        public async Task CA1812_CSharp_NoDiagnostic_NestedGenericTypeWithNewConstraintAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -1226,7 +1226,7 @@ internal class Program
         }
 
         [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
-        public async Task CA1812_Basic_NoDiagnostic_NestedGenericTypeWithNewConstraint()
+        public async Task CA1812_Basic_NoDiagnostic_NestedGenericTypeWithNewConstraintAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Collections.Generic
@@ -1248,7 +1248,7 @@ End Module");
         }
 
         [Fact, WorkItem(1739, "https://github.com/dotnet/roslyn-analyzers/issues/1739")]
-        public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithRecursiveConstraint()
+        public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithRecursiveConstraintAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public abstract class JobStateBase<TState>
@@ -1268,7 +1268,7 @@ public class JobStateChangeHandler<TState>
         }
 
         [Fact, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
-        public async Task CA1812_CSharp_NoDiagnostic_TypeDeclaredInCoClassAttribute()
+        public async Task CA1812_CSharp_NoDiagnostic_TypeDeclaredInCoClassAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -1281,7 +1281,7 @@ internal class CSomeClass {}
         }
 
         [Fact, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
-        public async Task CA1812_CSharp_DontFailOnInvalidCoClassUsages()
+        public async Task CA1812_CSharp_DontFailOnInvalidCoClassUsagesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -1309,7 +1309,7 @@ internal class CSomeClass {}
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeTypeName_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeTypeName_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1328,7 +1328,7 @@ namespace SomeNamespace
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1348,7 +1348,7 @@ namespace SomeNamespace
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1365,7 +1365,7 @@ public class MyTextBox { }");
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeType_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeType_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1381,7 +1381,7 @@ namespace SomeNamespace
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeNameWithBaseTypeName_NoDiagnostic()
+        public async Task CA1812_DesignerAttributeTypeNameWithBaseTypeName_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1398,7 +1398,7 @@ namespace SomeNamespace
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeNameWithBaseType_NoDiagnostic()
+        public async Task CA1812_DesignerAttributeTypeNameWithBaseType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1415,7 +1415,7 @@ namespace SomeNamespace
         }
 
         [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
-        public async Task CA1812_DesignerAttributeTypeWithBaseType_NoDiagnostic()
+        public async Task CA1812_DesignerAttributeTypeWithBaseType_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1436,7 +1436,7 @@ namespace SomeNamespace
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1459,7 +1459,7 @@ namespace SomeNamespace
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
         [InlineData("System.ComponentModel.DesignerAttribute")]
         [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
-        public async Task CA1812_DesignerAttributeNestedType_NoDiagnostic(string attributeFullName)
+        public async Task CA1812_DesignerAttributeNestedType_NoDiagnosticAsync(string attributeFullName)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1476,7 +1476,7 @@ namespace SomeNamespace
         }
 
         [Fact, WorkItem(3199, "https://github.com/dotnet/roslyn-analyzers/issues/3199")]
-        public async Task CA1812_AliasingTypeNewConstraint_NoDiagnostic()
+        public async Task CA1812_AliasingTypeNewConstraint_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -1516,7 +1516,7 @@ public class CC
         }
 
         [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
-        public async Task CA1812_VisualBasic_StaticLikeClass_NoDiagnostic()
+        public async Task CA1812_VisualBasic_StaticLikeClass_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1580,7 +1580,7 @@ End Class");
         }
 
         [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
-        public async Task CA1812_VisualBasic_NotStaticLikeClass_Diagnostic()
+        public async Task CA1812_VisualBasic_NotStaticLikeClass_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1597,7 +1597,7 @@ End Class");
         }
 
         [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
-        public async Task CA1812_CSharp_TopLevelStatements_NoDiagnostic()
+        public async Task CA1812_CSharp_TopLevelStatements_NoDiagnosticAsync()
         {
             await new VerifyCS.Test()
             {

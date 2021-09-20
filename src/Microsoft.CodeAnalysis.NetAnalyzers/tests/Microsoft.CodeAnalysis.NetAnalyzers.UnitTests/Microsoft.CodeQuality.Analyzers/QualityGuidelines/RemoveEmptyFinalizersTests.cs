@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class RemoveEmptyFinalizersTests
     {
         [Fact]
-        public async Task CA1821CSharpTestNoWarning()
+        public async Task CA1821CSharpTestNoWarningAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -97,7 +97,7 @@ public class Class7
         }
 
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizers()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -122,7 +122,7 @@ public class Class2
         }
 
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithScope()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -146,7 +146,7 @@ public class Class2
         }
 
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -168,7 +168,7 @@ public class Class1
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail_ExpressionBody()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail_ExpressionBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -187,7 +187,7 @@ public class Class1
         }
 
         [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
-        public async Task CA1821_DebugFailAndDebugDirective_NoDiagnostic()
+        public async Task CA1821_DebugFailAndDebugDirective_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -245,7 +245,7 @@ End Class
         }
 
         [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
-        public async Task CA1821_DebugFailAndReleaseDirective_NoDiagnostic_FalsePositive()
+        public async Task CA1821_DebugFailAndReleaseDirective_NoDiagnostic_FalsePositiveAsync()
         {
             await new VerifyCS.Test
             {
@@ -301,7 +301,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirectiveAroundStatements()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirectiveAroundStatementsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -334,7 +334,7 @@ public class Class2
 
         [WorkItem(820941, "DevDiv")]
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithNonInvocationBody()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithNonInvocationBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -353,7 +353,7 @@ public class Class2
         }
 
         [Fact]
-        public async Task CA1821BasicTestNoWarning()
+        public async Task CA1821BasicTestNoWarningAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
@@ -401,7 +401,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1821BasicTestRemoveEmptyFinalizers()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
@@ -433,7 +433,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1821BasicTestRemoveEmptyFinalizersWithScope()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
@@ -462,7 +462,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1821BasicTestRemoveEmptyFinalizersWithDebugFail()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithDebugFailAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Diagnostics
@@ -486,7 +486,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowStatement()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowStatementAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -500,7 +500,7 @@ public class Class1
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowExpression()
+        public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -511,7 +511,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1821BasicTestRemoveEmptyFinalizersWithThrowStatement()
+        public async Task CA1821BasicTestRemoveEmptyFinalizersWithThrowStatementAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -525,7 +525,7 @@ End Class
         }
 
         [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
-        public async Task CA1821CSharpRemoveEmptyFinalizersInvalidInvocationExpression()
+        public async Task CA1821CSharpRemoveEmptyFinalizersInvalidInvocationExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
@@ -539,7 +539,7 @@ public class C1
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public async Task CA1821CSharpRemoveEmptyFinalizers_ErrorCodeWithBothBlockAndExpressionBody()
+        public async Task CA1821CSharpRemoveEmptyFinalizers_ErrorCodeWithBothBlockAndExpressionBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
@@ -551,7 +551,7 @@ public class C1
         }
 
         [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
-        public async Task CA1821BasicRemoveEmptyFinalizersInvalidInvocationExpression()
+        public async Task CA1821BasicRemoveEmptyFinalizersInvalidInvocationExpressionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -563,7 +563,7 @@ End Class
         }
 
         [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
-        public async Task CA1821CSharpRemoveEmptyFinalizers_ExpressionBodiedImpl()
+        public async Task CA1821CSharpRemoveEmptyFinalizers_ExpressionBodiedImplAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

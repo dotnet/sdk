@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class MarkISerializableTypesWithSerializableFixerTests
     {
         [Fact]
-        public async Task CA2237SerializableMissingAttrFix()
+        public async Task CA2237SerializableMissingAttrFixAsync()
         {
             await new VerifyCS.Test
             {

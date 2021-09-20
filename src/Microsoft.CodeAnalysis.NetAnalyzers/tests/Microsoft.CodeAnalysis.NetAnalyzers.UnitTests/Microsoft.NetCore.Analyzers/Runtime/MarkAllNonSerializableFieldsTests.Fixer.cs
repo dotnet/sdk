@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public partial class MarkAllNonSerializableFieldsFixerTests
     {
         [Fact]
-        public async Task CA2235WithNonSerializableFieldsWithFix()
+        public async Task CA2235WithNonSerializableFieldsWithFixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -63,7 +63,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2235WithNonSerializableFieldsWithFix1()
+        public async Task CA2235WithNonSerializableFieldsWithFix1Async()
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, XUnitVerifier>
             {
@@ -117,7 +117,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA2235WithNonSerializableFieldsWithFix2()
+        public async Task CA2235WithNonSerializableFieldsWithFix2Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -161,7 +161,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2235WithNonSerializableFieldsWithFix3()
+        public async Task CA2235WithNonSerializableFieldsWithFix3Async()
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, XUnitVerifier>
             {

@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
     public class RethrowToPreserveStackDetailsTests
     {
         [Fact]
-        public async Task TestCSharp_RethrowExplicitlyToThrowImplicitly()
+        public async Task TestCSharp_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 #pragma warning disable RS0030 // Do not used banned APIs
@@ -65,7 +65,7 @@ class Program
 }");
         }
         [Fact]
-        public async Task TestBasic_RethrowExplicitlyToThrowImplicitly()
+        public async Task TestBasic_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 #pragma warning disable RS0030 // Do not used banned APIs

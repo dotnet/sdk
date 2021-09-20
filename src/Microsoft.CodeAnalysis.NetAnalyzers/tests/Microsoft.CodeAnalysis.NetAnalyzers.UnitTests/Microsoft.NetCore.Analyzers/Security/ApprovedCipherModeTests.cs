@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class ApprovedCipherModeTests
     {
         [Fact]
-        public async Task TestECBMode()
+        public async Task TestECBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -43,7 +43,7 @@ End Module",
         }
 
         [Fact]
-        public async Task TestOFBMode()
+        public async Task TestOFBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -71,7 +71,7 @@ End Module",
         }
 
         [Fact]
-        public async Task TestCFBMode()
+        public async Task TestCFBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -99,7 +99,7 @@ End Module",
         }
 
         [Fact]
-        public async Task TestCBCMode()
+        public async Task TestCBCModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -127,7 +127,7 @@ End Module"
         }
 
         [Fact]
-        public async Task TestCTSMode()
+        public async Task TestCTSModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

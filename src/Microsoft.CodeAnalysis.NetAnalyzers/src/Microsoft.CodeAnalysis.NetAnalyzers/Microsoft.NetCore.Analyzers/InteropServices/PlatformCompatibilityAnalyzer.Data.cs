@@ -45,6 +45,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public SmallDictionary<string, Versions>? Platforms { get; set; }
             public Callsite Callsite { get; set; }
+            public bool IsAssemblyAttribute { get; set; }
         }
     }
 }

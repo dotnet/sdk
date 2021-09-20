@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotNameEnumValuesReservedTests
     {
         [Fact]
-        public async Task CA1700_NameContainsReserved_Diagnostic()
+        public async Task CA1700_NameContainsReserved_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Enum1
@@ -40,7 +40,7 @@ End Enum",
         }
 
         [Fact]
-        public async Task CA1700_NameContainsReservedWithoutCorrectCase_Diagnostic()
+        public async Task CA1700_NameContainsReservedWithoutCorrectCase_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Enum1
@@ -60,7 +60,7 @@ End Enum");
         }
 
         [Fact]
-        public async Task CA1700_NameContainsReservedWithoutCorrectCase_NoDiagnostic()
+        public async Task CA1700_NameContainsReservedWithoutCorrectCase_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Enum1
@@ -79,7 +79,7 @@ End Enum");
         }
 
         [Fact]
-        public async Task CA1700_EnumIsNotPublicAndNameContainsReserved_NoDiagnostic()
+        public async Task CA1700_EnumIsNotPublicAndNameContainsReserved_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal enum Enum1
@@ -98,7 +98,7 @@ End Enum");
         }
 
         [Fact]
-        public async Task CA1700_NameContainsPreserved_NoDiagnostic()
+        public async Task CA1700_NameContainsPreserved_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public enum Enum1

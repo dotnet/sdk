@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -68,7 +68,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInGetShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -113,7 +113,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInSetShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -169,7 +169,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInTryShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInTryShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -219,7 +219,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInCatchShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInCatchShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -267,7 +267,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInFinallyShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInFinallyShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -316,7 +316,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -361,7 +361,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -413,7 +413,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlSerializerDeserializeWithXmlReaderShouldNoGenerateDiagnostic()
+        public async Task UseXmlSerializerDeserializeWithXmlReaderShouldNoGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

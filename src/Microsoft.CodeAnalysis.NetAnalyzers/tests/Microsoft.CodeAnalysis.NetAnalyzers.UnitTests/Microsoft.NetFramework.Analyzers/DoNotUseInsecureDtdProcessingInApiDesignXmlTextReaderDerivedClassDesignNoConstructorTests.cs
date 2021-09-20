@@ -14,7 +14,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
         [Fact]
-        public async Task NonXmlTextReaderDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()
+        public async Task NonXmlTextReaderDerivedTypeWithNoConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -47,7 +47,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task NonXmlTextReaderDerivedTypeWithConstructorShouldNotGenerateDiagnostic()
+        public async Task NonXmlTextReaderDerivedTypeWithConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -85,7 +85,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task TextReaderDerivedTypeWithNoConstructorShouldNotGenerateDiagnostic()
+        public async Task TextReaderDerivedTypeWithNoConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -109,7 +109,7 @@ End Namespace"
         }
 
         [Fact]
-        public async Task TextReaderDerivedTypeWithMethodAndNoConstructorShouldNotGenerateDiagnostic()
+        public async Task TextReaderDerivedTypeWithMethodAndNoConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
