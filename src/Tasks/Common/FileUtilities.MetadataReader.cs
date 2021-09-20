@@ -36,10 +36,7 @@ namespace Microsoft.NET.Build.Tasks
 
             Version version = GetAssemblyVersionFromFile(sourcePath);
 
-            if (version is not null)
-            {
-                s_versionCache[sourcePath] = (lastWriteTimeUtc, version);
-            }
+            s_versionCache[sourcePath] = (lastWriteTimeUtc, version);
 
             // When introducing this cache, we decided that the cached
             // data was small and likely to be basically finite for
