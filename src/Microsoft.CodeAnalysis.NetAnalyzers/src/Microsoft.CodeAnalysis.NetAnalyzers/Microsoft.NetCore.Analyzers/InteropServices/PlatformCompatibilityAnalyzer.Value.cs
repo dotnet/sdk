@@ -121,7 +121,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if ((argumentValue is IPropertyReferenceOperation propertyReference) &&
                     propertyReference.Property.ContainingType.Equals(osPlatformType))
                 {
-                    decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    if (propertyReference.Property.Name.Equals(OSX, StringComparison.OrdinalIgnoreCase))
+                    {
+                        decodedOsPlatformNamesBuilder.Add(macOS);
+                    }
+                    else
+                    {
+                        decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    }
                     return true;
                 }
 
