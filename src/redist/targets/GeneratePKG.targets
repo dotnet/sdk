@@ -14,6 +14,7 @@
       <SdkProductArchiveId>com.microsoft.dotnet.dev.$(Version).osx.$(Architecture)</SdkProductArchiveId>
 
       <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
+      <x64EmulationPkgInstallDirectory>/usr/local/share/dotnet/x64</x64EmulationPkgInstallDirectory>
 
       <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)packaging/osx/clisdk</SdkPkgSourcesRootDirectory>
       <SdkPkgScriptsDirectory>$(SdkPkgSourcesRootDirectory)/scripts</SdkPkgScriptsDirectory>
@@ -22,7 +23,8 @@
       <SdkPkgScriptFile>$(SdkPkgDestinationScriptsDirectory)/postinstall</SdkPkgScriptFile>
       <SdkProductArchiveResourcesDirectory>$(PkgIntermediateDirectory)/resources</SdkProductArchiveResourcesDirectory>
 
-      <SdkProductArchiveDistributionTemplateFile>$(SdkPkgSourcesRootDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' != 'x64'">$(SdkPkgSourcesRootDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' == 'x64'">$(SdkPkgSourcesRootDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
       <SdkProductArchiveDistributionFile>$(PkgIntermediateDirectory)/CLI-SDK-Formatted-Distribution-Template.xml</SdkProductArchiveDistributionFile>
 
       <SdkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SdkComponentId).pkg</SdkPkgIntermediatePath>
@@ -95,6 +97,9 @@
         <DistributionTemplateReplacement Include="{minOsVersion}">
           <ReplacementString>10.13</ReplacementString>
           <ReplacementString Condition="'$(Architecture)' == 'arm64'" >11.0</ReplacementString>
+        </DistributionTemplateReplacement>
+        <DistributionTemplateReplacement Include="{x64EmulationPkgInstallDirectory}">
+          <ReplacementString>$(x64EmulationPkgInstallDirectory)</ReplacementString>
         </DistributionTemplateReplacement>
 
         <PostInstallScriptReplacement Include="%SDK_VERSION%">
