@@ -176,7 +176,7 @@ namespace EndToEnd.Tests
             string expectedOutput =
 @"[\-\s]+
 [\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
-[\w \.]+blazorwasm\s+\[C#\][\w\ \/]+
+[\w \.]+blazorserver\s+\[C#\][\w\ \/]+
 [\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
 ";
