@@ -29,7 +29,6 @@ namespace Microsoft.NET.Restore.Tests
         [InlineData("4.8")]
         public void It_restores_net_framework_project_successfully(string version)
         {
-            var targetFrameworkVersion = (TargetDotNetFrameworkVersion)System.Enum.Parse(typeof(TargetDotNetFrameworkVersion), "Version" + string.Join("", version.Split('.')));
             var targetFramework = "net" + string.Join("", version.Split('.'));
             var testProject = new TestProject()
             {
@@ -39,20 +38,20 @@ namespace Microsoft.NET.Restore.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: version);
 
+            var restoreCommand =
+                testAsset.GetRestoreCommand(Log, relativePath: testProject.Name);
+            restoreCommand.Execute().Should().Pass();
+
             string projectAssetsJsonPath = Path.Combine(
                 testAsset.Path,
                 testProject.Name,
                 "obj",
                 "project.assets.json");
 
-            var restoreCommand =
-                testAsset.GetRestoreCommand(Log, relativePath: testProject.Name);
-            restoreCommand.Execute().Should().Pass();
-
             LockFile lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
             var netFrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v" + version), null).Libraries.FirstOrDefault((file) => file.Name.Contains(targetFramework));
 
-            if (TestProject.ReferenceAssembliesAreInstalled(targetFrameworkVersion))
+            if (TestProject.ReferenceAssembliesAreInstalled(version))
             {
                 netFrameworkLibrary.Should().BeNull();
             }
@@ -110,7 +109,7 @@ namespace Microsoft.NET.Restore.Tests
                 NullLogger.Instance);
 
             var net471FrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v4.7.1"), null).Libraries.FirstOrDefault((file) => file.Name.Contains("net471"));
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version471) && !includeExplicitReference)
+            if (TestProject.ReferenceAssembliesAreInstalled("4.7.1") && !includeExplicitReference)
             {
                 net471FrameworkLibrary.Should().BeNull();
             }
@@ -122,7 +121,7 @@ namespace Microsoft.NET.Restore.Tests
 
             var net472FrameworkLibrary = lockFile.GetTarget(NuGetFramework.Parse(".NETFramework,Version=v4.7.2"), null).Libraries.FirstOrDefault((file) => file.Name.Contains("net472"));
 
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version472) && !includeExplicitReference)
+            if (TestProject.ReferenceAssembliesAreInstalled("4.7.2") && !includeExplicitReference)
             {
                 net472FrameworkLibrary.Should().BeNull();
             }
@@ -195,7 +194,7 @@ namespace Microsoft.NET.Restore.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
-            if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version472))
+            if (TestProject.ReferenceAssembliesAreInstalled("4.7.2"))
             {
                 buildCommand.Execute()
                     .Should()
@@ -219,6 +218,62 @@ namespace Microsoft.NET.Restore.Tests
                     .Should()
                     .Fail();
             }
+        }
+
+        [WindowsOnlyFact]
+        public void It_implicitly_references_targeting_packs_for_static_graph()
+        {
+            var netFrameworkVersions = new[]
+            {
+                "4.0",
+                "4.5",
+                "4.5.1",
+                "4.6.1",
+                "4.6",
+                "4.6.1",
+                "4.6.2",
+                "4.7",
+                "4.7.1",
+                "4.7.2",
+                "4.8",
+            };
+
+            //  Choose a version of .NET Framework to target where the reference assemblies are installed
+            var versionToTarget = netFrameworkVersions.LastOrDefault(v => TestProject.ReferenceAssembliesAreInstalled(v));
+
+            if (versionToTarget == null)
+            {
+                Log.WriteLine("Test skipped: No .NET Framework targeting packs were installed");
+            }
+
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = "net" + versionToTarget
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .WithWorkingDirectory(testAsset.Path)
+                .Execute("/graph", "/p:RestoreUseStaticGraphEvaluation=true", "/bl:restore.binlog")
+                .Should()
+                .Pass();
+
+            string projectAssetsJsonPath = Path.Combine(
+                buildCommand.GetBaseIntermediateDirectory().FullName,
+                "project.assets.json");
+
+            LockFile lockFile = LockFileUtilities.GetLockFile(projectAssetsJsonPath, NullLogger.Instance);
+
+            //  Verify that the corresponding reference assembly package was referenced even though it wasn't needed for the build on this machine
+            string referenceAssemblyNuGetPackageName = "Microsoft.NETFramework.ReferenceAssemblies." + testProject.TargetFrameworks.Replace(".", "");
+            lockFile.GetTarget(NuGetFramework.Parse(testProject.TargetFrameworks), null)
+                .Libraries
+                .Where(l => l.Name == referenceAssemblyNuGetPackageName)
+                .Should()
+                .HaveCount(1);
         }
     }
 }

@@ -401,9 +401,14 @@ namespace {this.Name}
             AdditionalItems.Add(new(itemName, attributes));
         }
 
-        public static bool ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion targetFrameworkVersion)
+        public static bool ReferenceAssembliesAreInstalled(string netFrameworkVersion)
         {
-            var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(targetFrameworkVersion);
+            if (!Enum.TryParse<TargetDotNetFrameworkVersion>("Version" + string.Join("", netFrameworkVersion.Split('.')), out var enumVersion))
+            {
+                throw new ArgumentException("No TargetDotNetFrameworkVersion enum defined for .NET Framework " + netFrameworkVersion);
+            }
+
+            var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(enumVersion);
             return referenceAssemblies != null;
         }
     }

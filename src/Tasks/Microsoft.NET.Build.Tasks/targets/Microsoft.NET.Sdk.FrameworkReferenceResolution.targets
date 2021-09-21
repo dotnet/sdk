@@ -396,12 +396,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="IncludeTargetingPackReference" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CheckForImplicitPackageReferenceOverrides"
           Condition="'$(TargetFrameworkMoniker)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(AutomaticallyUseReferenceAssemblyPackages)' == 'true'">
+    
+    <!-- Skip this task if is using static graph, because in that case we don't want the NuGet packages referenced to change based on machine state, so we should always
+         reference the reference assembly package. -->
     <GetReferenceAssemblyPaths
         TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
         RootPath="$(TargetFrameworkRootPath)"
         TargetFrameworkFallbackSearchPaths="$(TargetFrameworkFallbackSearchPaths)"
         BypassFrameworkInstallChecks="true"
-        SuppressNotFoundError="true">
+        SuppressNotFoundError="true"
+        Condition="'$(IsGraphBuild)' != 'true'"
+        >
       <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
     </GetReferenceAssemblyPaths>
 
