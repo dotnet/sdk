@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +13,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization of <see cref="T:System.Data.DataSet"/> or <see cref="T:System.Data.DataTable"/> in an
     /// deserialized object graph for certain serializers.
@@ -31,14 +33,14 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor ObjectGraphContainsDangerousTypeDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2355",
-                nameof(MicrosoftNetCoreAnalyzersResources.DataSetDataTableInDeserializableObjectGraphTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.DataSetDataTableInDeserializableObjectGraphMessage),
+                nameof(DataSetDataTableInDeserializableObjectGraphTitle),
+                nameof(DataSetDataTableInDeserializableObjectGraphMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(ObjectGraphContainsDangerousTypeDescriptor);
 
         protected abstract string ToString(TypedConstant typedConstant);

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -43,7 +43,7 @@ namespace System.Web
         }
 
         [Fact]
-        public async Task Test_AssignHttpOnlyWithFalse_Diagnostic()
+        public async Task Test_AssignHttpOnlyWithFalse_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -60,7 +60,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_AssignHttpOnlyWithFalsePossibly_Diagnostic()
+        public async Task Test_AssignHttpOnlyWithFalsePossibly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -83,7 +83,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_ReturnHttpCookieWithFalseHttpOnly_Diagnostic()
+        public async Task Test_ReturnHttpCookieWithFalseHttpOnly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -101,7 +101,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_ReturnHttpCookie_WithoutSettingHttpOnly_Diagnostic()
+        public async Task Test_ReturnHttpCookie_WithoutSettingHttpOnly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -119,7 +119,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieAsAParamter_WithoutSettingHttpOnly_Diagnostic()
+        public async Task Test_PassHttpCookieAsAParamter_WithoutSettingHttpOnly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -140,7 +140,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalse_Diagnostic()
+        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalse_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -162,7 +162,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalsePossibly_Diagnostic()
+        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsFalsePossibly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -191,7 +191,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_CreateHttpCookieWithNullArguments_NoDiagnostic()
+        public async Task Test_CreateHttpCookieWithNullArguments_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -206,7 +206,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_AssignHttpOnlyWithTrue_NoDiagnostic()
+        public async Task Test_AssignHttpOnlyWithTrue_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -222,7 +222,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_JustObjectCreation_NoDiagnostic()
+        public async Task Test_JustObjectCreation_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -237,7 +237,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_AssignHttpOnlyWithTruePossibly_NoDiagnostic()
+        public async Task Test_AssignHttpOnlyWithTruePossibly_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -259,7 +259,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_ReturnHttpCookieWithUnkownHttpOnly_NoDiagnostic()
+        public async Task Test_ReturnHttpCookieWithUnkownHttpOnly_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -274,7 +274,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_ReturnHttpCookieWithTrueHttpOnly_NoDiagnostic()
+        public async Task Test_ReturnHttpCookieWithTrueHttpOnly_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -291,7 +291,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTrue_NoDiagnostic()
+        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTrue_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -313,7 +313,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTruePossibly_NoDiagnostic()
+        public async Task Test_PassHttpCookieAsAParamter_WithSettingHttpOnlyAsTruePossibly_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -341,7 +341,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_PassHttpCookieWithNullValue_NoDiagnostic()
+        public async Task Test_PassHttpCookieWithNullValue_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;
@@ -360,7 +360,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_ReturnNull_NoDiagnostic()
+        public async Task Test_ReturnNull_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Web;

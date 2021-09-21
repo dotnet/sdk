@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
     public class DoNotUseWhenAllOrWaitAllWithSingleArgumentTests
     {
         [Fact]
-        public async Task NoDiagnostic_CSharp()
+        public async Task NoDiagnostic_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N
@@ -93,7 +93,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task NoDiagnostic_VB()
+        public async Task NoDiagnostic_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading.Tasks
@@ -168,7 +168,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_WhenAll_CSharp()
+        public async Task Diagnostics_FixApplies_WhenAll_CSharpAsync()
         {
             var source = @"
 using System.Threading.Tasks;
@@ -255,7 +255,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_WhenAll_VB()
+        public async Task Diagnostics_FixApplies_WhenAll_VBAsync()
         {
             var code = @"
 Imports System.Threading.Tasks
@@ -335,7 +335,7 @@ End Class";
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_WaitAll_CSharp()
+        public async Task Diagnostics_FixApplies_WaitAll_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.Threading.Tasks;
@@ -380,7 +380,7 @@ class C
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_WaitAll_VB()
+        public async Task Diagnostics_FixApplies_WaitAll_VBAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Threading.Tasks

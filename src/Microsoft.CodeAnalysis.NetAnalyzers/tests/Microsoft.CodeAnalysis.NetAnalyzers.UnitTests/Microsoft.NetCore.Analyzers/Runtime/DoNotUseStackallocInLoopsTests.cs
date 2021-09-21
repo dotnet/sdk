@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotUseStackallocInLoopsTests
     {
         [Fact]
-        public async Task NoDiagnostics_StackallocNotInLoop()
+        public async Task NoDiagnostics_StackallocNotInLoopAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_StackallocInLoopWithBreak()
+        public async Task NoDiagnostics_StackallocInLoopWithBreakAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -65,7 +65,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_StackallocInLoopButInsideALocalFunction()
+        public async Task NoDiagnostics_StackallocInLoopButInsideALocalFunctionAsync()
         {
             await new VerifyCS.Test
             {
@@ -89,7 +89,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task NoDiagnostics_StackallocInLoopButInsideALambda()
+        public async Task NoDiagnostics_StackallocInLoopButInsideALambdaAsync()
         {
             await new VerifyCS.Test
             {
@@ -111,7 +111,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task NoDiagnostics_StackallocInLoopButInsideALambda2()
+        public async Task NoDiagnostics_StackallocInLoopButInsideALambda2Async()
         {
             await new VerifyCS.Test
             {
@@ -129,7 +129,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task NoDiagnostics_StackallocInLoopButInsideFunc()
+        public async Task NoDiagnostics_StackallocInLoopButInsideFuncAsync()
         {
             await new VerifyCS.Test
             {
@@ -152,7 +152,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task Diagnostics_LoopsWithStackallocPtr()
+        public async Task Diagnostics_LoopsWithStackallocPtrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -182,7 +182,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task Diagnostics_LoopsWithStackallocSpan()
+        public async Task Diagnostics_LoopsWithStackallocSpanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -212,7 +212,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task Diagnostics_LoopInLoopWithOuterBreak()
+        public async Task Diagnostics_LoopInLoopWithOuterBreakAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;
@@ -231,7 +231,7 @@ class TestClass {
         }
 
         [Fact]
-        public async Task Diagnostics_LoopWithBreakInConditional()
+        public async Task Diagnostics_LoopWithBreakInConditionalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;

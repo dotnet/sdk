@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotDisableHTTPHeaderCheckingTests
     {
         [Fact]
-        public async Task TestLiteralDiagnostic()
+        public async Task TestLiteralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -31,7 +31,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstantDiagnostic()
+        public async Task TestConstantDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -50,7 +50,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestPropertyInitializerDiagnostic()
+        public async Task TestPropertyInitializerDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -71,7 +71,7 @@ class TestClass
 
         //Ideally, we would generate a diagnostic in this case.
         [Fact]
-        public async Task TestVariableNoDiagnostic()
+        public async Task TestVariableNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -89,7 +89,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestLiteralNoDiagnostic()
+        public async Task TestLiteralNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -106,7 +106,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstantNoDiagnostic()
+        public async Task TestConstantNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -124,7 +124,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestPropertyInitializerNoDiagnostic()
+        public async Task TestPropertyInitializerNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;

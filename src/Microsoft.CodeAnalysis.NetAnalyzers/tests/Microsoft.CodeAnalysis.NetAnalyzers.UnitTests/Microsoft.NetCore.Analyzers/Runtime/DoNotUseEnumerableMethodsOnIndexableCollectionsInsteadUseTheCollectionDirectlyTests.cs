@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTests
     {
         [Fact]
-        public async Task CSharpCases()
+        public async Task CSharpCasesAsync()
         {
             var code = @"
 using System;
@@ -96,7 +96,7 @@ class C
         }
 
         [Fact]
-        public async Task BasicCases()
+        public async Task BasicCasesAsync()
         {
             var code = @"
 Imports System
@@ -194,7 +194,7 @@ End Class
         [InlineData("dotnet_code_quality.exclude_ordefault_methods = true")]
         [InlineData("dotnet_code_quality.CA1826.exclude_ordefault_methods = false")]
         [InlineData("dotnet_code_quality.exclude_ordefault_methods = false")]
-        public async Task CA1826_EditorConfig_ExcludeOrDefaultMethods(string editorConfigText)
+        public async Task CA1826_EditorConfig_ExcludeOrDefaultMethodsAsync(string editorConfigText)
         {
             var csharpSource = @"
 using System;

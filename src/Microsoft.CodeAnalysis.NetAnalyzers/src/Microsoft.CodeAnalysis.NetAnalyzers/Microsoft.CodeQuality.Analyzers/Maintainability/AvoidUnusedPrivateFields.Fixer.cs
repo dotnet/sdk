@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = AvoidUnusedPrivateFieldsAnalyzer.RuleId), Shared]
     public sealed class AvoidUnusedPrivateFieldsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(AvoidUnusedPrivateFieldsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidUnusedPrivateFieldsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -40,14 +40,14 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             context.RegisterCodeFix(
                 new MyCodeAction(
                     title,
-                    async ct => await RemoveField(context.Document, node, ct).ConfigureAwait(false),
+                    async ct => await RemoveFieldAsync(context.Document, node, ct).ConfigureAwait(false),
                     equivalenceKey: title),
                 context.Diagnostics);
 
             return;
         }
 
-        private static async Task<Document> RemoveField(Document document, SyntaxNode node, CancellationToken cancellationToken)
+        private static async Task<Document> RemoveFieldAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             node = editor.Generator.GetDeclaration(node);

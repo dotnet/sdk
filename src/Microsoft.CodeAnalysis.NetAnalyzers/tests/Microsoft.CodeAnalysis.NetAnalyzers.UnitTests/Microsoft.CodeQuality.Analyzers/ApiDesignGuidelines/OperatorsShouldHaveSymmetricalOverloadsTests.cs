@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OperatorsShouldHaveSymmetricalOverloadsTests
     {
         [Fact]
-        public async Task CSharpTestMissingEquality()
+        public async Task CSharpTestMissingEqualityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -24,7 +24,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestMissingInequality()
+        public async Task CSharpTestMissingInequalityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -35,7 +35,7 @@ public class A
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharpTestMissingEquality_Internal()
+        public async Task CSharpTestMissingEquality_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class A
@@ -60,7 +60,7 @@ public class B
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharpTestMissingInequality_Internal()
+        public async Task CSharpTestMissingInequality_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class A
@@ -84,7 +84,7 @@ public class B
         }
 
         [Fact]
-        public async Task CSharpTestBothEqualityOperators()
+        public async Task CSharpTestBothEqualityOperatorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -95,7 +95,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestMissingLessThan()
+        public async Task CSharpTestMissingLessThanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -106,7 +106,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestNotMissingLessThan()
+        public async Task CSharpTestNotMissingLessThanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -117,7 +117,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestMissingLessThanOrEqualTo()
+        public async Task CSharpTestMissingLessThanOrEqualToAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -128,7 +128,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestNotMissingLessThanOrEqualTo()
+        public async Task CSharpTestNotMissingLessThanOrEqualToAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -139,7 +139,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestOperatorType()
+        public async Task CSharpTestOperatorTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DeclareTypesInNamespacesTests
     {
         [Fact]
-        public async Task OuterTypeInGlobalNamespace_Warns()
+        public async Task OuterTypeInGlobalNamespace_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
+        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -48,7 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task InternalClassInGlobalNamespace_DoesNotWarn()
+        public async Task InternalClassInGlobalNamespace_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 internal class Class
@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
+        public async Task PublicClassInNonGlobalNamespace_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 namespace NS

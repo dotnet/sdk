@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DataSetDataTableInIFormatterObjectGraphTests
     {
         [Fact]
-        public async Task BinaryFormatter_Cast_Diagnostic()
+        public async Task BinaryFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -41,7 +41,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task NetDataContractSerializer_Cast_Diagnostic()
+        public async Task NetDataContractSerializer_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -68,7 +68,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task ObjectStateFormatter_Cast_Diagnostic()
+        public async Task ObjectStateFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -95,7 +95,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task SoapFormatter_Cast_Diagnostic()
+        public async Task SoapFormatter_Cast_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -122,7 +122,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinaryFormatter_As_Diagnostic()
+        public async Task BinaryFormatter_As_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -149,7 +149,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinaryFormatter_As_PrivateAutoProperty_Diagnostic()
+        public async Task BinaryFormatter_As_PrivateAutoProperty_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -176,7 +176,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinaryFormatter_Cast_ReferenceLoop_Diagnostic()
+        public async Task BinaryFormatter_Cast_ReferenceLoop_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -205,7 +205,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task BinaryFormatter_Cast_ReferenceIndirectLoop_Diagnostic()
+        public async Task BinaryFormatter_Cast_ReferenceIndirectLoop_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;

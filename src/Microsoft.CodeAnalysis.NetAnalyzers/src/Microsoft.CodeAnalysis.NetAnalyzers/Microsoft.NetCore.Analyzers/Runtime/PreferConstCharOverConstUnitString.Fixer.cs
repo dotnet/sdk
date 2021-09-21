@@ -1,24 +1,24 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Composition;
 using System.Collections.Immutable;
+using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.Operations;
-using Analyzer.Utilities.Extensions;
-using Microsoft.CodeAnalysis.Editing;
-using System.Linq;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public class PreferConstCharOverConstUnitStringFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(PreferConstCharOverConstUnitStringAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferConstCharOverConstUnitStringAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             return;
                         }
 
-                        variableDeclaratorOperation = semanticModel.GetOperationWalkingUpParentChain(declaringSyntaxReference.GetSyntax(cancellationToken), cancellationToken) as IVariableDeclaratorOperation;
+                        variableDeclaratorOperation = semanticModel.GetOperationWalkingUpParentChain(await declaringSyntaxReference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false), cancellationToken) as IVariableDeclaratorOperation;
 
                         if (variableDeclaratorOperation == null)
                         {

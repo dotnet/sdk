@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         #region CA2101 Fixer tests 
 
         [Fact]
-        public async Task CA2101FixMarshalAsCSharpTest()
+        public async Task CA2101FixMarshalAsCSharpTestAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.Runtime.InteropServices;
@@ -46,7 +46,7 @@ class C
         }
 
         [Fact]
-        public async Task CA2101FixMarshalAsBasicTest()
+        public async Task CA2101FixMarshalAsBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Runtime.InteropServices
@@ -82,7 +82,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2101FixCharSetCSharpTest()
+        public async Task CA2101FixCharSetCSharpTestAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.Runtime.InteropServices;
@@ -112,7 +112,7 @@ class C
         }
 
         [Fact]
-        public async Task CA2101FixCharSetBasicTest()
+        public async Task CA2101FixCharSetBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Runtime.InteropServices
@@ -152,7 +152,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2101FixDeclareBasicTest()
+        public async Task CA2101FixDeclareBasicTestAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.Text

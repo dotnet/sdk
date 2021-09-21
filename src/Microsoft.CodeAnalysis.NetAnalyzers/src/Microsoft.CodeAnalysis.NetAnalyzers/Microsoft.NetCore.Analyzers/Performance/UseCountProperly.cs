@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1827: Do not use Count()/LongCount() when Any() can be used.
     /// CA1828: Do not use CountAsync()/LongCountAsync() when AnyAsync() can be used.
@@ -46,68 +48,48 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         internal const string PropertyNameKey = nameof(PropertyNameKey);
 
-        // CA1827
-        private static readonly LocalizableString s_localizableTitle_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1828
-        private static readonly LocalizableString s_localizableTitle_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1829
-        private static readonly LocalizableString s_localizableTitle_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1836
-        private static readonly LocalizableString s_localizableTitle_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
         internal static readonly DiagnosticDescriptor s_rule_CA1827 = DiagnosticDescriptorHelper.Create(
             CA1827,
-            s_localizableTitle_CA1827,
-            s_localizableMessage_CA1827,
+            CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1827,
+            description: CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor s_rule_CA1828 = DiagnosticDescriptorHelper.Create(
             CA1828,
-            s_localizableTitle_CA1828,
-            s_localizableMessage_CA1828,
+            CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1828,
+            description: CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor s_rule_CA1829 = DiagnosticDescriptorHelper.Create(
             CA1829,
-            s_localizableTitle_CA1829,
-            s_localizableMessage_CA1829,
+            CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableTitle)),
+            CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1829,
+            description: CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static DiagnosticDescriptor s_rule_CA1836 = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor s_rule_CA1836 = DiagnosticDescriptorHelper.Create(
             CA1836,
-            s_localizableTitle_CA1836,
-            s_localizableMessage_CA1836,
+            CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountTitle)),
+            CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1836,
+            description: CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+            = ImmutableArray.Create(
                 s_rule_CA1827,
                 s_rule_CA1828,
                 s_rule_CA1829,

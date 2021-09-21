@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class TestForNaNCorrectlyTests
     {
         [Fact]
-        public async Task CSharpDiagnosticForEqualityWithFloatNaN()
+        public async Task CSharpDiagnosticForEqualityWithFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -30,7 +30,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForEqualityWithFloatNaN()
+        public async Task BasicDiagnosticForEqualityWithFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -43,7 +43,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForInequalityWithFloatNaN()
+        public async Task CSharpDiagnosticForInequalityWithFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -58,7 +58,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForInEqualityWithFloatNaN()
+        public async Task BasicDiagnosticForInEqualityWithFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -71,7 +71,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForGreaterThanFloatNaN()
+        public async Task CSharpDiagnosticForGreaterThanFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -86,7 +86,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForGreaterThanFloatNaN()
+        public async Task BasicDiagnosticForGreaterThanFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -99,7 +99,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForGreaterThanOrEqualToFloatNaN()
+        public async Task CSharpDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -114,7 +114,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForGreaterThanOrEqualToFloatNaN()
+        public async Task BasicDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -127,7 +127,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForLessThanFloatNaN()
+        public async Task CSharpDiagnosticForLessThanFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -142,7 +142,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForLessThanFloatNaN()
+        public async Task BasicDiagnosticForLessThanFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -155,7 +155,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForLessThanOrEqualToFloatNaN()
+        public async Task CSharpDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
             var code = @"
 public class A
@@ -170,7 +170,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForLessThanOrEqualToFloatNaN()
+        public async Task BasicDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
             var code = @"
 Public Class A
@@ -183,7 +183,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithDoubleNaN()
+        public async Task CSharpDiagnosticForComparisonWithDoubleNaNAsync()
         {
             var code = @"
 public class A
@@ -198,7 +198,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForComparisonWithDoubleNaN()
+        public async Task BasicDiagnosticForComparisonWithDoubleNaNAsync()
         {
             var code = @"
 Public Class A
@@ -211,7 +211,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNOnLeft()
+        public async Task CSharpDiagnosticForComparisonWithNaNOnLeftAsync()
         {
             var code = @"
 public class A
@@ -226,7 +226,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForComparisonWithNaNOnLeft()
+        public async Task BasicDiagnosticForComparisonWithNaNOnLeftAsync()
         {
             var code = @"
 Public Class A
@@ -239,7 +239,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForComparisonWithBadExpression()
+        public async Task CSharpNoDiagnosticForComparisonWithBadExpressionAsync()
         {
             var code = @"
 public class A
@@ -254,7 +254,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForComparisonWithBadExpression()
+        public async Task BasicNoDiagnosticForComparisonWithBadExpressionAsync()
         {
             var code = @"
 Public Class A
@@ -267,7 +267,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForComparisonWithFunctionReturningNaN()
+        public async Task CSharpNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
             var code = @"
 public class A
@@ -287,7 +287,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForComparisonWithFunctionReturningNaN()
+        public async Task BasicNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
             var code = @"
 Public Class A
@@ -304,7 +304,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForEqualityWithNonNaN()
+        public async Task CSharpNoDiagnosticForEqualityWithNonNaNAsync()
         {
             var code = @"
 public class A
@@ -319,7 +319,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForEqualityWithNonNaN()
+        public async Task BasicNoDiagnosticForEqualityWithNonNaNAsync()
         {
             var code = @"
 Public Class A
@@ -332,7 +332,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticForNonComparisonOperationWithNaN()
+        public async Task CSharpNoDiagnosticForNonComparisonOperationWithNaNAsync()
         {
             var code = @"
 public class A
@@ -347,7 +347,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticForNonComparisonOperationWithNonNaN()
+        public async Task BasicNoDiagnosticForNonComparisonOperationWithNonNaNAsync()
         {
             var code = @"
 Public Class A
@@ -360,7 +360,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpOnlyOneDiagnosticForComparisonWithNaNOnBothSides()
+        public async Task CSharpOnlyOneDiagnosticForComparisonWithNaNOnBothSidesAsync()
         {
             var code = @"
 public class A
@@ -375,7 +375,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicOnlyOneDiagnosticForComparisonWithNonNaNOnBothSides()
+        public async Task BasicOnlyOneDiagnosticForComparisonWithNonNaNOnBothSidesAsync()
         {
             var code = @"
 Public Class A
@@ -395,7 +395,7 @@ End Class
         // than they are about the correctness of our treatment of these expressions once
         // we find them.
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInFunctionArgument()
+        public async Task CSharpDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
             var code = @"
 public class A
@@ -414,7 +414,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForComparisonWithNaNInFunctionArgument()
+        public async Task BasicDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
             var code = @"
 Public Class A
@@ -432,7 +432,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInTernaryOperator()
+        public async Task CSharpDiagnosticForComparisonWithNaNInTernaryOperatorAsync()
         {
             var code = @"
 public class A
@@ -449,7 +449,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicDiagnosticForComparisonWithNaNInIfOperator()
+        public async Task BasicDiagnosticForComparisonWithNaNInIfOperatorAsync()
         {
             // VB doesn't have the ternary operator, but we add this test for symmetry.
             var code = @"
@@ -465,7 +465,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInThrowStatement()
+        public async Task CSharpDiagnosticForComparisonWithNaNInThrowStatementAsync()
         {
             var code = @"
 public class A
@@ -482,7 +482,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInCatchFilterClause()
+        public async Task CSharpDiagnosticForComparisonWithNaNInCatchFilterClauseAsync()
         {
             var code = @"
 using System;
@@ -506,7 +506,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInYieldReturnStatement()
+        public async Task CSharpDiagnosticForComparisonWithNaNInYieldReturnStatementAsync()
         {
             var code = @"
 using System.Collections.Generic;
@@ -525,7 +525,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInSwitchStatement()
+        public async Task CSharpDiagnosticForComparisonWithNaNInSwitchStatementAsync()
         {
             var code = @"
 public class A
@@ -546,7 +546,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInForLoop()
+        public async Task CSharpDiagnosticForComparisonWithNaNInForLoopAsync()
         {
             var code = @"
 public class A
@@ -566,7 +566,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInWhileLoop()
+        public async Task CSharpDiagnosticForComparisonWithNaNInWhileLoopAsync()
         {
             var code = @"
 public class A
@@ -585,7 +585,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpDiagnosticForComparisonWithNaNInDoWhileLoop()
+        public async Task CSharpDiagnosticForComparisonWithNaNInDoWhileLoopAsync()
         {
             var code = @"
 public class A

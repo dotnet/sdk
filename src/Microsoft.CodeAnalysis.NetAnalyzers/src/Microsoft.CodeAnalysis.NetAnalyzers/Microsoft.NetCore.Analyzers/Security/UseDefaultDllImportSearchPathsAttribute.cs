@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.IO;
@@ -12,28 +12,30 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseDefaultDllImportSearchPathsAttribute : DiagnosticAnalyzer
     {
-        internal static DiagnosticDescriptor UseDefaultDllImportSearchPathsAttributeRule = SecurityHelpers.CreateDiagnosticDescriptor(
+        internal static readonly DiagnosticDescriptor UseDefaultDllImportSearchPathsAttributeRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5392",
-            typeof(MicrosoftNetCoreAnalyzersResources),
-            nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttribute),
-            nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeMessage),
+            nameof(UseDefaultDllImportSearchPathsAttribute),
+            nameof(UseDefaultDllImportSearchPathsAttributeMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: false,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.UseDefaultDllImportSearchPathsAttributeDescription));
-        internal static DiagnosticDescriptor DoNotUseUnsafeDllImportSearchPathRule = SecurityHelpers.CreateDiagnosticDescriptor(
+            descriptionResourceStringName: nameof(UseDefaultDllImportSearchPathsAttributeDescription));
+
+        internal static readonly DiagnosticDescriptor DoNotUseUnsafeDllImportSearchPathRule = SecurityHelpers.CreateDiagnosticDescriptor(
             "CA5393",
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPath),
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathMessage),
+            nameof(DoNotUseUnsafeDllImportSearchPath),
+            nameof(DoNotUseUnsafeDllImportSearchPathMessage),
             RuleLevel.Disabled,
             isPortedFxCopRule: false,
             isDataflowRule: false,
             isReportedAtCompilationEnd: false,
-            descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseUnsafeDllImportSearchPathDescription));
+            descriptionResourceStringName: nameof(DoNotUseUnsafeDllImportSearchPathDescription));
 
         // DllImportSearchPath.AssemblyDirectory = 2.
         // DllImportSearchPath.UseDllDirectoryForDependencies = 256.
@@ -41,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Security
         private const int UnsafeBits = 2 | 256 | 512;
         private const int LegacyBehavior = 0;
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             UseDefaultDllImportSearchPathsAttributeRule,
             DoNotUseUnsafeDllImportSearchPathRule);
 

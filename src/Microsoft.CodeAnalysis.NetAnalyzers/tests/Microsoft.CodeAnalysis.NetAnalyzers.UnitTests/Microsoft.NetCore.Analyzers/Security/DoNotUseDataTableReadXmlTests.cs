@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseDataTableReadXmlTests
     {
         [Fact]
-        public async Task ReadXml_Diagnostic()
+        public async Task ReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -33,7 +33,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DerivedReadXml_Diagnostic()
+        public async Task DerivedReadXml_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -58,7 +58,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task RejectChanges_NoDiagnostic()
+        public async Task RejectChanges_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;

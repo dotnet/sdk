@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class ReviewVisibleEventHandlersTests
     {
         [Fact]
-        public async Task CA2109_PublicEventHandler_Diagnostic()
+        public async Task CA2109_PublicEventHandler_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -51,7 +51,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA2109_PublicEventHandlerWithSecurityAttribute_Diagnostic()
+        public async Task CA2109_PublicEventHandlerWithSecurityAttribute_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -75,7 +75,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2109_PublicEventHandlerUWP_Diagnostic()
+        public async Task CA2109_PublicEventHandlerUWP_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace Windows.UI.Xaml
@@ -101,7 +101,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2109_PrivateInternalEventHandler_NoDiagnostic()
+        public async Task CA2109_PrivateInternalEventHandler_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -125,7 +125,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2109_PublicProtectedNotEventHandler_NoDiagnostic()
+        public async Task CA2109_PublicProtectedNotEventHandler_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -149,7 +149,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA2109_PublicOverrideVirtualEventHandler_NoDiagnostic()
+        public async Task CA2109_PublicOverrideVirtualEventHandler_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -182,7 +182,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2109_PublicOverrideAbstractEventHandler_NoDiagnostic()
+        public async Task CA2109_PublicOverrideAbstractEventHandler_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -214,7 +214,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2109_PublicInterfaceImplementationEventHandler_NoDiagnostic()
+        public async Task CA2109_PublicInterfaceImplementationEventHandler_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 // TODO(dotpaul): Enable nullable analysis after rewriting these to use DFA.
 #nullable disable
@@ -15,6 +15,8 @@ using Microsoft.NetFramework.Analyzers.Helpers;
 
 namespace Microsoft.NetFramework.Analyzers
 {
+    using static MicrosoftNetFrameworkAnalyzersResources;
+
     /// <summary>
     /// Secure DTD processing and entity resolution in XML
     /// </summary>
@@ -24,42 +26,43 @@ namespace Microsoft.NetFramework.Analyzers
         internal const string RuleId = "CA3075";
 
         // Use 'DiagnosticDescriptorHelper.Create' for one of the descriptors so the rule "CA3075" can be captured in AnalyzerReleases.*.md
-        internal static DiagnosticDescriptor RuleXmlDocumentWithNoSecureResolver =
-            DiagnosticDescriptorHelper.Create(RuleId,
-                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
-                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentWithNoSecureResolverMessage)),
-                    DiagnosticCategory.Security,
-                    RuleLevel.IdeHidden_BulkConfigurable,
-                    SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
-                    isPortedFxCopRule: false,
-                    isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleXmlDocumentWithNoSecureResolver =
+            DiagnosticDescriptorHelper.Create(
+                RuleId,
+                CreateLocalizableResourceString(nameof(InsecureXmlDtdProcessing)),
+                CreateLocalizableResourceString(nameof(XmlDocumentWithNoSecureResolverMessage)),
+                DiagnosticCategory.Security,
+                RuleLevel.IdeHidden_BulkConfigurable,
+                CreateLocalizableResourceString(nameof(DoNotUseInsecureDtdProcessingDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
 
-        internal static DiagnosticDescriptor RuleXmlTextReaderConstructedWithNoSecureResolution =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderConstructedWithNoSecureResolutionMessage)));
+        internal static readonly DiagnosticDescriptor RuleXmlTextReaderConstructedWithNoSecureResolution =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(XmlTextReaderConstructedWithNoSecureResolutionMessage)));
 
-        internal static DiagnosticDescriptor RuleDoNotUseDtdProcessingOverloads =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseDtdProcessingOverloadsMessage)));
+        internal static readonly DiagnosticDescriptor RuleDoNotUseDtdProcessingOverloads =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(DoNotUseDtdProcessingOverloadsMessage)));
 
-        internal static DiagnosticDescriptor RuleXmlReaderCreateWrongOverload =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateWrongOverloadMessage)));
+        internal static readonly DiagnosticDescriptor RuleXmlReaderCreateWrongOverload =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(XmlReaderCreateWrongOverloadMessage)));
 
-        internal static DiagnosticDescriptor RuleXmlReaderCreateInsecureInput =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureInputMessage)));
+        internal static readonly DiagnosticDescriptor RuleXmlReaderCreateInsecureInput =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(XmlReaderCreateInsecureInputMessage)));
 
-        internal static DiagnosticDescriptor RuleXmlReaderCreateInsecureConstructed =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlReaderCreateInsecureConstructedMessage)));
+        internal static readonly DiagnosticDescriptor RuleXmlReaderCreateInsecureConstructed =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(XmlReaderCreateInsecureConstructedMessage)));
 
-        internal static DiagnosticDescriptor RuleXmlTextReaderSetInsecureResolution =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderSetInsecureResolutionMessage)));
+        internal static readonly DiagnosticDescriptor RuleXmlTextReaderSetInsecureResolution =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(XmlTextReaderSetInsecureResolutionMessage)));
 
-        internal static DiagnosticDescriptor RuleDoNotUseSetInnerXml =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseSetInnerXmlMessage)));
+        internal static readonly DiagnosticDescriptor RuleDoNotUseSetInnerXml =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(DoNotUseSetInnerXmlMessage)));
 
-        internal static DiagnosticDescriptor RuleReviewDtdProcessingProperties =
-            CreateDiagnosticDescriptor(SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.ReviewDtdProcessingPropertiesMessage)));
+        internal static readonly DiagnosticDescriptor RuleReviewDtdProcessingProperties =
+            CreateDiagnosticDescriptor(CreateLocalizableResourceString(nameof(ReviewDtdProcessingPropertiesMessage)));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+            = ImmutableArray.Create(
                 RuleXmlDocumentWithNoSecureResolver,
                 RuleXmlTextReaderConstructedWithNoSecureResolution,
                 RuleDoNotUseDtdProcessingOverloads,
@@ -200,7 +203,7 @@ namespace Microsoft.NetFramework.Analyzers
                 {
                     XmlDocumentEnvironment env = p.Value;
 
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver))
+                    if (!env.IsXmlResolverSet && !env.IsSecureResolver)
                     {
                         context.ReportDiagnostic(env.XmlDocumentDefinition.CreateDiagnostic(RuleXmlDocumentWithNoSecureResolver));
                     }
@@ -209,8 +212,8 @@ namespace Microsoft.NetFramework.Analyzers
                 foreach (KeyValuePair<ISymbol, XmlTextReaderEnvironment> p in _xmlTextReaderEnvironments)
                 {
                     XmlTextReaderEnvironment env = p.Value;
-                    if (!(env.IsXmlResolverSet | env.IsSecureResolver) ||
-                        !(env.IsDtdProcessingSet | env.IsDtdProcessingDisabled))
+                    if ((!env.IsXmlResolverSet && !env.IsSecureResolver) ||
+                        (!env.IsDtdProcessingSet && !env.IsDtdProcessingDisabled))
                     {
                         context.ReportDiagnostic(env.XmlTextReaderDefinition.CreateDiagnostic(RuleXmlTextReaderConstructedWithNoSecureResolution));
                     }
@@ -716,14 +719,15 @@ namespace Microsoft.NetFramework.Analyzers
 
         private static DiagnosticDescriptor CreateDiagnosticDescriptor(LocalizableResourceString messageFormat)
         {
-            return DiagnosticDescriptorHelper.Create(RuleId,
-                                            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXmlDtdProcessing)),
-                                            messageFormat,
-                                            DiagnosticCategory.Security,
-                                            RuleLevel.IdeHidden_BulkConfigurable,
-                                            SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingDescription)),
-                                            isPortedFxCopRule: false,
-                                            isDataflowRule: false);
+            return DiagnosticDescriptorHelper.Create(
+                RuleId,
+                CreateLocalizableResourceString(nameof(InsecureXmlDtdProcessing)),
+                messageFormat,
+                DiagnosticCategory.Security,
+                RuleLevel.IdeHidden_BulkConfigurable,
+                CreateLocalizableResourceString(nameof(DoNotUseInsecureDtdProcessingDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
         }
     }
 }

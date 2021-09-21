@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class EventsShouldNotHaveBeforeOrAfterPrefix : DiagnosticAnalyzer
     {
@@ -17,21 +19,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private const string AfterKeyword = "After";
         private const string BeforeKeyword = "Before";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EventsShouldNotHaveBeforeOrAfterPrefixTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EventsShouldNotHaveBeforeOrAfterPrefixMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EventsShouldNotHaveBeforeOrAfterPrefixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(EventsShouldNotHaveBeforeOrAfterPrefixTitle)),
+            CreateLocalizableResourceString(nameof(EventsShouldNotHaveBeforeOrAfterPrefixMessage)),
             DiagnosticCategory.Naming,
             RuleLevel.Disabled,
-            description: s_localizableDescription,
+            description: CreateLocalizableResourceString(nameof(EventsShouldNotHaveBeforeOrAfterPrefixDescription)),
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         private static readonly ImmutableHashSet<string> s_invalidPrefixes = ImmutableHashSet.Create(AfterKeyword, BeforeKeyword);
 

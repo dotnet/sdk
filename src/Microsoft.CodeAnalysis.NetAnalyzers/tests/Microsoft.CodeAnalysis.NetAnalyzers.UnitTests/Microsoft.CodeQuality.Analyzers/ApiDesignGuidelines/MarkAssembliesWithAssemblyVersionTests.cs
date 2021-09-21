@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class MarkAssembliesWithAssemblyVersionAttributeTests
     {
         [Fact]
-        public async Task CA1016BasicTestWithNoComplianceAttribute()
+        public async Task CA1016BasicTestWithNoComplianceAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
 @"
@@ -34,7 +34,7 @@ imports System
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithVersionAttributeNotFromBCL()
+        public async Task CA1016CSharpTestWithVersionAttributeNotFromBCLAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -55,7 +55,7 @@ class AssemblyVersionAttribute : Attribute {
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithNoVersionAttribute()
+        public async Task CA1016CSharpTestWithNoVersionAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -72,7 +72,7 @@ class AssemblyVersionAttribute : Attribute {
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithVersionAttribute()
+        public async Task CA1016CSharpTestWithVersionAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -90,7 +90,7 @@ using System.Reflection;
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithTwoFilesWithAttribute()
+        public async Task CA1016CSharpTestWithTwoFilesWithAttributeAsync()
         {
             await new VerifyCS.Test
             {
@@ -118,7 +118,7 @@ using System.Reflection;
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithVersionAttributeTruncated()
+        public async Task CA1016CSharpTestWithVersionAttributeTruncatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -135,7 +135,7 @@ using System.Reflection;
         }
 
         [Fact]
-        public async Task CA1016CSharpTestWithVersionAttributeFullyQualified()
+        public async Task CA1016CSharpTestWithVersionAttributeFullyQualifiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -152,7 +152,7 @@ using System.Reflection;
         }
 
         [Fact, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
-        public async Task CA1016CSharpTestWithRazorCompiledItemAttribute()
+        public async Task CA1016CSharpTestWithRazorCompiledItemAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"using System;

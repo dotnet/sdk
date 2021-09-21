@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = "CA2237 CodeFix provider"), Shared]
     public sealed class MarkTypesWithSerializableFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(SerializationRulesDiagnosticAnalyzer.RuleCA2237Id);
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(SerializationRulesDiagnosticAnalyzer.RuleCA2237Id);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -34,12 +34,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             string title = MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle;
             context.RegisterCodeFix(new MyCodeAction(title,
-                                        async ct => await AddSerializableAttribute(context.Document, node, ct).ConfigureAwait(false),
+                                        async ct => await AddSerializableAttributeAsync(context.Document, node, ct).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     context.Diagnostics);
         }
 
-        private static async Task<Document> AddSerializableAttribute(Document document, SyntaxNode node, CancellationToken cancellationToken)
+        private static async Task<Document> AddSerializableAttributeAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(

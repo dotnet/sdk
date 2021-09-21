@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,37 +10,37 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class PInvokeDiagnosticAnalyzer : DiagnosticAnalyzer
     {
         public const string RuleCA1401Id = "CA1401";
         public const string RuleCA2101Id = "CA2101";
 
-        private static readonly LocalizableString s_localizableTitleCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1401 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PInvokesShouldNotBeVisibleDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        internal static DiagnosticDescriptor RuleCA1401 = DiagnosticDescriptorHelper.Create(RuleCA1401Id,
-                                                                         s_localizableTitleCA1401,
-                                                                         s_localizableMessageCA1401,
-                                                                         DiagnosticCategory.Interoperability,
-                                                                         RuleLevel.IdeSuggestion,
-                                                                         description: s_localizableDescriptionCA1401,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleCA1401 = DiagnosticDescriptorHelper.Create(
+            RuleCA1401Id,
+            CreateLocalizableResourceString(nameof(PInvokesShouldNotBeVisibleTitle)),
+            CreateLocalizableResourceString(nameof(PInvokesShouldNotBeVisibleMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(PInvokesShouldNotBeVisibleDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessageAndTitleCA2101 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA2101 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyMarshalingForPInvokeStringArgumentsDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableMessageAndTitleCA2101 = CreateLocalizableResourceString(nameof(SpecifyMarshalingForPInvokeStringArgumentsTitle));
 
-        internal static DiagnosticDescriptor RuleCA2101 = DiagnosticDescriptorHelper.Create(RuleCA2101Id,
-                                                                         s_localizableMessageAndTitleCA2101,
-                                                                         s_localizableMessageAndTitleCA2101,
-                                                                         DiagnosticCategory.Globalization,
-                                                                         RuleLevel.BuildWarningCandidate,
-                                                                         description: s_localizableDescriptionCA2101,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleCA2101 = DiagnosticDescriptorHelper.Create(
+            RuleCA2101Id,
+            s_localizableMessageAndTitleCA2101,
+            s_localizableMessageAndTitleCA2101,
+            DiagnosticCategory.Globalization,
+            RuleLevel.BuildWarningCandidate,
+            description: CreateLocalizableResourceString(nameof(SpecifyMarshalingForPInvokeStringArgumentsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA1401, RuleCA2101);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleCA1401, RuleCA2101);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class SetViewStateUserKeyTests
     {
         [Fact]
-        public async Task TestSubclassWithoutOnInitMethodDiagnostic()
+        public async Task TestSubclassWithoutOnInitMethodDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestOverrideModifierWithoutSettingViewStateUserKeyDiagnostic()
+        public async Task TestOverrideModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -72,7 +72,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestNewModifierWithoutSettingViewStateUserKeyDiagnostic()
+        public async Task TestNewModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -88,7 +88,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestNoModifierWithoutSettingViewStateUserKeyDiagnostic()
+        public async Task TestNoModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -104,7 +104,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestOverloadOnInitWithSettingViewStateUserKeyDiagnostic()
+        public async Task TestOverloadOnInitWithSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -121,7 +121,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestStaticMethodWithSettingViewStateUserKeyDiagnostic()
+        public async Task TestStaticMethodWithSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -139,7 +139,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestSubclassWithSettingPropertyOfLocalObjectDiagnostic()
+        public async Task TestSubclassWithSettingPropertyOfLocalObjectDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -157,7 +157,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestSubclassWithSettingPropertyOfWrongClassDiagnostic()
+        public async Task TestSubclassWithSettingPropertyOfWrongClassDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -181,7 +181,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestSubclassWithSettingWrongPropertyDiagnostic()
+        public async Task TestSubclassWithSettingWrongPropertyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -200,7 +200,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestSettingPropertyOfLocalObjectInPage_InitDiagnostic()
+        public async Task TestSettingPropertyOfLocalObjectInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -218,7 +218,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TesthSettingPropertyOfWrongClassInPage_InitDiagnostic()
+        public async Task TesthSettingPropertyOfWrongClassInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -242,7 +242,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestWithSettingWrongPropertyInPage_InitDiagnostic()
+        public async Task TestWithSettingWrongPropertyInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -261,7 +261,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestInPage_InitWithObjectParameterDiagnostic()
+        public async Task TestInPage_InitWithObjectParameterDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -278,7 +278,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestInPage_InitWithStringReturnTypeDiagnostic()
+        public async Task TestInPage_InitWithStringReturnTypeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -296,7 +296,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestNeitherOnInitNorInPage_InitNoDiagnostic()
+        public async Task TestNeitherOnInitNorInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -316,7 +316,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestNewPageDiagnostic()
+        public async Task TestNewPageDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -335,7 +335,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestOverridePageDiagnostic()
+        public async Task TestOverridePageDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -354,7 +354,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestSubclassWithSettingViewStateUserKeyNoDiagnostic()
+        public async Task TestSubclassWithSettingViewStateUserKeyNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -370,7 +370,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestNewModifierNoDiagnostic()
+        public async Task TestNewModifierNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -386,7 +386,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestWithoutModifierNoDiagnostic()
+        public async Task TestWithoutModifierNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -402,7 +402,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestOrdinaryClassWithSettingViewStateUserKeyNoDiagnostic()
+        public async Task TestOrdinaryClassWithSettingViewStateUserKeyNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -419,7 +419,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestSettingViewStateUserKeyInPage_InitNoDiagnostic()
+        public async Task TestSettingViewStateUserKeyInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -435,7 +435,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestBothOnInitAndInPage_InitNoDiagnostic()
+        public async Task TestBothOnInitAndInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -456,7 +456,7 @@ class TestClass : Page
         }
 
         [Fact]
-        public async Task TestNotAPage_NoDiagnostic()
+        public async Task TestNotAPage_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -477,7 +477,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestInterface_NoDiagnostic()
+        public async Task TestInterface_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -494,7 +494,7 @@ interface ITestInterface
         }
 
         [Fact]
-        public async Task TestSettingViewStateUserKeyOfPageNoDiagnostic()
+        public async Task TestSettingViewStateUserKeyOfPageNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;

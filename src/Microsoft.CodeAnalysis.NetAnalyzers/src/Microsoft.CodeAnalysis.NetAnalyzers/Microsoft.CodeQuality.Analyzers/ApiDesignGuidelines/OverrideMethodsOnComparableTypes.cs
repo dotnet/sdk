@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1036: A public or protected type implements the System.IComparable interface and
     /// does not override Object.Equals or does not overload the language-specific operator
@@ -21,40 +23,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     public sealed class OverrideMethodsOnComparableTypesAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1036";
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageEquals = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageEquals), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageOperators = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageOperator), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageBoth = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesMessageBoth), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.OverrideMethodsOnComparableTypesDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(OverrideMethodsOnComparableTypesTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(OverrideMethodsOnComparableTypesDescription));
 
-        internal static readonly DiagnosticDescriptor RuleEquals = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                  s_localizableTitle,
-                                                                                  s_localizableMessageEquals,
-                                                                                  DiagnosticCategory.Design,
-                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                  description: s_localizableDescription,
-                                                                                  isPortedFxCopRule: true,
-                                                                                  isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleEquals = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(OverrideMethodsOnComparableTypesMessageEquals)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor RuleOperator = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                  s_localizableTitle,
-                                                                                  s_localizableMessageOperators,
-                                                                                  DiagnosticCategory.Design,
-                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                  description: s_localizableDescription,
-                                                                                  isPortedFxCopRule: true,
-                                                                                  isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleOperator = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(OverrideMethodsOnComparableTypesMessageOperator)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor RuleBoth = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                  s_localizableTitle,
-                                                                                  s_localizableMessageBoth,
-                                                                                  DiagnosticCategory.Design,
-                                                                                  RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                  description: s_localizableDescription,
-                                                                                  isPortedFxCopRule: true,
-                                                                                  isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleBoth = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(OverrideMethodsOnComparableTypesMessageBoth)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleBoth, RuleEquals, RuleOperator);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleBoth, RuleEquals, RuleOperator);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -8,6 +8,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1417: Do not use [Out] string parameters for P/Invokes
     /// </summary>
@@ -16,20 +18,17 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         internal const string RuleId = "CA1417";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseOutAttributeStringPInvokeParametersTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseOutAttributeStringPInvokeParametersMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseOutAttributeStringPInvokeParametersDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
-                                                        RuleId,
-                                                        s_localizableTitle,
-                                                        s_localizableMessage,
-                                                        DiagnosticCategory.Interoperability,
-                                                        RuleLevel.BuildWarning,
-                                                        description: s_localizableDescription,
-                                                        isPortedFxCopRule: false,
-                                                        isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DoNotUseOutAttributeStringPInvokeParametersTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseOutAttributeStringPInvokeParametersMessage)),
+            DiagnosticCategory.Interoperability,
+            RuleLevel.BuildWarning,
+            description: CreateLocalizableResourceString(nameof(DoNotUseOutAttributeStringPInvokeParametersDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

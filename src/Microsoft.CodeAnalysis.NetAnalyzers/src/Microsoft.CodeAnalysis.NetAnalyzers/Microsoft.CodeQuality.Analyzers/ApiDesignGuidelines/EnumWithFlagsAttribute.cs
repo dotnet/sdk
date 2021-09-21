@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +13,8 @@ using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.Helpers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// Implements CA1027 and CA2217
     ///
@@ -36,31 +38,27 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string RuleIdDoNotMarkEnumsWithFlags = "CA2217";
         internal const string RuleNameForExportAttribute = "EnumWithFlagsAttributeRules";
 
-        private static readonly LocalizableString s_localizableTitleCA1027 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1027 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1027 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor Rule1027 = DiagnosticDescriptorHelper.Create(RuleIdMarkEnumsWithFlags,
-                                                                             s_localizableTitleCA1027,
-                                                                             s_localizableMessageCA1027,
-                                                                             DiagnosticCategory.Design,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescriptionCA1027,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule1027 = DiagnosticDescriptorHelper.Create(
+            RuleIdMarkEnumsWithFlags,
+            CreateLocalizableResourceString(nameof(MarkEnumsWithFlagsTitle)),
+            CreateLocalizableResourceString(nameof(MarkEnumsWithFlagsMessage)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(MarkEnumsWithFlagsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableTitleCA2217 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA2217 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA2217 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor Rule2217 = DiagnosticDescriptorHelper.Create(RuleIdDoNotMarkEnumsWithFlags,
-                                                                             s_localizableTitleCA2217,
-                                                                             s_localizableMessageCA2217,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescriptionCA2217,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule2217 = DiagnosticDescriptorHelper.Create(
+            RuleIdDoNotMarkEnumsWithFlags,
+            CreateLocalizableResourceString(nameof(DoNotMarkEnumsWithFlagsTitle)),
+            CreateLocalizableResourceString(nameof(DoNotMarkEnumsWithFlagsMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(DoNotMarkEnumsWithFlagsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule1027, Rule2217);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule1027, Rule2217);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. 
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information. 
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class PreferConstCharOverConstUnitStringForStringBuilderAppendTests
     {
         [Fact]
-        public async Task TestRegularCase()
+        public async Task TestRegularCaseAsync()
         {
             string csInput = @" 
 using System; 
@@ -81,7 +81,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestMultipleDeclarations()
+        public async Task TestMultipleDeclarationsAsync()
         {
             const string multipleDeclarations_cs = @" 
 using System; 
@@ -117,7 +117,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestClassField()
+        public async Task TestClassFieldAsync()
         {
             const string classFieldInAppend_cs = @"
 using System;
@@ -154,7 +154,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestNullInitializer()
+        public async Task TestNullInitializerAsync()
         {
             const string nullInitializer_cs = @" 
 using System; 
@@ -190,7 +190,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestNonUnitString()
+        public async Task TestNonUnitStringAsync()
         {
             const string nonUnitString_cs = @" 
 using System; 
@@ -226,7 +226,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestNoCallToStringAppend()
+        public async Task TestNoCallToStringAppendAsync()
         {
             const string noCallToStringAppend_cs = @" 
 using System; 
@@ -261,7 +261,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestNonConstUnitString()
+        public async Task TestNonConstUnitStringAsync()
         {
             const string nonConstUnitString_cs = @" 
 using System; 
@@ -298,7 +298,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestAppendLiteralWithFix()
+        public async Task TestAppendLiteralWithFixAsync()
         {
             const string appendLiteralInput_cs = @" 
 using System; 
@@ -361,7 +361,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestMethodCallInAppend()
+        public async Task TestMethodCallInAppendAsync()
         {
             const string methodCallInAppend_cs = @" 
 using System; 
@@ -402,7 +402,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestMethodParameterInAppend()
+        public async Task TestMethodParameterInAppendAsync()
         {
             const string methodParameterInAppend = @"
 using System; 
@@ -439,7 +439,7 @@ End Module
         [Theory]
         [InlineData("ab")]
         [InlineData("(string)null")]
-        public async Task TestAppendLiteral(string input)
+        public async Task TestAppendLiteralAsync(string input)
         {
             string quotes = input == "(string)null" ? "" : "\"";
             string methodParameterInAppend = @"
@@ -479,7 +479,7 @@ End Module
         }
 
         [Fact]
-        public async Task TestInterpolatedString()
+        public async Task TestInterpolatedStringAsync()
         {
             const string interpolatedString_cs = @"
 using System; 

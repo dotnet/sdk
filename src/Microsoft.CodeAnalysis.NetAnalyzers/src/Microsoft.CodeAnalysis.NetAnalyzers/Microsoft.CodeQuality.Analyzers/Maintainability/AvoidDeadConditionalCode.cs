@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -15,6 +15,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1508: Flags conditional expressions which are always true/false and null checks for operations that are always null/non-null based on predicate analysis.
     /// </summary>
@@ -23,31 +25,31 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     {
         internal const string RuleId = "CA1508";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidDeadConditionalCodeTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableAlwaysTrueFalseOrNullMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidDeadConditionalCodeAlwaysTruFalseOrNullMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableNeverNullMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidDeadConditionalCodeNeverNullMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(AvoidDeadConditionalCodeTitle));
 
         // https://github.com/dotnet/roslyn-analyzers/issues/2180 tracks enabling the rule by default
 
-        internal static DiagnosticDescriptor AlwaysTrueFalseOrNullRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableAlwaysTrueFalseOrNullMessage,
-                                                                             DiagnosticCategory.Maintainability,
-                                                                             RuleLevel.Disabled,
-                                                                             description: null,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor AlwaysTrueFalseOrNullRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(AvoidDeadConditionalCodeAlwaysTruFalseOrNullMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
-        internal static DiagnosticDescriptor NeverNullRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableNeverNullMessage,
-                                                                             DiagnosticCategory.Maintainability,
-                                                                             RuleLevel.Disabled,
-                                                                             description: null,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor NeverNullRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(AvoidDeadConditionalCodeNeverNullMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(AlwaysTrueFalseOrNullRule, NeverNullRule);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotRaiseReservedExceptionTypesTests
     {
         [Fact]
-        public async Task CreateSystemNotImplementedException()
+        public async Task CreateSystemNotImplementedExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -44,7 +44,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CreateSystemException()
+        public async Task CreateSystemExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -75,7 +75,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task CreateSystemStackOverflowException()
+        public async Task CreateSystemStackOverflowExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

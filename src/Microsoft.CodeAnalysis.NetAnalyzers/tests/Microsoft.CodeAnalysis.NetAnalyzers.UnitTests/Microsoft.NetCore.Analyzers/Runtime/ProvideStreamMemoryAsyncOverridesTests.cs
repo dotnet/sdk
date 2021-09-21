@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     {
         #region Reports Diagnostic
         [Fact]
-        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_CS()
+        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -48,7 +48,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_VB()
+        public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -72,7 +72,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_CS()
+        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -98,7 +98,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_VB()
+        public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -122,7 +122,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleBiagnostics_CS()
+        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleBiagnostics_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -154,7 +154,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleDiagnostics_VB()
+        public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleDiagnostics_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -187,7 +187,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
         [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
-        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_CS(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_CSAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
 {CSUsings}
@@ -225,7 +225,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
         [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
-        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_VB(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_VBAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
 {VBUsings}
@@ -259,7 +259,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
         [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
-        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_CS(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_CSAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string fooSource = $@"
 {CSUsings}
@@ -306,7 +306,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
         [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
-        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_VB(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_VBAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string fooSource = $@"
 {VBUsings}
@@ -346,7 +346,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_CS()
+        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -396,7 +396,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_VB()
+        public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -440,7 +440,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_CS()
+        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_CSAsync()
         {
             string fooSource = $@"
 {CSUsings}
@@ -492,7 +492,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_VB()
+        public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_VBAsync()
         {
             string fooSource = $@"
 {VBUsings}
@@ -542,7 +542,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray, CSHideReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
         [InlineData(CSWriteAsyncArray, CSHideWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
-        public Task WhenMemoryMethodNotDeclaredOverride_ReportsDiagnostic(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task WhenMemoryMethodNotDeclaredOverride_ReportsDiagnosticAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
 {CSUsings}
@@ -575,7 +575,7 @@ namespace Testopolis
         [Theory]
         [InlineData(CSReadAsyncArray, CSHideExplicitReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
         [InlineData(CSWriteAsyncArray, CSHideExplicitWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
-        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_CS(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_CSAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
 {CSUsings}
@@ -606,7 +606,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray, VBHideExplicitReadAsyncMemory, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
         [InlineData(VBWriteAsyncArray, VBHideExplicitWriteAsyncMemory, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
-        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_VB(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
+        public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_VBAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
 {VBUsings}
@@ -635,7 +635,7 @@ End Namespace";
 
         #region No Diagnostic
         [Fact]
-        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_CS()
+        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -658,7 +658,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_VB()
+        public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -679,7 +679,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_CS()
+        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -702,7 +702,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_VB()
+        public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -723,7 +723,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_CS()
+        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -745,7 +745,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_VB()
+        public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -765,7 +765,7 @@ End Namespace";
         }
 
         [Fact]
-        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_CS()
+        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_CSAsync()
         {
             string code = $@"
 {CSUsings}
@@ -787,7 +787,7 @@ namespace Testopolis
         }
 
         [Fact]
-        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_VB()
+        public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_VBAsync()
         {
             string code = $@"
 {VBUsings}
@@ -809,7 +809,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray)]
         [InlineData(CSWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {CSUsings}
@@ -841,7 +841,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray)]
         [InlineData(VBWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_VB(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {VBUsings}
@@ -869,7 +869,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray)]
         [InlineData(CSWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBaseOverridesArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBaseOverridesArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {CSUsings}
@@ -903,7 +903,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray)]
         [InlineData(VBWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBaseOverridesArray_NoDiagnostic_VB(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBaseOverridesArray_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {VBUsings}
@@ -933,7 +933,7 @@ End Namespace";
         [Theory]
         [InlineData(CSReadAsyncArray)]
         [InlineData(CSWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_CS(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {CSUsings}
@@ -968,7 +968,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBReadAsyncArray)]
         [InlineData(VBWriteAsyncArray)]
-        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_VB(string arrayMethodDefinition)
+        public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
 {VBUsings}
@@ -999,7 +999,7 @@ End Namespace";
         [Theory]
         [InlineData(CSHideReadAsyncArray)]
         [InlineData(CSHideWriteAsyncArray)]
-        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_CS(string arrayMethod)
+        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_CSAsync(string arrayMethod)
         {
             string code = $@"
 {CSUsings}
@@ -1025,7 +1025,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBHideReadAsyncArray)]
         [InlineData(VBHideWriteAsyncArray)]
-        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_VB(string arrayMethod)
+        public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_VBAsync(string arrayMethod)
         {
             string code = $@"
 {VBUsings}
@@ -1049,7 +1049,7 @@ End Namespace";
         [Theory]
         [InlineData(CSHideExplicitReadAsyncArray)]
         [InlineData(CSHideExplicitWriteAsyncArray)]
-        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_CS(string arrayMethod)
+        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_CSAsync(string arrayMethod)
         {
             string code = $@"
 {CSUsings}
@@ -1073,7 +1073,7 @@ namespace Testopolis
         [Theory]
         [InlineData(VBHideExplicitReadAsyncArray)]
         [InlineData(VBHideExplicitWriteAsyncArray)]
-        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_VB(string arrayMethod)
+        public Task WhenArrayMethodDeclaredNew_NoDiagnostic_VBAsync(string arrayMethod)
         {
             string code = $@"
 {VBUsings}
@@ -1097,7 +1097,7 @@ End Namespace";
         [Theory]
         [InlineData(ReadAsyncName, CSReadAsyncArray)]
         [InlineData(WriteAsyncName, CSWriteAsyncArray)]
-        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_CS(string methodName, string methodDefinition)
+        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_CSAsync(string methodName, string methodDefinition)
         {
             string code = $@"
 {CSUsings}
@@ -1129,7 +1129,7 @@ namespace Testopolis
         [Theory]
         [InlineData(ReadAsyncName, VBReadAsyncArray)]
         [InlineData(WriteAsyncName, VBWriteAsyncArray)]
-        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_VB(string methodName, string methodDefinition)
+        public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_VBAsync(string methodName, string methodDefinition)
         {
             string code = $@"
 {VBUsings}
@@ -1159,7 +1159,7 @@ End Namespace";
         [Theory]
         [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
         [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
-        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_CS(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
 {CSUsings}
@@ -1190,7 +1190,7 @@ namespace Testopolis
         [Theory]
         [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
         [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
-        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_VB(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
 {VBUsings}
@@ -1219,7 +1219,7 @@ End Namespace";
         [Theory]
         [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
         [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
-        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_CS(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
 {CSUsings}
@@ -1250,7 +1250,7 @@ namespace Testopolis
         [Theory]
         [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
         [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
-        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_VB(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
+        public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
 {VBUsings}
@@ -1280,7 +1280,7 @@ End Namespace";
         [Theory]
         [InlineData(ReadAsyncName, CSReadAsyncMemory)]
         [InlineData(WriteAsyncName, CSWriteAsyncMemory)]
-        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_CS(string methodName, string memoryMethodDefinition)
+        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string memoryMethodDefinition)
         {
             string code = $@"
 {CSUsings}
@@ -1310,7 +1310,7 @@ namespace Testopolis
         [Theory]
         [InlineData(ReadAsyncName, VBReadAsyncMemory)]
         [InlineData(WriteAsyncName, VBWriteAsyncMemory)]
-        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_VB(string methodName, string memoryMethodDefinition)
+        public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string memoryMethodDefinition)
         {
             string code = $@"
 {VBUsings}

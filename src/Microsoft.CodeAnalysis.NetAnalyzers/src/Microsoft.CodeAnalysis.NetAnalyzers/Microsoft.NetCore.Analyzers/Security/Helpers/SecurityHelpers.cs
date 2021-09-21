@@ -1,11 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Resources;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -15,56 +12,23 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Security.Helpers
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     internal static class SecurityHelpers
     {
-        /// <summary>
-        /// Creates a DiagnosticDescriptor with <see cref="LocalizableResourceString"/>s from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
-        /// </summary>
-        /// <param name="id">Diagnostic identifier.</param>
-        /// <param name="titleResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's title.</param>
-        /// <param name="messageResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's message.</param>
-        /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
-        /// <param name="descriptionResourceStringName">Name of the resource string inside <see cref="MicrosoftNetCoreAnalyzersResources"/> for the diagnostic's description.</param>
-        /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
-        /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
-        /// <returns>new DiagnosticDescriptor</returns>
-        public static DiagnosticDescriptor CreateDiagnosticDescriptor(
-            string id,
-            string titleResourceStringName,
-            string messageResourceStringName,
-            RuleLevel ruleLevel,
-            bool isPortedFxCopRule,
-            bool isDataflowRule,
-            bool isReportedAtCompilationEnd,
-            string? descriptionResourceStringName = null)
-        {
-            return CreateDiagnosticDescriptor(
-                id,
-                typeof(MicrosoftNetCoreAnalyzersResources),
-                titleResourceStringName,
-                messageResourceStringName,
-                ruleLevel,
-                isPortedFxCopRule,
-                isDataflowRule,
-                isReportedAtCompilationEnd,
-                descriptionResourceStringName);
-        }
-
         /// <summary>
         /// Creates a DiagnosticDescriptor with <see cref="LocalizableResourceString"/>s from the specified resource source type.
         /// </summary>
         /// <param name="id">Diagnostic identifier.</param>
-        /// <param name="resourceSource">Type containing the resource strings.</param>
-        /// <param name="titleResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's title.</param>
-        /// <param name="messageResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's message.</param>
+        /// <param name="titleResourceStringName">Name of the resource string for the diagnostic's title.</param>
+        /// <param name="messageResourceStringName">Name of the resource string for the diagnostic's message.</param>
         /// <param name="ruleLevel">Indicates the <see cref="RuleLevel"/> for this rule.</param>
-        /// <param name="descriptionResourceStringName">Name of the resource string inside <paramref name="resourceSource"/> for the diagnostic's description.</param>
+        /// <param name="descriptionResourceStringName">Name of the resource string for the diagnostic's description.</param>
         /// <param name="isPortedFxCopRule">Flag indicating if this is a rule ported from legacy FxCop.</param>
         /// <param name="isDataflowRule">Flag indicating if this is a dataflow analysis based rule.</param>
         /// <returns>new DiagnosticDescriptor</returns>
         public static DiagnosticDescriptor CreateDiagnosticDescriptor(
             string id,
-            Type resourceSource,
             string titleResourceStringName,
             string messageResourceStringName,
             RuleLevel ruleLevel,
@@ -75,11 +39,11 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
         {
             return DiagnosticDescriptorHelper.Create(
                 id,
-                GetResourceString(resourceSource, titleResourceStringName),
-                GetResourceString(resourceSource, messageResourceStringName),
+                CreateLocalizableResourceString(titleResourceStringName),
+                CreateLocalizableResourceString(messageResourceStringName),
                 DiagnosticCategory.Security,
                 ruleLevel,
-                descriptionResourceStringName != null ? GetResourceString(resourceSource, descriptionResourceStringName) : null,
+                descriptionResourceStringName != null ? CreateLocalizableResourceString(descriptionResourceStringName) : null,
                 isPortedFxCopRule,
                 isDataflowRule,
                 isReportedAtCompilationEnd: isReportedAtCompilationEnd);
@@ -134,14 +98,6 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
             ImmutableHashSet.Create(
                 StringComparer.Ordinal,
                 "Deserialize");
-
-        private static readonly ImmutableDictionary<Type, ResourceManager> ResourceManagerMapping =
-            ImmutableDictionary.CreateRange<Type, ResourceManager>(
-                new[]
-                {
-                    (typeof(MicrosoftNetCoreAnalyzersResources), MicrosoftNetCoreAnalyzersResources.ResourceManager),
-                    (typeof(MicrosoftNetCoreAnalyzersResources), MicrosoftNetCoreAnalyzersResources.ResourceManager),
-                }.Select(o => new KeyValuePair<Type, ResourceManager>(o.Item1, o.ResourceManager)));
 
         /// <summary>
         /// Methods using a <see cref="T:Newtonsoft.Json.JsonSerializerSettings"/> parameter for <see cref="T:Newtonsoft.Json.JsonSerializer"/>.
@@ -225,35 +181,6 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                 && methodSymbol.Parameters[0].Type.Equals(xmlReaderTypeSymbol)
                 && methodSymbol.ContainingType?.HasAttribute(designerCategoryAttributeTypeSymbol) == true
                 && methodSymbol.HasAttribute(debuggerNonUserCodeAttributeTypeSymbol);
-        }
-
-        /// <summary>
-        /// Gets a <see cref="LocalizableResourceString"/> from <see cref="MicrosoftNetCoreAnalyzersResources"/>.
-        /// </summary>
-        /// <param name="resourceSource">Type containing the resource strings.</param>
-        /// <param name="name">Name of the resource string to retrieve.</param>
-        /// <returns>The corresponding <see cref="LocalizableResourceString"/>.</returns>
-        private static LocalizableResourceString GetResourceString(Type resourceSource, string name)
-        {
-            if (resourceSource == null)
-            {
-                throw new ArgumentNullException(nameof(resourceSource));
-            }
-
-            if (!ResourceManagerMapping.TryGetValue(resourceSource, out ResourceManager resourceManager))
-            {
-                throw new ArgumentException($"No mapping found for {resourceSource}", nameof(resourceSource));
-            }
-
-#if DEBUG
-            if (resourceManager.GetString(name, System.Globalization.CultureInfo.InvariantCulture) == null)
-            {
-                throw new ArgumentException($"Resource string '{name}' not found in {resourceSource}", nameof(name));
-            }
-#endif
-
-            LocalizableResourceString localizableResourceString = new LocalizableResourceString(name, resourceManager, resourceSource);
-            return localizableResourceString;
         }
     }
 }

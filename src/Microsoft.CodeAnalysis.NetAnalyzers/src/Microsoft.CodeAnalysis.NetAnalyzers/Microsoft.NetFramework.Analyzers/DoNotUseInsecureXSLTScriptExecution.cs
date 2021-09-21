@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -12,23 +12,25 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetFramework.Analyzers
 {
+    using static MicrosoftNetFrameworkAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureXSLTScriptExecutionAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3076";
 
-        internal static DiagnosticDescriptor RuleDoNotUseInsecureXSLTScriptExecution =
+        internal static readonly DiagnosticDescriptor RuleDoNotUseInsecureXSLTScriptExecution =
             DiagnosticDescriptorHelper.Create(
                 RuleId,
-                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureXsltScriptProcessingMessage)),
-                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage)),
+                CreateLocalizableResourceString(nameof(InsecureXsltScriptProcessingMessage)),
+                CreateLocalizableResourceString(nameof(DoNotUseInsecureDtdProcessingGenericMessage)),
                 DiagnosticCategory.Security,
                 RuleLevel.IdeHidden_BulkConfigurable,
-                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureXSLTScriptExecutionDescription)),
+                CreateLocalizableResourceString(nameof(DoNotUseInsecureXSLTScriptExecutionDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDoNotUseInsecureXSLTScriptExecution);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleDoNotUseInsecureXSLTScriptExecution);
 
 #pragma warning disable RS1026 // Enable concurrent execution
         public override void Initialize(AnalysisContext context)
@@ -163,10 +165,10 @@ namespace Microsoft.NetFramework.Analyzers
 
                 if (!isSecureSettings && !isSecureResolver)
                 {
-                    LocalizableResourceString message = SecurityDiagnosticHelpers.GetLocalizableResourceString(
+                    LocalizableResourceString message = CreateLocalizableResourceString(
                         isSetInBlock
-                            ? nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureConstructedMessage)
-                            : nameof(MicrosoftNetFrameworkAnalyzersResources.XslCompiledTransformLoadInsecureInputMessage),
+                            ? nameof(XslCompiledTransformLoadInsecureConstructedMessage)
+                            : nameof(XslCompiledTransformLoadInsecureInputMessage),
                         SecurityDiagnosticHelpers.GetNonEmptyParentName(_enclosingSymbol)
                     );
 

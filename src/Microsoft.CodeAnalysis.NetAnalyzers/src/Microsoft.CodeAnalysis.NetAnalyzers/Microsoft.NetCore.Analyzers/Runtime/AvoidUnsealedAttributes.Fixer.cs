@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public class AvoidUnsealedAttributesFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(AvoidUnsealedAttributesAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidUnsealedAttributesAnalyzer.RuleId);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -31,13 +31,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 string title = MicrosoftNetCoreAnalyzersResources.AvoidUnsealedAttributesMessage;
                 context.RegisterCodeFix(new MyCodeAction(title,
-                    async ct => await MakeSealed(editor, declaration).ConfigureAwait(false),
+                    async ct => await MakeSealedAsync(editor, declaration).ConfigureAwait(false),
                     equivalenceKey: title),
                     context.Diagnostics);
             }
         }
 
-        private static Task<Document> MakeSealed(DocumentEditor editor, SyntaxNode declaration)
+        private static Task<Document> MakeSealedAsync(DocumentEditor editor, SyntaxNode declaration)
         {
             DeclarationModifiers modifiers = editor.Generator.GetModifiers(declaration);
             editor.SetModifiers(declaration, modifiers + DeclarationModifiers.Sealed);

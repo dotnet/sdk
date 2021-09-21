@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class UseLiteralsWhereAppropriateFixerTests
     {
         [Fact]
-        public async Task CSharp_CodeFixForEmptyString()
+        public async Task CSharp_CodeFixForEmptyStringAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -45,7 +45,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CodeFixForNonEmptyString()
+        public async Task CSharp_CodeFixForNonEmptyStringAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -79,7 +79,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CodeFixForMultiDeclaration()
+        public async Task CSharp_CodeFixForMultiDeclarationAsync()
         {
             // Fixers are disabled on multiple fields, because it may introduce compile error.
 
@@ -112,7 +112,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharp_CodeFixForInt32()
+        public async Task CSharp_CodeFixForInt32Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -147,7 +147,7 @@ End Class
 
         [Fact]
         [WorkItem(4732, "https://github.com/dotnet/roslyn-analyzers/issues/4732")]
-        public async Task ConstantInterpolatedString_LanguageVersionNotSupported()
+        public async Task ConstantInterpolatedString_LanguageVersionNotSupportedAsync()
         {
             // At the time of writing the test, constant interpolated strings is preview.
             // A diagnostic should be produced when it's supported in a stable language version (most likely C# 10).

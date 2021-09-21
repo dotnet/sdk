@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideEqualsAndOperatorEqualsOnValueTypesFixerTests
     {
         [Fact]
-        public async Task CSharpCodeFixNoEqualsOverrideOrEqualityOperators()
+        public async Task CSharpCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public struct A
@@ -56,7 +56,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CSharpCodeFixNoEqualsOverride()
+        public async Task CSharpCodeFixNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public struct A
@@ -100,7 +100,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CSharpCodeFixNoEqualityOperator()
+        public async Task CSharpCodeFixNoEqualityOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public struct A
@@ -149,7 +149,7 @@ public struct A
         }
 
         [Fact]
-        public async Task CSharpCodeFixNoInequalityOperator()
+        public async Task CSharpCodeFixNoInequalityOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public struct A
@@ -197,7 +197,7 @@ public struct A
 ");
         }
         [Fact]
-        public async Task BasicCodeFixNoEqualsOverrideOrEqualityOperators()
+        public async Task BasicCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Structure A
@@ -233,7 +233,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicCodeFixNoEqualsOverride()
+        public async Task BasicCodeFixNoEqualsOverrideAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Structure A
@@ -269,7 +269,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicCodeFixNoEqualityOperator()
+        public async Task BasicCodeFixNoEqualityOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Structure A
@@ -309,7 +309,7 @@ End Structure
         }
 
         [Fact]
-        public async Task BasicCodeFixNoInequalityOperator()
+        public async Task BasicCodeFixNoInequalityOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Structure A

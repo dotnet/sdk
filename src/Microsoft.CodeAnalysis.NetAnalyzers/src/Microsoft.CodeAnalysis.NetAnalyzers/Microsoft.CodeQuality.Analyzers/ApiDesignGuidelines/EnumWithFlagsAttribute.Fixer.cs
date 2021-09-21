@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -22,7 +22,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class EnumWithFlagsAttributeFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags,
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags,
                                                                                    EnumWithFlagsAttributeAnalyzer.RuleIdDoNotMarkEnumsWithFlags);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
@@ -41,13 +41,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                         MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsCodeFix :
                                                         MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsCodeFix;
                 context.RegisterCodeFix(new MyCodeAction(fixTitle,
-                                             async ct => await AddOrRemoveFlagsAttribute(context.Document, context.Span, diagnostic.Id, flagsAttributeType, ct).ConfigureAwait(false),
+                                             async ct => await AddOrRemoveFlagsAttributeAsync(context.Document, context.Span, diagnostic.Id, flagsAttributeType, ct).ConfigureAwait(false),
                                              equivalenceKey: fixTitle),
                                         diagnostic);
             }
         }
 
-        private static async Task<Document> AddOrRemoveFlagsAttribute(Document document, TextSpan span, string diagnosticId, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
+        private static async Task<Document> AddOrRemoveFlagsAttributeAsync(Document document, TextSpan span, string diagnosticId, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
