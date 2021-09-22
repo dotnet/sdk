@@ -13,7 +13,8 @@
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.Tarball_WriteSourceRepoProperties" AssemblyFile="$(SourceBuildTasksAssembly)" />
 
   <PropertyGroup>
-    <TarballDir>$(RepoRoot)artifacts/tarball/</TarballDir>
+    <ArtifactsDir>$(RepoRoot)artifacts/</ArtifactsDir>
+    <TarballDir>$(ArtifactsDir)tarball/</TarballDir>
     <TarballRootDir>$([MSBuild]::EnsureTrailingSlash('$(TarballDir)'))</TarballRootDir>
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
@@ -28,6 +29,8 @@
       SetupSelfGithubInfo;
       CloneRepoAndDependentsRecursive;
       CleanClonedSource;
+      RestoreTextOnlyPackages;
+      CopyTextOnlyPackages;
       CopyTarballContent;
       ">
 
@@ -227,6 +230,19 @@
     <Delete Files="@(TarballSrcBinaryToRemove)" />
   </Target>
 
+  <Target Name="RestoreTextOnlyPackages">
+    <PropertyGroup>
+      <TextOnlyPackageRestoreDir>$(ArtifactsDir)text-only-packages/</TextOnlyPackageRestoreDir>
+      <TextOnlyPackageTarballDir>$(TarballRootDir)packages/text-only/</TextOnlyPackageTarballDir>
+    </PropertyGroup>
+
+    <Message Text="Restoring text only packages..." Importance="High" />
+
+    <MSBuild Projects="../Arcade/tools/TextOnlyPackages.csproj"
+             Properties="TargetPackagesPath=$(TextOnlyPackageRestoreDir)"
+             Targets="Restore" />
+  </Target>
+
   <Target Name="CopyTarballContent">
     <ItemGroup>
       <TarballContent Include="$(RepoRoot)src/SourceBuild/tarball/content/**/*" />
@@ -267,6 +283,44 @@
       Overwrite="true" />
 
     <MakeDir Directories="$(TarballRootDir)packages/prebuilt" />
+  </Target>
+
+  <!--
+    Read directories in which text-only packages have been downloaded and copy content to tarball.
+  -->
+  <Target Name="CopyTextOnlyPackages" DependsOnTargets="RestoreTextOnlyPackages" >
+
+    <ReadLinesFromFile File="$(TextOnlyPackageRestoreDir)/TextOnlyPackageDirectories.txt" Condition="Exists('$(TextOnlyPackageRestoreDir)/TextOnlyPackageDirectories.txt')">
+      <Output TaskParameter="Lines" ItemName="TextOnlyPackageDirectories" />
+    </ReadLinesFromFile>
+
+    <MSBuild Projects="$(MSBuildProjectFile)"
+      Targets="CopySingleTextOnlyDirectory"
+      Properties="TextOnlyDirectory=%(TextOnlyPackageDirectories.Identity);TextOnlyPackageTarballDir=$(TextOnlyPackageTarballDir)" />
+
+  </Target>
+
+  <Target Name="CopySingleTextOnlyDirectory">
+
+    <PropertyGroup>
+      <DirectoryName>$([System.IO.Path]::GetFileName('$(TextOnlyDirectory)'))</DirectoryName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <TextOnlyPackageContent 
+        Include="$(TextOnlyDirectory)/**/*"
+        Exclude="
+          $(TextOnlyDirectory)/**/.nupkg.metadata;
+          $(TextOnlyDirectory)/**/.signature.p7s;
+          $(TextOnlyDirectory)/**/*.nupkg;
+          $(TextOnlyDirectory)/**/*.nupkg.sha512;
+        " />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(TextOnlyPackageContent)"
+      DestinationFiles="@(TextOnlyPackageContent->'$(TextOnlyPackageTarballDir)$(DirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
+
   </Target>
 
 </Project>
