@@ -1,0 +1,26 @@
+From 4c6179851c1e4ff7f6835707d11f0d9a411aefbc Mon Sep 17 00:00:00 2001
+From: Matt Galbraith <mattgal@microsoft.com>
+Date: Mon, 23 Aug 2021 08:52:35 -0700
+Subject: [PATCH] https://github.com/dotnet/arcade/issues/7778 - Ignore curl
+ failures for no-network build scenario
+
+---
+ eng/common/tools.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/common/tools.sh b/eng/common/tools.sh
+index 3c5f3a12..41e32310 100755
+--- a/eng/common/tools.sh
++++ b/eng/common/tools.sh
+@@ -402,7 +402,7 @@ function StopProcesses {
+ function TryLogClientIpAddress () {
+   echo 'Attempting to log this client''s IP for Azure Package feed telemetry purposes'
+   if command -v curl > /dev/null; then
+-    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: '
++    curl -s 'http://co1.msedge.net/fdv2/diagnostics.aspx' | grep ' IP: ' || true
+   fi
+ }
+ 
+-- 
+2.30.2
+

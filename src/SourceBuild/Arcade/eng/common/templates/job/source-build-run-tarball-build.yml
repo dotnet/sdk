@@ -27,10 +27,9 @@ jobs:
       Fedora33-Online:
         _runOnline: true
         _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-      # TODO: Renable once installer prebuilts are eliminated.
-      # Fedora33-Offline:
-      #   _runOnline: false
-      #   _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+      Fedora33-Offline:
+        _runOnline: false
+        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
   timeoutInMinutes: 180
   variables:
     _TarballDir: $(Build.StagingDirectory)/tarball
