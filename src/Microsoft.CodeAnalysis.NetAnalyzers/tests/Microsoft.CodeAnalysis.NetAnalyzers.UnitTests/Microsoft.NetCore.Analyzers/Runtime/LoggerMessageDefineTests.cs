@@ -27,6 +27,12 @@ namespace Microsoft.Extensions.Logging.Analyzer
             await TriggerCodeAsync(format);
         }
 
+        [Fact]
+        public async Task CA2254ShouldNotApplyForConstantValues()
+        {
+            await TriggerCodeAsync("{|CA1848:logger.LogDebug($\"{nameof(System.Collections.Generic.IList<object>)}<{{Arg1}}> could not be resovled from DI container, using default JSON binder.\", typeof(string).Assembly)|};");
+        }
+
         [Theory]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{new System.Exception().Message}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
