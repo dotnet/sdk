@@ -170,7 +170,8 @@
     <!-- Remove the git objects folder to free up tarball space -->
     <Exec
       Command="rm -rf objects"
-      WorkingDirectory="$(TarballRepoSourceDir).git" />
+      WorkingDirectory="$(TarballRepoSourceDir).git" 
+      Condition="$(PreserveTarballGitFolders) != 'true'" />
 
     <Message Text="--> Done Cloning Repo $(SourceBuildRepoName)" Importance="High" />
 

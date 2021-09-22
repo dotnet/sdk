@@ -104,16 +104,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                 var releaseParts = nugetVersion.Release.Split('-', '.');
                 if (releaseParts.Length == 2)
                 {
-                    if (releaseParts[1].TrimStart('0') == commitCount)
-                    {
-                        // core-sdk does this - OfficialBuildId is only used for their fake package and not in anything shipped
-                        return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = releaseParts[0] };
-                    }
-                    else
-                    {
-                        // NuGet does this - arbitrary build IDs
-                        return new DerivedVersion { OfficialBuildId = releaseParts[1], PreReleaseVersionLabel = releaseParts[0] };
-                    }
+                    // NuGet does this - arbitrary build IDs
+                    return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = releaseParts[0] };
                 }
                 else if (releaseParts.Length == 3)
                 {
