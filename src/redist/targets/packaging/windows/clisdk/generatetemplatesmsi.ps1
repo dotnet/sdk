@@ -63,6 +63,7 @@ function RunCandle
         -dDependencyKeyName="$DependencyKeyName" `
         -arch "$Architecture" `
         -ext WixDependencyExtension.dll `
+        "$PSScriptRoot\dotnethome_x64.wxs" `
         "$PSScriptRoot\templates.wxs" `
         "$PSScriptRoot\provider.wxs" `
         $InstallFileswsx
@@ -89,6 +90,7 @@ function RunLight
 
     $lightOutput = .\light.exe -nologo -ext WixUIExtension -ext WixDependencyExtension -ext WixUtilExtension `
         -cultures:en-us `
+        dotnethome_x64.wixobj `
         templates.wixobj `
         provider.wixobj `
         $InstallFilesWixobj `
