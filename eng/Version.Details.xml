@@ -83,26 +83,26 @@
       <Uri>https://github.com/dotnet/format</Uri>
       <Sha>9ff1db40a091b26e598f8d7ffab96430e81d9efb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.0.0-5.21473.4">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.0.0-5.21473.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>dca97385db03c57716410009c4c9ee60d92beb64</Sha>
+      <Sha>fa693e5c514013df21af6be38b9b580cbe7b8e3e</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-5.21473.4">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.0.0-5.21473.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>dca97385db03c57716410009c4c9ee60d92beb64</Sha>
+      <Sha>fa693e5c514013df21af6be38b9b580cbe7b8e3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.0.0-5.21473.4">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.0.0-5.21473.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>dca97385db03c57716410009c4c9ee60d92beb64</Sha>
+      <Sha>fa693e5c514013df21af6be38b9b580cbe7b8e3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.0-5.21473.4">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.0-5.21473.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>dca97385db03c57716410009c4c9ee60d92beb64</Sha>
+      <Sha>fa693e5c514013df21af6be38b9b580cbe7b8e3e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.0.0-5.21473.4">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.0.0-5.21473.9">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>dca97385db03c57716410009c4c9ee60d92beb64</Sha>
+      <Sha>fa693e5c514013df21af6be38b9b580cbe7b8e3e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="6.0.0-rc.2.21470.37">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
