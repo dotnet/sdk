@@ -180,6 +180,7 @@
         <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnet.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\registrykeys.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\install-files.wixobj" />
     </ItemGroup>
     <CreateLightCommandPackageDrop
@@ -250,6 +251,7 @@
     <ItemGroup>
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\templates.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
     </ItemGroup>
 
@@ -306,6 +308,7 @@
     <ItemGroup>
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifests.wixobj" />
+      <ManifestsMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifest-install-files.wixobj" />
     </ItemGroup>
 
