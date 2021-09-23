@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="NoSelfContainedOptionDescription">
         <source>Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</source>
-        <target state="translated">Publiez votre application en tant qu'application dépendante du framework sans le runtime .NET. Vous devez installer un runtime .NET pris en charge pour permettre l'exécution de votre application.</target>
+        <target state="new">Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOption">
@@ -66,14 +66,14 @@ La valeur par défaut est de publier une application dépendante du framework.</
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</source>
-        <target state="translated">Les options '--self-contained' et '--no-self-contained' sont en conflit. Spécifiez uniquement l'une de ces options.</target>
+        <target state="new">The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Publiez le runtime .NET avec votre application pour éviter à l'utilisateur de l'installer sur la machine cible.
-La valeur par défaut est 'true' si un identificateur de runtime est spécifié.</target>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'true' if a runtime identifier is specified.</target>
         <note />
       </trans-unit>
     </body>
