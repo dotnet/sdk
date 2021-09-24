@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Thread safe queue use to store incoming log request messages.
         /// </summary>
-        private BlockingCollection<string> _messageQueue = new BlockingCollection<string>();
+        private readonly BlockingCollection<string> _messageQueue = new BlockingCollection<string>();
 
         private bool _disposed;
         private readonly StreamWriter _stream;
@@ -189,7 +189,17 @@ namespace Microsoft.DotNet.Installer.Windows
 
         protected override void WriteMessage(string message)
         {
-            _messageQueue.Add(message);
+            if (!_disposed)
+            {
+                try
+                {
+                    _messageQueue.Add(message);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // There's a possible race condition where the queue has been disposed but the flag hasn't been set yet
+                }
+            }
         }
     }
 }
