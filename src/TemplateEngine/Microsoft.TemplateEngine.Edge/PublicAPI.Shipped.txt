@@ -1,5 +1,18 @@
 ﻿#nullable enable
 Microsoft.TemplateEngine.Edge.Components
+Microsoft.TemplateEngine.Edge.DefaultEnvironment
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.ConsoleBufferWidth.get -> int
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.DefaultEnvironment() -> void
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.ExpandEnvironmentVariables(string! name) -> string!
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.GetEnvironmentVariable(string! name) -> string?
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.GetEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Edge.DefaultEnvironment.NewLine.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.DefaultPathInfo(Microsoft.TemplateEngine.Abstractions.IEnvironment! environment, Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost! host, string? globalSettingsDir = null, string? hostSettingsDir = null, string? hostVersionSettingsDir = null) -> void
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.GlobalSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.HostSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.HostVersionSettingsDir.get -> string!
+Microsoft.TemplateEngine.Edge.DefaultPathInfo.UserProfileDir.get -> string!
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.DefaultTemplateEngineHost(string! hostIdentifier, string! version, System.Collections.Generic.Dictionary<string!, string!>? defaults = null, System.Collections.Generic.IReadOnlyList<(System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>? builtIns = null, System.Collections.Generic.IReadOnlyList<string!>? fallbackHostTemplateConfigNames = null, Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory = null) -> void
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.FallbackHostTemplateConfigNames.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -36,12 +49,18 @@ Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsParameterMatch.get
 Microsoft.TemplateEngine.Edge.Settings.FilteredTemplateInfo.IsPartialMatch.get -> bool
 Microsoft.TemplateEngine.Edge.Settings.InstallationScope
 Microsoft.TemplateEngine.Edge.Settings.InstallationScope.Global = 0 -> Microsoft.TemplateEngine.Edge.Settings.InstallationScope
+Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache
+Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> Newtonsoft.Json.Linq.JObject?
 Microsoft.TemplateEngine.Edge.Settings.Scanner
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
+Microsoft.TemplateEngine.Edge.Settings.Scanner.Scan(string! mountPointUri, bool scanForComponents) -> Microsoft.TemplateEngine.Edge.Settings.ScanResult!
 Microsoft.TemplateEngine.Edge.Settings.Scanner.Scanner(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Components.get -> System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.Dispose() -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Localizations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.MountPoint.get -> Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint!
+Microsoft.TemplateEngine.Edge.Settings.ScanResult.ScanResult(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! mountPoint, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>! templates, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations, System.Collections.Generic.IReadOnlyList<(string! AssemblyPath, System.Type! InterfaceType, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>! components) -> void
 Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
 Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager
 Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.Dispose() -> void

@@ -239,3 +239,6 @@ static Microsoft.TemplateEngine.Utils.InstallRequestPathResolution.ExpandMaskedP
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter parameter, string receivedValue, string message, out string newValue) -> bool
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnSymbolUsed(string symbol, object value) -> void
 ~virtual Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.TryGetHostParamDefault(string paramName, out string value) -> bool
+Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions
+static Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions.GetDisplayPath(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo! fileSystemInfo) -> string!
+
