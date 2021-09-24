@@ -86,6 +86,12 @@ jobs:
       artifact: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
       displayName: Publish Source Build Artifacts
 
+  - script: |
+      set -x
+
+      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./build.sh --run-smoke-test
+    displayName: Run Tests
+
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
     parameters:
       sourceFolder: $(_TarballDir)

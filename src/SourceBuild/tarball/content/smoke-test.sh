@@ -3,10 +3,10 @@ set -euo pipefail
 
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 TARBALL_PREFIX=dotnet-sdk-
-VERSION_PREFIX=5.0
+VERSION_PREFIX=6.0
 # See https://github.com/dotnet/source-build/issues/579, this version
 # needs to be compatible with the runtime produced from source-build
-DEV_CERTS_VERSION_DEFAULT=5.0.0-preview.3
+DEV_CERTS_VERSION_DEFAULT=6.0.0-preview.6.21355.2
 __ROOT_REPO=$(sed 's/\r$//' "$SCRIPT_ROOT/artifacts/obj/rootrepo.txt") # remove CR if mounted repo on Windows drive
 executingUserHome=${HOME:-}
 
@@ -155,7 +155,7 @@ while :; do
     shift
 done
 
-prodConBlobFeedUrl="${prodConBlobFeedUrl-$(cat "$SCRIPT_ROOT/ProdConFeed.txt")}"
+prodConBlobFeedUrl="${prodConBlobFeedUrl-}"
 
 function doCommand() {
     lang=$1
@@ -165,8 +165,11 @@ function doCommand() {
     echo "starting language $lang, type $proj" | tee -a smoke-test.log
 
     dotnetCmd=${dotnetDir}/dotnet
-    mkdir "${lang}_${proj}"
-    cd "${lang}_${proj}"
+
+    # rename '#'' to 'Sharp' to workaround https://github.com/dotnet/aspnetcore/issues/36900
+    projectDir="${lang//"#"/"Sharp"}_${proj}"
+    mkdir "${projectDir}"
+    cd "${projectDir}"
 
     newArgs="new $proj -lang $lang"
 
@@ -200,7 +203,7 @@ function doCommand() {
             binlogHttpsPart="https"
         fi
 
-        binlogPrefix="$testingDir/${lang}_${proj}_${binlogOnlinePart}_${binlogHttpsPart}_"
+        binlogPrefix="$testingDir/${projectDir}_${binlogOnlinePart}_${binlogHttpsPart}_"
         binlog="${binlogPrefix}$1.binlog"
         echo "    running $1" | tee -a "$logFile"
 
@@ -270,7 +273,7 @@ function doCommand() {
     cd ..
 
     if [ "$keepProjects" == "false" ]; then
-       rm -rf "${lang}_${proj}"
+       rm -rf "${projectDir}"
     fi
 
     echo "finished language $lang, type $proj" | tee -a smoke-test.log
@@ -507,6 +510,129 @@ function runXmlDocTests() {
         System.Xml.Serialization.xml
         System.Xml.xml
         System.Xml.XmlDocument.xml
+        Microsoft.CSharp.xml
+        # Added temporarily due to https://github.com/dotnet/source-build/issues/2404
+        Microsoft.VisualBasic.Core.xml
+        Microsoft.Win32.Primitives.xml
+        Microsoft.Win32.Registry.xml
+        System.Collections.Concurrent.xml
+        System.Collections.Immutable.xml
+        System.Collections.NonGeneric.xml
+        System.Collections.Specialized.xml
+        System.Collections.xml
+        System.ComponentModel.Annotations.xml
+        System.ComponentModel.EventBasedAsync.xml
+        System.ComponentModel.Primitives.xml
+        System.ComponentModel.TypeConverter.xml
+        System.ComponentModel.xml
+        System.Console.xml
+        System.Data.Common.xml
+        System.Diagnostics.Contracts.xml
+        System.Diagnostics.DiagnosticSource.xml
+        System.Diagnostics.FileVersionInfo.xml
+        System.Diagnostics.Process.xml
+        System.Diagnostics.StackTrace.xml
+        System.Diagnostics.TextWriterTraceListener.xml
+        System.Diagnostics.TraceSource.xml
+        System.Diagnostics.Tracing.xml
+        System.Drawing.Primitives.xml
+        System.Formats.Asn1.xml
+        System.IO.Compression.Brotli.xml
+        System.IO.Compression.ZipFile.xml
+        System.IO.Compression.xml
+        System.IO.FileSystem.AccessControl.xml
+        System.IO.FileSystem.DriveInfo.xml
+        System.IO.FileSystem.Watcher.xml
+        System.IO.FileSystem.xml
+        System.IO.IsolatedStorage.xml
+        System.IO.MemoryMappedFiles.xml
+        System.IO.Pipes.AccessControl.xml
+        System.IO.Pipes.xml
+        System.Linq.Expressions.xml
+        System.Linq.Parallel.xml
+        System.Linq.Queryable.xml
+        System.Linq.xml
+        System.Memory.xml
+        System.Net.Http.Json.xml
+        System.Net.Http.xml
+        System.Net.HttpListener.xml
+        System.Net.Mail.xml
+        System.Net.NameResolution.xml
+        System.Net.NetworkInformation.xml
+        System.Net.Ping.xml
+        System.Net.Primitives.xml
+        System.Net.Requests.xml
+        System.Net.Security.xml
+        System.Net.ServicePoint.xml
+        System.Net.Sockets.xml
+        System.Net.WebClient.xml
+        System.Net.WebHeaderCollection.xml
+        System.Net.WebProxy.xml
+        System.Net.WebSockets.Client.xml
+        System.Net.WebSockets.xml
+        System.Numerics.Vectors.xml
+        System.ObjectModel.xml
+        System.Reflection.DispatchProxy.xml
+        System.Reflection.Emit.ILGeneration.xml
+        System.Reflection.Emit.Lightweight.xml
+        System.Reflection.Emit.xml
+        System.Reflection.Metadata.xml
+        System.Reflection.Primitives.xml
+        System.Reflection.TypeExtensions.xml
+        System.Resources.Writer.xml
+        System.Runtime.CompilerServices.Unsafe.xml
+        System.Runtime.CompilerServices.VisualC.xml
+        System.Runtime.InteropServices.RuntimeInformation.xml
+        System.Runtime.InteropServices.xml
+        System.Runtime.Intrinsics.xml
+        System.Runtime.Loader.xml
+        System.Runtime.Numerics.xml
+        System.Runtime.Serialization.Formatters.xml
+        System.Runtime.Serialization.Json.xml
+        System.Runtime.Serialization.Primitives.xml
+        System.Runtime.Serialization.Xml.xml
+        System.Runtime.xml
+        System.Security.AccessControl.xml
+        System.Security.Claims.xml
+        System.Security.Cryptography.Algorithms.xml
+        System.Security.Cryptography.Cng.xml
+        System.Security.Cryptography.Csp.xml
+        System.Security.Cryptography.Encoding.xml
+        System.Security.Cryptography.OpenSsl.xml
+        System.Security.Cryptography.Primitives.xml
+        System.Security.Cryptography.X509Certificates.xml
+        System.Security.Principal.Windows.xml
+        System.Text.Encoding.CodePages.xml
+        System.Text.Encoding.Extensions.xml
+        System.Text.Encodings.Web.xml
+        System.Text.Json.xml
+        System.Text.Json.SourceGeneration.xml
+        System.Text.Json.SourceGeneration.resources.xml
+        System.Text.RegularExpressions.xml
+        System.Threading.Channels.xml
+        System.Threading.Overlapped.xml
+        System.Threading.Tasks.Dataflow.xml
+        System.Threading.Tasks.Parallel.xml
+        System.Threading.Thread.xml
+        System.Threading.ThreadPool.xml
+        System.Threading.xml
+        System.Transactions.Local.xml
+        System.Web.HttpUtility.xml
+        System.Xml.ReaderWriter.xml
+        System.Xml.XDocument.xml
+        System.Xml.XPath.XDocument.xml
+        System.Xml.XPath.xml
+        System.Xml.XmlSerializer.xml
+        WindowsBase.xml
+        mscorlib.xml
+    )
+
+    # Added temporarily due to https://github.com/dotnet/source-build/issues/2404
+    aspnetcoreappIgnoreList=(
+        Microsoft.AspNetCore.App.Analyzers.xml
+        Microsoft.AspNetCore.App.CodeFixes.xml
+        Microsoft.Extensions.Logging.Generators.resources.xml
+        Microsoft.Extensions.Logging.Generators.xml
     )
 
     error=0
@@ -525,6 +651,16 @@ function runXmlDocTests() {
         if [[ "$xmlDocFile" == *"/packs/NETStandard.Library.Ref"* ]]; then
             xmlFileBasename=$(basename "$xmlDocFile")
             for ignoreItem in "${netstandardIgnoreList[@]}"; do
+                if [[ "$ignoreItem" == "$xmlFileBasename" ]]; then
+                    skip=1;
+                    break
+                fi
+            done
+        fi
+        # Added temporarily due to https://github.com/dotnet/source-build/issues/2404
+        if [[ "$xmlDocFile" == *"/packs/Microsoft.AspNetCore.App.Ref"* ]]; then
+            xmlFileBasename=$(basename "$xmlDocFile")
+            for ignoreItem in "${aspnetcoreappIgnoreList[@]}"; do
                 if [[ "$ignoreItem" == "$xmlFileBasename" ]]; then
                     skip=1;
                     break

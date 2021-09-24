@@ -8,6 +8,7 @@ usage() {
     echo "  --online                           build using online sources"
     echo "  --with-packages <dir>              use the specified directory of previously-built packages"
     echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
+    echo "  --run-smoke-test                   don't build; run smoke tests"
     echo "use -- to send the remaining arguments to MSBuild"
     echo ""
 }
