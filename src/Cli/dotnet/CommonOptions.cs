@@ -25,6 +25,9 @@ namespace Microsoft.DotNet.Cli
         public static Option<VerbosityOptions> VerbosityOption() =>
             VerbosityOption(o => $"-verbosity:{o}");
 
+        public static Option<VerbosityOptions> HiddenVerbosityOption() =>
+            VerbosityOption().Hide();
+
         public static Option<VerbosityOptions> VerbosityOption(Func<VerbosityOptions, string> format) =>
             new ForwardedOption<VerbosityOptions>(
                 new string[] { "-v", "--verbosity" },
@@ -111,7 +114,7 @@ namespace Microsoft.DotNet.Cli
 
         public static Option<bool> SelfContainedOption() =>
             new ForwardedOption<bool>(
-                "--self-contained",
+                new string[] { "--sc", "--self-contained" },
                 CommonLocalizableStrings.SelfContainedOptionDescription)
             .ForwardAsMany(o => new string[] { $"-property:SelfContained={o}", "-property:_CommandLineDefinedSelfContained=true" });
 
