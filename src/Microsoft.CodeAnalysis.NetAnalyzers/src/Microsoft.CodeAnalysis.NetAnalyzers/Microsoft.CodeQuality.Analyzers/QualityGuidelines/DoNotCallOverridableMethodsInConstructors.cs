@@ -64,7 +64,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             var operation = (IInvocationOperation)context.Operation;
             IMethodSymbol method = operation.TargetMethod;
-            if (method != null &&
+            if (operation.Instance?.Kind == OperationKind.InstanceReference &&
+                method != null &&
                 (method.IsAbstract || method.IsVirtual) &&
                 Equals(method.ContainingType, containingType) &&
                 !operation.IsWithinLambdaOrLocalFunction(out _))
