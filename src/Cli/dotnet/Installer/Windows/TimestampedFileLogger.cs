@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
@@ -130,7 +131,7 @@ namespace Microsoft.DotNet.Installer.Windows
             NamedPipeClientStream logPipe = new NamedPipeClientStream(".", (string)logPipeName, PipeDirection.InOut);
             PipeStreamMessageDispatcherBase dispatcher = new(logPipe);
             dispatcher.Connect();
-            LogMessage($"Log connected.");
+            LogMessage($"Log connected: {logPipeName}.");
 
             while (dispatcher.IsConnected)
             {
@@ -138,7 +139,12 @@ namespace Microsoft.DotNet.Installer.Windows
                 {
                     // We'll block waiting for messages to arrive before sending them to the queue. We don't call LogMessage
                     // directly since the external logger should have stamped the message with the process ID.
-                    WriteMessage(UTF8Encoding.UTF8.GetString(dispatcher.ReadMessage()));
+                    string msg = UTF8Encoding.UTF8.GetString(dispatcher.ReadMessage());
+
+                    if (!string.IsNullOrWhiteSpace(msg))
+                    {
+                        WriteMessage(msg);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -176,7 +182,10 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="message">The message to log.</param>
         protected override void WriteMessage(string message)
         {
-            _messageQueue.Add(message);
+            if (!_messageQueue.IsCompleted)
+            {
+                _messageQueue.Add(message);
+            }
         }
     }
 }
