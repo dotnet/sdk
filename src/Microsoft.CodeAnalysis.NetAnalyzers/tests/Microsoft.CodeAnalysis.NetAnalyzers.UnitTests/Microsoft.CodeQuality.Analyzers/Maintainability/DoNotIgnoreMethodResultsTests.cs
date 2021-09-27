@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
         [Fact]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
-        public async Task UsedInvocationResult()
+        public async Task UsedInvocationResultAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -76,7 +76,7 @@ End Class
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
         [Fact]
-        public async Task ExpectedExceptionLastLine()
+        public async Task ExpectedExceptionLastLineAsync()
         {
             await new VerifyCS.Test
             {
@@ -132,7 +132,7 @@ End Class",
         [InlineData("NUnit.Framework", "Catch", "", false)]
         [InlineData("NUnit.Framework", "DoesNotThrow", "", false)]
         [Theory]
-        public async Task UnitTestingThrows(string @namespace, string method, string generic, bool useXunit)
+        public async Task UnitTestingThrowsAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
             {
@@ -188,7 +188,7 @@ End Class",
         [InlineData("NUnit.Framework", "CatchAsync", "", false)]
         [InlineData("NUnit.Framework", "DoesNotThrowAsync", "", false)]
         [Theory]
-        public async Task UnitTestingThrowsAsync(string @namespace, string method, string generic, bool useXunit)
+        public async Task UnitTestingThrows2Async(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
             {
@@ -239,7 +239,7 @@ End Class",
         }
 
         [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
-        public async Task CA1806_LinqMethods_NoDiagnostic()
+        public async Task CA1806_LinqMethods_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Linq;
@@ -284,7 +284,7 @@ End Class
 
         [Fact]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
-        public async Task UnusedStringCreation()
+        public async Task UnusedStringCreationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -321,7 +321,7 @@ End Class
 
         [Fact]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
-        public async Task UnusedObjectCreation()
+        public async Task UnusedObjectCreationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -352,7 +352,7 @@ End Class
 
         [Fact]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
-        public async Task UnusedTryParseResult()
+        public async Task UnusedTryParseResultAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -383,7 +383,7 @@ End Class
 
         [Fact]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
-        public async Task UnusedPInvokeResult()
+        public async Task UnusedPInvokeResultAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -420,7 +420,7 @@ End Class
 
         [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/746")]
         [WorkItem(746, "https://github.com/dotnet/roslyn-analyzers/issues/746")]
-        public async Task UnusedComImportPreserveSig()
+        public async Task UnusedComImportPreserveSigAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -464,7 +464,7 @@ End Interface
 
         [Fact]
         [WorkItem(1164, "https://github.com/dotnet/roslyn-analyzers/issues/1164")]
-        public async Task UnusedPureMethodTriggersError()
+        public async Task UnusedPureMethodTriggersErrorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics.Contracts;
@@ -506,7 +506,7 @@ End Module
         [InlineData("NUnit.Framework", "Catch", "", false)]
         [InlineData("NUnit.Framework", "DoesNotThrow", "", false)]
         [Theory]
-        public async Task UnitTestingThrows_NotLastLineStillDiagnostic(string @namespace, string method, string generic, bool useXunit)
+        public async Task UnitTestingThrows_NotLastLineStillDiagnosticAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
             {
@@ -574,7 +574,7 @@ End Class",
         [InlineData("NUnit.Framework", "CatchAsync", "", false)]
         [InlineData("NUnit.Framework", "DoesNotThrowAsync", "", false)]
         [Theory]
-        public async Task UnitTestingThrowsAsync_NotLastLineStillDiagnostic(string @namespace, string method, string generic, bool useXunit)
+        public async Task UnitTestingThrowsAsync_NotLastLineStillDiagnosticAsync(string @namespace, string method, string generic, bool useXunit)
         {
             await new VerifyCS.Test
             {
@@ -637,7 +637,7 @@ End Class",
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
         [Fact]
-        public async Task ExpectedException_NotLastLineDiagnostic()
+        public async Task ExpectedException_NotLastLineDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -697,7 +697,7 @@ End Class",
         }
 
         [Fact, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
-        public async Task PureMethodVoid()
+        public async Task PureMethodVoidAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics.Contracts;
@@ -742,7 +742,7 @@ End Class");
         }
 
         [Fact, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
-        public async Task CA1806_LinqMethods_Diagnostic()
+        public async Task CA1806_LinqMethods_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Linq;
@@ -799,7 +799,7 @@ End Class
         [InlineData("dotnet_code_quality.additional_use_results_methods = SomeClass.GetSomeValue()|SomeClass.GetSomeValue(System.Int32)")]
         // Match by documentation ID with "M:" prefix
         [InlineData("dotnet_code_quality.additional_use_results_methods = M:SomeClass.GetSomeValue()|M:SomeClass.GetSomeValue(System.Int32)")]
-        public async Task CA1806_UserDefinedMethods_Diagnostic(string editorConfigText)
+        public async Task CA1806_UserDefinedMethods_DiagnosticAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

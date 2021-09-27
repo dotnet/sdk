@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class AvoidOutParametersTests
     {
         [Fact]
-        public async Task SimpleCases_Diagnostic()
+        public async Task SimpleCases_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -80,7 +80,7 @@ End Class",
         [InlineData("private", "dotnet_code_quality.CA1021.api_surface = internal, public")]
         [InlineData("public", @"dotnet_code_quality.api_surface = all
                                 dotnet_code_quality.CA1021.api_surface = private")]
-        public async Task ApiSurface_NoDiagnostic(string accessibility, string editorConfigText)
+        public async Task ApiSurface_NoDiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -138,7 +138,7 @@ End Class"
         [InlineData("public", "dotnet_code_quality.CA1021.api_surface = public")]
         [InlineData("public", @"dotnet_code_quality.api_surface = private
                                 dotnet_code_quality.CA1021.api_surface = public")]
-        public async Task ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        public async Task ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -201,7 +201,7 @@ End Class"
         }
 
         [Fact]
-        public async Task MultipleOut_Diagnostic()
+        public async Task MultipleOut_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -240,7 +240,7 @@ End Class",
         }
 
         [Fact]
-        public async Task OutAndRef_Diagnostic()
+        public async Task OutAndRef_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -277,7 +277,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Ref_NoDiagnostic()
+        public async Task Ref_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -295,7 +295,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TryPattern_NoDiagnostic()
+        public async Task TryPattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -360,7 +360,7 @@ End Class");
         }
 
         [Fact]
-        public async Task InvalidTryPattern_Diagnostic()
+        public async Task InvalidTryPattern_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -410,7 +410,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Deconstruct_NoDiagnostic()
+        public async Task Deconstruct_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Person
@@ -424,7 +424,7 @@ public class Person
         }
 
         [Fact]
-        public async Task DeconstructExtensionMethod_NoDiagnostic()
+        public async Task DeconstructExtensionMethod_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Person
@@ -442,7 +442,7 @@ public static class Ext
         }
 
         [Fact]
-        public async Task InvalidDeconstruct_Diagnostic()
+        public async Task InvalidDeconstruct_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Person

@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
     public class DoNotCreateTasksWithoutPassingATaskSchedulerTests
     {
         [Fact]
-        public async Task NoDiagnosticCases()
+        public async Task NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -92,7 +92,7 @@ End Class
         }
 
         [Fact]
-        public async Task DiagnosticCases()
+        public async Task DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

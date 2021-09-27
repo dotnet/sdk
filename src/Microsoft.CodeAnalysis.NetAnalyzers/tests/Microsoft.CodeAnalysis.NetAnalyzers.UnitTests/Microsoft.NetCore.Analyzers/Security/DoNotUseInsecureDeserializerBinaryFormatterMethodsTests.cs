@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseInsecureDeserializerBinaryFormatterMethodsTests
     {
         [Fact]
-        public async Task UnsafeDeserialize_Diagnostic()
+        public async Task UnsafeDeserialize_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -40,7 +40,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task UnsafeDeserializeMethodResponse_Diagnostic()
+        public async Task UnsafeDeserializeMethodResponse_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -68,7 +68,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Diagnostic()
+        public async Task Deserialize_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -89,7 +89,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_HeaderHandler_Diagnostic()
+        public async Task Deserialize_HeaderHandler_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -117,7 +117,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeMethodResponse_Diagnostic()
+        public async Task DeserializeMethodResponse_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -145,7 +145,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Reference_Diagnostic()
+        public async Task Deserialize_Reference_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -167,7 +167,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_NoDiagnostic()
+        public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -189,7 +189,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_Reference_NoDiagnostic()
+        public async Task Serialize_Reference_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;

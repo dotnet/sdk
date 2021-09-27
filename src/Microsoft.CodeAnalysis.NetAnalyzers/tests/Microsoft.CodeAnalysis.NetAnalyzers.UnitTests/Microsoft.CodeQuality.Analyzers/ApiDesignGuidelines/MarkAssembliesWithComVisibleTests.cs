@@ -12,13 +12,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class MarkAllAssembliesWithComVisibleTests
     {
         [Fact]
-        public async Task NoTypesComVisibleMissing()
+        public async Task NoTypesComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("");
         }
 
         [Fact]
-        public async Task NoTypesComVisibleTrue()
+        public async Task NoTypesComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public async Task NoTypesComVisibleFalse()
+        public async Task NoTypesComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
         }
 
         [Fact]
-        public async Task PublicTypeComVisibleMissing()
+        public async Task PublicTypeComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -46,7 +46,7 @@ public class C
         }
 
         [Fact]
-        public async Task PublicTypeComVisibleTrue()
+        public async Task PublicTypeComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -60,7 +60,7 @@ public class C
         }
 
         [Fact]
-        public async Task PublicTypeComVisibleFalse()
+        public async Task PublicTypeComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -73,7 +73,7 @@ public class C
         }
 
         [Fact]
-        public async Task InternalTypeComVisibleMissing()
+        public async Task InternalTypeComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class C
@@ -82,7 +82,7 @@ internal class C
         }
 
         [Fact]
-        public async Task InternalTypeComVisibleTrue()
+        public async Task InternalTypeComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -95,7 +95,7 @@ internal class C
         }
 
         [Fact]
-        public async Task InternalTypeComVisibleFalse()
+        public async Task InternalTypeComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;

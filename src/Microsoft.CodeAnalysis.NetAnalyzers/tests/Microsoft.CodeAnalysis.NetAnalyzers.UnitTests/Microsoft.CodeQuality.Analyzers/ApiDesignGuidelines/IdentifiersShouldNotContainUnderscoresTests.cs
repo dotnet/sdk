@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     {
         #region CSharp Tests
         [Fact]
-        public async Task CA1707_ForAssembly_CSharp() // TODO: How to test the code fixer for this?
+        public async Task CA1707_ForAssembly_CSharpAsync() // TODO: How to test the code fixer for this?
         {
             await new VerifyCS.Test
             {
@@ -42,7 +42,7 @@ public class DoesNotMatter
         }
 
         [Fact]
-        public async Task CA1707_ForAssembly_NoDiagnostics_CSharp()
+        public async Task CA1707_ForAssembly_NoDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
             {
@@ -60,7 +60,7 @@ public class DoesNotMatter
         }
 
         [Fact]
-        public async Task CA1707_ForNamespace_CSharp()
+        public async Task CA1707_ForNamespace_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 namespace OuterNamespace
@@ -99,7 +99,7 @@ namespace HasNoUnderScore
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA1707_ForTypes_CSharp()
+        public async Task CA1707_ForTypes_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class OuterType
@@ -150,7 +150,7 @@ internal class OuterType2
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA1707_ForFields_CSharp()
+        public async Task CA1707_ForFields_CSharpAsync()
         {
             await new VerifyCS.Test
             {
@@ -234,7 +234,7 @@ public class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA1707_ForMethods_CSharp()
+        public async Task CA1707_ForMethods_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class DoesNotMatter
@@ -310,7 +310,7 @@ internal class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA1707_ForProperties_CSharp()
+        public async Task CA1707_ForProperties_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class DoesNotMatter
@@ -386,7 +386,7 @@ internal class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CA1707_ForEvents_CSharp()
+        public async Task CA1707_ForEvents_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -466,7 +466,7 @@ internal class C
         }
 
         [Fact]
-        public async Task CA1707_ForDelegates_CSharp()
+        public async Task CA1707_ForDelegates_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public delegate void Dele(int {|#0:intPublic_|}, string {|#1:stringPublic_|});
@@ -485,7 +485,7 @@ public delegate T Del<T>(int t);
         }
 
         [Fact]
-        public async Task CA1707_ForMemberparameters_CSharp()
+        public async Task CA1707_ForMemberparameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class DoesNotMatter
@@ -580,7 +580,7 @@ public class Der : Base
         }
 
         [Fact]
-        public async Task CA1707_ForTypeTypeParameters_CSharp()
+        public async Task CA1707_ForTypeTypeParameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class DoesNotMatter<{|#0:T_|}>
@@ -600,7 +600,7 @@ class NoDiag<U_>
         }
 
         [Fact]
-        public async Task CA1707_ForMemberTypeParameters_CSharp()
+        public async Task CA1707_ForMemberTypeParameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class DoesNotMatter22
@@ -697,7 +697,7 @@ public class Der : Base
         }
 
         [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
-        public async Task CA1707_ForOperators_CSharp()
+        public async Task CA1707_ForOperators_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct S
@@ -716,7 +716,7 @@ public struct S
         }
 
         [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
-        public async Task CA1707_CustomOperator_CSharp()
+        public async Task CA1707_CustomOperator_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Span
@@ -736,7 +736,7 @@ public class Span
         }
 
         [Fact]
-        public async Task CA1707_CSharp_DiscardSymbolParameter_NoDiagnostic()
+        public async Task CA1707_CSharp_DiscardSymbolParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public static class MyHelper
@@ -756,7 +756,7 @@ public static class MyHelper
         }
 
         [Fact]
-        public async Task CA1707_CSharp_DiscardSymbolTuple_NoDiagnostic()
+        public async Task CA1707_CSharp_DiscardSymbolTuple_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -771,7 +771,7 @@ public class SomeClass
         }
 
         [Fact]
-        public async Task CA1707_CSharp_DiscardSymbolPatternMatching_NoDiagnostic()
+        public async Task CA1707_CSharp_DiscardSymbolPatternMatching_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -788,7 +788,7 @@ public class SomeClass
         }
 
         [Fact]
-        public async Task CA1707_CSharp_StandaloneDiscardSymbol_NoDiagnostic()
+        public async Task CA1707_CSharp_StandaloneDiscardSymbol_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class SomeClass
@@ -803,7 +803,7 @@ public class SomeClass
         }
 
         [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
-        public async Task CA1707_CSharp_GlobalAsaxSpecialMethods()
+        public async Task CA1707_CSharp_GlobalAsaxSpecialMethodsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -887,7 +887,7 @@ public class InvalidContext
 
         #region Visual Basic Tests
         [Fact]
-        public async Task CA1707_ForAssembly_VisualBasic()
+        public async Task CA1707_ForAssembly_VisualBasicAsync()
         {
             await new VerifyVB.Test
             {
@@ -908,7 +908,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1707_ForAssembly_NoDiagnostics_VisualBasic()
+        public async Task CA1707_ForAssembly_NoDiagnostics_VisualBasicAsync()
         {
             await new VerifyVB.Test
             {
@@ -925,7 +925,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1707_ForNamespace_VisualBasic()
+        public async Task CA1707_ForNamespace_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Namespace OuterNamespace
@@ -954,7 +954,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task CA1707_ForTypes_VisualBasic()
+        public async Task CA1707_ForTypes_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class OuterType
@@ -975,7 +975,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForFields_VisualBasic()
+        public async Task CA1707_ForFields_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter
@@ -1014,7 +1014,7 @@ End Enum");
         }
 
         [Fact]
-        public async Task CA1707_ForMethods_VisualBasic()
+        public async Task CA1707_ForMethods_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter
@@ -1090,7 +1090,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForProperties_VisualBasic()
+        public async Task CA1707_ForProperties_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter
@@ -1236,7 +1236,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForEvents_VisualBasic()
+        public async Task CA1707_ForEvents_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter
@@ -1298,7 +1298,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForDelegates_VisualBasic()
+        public async Task CA1707_ForDelegates_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Delegate Sub Dele({|#0:intPublic_|} As Integer, {|#1:stringPublic_|} As String)
@@ -1319,7 +1319,7 @@ Public Delegate Function Del(Of T)(t As Integer) As T
         }
 
         [Fact]
-        public async Task CA1707_ForMemberparameters_VisualBasic()
+        public async Task CA1707_ForMemberparameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter
@@ -1412,7 +1412,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForTypeTypeParameters_VisualBasic()
+        public async Task CA1707_ForTypeTypeParameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter(Of {|#0:T_|})
@@ -1429,7 +1429,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1707_ForMemberTypeParameters_VisualBasic()
+        public async Task CA1707_ForMemberTypeParameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class DoesNotMatter22
@@ -1520,7 +1520,7 @@ End Class");
         }
 
         [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
-        public async Task CA1707_ForOperators_VisualBasic()
+        public async Task CA1707_ForOperators_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure S
@@ -1536,7 +1536,7 @@ End Structure
         }
 
         [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
-        public async Task CA1707_CustomOperator_VisualBasic()
+        public async Task CA1707_CustomOperator_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Span
@@ -1561,7 +1561,7 @@ End Class
         }
 
         [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
-        public async Task CA1707_VisualBasic_GlobalAsaxSpecialMethods()
+        public async Task CA1707_VisualBasic_GlobalAsaxSpecialMethodsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

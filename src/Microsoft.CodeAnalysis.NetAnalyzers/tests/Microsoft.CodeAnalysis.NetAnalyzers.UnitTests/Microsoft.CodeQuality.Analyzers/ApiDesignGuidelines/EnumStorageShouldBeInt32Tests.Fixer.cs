@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     {
         #region CSharpUnitTests
         [Fact]
-        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTrivia()
+        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
 using System;
@@ -43,7 +43,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTrivia()
+        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
 using System;
@@ -74,7 +74,7 @@ namespace Test
         #region BasicUnitTests
 
         [Fact]
-        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTrivia()
+        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
 Imports System
@@ -98,7 +98,7 @@ End Module
         }
 
         [Fact]
-        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTrivia()
+        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
 Imports System

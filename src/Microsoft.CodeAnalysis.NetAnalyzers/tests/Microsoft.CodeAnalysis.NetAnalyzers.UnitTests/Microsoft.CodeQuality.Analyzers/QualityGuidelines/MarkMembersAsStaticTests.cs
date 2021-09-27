@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class MarkMembersAsStaticTests
     {
         [Fact]
-        public async Task CSharpSimpleMembers()
+        public async Task CSharpSimpleMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MembersTests
@@ -71,7 +71,7 @@ public class MembersTests
         }
 
         [Fact]
-        public async Task BasicSimpleMembers()
+        public async Task BasicSimpleMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -137,7 +137,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethods()
+        public async Task CSharpSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class MembersTests
@@ -211,7 +211,7 @@ internal class MembersTests
         }
 
         [Fact]
-        public async Task BasicSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethods()
+        public async Task BasicSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -297,7 +297,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpSimpleMembers_NoDiagnostic()
+        public async Task CSharpSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MembersTests
@@ -351,7 +351,7 @@ public class Generic<T>
         }
 
         [Fact]
-        public async Task BasicSimpleMembers_NoDiagnostic()
+        public async Task BasicSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class MembersTests
@@ -417,7 +417,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpOverrides_NoDiagnostic()
+        public async Task CSharpOverrides_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public abstract class SpecialCasesTest1
@@ -441,7 +441,7 @@ public class SpecialCasesTest2 : SpecialCasesTest1, ISpecialCasesTest
         }
 
         [Fact]
-        public async Task BasicOverrides_NoDiagnostic()
+        public async Task BasicOverrides_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public MustInherit Class SpecialCasesTest1
@@ -469,7 +469,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostic_ComVisibleAttribute()
+        public async Task CSharpNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -490,7 +490,7 @@ public class ComVisibleClass
         }
 
         [Fact]
-        public async Task BasicNoDiagnostic_ComVisibleAttribute()
+        public async Task BasicNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -526,7 +526,7 @@ End Class
         [InlineData("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
         [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
         [InlineData("NUnit.Framework.Theory", false, true, false)]
-        public async Task NoDiagnostic_TestAttributes(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
+        public async Task NoDiagnostic_TestAttributesAsync(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
         {
             var referenceAssemblies = (isMSTest, isNUnit, isxunit) switch
             {
@@ -602,7 +602,7 @@ End Namespace
         [Fact]
         [WorkItem(4995, "https://github.com/dotnet/roslyn-analyzers/issues/4995")]
         [WorkItem(5110, "https://github.com/dotnet/roslyn-analyzers/issues/5110")]
-        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnostic()
+        public async Task AttributeImplementingNUnitITestBuilder_NoDiagnosticAsync()
         {
             var referenceAssemblies = AdditionalMetadataReferences.DefaultWithNUnit;
 
@@ -678,7 +678,7 @@ End Namespace
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
-        public async Task PrivateMethodOnlyCalledByASkippedMethod_Diagnostic()
+        public async Task PrivateMethodOnlyCalledByASkippedMethod_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -712,7 +712,7 @@ public class Program
         }
 
         [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
-        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnostic()
+        public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -742,7 +742,7 @@ public class Program
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
-        public async Task CSharp_InstanceReferenceInObjectInitializer_Diagnostic()
+        public async Task CSharp_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class A
@@ -762,7 +762,7 @@ public class B
         }
 
         [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
-        public async Task Basic_InstanceReferenceInObjectInitializer_Diagnostic()
+        public async Task Basic_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class A
@@ -780,7 +780,7 @@ End Class
         }
 
         [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
-        public async Task CSharpPropertySingleAccessorAccessingInstance_NoDiagnostic()
+        public async Task CSharpPropertySingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MyClass
@@ -810,7 +810,7 @@ public class MyClass
         }
 
         [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
-        public async Task CSharpEventWithSingleAccessorAccessingInstance_NoDiagnostic()
+        public async Task CSharpEventWithSingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -849,7 +849,7 @@ public class MyClass
         }
 
         [Fact, WorkItem(2414, "https://github.com/dotnet/roslyn-analyzers/issues/2414")]
-        public async Task CSharp_ErrorCase_MethodWithThrowNotInCatch()
+        public async Task CSharp_ErrorCase_MethodWithThrowNotInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
@@ -864,7 +864,7 @@ class C
         }
 
         [Fact, WorkItem(2785, "https://github.com/dotnet/roslyn-analyzers/issues/2785")]
-        public async Task CSharp_CustomTestMethodAttribute_NoDiagnostic()
+        public async Task CSharp_CustomTestMethodAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -906,7 +906,7 @@ namespace SomeNamespace
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("dotnet_code_quality.api_surface = private, internal")]
-        public async Task WebSpecificControllerMethods_NoDiagnostic(string editorConfigText)
+        public async Task WebSpecificControllerMethods_NoDiagnosticAsync(string editorConfigText)
         {
             var csSource = @"
 using System;
@@ -1000,7 +1000,7 @@ End Class
         }
 
         [Fact]
-        public async Task MethodsWithOptionalParameter()
+        public async Task MethodsWithOptionalParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal class C
@@ -1036,7 +1036,7 @@ End Class
         }
 
         [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
-        public async Task CA1822_ObsoleteAttribute_NoDiagnostic()
+        public async Task CA1822_ObsoleteAttribute_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -1228,7 +1228,7 @@ End Class
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
         [InlineData("dotnet_code_quality.api_surface = private, internal")]
-        public async Task TestWebProject(string editorConfigText)
+        public async Task TestWebProjectAsync(string editorConfigText)
         {
             var csSource = @"
 public class Test
@@ -1276,7 +1276,7 @@ End Class";
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task FullProperties_NoDiagnostic()
+        public async Task FullProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -1305,7 +1305,7 @@ public class C
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task AutoProperties_NoDiagnostic()
+        public async Task AutoProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Diagnostics;
@@ -1339,7 +1339,7 @@ public class C1
         }
 
         [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
-        public async Task Properties_StaticField_Diagnostic()
+        public async Task Properties_StaticField_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
@@ -1365,7 +1365,7 @@ public class C1
         }
 
         [Fact, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
-        public async Task SkippableFactAttribute()
+        public async Task SkippableFactAttributeAsync()
         {
             await new VerifyCS.Test
             {
@@ -1384,7 +1384,7 @@ public class C
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_INotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_INotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1403,7 +1403,7 @@ public class DummyAwaiter : INotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnostic()
+        public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1423,7 +1423,7 @@ public class DummyAwaiter : ICriticalNotifyCompletion
         }
 
         [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
-        public async Task AwaitablePattern_NoDiagnostic()
+        public async Task AwaitablePattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1447,7 +1447,7 @@ public class DummyAwaiter : INotifyCompletion
         }
 
         [Fact]
-        public async Task InstanceMemberUsedInXml_NoDiagnostic()
+        public async Task InstanceMemberUsedInXml_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C

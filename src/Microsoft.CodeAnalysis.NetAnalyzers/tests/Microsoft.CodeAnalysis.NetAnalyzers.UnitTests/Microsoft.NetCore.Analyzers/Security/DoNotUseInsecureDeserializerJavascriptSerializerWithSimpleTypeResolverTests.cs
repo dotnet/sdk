@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private static readonly DiagnosticDescriptor MaybeRule = DoNotUseInsecureDeserializerJavaScriptSerializerWithSimpleTypeResolver.MaybeWithSimpleTypeResolver;
 
         [Fact]
-        public async Task Deserialize_Generic_DefinitelyDiagnostic()
+        public async Task Deserialize_Generic_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -39,7 +39,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_DefinitelyDiagnostic()
+        public async Task Deserialize_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -60,7 +60,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_DefinitelyDiagnostic()
+        public async Task DeserializeObject_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -81,7 +81,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_AnyPath_DefinitelyDiagnostic()
+        public async Task DeserializeObject_AnyPath_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -106,7 +106,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_FromArgument_MaybeDiagnostic()
+        public async Task Deserialize_FromArgument_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -126,7 +126,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_TypeResolver_Unknown_MaybeDiagnostic()
+        public async Task Deserialize_TypeResolver_Unknown_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -148,7 +148,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_TypeResolver_UnknownNotNull_MaybeDiagnostic()
+        public async Task Deserialize_TypeResolver_UnknownNotNull_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -171,7 +171,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_TypeResolver_UnknownNull_NoDiagnostic()
+        public async Task Deserialize_TypeResolver_UnknownNull_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -193,7 +193,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_FromField_MaybeDiagnostic()
+        public async Task Deserialize_FromField_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -215,7 +215,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_FromStaticField_MaybeDiagnostic()
+        public async Task Deserialize_FromStaticField_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -237,7 +237,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_NoTypeResolver_NoDiagnostic()
+        public async Task Deserialize_NoTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -256,7 +256,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_CustomTypeResolver_NoDiagnostic()
+        public async Task Deserialize_CustomTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -289,7 +289,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_FromLocalFunction_DefinitelyDiagnostic()
+        public async Task DeserializeObject_FromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -311,7 +311,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_SimpleTypeResolverFromParameter_DefinitelyDiagnostic()
+        public async Task DeserializeObject_SimpleTypeResolverFromParameter_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -333,7 +333,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_JavaScriptTypeResolverFromParameter_MaybeDiagnostic()
+        public async Task DeserializeObject_JavaScriptTypeResolverFromParameter_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -355,7 +355,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnostic()
+        public async Task DeserializeObject_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -377,7 +377,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnostic()
+        public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -402,7 +402,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InLambda_DefinitelyDiagnostic()
+        public async Task DeserializeObject_InLambda_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -426,7 +426,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InLambda_CustomTypeResolver_NoDiagnostic()
+        public async Task DeserializeObject_InLambda_CustomTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -462,7 +462,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InOtherMethod_DefinitelyDiagnostic()
+        public async Task DeserializeObject_InOtherMethod_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -490,7 +490,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InOtherMethodThrice_DefinitelyDiagnostic()
+        public async Task DeserializeObject_InOtherMethodThrice_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -521,7 +521,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InOtherMethod_OnceDefinitely_OnceMaybe_DefinitelyDiagnostic()
+        public async Task DeserializeObject_InOtherMethod_OnceDefinitely_OnceMaybe_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -553,7 +553,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnostic()
+        public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -601,7 +601,7 @@ namespace Blah
         [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D*
                       dotnet_code_quality.CA2322.excluded_symbol_names = D*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Des")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
             {

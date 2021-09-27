@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task NoDiagnostic_NamingCases()
+        public async Task NoDiagnostic_NamingCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -77,7 +77,7 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task NoDiagnostic_InterfaceMemberImplementation()
+        public async Task NoDiagnostic_InterfaceMemberImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -135,7 +135,7 @@ End Interface
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task NoDiagnostic_UnflaggedMethodKinds()
+        public async Task NoDiagnostic_UnflaggedMethodKindsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -246,7 +246,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task NoDiagnostic_FlaggedMethodKinds_NotExternallyVisible()
+        public async Task NoDiagnostic_FlaggedMethodKinds_NotExternallyVisibleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -340,7 +340,7 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task Diagnostic_FlaggedMethodKinds()
+        public async Task Diagnostic_FlaggedMethodKindsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -443,7 +443,7 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task Diagnostic_PascalCasedMethodNames()
+        public async Task Diagnostic_PascalCasedMethodNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class EventsClassPascalCased
@@ -530,7 +530,7 @@ End Class
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
         [Fact]
-        public async Task Diagnostic_LowerCaseMethodNames()
+        public async Task Diagnostic_LowerCaseMethodNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class EventsClassLowercase

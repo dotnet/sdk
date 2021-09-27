@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class PreferJaggedArraysOverMultidimensionalTests
     {
         [Fact]
-        public async Task CSharpSimpleMembers()
+        public async Task CSharpSimpleMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -60,7 +60,7 @@ public interface IInterface
         }
 
         [Fact]
-        public async Task BasicSimpleMembers()
+        public async Task BasicSimpleMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -102,7 +102,7 @@ End Interface
         }
 
         [Fact]
-        public async Task CSharpNoDiagostics()
+        public async Task CSharpNoDiagosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -125,7 +125,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task BasicNoDiangnostics()
+        public async Task BasicNoDiangnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -148,7 +148,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpOverridenMembers()
+        public async Task CSharpOverridenMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -182,7 +182,7 @@ public class Class2 : Class1
         }
 
         [Fact]
-        public async Task BasicOverriddenMembers()
+        public async Task BasicOverriddenMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -215,7 +215,7 @@ End Class
         }
 
         [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
-        public async Task Method_WhenInterfaceImplementation_NoDiagnostic()
+        public async Task Method_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface IC
@@ -249,7 +249,7 @@ End Class
         }
 
         [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
-        public async Task Property_WhenInterfaceImplementation_NoDiagnostic()
+        public async Task Property_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface IC

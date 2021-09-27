@@ -30,7 +30,7 @@ namespace GenerateDocumentationAndConfigFiles
 
         public static async Task<int> Main(string[] args)
         {
-            const int expectedArguments = 22;
+            const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
@@ -84,6 +84,11 @@ namespace GenerateDocumentationAndConfigFiles
             if (!bool.TryParse(releaseTrackingOptOutString, out bool releaseTrackingOptOut))
             {
                 releaseTrackingOptOut = false;
+            }
+
+            if (!bool.TryParse(args[22], out var validateOffline))
+            {
+                validateOffline = false;
             }
 
             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
@@ -627,13 +632,18 @@ Rule ID | Missing Help Link | Title |
                 }
                 return;
 
-                static async Task<bool> checkHelpLinkAsync(string helpLink)
+                async Task<bool> checkHelpLinkAsync(string helpLink)
                 {
                     try
                     {
                         if (!Uri.TryCreate(helpLink, UriKind.Absolute, out var uri))
                         {
                             return false;
+                        }
+
+                        if (validateOffline)
+                        {
+                            return true;
                         }
 
                         var request = new HttpRequestMessage(HttpMethod.Head, uri);
@@ -1391,6 +1401,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
@@ -1440,8 +1451,8 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
            and an implied numerical option (such as '4') -->
       <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">5.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">7.0</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And

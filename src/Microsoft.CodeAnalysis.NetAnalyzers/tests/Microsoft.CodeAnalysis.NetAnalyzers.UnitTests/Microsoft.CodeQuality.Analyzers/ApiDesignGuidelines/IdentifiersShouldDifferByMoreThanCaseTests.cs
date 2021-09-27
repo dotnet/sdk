@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region Namespace Level
 
         [Fact]
-        public async Task TestGlobalNamespaceNames()
+        public async Task TestGlobalNamespaceNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N
@@ -32,7 +32,7 @@ namespace n
         }
 
         [Fact]
-        public async Task TestNestedNamespaceNames()
+        public async Task TestNestedNamespaceNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N
@@ -58,7 +58,7 @@ namespace n
         }
 
         [Fact]
-        public async Task TestGlobalTypeNames()
+        public async Task TestGlobalTypeNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Ni
@@ -75,7 +75,7 @@ public interface nI
         }
 
         [Fact]
-        public async Task TestGenericClasses()
+        public async Task TestGenericClassesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C<T>
@@ -95,7 +95,7 @@ public class C<T,X>
         }
 
         [Fact]
-        public async Task TestPartialTypes()
+        public async Task TestPartialTypesAsync()
         {
             await new VerifyCS.Test
             {
@@ -147,7 +147,7 @@ namespace N
         #region Type Level
 
         [Fact]
-        public async Task TestNestedTypeNames()
+        public async Task TestNestedTypeNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NI
@@ -194,7 +194,7 @@ namespace NI
         }
 
         [Fact]
-        public async Task TestNestedTypeNamesWithScope()
+        public async Task TestNestedTypeNamesWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -242,7 +242,7 @@ namespace NI
         }
 
         [Fact]
-        public async Task TestMethodOverloads()
+        public async Task TestMethodOverloadsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NI
@@ -258,7 +258,7 @@ namespace NI
         }
 
         [Fact]
-        public async Task TestGenericMethods()
+        public async Task TestGenericMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NI
@@ -277,7 +277,7 @@ namespace NI
         }
 
         [Fact]
-        public async Task TestMembers()
+        public async Task TestMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace NI
@@ -312,7 +312,7 @@ namespace NI
         }
 
         [Fact]
-        public async Task TestCultureSpecificNames()
+        public async Task TestCultureSpecificNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -325,7 +325,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestParameters()
+        public async Task TestParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 namespace N

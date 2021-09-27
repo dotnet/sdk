@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ProvideObsoleteAttributeMessageTests
     {
         [Fact]
-        public async Task CSharpSimpleCases()
+        public async Task CSharpSimpleCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -51,7 +51,7 @@ public delegate void del(int x);
         }
 
         [Fact]
-        public async Task BasicSimpleCases()
+        public async Task BasicSimpleCasesAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -88,7 +88,7 @@ Public Delegate Sub del(x As Integer)
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharpNoDiagnosticsForInternal()
+        public async Task CSharpNoDiagnosticsForInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -115,7 +115,7 @@ delegate void del(int x);
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task BasicNoDiagnosticsForInternal()
+        public async Task BasicNoDiagnosticsForInternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -144,7 +144,7 @@ Delegate Sub del(x As Integer)
         }
 
         [Fact]
-        public async Task CSharpNoDiagnostics()
+        public async Task CSharpNoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -165,7 +165,7 @@ class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnostics()
+        public async Task BasicNoDiagnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UseGenericEventHandlerTests
     {
         [Fact]
-        public async Task TestAlreadyUsingGenericEventHandlerCSharp()
+        public async Task TestAlreadyUsingGenericEventHandlerCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -28,7 +28,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestAlreadyUsingGenericEventHandlerBasic()
+        public async Task TestAlreadyUsingGenericEventHandlerBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -39,7 +39,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestUsingStructAsEventArgsForOptimizationCSharp()
+        public async Task TestUsingStructAsEventArgsForOptimizationCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct SpecialCaseStructEventArgs
@@ -61,7 +61,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestUsingStructAsEventArgsForOptimizationBasic()
+        public async Task TestUsingStructAsEventArgsForOptimizationBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure SpecialCaseStructEventArgs
@@ -80,7 +80,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestGeneratedEventHandlersBasic()
+        public async Task TestGeneratedEventHandlersBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -101,7 +101,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestNonPublicEventAndNonPublicDelegate()
+        public async Task TestNonPublicEventAndNonPublicDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 internal delegate void BadEventHandler(object senderId, System.EventArgs e);
@@ -114,7 +114,7 @@ public class EventsClass
         }
 
         [Fact]
-        public async Task TestNonPublicEventButPublicDelegate()
+        public async Task TestNonPublicEventButPublicDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadEventHandler(object senderId, System.EventArgs e);
@@ -129,7 +129,7 @@ public class EventsClass
         }
 
         [Fact]
-        public async Task TestNonPublicEventAndPublicInvalidDelegate()
+        public async Task TestNonPublicEventAndPublicInvalidDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadEventHandler(object senderId);
@@ -142,7 +142,7 @@ public class EventsClass
         }
 
         [Fact]
-        public async Task TestIgnoreEventsThatAreInterfaceImplementations()
+        public async Task TestIgnoreEventsThatAreInterfaceImplementationsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -177,7 +177,7 @@ public class EventsClassExplicit : ITest
         }
 
         [Fact]
-        public async Task TestOverrideEvent()
+        public async Task TestOverrideEventAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadHandler();
@@ -197,7 +197,7 @@ public class D : C
         }
 
         [Fact]
-        public async Task TestComSourceInterfaceEvent()
+        public async Task TestComSourceInterfaceEventAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public delegate void BadHandler();
@@ -211,7 +211,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestViolatingEventsCSharp()
+        public async Task TestViolatingEventsCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -247,7 +247,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestViolatingEventsBasic()
+        public async Task TestViolatingEventsBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Delegate Sub BadHandler(sender As Object, args As System.EventArgs)
