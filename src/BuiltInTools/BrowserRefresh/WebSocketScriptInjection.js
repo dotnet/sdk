@@ -1,4 +1,11 @@
 setTimeout(async function () {
+  // Ensure we only try to connect once, even if the script is both injected and manually inserted
+  const scriptInjectedSentinel = '_dotnet_watch_ws_injected';
+  if (window.hasOwnProperty(scriptInjectedSentinel)) {
+    return;
+  }
+  window[scriptInjectedSentinel] = true;
+
   // dotnet-watch browser reload script
   const webSocketUrls = '{{hostString}}'.split(',');
   const sharedSecret = await getSecret('{{ServerKey}}');
@@ -69,7 +76,7 @@ setTimeout(async function () {
       document.querySelector(`link[href^="${document.baseURI}${path}"]`);
 
     // Receive a Clear-site-data header.
-    await fetch('/_framework/clear-browser-cache');
+    await fetch('_framework/clear-browser-cache');
 
     if (!styleElement || !styleElement.parentNode) {
       console.debug('Unable to find a stylesheet to update. Updating all local css files.');
