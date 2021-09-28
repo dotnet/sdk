@@ -209,9 +209,6 @@
       </MsiPackage>
       <MsiPackage SourceFile="$(var.CLISDKMsiSourcePath)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-        <MsiProperty Name="DOTNETHOME_X86" Value="[DOTNETHOME_X86]" />
-        <MsiProperty Name="DOTNETHOME_X64" Value="[DOTNETHOME_X64]" />
-        <MsiProperty Name="DOTNETHOME_ARM64" Value="[DOTNETHOME_ARM64]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
