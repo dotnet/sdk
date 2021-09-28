@@ -15,6 +15,8 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        private static readonly string currentTfm = "net7.0";
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -26,6 +28,13 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
+            var project = XDocument.Load(projectPath);
+            var ns = project.Root.Name.Namespace;
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
+            project.Save(projectPath);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -71,6 +80,8 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
 
             project.Save(projectPath);
 
@@ -176,7 +187,7 @@ namespace EndToEnd.Tests
             string expectedOutput =
 @"[\-\s]+
 [\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
-[\w \.]+blazorwasm\s+\[C#\][\w\ \/]+
+[\w \.]+blazorserver\s+\[C#\][\w\ \/]+
 [\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
 [\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
 ";
