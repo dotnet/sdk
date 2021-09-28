@@ -44,7 +44,6 @@ Add following to your build file:
     arguments: '--verify-no-changes'
 ```
 
-
 These instructions originally authored by [leotsarev](https://github.com/joinrpg/joinrpg-net/).
 
 
@@ -58,12 +57,23 @@ Add the following block to the `repos` section of your `.pre-commit-config.yaml`
     hooks:
     -   id: dotnet-format
 ```
-Note that this will install dotnet format to an isolated environment, using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
+Note that this will compile and install dotnet format to an isolated environment, using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details. The problem is that dotnet format is using *preview* SDK (even for 5.x versions), and you have to install preview SDK on your machine for compiling it. Another option is to use local feature of pre-commit, as follows:
 
-These instructions originally authored by [rkm](https://github.com/rkm)
+```yaml
+-   repo: local
+    hooks:
+    #Use dotnet format already installed on your machine
+    -   id: dotnet-format
+        name: dotnet-format
+        language: system 
+        entry: dotnet format --include 
+        types_or: ["c#", "vb"]
+```
+
+These instructions originally authored by [rkm](https://github.com/rkm) & [leotsarev](https://github.com/joinrpg/joinrpg-net/).
+
 
 ## Rider reformat on save
-
 
 1. Open Settings -> Tools -> File Watchers
 1. Press The “Plus Sign” to Add a Custom watcher
