@@ -25,7 +25,6 @@
       ExtractToolPackage;
       GenerateRootFs;
       BuildTextOnlyPackages;
-      ApplyPatches;
       PoisonPrebuiltPackages" />
   </Target>
 
@@ -107,17 +106,6 @@
         __ToolInitPhase=%(BuildTasksTarget.Identity)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)BuildXPlatTasks.complete" Overwrite="true" />
-  </Target>
-
-  <Target Name="GetRepoProjects">
-    <ItemGroup>
-      <RepoProjects Include="$(ProjectDir)repos/*.proj" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ApplyPatches" DependsOnTargets="GetRepoProjects">
-    <Message Text="Applying patches only" />
-    <MSBuild Projects="@(RepoProjects)" Targets="ApplyPatches" BuildInParallel="$(BuildInParallel)" />
   </Target>
 
   <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">

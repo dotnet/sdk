@@ -175,6 +175,24 @@
 
     <Message Text="--> Done Cloning Repo $(SourceBuildRepoName)" Importance="High" />
 
+    <!-- Apply source-build patches -->
+    <ItemGroup>
+      <SourceBuildPatchFile Include="$(RepoRoot)src/SourceBuild/tarball/patches/$(SourceBuildRepoName)/*.patch" />
+    </ItemGroup>
+
+    <Message
+      Text="--> Applying $(SourceBuildRepoName) Patches"
+      Importance="High"
+      Condition="'@(SourceBuildPatchFile)' != ''" />
+    <Exec
+      Command="git --work-tree=$(TarballRepoSourceDir) apply --ignore-whitespace --whitespace=nowarn &quot;%(SourceBuildPatchFile.FullPath)&quot;"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="'@(SourceBuildPatchFile)' != ''" />
+    <Message
+      Text="--> Done Applying $(SourceBuildRepoName) Patches"
+      Importance="High"
+      Condition="'@(SourceBuildPatchFile)' != ''" />
+
     <!-- Override to use a temporary SourceBuild specific Version.Details.xml file in installer for Preview 6
          See https://github.com/dotnet/source-build/issues/2266 -->
     <Copy

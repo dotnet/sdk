@@ -39,7 +39,7 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceRegexInFiles" />
 
   <Target Name="FixAspNetCoreVersion"
-          AfterTargets="ApplyPatches">
+          BeforeTargets="RepoBuild">
 
     <ItemGroup>
       <MinifiedJavascriptFile Include="$(ProjectDirectory)**\blazor.server.js" />
