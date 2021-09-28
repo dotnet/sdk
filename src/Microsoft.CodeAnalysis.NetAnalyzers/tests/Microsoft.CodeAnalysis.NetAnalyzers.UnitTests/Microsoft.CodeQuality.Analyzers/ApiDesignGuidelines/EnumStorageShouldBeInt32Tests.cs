@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region CSharpUnitTests
 
         [Fact]
-        public async Task CSharp_CA1028_NoDiagnostic()
+        public async Task CSharp_CA1028_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -57,7 +57,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task CSharp_CA1028_DiagnosticForInt64WithNoFlags()
+        public async Task CSharp_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -74,7 +74,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task CSharp_CA1028_DiagnosticForSByte()
+        public async Task CSharp_CA1028_DiagnosticForSByteAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -91,7 +91,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task CSharp_CA1028_DiagnosticForUShort()
+        public async Task CSharp_CA1028_DiagnosticForUShortAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -111,7 +111,7 @@ namespace Test
         #region BasicUnitTests
 
         [Fact]
-        public async Task Basic_CA1028_NoDiagnostic()
+        public async Task Basic_CA1028_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -143,7 +143,7 @@ End Module
         }
 
         [Fact]
-        public async Task Basic_CA1028_DiagnosticForInt64WithNoFlags()
+        public async Task Basic_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -158,7 +158,7 @@ End Module
         }
 
         [Fact]
-        public async Task Basic_CA1028_DiagnosticForByte()
+        public async Task Basic_CA1028_DiagnosticForByteAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -173,7 +173,7 @@ End Module
         }
 
         [Fact]
-        public async Task Basic_CA1028_DiagnosticForUShort()
+        public async Task Basic_CA1028_DiagnosticForUShortAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System

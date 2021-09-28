@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public class AvoidStringBuilderPInvokeParametersTests
     {
         [Fact]
-        public async Task NotPInvoke_NoDiagnostics_CS()
+        public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -30,7 +30,7 @@ public class C
         }
 
         [Fact]
-        public async Task StringBuilderParameter_Diagnostics_CS()
+        public async Task StringBuilderParameter_Diagnostics_CSAsync()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -53,7 +53,7 @@ public class C
         }
 
         [Fact]
-        public async Task NotPInvoke_NoDiagnostics_VB()
+        public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
             string source = @"
 Imports System.Runtime.InteropServices
@@ -68,7 +68,7 @@ End Class
         }
 
         [Fact]
-        public async Task StringBuilderParameter_Diagnostics_VB()
+        public async Task StringBuilderParameter_Diagnostics_VBAsync()
         {
             string source = @"
 Imports System.Runtime.InteropServices

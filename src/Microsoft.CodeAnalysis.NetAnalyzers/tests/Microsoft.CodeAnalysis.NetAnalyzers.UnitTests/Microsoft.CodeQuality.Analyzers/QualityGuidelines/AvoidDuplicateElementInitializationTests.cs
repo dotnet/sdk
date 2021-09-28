@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class AvoidDuplicateElementInitializationTests
     {
         [Fact]
-        public async Task NoInitializer()
+        public async Task NoInitializerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -26,7 +26,7 @@ class C
         }
 
         [Fact]
-        public async Task LiteralIntIndex()
+        public async Task LiteralIntIndexAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -57,7 +57,7 @@ class C
         }
 
         [Fact]
-        public async Task CalculatedIntIndex()
+        public async Task CalculatedIntIndexAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -88,7 +88,7 @@ class C
         }
 
         [Fact]
-        public async Task LiteralStringIndex()
+        public async Task LiteralStringIndexAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -119,7 +119,7 @@ class C
         }
 
         [Fact]
-        public async Task ConcatenatedStringIndex()
+        public async Task ConcatenatedStringIndexAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -150,7 +150,7 @@ class C
         }
 
         [Fact]
-        public async Task EnumIndex()
+        public async Task EnumIndexAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -181,7 +181,7 @@ class C
         }
 
         [Fact]
-        public async Task MultipleIndexerArguments()
+        public async Task MultipleIndexerArgumentsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -232,7 +232,7 @@ class D
         }
 
         [Fact]
-        public async Task MultipleIndexerArgumentsNamed()
+        public async Task MultipleIndexerArgumentsNamedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -283,7 +283,7 @@ class D
         }
 
         [Fact]
-        public async Task MultipleIndexerArgumentsNamedWithAtPrefix()
+        public async Task MultipleIndexerArgumentsNamedWithAtPrefixAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -334,7 +334,7 @@ class D
         }
 
         [Fact]
-        public async Task MultipleArgumentsWithOmittedDefault()
+        public async Task MultipleArgumentsWithOmittedDefaultAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -386,7 +386,7 @@ class D
         }
 
         [Fact]
-        public async Task MultipleArgumentsWithOmittedDefault_ConsecutiveDuplicates()
+        public async Task MultipleArgumentsWithOmittedDefault_ConsecutiveDuplicatesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -438,7 +438,7 @@ class D
         }
 
         [Fact]
-        public async Task NonConstantArguments()
+        public async Task NonConstantArgumentsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 class C
@@ -469,7 +469,7 @@ class C
         }
 
         [Fact]
-        public async Task MatchingNonConstantArguments()
+        public async Task MatchingNonConstantArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -489,7 +489,7 @@ class C
         }
 
         [Fact]
-        public async Task ConstantMatchingNonConstantArgument()
+        public async Task ConstantMatchingNonConstantArgumentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -508,7 +508,7 @@ class C
         }
 
         [Fact]
-        public async Task AllNonConstantArguments()
+        public async Task AllNonConstantArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C

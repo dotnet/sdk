@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -65,7 +65,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInGetShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -106,7 +106,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInSetShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -158,7 +158,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInTryBlockShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -204,7 +204,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -249,7 +249,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -295,7 +295,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -345,7 +345,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithoutReaderInDelegateShouldGenerateDiagnostic()
+        public async Task UseXPathDocumentWithoutReaderInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -383,7 +383,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXPathDocumentWithXmlReaderShouldNotGenerateDiagnostic()
+        public async Task UseXPathDocumentWithXmlReaderShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

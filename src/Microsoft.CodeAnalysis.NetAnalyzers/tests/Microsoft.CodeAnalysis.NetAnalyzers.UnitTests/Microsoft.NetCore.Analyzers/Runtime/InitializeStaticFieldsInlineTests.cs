@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Unit tests for no analyzer diagnostic
 
         [Fact]
-        public async Task CA1810_EmptyStaticConstructor()
+        public async Task CA1810_EmptyStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -39,7 +39,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2207_EmptyStaticConstructor()
+        public async Task CA2207_EmptyStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct Struct1
@@ -60,7 +60,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA1810_NoStaticFieldInitializedInStaticConstructor()
+        public async Task CA1810_NoStaticFieldInitializedInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -91,7 +91,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1810_StaticPropertyInStaticConstructor()
+        public async Task CA1810_StaticPropertyInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -124,7 +124,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1810_InitializionInNonStaticConstructor()
+        public async Task CA1810_InitializionInNonStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -156,7 +156,7 @@ End Class
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EventLambdas_NoDiagnostic()
+        public async Task CA1810_EventLambdas_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -193,7 +193,7 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EventDelegate_NoDiagnostic()
+        public async Task CA1810_EventDelegate_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -210,7 +210,7 @@ class C
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_TaskRunActionAndFunc_NoDiagnostic()
+        public async Task CA1810_TaskRunActionAndFunc_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -251,7 +251,7 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_EnumerableWhere_NoDiagnostic()
+        public async Task CA1810_EnumerableWhere_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -298,7 +298,7 @@ End Class");
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_MixedFieldInitialization_NoDiagnostic()
+        public async Task CA1810_MixedFieldInitialization_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -332,7 +332,7 @@ End Class");
         }
 
         [Fact, WorkItem(3852, "https://github.com/dotnet/roslyn-analyzers/issues/3852")]
-        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnostic()
+        public async Task CA1810_EventSubscriptionInStaticCtorPreventsDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -375,7 +375,7 @@ public class C2
         #region Unit tests for analyzer diagnostic(s)
 
         [Fact]
-        public async Task CA1810_InitializationInStaticConstructor()
+        public async Task CA1810_InitializationInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -402,7 +402,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2207_InitializationInStaticConstructor()
+        public async Task CA2207_InitializationInStaticConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct Struct1
@@ -429,7 +429,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA1810_NoDuplicateDiagnostics()
+        public async Task CA1810_NoDuplicateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -457,7 +457,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA2207_NoDuplicateDiagnostics()
+        public async Task CA2207_NoDuplicateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct Struct1
@@ -485,7 +485,7 @@ End Structure",
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_LocalFunc_Diagnostic()
+        public async Task CA1810_LocalFunc_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -507,7 +507,7 @@ class C
         }
 
         [Fact, WorkItem(3138, "https://github.com/dotnet/roslyn-analyzers/issues/3138")]
-        public async Task CA1810_StaticLocalFunc_Diagnostic()
+        public async Task CA1810_StaticLocalFunc_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {

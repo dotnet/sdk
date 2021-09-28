@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotPassTypesByReferenceTests
     {
         [Fact]
-        public async Task CA1045_RefParameters_Diagnostic()
+        public async Task CA1045_RefParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -36,7 +36,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1045_MethodIsNotPublic_NoDiagnostic()
+        public async Task CA1045_MethodIsNotPublic_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -54,7 +54,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1045_MethodIsOverride_Diagnostic()
+        public async Task CA1045_MethodIsOverride_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class BaseClass
@@ -87,7 +87,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1045_MethodIsInterfaceImplementation_Diagnostic()
+        public async Task CA1045_MethodIsInterfaceImplementation_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface Interface1
@@ -116,7 +116,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1045_OutParameter_NoDiagnostic()
+        public async Task CA1045_OutParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -138,7 +138,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1045_PInvokeMethod_Diagnostic()
+        public async Task CA1045_PInvokeMethod_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -161,7 +161,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CA1045_InParameter_NoDiagnostic()
+        public async Task CA1045_InParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -197,7 +197,7 @@ public class Class1
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1045.api_surface_2 = private")]
-        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -245,7 +245,7 @@ public class C
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1045.api_surface_2 = Private")]
-        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {

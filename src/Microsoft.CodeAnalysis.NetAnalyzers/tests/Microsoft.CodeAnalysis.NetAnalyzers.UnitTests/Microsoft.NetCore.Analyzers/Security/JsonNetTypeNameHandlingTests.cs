@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_CSharp_Violation_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -41,7 +41,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_VB_Violation_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task DocSample1_VB_Violation_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports Newtonsoft.Json
@@ -59,7 +59,7 @@ End Class",
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_CSharp_Solution_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -79,7 +79,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_VB_Solution_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task DocSample1_VB_Solution_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports Newtonsoft.Json
@@ -97,7 +97,7 @@ End Class");
 
         [Theory]
         [CombinatorialData]
-        public async Task Reference_TypeNameHandling_None_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Reference_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -114,7 +114,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Reference_TypeNameHandling_All_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task Reference_TypeNameHandling_All_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -132,7 +132,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Reference_AttributeTargets_All_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Reference_AttributeTargets_All_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -149,7 +149,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Assign_TypeNameHandling_Objects_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task Assign_TypeNameHandling_Objects_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -167,7 +167,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Assign_TypeNameHandling_1_Or_Arrays_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task Assign_TypeNameHandling_1_Or_Arrays_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -185,7 +185,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Assign_TypeNameHandling_0_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Assign_TypeNameHandling_0_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -202,7 +202,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Assign_TypeNameHandling_None_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Assign_TypeNameHandling_None_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;

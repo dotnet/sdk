@@ -63,7 +63,7 @@ namespace NormalNamespace
         }
 
         [Fact]
-        public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnostic()
+        public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -81,7 +81,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestNormalMethodOfCloudStorageAccountNoDiagnostic()
+        public async Task TestNormalMethodOfCloudStorageAccountNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -98,7 +98,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnostic()
+        public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;

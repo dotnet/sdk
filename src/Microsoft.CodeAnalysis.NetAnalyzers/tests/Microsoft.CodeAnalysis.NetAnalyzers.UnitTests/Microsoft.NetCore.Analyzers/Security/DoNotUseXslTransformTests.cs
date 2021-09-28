@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseXslTransformTests
     {
         [Fact]
-        public async Task TestConstructXslTransformDiagnostic()
+        public async Task TestConstructXslTransformDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -29,7 +29,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstructNormalClassNoDiagnostic()
+        public async Task TestConstructNormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -45,7 +45,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestInvokeMethodOfXslTransformNoDiagnostic()
+        public async Task TestInvokeMethodOfXslTransformNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

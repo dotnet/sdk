@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DeclareTypesInNamespacesTests
     {
         [Fact]
-        public async Task OuterTypeInGlobalNamespace_Warns()
+        public async Task OuterTypeInGlobalNamespace_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
+        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -48,7 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task InternalClassInGlobalNamespace_DoesNotWarn()
+        public async Task InternalClassInGlobalNamespace_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 internal class Class
@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
+        public async Task PublicClassInNonGlobalNamespace_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 namespace NS

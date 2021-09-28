@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -58,7 +58,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInGetShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -102,7 +102,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInSetShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -158,7 +158,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInTryBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -208,7 +208,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -257,7 +257,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -307,7 +307,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -361,7 +361,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -403,7 +403,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentSetInnerXmlInlineShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentSetInnerXmlInlineShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -449,7 +449,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentInnerXmlShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentInnerXmlShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -492,7 +492,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInGetShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -536,7 +536,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInSetShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -593,7 +593,7 @@ End Class
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInTryBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -643,7 +643,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -692,7 +692,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -742,7 +742,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -796,7 +796,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -838,7 +838,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentSetInnerXmlInlineShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentSetInnerXmlInlineShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,

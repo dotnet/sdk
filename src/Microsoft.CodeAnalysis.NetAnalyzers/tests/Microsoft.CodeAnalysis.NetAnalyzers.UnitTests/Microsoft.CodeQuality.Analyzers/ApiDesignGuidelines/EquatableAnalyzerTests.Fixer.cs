@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EquatableFixerTests
     {
         [Fact]
-        public async Task CodeFixForStructWithEqualsOverrideButNoIEquatableImplementation()
+        public async Task CodeFixForStructWithEqualsOverrideButNoIEquatableImplementationAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -46,7 +46,7 @@ struct S : IEquatable<S>
         }
 
         [Fact]
-        public async Task CodeFixForStructWithIEquatableImplementationButNoEqualsOverride()
+        public async Task CodeFixForStructWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -77,7 +77,7 @@ struct S : IEquatable<S>
         }
 
         [Fact]
-        public async Task CodeFixForClassWithIEquatableImplementationButNoEqualsOverride()
+        public async Task CodeFixForClassWithIEquatableImplementationButNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -108,7 +108,7 @@ class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task CodeFixForClassWithExplicitIEquatableImplementationAndNoEqualsOverride()
+        public async Task CodeFixForClassWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -139,7 +139,7 @@ class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task CodeFixForStructWithExplicitIEquatableImplementationAndNoEqualsOverride()
+        public async Task CodeFixForStructWithExplicitIEquatableImplementationAndNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;

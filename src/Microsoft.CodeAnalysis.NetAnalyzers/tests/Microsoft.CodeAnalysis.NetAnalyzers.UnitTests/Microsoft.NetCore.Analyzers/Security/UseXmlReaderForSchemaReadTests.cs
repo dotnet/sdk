@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseXmlReaderForSchemaReadTests
     {
         [Fact]
-        public async Task TestReadWithStreamAndValidationEventHandlerParametersDiagnostic()
+        public async Task TestReadWithStreamAndValidationEventHandlerParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -30,7 +30,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestTextReaderAndValidationEventHandlerParametersDiagnostic()
+        public async Task TestTextReaderAndValidationEventHandlerParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -48,7 +48,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestXmlReaderAndValidationEventHandlerParametersNoDiagnostic()
+        public async Task TestXmlReaderAndValidationEventHandlerParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -65,7 +65,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task XmlSchemaReadDocSample1_Solution()
+        public async Task XmlSchemaReadDocSample1_SolutionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;

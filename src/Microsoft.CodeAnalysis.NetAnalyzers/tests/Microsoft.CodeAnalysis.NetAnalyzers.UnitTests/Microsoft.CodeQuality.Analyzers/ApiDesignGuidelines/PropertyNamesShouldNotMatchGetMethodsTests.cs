@@ -75,7 +75,7 @@ End Class
 ";
 
         [Fact]
-        public async Task CSharp_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnostic()
+        public async Task CSharp_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -100,7 +100,7 @@ public class Test
         [InlineData("protected internal", "public")]
         [InlineData("protected internal", "protected")]
         [InlineData("protected internal", "protected internal")]
-        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Exposed_Diagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(
                 string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility),
@@ -120,7 +120,7 @@ public class Test
         [InlineData("internal", "private")]
         [InlineData("internal", "internal")]
         [InlineData("", "")]
-        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
         }
@@ -144,13 +144,13 @@ public class Test
         [InlineData("", "public")]
         [InlineData("", "protected")]
         [InlineData("", "protected internal")]
-        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
         [Fact]
-        public async Task CSharp_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_Diagnostic()
+        public async Task CSharp_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -174,7 +174,7 @@ public class SometOtherClass : SomeClass
         }
 
         [Fact]
-        public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()
+        public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -198,7 +198,7 @@ public class SometOtherClass : SomeClass
         }
 
         [Fact]
-        public async Task Basic_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnostic()
+        public async Task Basic_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -225,7 +225,7 @@ End Class");
         [InlineData("Protected Friend", "Public")]
         [InlineData("Protected Friend", "Protected")]
         [InlineData("Protected Friend", "Protected Friend")]
-        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Exposed_Diagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(
                 string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility),
@@ -244,7 +244,7 @@ End Class");
         [InlineData("Private", "Friend")]
         [InlineData("Friend", "Private")]
         [InlineData("Friend", "Friend")]
-        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
         }
@@ -262,13 +262,13 @@ End Class");
         [InlineData("Friend", "Public")]
         [InlineData("Friend", "Protected")]
         [InlineData("Friend", "Protected Friend")]
-        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnostics(string propertyAccessibility, string methodAccessibility)
+        public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
         [Fact]
-        public async Task Basic_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_Diagnostic()
+        public async Task Basic_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -291,7 +291,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_Diagnostic()
+        public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -313,7 +313,7 @@ End Class",
         }
 
         [Fact, WorkItem(1374, "https://github.com/dotnet/roslyn-analyzers/issues/1374")]
-        public async Task CA1721_TypePropertyNoDiagnostic()
+        public async Task CA1721_TypePropertyNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class T { }
@@ -331,7 +331,7 @@ End Class");
         }
 
         [Fact, WorkItem(2085, "https://github.com/dotnet/roslyn-analyzers/issues/2085")]
-        public async Task CA1721_StaticAndInstanceMismatchNoDiagnostic()
+        public async Task CA1721_StaticAndInstanceMismatchNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C1
@@ -366,7 +366,7 @@ End Class");
         }
 
         [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
-        public async Task CA1721_OverrideNoDiagnosticButVirtualDiagnostic()
+        public async Task CA1721_OverrideNoDiagnosticButVirtualDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class BaseClass
@@ -438,7 +438,7 @@ End Class
         }
 
         [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
-        public async Task CA1721_OverrideWithLocalMemberDiagnostic()
+        public async Task CA1721_OverrideWithLocalMemberDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class BaseClass1
@@ -511,7 +511,7 @@ End Class
         }
 
         [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
-        public async Task CA1721_OverrideMultiLevelDiagnostic()
+        public async Task CA1721_OverrideMultiLevelDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class MyBaseClass
@@ -585,7 +585,7 @@ End Class
         }
 
         [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
-        public async Task CA1721_Obsolete_NoDiagnostic()
+        public async Task CA1721_Obsolete_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -669,7 +669,7 @@ End Class");
         }
 
         [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
-        public async Task CA1721_OnlyOneOverloadObsolete_Diagnostic()
+        public async Task CA1721_OnlyOneOverloadObsolete_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -714,7 +714,7 @@ End Class",
         }
 
         [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
-        public async Task CA1721_AllOverloadsObsolete_NoDiagnostic()
+        public async Task CA1721_AllOverloadsObsolete_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

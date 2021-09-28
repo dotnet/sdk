@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class InstantiateArgumentExceptionsCorrectlyTests
     {
         [Fact]
-        public async Task ArgumentException_NoArguments_Warns()
+        public async Task ArgumentException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ArgumentException_EmptyParameterNameArgument_Warns()
+        public async Task ArgumentException_EmptyParameterNameArgument_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ArgumentNullException_SpaceParameterArgument_Warns()
+        public async Task ArgumentNullException_SpaceParameterArgument_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -82,7 +82,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ArgumentNullException_NameofNonParameter_Warns()
+        public async Task ArgumentNullException_NameofNonParameter_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -106,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task ArgumentException_ParameterNameAsMessage_WarnsAndCodeFixesWithNameOf()
+        public async Task ArgumentException_ParameterNameAsMessage_WarnsAndCodeFixesWithNameOfAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -140,7 +140,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_ReversedArguments_WarnsAndCodeFixesWithNameOf()
+        public async Task ArgumentException_ReversedArguments_WarnsAndCodeFixesWithNameOfAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -174,7 +174,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_ParameterWithNameofAsMessage_WarnsAndCodeFixes()
+        public async Task ArgumentException_ParameterWithNameofAsMessage_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -196,7 +196,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_ReversedArgumentsWithNameof_WarnsAndCodeFixes()
+        public async Task ArgumentException_ReversedArgumentsWithNameof_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -217,7 +217,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_Reversed3Arguments_WarnsAndCodeFixes()
+        public async Task ArgumentException_Reversed3Arguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -251,7 +251,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentNullException_NoArguments_Warns()
+        public async Task ArgumentNullException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -273,7 +273,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentNullException_MessageAsParameterName_Warns()
+        public async Task ArgumentNullException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -287,7 +287,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentNullException_ReversedArguments_WarnsAndCodeFixes()
+        public async Task ArgumentNullException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -321,7 +321,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_NoArguments_Warns()
+        public async Task ArgumentOutOfRangeException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -343,7 +343,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_MessageAsParameterName_Warns()
+        public async Task ArgumentOutOfRangeException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -365,7 +365,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_ReversedArguments_WarnsAndCodeFixes()
+        public async Task ArgumentOutOfRangeException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -399,7 +399,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_Reversed3Arguments_WarnsAndCodeFixes()
+        public async Task ArgumentOutOfRangeException_Reversed3Arguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -437,7 +437,7 @@ End Class");
         }
 
         [Fact]
-        public async Task DuplicateWaitObjectException_NoArguments_Warns()
+        public async Task DuplicateWaitObjectException_NoArguments_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -459,7 +459,7 @@ End Class");
         }
 
         [Fact]
-        public async Task DuplicateWaitObjectException_MessageAsParameterName_Warns()
+        public async Task DuplicateWaitObjectException_MessageAsParameterName_WarnsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -481,7 +481,7 @@ End Class");
         }
 
         [Fact]
-        public async Task DuplicateWaitObjectException_ReversedArguments_WarnsAndCodeFixes()
+        public async Task DuplicateWaitObjectException_ReversedArguments_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -515,7 +515,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentNullException_ParentHasNoParameter_DoesNotWarn()
+        public async Task ArgumentNullException_ParentHasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -528,7 +528,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_ParentHasNoParameter_DoesNotWarn()
+        public async Task ArgumentException_ParentHasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -541,7 +541,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_VariableUsed_DoesNotWarn()
+        public async Task ArgumentException_VariableUsed_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -554,7 +554,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_NoArguments_ParentMethod_HasNoParameter_DoesNotWarn()
+        public async Task ArgumentException_NoArguments_ParentMethod_HasNoParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -574,7 +574,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_CorrectMessage_DoesNotWarn()
+        public async Task ArgumentException_CorrectMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -594,7 +594,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_GenericParameterName_DoesNotWarn()
+        public async Task ArgumentException_GenericParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -614,7 +614,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ArgumentException_GenericParameterName_WrongPosition_WarnsAndCodeFixes()
+        public async Task ArgumentException_GenericParameterName_WrongPosition_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
                 public class Class
@@ -666,7 +666,7 @@ End Class");
         [InlineData("protected", "", true)]
         [InlineData("private", "", true)]
         [InlineData("protected", "dotnet_code_quality.CA2208.api_surface = public", true)]
-        public async Task EditorConfigConfiguration_ApiSurfaceOption_Test(string accessibility, string editorConfigText, bool expectDiagnostic)
+        public async Task EditorConfigConfiguration_ApiSurfaceOption_TestAsync(string accessibility, string editorConfigText, bool expectDiagnostic)
         {
             var exception = expectDiagnostic ? @"[|new System.ArgumentNullException(""first is null"")|]" : @"new System.ArgumentNullException(""first is null"")";
 
@@ -720,7 +720,7 @@ public class C
         }
 
         [Fact]
-        public async Task EditorConfigConfiguredPublic_PrivateMethods_TriggeringOtherRules_DoesNotWarn()
+        public async Task EditorConfigConfiguredPublic_PrivateMethods_TriggeringOtherRules_DoesNotWarnAsync()
         {
             await new VerifyCS.Test
             {
@@ -752,7 +752,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentException_CorrectMessageAndParameterName_DoesNotWarn()
+        public async Task ArgumentException_CorrectMessageAndParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -772,7 +772,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentNullException_CorrectParameterName_DoesNotWarn()
+        public async Task ArgumentNullException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -792,7 +792,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentNullException_VariableUsed_DoesNotWarn()
+        public async Task ArgumentNullException_VariableUsed_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -807,7 +807,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
 
         [Fact]
 
-        public async Task ArgumentNullException_NameofParameter_DoesNotWarn()
+        public async Task ArgumentNullException_NameofParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -827,7 +827,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentNull_CorrectParameterNameAndMessage_DoesNotWarn()
+        public async Task ArgumentNull_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -847,7 +847,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_CorrectParameterName_DoesNotWarn()
+        public async Task ArgumentOutOfRangeException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -867,7 +867,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentOutOfRangeException_CorrectParameterNameAndMessage_DoesNotWarn()
+        public async Task ArgumentOutOfRangeException_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -887,7 +887,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task DuplicateWaitObjectException_CorrectParameterName_DoesNotWarn()
+        public async Task DuplicateWaitObjectException_CorrectParameterName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -907,7 +907,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task DuplicateWaitObjectException_CorrectParameterNameAndMessage_DoesNotWarn()
+        public async Task DuplicateWaitObjectException_CorrectParameterNameAndMessage_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -927,7 +927,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentExceptionType_NotHavingConstructorWithParameterName_NoArgument_DoesNotWarn()
+        public async Task ArgumentExceptionType_NotHavingConstructorWithParameterName_NoArgument_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -947,7 +947,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact]
-        public async Task ArgumentExceptionType_NotHavingConstructor_WithParameterName_WithArgument_DoesNotWarn()
+        public async Task ArgumentExceptionType_NotHavingConstructor_WithParameterName_WithArgument_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -967,7 +967,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
-        public async Task ArgumentNullException_LocalFunctionParameter_DoesNotWarn()
+        public async Task ArgumentNullException_LocalFunctionParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -983,7 +983,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
-        public async Task ArgumentNullException_NestedLocalFunctionParameter_DoesNotWarn()
+        public async Task ArgumentNullException_NestedLocalFunctionParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -1002,7 +1002,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact, WorkItem(1824, "https://github.com/dotnet/roslyn-analyzers/issues/1824")]
-        public async Task ArgumentNullException_LambdaParameter_DoesNotWarn()
+        public async Task ArgumentNullException_LambdaParameter_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 public class Class
@@ -1018,7 +1018,7 @@ dotnet_code_quality.CA2208.api_surface = public") }
         }
 
         [Fact, WorkItem(1561, "https://github.com/dotnet/roslyn-analyzers/issues/1561")]
-        public async Task ArgumentOutOfRangeException_PropertyName_DoesNotWarn()
+        public async Task ArgumentOutOfRangeException_PropertyName_DoesNotWarnAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
                 using System;

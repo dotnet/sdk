@@ -59,7 +59,7 @@ namespace System
         }
 
         [Fact]
-        public async Task EmptyArrayCSharp()
+        public async Task EmptyArrayCSharpAsync()
         {
             const string badSource = @"
 using System.Collections.Generic;
@@ -162,7 +162,7 @@ class C
         }
 
         [Fact]
-        public async Task EmptyArrayCSharpError()
+        public async Task EmptyArrayCSharpErrorAsync()
         {
             const string badSource = @"
 // This is a compile error but we want to ensure analyzer doesn't complain for it.
@@ -173,7 +173,7 @@ class C
         }
 
         [Fact]
-        public async Task EmptyArrayVisualBasic()
+        public async Task EmptyArrayVisualBasicAsync()
         {
             const string badSource = @"
 Imports System.Collections.Generic
@@ -275,7 +275,7 @@ End Class";
         }
 
         [Fact]
-        public async Task EmptyArrayCSharp_DifferentTypeKind()
+        public async Task EmptyArrayCSharp_DifferentTypeKindAsync()
         {
             const string badSource = @"
 class C
@@ -328,7 +328,7 @@ class C
 
         [WorkItem(10214, "https://github.com/dotnet/roslyn/issues/10214")]
         [Fact]
-        public async Task EmptyArrayVisualBasic_CompilerGeneratedArrayCreation()
+        public async Task EmptyArrayVisualBasic_CompilerGeneratedArrayCreationAsync()
         {
             const string source = @"
 Class C
@@ -350,7 +350,7 @@ End Class
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
         [Fact]
-        public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInObjectCreation()
+        public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInObjectCreationAsync()
         {
             const string source = @"
 namespace N
@@ -379,7 +379,7 @@ namespace N
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
         [Fact]
-        public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInIndexerAccess()
+        public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInIndexerAccessAsync()
         {
             const string source = @"
 public abstract class C
@@ -400,7 +400,7 @@ public abstract class C
         }
 
         [Fact]
-        public async Task EmptyArrayCSharp_UsedInAttribute_NoDiagnostics()
+        public async Task EmptyArrayCSharp_UsedInAttribute_NoDiagnosticsAsync()
         {
             const string source = @"
 using System;
@@ -424,7 +424,7 @@ class C
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
-        public async Task EmptyArrayCSharp_FieldOrPropertyInitializer()
+        public async Task EmptyArrayCSharp_FieldOrPropertyInitializerAsync()
         {
             const string badSource = @"
 using System;
@@ -461,7 +461,7 @@ class C
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
-        public async Task EmptyArrayCSharp_UsedInAssignment()
+        public async Task EmptyArrayCSharp_UsedInAssignmentAsync()
         {
             const string badSource = @"
 using System;
@@ -505,7 +505,7 @@ class C
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
-        public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_NotArray()
+        public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_NotArrayAsync()
         {
             const string badSource = @"
 using System;
@@ -579,7 +579,7 @@ class C
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
-        public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_DifferentElementType()
+        public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_DifferentElementTypeAsync()
         {
             const string badSource = @"
 using System;
@@ -608,7 +608,7 @@ class C
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
-        public async Task EmptyArrayCSharp_UsedAsExpression()
+        public async Task EmptyArrayCSharp_UsedAsExpressionAsync()
         {
             const string badSource = @"
 using System;
@@ -687,7 +687,7 @@ class C
         }
 
         [Fact]
-        public async Task EmptyArrayCSharp_SystemNotImported()
+        public async Task EmptyArrayCSharp_SystemNotImportedAsync()
         {
             const string badSource = @"
 class C
@@ -711,7 +711,7 @@ class C
 
         [Fact]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
-        public async Task NoDiagnosticInExpressionTree_CSharp()
+        public async Task NoDiagnosticInExpressionTree_CSharpAsync()
         {
             const string source = @"
 using System;
@@ -727,7 +727,7 @@ class C
 
         [Fact]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
-        public async Task NoDiagnosticInExpressionTree_VisualBasic()
+        public async Task NoDiagnosticInExpressionTree_VisualBasicAsync()
         {
             const string source = @"
 Imports System

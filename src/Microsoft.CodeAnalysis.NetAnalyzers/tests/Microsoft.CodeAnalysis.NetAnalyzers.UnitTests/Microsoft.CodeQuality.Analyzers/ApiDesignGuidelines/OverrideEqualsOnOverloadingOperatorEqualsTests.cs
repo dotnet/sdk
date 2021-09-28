@@ -12,7 +12,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideEqualsOnOverloadingOperatorEqualsTests
     {
         [Fact]
-        public async Task Good_Class_Operator()
+        public async Task Good_Class_OperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -31,7 +31,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Good_Class_NoOperator()
+        public async Task Good_Class_NoOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -39,7 +39,7 @@ End Class");
         }
 
         [Fact]
-        public async Task Good_Structure_Operator()
+        public async Task Good_Structure_OperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -58,7 +58,7 @@ End Structure");
         }
 
         [Fact]
-        public async Task Good_Structure_NoOperator()
+        public async Task Good_Structure_NoOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -66,7 +66,7 @@ End Structure");
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_Interface()
+        public async Task Ignored_InterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Interface I
@@ -77,7 +77,7 @@ End Interface");
         }
 
         [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
-        public async Task Ignored_TopLevel()
+        public async Task Ignored_TopLevelAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Shared Operator =(a As I, b As I)
@@ -86,7 +86,7 @@ End Operator");
         }
 
         [Fact]
-        public async Task Bad_Class()
+        public async Task Bad_ClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -103,7 +103,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Bad_Structure()
+        public async Task Bad_StructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Structure C
@@ -120,7 +120,7 @@ End Structure",
         }
 
         [Fact]
-        public async Task Bad_NotOverride()
+        public async Task Bad_NotOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -141,7 +141,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Bad_FalseOverride()
+        public async Task Bad_FalseOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class Base

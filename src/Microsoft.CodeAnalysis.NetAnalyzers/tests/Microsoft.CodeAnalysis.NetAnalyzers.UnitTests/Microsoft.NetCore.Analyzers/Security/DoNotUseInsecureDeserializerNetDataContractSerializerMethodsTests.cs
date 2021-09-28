@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseInsecureDeserializerNetDataContractSerializerMethodsTests
     {
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -34,7 +34,7 @@ public class ExampleClass
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
 Imports System.IO
@@ -50,7 +50,7 @@ End Class",
         }
 
         [Fact]
-        public async Task Deserialize_Diagnostic()
+        public async Task Deserialize_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -71,7 +71,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Deserialize_Reference_Diagnostic()
+        public async Task Deserialize_Reference_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -93,7 +93,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task ReadObject_Stream_Diagnostic()
+        public async Task ReadObject_Stream_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -114,7 +114,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task ReadObject_Stream_Reference_Diagnostic()
+        public async Task ReadObject_Stream_Reference_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -136,7 +136,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task ReadObject_XmlReader_Diagnostic()
+        public async Task ReadObject_XmlReader_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -158,7 +158,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task ReadObject_XmlReader_Reference_Diagnostic()
+        public async Task ReadObject_XmlReader_Reference_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -181,7 +181,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_NoDiagnostic()
+        public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;
@@ -203,7 +203,7 @@ namespace Blah
         }
 
         [Fact]
-        public async Task Serialize_Reference_NoDiagnostic()
+        public async Task Serialize_Reference_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System.IO;

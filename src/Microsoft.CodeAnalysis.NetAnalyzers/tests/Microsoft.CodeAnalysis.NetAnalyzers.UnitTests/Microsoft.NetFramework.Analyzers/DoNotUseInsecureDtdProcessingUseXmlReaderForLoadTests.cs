@@ -25,7 +25,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task UseXmlDocumentLoadShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -67,7 +67,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInGetShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -111,7 +111,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInSetShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -167,7 +167,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInTryBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -217,7 +217,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -266,7 +266,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -316,7 +316,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -369,7 +369,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -411,7 +411,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -449,7 +449,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInGetShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -494,7 +494,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInTryBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -544,7 +544,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInCatchBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -593,7 +593,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInFinallyBlockShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -643,7 +643,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInAsyncAwaitShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -697,7 +697,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadInDelegateShouldGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -739,7 +739,7 @@ End Class",
         }
 
         [Fact]
-        public async Task UseXmlDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnostic()
+        public async Task UseXmlDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
@@ -776,7 +776,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task UseXmlDataDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnostic()
+        public async Task UseXmlDataDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
