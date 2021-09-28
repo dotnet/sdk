@@ -61,3 +61,20 @@ Add the following block to the `repos` section of your `.pre-commit-config.yaml`
 Note that this will install dotnet format to an isolated environment, using the system installation of the dotnet CLI. See the [pre-commit.com documentation](https://pre-commit.com/#dotnet) for more details.
 
 These instructions originally authored by [rkm](https://github.com/rkm)
+
+## Rider reformat on save
+
+
+1. Open Settings -> Tools -> File Watchers
+1. Press The “Plus Sign” to Add a Custom watcher
+1. Set the name to i.e. “dotnet format on save”
+1. FileType: C#
+1. Scope: Open Files
+1. Program: Write dotnet-format
+1. Arguments: $SolutionPath$ -verbosity diagnostic --include $FileRelativePath$
+1. (Optionally) Append --fix-style warning to fix any style issues automatically on save.
+1. (Optionally) Append --fix-analyzers warning to fix any analyzer warnings on save.
+1. Disable all advanced option checkboxes.
+1. All other values were left default
+
+These instructions originally authored by [Nils Henrik Hals](https://strepto.github.io/Pause/blog/dotnet-format-rider/).
