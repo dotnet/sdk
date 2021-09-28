@@ -44,7 +44,6 @@ Add following to your build file:
     arguments: '--verify-no-changes'
 ```
 
-
 These instructions originally authored by [leotsarev](https://github.com/joinrpg/joinrpg-net/).
 
 
@@ -72,3 +71,20 @@ Note that this will compile and install dotnet format to an isolated environment
 ```
 
 These instructions originally authored by [rkm](https://github.com/rkm) & [leotsarev](https://github.com/joinrpg/joinrpg-net/).
+
+
+## Rider reformat on save
+
+1. Open Settings -> Tools -> File Watchers
+1. Press The “Plus Sign” to Add a Custom watcher
+1. Set the name to i.e. “dotnet format on save”
+1. FileType: C#
+1. Scope: Open Files
+1. Program: Write dotnet-format
+1. Arguments: $SolutionPath$ -verbosity diagnostic --include $FileRelativePath$
+1. (Optionally) Append --fix-style warning to fix any style issues automatically on save.
+1. (Optionally) Append --fix-analyzers warning to fix any analyzer warnings on save.
+1. Disable all advanced option checkboxes.
+1. All other values were left default
+
+These instructions originally authored by [Nils Henrik Hals](https://strepto.github.io/Pause/blog/dotnet-format-rider/).
