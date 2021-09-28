@@ -13,7 +13,7 @@
 |Branch| SDK | Description|
 |--------|--------|--------|
 |[2.9.x](https://github.com/dotnet/roslyn-analyzers/tree/2.9.x)| Does not ship in the .NET SDK | A special branch compatible with Visual Studio 2017 where security analyzers are shipped from.
-|[main](https://github.com/dotnet/roslyn-analyzers/tree/main)| Does not ship in the .NET SDK | Default branch. Used to service packages on nuget.org (which ship out of band). Changes made here will merge into the currently active release branch automatically.
+|[main](https://github.com/dotnet/roslyn-analyzers/tree/main)| .NET SDK 7.0.0xx  | Currently active branch. All work should target this branch unless it is a bugfix for a previous release
 |[release/5.0.3xx](https://github.com/dotnet/roslyn-analyzers/tree/release/5.0.3xx)| .NET SDK 5.0.3xx | Servicing branch for the .NET 5 SDK.
 |[release/6.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/6.0.1xx)| .NET SDK 6.0.0xx | Servicing branch for the .NET 6 SDK. Currently accepting targeting fixes until the .NET 6 SDK ships
 |[release/7.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/7.0.1xx)| .NET SDK 7.0.0xx | Currently active release branch. New SDK analyzer should target this branch.
