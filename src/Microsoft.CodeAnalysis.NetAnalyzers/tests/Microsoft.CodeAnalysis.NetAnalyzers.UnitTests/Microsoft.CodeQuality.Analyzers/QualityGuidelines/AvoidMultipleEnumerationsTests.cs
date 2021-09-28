@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
     public class AvoidMultipleEnumerationsTests
     {
         [Fact]
-        public async Task TestFirst()
+        public async Task TestMultipleInvocations()
         {
             var code = @"
 using System;
@@ -27,18 +27,15 @@ public class Bar
     public void Sub()
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        var c = {|#1:i|}.First();
-        var d = {|#2:i|}.First();
+        var c = [|i|].First();
+        var d = [|i|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(
-                code,
-                VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1),
-                VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(2));
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public async Task TestFirstInForLoop()
+        public async Task TestForLoop()
         {
             var code = @"
 using System;
@@ -52,17 +49,15 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         for (int j = 0; j < 100; j++)
         {
-            {|#1:i|}.First();
+            [|i|].First();
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(
-                code,
-                VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public async Task TestFirstInForEachLoop()
+        public async Task TestForEachLoop()
         {
             var code = @"
 using System;
@@ -76,17 +71,15 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         foreach (var c in Enumerable.Range(1, 10))
         {
-            {|#1:i|}.First();
+            [|i|].First();
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(
-                code,
-                VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public async Task TestFirstInWhileLoop()
+        public async Task TestWhileLoop()
         {
             var code = @"
 using System;
@@ -100,17 +93,15 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         while (true)
         {
-            {|#1:i|}.First();
+            [|i|].First();
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(
-                code,
-                VerifyCS.Diagnostic(AvoidMultipleEnumerations.MultipleEnumerableDescriptor).WithLocation(1));
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public async Task TestFirstAfterUnreachableCode()
+        public async Task TestInvocationAfterUnreachableCode()
         {
             var code = @"
 using System;
@@ -130,6 +121,189 @@ public class Bar
         i.First();
     }
 }";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationAfterIfBranch1()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(int b)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        if (b == 1)
+        {
+            [|i|].First();
+        }
+        else if (b == 3)
+        {
+            [|i|].First();
+        }
+        else if (b == 5)
+        {
+            [|i|].First();
+        }
+
+        [|i|].First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationAfterIfBranch2()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(int b)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        if (b == 1)
+        {
+            i.First();
+        }
+        else if (b == 3)
+        {
+            i.First();
+        }
+        else if (b == 5)
+        {
+        }
+
+        i.First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationAfterIfBranch3()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        if (flag)
+        {
+            [|i|].First();
+        }
+        else if (!flag)
+        {
+            [|i|].First();
+        }
+
+        [|i|].First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationAfterIfBranch4()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        if (flag)
+        {
+            [|i|].First();
+        }
+        else
+        {
+            [|i|].First();
+        }
+
+        [|i|].First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationWithForEachLoop()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        foreach (var c in [|i|])
+        {
+        }
+
+        [|i|].First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationWithAssignment()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        var j = i;
+        var k = j;
+        
+        if (flag)
+        {
+            foreach (var x in [|k|])
+            {
+            }
+        }
+        else
+        {
+            var d = [|i|].First();
+        }
+        
+        foreach (var z in [|j|])
+        {
+        }
+    }
+}";
+
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
     }
