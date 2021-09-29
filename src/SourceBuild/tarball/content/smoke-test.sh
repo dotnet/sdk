@@ -33,6 +33,9 @@ case $cpuName in
   i686)
     buildArch=x86
     ;;
+  s390x)
+    buildArch=s390x
+    ;;
   *)
     echo "Unknown CPU $cpuName detected, treating it as x64"
     buildArch=x64
