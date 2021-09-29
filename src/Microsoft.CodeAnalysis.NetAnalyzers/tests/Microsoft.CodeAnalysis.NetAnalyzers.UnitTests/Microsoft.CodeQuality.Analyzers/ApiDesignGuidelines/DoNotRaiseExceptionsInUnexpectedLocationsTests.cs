@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region Property and Event Tests
 
         [Fact]
-        public async Task CSharpPropertyNoDiagnostics()
+        public async Task CSharpPropertyNoDiagnosticsAsync()
         {
             var code = @"
 using System;
@@ -41,7 +41,7 @@ class NonPublic
         }
 
         [Fact]
-        public async Task CSharpPropertyWithDerivedExceptionNoDiagnostics()
+        public async Task CSharpPropertyWithDerivedExceptionNoDiagnosticsAsync()
         {
             var code = @"
 using System;
@@ -55,7 +55,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicPropertyNoDiagnostics()
+        public async Task BasicPropertyNoDiagnosticsAsync()
         {
             var code = @"
 Imports System
@@ -108,7 +108,7 @@ End Class
         }
 
         [Fact]
-        public async Task BasicPropertyWithDerivedExceptionNoDiagnostics()
+        public async Task BasicPropertyWithDerivedExceptionNoDiagnosticsAsync()
         {
             var code = @"
 Imports System
@@ -128,7 +128,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpPropertyWithInvalidExceptions()
+        public async Task CSharpPropertyWithInvalidExceptionsAsync()
         {
             var code = @"
 using System;
@@ -148,7 +148,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicPropertyWithInvalidExceptions()
+        public async Task BasicPropertyWithInvalidExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -195,7 +195,7 @@ End Class
         }
 
         [Fact, WorkItem(1842, "https://github.com/dotnet/roslyn-analyzers/issues/1842")]
-        public async Task CSharpIndexer_KeyNotFoundException_NoDiagnostics()
+        public async Task CSharpIndexer_KeyNotFoundException_NoDiagnosticsAsync()
         {
             var code = @"
 using System.Collections.Generic;
@@ -212,7 +212,7 @@ public class C
         #region Equals, GetHashCode, Dispose and ToString Tests
 
         [Fact]
-        public async Task CSharpEqualsAndGetHashCodeWithExceptions()
+        public async Task CSharpEqualsAndGetHashCodeWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -236,7 +236,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicEqualsAndGetHashCodeWithExceptions()
+        public async Task BasicEqualsAndGetHashCodeWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -257,7 +257,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpEqualsAndGetHashCodeNoDiagnostics()
+        public async Task CSharpEqualsAndGetHashCodeNoDiagnosticsAsync()
         {
             var code = @"
 using System;
@@ -279,7 +279,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicEqualsAndGetHashCodeNoDiagnostics()
+        public async Task BasicEqualsAndGetHashCodeNoDiagnosticsAsync()
         {
             var code = @"
 Imports System
@@ -298,7 +298,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpIEquatableEqualsWithExceptions()
+        public async Task CSharpIEquatableEqualsWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -316,7 +316,7 @@ public class C : IEquatable<C>
         }
 
         [Fact]
-        public async Task BasicIEquatableEqualsExceptions()
+        public async Task BasicIEquatableEqualsExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -334,7 +334,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpIHashCodeProviderGetHashCode()
+        public async Task CSharpIHashCodeProviderGetHashCodeAsync()
         {
             var code = @"
 using System;
@@ -360,7 +360,7 @@ public class D : IHashCodeProvider
         }
 
         [Fact]
-        public async Task BasicIHashCodeProviderGetHashCode()
+        public async Task BasicIHashCodeProviderGetHashCodeAsync()
         {
             var code = @"
 Imports System
@@ -385,7 +385,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpIEqualityComparer()
+        public async Task CSharpIEqualityComparerAsync()
         {
             var code = @"
 using System;
@@ -408,7 +408,7 @@ public class C : IEqualityComparer<C>
         }
 
         [Fact]
-        public async Task BasicIEqualityComparer()
+        public async Task BasicIEqualityComparerAsync()
         {
             var code = @"
 Imports System
@@ -430,7 +430,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpIDisposable()
+        public async Task CSharpIDisposableAsync()
         {
             var code = @"
 using System;
@@ -448,7 +448,7 @@ public class C : IDisposable
         }
 
         [Fact]
-        public async Task BasicIDisposable()
+        public async Task BasicIDisposableAsync()
         {
             var code = @"
 Imports System
@@ -466,7 +466,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpToStringWithExceptions()
+        public async Task CSharpToStringWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -485,7 +485,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicToStringWithExceptions()
+        public async Task BasicToStringWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -505,7 +505,7 @@ End Class
 
         #region Constructor and Destructor tests
         [Fact]
-        public async Task CSharpStaticConstructorWithExceptions()
+        public async Task CSharpStaticConstructorWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -523,7 +523,7 @@ class NonPublic
         }
 
         [Fact]
-        public async Task BasicStaticConstructorWithExceptions()
+        public async Task BasicStaticConstructorWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -540,7 +540,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpFinalizerWithExceptions()
+        public async Task CSharpFinalizerWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -558,7 +558,7 @@ class NonPublic
         }
 
         [Fact]
-        public async Task BasicFinalizerWithExceptions()
+        public async Task BasicFinalizerWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -577,7 +577,7 @@ End Class
 
         #region Operator tests
         [Fact]
-        public async Task CSharpEqualityOperatorWithExceptions()
+        public async Task CSharpEqualityOperatorWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -601,7 +601,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicEqualityOperatorWithExceptions()
+        public async Task BasicEqualityOperatorWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -622,7 +622,69 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpImplicitOperatorWithExceptions()
+        [WorkItem(5021, "https://github.com/dotnet/roslyn-analyzers/issues/5021")]
+        public async Task CSharpComparisonOperatorWithExceptionsAsync()
+        {
+            var code = @"
+using System;
+
+public class C
+{
+    public static bool operator <=(C left, C right)
+    {
+        {|#0:throw new Exception();|}
+    }
+    public static bool operator >=(C left, C right)
+    {
+        {|#1:throw new Exception();|}
+    }
+    public static bool operator <(C left, C right)
+    {
+        {|#2:throw new Exception();|}
+    }
+    public static bool operator >(C left, C right)
+    {
+        {|#3:throw new Exception();|}
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(
+                code,
+                GetCSharpNoExceptionsResultAt(0, "op_LessThanOrEqual", "Exception"),
+                GetCSharpNoExceptionsResultAt(1, "op_GreaterThanOrEqual", "Exception"),
+                GetCSharpNoExceptionsResultAt(2, "op_LessThan", "Exception"),
+                GetCSharpNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicComparisonOperatorWithExceptionsAsync()
+        {
+            var code = @"
+Imports System
+
+Public Class C
+    Public Shared Operator <=(left As C, right As C) As Boolean
+        {|#0:Throw New Exception()|}
+    End Operator
+    Public Shared Operator >=(left As C, right As C) As Boolean
+        {|#1:Throw New Exception()|}
+    End Operator
+    Public Shared Operator <(left As C, right As C) As Boolean
+        {|#2:Throw New Exception()|}
+    End Operator
+    Public Shared Operator >(left As C, right As C) As Boolean
+        {|#3:Throw New Exception()|}
+    End Operator
+End Class";
+            await VerifyVB.VerifyAnalyzerAsync(
+                code,
+                GetBasicNoExceptionsResultAt(0, "op_LessThanOrEqual", "Exception"),
+                GetBasicNoExceptionsResultAt(1, "op_GreaterThanOrEqual", "Exception"),
+                GetBasicNoExceptionsResultAt(2, "op_LessThan", "Exception"),
+                GetBasicNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
+        }
+
+        [Fact]
+        public async Task CSharpImplicitOperatorWithExceptionsAsync()
         {
             var code = @"
 using System;
@@ -645,7 +707,7 @@ public class C
         }
 
         [Fact]
-        public async Task BasicImplicitOperatorWithExceptions()
+        public async Task BasicImplicitOperatorWithExceptionsAsync()
         {
             var code = @"
 Imports System
@@ -677,6 +739,12 @@ End Class
         {
             return GetCSharpResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
         }
+        private static DiagnosticResult GetCSharpNoExceptionsResultAt(int markupKey, string methodName, string exceptionName)
+        {
+            return VerifyCS.Diagnostic(DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule)
+                .WithLocation(markupKey)
+                .WithArguments(methodName, exceptionName);
+        }
 
         private static DiagnosticResult GetBasicPropertyResultAt(int line, int column, string methodName, string exceptionName)
         {
@@ -689,6 +757,12 @@ End Class
         private static DiagnosticResult GetBasicNoExceptionsResultAt(int line, int column, string methodName, string exceptionName)
         {
             return GetBasicResultAt(line, column, DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule, methodName, exceptionName);
+        }
+        private static DiagnosticResult GetBasicNoExceptionsResultAt(int markupKey, string methodName, string exceptionName)
+        {
+            return VerifyVB.Diagnostic(DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer.NoAllowedExceptionsRule)
+                .WithLocation(markupKey)
+                .WithArguments(methodName, exceptionName);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

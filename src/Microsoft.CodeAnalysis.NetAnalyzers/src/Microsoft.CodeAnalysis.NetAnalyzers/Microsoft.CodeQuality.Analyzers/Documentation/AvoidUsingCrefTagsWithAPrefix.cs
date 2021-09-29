@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.Documentation
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1200: Avoid using cref tags with a prefix
     /// </summary>
@@ -14,21 +16,17 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation
     {
         internal const string RuleId = "CA1200";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUsingCrefTagsWithAPrefixTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(AvoidUsingCrefTagsWithAPrefixTitle)),
+            CreateLocalizableResourceString(nameof(AvoidUsingCrefTagsWithAPrefixMessage)),
+            DiagnosticCategory.Documentation,
+            RuleLevel.IdeHidden_BulkConfigurable,      // False positives would occur in multitargeting scenarios.
+            description: CreateLocalizableResourceString(nameof(AvoidUsingCrefTagsWithAPrefixDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUsingCrefTagsWithAPrefixMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidUsingCrefTagsWithAPrefixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Documentation,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,      // False positives would occur in multitargeting scenarios.
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         protected static void ProcessAttribute(SyntaxNodeAnalysisContext context, SyntaxTokenList textTokens)
         {

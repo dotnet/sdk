@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
     public class DoNotCatchCorruptedStateExceptionsTests
     {
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithSecurityCriticalAttribute()
+        public async Task CA2153TestCatchExceptionInMethodWithSecurityCriticalAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -77,7 +77,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAttribute()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAttributeAsync()
         {
             // Note this is a change from FxCop's previous behavior since we no longer consider SystemCritical.
 
@@ -147,7 +147,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchRethrowExceptionInMethodWithHpcseAndSecurityCriticalAttributes()
+        public async Task CA2153TestCatchRethrowExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -218,7 +218,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalAttributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -315,7 +315,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchInMethodWithHpcseAndSecurityCriticalAttributes()
+        public async Task CA2153TestCatchInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -389,7 +389,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchsystemExceptionInMethodWithHpcseAndSecurityCriticalAttributes()
+        public async Task CA2153TestCatchsystemExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -463,7 +463,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchWithFilterInMethodWithHpcseAttribute()
+        public async Task CA2153TestCatchWithFilterInMethodWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -509,7 +509,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchVariableWithFilterInMethodWithHpcseAttribute()
+        public async Task CA2153TestCatchVariableWithFilterInMethodWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -553,7 +553,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeEverythingAttributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -605,7 +605,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassAttributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -636,7 +636,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeExcplicitAttributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeExcplicitAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -667,7 +667,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL1Attributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL1AttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -699,7 +699,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL2Attributes()
+        public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL2AttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -731,7 +731,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInNestedClassMethodWithOuterHpcseAndSecurityCriticalScopeEverythingAttributes()
+        public async Task CA2153TestCatchExceptionInNestedClassMethodWithOuterHpcseAndSecurityCriticalScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -765,7 +765,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInNestedClassMethodWithInnerHpcseAndSecurityCriticalScopeEverythingAttributes()
+        public async Task CA2153TestCatchExceptionInNestedClassMethodWithInnerHpcseAndSecurityCriticalScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -799,7 +799,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInNestedClassMethodwithInnerHpcseAndOuterSecurityCriticalAttributes()
+        public async Task CA2153TestCatchExceptionInNestedClassMethodwithInnerHpcseAndOuterSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -833,7 +833,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInGetAccessorWithHpcseAttribute()
+        public async Task CA2153TestCatchExceptionInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -897,7 +897,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchInGetAccessorWithHpcseAttribute()
+        public async Task CA2153TestCatchInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -936,7 +936,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchSystemExceptionInGetAccessorWithHpcseAttribute()
+        public async Task CA2153TestCatchSystemExceptionInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -975,7 +975,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchInSetAccessorWithHpcseAttribute()
+        public async Task CA2153TestCatchInSetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1013,7 +1013,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInSetAccessorWithHpcseAttribute()
+        public async Task CA2153TestCatchExceptionInSetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1078,7 +1078,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchIOExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestCatchIOExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1115,7 +1115,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchIOExceptionSwallowOtherExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestCatchIOExceptionSwallowOtherExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1152,7 +1152,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestSwallowAccessViolationExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestSwallowAccessViolationExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1187,7 +1187,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestSwallowAccessViolationExceptionThenSwallowOtherExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestSwallowAccessViolationExceptionThenSwallowOtherExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1227,7 +1227,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionThrowNotImplementedExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestCatchExceptionThrowNotImplementedExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1300,7 +1300,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchExceptionInnerCatchThrowIOExceptionInMethodHpcseAttribute()
+        public async Task CA2153TestCatchExceptionInnerCatchThrowIOExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1395,7 +1395,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchGeneralException()
+        public async Task CA2153TestCatchGeneralExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -1463,7 +1463,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         }
 
         [Fact]
-        public async Task CA2153TestCatchInsideLambdaExpression()
+        public async Task CA2153TestCatchInsideLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UriPropertiesShouldNotBeStringsTests
     {
         [Fact]
-        public async Task CA1056NoWarningWithUrl()
+        public async Task CA1056NoWarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056NoWarningWithUrlNotStringType()
+        public async Task CA1056NoWarningWithUrlNotStringTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056WarningWithUrl()
+        public async Task CA1056WarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056NoWarningWithNoUrl()
+        public async Task CA1056NoWarningWithNoUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -68,7 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056NoWarningNotPublic()
+        public async Task CA1056NoWarningNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056NoWarningDerivedFromAttribute()
+        public async Task CA1056NoWarningDerivedFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -96,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056NoWarningOverride()
+        public async Task CA1056NoWarningOverrideAsync()
         {
             // warning is from base type not overriden one
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -115,7 +115,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CA1056WarningVB()
+        public async Task CA1056WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -132,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
-        public async Task DoNotReportOnInterfaceImplementation()
+        public async Task DoNotReportOnInterfaceImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface IPath

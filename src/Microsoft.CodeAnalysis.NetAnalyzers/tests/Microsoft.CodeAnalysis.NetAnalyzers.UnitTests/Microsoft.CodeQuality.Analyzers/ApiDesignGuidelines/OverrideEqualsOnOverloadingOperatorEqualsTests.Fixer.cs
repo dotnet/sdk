@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OverrideEqualsOnOverloadingOperatorEqualsFixerTests
     {
         [Fact]
-        public async Task CS0660()
+        public async Task CS0660Async()
         {
             await new VerifyCS.Test
             {
@@ -73,7 +73,7 @@ class {|CS0659:{|CS0661:C|}|}
         }
 
         [Fact]
-        public async Task CS0660_Simplified()
+        public async Task CS0660_SimplifiedAsync()
         {
             await new VerifyCS.Test
             {
@@ -135,7 +135,7 @@ class {|CS0659:{|CS0661:C|}|}
         }
 
         [Fact]
-        public async Task CA2224()
+        public async Task CA2224Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Class [|C|]
@@ -174,7 +174,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA2224_Simplified()
+        public async Task CA2224_SimplifiedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

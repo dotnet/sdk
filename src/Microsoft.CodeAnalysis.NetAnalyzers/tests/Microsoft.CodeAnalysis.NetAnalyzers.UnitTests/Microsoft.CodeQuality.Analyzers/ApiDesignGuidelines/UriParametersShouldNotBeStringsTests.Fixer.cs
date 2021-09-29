@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class UriParametersShouldNotBeStringsFixerTests
     {
         [Fact]
-        public async Task CA1054WarningWithUrl()
+        public async Task CA1054WarningWithUrlAsync()
         {
             var code = @"
 using System;
@@ -43,7 +43,7 @@ public class A
         }
 
         [Fact]
-        public async Task CA1054MultipleWarningWithUrl()
+        public async Task CA1054MultipleWarningWithUrlAsync()
         {
             var code = @"
 using System;
@@ -87,7 +87,7 @@ public class A
         }
 
         [Fact]
-        public async Task CA1054MultipleWarningWithUrlWithOverload()
+        public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
             var code = @"
@@ -128,7 +128,7 @@ public class A
         }
 
         [Fact]
-        public async Task CA1054WarningVB()
+        public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
             var code = @"

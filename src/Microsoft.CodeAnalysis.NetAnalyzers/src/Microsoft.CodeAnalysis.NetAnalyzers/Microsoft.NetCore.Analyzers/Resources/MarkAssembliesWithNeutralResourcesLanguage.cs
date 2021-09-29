@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Resources
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1824: Mark assemblies with NeutralResourcesLanguageAttribute
     /// </summary>
@@ -23,24 +25,20 @@ namespace Microsoft.NetCore.Analyzers.Resources
         protected const string StronglyTypedResourceBuilder = "StronglyTypedResourceBuilder";
         private const string Designer = ".Designer.";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageTitle)),
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageMessage)),
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAssembliesWithNeutralResourcesLanguageDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode);
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Performance,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false,
-                                                                             isReportedAtCompilationEnd: true);
-
-        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -51,13 +49,29 @@ namespace Microsoft.NetCore.Analyzers.Resources
             // any diagnostics from it.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze);
 
-            context.RegisterCompilationStartAction(cc =>
+            context.RegisterCompilationStartAction(context =>
             {
+                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute, out var generatedCode))
+                {
+                    return;
+                }
+
+                INamedTypeSymbol? attribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
+                if (attribute is null)
+                {
+                    return;
+                }
+
+                if (TryCheckNeutralResourcesLanguageAttribute(context.Compilation, attribute, out var data))
+                {
+                    // attribute already exist
+                    return;
+                }
+
                 var hasResource = false;
+                RegisterAttributeAnalyzer(context, () => hasResource = true, generatedCode);
 
-                RegisterAttributeAnalyzer(cc, () => hasResource = true);
-
-                cc.RegisterCompilationEndAction(ce =>
+                context.RegisterCompilationEndAction(context =>
                 {
                     // there is nothing to do.
                     if (!hasResource)
@@ -65,21 +79,15 @@ namespace Microsoft.NetCore.Analyzers.Resources
                         return;
                     }
 
-                    if (TryCheckNeutralResourcesLanguageAttribute(ce, out AttributeData data))
-                    {
-                        // attribute already exist
-                        return;
-                    }
-
                     if (data != null)
                     {
                         // we have the attribute but its doing it wrong.
-                        ce.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(ce.CancellationToken).CreateDiagnostic(Rule));
+                        context.ReportDiagnostic(data.ApplicationSyntaxReference.GetSyntax(context.CancellationToken).CreateDiagnostic(Rule));
                         return;
                     }
 
                     // attribute just don't exist
-                    ce.ReportNoLocationDiagnostic(Rule);
+                    context.ReportNoLocationDiagnostic(Rule);
                 });
             });
         }
@@ -89,14 +97,13 @@ namespace Microsoft.NetCore.Analyzers.Resources
             return tree.FilePath?.IndexOf(Designer, StringComparison.OrdinalIgnoreCase) > 0;
         }
 
-        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode argument, CancellationToken cancellationToken)
+        protected static bool CheckResxGeneratedFile(SemanticModel model, SyntaxNode attribute, SyntaxNode argument, INamedTypeSymbol generatedCode, CancellationToken cancellationToken)
         {
             if (!CheckDesignerFile(model.SyntaxTree))
             {
                 return false;
             }
 
-            INamedTypeSymbol? generatedCode = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCodeDomCompilerGeneratedCodeAttribute);
             if (model.GetSymbolInfo(attribute, cancellationToken).Symbol?.ContainingType?.Equals(generatedCode) != true)
             {
                 return false;
@@ -121,15 +128,12 @@ namespace Microsoft.NetCore.Analyzers.Resources
             return true;
         }
 
-        private static bool TryCheckNeutralResourcesLanguageAttribute(CompilationAnalysisContext context, out AttributeData attributeData)
+        private static bool TryCheckNeutralResourcesLanguageAttribute(Compilation compilation, INamedTypeSymbol attribute, out AttributeData? attributeData)
         {
-            INamedTypeSymbol? attribute = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemResourcesNeutralResourcesLanguageAttribute);
-            INamedTypeSymbol? @string = context.Compilation.GetSpecialType(SpecialType.System_String);
-
-            IEnumerable<AttributeData> attributes = context.Compilation.Assembly.GetAttributes().Where(d => d.AttributeClass?.Equals(attribute) == true);
+            IEnumerable<AttributeData> attributes = compilation.Assembly.GetAttributes().Where(d => SymbolEqualityComparer.Default.Equals(attribute, d.AttributeClass));
             foreach (AttributeData data in attributes)
             {
-                if (data.ConstructorArguments.Any(c => c.Type?.Equals(@string) == true && !string.IsNullOrWhiteSpace((string)c.Value)))
+                if (data.ConstructorArguments.Any(c => c.Value is string constantValue && !string.IsNullOrWhiteSpace(constantValue)))
                 {
                     // found one that already does right thing.
                     attributeData = data;

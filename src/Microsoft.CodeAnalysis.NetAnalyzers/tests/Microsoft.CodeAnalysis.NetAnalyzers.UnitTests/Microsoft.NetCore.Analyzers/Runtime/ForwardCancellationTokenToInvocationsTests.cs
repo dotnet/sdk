@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region No Diagnostic - C#
 
         [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_AsyncNoToken()
+        public Task CS_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -35,7 +35,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_SyncNoToken()
+        public Task CS_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -50,7 +50,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_TokenDefault()
+        public Task CS_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -67,7 +67,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_NoToken()
+        public Task CS_NoDiagnostic_NoTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -84,7 +84,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_OverloadArgumentsDontMatch()
+        public Task CS_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -102,7 +102,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_Overload_AlreadyPassingToken()
+        public Task CS_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -120,7 +120,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_Default_AlreadyPassingToken()
+        public Task CS_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -136,7 +136,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_PassingTokenFromSource()
+        public Task CS_NoDiagnostic_PassingTokenFromSourceAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -155,7 +155,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitDefault()
+        public Task CS_NoDiagnostic_PassingExplicitDefaultAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -173,7 +173,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitDefaultCancellationToken()
+        public Task CS_NoDiagnostic_PassingExplicitDefaultCancellationTokenAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -191,7 +191,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitCancellationTokenNone()
+        public Task CS_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -209,7 +209,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_OverloadTokenNotLastParameter()
+        public Task CS_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -227,7 +227,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_OverloadWithMultipleTokens()
+        public Task CS_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -245,7 +245,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_OverloadWithMultipleTokensSeparated()
+        public Task CS_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -263,7 +263,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_NamedTokenUnordered()
+        public Task CS_NoDiagnostic_NamedTokenUnorderedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -280,7 +280,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_Overload_NamedTokenUnordered()
+        public Task CS_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -298,7 +298,7 @@ class C
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_CancellationTokenSource_ParamsUsed_Order()
+        public Task CS_NoDiagnostic_CancellationTokenSource_ParamsUsed_OrderAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -330,7 +330,7 @@ class CTS
         }
 
         [Fact]
-        public Task CS_NoDiagnostic_ExtensionMethodTakesToken()
+        public Task CS_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
             string originalCode = @"
@@ -358,7 +358,7 @@ public static class Extensions
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_ParametersDifferMoreThanOne()
+        public Task CS_NoDiagnostic_ParametersDifferMoreThanOneAsync()
         {
             return CS8VerifyAnalyzerAsync(@"
 using System;
@@ -379,7 +379,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambda()
+        public Task CS_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
@@ -407,7 +407,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegate()
+        public Task CS_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
@@ -436,7 +436,7 @@ class C
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_NoDiagnostic_ReturnTypesDiffer()
+        public Task CS_NoDiagnostic_ReturnTypesDifferAsync()
         {
             return VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -462,7 +462,7 @@ class P
         #region Diagnostics with no fix = C#
 
         [Fact]
-        public Task CS_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnordered()
+        public Task CS_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
             // because the fixer does not currently have a way to know the overload's ct parameter name
@@ -485,7 +485,7 @@ class C
         }
 
         [Fact]
-        public Task CS_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmpty()
+        public Task CS_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -515,7 +515,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_AnalyzerOnlyDiagnostic_StaticLocalMethod()
+        public Task CS_AnalyzerOnlyDiagnostic_StaticLocalMethodAsync()
         {
             // Local static functions are available in C# >= 8.0
             // The user should fix convert the static local method into a non-static local method,
@@ -541,7 +541,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_AnalyzerOnlyDiagnostic_LocalMethod_InsideOf_StaticLocalMethod_TokenInTopParent()
+        public Task CS_AnalyzerOnlyDiagnostic_LocalMethod_InsideOf_StaticLocalMethod_TokenInTopParentAsync()
         {
             // Local static functions are available in C# >= 8.0
             // The user should fix convert the static local method into a non-static local method,
@@ -574,7 +574,7 @@ class C
         #region Diagnostics with fix = C#
 
         [Fact]
-        public Task CS_Diagnostic_Class_TokenDefault()
+        public Task CS_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -602,7 +602,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Class_TokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -632,7 +632,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_NoAwait()
+        public Task CS_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -662,7 +662,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_SaveTask()
+        public Task CS_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -692,7 +692,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_ClassStaticMethod_TokenDefault()
+        public Task CS_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -722,7 +722,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -752,7 +752,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OtherClass_TokenDefault()
+        public Task CS_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -788,7 +788,7 @@ class O
         }
 
         [Fact]
-        public Task CS_Diagnostic_OtherClass_TokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -828,7 +828,7 @@ class O
         }
 
         [Fact]
-        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault()
+        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             // The invocation for a static method includes the type and the dot
             string originalCode = @"
@@ -865,7 +865,7 @@ class O
         }
 
         [Fact]
-        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             // The invocation for a static method includes the type and the dot
             string originalCode = @"
@@ -904,7 +904,7 @@ class O
         }
 
         [Fact]
-        public Task CS_Diagnostic_Struct_TokenDefault()
+        public Task CS_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -934,7 +934,7 @@ struct S
         }
 
         [Fact]
-        public Task CS_Diagnostic_Struct_TokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -964,7 +964,7 @@ struct S
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadToken()
+        public Task CS_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -996,7 +996,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadToken_WithConfigureAwait()
+        public Task CS_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1028,7 +1028,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadTokenDefault()
+        public Task CS_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1060,7 +1060,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadTokenDefault_WithConfigureAwait()
+        public Task CS_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1092,7 +1092,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadsArgumentsMatch()
+        public Task CS_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1128,7 +1128,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwait()
+        public Task CS_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1164,7 +1164,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_ActionDelegateAwait()
+        public Task CS_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1200,7 +1200,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_ActionDelegateNoAwait()
+        public Task CS_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1236,7 +1236,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_ActionDelegateAwait_WithConfigureAwait()
+        public Task CS_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1272,7 +1272,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwait()
+        public Task CS_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1316,7 +1316,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwait_WithConfigureAwait()
+        public Task CS_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1360,7 +1360,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwaitOutside()
+        public Task CS_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
 using System;
@@ -1396,7 +1396,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwait()
+        public Task CS_Diagnostic_NestedFunctionAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1438,7 +1438,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_NestedFunctionNoAwait()
+        public Task CS_Diagnostic_NestedFunctionNoAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1480,7 +1480,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwaitOutside()
+        public Task CS_Diagnostic_NestedFunctionAwaitOutsideAsync()
         {
             string originalCode = @"
 using System;
@@ -1522,7 +1522,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwait_WithConfigureAwait()
+        public Task CS_Diagnostic_NestedFunctionAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1564,7 +1564,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_AliasTokenInDefault()
+        public Task CS_Diagnostic_AliasTokenInDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1596,7 +1596,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_AliasTokenInOverload()
+        public Task CS_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1630,7 +1630,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_AliasTokenInMethodParameter()
+        public Task CS_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1662,7 +1662,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Overload_AliasTokenInMethodParameter()
+        public Task CS_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1696,7 +1696,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_AliasTokenInDefaultAndMethodParameter()
+        public Task CS_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1728,7 +1728,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameter()
+        public Task CS_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1762,7 +1762,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithAllDefaultParametersImplicit()
+        public Task CS_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1798,7 +1798,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithSomeDefaultParameters()
+        public Task CS_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1828,7 +1828,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithNamedParameters()
+        public Task CS_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1858,7 +1858,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithAncestorAliasAndNamedParameters()
+        public Task CS_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1890,7 +1890,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithMethodArgumentAliasAndNamedParameters()
+        public Task CS_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1922,7 +1922,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_Default_WithNamedParametersUnordered()
+        public Task CS_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1951,7 +1951,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_WithLock()
+        public Task CS_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1991,7 +1991,7 @@ class C
         }
 
         [Fact]
-        public Task CS_Diagnostic_DereferencePossibleNullReference()
+        public Task CS_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
 #nullable enable
@@ -2038,7 +2038,7 @@ class O
         }
 
         [Fact]
-        public Task CS_Diagnostic_WithTrivia()
+        public Task CS_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -2105,7 +2105,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_MultiNesting_TopMethod()
+        public Task CS_Diagnostic_MultiNesting_TopMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2154,7 +2154,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_MultiNesting_LocalMethod()
+        public Task CS_Diagnostic_MultiNesting_LocalMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2203,7 +2203,7 @@ class C
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_LocalMethod_InsideOf_StaticLocalMethodPassingToken()
+        public Task CS_Diagnostic_LocalMethod_InsideOf_StaticLocalMethodPassingTokenAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2250,8 +2250,158 @@ class C
         }
 
         [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+public class SqlDataReader
+{
+    public Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+}
+class C
+{
+    public async Task<Guid> M(SqlDataReader r, CancellationToken c)
+    {
+        return await [|r.GetFieldValueAsync<Guid>|](0);
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+public class SqlDataReader
+{
+    public Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+}
+class C
+{
+    public async Task<Guid> M(SqlDataReader r, CancellationToken c)
+    {
+        return await r.GetFieldValueAsync<Guid>(0, c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_GenericTypeParamOnStaticMethodAsync()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public static Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+    public async Task<Guid> M(CancellationToken c)
+    {
+        return await [|GetFieldValueAsync<Guid>|](0);
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    public static Task<T> GetFieldValueAsync<T>(int i, CancellationToken c = default) => Task.FromResult(default(T));
+    public async Task<Guid> M(CancellationToken c)
+    {
+        return await GetFieldValueAsync<Guid>(0, c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_NullCoalescedDelegatesAsync()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2)|]();
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2)|](c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task CS_Diagnostic_NullCoalescedDelegatesWithInvokeAsync()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await [|(f1 ?? f2).Invoke|]();
+    }
+}
+            ";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class C
+{
+    delegate Task F(CancellationToken c = default);
+    static Task DoF(CancellationToken c = default) => Task.CompletedTask;
+    public async Task M(CancellationToken c)
+    {
+        F f1 = null;
+        F f2 = DoF;
+        await (f1 ?? f2).Invoke(c);
+    }
+}
+            ";
+            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_Diagnostic_ReturnTypeIsConvertable()
+        public Task CS_Diagnostic_ReturnTypeIsConvertableAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2291,7 +2441,7 @@ class P
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_SpecialCaseTaskLikeReturnTypes()
+        public Task CS_SpecialCaseTaskLikeReturnTypesAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2329,12 +2479,53 @@ class P
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
+        [Fact]
+        [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
+        public Task CS_ParamsArrayAsync()
+        {
+            string originalCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C{
+  public ValueTask<object> FindAsync(params object[] keyValues) => throw new NotImplementedException();
+  public ValueTask<object> FindAsync(object[] keyValues, CancellationToken cancellationToken) => throw new NotImplementedException();
+}
+
+public class B {
+    async Task M(string[] args, CancellationToken token)
+    {
+        var c = new C();
+        var result = await [|c.FindAsync|](5);
+    }
+}";
+            string fixedCode = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+public class C{
+  public ValueTask<object> FindAsync(params object[] keyValues) => throw new NotImplementedException();
+  public ValueTask<object> FindAsync(object[] keyValues, CancellationToken cancellationToken) => throw new NotImplementedException();
+}
+
+public class B {
+    async Task M(string[] args, CancellationToken token)
+    {
+        var c = new C();
+        var result = await c.FindAsync(new object[] { 5 }, cancellationToken: token);
+    }
+}";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
         #endregion
 
         #region No Diagnostic - VB
 
         [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_AsyncNoToken()
+        public Task VB_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2351,7 +2542,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_SyncNoToken()
+        public Task VB_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -2365,7 +2556,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_TokenDefault()
+        public Task VB_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2382,7 +2573,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_NoToken()
+        public Task VB_NoDiagnostic_NoTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2399,7 +2590,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_OverloadArgumentsDontMatch()
+        public Task VB_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2419,7 +2610,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_Overload_AlreadyPassingToken()
+        public Task VB_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2439,7 +2630,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_Default_AlreadyPassingToken()
+        public Task VB_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2454,7 +2645,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_PassingTokenFromSource()
+        public Task VB_NoDiagnostic_PassingTokenFromSourceAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2477,7 +2668,7 @@ End Class
         // There is no default keyword in VB, must use Nothing instead.
         // The following test method covers the two cases for: `default` and `default(CancellationToken)`
         [Fact]
-        public Task VB_NoDiagnostic_PassingExplicitNothing()
+        public Task VB_NoDiagnostic_PassingExplicitNothingAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2497,7 +2688,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_PassingExplicitCancellationTokenNone()
+        public Task VB_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2517,7 +2708,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_OverloadTokenNotLastParameter()
+        public Task VB_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2537,7 +2728,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_OverloadWithMultipleTokens()
+        public Task VB_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2557,7 +2748,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_OverloadWithMultipleTokensSeparated()
+        public Task VB_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2577,7 +2768,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_NamedTokenUnordered()
+        public Task VB_NoDiagnostic_NamedTokenUnorderedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2594,7 +2785,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_Overload_NamedTokenUnordered()
+        public Task VB_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
@@ -2614,7 +2805,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_CancellationTokenSource_ParamsUsed()
+        public Task VB_NoDiagnostic_CancellationTokenSource_ParamsUsedAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -2641,7 +2832,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_NoDiagnostic_ExtensionMethodTakesToken()
+        public Task VB_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
             string originalCode = @"
@@ -2669,7 +2860,7 @@ End Module
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambda()
+        public Task VB_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
@@ -2702,7 +2893,7 @@ End Class
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegate()
+        public Task VB_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
@@ -2732,7 +2923,7 @@ End Class
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_NoDiagnostic_ReturnTypesDiffer()
+        public Task VB_NoDiagnostic_ReturnTypesDifferAsync()
         {
             return VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -2760,7 +2951,7 @@ End Module
         #region Diagnostics with no fix = VB
 
         [Fact]
-        public Task VB_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnordered()
+        public Task VB_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
             // because the fixer does not currently have a way to know the overload's ct parameter name
@@ -2786,7 +2977,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmpty()
+        public Task VB_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -2818,7 +3009,7 @@ End Class
         #region Diagnostics with fix = VB
 
         [Fact]
-        public Task VB_Diagnostic_Class_TokenDefault()
+        public Task VB_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2846,7 +3037,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Class_TokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2876,7 +3067,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_NoAwait()
+        public Task VB_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2906,7 +3097,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_SaveTask()
+        public Task VB_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2938,7 +3129,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_ClassStaticMethod_TokenDefault()
+        public Task VB_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2968,7 +3159,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -2998,7 +3189,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OtherClass_TokenDefault()
+        public Task VB_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3032,7 +3223,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OtherClass_TokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3074,7 +3265,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault()
+        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3108,7 +3299,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3150,7 +3341,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Struct_TokenDefault()
+        public Task VB_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3180,7 +3371,7 @@ End Structure
         }
 
         [Fact]
-        public Task VB_Diagnostic_Struct_TokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3210,7 +3401,7 @@ End Structure
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadToken()
+        public Task VB_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3246,7 +3437,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadToken_WithConfigureAwait()
+        public Task VB_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3282,7 +3473,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadTokenDefault()
+        public Task VB_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3318,7 +3509,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadTokenDefault_WithConfigureAwait()
+        public Task VB_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3354,7 +3545,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadsArgumentsMatch()
+        public Task VB_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3402,7 +3593,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwait()
+        public Task VB_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3450,7 +3641,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_ActionDelegateAwait()
+        public Task VB_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3490,7 +3681,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_ActionDelegateNoAwait()
+        public Task VB_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3530,7 +3721,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_ActionDelegateAwait_WithConfigureAwait()
+        public Task VB_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3570,7 +3761,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwait()
+        public Task VB_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3616,7 +3807,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_FuncDelegateNoAwait()
+        public Task VB_Diagnostic_FuncDelegateNoAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3662,7 +3853,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwaitOutside()
+        public Task VB_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
 Imports System
@@ -3702,7 +3893,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwait_WithConfigureAwait()
+        public Task VB_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3754,7 +3945,7 @@ End Class
         // VB_Diagnostic_NestedFunctionAwait_WithConfigureAwait
 
         [Fact]
-        public Task VB_Diagnostic_AliasTokenInOverload()
+        public Task VB_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3792,7 +3983,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_AliasTokenInMethodParameter()
+        public Task VB_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3824,7 +4015,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Overload_AliasTokenInMethodParameter()
+        public Task VB_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3862,7 +4053,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_AliasTokenInDefaultAndMethodParameter()
+        public Task VB_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3894,7 +4085,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameter()
+        public Task VB_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3932,7 +4123,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithAllDefaultParametersImplicit()
+        public Task VB_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3962,7 +4153,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithSomeDefaultParameters()
+        public Task VB_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3992,7 +4183,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithNamedParameters()
+        public Task VB_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4022,7 +4213,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithAncestorAliasAndNamedParameters()
+        public Task VB_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4054,7 +4245,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithMethodArgumentAliasAndNamedParameters()
+        public Task VB_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4086,7 +4277,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_Default_WithNamedParametersUnordered()
+        public Task VB_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4115,7 +4306,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_WithLock()
+        public Task VB_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4153,7 +4344,7 @@ End Class
         }
 
         [Fact]
-        public Task VB_Diagnostic_DereferencePossibleNullReference()
+        public Task VB_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4194,7 +4385,7 @@ End Structure
         }
 
         [Fact]
-        public Task VB_Diagnostic_WithTrivia()
+        public Task VB_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4285,7 +4476,7 @@ End Class
 
         [Fact]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_Diagnostic_MultiNesting_TopMethod()
+        public Task VB_Diagnostic_MultiNesting_TopMethodAsync()
         {
             // Local methods do not exist in VB, it's the only difference with the CS mirror test
             string originalCode = $@"
@@ -4326,8 +4517,78 @@ End Class
         }
 
         [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task VB_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Public Class SqlDataReader
+    Public Function GetFieldValueAsync(Of T)(ByVal i As Integer, ByVal Optional c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+End Class
+Class C
+    Public Async Function M(ByVal r As SqlDataReader, ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await r.[|GetFieldValueAsync(Of Guid)|](0)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Public Class SqlDataReader
+    Public Function GetFieldValueAsync(Of T)(ByVal i As Integer, ByVal Optional c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+End Class
+Class C
+    Public Async Function M(ByVal r As SqlDataReader, ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await r.GetFieldValueAsync(Of Guid)(0, c)
+    End Function
+End Class
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
+        public Task VB_Diagnostic_GenericTypeParamOnStaticMethodAsync()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Shared Function GetFieldValueAsync(Of T)(ByVal i As Integer, Optional ByVal c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+    Public Async Function M(ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await [|GetFieldValueAsync(Of Guid)|](0)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+Class C
+    Public Shared Function GetFieldValueAsync(Of T)(ByVal i As Integer, Optional ByVal c As CancellationToken = Nothing) As Task(Of T)
+        Return Task.CompletedTask
+    End Function
+    Public Async Function M(ByVal c As CancellationToken) As Task(Of Guid)
+        Return Await GetFieldValueAsync(Of Guid)(0, c)
+    End Function
+End Class
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_Diagnostic_ReturnTypeIsConvertable()
+        public Task VB_Diagnostic_ReturnTypeIsConvertableAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -4373,7 +4634,7 @@ End Module
 
         [Fact]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_SpecialCaseTaskLikeReturnTypes()
+        public Task VB_SpecialCaseTaskLikeReturnTypesAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -4413,6 +4674,53 @@ Module Program
         Throw New NotImplementedException
     End Function
 End Module
+";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [Fact]
+        [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
+        public Task VB_ParamsArrayAsync()
+        {
+            string originalCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function FindAsync(ParamArray keyValues() As Object) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function FindAsync(keyValues() As Object, cancellationToken As CancellationToken) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Async Function M(args As String(), cancellationToken As CancellationToken) As Task
+        Dim c = New C()
+        Dim result = Await c.[|FindAsync|](5)
+    End Function
+End Class
+";
+            string fixedCode = @"
+Imports System
+Imports System.Threading
+Imports System.Threading.Tasks
+
+Public Class C
+    Public Function FindAsync(ParamArray keyValues() As Object) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Public Function FindAsync(keyValues() As Object, cancellationToken As CancellationToken) As Task(Of Object)
+        Throw New NotImplementedException()
+    End Function
+
+    Async Function M(args As String(), cancellationToken As CancellationToken) As Task
+        Dim c = New C()
+        Dim result = Await c.FindAsync(New Object() {5}, cancellationToken:=cancellationToken)
+    End Function
+End Class
 ";
             return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }

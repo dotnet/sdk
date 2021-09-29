@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region C# tests
 
         [Fact]
-        public async Task AddAlternateMethod_CSharp()
+        public async Task AddAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -39,7 +39,7 @@ public class C
         }
 
         [Fact]
-        public async Task AddAlternateOfMultiples_CSharp()
+        public async Task AddAlternateOfMultiples_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -62,7 +62,7 @@ public class C
         }
 
         [Fact]
-        public async Task AddAlternateProperty_CSharp()
+        public async Task AddAlternateProperty_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -90,7 +90,7 @@ public class C
         }
 
         [Fact]
-        public async Task AddAlternateForConversion_CSharp()
+        public async Task AddAlternateForConversion_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -113,7 +113,7 @@ public class C
         }
 
         [Fact]
-        public async Task AddAlternateForCompare_CSharp()
+        public async Task AddAlternateForCompare_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -141,7 +141,7 @@ public class C
         }
 
         [Fact]
-        public async Task AddAlternateForStructCompare_CSharp()
+        public async Task AddAlternateForStructCompare_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public struct C
@@ -164,7 +164,7 @@ public struct C
         }
 
         [Fact]
-        public async Task AddAlternateForIncrement_CSharp()
+        public async Task AddAlternateForIncrement_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -187,7 +187,7 @@ public class C
         }
 
         [Fact]
-        public async Task FixImproperMethodVisibility_CSharp()
+        public async Task FixImproperMethodVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -208,7 +208,7 @@ public class C
         }
 
         [Fact]
-        public async Task FixImproperPropertyVisibility_CSharp()
+        public async Task FixImproperPropertyVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -235,7 +235,7 @@ public class C
         #region VB tests
 
         [Fact]
-        public async Task AddAlternateMethod_Basic()
+        public async Task AddAlternateMethod_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -259,7 +259,7 @@ End Class
         }
 
         [Fact]
-        public async Task AddAlternateOfMultiples_Basic()
+        public async Task AddAlternateOfMultiples_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -283,7 +283,7 @@ End Class
         }
 
         [Fact]
-        public async Task AddAlternateProperty_Basic()
+        public async Task AddAlternateProperty_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -315,7 +315,7 @@ End Class
         }
 
         [Fact]
-        public async Task AddAlternateForConversion_Basic()
+        public async Task AddAlternateForConversion_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -339,7 +339,7 @@ End Class
         }
 
         [Fact]
-        public async Task AddAlternateForCompare_Basic()
+        public async Task AddAlternateForCompare_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -367,7 +367,7 @@ End Class
         }
 
         [Fact]
-        public async Task AddAlternateForStructCompare_Basic()
+        public async Task AddAlternateForStructCompare_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Structure C
@@ -391,7 +391,7 @@ End Structure
         }
 
         [Fact]
-        public async Task FixImproperMethodVisibility_Basic()
+        public async Task FixImproperMethodVisibility_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -419,7 +419,7 @@ End Class
         }
 
         [Fact]
-        public async Task FixImproperPropertyVisibility_Basic()
+        public async Task FixImproperPropertyVisibility_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C

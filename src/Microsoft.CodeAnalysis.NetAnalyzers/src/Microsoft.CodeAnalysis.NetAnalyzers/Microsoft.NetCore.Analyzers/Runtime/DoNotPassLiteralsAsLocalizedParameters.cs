@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -19,6 +19,8 @@ using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1303: Do not pass literals as localized parameters
     /// A method passes a string literal as a parameter to a constructor or method in the .NET Framework class library and that string should be localizable.
@@ -32,20 +34,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1303";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotPassLiteralsAsLocalizedParametersTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotPassLiteralsAsLocalizedParametersMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotPassLiteralsAsLocalizedParametersDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DoNotPassLiteralsAsLocalizedParametersTitle)),
+            CreateLocalizableResourceString(nameof(DoNotPassLiteralsAsLocalizedParametersMessage)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(DoNotPassLiteralsAsLocalizedParametersDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: true);
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: true);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
@@ -57,7 +56,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.RegisterOperationBlockStartAction(operationBlockStartContext =>
             {
                 if (operationBlockStartContext.OwningSymbol is not IMethodSymbol containingMethod ||
-                    operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken))
+                    operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, containingMethod, operationBlockStartContext.Compilation))
                 {
                     return;
                 }
@@ -104,11 +103,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 // Local functions
                 bool ShouldAnalyze(ISymbol? symbol)
-                    => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation, operationBlockStartContext.CancellationToken);
+                    => symbol != null && !operationBlockStartContext.Options.IsConfiguredToSkipAnalysis(Rule, symbol, operationBlockStartContext.OwningSymbol, operationBlockStartContext.Compilation);
 
                 static bool GetUseNamingHeuristicOption(OperationAnalysisContext operationContext)
                     => operationContext.Options.GetBoolOptionValue(EditorConfigOptionNames.UseNamingHeuristic, Rule,
-                        operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false, operationContext.CancellationToken);
+                        operationContext.Operation.Syntax.SyntaxTree, operationContext.Compilation, defaultValue: false);
 
                 void AnalyzeArgument(IParameterSymbol parameter, IPropertySymbol? containingPropertySymbol, IOperation operation, Action<Diagnostic> reportDiagnostic, bool useNamingHeuristic)
                 {
@@ -165,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartContext.Compilation);
                         return ValueContentAnalysis.TryGetOrComputeResult(cfg, containingMethod, wellKnownTypeProvider,
-                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties, operationBlockStartContext.CancellationToken);
+                            operationBlockStartContext.Options, Rule, PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties);
                     }
 
                     return null;

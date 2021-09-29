@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -18,6 +18,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with <see cref="T:System.Web.Script.Serialization.JavaScriptSerializer"/>.
     /// </summary>
@@ -28,23 +30,24 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor DefinitelyWithSimpleTypeResolver =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2321",
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerWithSimpleTypeResolverMessage),
-                RuleLevel.Disabled,
-                isPortedFxCopRule: false,
-                isDataflowRule: true,
-                isReportedAtCompilationEnd: true);
-        internal static readonly DiagnosticDescriptor MaybeWithSimpleTypeResolver =
-            SecurityHelpers.CreateDiagnosticDescriptor(
-                "CA2322",
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JavaScriptSerializerMaybeWithSimpleTypeResolverMessage),
+                nameof(JavaScriptSerializerWithSimpleTypeResolverTitle),
+                nameof(JavaScriptSerializerWithSimpleTypeResolverMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: true,
                 isReportedAtCompilationEnd: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        internal static readonly DiagnosticDescriptor MaybeWithSimpleTypeResolver =
+            SecurityHelpers.CreateDiagnosticDescriptor(
+                "CA2322",
+                nameof(JavaScriptSerializerMaybeWithSimpleTypeResolverTitle),
+                nameof(JavaScriptSerializerMaybeWithSimpleTypeResolverMessage),
+                RuleLevel.Disabled,
+                isPortedFxCopRule: false,
+                isDataflowRule: true,
+                isReportedAtCompilationEnd: true);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(
                 DefinitelyWithSimpleTypeResolver,
                 MaybeWithSimpleTypeResolver);
@@ -156,9 +159,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 
                             // TODO: Handle case when exactly one of the below rules is configured to skip analysis.
                             if (operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(DefinitelyWithSimpleTypeResolver,
-                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken) &&
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation) &&
                                 operationBlockStartAnalysisContext.Options.IsConfiguredToSkipAnalysis(MaybeWithSimpleTypeResolver,
-                                    owningSymbol, operationBlockStartAnalysisContext.Compilation, operationBlockStartAnalysisContext.CancellationToken))
+                                    owningSymbol, operationBlockStartAnalysisContext.Compilation))
                             {
                                 return;
                             }
@@ -224,8 +227,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                                             SupportedDiagnostics,
                                             rootOperationsNeedingAnalysis.First().Operation,
                                             compilationAnalysisContext.Compilation,
-                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive,
-                                            cancellationToken: compilationAnalysisContext.CancellationToken));
+                                            defaultInterproceduralAnalysisKind: InterproceduralAnalysisKind.ContextSensitive));
                                 }
 
                                 if (allResults == null)

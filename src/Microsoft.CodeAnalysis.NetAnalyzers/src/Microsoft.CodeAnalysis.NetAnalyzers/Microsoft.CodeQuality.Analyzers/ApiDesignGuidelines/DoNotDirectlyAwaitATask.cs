@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2007: Do not directly await a Task in libraries. Append ConfigureAwait(false) to the task.
     /// </summary>
@@ -19,21 +21,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA2007";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotDirectlyAwaitATaskDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
         public static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskTitle)),
+            CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskMessage)),
             DiagnosticCategory.Reliability,
             RuleLevel.Disabled,
-            description: s_localizableDescription,
+            description: CreateLocalizableResourceString(nameof(DoNotDirectlyAwaitATaskDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -43,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCompilationStartAction(context =>
             {
                 if (context.Compilation.SyntaxTrees.FirstOrDefault() is not SyntaxTree tree ||
-                    !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation, context.CancellationToken).Contains(context.Compilation.Options.OutputKind))
+                    !context.Options.GetOutputKindsOption(Rule, tree, context.Compilation).Contains(context.Compilation.Options.OutputKind))
                 {
                     // Configured to skip analysis for the compilation's output kind
                     return;
@@ -67,8 +65,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                 rule: Rule,
                                 method,
                                 context.Compilation,
-                                defaultValue: false,
-                                cancellationToken: context.CancellationToken))
+                                defaultValue: false))
                         {
                             // Configured to skip this analysis in async void methods.
                             return;

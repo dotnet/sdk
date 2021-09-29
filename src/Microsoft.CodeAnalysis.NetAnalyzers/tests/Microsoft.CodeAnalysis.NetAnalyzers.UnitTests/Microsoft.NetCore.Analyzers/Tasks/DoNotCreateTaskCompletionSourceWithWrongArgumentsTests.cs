@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
     public class DoNotCreateTaskCompletionSourceWithWrongArgumentsTests
     {
         [Fact]
-        public async Task NoDiagnostics_CSharp()
+        public async Task NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading.Tasks;
@@ -55,11 +55,16 @@ class C
     }
     TaskCreationOptions MyProperty { get; set; }
 }
+
+class Derived : TaskCompletionSource<int>
+{
+    public Derived() : base(TaskCreationOptions.RunContinuationsAsynchronously) { }
+}
 ");
         }
 
         [Fact]
-        public async Task NoDiagnostics_Basic()
+        public async Task NoDiagnostics_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading.Tasks
@@ -89,11 +94,19 @@ Class T
 
     Private Property MyProperty As TaskCreationOptions
 End Class
+
+Class Derived
+    Inherits TaskCompletionSource(Of Integer)
+
+    Public Sub New()
+        MyBase.New(TaskCreationOptions.RunContinuationsAsynchronously)
+    End Sub
+End Class
 ");
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_CSharp()
+        public async Task Diagnostics_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -109,6 +122,11 @@ class C
     }
     TaskContinuationOptions MyProperty { get; set; }
 }
+
+class Derived : TaskCompletionSource<int>
+{
+    public Derived() : base([|TaskContinuationOptions.RunContinuationsAsynchronously|]) { }
+}
 ",
 @"
 using System.Threading.Tasks;
@@ -123,11 +141,16 @@ class C
     }
     TaskContinuationOptions MyProperty { get; set; }
 }
+
+class Derived : TaskCompletionSource<int>
+{
+    public Derived() : base(TaskCreationOptions.RunContinuationsAsynchronously) { }
+}
 ");
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_CSharp_NonGeneric()
+        public async Task Diagnostics_FixApplies_CSharp_NonGenericAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
 @"
@@ -152,6 +175,11 @@ class C
     }
     TaskContinuationOptions MyProperty { get; set; }
 }
+
+class Derived : TaskCompletionSource
+{
+    public Derived() : base([|TaskContinuationOptions.RunContinuationsAsynchronously|]) { }
+}
 ",
 @"
 using System.Threading.Tasks;
@@ -175,11 +203,16 @@ class C
     }
     TaskContinuationOptions MyProperty { get; set; }
 }
+
+class Derived : TaskCompletionSource
+{
+    public Derived() : base(TaskCreationOptions.RunContinuationsAsynchronously) { }
+}
 ");
         }
 
         [Fact]
-        public async Task Diagnostics_FixApplies_Basic()
+        public async Task Diagnostics_FixApplies_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 @"
@@ -194,6 +227,14 @@ Class C
 
     Private Property MyProperty As TaskContinuationOptions
 End Class
+
+Class Derived
+    Inherits TaskCompletionSource(Of Integer)
+
+    Public Sub New()
+        MyBase.New([|TaskContinuationOptions.RunContinuationsAsynchronously|])
+    End Sub
+End Class
 ",
 @"
 Imports System.Threading.Tasks
@@ -207,11 +248,19 @@ Class C
 
     Private Property MyProperty As TaskContinuationOptions
 End Class
+
+Class Derived
+    Inherits TaskCompletionSource(Of Integer)
+
+    Public Sub New()
+        MyBase.New(TaskCreationOptions.RunContinuationsAsynchronously)
+    End Sub
+End Class
 ");
         }
 
         [Fact]
-        public async Task Diagnostics_FixDoesntApply_CSharp()
+        public async Task Diagnostics_FixDoesntApply_CSharpAsync()
         {
             const string Input = @"
 using System.Threading.Tasks;

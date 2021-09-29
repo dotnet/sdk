@@ -1,7 +1,10 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -10,8 +13,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
     public class DoNotDeclareProtectedMembersInSealedTypesTests
     {
+
         [Fact]
-        public async Task ProtectedSubInNotInheritable_Diagnostic()
+        public async Task ProtectedSubInNotInheritable_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public NotInheritable Class C
@@ -21,29 +25,79 @@ End Class",
                 VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
-        [Fact]
-        public async Task ProtectedMemberInNotInheritable_Diagnostic()
+        [Theory]
+        [InlineData("protected")]
+        [InlineData("protected internal")]
+        [InlineData("private protected")]
+        public Task AnyProtectedVariantMembersInSealed_DiagnosticAsync(string accessModifier)
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            return new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        $@"
+using System;
+
+public sealed class C
+{{
+    {accessModifier} int [|SomeField|];
+
+    {accessModifier} int [|SomeProperty|] {{ [|get|]; [|set|]; }}
+
+    {accessModifier} event EventHandler [|SomeEvent|];
+
+    {accessModifier} void [|SomeMethod|]() {{ }}
+}}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
+                }
+            }.RunAsync();
+        }
+
+        [Theory]
+        [InlineData("Protected")]
+        [InlineData("Protected Friend")]
+        [InlineData("Private Protected")]
+        public Task AnyProtectedVariantMemberInNotInheritable_DiagnosticAsync(string accessModifier)
+        {
+            return new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { $@"
 Imports System
 
 Public NotInheritable Class C
-    Protected [|SomeField|] As Integer
+    {accessModifier} [|SomeField|] As Integer
 
-    Protected Property [|SomeProperty|] As Integer
+    {accessModifier} Property [|SomeProperty|] As Integer
 
-    Protected Event [|SomeEvent|] As EventHandler
+    {accessModifier} Event [|SomeEvent|] As EventHandler
 
-    Protected Sub [|SomeSub|]()
+    {accessModifier} Sub [|SomeSub|]()
     End Sub
 
-    Protected Function [|SomeFunction|]() As Integer
+    {accessModifier} Function [|SomeFunction|]() As Integer
     End Function
-End Class");
+End Class"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+dotnet_code_quality.CA1047.api_surface = All
+") }
+                }
+            }.RunAsync();
         }
 
         [Fact]
-        public async Task ProtectedOverridesMemberInNotInheritable_NoDiagnostic()
+        public async Task ProtectedOverridesMemberInNotInheritable_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -95,7 +149,7 @@ End Class");
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1047.api_surface_2 = Private")]
-        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -120,7 +174,7 @@ End Class"
         }
 
         [Fact]
-        public async Task Finalize_NoDiagnostic()
+        public async Task Finalize_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public NotInheritable Class C

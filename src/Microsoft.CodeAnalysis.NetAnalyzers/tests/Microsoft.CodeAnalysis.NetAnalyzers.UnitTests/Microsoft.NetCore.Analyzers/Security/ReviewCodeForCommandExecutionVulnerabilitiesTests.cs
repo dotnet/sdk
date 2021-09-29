@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForCommandExecutionVulnerabilities.Rule;
 
         [Fact]
-        public async Task DoNotWarnAboutTaintedArgumentIfDoesNotEnterSink()
+        public async Task DoNotWarnAboutTaintedArgumentIfDoesNotEnterSinkAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -37,7 +37,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_CSharp_fileName_Diagnostic()
+        public async Task DocSample1_CSharp_fileName_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -55,7 +55,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_fileName_Diagnostic()
+        public async Task DocSample1_VB_fileName_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -87,7 +87,7 @@ End Class
         }
 
         [Fact]
-        public async Task Process_Start_arguments_Diagnostic()
+        public async Task Process_Start_arguments_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -107,7 +107,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task ProcessStartInfo_Constructor_Diagnostic()
+        public async Task ProcessStartInfo_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -127,7 +127,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task ProcessStartInfo_Arguments_Diagnostic()
+        public async Task ProcessStartInfo_Arguments_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -147,6 +147,26 @@ public partial class WebForm : System.Web.UI.Page
     }
 }",
                 GetCSharpResultAt(14, 13, 11, 24, "string ProcessStartInfo.Arguments", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
+        }
+
+        [Fact]
+        public async Task AspNetCoreHttpRequest_Process_Start_fileName_DiagnosticAsync()
+        {
+            await VerifyCSharpWithDependenciesAsync(@"
+using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
+
+public class HomeController : Controller
+{
+    public IActionResult Index()
+    {
+        string input = Request.Form[""in""];
+        Process p = Process.Start(input);
+
+        return View();
+    }
+}",
+                GetCSharpResultAt(10, 21, 9, 24, "Process Process.Start(string fileName)", "IActionResult HomeController.Index()", "IFormCollection HttpRequest.Form", "IActionResult HomeController.Index()"));
         }
     }
 }

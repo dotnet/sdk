@@ -46,6 +46,8 @@ End users can enable `.editorconfig` based configuration for individual document
 
 Note that this additional file based approach is also supported on VS2019 16.3 and later releases for backwards compatibility.
 
+**The additional file based approach is no longer supported starting in Microsoft.CodeAnalysis.NetAnalyzers v5.0.4. It will be implicitly discovered (if the file is in the project's directory or any ancestor directory), or it should be converted into a 'globalconfig'. See [Configuration files for code analysis rules](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files).**
+
 ## Supported .editorconfig options
 
 This section documents the list of supported `.editorconfig` key-value options for CA rules.

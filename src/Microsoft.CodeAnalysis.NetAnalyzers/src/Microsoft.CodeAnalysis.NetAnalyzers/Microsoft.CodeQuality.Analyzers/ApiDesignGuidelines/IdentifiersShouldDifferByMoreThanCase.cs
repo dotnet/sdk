@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -8,11 +8,12 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using System.Threading;
 using Analyzer.Utilities.PooledObjects;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class IdentifiersShouldDifferByMoreThanCaseAnalyzer : DiagnosticAnalyzer
     {
@@ -22,20 +23,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public const string Member = "Members";
         public const string Parameter = "Parameters of";
 
-        private static readonly LocalizableResourceString s_localizableTitle = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableResourceString s_localizableMessage = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableResourceString s_localizableDescription = new(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldDifferByMoreThanCaseDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseTitle)),
+            CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseMessage)),
+            DiagnosticCategory.Naming,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(IdentifiersShouldDifferByMoreThanCaseDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                      s_localizableTitle,
-                                                                                      s_localizableMessage,
-                                                                                      DiagnosticCategory.Naming,
-                                                                                      RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                      description: s_localizableDescription,
-                                                                                      isPortedFxCopRule: true,
-                                                                                      isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -53,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -68,7 +66,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // types because "InternalsVisibleTo" could be set. But it might be bad for users to start seeing warnings
             // where they previously did not from FxCop.
             // Note that end user can now override this default behavior via options.
-            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation, context.CancellationToken))
+            if (!context.Options.MatchesConfiguredVisibility(Rule, namedTypeSymbol, context.Compilation))
             {
                 return;
             }
@@ -76,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Get externally visible members in the given type
             IEnumerable<ISymbol> members = namedTypeSymbol.GetMembers()
                                                           .Where(item => !item.IsAccessorMethod() &&
-                                                                         MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                                                                         MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
             if (members.Any())
             {
@@ -96,7 +94,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // Get all the potentially externally visible types in the namespace
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation, context.CancellationToken));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
 
                 if (typeMembers.Any())
                 {
@@ -300,10 +298,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return string.Join(", ", group.Select(s => s.ToDisplayString()).OrderBy(k => k, StringComparer.Ordinal));
         }
 
-        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, Compilation compilation, CancellationToken cancellationToken)
+        public static bool MatchesConfiguredVisibility(ISymbol symbol, AnalyzerOptions options, Compilation compilation)
         {
             var defaultAllowedVisibilties = SymbolVisibilityGroup.Public | SymbolVisibilityGroup.Internal;
-            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, symbol, compilation, defaultAllowedVisibilties, cancellationToken);
+            var allowedVisibilities = options.GetSymbolVisibilityGroupOption(Rule, symbol, compilation, defaultAllowedVisibilties);
             return allowedVisibilities.Contains(symbol.GetResultantVisibility());
         }
 

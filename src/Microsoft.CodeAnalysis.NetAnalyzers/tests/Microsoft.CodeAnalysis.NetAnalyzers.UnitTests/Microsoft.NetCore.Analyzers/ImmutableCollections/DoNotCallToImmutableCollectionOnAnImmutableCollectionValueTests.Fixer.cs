@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections.UnitTests
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity1))]
-        public async Task CA2009_Arity1_CSharp(string collectionName)
+        public async Task CA2009_Arity1_CSharpAsync(string collectionName)
         {
             var initial = $@"
 using System.Collections.Generic;
@@ -66,7 +66,7 @@ class C
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity1))]
-        public async Task CA2009_Arity1_Basic(string collectionName)
+        public async Task CA2009_Arity1_BasicAsync(string collectionName)
         {
             var initial = $@"
 Imports System.Collections.Generic
@@ -98,7 +98,7 @@ End Class";
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity2))]
-        public async Task CA2009_Arity2_CSharp(string collectionName)
+        public async Task CA2009_Arity2_CSharpAsync(string collectionName)
         {
             var initial = $@"
 using System.Collections.Generic;
@@ -134,7 +134,7 @@ class C
 
         [Theory]
         [MemberData(nameof(CollectionNames_Arity2))]
-        public async Task CA2009_Arity2_Basic(string collectionName)
+        public async Task CA2009_Arity2_BasicAsync(string collectionName)
         {
             var initial = $@"
 Imports System.Collections.Generic

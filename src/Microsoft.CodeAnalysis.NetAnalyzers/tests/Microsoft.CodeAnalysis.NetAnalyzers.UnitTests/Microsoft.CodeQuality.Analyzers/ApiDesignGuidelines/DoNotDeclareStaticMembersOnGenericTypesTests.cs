@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DoNotDeclareStaticMembersOnGenericTypesTests
     {
         [Fact]
-        public async Task CSharp_CA1000_ShouldGenerate()
+        public async Task CSharp_CA1000_ShouldGenerateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task Basic_CA1000_ShouldGenerate()
+        public async Task Basic_CA1000_ShouldGenerateAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Imports System
 Public Class GenericType1(Of T)
@@ -95,7 +95,7 @@ End Class",
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
+        public async Task CSharp_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisibleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
     using System;
@@ -133,7 +133,7 @@ End Class",
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task Basic_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisible()
+        public async Task Basic_CA1000_ShouldNotGenerate_ContainingTypeIsNotExternallyVisibleAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Imports System
 Friend Class GenericType1(Of T)
@@ -165,7 +165,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharp_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
+        public async Task CSharp_CA1000_ShouldNotGenerate_MemberIsNotPublicStaticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -260,7 +260,7 @@ public sealed class ClosedType : OpenType<String>
         }
 
         [Fact]
-        public async Task Basic_CA1000_ShouldNotGenerate_MemberIsNotPublicStatic()
+        public async Task Basic_CA1000_ShouldNotGenerate_MemberIsNotPublicStaticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -347,7 +347,7 @@ End Class");
         }
 
         [Fact]
-        public async Task CSharp_CA1000_ShouldNotGenerate_ConversionOperator()
+        public async Task CSharp_CA1000_ShouldNotGenerate_ConversionOperatorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1<T>
@@ -359,7 +359,7 @@ public class Class1<T>
         }
 
         [Fact]
-        public async Task Basic_CA1000_ShouldNotGenerate_ConversionOperator()
+        public async Task Basic_CA1000_ShouldNotGenerate_ConversionOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1(Of T)
@@ -375,7 +375,7 @@ End Class
         }
 
         [Fact, WorkItem(1791, "https://github.com/dotnet/roslyn-analyzers/issues/1791")]
-        public async Task CSharp_CA1000_ShouldNotGenerate_OperatorOverloads()
+        public async Task CSharp_CA1000_ShouldNotGenerate_OperatorOverloadsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

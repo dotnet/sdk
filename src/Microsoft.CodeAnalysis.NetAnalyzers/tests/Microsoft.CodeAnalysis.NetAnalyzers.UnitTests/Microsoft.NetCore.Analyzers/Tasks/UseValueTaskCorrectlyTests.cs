@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         #region No Diagnostic Tests
 
         [Fact]
-        public async Task NoDiagnostics_AwaitMethodCallResults()
+        public async Task NoDiagnostics_AwaitMethodCallResultsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -112,7 +112,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_AwaitMethodCallResults_VB()
+        public async Task NoDiagnostics_AwaitMethodCallResults_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(VBBoilerplate(@"
                 Imports System
@@ -131,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_Ternary()
+        public async Task NoDiagnostics_TernaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -155,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_NullConditional()
+        public async Task NoDiagnostics_NullConditionalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -178,7 +178,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_Switch()
+        public async Task NoDiagnostics_SwitchAsync()
         {
             await new VerifyCS.Test
             {
@@ -231,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_AwaitConfiguredMethodCallResults()
+        public async Task NoDiagnostics_AwaitConfiguredMethodCallResultsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -255,7 +255,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_PassAsArguments()
+        public async Task NoDiagnostics_PassAsArgumentsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -278,7 +278,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_Preserve()
+        public async Task NoDiagnostics_PreserveAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -302,7 +302,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_AsTask()
+        public async Task NoDiagnostics_AsTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -326,7 +326,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_ReturnValueTask()
+        public async Task NoDiagnostics_ReturnValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -369,7 +369,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_AssignVariableThenReturnValueTask()
+        public async Task NoDiagnostics_AssignVariableThenReturnValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -407,7 +407,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_OutValueTask()
+        public async Task NoDiagnostics_OutValueTaskAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -433,7 +433,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_WorkBetweenStoreAndAwait()
+        public async Task NoDiagnostics_WorkBetweenStoreAndAwaitAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -459,7 +459,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task NoDiagnostics_AssertsBeforeDirectAccess(string isProp)
+        public async Task NoDiagnostics_AssertsBeforeDirectAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -493,7 +493,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task NoDiagnostics_AssertsBeforeDirectAccessToAssignedLocal(string isProp)
+        public async Task NoDiagnostics_AssertsBeforeDirectAccessToAssignedLocalAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -533,7 +533,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task NoDiagnostics_AssertsEarlierInFlowBeforeDirectAccess(string isProp)
+        public async Task NoDiagnostics_AssertsEarlierInFlowBeforeDirectAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -588,7 +588,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task NoDiagnostics_FastPathForSyncCompleted(string isProp)
+        public async Task NoDiagnostics_FastPathForSyncCompletedAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -617,7 +617,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task NoDiagnostics_FastPathForSyncCompletedInverted(string isProp)
+        public async Task NoDiagnostics_FastPathForSyncCompletedInvertedAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -646,7 +646,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompletedPropertiesAndResultAccess))]
-        public async Task NoDiagnostics_FastPathForSyncCompletedOfInt(string isProp, string resultMember)
+        public async Task NoDiagnostics_FastPathForSyncCompletedOfIntAsync(string isProp, string resultMember)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -673,7 +673,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompletedPropertiesAndResultAccess))]
-        public async Task NoDiagnostics_FastPathForSyncCompletedOfTInvertedNoElse(string isProp, string resultMember)
+        public async Task NoDiagnostics_FastPathForSyncCompletedOfTInvertedNoElseAsync(string isProp, string resultMember)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -699,7 +699,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_CreateInTry_AwaitInFinally()
+        public async Task NoDiagnostics_CreateInTry_AwaitInFinallyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -724,7 +724,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_CreateInTry_AwaitInCatch()
+        public async Task NoDiagnostics_CreateInTry_AwaitInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -749,7 +749,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_ReturnOutOfPropertyExpressionBodied()
+        public async Task NoDiagnostics_ReturnOutOfPropertyExpressionBodiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -765,7 +765,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_ReturnOutOfPropertyStatements()
+        public async Task NoDiagnostics_ReturnOutOfPropertyStatementsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -804,7 +804,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_CreateInTry_AwaitInCatchAndFinally()
+        public async Task NoDiagnostics_CreateInTry_AwaitInCatchAndFinallyAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
             // this case, but the validation across try/catch/finally is complicated.
@@ -839,7 +839,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         #region Diagnostic Tests
 
         [Fact]
-        public async Task Diagnostics_DontConsume()
+        public async Task Diagnostics_DontConsumeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -868,7 +868,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_DontConsume_VB()
+        public async Task Diagnostics_DontConsume_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(VBBoilerplate(@"
                 Imports System
@@ -895,7 +895,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_StoreLocalUnused()
+        public async Task NoDiagnostics_StoreLocalUnusedAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
             // this case, but the validation to ensure the local is properly consumed
@@ -917,7 +917,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task NoDiagnostics_StoreLocalUnused_Guarded()
+        public async Task NoDiagnostics_StoreLocalUnused_GuardedAsync()
         {
             // NOTE: This is a false negative.  Ideally the analyzer would catch
             // this case, but the validation to ensure the local is properly consumed
@@ -940,7 +940,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_PassAsGeneric()
+        public async Task Diagnostics_PassAsGenericAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -962,7 +962,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_DirectResultAccess()
+        public async Task Diagnostics_DirectResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -989,7 +989,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_UnguardedLocalResultAccess()
+        public async Task Diagnostics_UnguardedLocalResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1020,7 +1020,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_UnguardedOutResultAccess()
+        public async Task Diagnostics_UnguardedOutResultAccessAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1051,7 +1051,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_MultipleLocalAwaits()
+        public async Task Diagnostics_MultipleLocalAwaitsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1082,7 +1082,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_StoreIntoFields()
+        public async Task Diagnostics_StoreIntoFieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1108,7 +1108,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_Discards()
+        public async Task Diagnostics_DiscardsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1139,7 +1139,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task Diagnostics_AssertsAfterDirectLocalAccess(string isProp)
+        public async Task Diagnostics_AssertsAfterDirectLocalAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1177,7 +1177,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task Diagnostics_AssertsAfterDirectOutAccess(string isProp)
+        public async Task Diagnostics_AssertsAfterDirectOutAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1215,7 +1215,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task Diagnostics_AssertsLaterInFlowAfterDirectLocalAccess(string isProp)
+        public async Task Diagnostics_AssertsLaterInFlowAfterDirectLocalAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1274,7 +1274,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 
         [Theory]
         [MemberData(nameof(IsCompleteProperties))]
-        public async Task Diagnostics_AssertsLaterInFlowAfterDirectOutAccess(string isProp)
+        public async Task Diagnostics_AssertsLaterInFlowAfterDirectOutAccessAsync(string isProp)
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;
@@ -1332,7 +1332,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         }
 
         [Fact]
-        public async Task Diagnostics_MultipleAwaitsAcrossDifferingConditions()
+        public async Task Diagnostics_MultipleAwaitsAcrossDifferingConditionsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(CSBoilerplate(@"
                 using System;

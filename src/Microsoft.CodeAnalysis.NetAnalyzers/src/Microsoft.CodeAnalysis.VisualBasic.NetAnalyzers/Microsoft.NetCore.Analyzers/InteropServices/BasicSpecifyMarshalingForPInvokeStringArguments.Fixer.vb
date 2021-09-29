@@ -1,4 +1,4 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Composition
 Imports Microsoft.NetCore.Analyzers.InteropServices
@@ -22,7 +22,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.InteropServices
         Protected Overrides Function FindNamedArgument(arguments As IReadOnlyList(Of SyntaxNode), argumentName As String) As SyntaxNode
             Return Aggregate arg In arguments.OfType(Of SimpleArgumentSyntax)
                    Where arg.IsNamed
-                   Into FirstOrDefault(arg.NameColonEquals.Name.Identifier.Text = argumentName)
+                   Into FirstOrDefault(String.Equals(arg.NameColonEquals.Name.Identifier.Text, argumentName, StringComparison.OrdinalIgnoreCase))
         End Function
 
         Protected Overrides Function IsDeclareStatement(node As SyntaxNode) As Boolean
@@ -30,7 +30,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.InteropServices
                    node.IsKind(SyntaxKind.DeclareSubStatement)
         End Function
 
-        Protected Overrides Async Function FixDeclareStatement(document As Document, node As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+        Protected Overrides Async Function FixDeclareStatementAsync(document As Document, node As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
             Dim editor = Await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(False)
             Dim decl = CType(node, DeclareStatementSyntax)
             Dim newCharSetKeyword = SyntaxFactory.Token(SyntaxKind.UnicodeKeyword).

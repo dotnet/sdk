@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -19,11 +19,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [Theory]
         [InlineData("build_property.InvariantGlobalization = false", @"[|""aaa"".ToLower()|]")]
         [InlineData("build_property.InvariantGlobalization = true", @"""aaa"".ToLower()")]
-        public async Task CA1304_PlainString_CSharp_InvariantGlobalization(string property, string returnExpression)
+        public async Task CA1304_PlainString_CSharp_InvariantGlobalizationAsync(string property, string returnExpression)
         {
-            await new VerifyCS.Test
-            {
-                TestCode = $@"
+            var source = $@"
 using System;
 using System.Globalization;
 
@@ -33,13 +31,19 @@ public class CultureInfoTestClass0
     {{
         return {returnExpression};
     }}
-}}",
-                AnalyzerConfigDocument = property,
+}}";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{property}") },
+                }
             }.RunAsync();
         }
 
         [Fact]
-        public async Task CA1304_PlainString_CSharp()
+        public async Task CA1304_PlainString_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -56,7 +60,7 @@ public class CultureInfoTestClass0
         }
 
         [Fact]
-        public async Task CA1304_VariableStringInsideDifferentContainingSymbols_CSharp()
+        public async Task CA1304_VariableStringInsideDifferentContainingSymbols_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -99,7 +103,7 @@ public class CultureInfoTestClass1
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_CSharp()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -126,7 +130,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstAndSecondArgument_CSharp()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstAndSecondArgument_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -153,7 +157,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_RefKindRef_CSharp()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_RefKindRef_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -180,7 +184,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_CSharp()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -212,7 +216,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_RefKindOut_CSharp()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_RefKindOut_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -240,7 +244,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasJustCultureInfo_CSharp()
+        public async Task CA1304_MethodOverloadHasJustCultureInfo_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -267,7 +271,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_DoesNotRecommendObsoleteOverload_CSharp()
+        public async Task CA1304_DoesNotRecommendObsoleteOverload_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -294,7 +298,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_TargetMethodIsGenericsAndNonGenerics_CSharp()
+        public async Task CA1304_TargetMethodIsGenericsAndNonGenerics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -328,7 +332,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadIncludeNonCandidates_CSharp()
+        public async Task CA1304_MethodOverloadIncludeNonCandidates_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -358,7 +362,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_CSharp()
+        public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -385,7 +389,7 @@ public class CultureInfoTestClass2
         }
 
         [Fact]
-        public async Task CA1304_NoDiagnostics_CSharp()
+        public async Task CA1304_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -456,7 +460,7 @@ public class DerivedCultureInfo : CultureInfo
         }
 
         [Fact]
-        public async Task CA1304_PlainString_VisualBasic()
+        public async Task CA1304_PlainString_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -471,7 +475,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_VariableStringInsideDifferentContainingSymbols_VisualBasic()
+        public async Task CA1304_VariableStringInsideDifferentContainingSymbols_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -505,7 +509,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_VisualBasic()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -528,7 +532,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_VisualBasic()
+        public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -555,7 +559,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadHasJustCultureInfo_VisualBasic()
+        public async Task CA1304_MethodOverloadHasJustCultureInfo_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -578,7 +582,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadIncludeNonCandidates_VisualBasic()
+        public async Task CA1304_MethodOverloadIncludeNonCandidates_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -604,7 +608,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_VisualBasic()
+        public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -627,7 +631,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1304_NoDiagnostics_VisualBasic()
+        public async Task CA1304_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -689,7 +693,7 @@ End Class");
         [InlineData("dotnet_code_quality.excluded_symbol_names = T:NS.C")]
         [InlineData("dotnet_code_quality.excluded_symbol_names = N:NS")]
         [InlineData("dotnet_code_quality.CA1304.excluded_symbol_names = M*")]
-        public async Task CA1034_ExcludedSymbolsOption(string editorConfigText)
+        public async Task CA1034_ExcludedSymbolsOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

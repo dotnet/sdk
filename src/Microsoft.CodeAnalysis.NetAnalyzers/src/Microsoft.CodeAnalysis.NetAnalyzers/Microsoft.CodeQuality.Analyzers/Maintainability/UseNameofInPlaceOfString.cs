@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1507 Use nameof to express symbol names
     /// </summary>
@@ -20,20 +22,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private const string PropertyName = "propertyName";
         internal const string StringText = "StringText";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.UseNameOfInPlaceOfStringDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor RuleWithSuggestion = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(UseNameOfInPlaceOfStringTitle)),
+            CreateLocalizableResourceString(nameof(UseNameOfInPlaceOfStringMessage)),
+            DiagnosticCategory.Maintainability,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(UseNameOfInPlaceOfStringDescription)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor RuleWithSuggestion = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                         s_localizableTitle,
-                                                                         s_localizableMessage,
-                                                                         DiagnosticCategory.Maintainability,
-                                                                         RuleLevel.IdeSuggestion,
-                                                                         description: s_localizableDescription,
-                                                                         isPortedFxCopRule: false,
-                                                                         isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleWithSuggestion);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleWithSuggestion);
 
         protected abstract bool IsApplicableToLanguageVersion(ParseOptions options);
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1831, CA1832, CA1833: Use AsSpan or AsMemory instead of Range-based indexers when appropriate.
     /// </summary>
@@ -23,11 +25,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal const string ArrayReadWriteRuleId = "CA1833";
         internal const string TargetMethodName = nameof(TargetMethodName);
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfRangeIndexerTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfRangeIndexerMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableStringDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfStringRangeIndexerDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableArrayReadDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableArrayWriteDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseAsSpanInsteadOfArrayRangeIndexerDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseAsSpanInsteadOfRangeIndexerTitle));
+        private static readonly LocalizableString s_localizableMessage = CreateLocalizableResourceString(nameof(UseAsSpanInsteadOfRangeIndexerMessage));
 
         internal static readonly DiagnosticDescriptor StringRule = DiagnosticDescriptorHelper.Create(
             StringRuleId,
@@ -35,7 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             s_localizableMessage,
             DiagnosticCategory.Performance,
             RuleLevel.BuildWarning,
-            description: s_localizableStringDescription,
+            description: CreateLocalizableResourceString(nameof(UseAsSpanInsteadOfStringRangeIndexerDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -45,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             s_localizableMessage,
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableArrayReadDescription,
+            description: CreateLocalizableResourceString(nameof(UseAsSpanReadOnlyInsteadOfArrayRangeIndexerDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -55,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             s_localizableMessage,
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableArrayWriteDescription,
+            description: CreateLocalizableResourceString(nameof(UseAsSpanInsteadOfArrayRangeIndexerDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 

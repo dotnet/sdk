@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     {
         #region CSharpUnitTests
         [Fact]
-        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTrivia()
+        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
 using System;
@@ -43,7 +43,7 @@ namespace Test
         }
 
         [Fact]
-        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTrivia()
+        public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
 using System;
@@ -74,7 +74,7 @@ namespace Test
         #region BasicUnitTests
 
         [Fact]
-        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTrivia()
+        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
 Imports System
@@ -98,7 +98,7 @@ End Module
         }
 
         [Fact]
-        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTrivia()
+        public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
 Imports System

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags);
             context.RegisterCompilationStartAction(context =>
             {
-                var value = context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation, context.CancellationToken);
+                var value = context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation);
                 if (value != "true")
                 {
                     InitializeWorker(context);

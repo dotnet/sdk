@@ -8,6 +8,16 @@
 6. Add a message, title and description for your analyzer into `MicrosoftNetCoreAnalyzersResources.resx` and build the repo before using them, the language specific resources will be generated.
 7. Make sure you have done everything from the [Definition of done list](#definition-of-done) below.
 
+## Branch Definitions
+
+|Branch| SDK | Description|
+|--------|--------|--------|
+|[2.9.x](https://github.com/dotnet/roslyn-analyzers/tree/2.9.x)| Does not ship in the .NET SDK | A special branch compatible with Visual Studio 2017 where security analyzers are shipped from.
+|[main](https://github.com/dotnet/roslyn-analyzers/tree/main)| .NET SDK 7.0.0xx  | Currently active branch. All work should target this branch unless it is a bugfix for a previous release
+|[release/5.0.3xx](https://github.com/dotnet/roslyn-analyzers/tree/release/5.0.3xx)| .NET SDK 5.0.3xx | Servicing branch for the .NET 5 SDK.
+|[release/6.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/6.0.1xx)| .NET SDK 6.0.0xx | Servicing branch for the .NET 6 SDK. Currently accepting targeting fixes until the .NET 6 SDK ships
+|[release/7.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/7.0.1xx)| .NET SDK 7.0.0xx | Currently active release branch. New SDK analyzer should target this branch.
+
 ## Definition of done
 
 - Analyzer implemented to work for C# and VB.
@@ -60,7 +70,7 @@
 8. In case no any failure introduce an error somewhere to prove that the rule ran.
     - Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
 9. If failures found, repeat step 4-5 to evaluate and address all warnings.
-    - In case you want to [debug some failures](#Debugging-analyzer-with-runtiem-repo-projects).
+    - In case you want to [debug some failures](#debugging-analyzer-with-runtime-repo-projects).
 
 ## Testing against the Roslyn repo
 
@@ -75,7 +85,7 @@ The diagnostics reported by the analyzer will be listed in Output.txt.
 
 ## Debugging analyzer with runtime repo projects
 
-1. Copy over debug build of analyzer assemblies on top of NetAnalyzers nuget package in your packages folder. (Instructions are same as the step 1 and 2 of [Testing against the Runtime repo step](#Testing-against-the-Runtime-and-Roslyn-analyzers-repo))
+1. Copy over debug build of analyzer assemblies on top of NetAnalyzers nuget package in your packages folder. (Instructions are same as the step 1 and 2 of [Testing against the Runtime repo step](#testing-against-the-runtime-and-roslyn-analyzers-repo))
 2. Start VS and open a project you want to debug
 3. Note the process ID for `ServiceHub.RoslynCodeAnalysisService.exe` corresponding to that VS instance
     - If you are using `Visual Studio` older than version `16.8 Preview2` then analyzers run in `devenv.exe`, you will need to attach that process instead
