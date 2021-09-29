@@ -142,6 +142,12 @@
       WorkingDirectory="$(RepoRoot)"
       Condition="$(IsRootRepo) == 'true'" />
 
+    <!-- Needed in cases where source-build is pinned to a version of the root repo. -->
+    <Exec
+      Command="git reset --hard $(RepoSha)"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="$(IsRootRepo) == 'true'" />
+
     <Exec
       Command="git init $(TarballRepoSourceDir)"
       WorkingDirectory="$(RepoRoot)"
@@ -192,13 +198,6 @@
       Text="--> Done Applying $(SourceBuildRepoName) Patches"
       Importance="High"
       Condition="'@(SourceBuildPatchFile)' != ''" />
-
-    <!-- Override to use a temporary SourceBuild specific Version.Details.xml file in installer for Preview 6
-         See https://github.com/dotnet/source-build/issues/2266 -->
-    <Copy
-      Condition=" '$(SourceBuildRepoName)' == 'installer' "
-      SourceFiles="$(RepoRoot)eng/SourceBuild.Version.Details.xml"
-      DestinationFiles="$(TarballRepoSourceDir)/eng/Version.Details.xml" />
 
     <Tarball_ReadSourceBuildIntermediateNupkgDependencies
       VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(TarballVersionDetailsFile)))"

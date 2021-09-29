@@ -60,7 +60,7 @@ jobs:
     # This prevents allocation of additional agents if the tarball build legs should be skipped.
     # Only build the tarball if the PR touches source-build source.
     - script: |
-        if curl "https://api.github.com/repos/dotnet/installer/pulls/$(System.PullRequest.PullRequestNumber)/files" | grep '"filename": "src/SourceBuild/*\|"filename": "eng/SourceBuild.Version.Details.xml"'
+        if curl "https://api.github.com/repos/dotnet/installer/pulls/$(System.PullRequest.PullRequestNumber)/files" | grep '"filename": "src/SourceBuild/*'
         then
           echo "##vso[task.setvariable variable=_includeTarballBuild;isoutput=true]true"
         fi
