@@ -183,7 +183,7 @@ global using static global::TestStaticNamespace;
 ");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_can_persist_generatedfile_between_cleans_building_inside_vs()
         {
             // Regression test for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1405579
@@ -223,7 +223,7 @@ global using global::System.Threading.Tasks;
 ");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_removes_generatedfile_on_clean ()
         {
             // Regression test for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1405579
