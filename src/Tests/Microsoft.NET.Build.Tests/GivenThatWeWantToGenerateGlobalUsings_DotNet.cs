@@ -14,9 +14,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
-    public class GivenThatWeWantToGenerateImpliciUsings_DotNet : SdkTest
+    public class GivenThatWeWantToGenerateGlobalUsings_DotNet : SdkTest
     {
-        public GivenThatWeWantToGenerateImpliciUsings_DotNet(ITestOutputHelper log) : base(log) { }
+        public GivenThatWeWantToGenerateGlobalUsings_DotNet(ITestOutputHelper log) : base(log) { }
 
         [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_can_generate_global_usings_and_builds_successfully()
@@ -184,7 +184,7 @@ global using static global::TestStaticNamespace;
         }
 
         [Fact]
-        public void It_can_persist_between_cleans()
+        public void It_can_persist_generatedfile_between_cleans_building_inside_vs()
         {
             // Regression test for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1405579
             var tfm = "net6.0";
@@ -195,7 +195,7 @@ global using static global::TestStaticNamespace;
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
-                .Execute()
+                .Execute("/p:BuildingInsideVisualStudio=true")
                 .Should()
                 .Pass();
 
@@ -221,6 +221,36 @@ global using global::System.Net.Http;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
 ");
+        }
+
+        [Fact]
+        public void It_removes_generatedfile_on_clean ()
+        {
+            // Regression test for https://devdiv.visualstudio.com/DevDiv/_workitems/edit/1405579
+            var tfm = "net6.0";
+            var testProject = CreateTestProject(tfm);
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var globalUsingsFileName = $"{testAsset.TestProject.Name}.GlobalUsings.g.cs";
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetIntermediateDirectory(tfm);
+
+            outputDirectory.Should().HaveFile(globalUsingsFileName);
+
+            var cleanCommand = new CleanCommand(testAsset);
+            cleanCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            // Verify the GlobalUsings.g.cs does not get removed on clean.
+            outputDirectory.Should().NotHaveFile(globalUsingsFileName);
         }
 
         private TestProject CreateTestProject(string tfm)
