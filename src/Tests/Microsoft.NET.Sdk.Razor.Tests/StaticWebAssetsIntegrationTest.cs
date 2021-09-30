@@ -1116,7 +1116,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
@@ -1193,7 +1193,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '6.0'))"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
