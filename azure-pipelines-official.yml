@@ -21,7 +21,7 @@ stages:
   - job: OfficialBuild
     displayName: Official Build
     pool:
-      name: VSEngSS-MicroBuild2019
+      name: VSEngSS-MicroBuild2019-1ES
       demands:
       - cmd
 
