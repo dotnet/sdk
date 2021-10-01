@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.402-servicing.21457.2">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="5.0.402-servicing.21501.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="5.0.402">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Cli.Localization" Version="5.0.300-preview.21159.1">
       <Uri>https://github.com/dotnet/templating</Uri>
@@ -15,19 +15,19 @@
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="5.0.402">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Utils" Version="5.0.402">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateSearch.Common" Version="5.0.402">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="5.0.402">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>40c1132dcf3c4168d4d80b332361ecdd86ebf529</Sha>
+      <Sha>8510468585de1c9fb4448491855473589147641d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="5.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
