@@ -88,7 +88,9 @@
         <Name>$(GitHubRepositoryName)</Name>
         <Version>1.0.0</Version>
         <ExactVersion>1.0.0</ExactVersion>
-        <Sha>@(RootRepoCommitSha)</Sha>
+        <!-- Pin source-build to a specific commit to provide stabilization -->
+        <!-- <Sha>@(RootRepoCommitSha)</Sha> -->
+        <Sha>2f7c1a94d6c9f8f9173ebadf2ec2ba512b2b4576</Sha>
         <Uri>@(RootRepoUri)</Uri>
         <GitCommitCount>@(RootRepoCommitCount)</GitCommitCount>
         <SourceBuildRepoName>$(GitHubRepositoryName)</SourceBuildRepoName>
