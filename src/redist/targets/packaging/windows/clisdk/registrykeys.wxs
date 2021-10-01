@@ -16,5 +16,47 @@
         </RegistryKey>
       </Component>
     </ComponentGroup>
+
+    <!-- Set values for DOTNETHOME if not passed in.  
+         These searches prefer the existing registry key and fallback to probing the default location if registry key isn't present -->
+    <Property Id="DOTNETHOME_X86_SEARCH">
+      <DirectorySearch Id="dirDOTNETHOME_X86_search" Path="[ProgramFilesFolder]dotnet" AssignToProperty="yes">
+        <FileSearch Id="fileDOTNETHOME_X86_search" Name="dotnet.exe" />
+      </DirectorySearch>
+      <RegistrySearch Id="regDOTNETHOME_X86_search" Root="HKLM"  Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86" Name="InstallLocation" Win64="no" Type="raw" />
+    </Property>
+    <Property Id="DOTNETHOME_X64_SEARCH">
+      <DirectorySearch Id="dirDOTNETHOME_X64_search" Path="[ProgramFiles64Folder]dotnet" AssignToProperty="yes">
+        <FileSearch Id="fileDOTNETHOME_X64_search" Name="dotnet.exe" />
+      </DirectorySearch>
+      <RegistrySearch Id="regDOTNETHOME_X64_search" Root="HKLM"  Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64" Name="InstallLocation" Win64="no" Type="raw" />
+    </Property>
+    <Property Id="DOTNETHOME_X64_ALT_SEARCH">
+      <DirectorySearch Id="dirDOTNETHOME_X64_ALT_search" Path="[ProgramFiles64Folder]dotnet\x64" AssignToProperty="yes">
+        <FileSearch Id="fileDOTNETHOME_X64_ALT_search" Name="dotnet.exe" />
+      </DirectorySearch>
+      <RegistrySearch Id="regDOTNETHOME_X64_ALT_search" Root="HKLM"  Key="SOFTWARE\dotnet\Setup\InstalledVersions\x64" Name="InstallLocation" Win64="no" Type="raw" />
+    </Property>
+    <Property Id="DOTNETHOME_ARM64_SEARCH">
+      <DirectorySearch Id="dirDOTNETHOME_ARM64_search" Path="[ProgramFiles64Folder]dotnet" AssignToProperty="yes">
+        <FileSearch Id="fileDOTNETHOME_ARM64_search" Name="dotnet.exe" />
+      </DirectorySearch>
+      <RegistrySearch Id="regDOTNETHOME_ARM64_search" Root="HKLM"  Key="SOFTWARE\dotnet\Setup\InstalledVersions\arm64" Name="InstallLocation" Win64="no" Type="raw" />
+    </Property>
+
+    <!-- Set the DOTNETHOME property if not passed in and we found a path -->
+    <SetProperty Id="DOTNETHOME_X86" Value="[DOTNETHOME_X86_SEARCH]" Before="CostFinalize">
+      NOT DOTNETHOME_X86 AND DOTNETHOME_X86_SEARCH
+    </SetProperty>
+    <SetProperty Id="DOTNETHOME_X64" Value="[DOTNETHOME_X64_SEARCH]" Before="CostFinalize">
+      NOT DOTNETHOME_X64 AND DOTNETHOME_X64_SEARCH AND %PROCESSOR_ARCHITECTURE="AMD64"
+    </SetProperty>
+    <SetProperty Action="Set_DOTNETHOME_X64_alt" Id="DOTNETHOME_X64" Value="[DOTNETHOME_X64_ALT_SEARCH]" Before="CostFinalize">
+      NOT DOTNETHOME_X64 AND DOTNETHOME_X64_ALT_SEARCH AND NOT %PROCESSOR_ARCHITECTURE="AMD64"
+    </SetProperty>
+    <SetProperty Id="DOTNETHOME_ARM64" Value="[DOTNETHOME_ARM64_SEARCH]" Before="CostFinalize">
+      NOT DOTNETHOME_ARM64 AND DOTNETHOME_ARM64_SEARCH
+    </SetProperty>
+
   </Fragment>
 </Wix>

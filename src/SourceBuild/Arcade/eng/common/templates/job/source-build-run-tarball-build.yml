@@ -34,6 +34,8 @@ jobs:
   timeoutInMinutes: 180
   variables:
     _TarballDir: $(Build.StagingDirectory)/tarball
+    _BuildConfig: Release
+    _BuildArch: x64
   workspace:
     clean: all
 
@@ -56,6 +58,7 @@ jobs:
       mkdir -p "$(_TarballDir)"
       tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
       eval tar -ozxf "$tarballFilePath" -C "$(_TarballDir)"
+      eval rm -f "$tarballFilePath"
     displayName: Extract Tarball
 
   - script: |
@@ -79,21 +82,16 @@ jobs:
       docker run --rm -v $(_TarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh ${customBuildArgs} -- /p:CleanWhileBuilding=true
     displayName: Build Tarball
 
-  - task: CopyFiles@2
-    displayName: Gather Source Build Artifacts
-    inputs:
-      SourceFolder: $(_TarballDir)
-      Contents: |
-        artifacts/**/Private.SourceBuilt.Artifacts*.tar.gz
-        artifacts/prebuilt-report/Private.SourceBuilt.Prebuilts.*.tar.gz
-      TargetFolder: '$(Build.StagingDirectory)/artifacts'
-      CleanTargetFolder: true
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - publish: '$(_TarballDir)/artifacts/$(_BuildArch)/$(_BuildConfig)/'
+      artifact: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
+      displayName: Publish Source Build Artifacts
 
-  - task: PublishPipelineArtifact@1
-    displayName: Publish Source Build Artifacts
-    inputs:
-      targetPath: '$(Build.StagingDirectory)/artifacts'
-      artifactName: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
+  - script: |
+      set -x
+
+      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./build.sh --run-smoke-test
+    displayName: Run Tests
 
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
     parameters:

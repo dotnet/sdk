@@ -1,0 +1,26 @@
+From 676bb5aa455dcf877c78792e4e5a62ca6a1d72c1 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 8 Sep 2021 16:43:11 +0000
+Subject: [PATCH] Patch sdk.props to target net6.0
+
+Workaround for https://github.com/dotnet/arcade/issues/7413
+---
+ src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+index e3c50582..a577f923 100644
+--- a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
++++ b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+@@ -8,7 +8,7 @@
+   -->
+ 
+   <PropertyGroup Condition="'$(DotNetSharedFrameworkTaskDir)' == ''">
+-    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/netcoreapp3.1/</DotNetSharedFrameworkTaskDir>
++    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net6.0/</DotNetSharedFrameworkTaskDir>
+     <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)../tools/net472/</DotNetSharedFrameworkTaskDir>
+   </PropertyGroup>
+ 
+-- 
+2.29.2
+

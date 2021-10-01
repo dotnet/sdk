@@ -11,6 +11,7 @@
 #include <cwchar>
 #include <winreg.h>
 #include <msi.h>
+#include <pathcch.h>
 
 // Configure some logging parameters for WiX
 #define ExitTrace LogErrorString
@@ -22,5 +23,6 @@
 #include "dutil.h"
 #include "regutil.h"
 #include "logutil.h"
+#include "pathutil.h"
 #include "strutil.h"
 #include "wiutil.h"

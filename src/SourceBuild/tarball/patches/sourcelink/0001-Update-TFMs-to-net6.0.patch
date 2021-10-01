@@ -32,121 +32,121 @@ index 4ea51a8..eff58cf 100644
      <XUnitVersion>2.4.1</XUnitVersion>
      <MicrosoftBuildVersion>16.7.0</MicrosoftBuildVersion>
 diff --git a/src/Microsoft.Build.Tasks.Git/Microsoft.Build.Tasks.Git.csproj b/src/Microsoft.Build.Tasks.Git/Microsoft.Build.Tasks.Git.csproj
-index 71b45db..9f25e24 100644
+index 3fa8c71..da0277b 100644
 --- a/src/Microsoft.Build.Tasks.Git/Microsoft.Build.Tasks.Git.csproj
 +++ b/src/Microsoft.Build.Tasks.Git/Microsoft.Build.Tasks.Git.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- NuGet -->
 diff --git a/src/SourceLink.AzureDevOpsServer.Git/Microsoft.SourceLink.AzureDevOpsServer.Git.csproj b/src/SourceLink.AzureDevOpsServer.Git/Microsoft.SourceLink.AzureDevOpsServer.Git.csproj
-index b905b8e..43cd185 100644
+index ceec252..84e89bd 100644
 --- a/src/SourceLink.AzureDevOpsServer.Git/Microsoft.SourceLink.AzureDevOpsServer.Git.csproj
 +++ b/src/SourceLink.AzureDevOpsServer.Git/Microsoft.SourceLink.AzureDevOpsServer.Git.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.AzureRepos.Git/Microsoft.SourceLink.AzureRepos.Git.csproj b/src/SourceLink.AzureRepos.Git/Microsoft.SourceLink.AzureRepos.Git.csproj
-index 8a5a0bf..5400288 100644
+index bdb048e..b01b429 100644
 --- a/src/SourceLink.AzureRepos.Git/Microsoft.SourceLink.AzureRepos.Git.csproj
 +++ b/src/SourceLink.AzureRepos.Git/Microsoft.SourceLink.AzureRepos.Git.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.Bitbucket.Git/Microsoft.SourceLink.Bitbucket.Git.csproj b/src/SourceLink.Bitbucket.Git/Microsoft.SourceLink.Bitbucket.Git.csproj
-index 387b65c..db2ce6c 100644
+index bf27b3f..11ac33d 100644
 --- a/src/SourceLink.Bitbucket.Git/Microsoft.SourceLink.Bitbucket.Git.csproj
 +++ b/src/SourceLink.Bitbucket.Git/Microsoft.SourceLink.Bitbucket.Git.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file since NuGet Pack target currently doesn't support including dependencies in tools packages -->
 diff --git a/src/SourceLink.Common/Microsoft.SourceLink.Common.csproj b/src/SourceLink.Common/Microsoft.SourceLink.Common.csproj
-index b220563..5cf5ab4 100644
+index 09ac8ec..534b316 100644
 --- a/src/SourceLink.Common/Microsoft.SourceLink.Common.csproj
 +++ b/src/SourceLink.Common/Microsoft.SourceLink.Common.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- NuGet -->
 diff --git a/src/SourceLink.GitHub/Microsoft.SourceLink.GitHub.csproj b/src/SourceLink.GitHub/Microsoft.SourceLink.GitHub.csproj
-index 45985c8..1b9edbc 100644
+index 626b9cc..0c025ca 100644
 --- a/src/SourceLink.GitHub/Microsoft.SourceLink.GitHub.csproj
 +++ b/src/SourceLink.GitHub/Microsoft.SourceLink.GitHub.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.GitLab/Microsoft.SourceLink.GitLab.csproj b/src/SourceLink.GitLab/Microsoft.SourceLink.GitLab.csproj
-index 18300ce..9ca4657 100644
+index 4a1d0af..ada8986 100644
 --- a/src/SourceLink.GitLab/Microsoft.SourceLink.GitLab.csproj
 +++ b/src/SourceLink.GitLab/Microsoft.SourceLink.GitLab.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.GitWeb/Microsoft.SourceLink.GitWeb.csproj b/src/SourceLink.GitWeb/Microsoft.SourceLink.GitWeb.csproj
-index 1991db7..ae16d1f 100644
+index 19f92a8..b9ec7b4 100644
 --- a/src/SourceLink.GitWeb/Microsoft.SourceLink.GitWeb.csproj
 +++ b/src/SourceLink.GitWeb/Microsoft.SourceLink.GitWeb.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.Gitea/Microsoft.SourceLink.Gitea.csproj b/src/SourceLink.Gitea/Microsoft.SourceLink.Gitea.csproj
-index b5bbc93..164e243 100644
+index fa9e33e..acca3af 100644
 --- a/src/SourceLink.Gitea/Microsoft.SourceLink.Gitea.csproj
 +++ b/src/SourceLink.Gitea/Microsoft.SourceLink.Gitea.csproj
-@@ -1,6 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+@@ -3,6 +3,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net472;net5.0</TargetFrameworks>
+     <TargetFrameworks>net472;net6.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
- 
+
      <!-- Using an explicit nuspec file due to https://github.com/NuGet/Home/issues/6754 -->
 diff --git a/src/SourceLink.Tools/Microsoft.SourceLink.Tools.Package.csproj b/src/SourceLink.Tools/Microsoft.SourceLink.Tools.Package.csproj
-index 053f124..f27f774 100644
+index 5d17262..3dd091a 100644
 --- a/src/SourceLink.Tools/Microsoft.SourceLink.Tools.Package.csproj
 +++ b/src/SourceLink.Tools/Microsoft.SourceLink.Tools.Package.csproj
 @@ -3,6 +3,7 @@
  <Project Sdk="Microsoft.NET.Sdk">
    <PropertyGroup>
-     <TargetFrameworks>net5.0;net472</TargetFrameworks>
+     <TargetFrameworks>net6.0;netstandard2.0</TargetFrameworks>
 +    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
      <GenerateDocumentationFile>false</GenerateDocumentationFile>
      <DebugType>none</DebugType>

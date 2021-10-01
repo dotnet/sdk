@@ -1,0 +1,26 @@
+From 752ab8ab199bd1d99353658cb676a6612508333b Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 8 Sep 2021 21:31:01 +0000
+Subject: [PATCH] Drop vstest.console netcoreapp2.1 support
+
+Workaround for https://github.com/microsoft/vstest/issues/3044
+---
+ src/vstest.console/vstest.console.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/vstest.console/vstest.console.csproj b/src/vstest.console/vstest.console.csproj
+index 1343e6d9..7c555591 100644
+--- a/src/vstest.console/vstest.console.csproj
++++ b/src/vstest.console/vstest.console.csproj
+@@ -8,7 +8,7 @@
+   <PropertyGroup>
+     <AssemblyName>vstest.console</AssemblyName>
+     <TargetFrameworks>netcoreapp2.1;net451</TargetFrameworks>
+-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">netcoreapp2.1;net6.0</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
+     <WarningsAsErrors>true</WarningsAsErrors>
+     <OutputType>Exe</OutputType>
+     <IsTestProject>false</IsTestProject>
+-- 
+2.29.2
+

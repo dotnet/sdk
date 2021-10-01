@@ -1,0 +1,32 @@
+From 1d34d8396b9c2968163802036ed102e18ef14605 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Fri, 10 Sep 2021 13:57:38 +0000
+Subject: [PATCH] Bootstrapping workaround
+
+Temporary workaround until source-build is built with recent source-built.
+  /repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/src/Microsoft.DotNet.CodeAnalysis/Microsoft.DotNet.CodeAnalysis.csproj : error NU1603: Microsoft.CodeAnalysis.Common 4.0.0-5.21453.15 depends on System.Runtime.CompilerServices.Unsafe (>= 6.0.0-rc.1.21415.6) but System.Runtime.CompilerServices.Unsafe 6.0.0-rc.1.21415.6 was not found. An approximate best match of System.Runtime.CompilerServices.Unsafe 6.0.0-rc.2.21457.6 was resolved. [/repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/Arcade.sln]
+  /repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj : error NU1603: Microsoft.CodeAnalysis.Common 4.0.0-5.21453.15 depends on System.Runtime.CompilerServices.Unsafe (>= 6.0.0-rc.1.21415.6) but System.Runtime.CompilerServices.Unsafe 6.0.0-rc.1.21415.6 was not found. An approximate best match of System.Runtime.CompilerServices.Unsafe 6.0.0-rc.2.21457.6 was resolved. [/repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/Arcade.sln]
+  /repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj : error NU1603: Microsoft.CodeAnalysis.Common 4.0.0-5.21453.15 depends on System.Runtime.CompilerServices.Unsafe (>= 6.0.0-rc.1.21415.6) but System.Runtime.CompilerServices.Unsafe 6.0.0-rc.1.21415.6 was not found. An approximate best match of System.Runtime.CompilerServices.Unsafe 6.0.0-rc.2.21457.6 was resolved. [/repos/tarball1/src/arcade.474307e526160c813c9fd58060eb8356ccca6099/artifacts/source-build/self/src/Arcade.sln]
+
+---
+ Directory.Build.props | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 960eb6c9..fa87aaac 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -18,6 +18,10 @@
+     <IsShipping>false</IsShipping>
+   </PropertyGroup>
+ 
++  <PropertyGroup>
++    <NoWarn>$(NoWarn);NU1603</NoWarn>
++  </PropertyGroup>
++
+   <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+     <!--    
+       When building using source-build the process is:
+-- 
+2.29.2
+

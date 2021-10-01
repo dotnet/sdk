@@ -5,7 +5,9 @@
     <!-- Package version is pinned to what CoreFX expects because CoreFX doesn't take an override property. -->
     <ILLinkTasksPackageId>Microsoft.NET.ILLink.Tasks</ILLinkTasksPackageId>
 
-    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <RepoApiImplemented>false</RepoApiImplemented>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
@@ -15,26 +17,6 @@
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
-
-  <!-- Extract this package into packages dir, because repos assume it's restored as a tool. -->
-  <!-- TODO: Determine if this is still required.  See https://github.com/dotnet/source-build/issues/2291 -->
-  <!-- <Target Name="ExtractLinkerPackageToCache"
-          AfterTargets="Package"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)ExtractLinkerPackageToCache.complete">
-    <PropertyGroup>
-      <ILLinkTasksPackageFile>$(PackagesOutput)/$(ILLinkTasksPackageId).$(OutputPackageVersion).nupkg</ILLinkTasksPackageFile>
-      <ILLinkTasksPackageIdToLower>$(ILLinkTasksPackageId.ToLowerInvariant())</ILLinkTasksPackageIdToLower>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="Extracting $(ILLinkTasksPackageFile) to package cache..." />
-
-    <ZipFileExtractToDirectory SourceArchive="$(ILLinkTasksPackageFile)"
-                               DestinationDirectory="$(PackagesDir)$(ILLinkTasksPackageIdToLower)/$(OutputPackageVersion)/"
-                               OverwriteDestination="true" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ExtractLinkerPackageToCache.complete" Overwrite="true" />
-  </Target> -->
 
   <!-- Replace file includes in nuspec as recommended in the linker repo's ./corebuild/README.md -->
   <Target Name="ReplaceNuspecDllIncludeLines" BeforeTargets="Build" Condition="'$(TargetOS)' != 'Windows_NT'">

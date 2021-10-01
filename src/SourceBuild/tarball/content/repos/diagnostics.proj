@@ -2,7 +2,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(StandardSourceBuildArgs)</BuildCommand>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>

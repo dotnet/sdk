@@ -70,26 +70,6 @@
     <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <ItemGroup  Condition="Exists('$(PatchesDir)$(RepositoryName)')" >
-    <PatchesToApply Include="$(PatchesDir)$(RepositoryName)/*.patch" />
-  </ItemGroup>
-
-  <Target Name="ApplyPatches"
-          Condition="'@(PatchesToApply)' != '' and '$(SkipPatches)' != 'true'"
-          Inputs="@(PatchesToApply)"
-          Outputs="$(RepoCompletedSemaphorePath)ApplyPatches.complete" >
-
-    <PropertyGroup>
-      <PatchCommand>git --work-tree=$(ProjectDirectory) apply --ignore-whitespace --whitespace=nowarn</PatchCommand>
-    </PropertyGroup>
-
-    <Exec Command="$(PatchCommand) %(PatchesToApply.Identity)"
-          WorkingDirectory="$(ProjectDirectory)"
-          Condition="'@(PatchesToApply)' != ''" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ApplyPatches.complete" Overwrite="true" />
-  </Target>
-
   <!--
     Update root repo with trailing slash until https://github.com/dotnet/arcade/pull/7498 gets figured out
     in arcade an propegated to all repos
@@ -162,11 +142,9 @@
       This adds additional scenarios when modifying tools.sh to search for the logger_path.  Source-build
       builds arcade after the change, so the logger is no longer found in Microsoft.DotNet.Arcade.Sdk,
       rather, it has moved to Microsoft.DotNet.ArcadeLogging.
-      The scenarios are:
-
-        1. Repo has old tools.sh - replace with new search for logger_path from updated tools.sh which looks for ArcadeLogging first,
+      The scenarios are: -->
+     <!-- 1. Repo has old tools.sh - replace with new search for logger_path from updated tools.sh which looks for ArcadeLogging first,
           but make the source-build search changes to find the right dll. -->
-
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="local logger_path=&quot;$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll&quot;"
                        NewText="$(LoggerPathReplacementText)" />
@@ -181,6 +159,12 @@
     <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
                        OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
                        NewText="_InitializeBuildToolFramework=&quot;%24{_OverrideArcadeInitializeBuildToolFramework-netcoreapp3.1}&quot;" />
+
+    <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
+         the tarball build preocess.  https://github.com/dotnet/source-build/issues/2307 -->
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="ExitWithExitCode 0"
+                       NewText="ExitWithExitCode $exit_code" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" Overwrite="true" />
   </Target>
@@ -199,15 +183,6 @@
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
       BuildWithOnlineSources="$(BuildWithOnlineSources)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)" />
-
-    <!-- Temporarily add dotnet6 feed to all NuGet.Configs 
-         until all repos build so that preview packages
-         referenced in TemporaryBootstrapPackageVersions.props
-         can be found. -->
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="dotnet6-temporary"
-                            SourcePath="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json"
-                            Condition=" '$(BuildWithOnlineSources)' == 'true' " />
 
     <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
                             SourceName="prebuilt"
@@ -503,7 +478,7 @@
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
-    <Copy
+    <Move
       Condition="'@(SourceBuiltNupkgFiles)' != ''"
       SourceFiles="@(SourceBuiltNupkgFiles)"
       DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
@@ -513,7 +488,7 @@
       <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
     </ItemGroup>
 
-    <Copy
+    <Move
       Condition="'@(SourceBuiltAssetFiles)' != ''"
       SourceFiles="@(SourceBuiltAssetFiles)"
       DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />

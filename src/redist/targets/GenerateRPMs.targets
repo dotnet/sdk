@@ -34,12 +34,14 @@
     <MakeDir Directories="$(RpmLayoutSDK)"/>
     <MakeDir Directories="$(RpmLayoutDocs)"/>
     <MakeDir Directories="$(RpmLayoutTemplates)"/>
+    <MakeDir Directories="$(RpmLayoutManifestFiles)"/>
     <MakeDir Directories="$(RpmLayoutScripts)"/>
 
     <!-- Copy files to rpm layout -->
     <ItemGroup>
       <SDKFiles Include="$(InputRoot)/**/*"/>
       <DotnetNewTemplatesFiles Include="$(DotnetNewTemplatesRoot)**/*" />
+      <SDKManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
       <SDKManpages Include="$(ManPagesDir)/**/*"/>
       <SDKTemplatesFiles Include="$(TemplatesDir)/**/*"/>
       <SDKScriptsFiles Include="$(ScriptsDir)/after_remove_host.sh"/>
@@ -53,6 +55,12 @@
 
     <Copy SourceFiles="@(DotnetNewTemplatesFiles)"
           DestinationFiles="@(DotnetNewTemplatesFiles->'$(RpmLayoutDotnetNewTemplates)/%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False"/>
+
+    <Copy SourceFiles="@(SDKManifestFiles)"
+          DestinationFiles="@(SDKManifestFiles->'$(RpmLayoutManifestFiles)/%(RecursiveDir)%(Filename)%(Extension)')"
           OverwriteReadOnlyFiles="True"
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False"/>
@@ -172,6 +180,12 @@
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False"/>
 
+    <Copy SourceFiles="@(GeneratedRpmFiles)"
+      DestinationFiles="$(MarinerRpmFile)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False"/>
+
   </Target>
 
   <Target Name="SetupRpmProps"
@@ -184,6 +198,7 @@
       <DotnetNewTemplatesRoot>$(RedistLayoutPath)templates/</DotnetNewTemplatesRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
+      <MarinerRpmFile>$(ArtifactsShippingPackagesDir)$(MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</MarinerRpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
       <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
@@ -198,6 +213,7 @@
       <RpmLayoutPackageRoot>$(RpmLayoutDirectory)package_root</RpmLayoutPackageRoot>
       <RpmLayoutSDK>$(RpmLayoutPackageRoot)/sdk</RpmLayoutSDK>
       <RpmLayoutDotnetNewTemplates>$(RpmLayoutPackageRoot)/templates</RpmLayoutDotnetNewTemplates>
+      <RpmLayoutManifestFiles>$(RpmLayoutPackageRoot)/sdk-manifests</RpmLayoutManifestFiles>
       <RpmLayoutDocs>$(RpmLayoutDirectory)docs</RpmLayoutDocs>                <!-- Man Pages -->
       <RpmLayoutTemplates>$(RpmLayoutDirectory)templates</RpmLayoutTemplates> <!-- Copyright, Changelog -->
       <RpmLayoutScripts>$(RpmLayoutDirectory)scripts</RpmLayoutScripts>

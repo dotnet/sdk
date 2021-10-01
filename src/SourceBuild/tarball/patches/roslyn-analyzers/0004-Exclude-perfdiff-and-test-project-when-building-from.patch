@@ -1,0 +1,42 @@
+From 0b40797eab5933ae0d9dd48e4b8b0ec03d712ca5 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Fri, 24 Sep 2021 17:58:56 +0000
+Subject: [PATCH 2/2] Exclude perfdiff and test project when building from
+ source
+
+---
+ src/Tools/PerfDiff/PerfDiff.csproj                             | 1 +
+ .../Tests/RulesetToEditorconfigConverter.UnitTests.csproj      | 3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/src/Tools/PerfDiff/PerfDiff.csproj b/src/Tools/PerfDiff/PerfDiff.csproj
+index 7a829e12e..44279f1f9 100644
+--- a/src/Tools/PerfDiff/PerfDiff.csproj
++++ b/src/Tools/PerfDiff/PerfDiff.csproj
+@@ -4,6 +4,7 @@
+     <OutputType>Exe</OutputType>
+     <TargetFramework>net6.0</TargetFramework>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Tools/RulesetToEditorconfigConverter/Tests/RulesetToEditorconfigConverter.UnitTests.csproj b/src/Tools/RulesetToEditorconfigConverter/Tests/RulesetToEditorconfigConverter.UnitTests.csproj
+index 027ca2b09..46fff2f30 100644
+--- a/src/Tools/RulesetToEditorconfigConverter/Tests/RulesetToEditorconfigConverter.UnitTests.csproj
++++ b/src/Tools/RulesetToEditorconfigConverter/Tests/RulesetToEditorconfigConverter.UnitTests.csproj
+@@ -4,8 +4,9 @@
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+     <ServerGarbageCollection>true</ServerGarbageCollection>
+     <IsShipping>false</IsShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+   <ItemGroup>
+     <ProjectReference Include="..\..\..\Test.Utilities\Test.Utilities.csproj" />
+   </ItemGroup>
+-</Project>
+\ No newline at end of file
++</Project>
+-- 
+2.31.1
+

@@ -54,14 +54,16 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
             foreach (var dependency in Dependencies.Select(dep => 
                 new {
                     Name = dep.GetMetadata("Name"),
+                    SourceBuildRepoName = dep.GetMetadata("SourceBuildRepoName"),
                     Version = dep.GetMetadata("ExactVersion"),
                     Sha = dep.GetMetadata("Sha"),
-                    Uri = dep.GetMetadata("Uri")
+                    Uri = dep.GetMetadata("Uri"),
+                    GitCommitCount = dep.GetMetadata("GitCommitCount")
                 }))
             {
-                string repoName = GetDefaultRepoNameFromUrl(dependency.Uri);
-                string safeRepoName = repoName.Replace("-", "");
-                string propsPath = Path.Combine(SourceBuildMetadataDir, $"{repoName}.props");
+                string repoName = dependency.SourceBuildRepoName;
+                string safeRepoName = repoName.Replace("-", "").Replace(".", "");
+                string propsPath = Path.Combine(SourceBuildMetadataDir, $"{repoName.Replace(".", "-")}.props");
                 DerivedVersion derivedVersion = GetVersionInfo(dependency.Version, "0");
                 var repoProps = new Dictionary<string, string>
                 {
@@ -71,6 +73,10 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                     ["PreReleaseVersionLabel"] = derivedVersion.PreReleaseVersionLabel,
                     ["IsStable"] = string.IsNullOrWhiteSpace(derivedVersion.PreReleaseVersionLabel) ? "true" : "false",
                 };
+                if (!string.IsNullOrEmpty(dependency.GitCommitCount))
+                {
+                    repoProps.Add("GitCommitCount", dependency.GitCommitCount);
+                }                
                 WritePropsFile(propsPath, repoProps);
                 allRepoProps[$"{safeRepoName}GitCommitHash"] = dependency.Sha;
                 allRepoProps[$"{safeRepoName}OutputPackageVersion"] = dependency.Version;
@@ -98,16 +104,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                 var releaseParts = nugetVersion.Release.Split('-', '.');
                 if (releaseParts.Length == 2)
                 {
-                    if (releaseParts[1].TrimStart('0') == commitCount)
-                    {
-                        // core-sdk does this - OfficialBuildId is only used for their fake package and not in anything shipped
-                        return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = releaseParts[0] };
-                    }
-                    else
-                    {
-                        // NuGet does this - arbitrary build IDs
-                        return new DerivedVersion { OfficialBuildId = releaseParts[1], PreReleaseVersionLabel = releaseParts[0] };
-                    }
+                    // NuGet does this - arbitrary build IDs
+                    return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = releaseParts[0] };
                 }
                 else if (releaseParts.Length == 3)
                 {
@@ -145,15 +143,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
             }
 
             throw new FormatException($"Can't derive a build ID from version {version} (commit count {commitCount}, release {string.Join(";", nugetVersion.Release.Split('-', '.'))})");
-        }
-
-        private static string GetDefaultRepoNameFromUrl(string repoUrl)
-        {
-            if (repoUrl.EndsWith(".git"))
-            {
-                repoUrl = repoUrl.Substring(0, repoUrl.Length - ".git".Length);
-            }
-            return repoUrl.Substring(repoUrl.LastIndexOf("/") + 1);
         }
 
         private static void UpdatePropsFile(string filePath, Dictionary<string, string> properties)

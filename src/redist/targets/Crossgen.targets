@@ -1,6 +1,7 @@
 <Project>
+  <!-- Crossgen is currently not supported on the s390x architecture. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == ''"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x'"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>

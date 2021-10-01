@@ -39,6 +39,7 @@
                Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
       <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(Architecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(Architecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
     </PropertyGroup>
   </Target>
 </Project>
