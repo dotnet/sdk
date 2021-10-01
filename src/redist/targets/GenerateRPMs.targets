@@ -180,6 +180,12 @@
           SkipUnchangedFiles="False"
           UseHardlinksIfPossible="False"/>
 
+    <Copy SourceFiles="@(GeneratedRpmFiles)"
+      DestinationFiles="$(MarinerRpmFile)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False"/>
+
   </Target>
 
   <Target Name="SetupRpmProps"
@@ -192,6 +198,7 @@
       <DotnetNewTemplatesRoot>$(RedistLayoutPath)templates/</DotnetNewTemplatesRoot>
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
+      <MarinerRpmFile>$(ArtifactsShippingPackagesDir)$(MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</MarinerRpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
       <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>

@@ -30,12 +30,6 @@
     <Property Id="NUGETVERSION" Value="$(var.NugetVersion)" />
     <WixVariable Id="WixUILicenseRtf" Value="$(var.MicrosoftEula)" />
 
-    <Property Id="DOTNETEXE">
-      <DirectorySearch Id="DOTNETPATH" Path="[#DOTNETHOME]">
-        <FileSearch Id="DOTNETEXESEARCH" Name="dotnet.exe" />
-      </DirectorySearch>
-    </Property>
-
     <CustomActionRef Id="WixBroadcastEnvironmentChange" />
 
     <CustomAction Id="PropertyAssignPrimeCacheAndTelemetry"
@@ -68,6 +62,10 @@
         </Directory>
       </Directory>
     </Directory>
+    
+    <?if $(var.Platform)~=x64?>
+    <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
+    <?endif?>
   </Fragment>
   <Fragment>
     <ComponentGroup Id="DotnetToolSetup">

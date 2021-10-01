@@ -70,26 +70,6 @@
     <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <ItemGroup  Condition="Exists('$(PatchesDir)$(RepositoryName)')" >
-    <PatchesToApply Include="$(PatchesDir)$(RepositoryName)/*.patch" />
-  </ItemGroup>
-
-  <Target Name="ApplyPatches"
-          Condition="'@(PatchesToApply)' != '' and '$(SkipPatches)' != 'true'"
-          Inputs="@(PatchesToApply)"
-          Outputs="$(RepoCompletedSemaphorePath)ApplyPatches.complete" >
-
-    <PropertyGroup>
-      <PatchCommand>git --work-tree=$(ProjectDirectory) apply --ignore-whitespace --whitespace=nowarn</PatchCommand>
-    </PropertyGroup>
-
-    <Exec Command="$(PatchCommand) %(PatchesToApply.Identity)"
-          WorkingDirectory="$(ProjectDirectory)"
-          Condition="'@(PatchesToApply)' != ''" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)ApplyPatches.complete" Overwrite="true" />
-  </Target>
-
   <!--
     Update root repo with trailing slash until https://github.com/dotnet/arcade/pull/7498 gets figured out
     in arcade an propegated to all repos

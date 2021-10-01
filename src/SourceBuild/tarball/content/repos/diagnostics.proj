@@ -3,8 +3,6 @@
 
   <PropertyGroup>
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <!-- Repo has netcoreapp2.1 projects: https://github.com/dotnet/diagnostics/issues/1640 -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:CheckEolTargetFramework=false</BuildCommandArgs>
     <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>

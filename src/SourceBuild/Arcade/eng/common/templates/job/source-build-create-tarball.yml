@@ -6,17 +6,25 @@ jobs:
   displayName: Source-Build Create Tarball
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCorePublic-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64.Open
+      name: NetCore1ESPool-Svc-Public
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCoreInternal-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
   variables:
     _BuildConfig: Release
   workspace:
     clean: all
 
   steps:
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - task: Bash@3
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+        arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
   - script: |
       set -x
       df -h
@@ -52,7 +60,7 @@ jobs:
     # This prevents allocation of additional agents if the tarball build legs should be skipped.
     # Only build the tarball if the PR touches source-build source.
     - script: |
-        if curl "https://api.github.com/repos/dotnet/installer/pulls/$(System.PullRequest.PullRequestNumber)/files" | grep '"filename": "src/SourceBuild/*\|"filename": "eng/SourceBuild.Version.Details.xml"'
+        if curl "https://api.github.com/repos/dotnet/installer/pulls/$(System.PullRequest.PullRequestNumber)/files" | grep '"filename": "src/SourceBuild/*'
         then
           echo "##vso[task.setvariable variable=_includeTarballBuild;isoutput=true]true"
         fi

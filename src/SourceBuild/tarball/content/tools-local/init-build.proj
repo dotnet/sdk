@@ -24,7 +24,7 @@
       BuildXPlatTasks;
       ExtractToolPackage;
       GenerateRootFs;
-      ApplyPatches;
+      BuildTextOnlyPackages;
       PoisonPrebuiltPackages" />
   </Target>
 
@@ -58,7 +58,7 @@
     <Move SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
 
     <!-- remove some reference packages that are generated incorrectly and instead use the prebuilt checked-in version instead -->
-    <!-- relevant issues: https://github.com/dotnet/runtime/issues/44646, https://github.com/dotnet/runtime/issues/45183, 
+    <!-- relevant issues: https://github.com/dotnet/runtime/issues/44646, https://github.com/dotnet/runtime/issues/45183,
          https://github.com/dotnet/runtime/issues/45417.   this should be fixed for the 6.0 release.                           -->
     <ItemGroup>
       <PrebuiltPackagesToUse Include="$(PrebuiltPackagesPath)/*.nupkg" />
@@ -108,17 +108,6 @@
     <WriteLinesToFile File="$(CompletedSemaphorePath)BuildXPlatTasks.complete" Overwrite="true" />
   </Target>
 
-  <Target Name="GetRepoProjects">
-    <ItemGroup>
-      <RepoProjects Include="$(ProjectDir)repos/*.proj" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ApplyPatches" DependsOnTargets="GetRepoProjects">
-    <Message Text="Applying patches only" />
-    <MSBuild Projects="@(RepoProjects)" Targets="ApplyPatches" BuildInParallel="$(BuildInParallel)" />
-  </Target>
-
   <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">
      <Exec Condition="$(Platform.Contains('arm')) AND '$(Platform)' != 'armel' AND '$(BuildArchitecture)' != 'arm64'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/build-rootfs.sh" />
      <Exec Condition="'$(Platform)' == 'armel'" Command="$(ArmEnvironmentVariables) $(ProjectDir)cross/armel/tizen-build-rootfs.sh" />
@@ -132,6 +121,13 @@
     <ItemGroup>
       <TextOnlyPackageNuspecFile Include="$(TextOnlyPackageBaseDir)/**/*.nuspec" />
     </ItemGroup>
+
+    <Message Importance="High" Text="Found text only package nuspec file: %(TextOnlyPackageNuspecFile.Identity)" />
+
+    <ReplaceTextInFile
+      InputFile="%(TextOnlyPackageNuspecFile.Identity)"
+      OldText="&lt;/package&gt;"
+      NewText="&lt;files&gt;&lt;file src=&quot;.\**\*&quot;/&gt;&lt;/files&gt;&lt;/package&gt;" />
 
     <NugetPack
       Nuspecs="%(TextOnlyPackageNuspecFile.Identity)"
@@ -160,7 +156,7 @@
       OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
       NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
 
-    <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker 
+    <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->
     <ItemGroup>
       <OverrideArcadeFiles Include="$(ProjectDir)ArcadeOverrides/**/*" />

@@ -59,8 +59,14 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
 
                     if (sourceBuildElement == null)
                     {
-                        // Ignore element: doesn't represent a source-build dependency.
-                        return null;
+                        // Workaround for https://github.com/dotnet/source-build/issues/2481
+                        sourceBuildElement = d.Element(CreateQualifiedName("SourceBuildTarball"));
+
+                        if (sourceBuildElement == null)
+                        {
+                            // Ignore element: doesn't represent a source-build dependency.
+                            return null;
+                        }
                     }
 
                     string repoName = sourceBuildElement.Attribute("RepoName")?.Value;
