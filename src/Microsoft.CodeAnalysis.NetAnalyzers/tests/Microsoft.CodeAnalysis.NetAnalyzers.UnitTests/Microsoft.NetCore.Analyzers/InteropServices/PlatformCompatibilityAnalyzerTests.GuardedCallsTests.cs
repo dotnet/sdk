@@ -4650,6 +4650,171 @@ class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [Fact]
+        public async Task OneOfSupportsNeedsGuard_AllOtherSuppressedByCallsite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+[UnsupportedOSPlatform(""MacCatalyst13.0"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|]; // This call site is reachable on: 'android' 23.0 and later, 'ios' 13.0 and later, 'windows' 8.1 and later. 'MyType' is only supported on: 'windows' 10.0.10240 and later.
+
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = new MyType();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+    }
+}
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+[UnsupportedOSPlatform(""MacCatalyst13.0"")]
+class MyType { }
+" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task TwoOfSupportsNeedsGuard_AllOtherSuppressedByCallsite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""tvos13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+class MyUsage
+{
+    public void M()
+    {
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            var t = [|new MyType()|];
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var t = [|new MyType()|];
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            var t = new MyType();
+        }
+    }
+}
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""tvos15.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+class MyType { }";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task OneOfSupportsNeedsGuard_OneNotSuppressedByCallSite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|];
+
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = [|new MyType()|];
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = [|new MyType()|];
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+    }
+}
+
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+class MyType { }";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task OneOfUnsupportsNeedsGuard()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[UnsupportedOSPlatform(""android23.0"")]
+[UnsupportedOSPlatform(""ios13.0"")]
+[UnsupportedOSPlatform(""windows10.0.10240"")]
+[SupportedOSPlatform(""MacCatalyst13.0"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|]; // This call site is reachable on: 'windows' 10.0.10240 and before. 'MyType' is unsupported on: 'windows' 8.1 and later.
+        if (!OperatingSystem.IsWindows() || !OperatingSystem.IsWindowsVersionAtLeast(8, 1))
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindowsVersionAtLeast(8, 1))
+        {
+            t = new MyType();
+        }
+    }
+}
+[UnsupportedOSPlatform(""android23.0"")]
+[UnsupportedOSPlatform(""ios13.0"")]
+[UnsupportedOSPlatform(""windows8.1"")]
+[SupportedOSPlatform(""MacCatalyst13.0"")]
+class MyType { }
+" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         private readonly string MockApisCsSource = @"
 namespace System
 {
