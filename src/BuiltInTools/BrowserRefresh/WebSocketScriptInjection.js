@@ -76,7 +76,7 @@ setTimeout(async function () {
       document.querySelector(`link[href^="${document.baseURI}${path}"]`);
 
     // Receive a Clear-site-data header.
-    await fetch('_framework/clear-browser-cache');
+    await fetch('/_framework/clear-browser-cache');
 
     if (!styleElement || !styleElement.parentNode) {
       console.debug('Unable to find a stylesheet to update. Updating all local css files.');
@@ -140,7 +140,7 @@ setTimeout(async function () {
       }
     });
 
-    fetch('_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
+    fetch('/_framework/blazor-hotreload', { method: 'post', headers: { 'content-type': 'application/json' }, body: JSON.stringify(deltas) })
       .then(response => {
         if (response.status == 200) {
           const etag = response.headers['etag'];
