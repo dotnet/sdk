@@ -28,8 +28,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             while (!cancellationToken.IsCancellationRequested)
             {
                 var arguments = context.Iteration == 0 || (context.ChangedFile?.FilePath is string changedFile && changedFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)) ?
-                   new[] { "msbuild", "/t:Build", "/restore", "/nologo" } :
-                   new[] { "msbuild", "/t:Build", "/nologo" };
+                   new[] { "msbuild", "/t:Build", "/restore", "/nologo", "/p:DotNetWatchBuild=true" } :
+                   new[] { "msbuild", "/t:Build", "/nologo", "/p:DotNetWatchBuild=true" };
 
                 var processSpec = new ProcessSpec
                 {
