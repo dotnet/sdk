@@ -150,7 +150,7 @@
         SourceBuildArcadeTargetsFile=$(MSBuildThisFileDirectory)SourceBuildArcade.targets;
         SourceBuildIntermediateNupkgLicenseFile=$(SourceBuildIntermediateNupkgLicenseFile);
         "
-      BuildInParallel="true"/>
+      BuildInParallel="false"/>
   </Target>
 
   <Import Project="SourceBuildArcade.targets" />

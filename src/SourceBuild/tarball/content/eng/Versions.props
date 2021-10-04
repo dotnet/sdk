@@ -21,8 +21,8 @@
   </PropertyGroup>
   <!-- Production Dependencies -->
   <PropertyGroup>
-    <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-6.0.100-bootstrap.16</PrivateSourceBuiltArtifactsPackageVersion>
+    <PrivateSourceBuiltArtifactsPackageVersion>0.1.0-6.0.100-bootstrap.19</PrivateSourceBuiltArtifactsPackageVersion>
     <PrivateSourceBuiltPrebuiltsPackageVersionPrefix>0.1.0-6.0.100-</PrivateSourceBuiltPrebuiltsPackageVersionPrefix>
-    <PrivateSourceBuiltPrebuiltsPackageVersionSuffix>19</PrivateSourceBuiltPrebuiltsPackageVersionSuffix>
+    <PrivateSourceBuiltPrebuiltsPackageVersionSuffix>23</PrivateSourceBuiltPrebuiltsPackageVersionSuffix>
   </PropertyGroup>
 </Project>

@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WiX" Version="$(WixPackageVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Signed.Wix" Version="$(WixPackageVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
