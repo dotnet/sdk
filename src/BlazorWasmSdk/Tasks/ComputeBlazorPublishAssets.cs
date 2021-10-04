@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         public string PublishPath { get; set; }
 
         [Required]
-        public string BundledNETCoreAppPackageVersion { get; set; }
+        public string BlazorWebAssemblySdkTasksTFM { get; set; }
 
         [Output]
         public ITaskItem[] NewCandidates { get; set; }
@@ -194,7 +194,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
-                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet.{BundledNETCoreAppPackageVersion}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
+                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet.{BlazorWebAssemblySdkTasksTFM}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
 
                         updateMap.Add(asset.ItemSpec, newDotNetJs);
                         Log.LogMessage("Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetJs.ItemSpec);
