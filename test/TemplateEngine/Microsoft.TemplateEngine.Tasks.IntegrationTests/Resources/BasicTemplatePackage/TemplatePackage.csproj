@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackageType>Template</PackageType>
+    <PackageId>TemplatePackage</PackageId>
+    <Authors>Microsoft</Authors>
+    <Description>TemplatePackage</Description>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <LocalizeTemplates>true</LocalizeTemplates>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="**\*" />
+    <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
+    <None Include="content\**\*" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+</Project>
