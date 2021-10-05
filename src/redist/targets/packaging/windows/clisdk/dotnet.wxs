@@ -44,8 +44,8 @@
                   Impersonate="no"/>
 
     <InstallExecuteSequence>
-      <Custom Action="PropertyAssignPrimeCacheAndTelemetry" Before="QtExecPrimeCacheAndTelemetryTarget" />
-      <Custom Action="QtExecPrimeCacheAndTelemetryTarget" Before="InstallFinalize" />
+      <Custom Action="PropertyAssignPrimeCacheAndTelemetry" Before="QtExecPrimeCacheAndTelemetryTarget">NOT Installed</Custom>
+      <Custom Action="QtExecPrimeCacheAndTelemetryTarget" Before="InstallFinalize">NOT Installed</Custom>
     </InstallExecuteSequence>
   </Product>
   <Fragment>
