@@ -90,7 +90,7 @@
     <WriteLinesToFile File="$(CompletedSemaphorePath)GeneratePrebuiltBurndownData.complete" Overwrite="true" />
   </Target>
 
-  <Target Name="RunSmokeTest" DependsOnTargets="GetProdConBlobFeedUrl">
+  <Target Name="RunSmokeTest">
     <PropertyGroup>
       <SmokeTestCommand>./smoke-test.sh</SmokeTestCommand>
       <SmokeTestCommand>$(SmokeTestCommand) --minimal</SmokeTestCommand>
@@ -102,15 +102,9 @@
       <SmokeTestCommand Condition="'$(TargetOS)' == 'OSX'">$(SmokeTestCommand) --excludeWebHttpsTests</SmokeTestCommand>
     </PropertyGroup>
 
-    <!--
-      Pass prodConBlobFeedUrl via EnvironmentVariables because it has '//' in it, which is
-      translated into '/' if it's passed in the Command arg.
-      This is also a problem when passing CLI feeds: https://github.com/dotnet/source-build/issues/561
-    -->
     <Exec Command="$(SmokeTestCommand)"
           EnvironmentVariables="
-            targetRid=$(TargetRid);
-            prodConBlobFeedUrl=$(ProdConBlobFeedUrl)" />
+            targetRid=$(TargetRid)" />
   </Target>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />
@@ -139,11 +133,11 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"
-          AfterTargets="Build" >
+          AfterTargets="Build">
 
     <PropertyGroup>
       <TarballFileVersion>$(PrivateSourceBuiltPrebuiltsPackageVersionPrefix)$([MSBuild]::Add($(PrivateSourceBuiltPrebuiltsPackageVersionSuffix), 1))</TarballFileVersion>
-      <TarballFilePath>$(PackageReportDir)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 

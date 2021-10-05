@@ -466,6 +466,13 @@
                       Overwrite="true" />
   </Target>
 
+  <Target Name="LayoutWorkloadUserLocalMarker"
+          Condition="'$(DotNetBuildFromSource)' == 'true'">
+    <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
+                      Overwrite="true" />
+  </Target>
+  
+
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
 
     <PropertyGroup>
@@ -535,6 +542,7 @@
                             LayoutRuntimeGraph;
                             LayoutTemplates;
                             LayoutManifests;
+                            LayoutWorkloadUserLocalMarker;
                             LayoutBundledTools;
                             RetargetTools;
                             CrossgenLayout;

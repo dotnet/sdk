@@ -1,5 +1,4 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-
   <ItemGroup>
     <BundledManifests Include="Microsoft.NET.Sdk.Android.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinAndroidWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Android" />
     <BundledManifests Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinIOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.iOS" />

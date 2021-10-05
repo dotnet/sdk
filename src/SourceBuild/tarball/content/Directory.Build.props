@@ -18,6 +18,7 @@
     <Platform Condition="'$(Platform)' == 'AnyCPU'"></Platform>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
     <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 'arm64'">$(BuildArchitecture)</Platform>
+    <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
 
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>
@@ -44,7 +45,6 @@
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(DOTNET_INSTALL_DIR)' != ''">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$(ProjectDir).dotnet/</DotNetCliToolDir>
     <DotnetToolCommand>$(DotNetCliToolDir)dotnet</DotnetToolCommand>
-    <PatchesDir>$(ProjectDir)patches/</PatchesDir>
     <PackagesDir Condition="'$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)</PackagesDir>
     <PackagesDir Condition="'$(PackagesDir)' == ''">$(ProjectDir)packages/restored/</PackagesDir>
     <ArcadeBootstrapPackageDir>$(PackagesDir)ArcadeBootstrapPackage/</ArcadeBootstrapPackageDir>
@@ -81,7 +81,6 @@
   <PropertyGroup>
     <SubmoduleDirectory Condition="'$(SubmoduleDirectory)' == ''">$(ProjectDir)src/</SubmoduleDirectory>
     <GitModulesPath>$(ProjectDir).gitmodules</GitModulesPath>
-    <ProdConFeedPath>$(ProjectDir)ProdConFeed.txt</ProdConFeedPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -252,10 +251,6 @@
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
-
-    <!-- Used by roslyn-analyzsers to determine rsolyn version -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisForShippedApisVersion" Version="%24(MicrosoftCodeAnalysisVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion" Version="%24(MicrosoftCodeAnalysisVersion)" />
 
     <!-- property used by Arcade to determine what version of SourceLink to use -->
     <!-- if MicrosoftSourceLinkCommonPackageVersion is non-empty, then we've already built SourceLink, regardless of whether

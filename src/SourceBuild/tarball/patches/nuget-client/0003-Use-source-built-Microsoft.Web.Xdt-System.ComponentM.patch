@@ -1,0 +1,43 @@
+From fecc40e502197e65804177b2aec49a7a5422ed6e Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Thu, 10 Dec 2020 16:17:55 -0600
+Subject: [PATCH 3/5] Use source-built Microsoft.Web.Xdt &
+ System.ComponentModel.Composition
+
+---
+ build/packages.targets | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/build/packages.targets b/build/packages.targets
+index 6f72ac3fd..8317f3903 100644
+--- a/build/packages.targets
++++ b/build/packages.targets
+@@ -15,6 +15,12 @@
+         <XunitVersion>2.4.1</XunitVersion>
+     </PropertyGroup>
+ 
++    <!-- source-build-relevant package versions -->
++    <PropertyGroup>
++        <MicrosoftWebXdtPackageVersion Condition="'$(MicrosoftWebXdtPackageVersion)' == ''">3.0.0</MicrosoftWebXdtPackageVersion>
++        <SystemComponentModelCompositionPackageVersion Condition="'$(SystemComponentModelCompositionPackageVersion)' == ''">4.5.0</SystemComponentModelCompositionPackageVersion>
++    </PropertyGroup>
++
+     <ItemGroup>
+         <!-- PackageDownload -->
+         <PackageDownload Update="Microsoft.Build" Version="[15.1.262-preview5]" />
+@@ -42,10 +48,10 @@
+         <PackageReference Update="Microsoft.VisualStudio.VCProjectEngine" Version="$(VSFrameworkVersion)" />
+         <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="17.0.7-preview-0001-g5492e466a9" />
+         <PackageReference Update="Microsoft.VSSDK.BuildTools" Version="17.0.1600" />
+-        <PackageReference Update="Microsoft.Web.Xdt" Version="3.0.0" />
++        <PackageReference Update="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
+         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+         <PackageReference Update="SharpZipLib" Version="1.3.2" />
+-        <PackageReference Update="System.ComponentModel.Composition" Version="4.5.0" />
++        <PackageReference Update="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionPackageVersion)" />
+         <!--
+           The Microsoft.VisualStudio.SDK metapackage brings in System.Threading.Tasks.Dataflow 4.11.1 (assembly version 4.9.5.0).
+           However, our MSBuild integration tests use Microsoft.Build 16.8.0, which requires System.Threading.Tasks.Dataflow 4.9.0 (assembly version 4.9.3.0).
+-- 
+2.18.0
+

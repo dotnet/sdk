@@ -48,8 +48,13 @@
         <RepositoryReference Include="runtime" />
         <RepositoryReference Include="templating" />
 
+        <!-- Tier 3 -->
+        <RepositoryReference Include="roslyn-analyzers" />
+
         <!-- Tier 4 -->
         <RepositoryReference Include="aspnetcore" />
+        <RepositoryReference Include="deployment-tools" />
+        <RepositoryReference Include="nuget-client" />
 
         <!-- Tier 5 -->
         <RepositoryReference Include="fsharp" />

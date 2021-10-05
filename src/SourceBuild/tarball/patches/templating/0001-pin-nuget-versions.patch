@@ -1,0 +1,30 @@
+From c0ec49b887cae58bb860a18982115c5910f29821 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 14 Sep 2021 22:54:01 +0000
+Subject: [PATCH] pin nuget versions
+
+Temporary fix for https://github.com/dotnet/source-build/issues/2455 to unblock source-build
+---
+ Directory.Build.targets | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index 0dc99916..7c45fda3 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -12,9 +12,9 @@
+     <PackageReference Update="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
+     <PackageReference Update="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+     <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+-    <PackageReference Update="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
+-    <PackageReference Update="NuGet.Credentials" Version="$(NuGetCredentialsPackageVersion)" />
+-    <PackageReference Update="NuGet.Protocol" Version="$(NuGetProtocolPackageVersion)" />
++    <PackageReference Update="NuGet.Configuration" Version="6.0.0-preview.3.179" />
++    <PackageReference Update="NuGet.Credentials" Version="6.0.0-preview.3.179" />
++    <PackageReference Update="NuGet.Protocol" Version="6.0.0-preview.3.179" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(BuildingInsideVisualStudio)' != 'true'">
+-- 
+2.29.2
+

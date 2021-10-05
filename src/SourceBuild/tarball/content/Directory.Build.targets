@@ -12,11 +12,4 @@
 
   <Import Condition="'$(SkipArcadeSdkImport)' != 'true'" Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <Target Name="GetProdConBlobFeedUrl">
-    <PropertyGroup>
-      <ProdConBlobFeedUrl>$([System.IO.File]::ReadAllText('$(ProdConFeedPath)').Trim())</ProdConBlobFeedUrl>
-      <ProdConBlobFeedUrl Condition="'$(ProdConBlobFeedUrlPrefix)' != ''">$(ProdConBlobFeedUrl.Replace('https://dotnetfeed.blob.core.windows.net/', '$(ProdConBlobFeedUrlPrefix)'))</ProdConBlobFeedUrl>
-    </PropertyGroup>
-  </Target>
-
 </Project>
