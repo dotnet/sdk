@@ -1,0 +1,35 @@
+From d0596ee04233142bbaa9b3587f2c8b3a0bd82f8f Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Fri, 27 Aug 2021 01:52:56 +0000
+Subject: [PATCH] NuGet.Build.Tasks.Pack source-build support
+
+---
+ .../NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+index f11dd752b..c7425dbe8 100644
+--- a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
++++ b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+@@ -180,13 +180,16 @@
+       <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
+     </PropertyGroup>
+     <ItemGroup>
+-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
++      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll" Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
+         <PackagePath>$(PackagePathDir)</PackagePath>
+       </TfmSpecificPackageFile>
+       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
+         <PackagePath>$(PackagePathDir)</PackagePath>
+       </TfmSpecificPackageFile>
+-    </ItemGroup>    
++      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
++        <PackagePath>$(PackagePathDir)</PackagePath>
++      </TfmSpecificPackageFile>
++    </ItemGroup>
+   </Target>
+ 
+   <Import Project="$(BuildCommonDirectory)common.targets"/>
+-- 
+2.29.2
+

@@ -2,30 +2,27 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommandArgs>--restore --build --pack</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --configuration $(Configuration)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -bl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) -warnaserror false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
-
-    <!-- Versioning args. -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:OfficialBuild=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetBuildFromSource=true</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:GitHubRepositoryName=roslyn-analyzers</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:RepositoryUrl=git://github.com/dotnet/roslyn-analyzers</BuildCommandArgs>
-
-    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <!-- roslyn-analyzers does not want to build with the source build packages as this more closely mimics their repo build.
+    To make this easier, the use of DotNetPackageVersionPropsPath is disabled and its versions.props explicitly imports
+    $(SourceBuildPackageVersionPropsPath) at the beginning. -->
+    <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('/p:DotNetPackageVersionPropsPath="$(PackageVersionPropsPath)"', ''))</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildPackageVersionPropsPath="$(PackageVersionPropsPath)"</BuildCommandArgs>
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <RepoApiImplemented>false</RepoApiImplemented>
-    <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
+    <DependencyVersionInputRepoApiImplemented>false</DependencyVersionInputRepoApiImplemented>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="runtime" />
+    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- TODO:  Enable with https://github.com/dotnet/source-build/issues/2274
+    <RepositoryReference Include="runtime" /> -->
     <RepositoryReference Include="roslyn" />
   </ItemGroup>
 

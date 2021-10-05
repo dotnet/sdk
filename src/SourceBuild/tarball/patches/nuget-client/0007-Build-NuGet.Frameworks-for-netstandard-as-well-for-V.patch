@@ -1,0 +1,25 @@
+From 612f18bace3320572dc69b3ee56c0d942c29331f Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Fri, 20 Aug 2021 15:30:52 -0500
+Subject: [PATCH] Build NuGet.Frameworks for netstandard as well for VSTest.
+
+---
+ src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+index 65f261dc1..ed81ecf24 100644
+--- a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
++++ b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+@@ -4,7 +4,7 @@
+ 
+   <PropertyGroup>
+     <Description>NuGet's understanding of target frameworks.</Description>
+-    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.0</TargetFrameworks>
+     <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net40</TargetFrameworks>
+     <TargetFramework />
+     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
+-- 
+2.18.0
+

@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <RestorePackagesPath>$(TargetPackagesPath)</RestorePackagesPath>
+  </PropertyGroup>
+
+  <!--
+    The following text-only packages are ones that are consumed by the installer repo, whose
+    versions are dynamic.  These are maintained here so the dynamic version numbers can
+    come from the source (eng/Versions.props).  All other more static text-only packages
+    should be added to source-build-reference-packages.
+  -->
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.DotNet.Common.ItemTemplates"
+                     Version="[$(MicrosoftDotNetCommonItemTemplates21PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates31PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates50PackageVersion)];
+                              [$(MicrosoftDotNetCommonItemTemplates60PackageVersion)]" />
+
+    <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates"
+                     Version="[$(AspNetCorePackageVersionFor21Templates)];
+                              [$(AspNetCorePackageVersionFor30Templates)];
+                              [$(AspNetCorePackageVersionFor31Templates)];
+                              [$(AspNetCorePackageVersionFor50Templates)]" />
+
+    <!-- TODO: Re-enable once successful build completes -->
+    <!-- <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" /> -->
+
+    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.2.1" Version="[$(MicrosoftDotNetCommonProjectTemplates21PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="[$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.1" Version="[$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" Version="[$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)]" />
+
+    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="[$(AspNetCorePackageVersionFor21Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="[$(AspNetCorePackageVersionFor30Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.3.1" Version="[$(AspNetCorePackageVersionFor31Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" Version="[$(AspNetCorePackageVersionFor50Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
+
+    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1" Version="[$(AspNetCorePackageVersionFor21Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" Version="[$(AspNetCorePackageVersionFor30Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1" Version="[$(AspNetCorePackageVersionFor31Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" Version="[$(AspNetCorePackageVersionFor50Templates)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
+
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
+  </ItemGroup>
+
+  <!--
+    Write out directories in which text-only packages are downloaded to be consumed by the "CopyTextOnlyPackages"
+    target.
+  -->
+  <Target Name="WriteTextOnlyDirectoryFile" BeforeTargets="Restore">
+    <ItemGroup>
+      <TextOnlyPackagesDirectories Include="$(TargetPackagesPath)$([System.String]::copy('%(PackageDownload.Identity)').ToLower())" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <TextOnlyPackageDirectoriesContent>@(TextOnlyPackagesDirectories)</TextOnlyPackageDirectoriesContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      Lines="$(TextOnlyPackageDirectoriesContent)"
+      File="$(TargetPackagesPath)/TextOnlyPackageDirectories.txt"
+      Overwrite="true" />
+  </Target>
+</Project>

@@ -2,7 +2,8 @@
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
   <PropertyGroup>
     <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">netcoreapp3.1</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
-    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' != 'true' ">net6.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
+    <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">net6.0</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
     <MicrosoftDotNetBuildTasksInstallersTaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</MicrosoftDotNetBuildTasksInstallersTaskTargetFramework>
     <MicrosoftDotNetBuildTasksInstallersTaskAssembly>$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\$(MicrosoftDotNetBuildTasksInstallersTaskTargetFramework)\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
   </PropertyGroup>
@@ -12,8 +13,8 @@
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
-      <WixVersion>3.14.0.4118</WixVersion>
-      <WixDownloadUrl>https://dotnetcli.azureedge.net/build/wix/wix.$(WixVersion).zip</WixDownloadUrl>
+      <WixVersion>1.0.0-v3.14.0.4118</WixVersion>
+      <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(WixVersion).zip</WixDownloadUrl>
       <WixRoot>$(ArtifactsDir)Tools/WixTools/$(WixVersion)</WixRoot>
       <WixDestinationPath>$(WixRoot)/WixTools.$(WixVersion).zip</WixDestinationPath>
       <WixDownloadSentinel>$(WixRoot)/WixDownload.$(WixVersion).sentinel</WixDownloadSentinel>
@@ -179,6 +180,7 @@
         <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnet.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\registrykeys.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
         <SdkMsiWixSrcFiles Include="$(WixRoot)\install-files.wixobj" />
     </ItemGroup>
     <CreateLightCommandPackageDrop
@@ -249,6 +251,7 @@
     <ItemGroup>
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\templates.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
     </ItemGroup>
 
@@ -305,6 +308,7 @@
     <ItemGroup>
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifests.wixobj" />
+      <ManifestsMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
       <ManifestsMsiWixSrcFiles Include="$(WixRoot)\Manifest-install-files.wixobj" />
     </ItemGroup>
 

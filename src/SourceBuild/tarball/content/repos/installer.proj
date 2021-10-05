@@ -62,8 +62,7 @@
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build" />
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2279
-    <RepositoryReference Include="nuget-client" /> -->
+    <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="sdk" />
@@ -98,15 +97,19 @@
           AfterTargets="ExtractIntermediatePackages"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)CopyTarBall.complete">
+
+    <PropertyGroup>
+      <TarBallPath>$(SourceBuiltAssetsDir)dotnet-sdk-*$(TarBallExtension)</TarBallPath>
+    </PropertyGroup>
+
     <ItemGroup>
-      <CliTarBalls Include="$(SourceBuiltAssetsDir)*$(TarBallExtension)" />
+      <TarBall Include="$(TarBallPath)" />
     </ItemGroup>
 
-    <Error Condition="'@(CliTarBalls)' == ''" Text="'$(SourceBuiltPackagesPath)*$(TarBallExtension)' does not exist." />
+    <Error Condition="'@(TarBall)' == ''" Text="'$(TarBallPath)' does not exist." />
 
-    <Copy SourceFiles="@(CliTarBalls)"
-          DestinationFolder="$(SourceBuiltTarBallPath)"
-          Condition="'@(CliTarBalls)' != ''" />
+    <Copy SourceFiles="@(TarBall)"
+          DestinationFolder="$(SourceBuiltTarBallPath)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CopyTarBall.complete" Overwrite="true" />
   </Target>

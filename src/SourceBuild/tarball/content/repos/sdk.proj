@@ -38,12 +38,11 @@
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build" />
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2279
-    <RepositoryReference Include="nuget-client" /> -->
-    <!-- TODO:  https://github.com/dotnet/source-build/issues/2319
-    <RepositoryReference Include="roslyn-analyzers" /> -->
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="deployment-tools" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

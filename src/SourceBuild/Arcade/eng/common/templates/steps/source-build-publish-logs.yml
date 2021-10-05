@@ -12,16 +12,14 @@ steps:
     Contents: |
       **/*.log
       **/*.binlog
-      artifacts/source-build/self/prebuilt-report/**
+      artifacts/prebuilt-report/*
     TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
     CleanTargetFolder: true
   continueOnError: true
   condition: succeededOrFailed()
 
-- task: PublishPipelineArtifact@1
+- publish: '$(Build.StagingDirectory)/BuildLogs'
+  artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   displayName: Publish BuildLogs
-  inputs:
-    targetPath: '$(Build.StagingDirectory)/BuildLogs'
-    artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
   continueOnError: true
   condition: succeededOrFailed()
