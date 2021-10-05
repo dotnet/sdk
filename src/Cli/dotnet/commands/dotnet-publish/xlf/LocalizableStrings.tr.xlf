@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="NoSelfContainedOptionDescription">
         <source>Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</source>
-        <target state="translated">Uygulamanızı .NET çalışma zamanı olmadan çerçeveye bağımlı bir uygulama olarak yayımlayın. Uygulamanızı çalıştırmak için desteklenen bir .NET çalışma zamanı yüklenmelidir.</target>
+        <target state="new">Publish your application as a framework dependent application without the .NET runtime. A supported .NET runtime must be installed to run your application.</target>
         <note />
       </trans-unit>
       <trans-unit id="OutputOption">
@@ -66,14 +66,14 @@ Varsayılan durum, çerçeveye bağımlı bir uygulama yayımlamaktır.</target>
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</source>
-        <target state="translated">'--self-contained' ve '--no-self-contained' seçenekleri birbiriyle çakışır. Seçeneklerden yalnızca birini belirtin.</target>
+        <target state="new">The '--self-contained' and '--no-self-contained' options conflict with each other. Specify only one of the options.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Uygulamanızla birlikte .NET çalışma zamanını yayımladığınızda hedef makinede çalışma zamanının yüklü olması gerekmez.
-Çalışma zamanı tanımlayıcısı belirtildiyse varsayılan değer 'true' olur.</target>
+        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
+The default is 'true' if a runtime identifier is specified.</target>
         <note />
       </trans-unit>
     </body>
