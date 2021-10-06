@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.AnalyzerUtilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
@@ -117,6 +118,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             var blockToTargetInvocationOperationsMap = blockToTargetInvocationOperationsMapBuilder.ToImmutableDictionary();
             var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            var result2 = GlobalFlowStateAnalysis.TryGetOrComputeResult(
+                cfg,
+                context.OwningSymbol,
+                CreateOperationVisitor,
+                wellKnowTypeProvider,
+                context.Options,
+                MultipleEnumerableDescriptor,
+                performValueContentAnalysis: true,
+                pessimisticAnalysis: false,
+                out var valueContentAnalysisResult);
+
             var result = InvocationCountAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
@@ -152,12 +164,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (!arguments.IsEmpty)
                 {
                     var count = result[invocationOperation.Kind, invocationOperation.Syntax];
-                    return count.Kind == InvocationCountAbstractValueKind.MoreThanOneTime;
+                    return count.InvocationTimes == InvocationTimes.MoreThanOneTime;
                 }
 
                 return false;
             }
         }
+
+        private static GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context)
+            => new InvocationCountDataFlowOperationVisitor(context);
 
         private static ImmutableArray<IInvocationOperation> GetAllImmediateExecutedInvocationOperations(IOperation root)
             => root.Descendants().OfType<IInvocationOperation>().WhereAsArray(IsImmediateExecutedLinqOperation);
