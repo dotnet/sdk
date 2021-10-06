@@ -1147,7 +1147,7 @@ Rule ID | Missing Help Link | Title |
                 sortedRulesById,
                 shippedReleaseData);
             var directory = Directory.CreateDirectory(folder);
-            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName);
+            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
             File.WriteAllText(editorconfigFilePath, text);
             return;
 
