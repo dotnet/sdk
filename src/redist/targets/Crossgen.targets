@@ -11,7 +11,7 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx6460PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
