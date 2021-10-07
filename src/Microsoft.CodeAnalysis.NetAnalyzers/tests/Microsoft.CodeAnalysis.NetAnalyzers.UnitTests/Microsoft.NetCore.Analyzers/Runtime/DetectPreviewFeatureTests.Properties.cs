@@ -533,5 +533,99 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(1).WithArguments("AProperty", "Program.AProperty"));
             await test.RunAsync();
         }
+
+        [Fact]
+        public async Task TestRefProperty()
+        {
+            var csInput = @" 
+        using System.Runtime.Versioning; using System;
+        namespace Preview_Feature_Scratch
+        {
+
+            class Program
+            {
+                private bool _foo;
+                private bool _aProperty;
+
+                [RequiresPreviewFeatures]
+                private ref bool Foo => ref _foo;
+
+                [RequiresPreviewFeatures]
+                public virtual ref bool AProperty => ref _aProperty;
+
+                static void Main(string[] args)
+                {
+                    Program prog = new Program();
+                    bool foo = {|#0:prog.Foo|};
+
+                    Derived derived = new Derived();
+                    bool prop = derived.AProperty;
+                }
+            }
+
+            class Derived: Program
+            {
+                private bool _aProperty;
+
+                public override ref bool {|#1:AProperty|} => ref _aProperty;
+            }
+        }";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(1).WithArguments("AProperty", "Program.AProperty"));
+            await test.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestIndexer()
+        {
+            var csInput = @"using System;
+        using System.Runtime.Versioning;
+
+        namespace Preview_Feature_Scratch
+        {
+            class Program
+            {
+                private bool[] _value;
+
+                [RequiresPreviewFeatures]
+                public bool this[int index] => _value[index];
+
+                static void Main(string[] args)
+                {
+                    Program prog = new Program();
+                    bool x = {|#0:prog[0]|};
+
+                    Base @base = new Base();
+                    bool y = {|#1:@base[0]|};
+
+                    Derived derived = new Derived();
+                    bool z = derived[0];
+                }
+            }
+
+            class Base
+            {
+                private bool[] _value;
+
+                [RequiresPreviewFeatures]
+                public virtual bool this[int index] => _value[index];
+            }
+
+            class Derived : Base
+            {
+                private bool[] _value;
+
+                public override bool {|#2:this|}[int index] => _value[index];
+            }
+        }";
+
+            var test = TestCS(csInput);
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("this[]"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("this[]"));
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(2).WithArguments("this[]", "Base.this[]"));
+            await test.RunAsync();
+        }
     }
 }
