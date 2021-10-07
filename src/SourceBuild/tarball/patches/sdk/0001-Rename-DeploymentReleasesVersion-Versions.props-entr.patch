@@ -19,7 +19,7 @@ index 0a7442c7c4..741b654ec4 100644
 @@ -36,7 +36,7 @@
      <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
      <SystemTextJsonVersion>5.0.2</SystemTextJsonVersion>
-     <SystemReflectionMetadataLoadContextVersion>6.0.0-rtm.21504.6</SystemReflectionMetadataLoadContextVersion>
+     <SystemReflectionMetadataLoadContextVersion>6.0.0-rtm.21506.22</SystemReflectionMetadataLoadContextVersion>
 -    <DeploymentReleasesVersion>1.0.0-preview1.1.21112.1</DeploymentReleasesVersion>
 +    <MicrosoftDeploymentDotNetReleasesVersion>1.0.0-preview1.1.21112.1</MicrosoftDeploymentDotNetReleasesVersion>
      <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
@@ -35,7 +35,7 @@ index b27862fb9d..539e127a63 100644
      <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
 -    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(DeploymentReleasesVersion)" />
 +    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
-     <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />
+     <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
    </ItemGroup>
    <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
 diff --git a/src/Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.csproj b/src/Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.csproj
