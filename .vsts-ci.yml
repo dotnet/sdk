@@ -41,11 +41,11 @@ jobs:
   displayName: Ubuntu16.04 Debug
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCorePublic-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64.Open
+      name: NetCore1ESPool-Svc-Public
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCoreInternal-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
     vmImage: ubuntu-16.04
   steps:
   - checkout: self
@@ -74,8 +74,8 @@ jobs:
 - job: debug_windows_nt
   displayName: Windows_NT Debug
   pool:
-    name: NetCorePublic-Pool
-    queue: BuildPool.Windows.10.Amd64.VS2017.Open
+    name: NetCore1ESPool-Svc-Public
+    demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -103,8 +103,8 @@ jobs:
 - job: debug_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Debug
   pool:
-    name: NetCorePublic-Pool
-    queue: BuildPool.Windows.10.Amd64.VS2017.Open
+    name: NetCore1ESPool-Svc-Public
+    demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -163,11 +163,11 @@ jobs:
   displayName: Ubuntu16.04 Release
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCorePublic-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64.Open
+      name: NetCore1ESPool-Svc-Public
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCoreInternal-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
     vmImage: ubuntu-16.04
   steps:
   - checkout: self
@@ -196,8 +196,8 @@ jobs:
 - job: release_windows_nt
   displayName: Windows_NT Release
   pool:
-    name: NetCorePublic-Pool
-    queue: BuildPool.Windows.10.Amd64.VS2017.Open
+    name: NetCore1ESPool-Svc-Public
+    demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
@@ -225,8 +225,8 @@ jobs:
 - job: release_windows_nt_fullframework
   displayName: Windows_NT_FullFramework Release
   pool:
-    name: NetCorePublic-Pool
-    queue: BuildPool.Windows.10.Amd64.VS2017.Open
+    name: NetCore1ESPool-Svc-Public
+    demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
   steps:
   - checkout: self
     clean: true
