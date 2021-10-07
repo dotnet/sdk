@@ -338,8 +338,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
-        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' dérive de la classe de prévisualisation '{1}' et doit donc opter pour les fonctionnalités de prévisualisation. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -348,8 +353,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
-        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">L'utilisation de '{0}' nécessite d'opter pour les fonctionnalités de prévisualisation. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
+        <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
@@ -1103,8 +1113,13 @@
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
-        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">Le type de « {0} » contient le type d’aperçu « {1} » et requiert l’option préverser les fonctionnalités en préversion. Pour plus d’informations, consultez https://aka.ms/dotnet-warnings/preview-features.</target>
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1258,13 +1273,23 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
-        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' met en œuvre l’interface de prévisualisation '{1}' et doit donc opter pour les fonctionnalités de prévisualisation. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
-        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' met en œuvre la méthode de prévisualisation '{1}' et doit donc opter pour les fonctionnalités de prévisualisation. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1573,13 +1598,23 @@
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
-        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' renvoie le type d'aperçu '{1}' et doit donc opter pour les fonctionnalités d'aperçu. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
-        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">' {0} ' accepte un paramètre d’aperçu de type ' {1} 'et doit accepter des fonctionnalités en préversion. Pour plus d’informations, consultez https://aka.ms/dotnet-warnings/preview-features.</target>
+      <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1673,8 +1708,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
-        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' contourne la méthode de prévisualisation '{1}' et doit donc opter pour les fonctionnalités de prévisualisation. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -2768,8 +2808,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
-        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="translated">'{0}' utilise le type d'aperçu '{1}' et doit opter pour les fonctionnalités d'aperçu. Voir https://aka.ms/dotnet-warnings/preview-features pour plus d'informations.</target>
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
     </body>
