@@ -27,9 +27,13 @@ jobs:
       Fedora33-Online:
         _runOnline: true
         _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-      Fedora33-Offline:
-        _runOnline: false
-        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+
+      # TODO: Don't run offline in Pr validation until prebuilts are stabilized/removed, otherwise dependency flow continuously breaks PR validation.
+      # https://github.com/dotnet/source-build/issues/2490
+      ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+        Fedora33-Offline:
+          _runOnline: false
+          _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
   timeoutInMinutes: 210
   variables:
     _TarballDir: $(Build.StagingDirectory)/tarball
@@ -86,11 +90,12 @@ jobs:
       artifact: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
       displayName: Publish Source Build Artifacts
 
-  - script: |
-      set -x
+  # TODO: Re-enable once https://github.com/dotnet/source-build/issues/2489 is fixed.
+  # - script: |
+  #     set -x
 
-      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./build.sh --run-smoke-test
-    displayName: Run Tests
+  #     docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./build.sh --run-smoke-test
+  #   displayName: Run Tests
 
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
     parameters:
