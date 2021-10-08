@@ -97,6 +97,10 @@ namespace Microsoft.TemplateEngine.Tasks
                 {
                     // Tasks is known to have already completed. We can get the result without await.
                     ExportResult result = pathTaskPair.Task.Result;
+                    if (!result.Succeeded)
+                    {
+                        Log.LogError("", "", "", result.TemplateJsonPath, 0, 0, 0, 0, result.ErrorMessage);
+                    }
                     failed |= !result.Succeeded;
                 }
             }
