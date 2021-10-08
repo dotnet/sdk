@@ -66,8 +66,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             var allFixers = projectAnalyzersAndFixers.Values.SelectMany(analyzersAndFixers => analyzersAndFixers.Fixers).ToImmutableArray();
 
-            // Only include compiler diagnostics if we have a fixer that can fix them.
+            // Only include compiler diagnostics if we have an associated fixer that supports FixAllScope.Solution
             var fixableCompilerDiagnostics = allFixers
+                .Where(codefix => codefix.GetFixAllProvider()?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) == true)
                 .SelectMany(codefix => codefix.FixableDiagnosticIds.Where(id => id.StartsWith("CS") || id.StartsWith("BC")))
                 .ToImmutableHashSet();
 
