@@ -325,6 +325,20 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <BinaryExtension Include="
+        .dll;
+        .Dll;
+        .exe;
+        .pdb;
+        .mdb;
+        .zip" />
+
+      <BinaryPackageContent Include="$(TextOnlyDirectory)/**/*%(BinaryExtension.Identity)" />
+    </ItemGroup>
+
+    <Error Text="Binary content found in text-only packages: @(BinaryPackageContent)" Condition=" '@(BinaryPackageContent)' != '' " />
+
+    <ItemGroup>
       <TextOnlyPackageContent 
         Include="$(TextOnlyDirectory)/**/*"
         Exclude="
