@@ -166,7 +166,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
       CopySymbols="$(_BlazorCopyOutputSymbolsToOutputDirectory)"
-      BlazorWebAssemblySdkTasksTFM="$(_BlazorWebAssemblySdkTasksTFM)"
       OutputPath="$(OutputPath)"
     >
       <Output TaskParameter="AssetCandidates" ItemName="_BuildAssetsCandidates" />
@@ -284,7 +283,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_BlazorGzipStaticWebAsset)" />
       <StaticWebAsset Include="@(_BuildBlazorBootJsonStaticWebAsset)" />
     </ItemGroup>
-
   </Target>
 
   <Target Name="_GenerateBuildBlazorBootJson" DependsOnTargets="ResolveStaticWebAssetsInputs">
