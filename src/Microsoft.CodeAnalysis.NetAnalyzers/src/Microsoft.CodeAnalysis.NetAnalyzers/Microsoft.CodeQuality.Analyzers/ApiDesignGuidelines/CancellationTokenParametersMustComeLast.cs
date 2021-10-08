@@ -57,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
 
-                    if (!methodSymbol.Parameters.Any(parameter => parameter.Type.Equals(cancellationTokenType)))
+                    if (!methodSymbol.Parameters.Any(static (parameter, tokenType) => parameter.Type.Equals(tokenType), cancellationTokenType))
                     {
                         return;
                     }
