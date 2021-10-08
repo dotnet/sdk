@@ -6,16 +6,15 @@ using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.AnalyzerUtilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed class AvoidMultipleEnumerations : DiagnosticAnalyzer
+    public sealed partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
         private const string RuleId = "CA1850";
 
@@ -137,7 +136,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return;
             }
 
-
             foreach (var block in basicBlocks)
             {
                 var blockResult = analysisResult[block];
@@ -195,12 +193,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             return builder.ToImmutable();
-        }
-
-        private static bool IsLocalIEnumerableOperation(IArgumentOperation argumentOperation)
-        {
-            var value = argumentOperation.Value;
-            return value is ILocalReferenceOperation or IParameterReferenceOperation && value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
         }
 
         private static ImmutableArray<IMethodSymbol> GetWellKnownLinqMethodsCausingEnumeration(WellKnownTypeProvider wellKnownTypeProvider)
