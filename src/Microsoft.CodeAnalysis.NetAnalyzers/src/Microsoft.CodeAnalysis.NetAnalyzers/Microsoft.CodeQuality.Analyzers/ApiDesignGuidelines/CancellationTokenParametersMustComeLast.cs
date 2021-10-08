@@ -56,6 +56,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 compilationContext.RegisterSymbolAction(symbolContext =>
                 {
                     var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
+
+                    if (!methodSymbol.Parameters.Any(parameter => parameter.Type.Equals(cancellationTokenType)))
+                    {
+                        return;
+                    }
+
                     if (methodSymbol.IsOverride ||
                         methodSymbol.IsImplementationOfAnyInterfaceMember())
                     {
