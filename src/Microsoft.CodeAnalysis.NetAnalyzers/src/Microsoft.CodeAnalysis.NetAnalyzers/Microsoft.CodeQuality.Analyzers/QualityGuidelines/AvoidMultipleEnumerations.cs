@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(MultipleEnumerableDescriptor);
 
-        private static readonly ImmutableArray<string> s_immediateExecutedMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_wellKnownLinqMethods = ImmutableArray.Create(
             "System.Linq.Enumerable.Aggregate",
             "System.Linq.Enumerable.All",
             "System.Linq.Enumerable.Any",
@@ -87,7 +87,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 return;
             }
 
-            using var blockToTargetInvocationOperationsMapBuilder = PooledDictionary<BasicBlock, ImmutableArray<IInvocationOperation>>.GetInstance();
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            var wellKnownLinqMethodsCauseEnumeration = GetWellKnownLinqMethodsCausingEnumeration(wellKnownTypeProvider);
+
+            using var blockToTargetInvocationOperationsMapBuilder = PooledDictionary<BasicBlock, ImmutableArray<IOperation>>.GetInstance();
             var basicBlocks = cfg.Blocks;
             foreach (var block in basicBlocks)
             {
@@ -96,10 +99,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     continue;
                 }
 
-                using var arrayBuilder = ArrayBuilder<IInvocationOperation>.GetInstance();
+                using var arrayBuilder = ArrayBuilder<IOperation>.GetInstance();
                 foreach (var operation in block.Operations)
                 {
-                    var immediateExecutedInvocationOperations = GetAllImmediateExecutedInvocationOperations(operation);
+                    var immediateExecutedInvocationOperations = GetOperationsCausingEnumeration(operation, wellKnownLinqMethodsCauseEnumeration);
                     if (immediateExecutedInvocationOperations.IsEmpty)
                     {
                         continue;
@@ -117,81 +120,102 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             var blockToTargetInvocationOperationsMap = blockToTargetInvocationOperationsMapBuilder.ToImmutableDictionary();
-            var wellKnowTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
-            var result2 = GlobalFlowStateAnalysis.TryGetOrComputeResult(
+
+            var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
-                CreateOperationVisitor,
-                wellKnowTypeProvider,
+                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownLinqMethodsCauseEnumeration),
+                wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
                 performValueContentAnalysis: true,
                 pessimisticAnalysis: false,
                 out var valueContentAnalysisResult);
 
-            var result = InvocationCountAnalysis.TryGetOrComputeResult(
-                cfg,
-                context.OwningSymbol,
-                wellKnowTypeProvider,
-                context.Options,
-                MultipleEnumerableDescriptor,
-                pessimisticAnalysis: false,
-                trackingMethodNames: s_immediateExecutedMethods);
-            if (result == null)
+            if (analysisResult == null)
             {
                 return;
             }
 
-            foreach (var (_, invocationOperations) in blockToTargetInvocationOperationsMap)
+
+            foreach (var block in basicBlocks)
             {
-                // TODO: Test IEnumerable[]
-                var multipleEnumerationTargetSet = invocationOperations.WhereAsArray(InvokedMoreThanOneTime)
-                    .Select(op => op.Arguments[0].Parameter)
-                    .ToImmutableHashSet();
-                foreach (var operation in invocationOperations)
+                var blockResult = analysisResult[block];
+                foreach (var (_, valueSet) in blockResult.Data)
                 {
-                    if (multipleEnumerationTargetSet.Contains(operation.Arguments[0].Parameter))
+                    var analysisValues = valueSet.AnalysisValues;
+                    if (analysisValues.Count > 1)
                     {
-                        context.ReportDiagnostic(operation.Arguments[0].CreateDiagnostic(MultipleEnumerableDescriptor));
+                        foreach (var value in analysisValues)
+                        {
+                            if (value is InvocationCountAbstractValue invocationCountAbstractValue)
+                            {
+                                context.ReportDiagnostic(invocationCountAbstractValue.InvocationOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private static GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
+            GlobalFlowStateAnalysisContext context, ImmutableArray<IMethodSymbol> wellKnownLinqMethodsCausingEnumeration)
+            => new InvocationCountDataFlowOperationVisitor(context, wellKnownLinqMethodsCausingEnumeration);
+
+        private static ImmutableArray<IOperation> GetOperationsCausingEnumeration(
+            IOperation root,
+            ImmutableArray<IMethodSymbol> wellKnownLinqMethodsCausingEnumeration)
+        {
+            using var builder = ArrayBuilder<IOperation>.GetInstance();
+
+            foreach (var operation in root.Children)
+            {
+                foreach (var descendantOperation in operation.Descendants())
+                {
+                    // 1. If the operation is Linq Method that causing Enumeration.
+                    // e.g. ToArray() / First() ...
+                    if (descendantOperation is IInvocationOperation invocationOperation
+                        && wellKnownLinqMethodsCausingEnumeration.Contains(invocationOperation.TargetMethod))
+                    {
+                        // Find the argument that matches to the 'source' in the linq method.
+                        // In most cases it is the first argument, but in cases like:
+                        // Enumerable.Select(selector: i => i + 1, source: x), this would be the second argument
+                        var sourceArgument = invocationOperation.Arguments.FirstOrDefault(arg => arg.Parameter.Name == "source");
+                        if (sourceArgument is { Value: ILocalReferenceOperation or IParameterReferenceOperation })
+                        {
+                            builder.Add(descendantOperation);
+                        }
+                    }
+                    // 2. For each loop
+                    else if (descendantOperation is IForEachLoopOperation { Collection: IConversionOperation { Operand: ILocalReferenceOperation or IParameterInitializerOperation } collection } forEachLoopOperation)
+                    {
+                        builder.Add(collection.Operand);
                     }
                 }
             }
 
-            // TODO: Find the Overload so that this can be static
-            bool InvokedMoreThanOneTime(IInvocationOperation invocationOperation)
-            {
-                var arguments = invocationOperation.Arguments;
-                if (!arguments.IsEmpty)
-                {
-                    var count = result[invocationOperation.Kind, invocationOperation.Syntax];
-                    return count.InvocationTimes == InvocationTimes.MoreThanOneTime;
-                }
-
-                return false;
-            }
-        }
-
-        private static GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(GlobalFlowStateAnalysisContext context)
-            => new InvocationCountDataFlowOperationVisitor(context);
-
-        private static ImmutableArray<IInvocationOperation> GetAllImmediateExecutedInvocationOperations(IOperation root)
-            => root.Descendants().OfType<IInvocationOperation>().WhereAsArray(IsImmediateExecutedLinqOperation);
-
-        private static bool IsImmediateExecutedLinqOperation(IInvocationOperation operation)
-        {
-            var targetMethod = operation.TargetMethod;
-            var arguments = operation.Arguments;
-
-            return targetMethod.IsExtensionMethod
-                   && s_immediateExecutedMethods.Contains(targetMethod.ToDisplayString(InvocationCountAnalysis.MethodFullyQualifiedNameFormat))
-                   && !arguments.IsEmpty
-                   && IsLocalIEnumerableOperation(arguments[0]);
+            return builder.ToImmutable();
         }
 
         private static bool IsLocalIEnumerableOperation(IArgumentOperation argumentOperation)
         {
             var value = argumentOperation.Value;
             return value is ILocalReferenceOperation or IParameterReferenceOperation && value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownLinqMethodsCausingEnumeration(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable, out var systemLinqEnumerableType))
+            {
+                foreach (var methodName in s_wellKnownLinqMethods)
+                {
+                    builder.AddRange(systemLinqEnumerableType.GetMembers(methodName).OfType<IMethodSymbol>());
+                }
+            }
+
+            return builder.ToImmutable();
         }
     }
 }
