@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string OriginalItemSpec { get; set; }
 
+        public string NuGetPackageVersion { get; set; }
+
         public static StaticWebAsset FromTaskItem(ITaskItem item)
         {
             var result = FromTaskItemCore(item);
@@ -170,6 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
                 OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
+                NuGetPackageVersion = item.GetMetadata(nameof(NuGetPackageVersion)),
             };
 
         public void ApplyDefaults()
@@ -214,6 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
             result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
             result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
+            result.SetMetadata(nameof(NuGetPackageVersion), NuGetPackageVersion);
             return result;
         }
 
@@ -253,7 +257,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             if (string.IsNullOrEmpty(OriginalItemSpec))
             {
                 throw new InvalidOperationException($"The '{nameof(OriginalItemSpec)}' for the asset must be defined for '{Identity}'.");
-            }            
+            }
 
             switch (AssetKind)
             {
@@ -311,7 +315,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string assetTraitValue,
             string copyToOutputDirectory,
             string copyToPublishDirectory,
-            string originalItemSpec)
+            string originalItemSpec,
+            string nuGetPackageVersion)
         {
             var result = new StaticWebAsset
             {
@@ -329,7 +334,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 AssetTraitValue = assetTraitValue,
                 CopyToOutputDirectory = copyToOutputDirectory,
                 CopyToPublishDirectory = copyToPublishDirectory,
-                OriginalItemSpec = originalItemSpec
+                OriginalItemSpec = originalItemSpec,
+                NuGetPackageVersion = nuGetPackageVersion,
             };
 
             result.ApplyDefaults();
@@ -463,7 +469,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                    AssetTraitValue == asset.AssetTraitValue &&
                    CopyToOutputDirectory == asset.CopyToOutputDirectory &&
                    CopyToPublishDirectory == asset.CopyToPublishDirectory &&
-                   OriginalItemSpec == asset.OriginalItemSpec;
+                   OriginalItemSpec == asset.OriginalItemSpec &&
+                   NuGetPackageVersion == asset.NuGetPackageVersion;
         }
 
         public static class AssetModes
@@ -538,7 +545,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             $"AssetTraitValue: {AssetTraitValue}, " +
             $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
             $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
-            $"OriginalItemSpec: {OriginalItemSpec}";
+            $"OriginalItemSpec: {OriginalItemSpec}, " +
+            $"NuGetPackageVersion: {NuGetPackageVersion}";
 
         public override int GetHashCode()
         {
@@ -559,6 +567,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hash.Add(CopyToOutputDirectory);
             hash.Add(CopyToPublishDirectory);
             hash.Add(OriginalItemSpec);
+            hash.Add(NuGetPackageVersion);
             return hash.ToHashCode();
 #else
             int hashCode = 1447485498;
@@ -577,6 +586,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(NuGetPackageVersion);
             return hashCode;
 #endif
         }
