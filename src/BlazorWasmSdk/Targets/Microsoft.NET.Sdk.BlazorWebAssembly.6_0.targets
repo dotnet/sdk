@@ -407,7 +407,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
       CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
       ExistingAssets="@(_BlazorPublishPrefilteredAssets)"
-      BlazorWebAssemblySdkTasksTFM="$(_BlazorWebAssemblySdkTasksTFM)"
     >
       <Output TaskParameter="NewCandidates" ItemName="_NewBlazorPublishStaticWebAssets" />
       <Output TaskParameter="FilesToRemove" ItemName="_PublishResolvedFilesToRemove" />

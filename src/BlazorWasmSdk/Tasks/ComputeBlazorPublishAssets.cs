@@ -48,9 +48,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         [Required]
         public string PublishPath { get; set; }
 
-        [Required]
-        public string BlazorWebAssemblySdkTasksTFM { get; set; }
-
         [Output]
         public ITaskItem[] NewCandidates { get; set; }
 
