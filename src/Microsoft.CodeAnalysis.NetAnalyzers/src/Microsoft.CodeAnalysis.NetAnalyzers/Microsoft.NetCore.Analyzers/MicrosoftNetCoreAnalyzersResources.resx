@@ -1719,8 +1719,8 @@
   <data name="DetectPreviewFeaturesDescription" xml:space="preserve">
     <value>An assembly has to opt into preview features before using them.</value>
   </data>
-  <data name="DetectPreviewFeaturesMessage" xml:space="preserve">
-    <value>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{2} Using '{0}' requires opting into preview features. See {1} for more information.</value>
   </data>
   <data name="DetectPreviewFeaturesTitle" xml:space="preserve">
     <value>This API requires opting into preview features</value>
@@ -1731,29 +1731,29 @@
   <data name="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode" xml:space="preserve">
     <value>Converting an instance method to a static method may produce invalid code</value>
   </data>
-  <data name="DerivesFromPreviewClassMessage" xml:space="preserve">
-    <value>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="ImplementsPreviewInterfaceMessage" xml:space="preserve">
-    <value>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="ImplementsPreviewMethodMessage" xml:space="preserve">
-    <value>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="MethodReturnsPreviewTypeMessage" xml:space="preserve">
-    <value>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="MethodUsesPreviewTypeAsParamaterMessage" xml:space="preserve">
-    <value>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="OverridesPreviewMethodMessage" xml:space="preserve">
-    <value>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="OverridesPreviewMethodMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
-    <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="FieldIsPreviewTypeMessage" xml:space="preserve">
-    <value>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</value>
+  <data name="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder" xml:space="preserve">
+    <value>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
     <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
@@ -1794,5 +1794,32 @@
   </data>
   <data name="DoNotAlwaysSkipTokenValidationInDelegatesMessage" xml:space="preserve">
     <value>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</value>
+  </data>
+  <data name="DerivesFromPreviewClassMessage" xml:space="preserve">
+    <value>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="DetectPreviewFeaturesMessage" xml:space="preserve">
+    <value>Using '{0}' requires opting into preview features. See {1} for more information.</value>
+  </data>
+  <data name="FieldIsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</value>
+  </data>
+  <data name="ImplementsPreviewInterfaceMessage" xml:space="preserve">
+    <value>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="ImplementsPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="MethodReturnsPreviewTypeMessage" xml:space="preserve">
+    <value>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="MethodUsesPreviewTypeAsParameterMessage" xml:space="preserve">
+    <value>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="OverridesPreviewMethodMessage" xml:space="preserve">
+    <value>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
+    <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
 </root>
