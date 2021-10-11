@@ -90,7 +90,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_DotNetJsVersion>%(_DotNetJsItem.NuGetPackageVersion)</_DotNetJsVersion>
-      <_DotNetJsVersion Condition="'$(_DotNetJsVersion)' == ''">$(TargetFramework)</_DotNetJsVersion>
       <_BlazorDotnetJsFileName>dotnet.$(_DotNetJsVersion).js</_BlazorDotnetJsFileName>
       <_BlazorDotNetJsFilePath>$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)</_BlazorDotNetJsFilePath>
     </PropertyGroup>

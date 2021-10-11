@@ -48,6 +48,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         [Required]
         public string PublishPath { get; set; }
 
+        [Required]
+        public string DotNetJsVersion { get; set; }
+
         [Output]
         public ITaskItem[] NewCandidates { get; set; }
 
@@ -191,7 +194,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     {
                         newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
                         newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
-                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet.{BlazorWebAssemblySdkTasksTFM}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
+                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet.{DotNetJsVersion}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
 
                         updateMap.Add(asset.ItemSpec, newDotNetJs);
                         Log.LogMessage("Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetJs.ItemSpec);
@@ -522,7 +525,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
             {
                 if (ComputeBlazorBuildAssets.ShouldFilterCandidate(candidate, TimeZoneSupport, InvariantGlobalization, CopySymbols, out var reason))
                 {
-                    Log.LogMessage("Skipping asset '{0}' becasue '{1}'", candidate.ItemSpec, reason);
+                    Log.LogMessage("Skipping asset '{0}' because '{1}'", candidate.ItemSpec, reason);
                     if (!resolvedFilesToPublishToRemove.ContainsKey(candidate.ItemSpec))
                     {
                         resolvedFilesToPublishToRemove.Add(candidate.ItemSpec, candidate);

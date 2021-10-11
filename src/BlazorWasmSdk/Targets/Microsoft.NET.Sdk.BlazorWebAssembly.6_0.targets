@@ -399,6 +399,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'%(StaticWebAsset.AssetTraitName)' == 'BlazorWebAssemblyResource' or '%(StaticWebAsset.AssetTraitName)' == 'Culture' or '%(AssetRole)' == 'Alternative'" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_DotNetJsItem Include="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.DestinationSubPath)' == 'dotnet.js' AND '%(ResolvedFileToPublish.AssetType)' == 'native'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_DotNetJsVersion>%(_DotNetJsItem.NuGetPackageVersion)</_DotNetJsVersion>
+    </PropertyGroup>
+
     <ComputeBlazorPublishAssets
       ResolvedFilesToPublish="@(ResolvedFileToPublish)"
       TimeZoneSupport="$(_BlazorEnableTimeZoneSupport)"
@@ -407,6 +415,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       InvariantGlobalization="$(_BlazorInvariantGlobalization)"
       CopySymbols="$(CopyOutputSymbolsToPublishDirectory)"
       ExistingAssets="@(_BlazorPublishPrefilteredAssets)"
+      DotNetJsVersion="$(_DotNetJsVersion)"
     >
       <Output TaskParameter="NewCandidates" ItemName="_NewBlazorPublishStaticWebAssets" />
       <Output TaskParameter="FilesToRemove" ItemName="_PublishResolvedFilesToRemove" />
