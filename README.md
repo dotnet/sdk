@@ -93,7 +93,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace> --severity error`                     | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
 | `dotnet format whitespace <workspace> --folder`                  | Formats a particular folder and subfolders.                                                        |
 | `dotnet format style <workspace>`                                | Fixes only codestyle analyzer warnings.                                                            |
-| `dotnet format style <workspace> --serverity error --no-restore` | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
+| `dotnet format style <workspace> --severity error --no-restore` | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
 | `dotnet format style <workspace> --diagnostics IDE0005`          | Fixes only codestyle analyzer warnings for the IDE0005 diagnostic.                                 |
 | `dotnet format analyzers <workspace> --severity error`           | Fixes only 3rd party analyzer errors.                                                              |
 | `dotnet format --include Program.cs Utility\Logging.cs`          | Formats the files Program.cs and Utility\Logging.cs                                                |
