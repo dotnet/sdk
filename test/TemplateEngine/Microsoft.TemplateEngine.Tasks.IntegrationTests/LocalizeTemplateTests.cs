@@ -23,8 +23,9 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources\\BasicTemplatePackage", tmpDir, true);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "-s", Path.GetFullPath("Packages"), "--prerelease")
+            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
               .Execute()
               .Should()
@@ -50,8 +51,9 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources\\TemplatePackageEnDe", tmpDir, true);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "-s", Path.GetFullPath("Packages"), "--prerelease")
+            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
               .Execute()
               .Should()
@@ -78,8 +80,9 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources\\TemplatePackagePartiallyLocalized", tmpDir, true);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
-            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "-s", Path.GetFullPath("Packages"), "--prerelease")
+            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
               .Execute()
               .Should()

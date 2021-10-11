@@ -17,9 +17,7 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="dotnet pack $(SolutionDir)src\Microsoft.TemplateEngine.Tasks --output $(TargetDir)Packages" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <Exec Command="dotnet pack $(SolutionDir)src\Microsoft.TemplateEngine.Tasks" />
   </Target>
-
-  <ProjectExtensions><VisualStudio><UserProperties resources_4testtemplatepackage_4content_4templatewithsourcename_4_1template_1config_4template_1json__JsonSchema="https://json.schemastore.org/template.json" /></VisualStudio></ProjectExtensions>
 </Project>
