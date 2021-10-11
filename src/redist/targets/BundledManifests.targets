@@ -68,13 +68,15 @@
     </GenerateGuidFromName>
       
     <ItemGroup>
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\**\*"
+      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/"/>
-
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\**\*.json;%(BundledManifests.RestoredNupkgContentPath)\**\*.targets"
-                       Condition="!Exists('%(BundledManifests.RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(BundledManifests.WorkloadManifestId)', '').ToLower())/"/>
+                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())"
+                       RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
+                       WorkloadManifestId="%(WorkloadManifestId)"/>
+                       
+      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
+                       Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
+                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/localize"/>
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
