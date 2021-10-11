@@ -1,0 +1,40 @@
+From 071dfef93e5431a415bd9298f2ed8aaf9a22524f Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Mon, 11 Oct 2021 19:35:15 +0000
+Subject: [PATCH] Don't publish for win runtime identifier in source-build
+
+See https://github.com/microsoft/vstest/pull/3096
+---
+ src/testhost.x86/testhost.x86.csproj | 2 +-
+ src/testhost/testhost.csproj         | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/testhost.x86/testhost.x86.csproj b/src/testhost.x86/testhost.x86.csproj
+index 7eb5cd15..09856522 100644
+--- a/src/testhost.x86/testhost.x86.csproj
++++ b/src/testhost.x86/testhost.x86.csproj
+@@ -19,7 +19,7 @@
+     <ApplicationManifest>app.manifest</ApplicationManifest>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1' AND '$(TargetFramework)' != 'netcoreapp1.0' AND '$(TargetFramework)' != 'net6.0' ">
+-    <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' != 'true'">win7-x86</RuntimeIdentifier>
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+     <TargetName Condition="'$(TargetFramework)' != 'net451'">$(AssemblyName.Replace('.x86', '')).$(TargetFramework).x86</TargetName>
+   </PropertyGroup>
+diff --git a/src/testhost/testhost.csproj b/src/testhost/testhost.csproj
+index a780e4e9..ba0fd259 100644
+--- a/src/testhost/testhost.csproj
++++ b/src/testhost/testhost.csproj
+@@ -16,7 +16,7 @@
+     <ApplicationManifest>app.manifest</ApplicationManifest>
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(TargetFramework)' != 'netcoreapp2.1' AND '$(TargetFramework)' != 'netcoreapp1.0' AND '$(TargetFramework)' != 'net6.0' ">
+-    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
++    <RuntimeIdentifier Condition="'$(DotNetBuildFromSource)' != 'true'">win7-x64</RuntimeIdentifier>
+     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+     <TargetName Condition="'$(TargetFramework)' != 'net451'">$(AssemblyName).$(TargetFramework)</TargetName>
+   </PropertyGroup>
+--
+2.31.1
+
