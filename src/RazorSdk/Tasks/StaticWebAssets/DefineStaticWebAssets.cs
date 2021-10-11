@@ -59,8 +59,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
-        public string NuGetPackageVersion { get; set; }
-
         [Output]
         public ITaskItem[] Assets { get; set; }
 
@@ -119,7 +117,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
-                    var nuGetPackageVersion = ComputePropertyValue(candidate, nameof(StaticWebAsset.NuGetPackageVersion), NuGetPackageVersion, isRequired: false);
                     var originalItemSpec = ComputePropertyValue(
                         candidate, 
                         nameof(StaticWebAsset.OriginalItemSpec),
@@ -158,8 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         assetTraitValue,
                         copyToOutputDirectory,
                         copyToPublishDirectory,
-                        originalItemSpec,
-                        nuGetPackageVersion);
+                        originalItemSpec);
 
                     var item = asset.ToTaskItem();
 
