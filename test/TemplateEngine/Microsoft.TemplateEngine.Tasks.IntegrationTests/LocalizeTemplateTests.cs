@@ -105,5 +105,32 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
             Directory.Delete(tmpDir, true);
         }
 
+        [Fact]
+        public void CanRunTaskAndDetectError()
+        {
+            string tmpDir = TestUtils.CreateTemporaryFolder();
+            TestUtils.DirectoryCopy("Resources\\InvalidTemplatePackage", tmpDir, true);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
+
+            new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
+              .WithWorkingDirectory(tmpDir)
+              .Execute()
+              .Should()
+              .Pass();
+
+            new DotnetCommand(_log, "build")
+                .WithWorkingDirectory(tmpDir)
+                .Execute()
+                .Should()
+                .Fail()
+                .And.HaveStdOutContaining("Build FAILED.")
+                .And.HaveStdOutContaining("error : Each child of \"//postActions\" should have a unique id");
+
+            string locFolder = Path.Combine(tmpDir, "content\\TemplateWithSourceName\\.template.config\\localize");
+
+            Assert.False(Directory.Exists(locFolder));
+            Directory.Delete(tmpDir, true);
+        }
+
     }
 }

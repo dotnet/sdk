@@ -18,6 +18,5 @@
   <ItemGroup>
     <Compile Remove="**\*" />
     <Content Include="content\**\*" Exclude="content\**\bin\**;content\**\obj\**" />
-    <None Include="content\**\*" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
