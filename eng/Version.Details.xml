@@ -254,13 +254,13 @@
       <Uri>https://github.com/aspnet/xdt</Uri>
       <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0-rtm.21507.2">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0-rtm.21512.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>13bc188d1e51ccc8ededb524be16785d4e22806b</Sha>
+      <Sha>36ec25e0492ad3f88a12e9a1b9f5f14ab91582d6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.3-beta1.21507.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.3-beta1.21512.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>13bc188d1e51ccc8ededb524be16785d4e22806b</Sha>
+      <Sha>36ec25e0492ad3f88a12e9a1b9f5f14ab91582d6</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21473.1">
