@@ -334,6 +334,7 @@ Integration with static web assets:
   <!-- Incrementalism is built into the task itself. -->
   <ItemGroup>
     <_CurrentProjectDiscoveredScopedCssFiles Include="@(_DiscoveredScopedCssFiles)" />
+    <_EmptyProjectBundlesList />
   </ItemGroup>
 
   <!-- This is the bundle for the app, we will always generate it when there are scoped css files for the current project or
@@ -353,7 +354,7 @@ Integration with static web assets:
   <ConcatenateCssFiles
     Condition="'@(_ScopedCss)' != ''"
     ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
-    ProjectBundles="@()"
+    ProjectBundles="@(_EmptyProjectBundlesList)"
     ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
     OutputFile="$(_ScopedCssProjectOutputPath)" />
 
