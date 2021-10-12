@@ -5,13 +5,18 @@ IFS=$'\n\t'
 SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 
 usage() {
-    echo "usage: $0"
+    echo "usage: $0 [options]"
     echo ""
     echo "  Prepares a tarball to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and"
     echo "  installing the version of dotnet referenced in global.json"
+    echo "options:"
+    echo "  --bootstrap    Build a bootstrap version of previously source-built packages archive."
+    echo "                 This modifies the downloaded version, replacing portable packages"
+    echo "                 with official ms-built packages restored from package feeds."
     echo ""
 }
 
+buildBootstrap=false
 positional_args=()
 while :; do
     if [ $# -le 0 ]; then
@@ -22,6 +27,9 @@ while :; do
         "-?"|-h|--help)
             usage
             exit 0
+            ;;
+        --bootstrap)
+            buildBootstrap=true
             ;;
         *)
             positional_args+=("$1")
@@ -86,4 +94,32 @@ done < $SCRIPT_ROOT/packages/archive/archiveArtifacts.txt
 if [ "$installDotnet" == "true" ]; then
     echo "  Installing dotnet..."
     (source ./eng/common/tools.sh && InitializeDotNetCli true)
+fi
+
+# Build bootstrap, if specified
+if [ "$buildBootstrap" == "true" ]; then
+    DOTNET_SDK_PATH="$SCRIPT_ROOT/.dotnet"
+
+    # Create working directory for running bootstrap project
+    workingDir=$(mktemp -d)
+    echo "  Building bootstrap previously source-built in $workingDir"
+
+    # Copy bootstrap project to working dir
+    cp $SCRIPT_ROOT/scripts/bootstrap/buildBootstrapPreviouslySB.csproj $workingDir
+
+    # Copy NuGet.config from the installer repo to have the right feeds
+    cp $SCRIPT_ROOT/src/installer.*/NuGet.config $workingDir
+
+    # Get PackageVersions.props from existing prev-sb archive
+    echo "  Retrieving PackageVersions.props from existing archive"
+    sourceBuiltArchive=`find $SCRIPT_ROOT/packages/archive -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
+    if [ -f "$sourceBuiltArchive" ]; then
+        tar -xzf "$sourceBuiltArchive" -C $workingDir PackageVersions.props
+    fi
+
+    # Run restore on project to initiate download of bootstrap packages
+    $DOTNET_SDK_PATH/dotnet restore $workingDir/buildBootstrapPreviouslySB.csproj /bl /p:ArchiveDir="$SCRIPT_ROOT/packages/archive/"
+
+    # Remove working directory
+    rm -rf $workingDir
 fi

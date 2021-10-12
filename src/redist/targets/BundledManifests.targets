@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <!-- Restore workload manifests via PackageReference -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
     <BundledManifestsForPackageDownload Include="@(BundledManifests)" >
       <Version>[%(Version)]</Version>
     </BundledManifestsForPackageDownload>
@@ -26,7 +26,8 @@
   </ItemGroup>
 
   <Target Name="LayoutManifests"
-        DependsOnTargets="LayoutManifestsForSDK;LayoutManifestsForMSI" />
+        DependsOnTargets="LayoutManifestsForSDK;LayoutManifestsForMSI" 
+        Condition="'$(DotNetBuildFromSource)' != 'true'"/>
 
   <Target Name="LayoutManifestsForSDK"
           DependsOnTargets="SetupBundledComponents;GenerateManifestVersions">
