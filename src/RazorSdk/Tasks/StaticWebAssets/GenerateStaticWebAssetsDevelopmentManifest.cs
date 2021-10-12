@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 if (asset.HasSourceId(Source) && !StaticWebAssetsManifest.ManifestModes.ShouldIncludeAssetInCurrentProject(asset, StaticWebAssetsManifest.ManifestModes.Root))
                 {
-                    Log.LogMessage("Skipping candidate asset '{0}' because asset mode is '{2}'",
+                    Log.LogMessage("Skipping candidate asset '{0}' because asset mode is '{1}'",
                         asset.Identity,
                         asset.AssetMode);
 
