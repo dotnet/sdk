@@ -1,7 +1,12 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -11,13 +16,53 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         internal class InvocationCountDataFlowOperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownLinqMethodCausingEnumeration;
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
+
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayingMethods;
+
             public InvocationCountDataFlowOperationVisitor(
                 GlobalFlowStateAnalysisContext analysisContext,
-                ImmutableArray<IMethodSymbol> wellKnownLinqMethodCausingEnumeration)
-                : base(analysisContext, hasPredicatedGlobalState: false)
+                ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
+                : base(analysisContext, hasPredicatedGlobalState: true)
             {
-                _wellKnownLinqMethodCausingEnumeration = wellKnownLinqMethodCausingEnumeration;
+                _wellKnownEnumerationMethods = wellKnownEnumerationMethods;
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitParameterReference(IParameterReferenceOperation operation, object? argument)
+            {
+                if (operation.Parameter.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    && operation.Parent is IArgumentOperation argumentOperation)
+                {
+
+                }
+
+                return base.VisitParameterReference(operation, argument);
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitLocalReference(ILocalReferenceOperation operation, object? argument)
+            {
+                if (operation.Local.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                {
+                    var parent = operation.Parent;
+
+                }
+
+                return base.VisitLocalReference(operation, argument);
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitFlowCapture(IFlowCaptureOperation operation, object? argument)
+            {
+                return base.VisitFlowCapture(operation, argument);
+            }
+
+            private bool IsInForEachLoop(IOperation operation)
+            {
+                if (operation.Parent.Parent is IForEachLoopOperation)
+                {
+
+                }
+
+                return false;
             }
 
             public override GlobalFlowStateAnalysisValueSet VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
@@ -30,7 +75,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 var value = base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(method, visitedInstance, visitedArguments, invokedAsDelegate, originalOperation, defaultValue);
 
-                if (_wellKnownLinqMethodCausingEnumeration.Contains(method)
+                if (_wellKnownEnumerationMethods.Contains(method)
                     && !visitedArguments.IsEmpty
                     && AnalysisEntityFactory.TryCreate(visitedArguments[0].Value, out var analysisEntity))
                 {
@@ -38,13 +83,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         var existingAbstractValue = GetAbstractValue(analysisEntity);
                         var newAbstractValue = existingAbstractValue.WithAdditionalAnalysisValues(
-                            GlobalFlowStateAnalysisValueSet.Create(new InvocationCountAbstractValue(originalOperation)), negate: false);
+                            GlobalFlowStateAnalysisValueSet.Create(new EnumerationInvocationAnalysisValue(originalOperation)), negate: false);
                         SetAbstractValue(analysisEntity, newAbstractValue);
                         return newAbstractValue;
                     }
                     else
                     {
-                        var newAbstractValue = GlobalFlowStateAnalysisValueSet.Create(new InvocationCountAbstractValue(originalOperation));
+                        var newAbstractValue = GlobalFlowStateAnalysisValueSet.Create(new EnumerationInvocationAnalysisValue(originalOperation));
                         SetAbstractValue(analysisEntity, newAbstractValue);
                         return newAbstractValue;
                     }
@@ -52,38 +97,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 return value;
             }
-
-            // public override InvocationCountAbstractValue VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
-            //     IMethodSymbol method,
-            //     IOperation? visitedInstance,
-            //     ImmutableArray<IArgumentOperation> visitedArguments,
-            //     bool invokedAsDelegate,
-            //     IOperation originalOperation,
-            //     InvocationCountAbstractValue defaultValue)
-            // {
-            //     // TODO: Instead of hard code, this should be changed to a function.
-            //     if (InvocationCountAnalysisHelper.CauseEnumeration(originalOperation))
-            //     {
-            //         // if (visitedInstance == null
-            //         //     && method.IsExtensionMethod
-            //         //     && !invocationOperation.Arguments.IsEmpty
-            //         //     && AnalysisEntityFactory.TryCreate(invocationOperation.Arguments[0], out var analysisEntity))
-            //         // {
-            //         //     var existingValue = GetAbstractValue(analysisEntity);
-            //         //     var newValue = InvocationCountValueDomain.Instance.Merge(existingValue, InvocationCountAbstractValue.OneTime);
-            //         //     SetAbstractValue(analysisEntity, newValue);
-            //         //     return newValue;
-            //         // }
-            //     }
-            //
-            //     return base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
-            //         method,
-            //         visitedInstance,
-            //         visitedArguments,
-            //         invokedAsDelegate,
-            //         originalOperation,
-            //         defaultValue);
-            // }
         }
     }
 }

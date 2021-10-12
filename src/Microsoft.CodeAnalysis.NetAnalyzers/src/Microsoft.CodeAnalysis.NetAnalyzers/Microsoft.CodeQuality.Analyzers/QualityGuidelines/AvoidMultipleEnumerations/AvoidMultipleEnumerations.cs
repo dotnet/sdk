@@ -1,7 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
+using System.Composition;
 using System.Linq;
+using System.Security.Claims;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -10,6 +14,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -28,7 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             MicrosoftCodeQualityAnalyzersResources.ResourceManager,
             typeof(MicrosoftCodeQualityAnalyzersResources));
 
-        internal static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
+        private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
             s_localizableMessage,
@@ -41,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
             ImmutableArray.Create(MultipleEnumerableDescriptor);
 
-        private static readonly ImmutableArray<string> s_wellKnownLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_wellKnownLinqMethodsCauseEnumeration = ImmutableArray.Create(
             "System.Linq.Enumerable.Aggregate",
             "System.Linq.Enumerable.All",
             "System.Linq.Enumerable.Any",
@@ -67,6 +72,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.ToList",
             "System.Linq.Enumerable.ToLookup");
 
+        private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray<string>.Empty;
+
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -74,11 +81,44 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             context.RegisterCompilationStartAction(CompilationStartAction);
         }
 
-        private static void CompilationStartAction(CompilationStartAnalysisContext context) => context.RegisterOperationBlockAction(OperationBlockAction);
+        private static void CompilationStartAction(CompilationStartAnalysisContext context)
+        {
+            context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+        }
 
-        private static void OperationBlockAction(OperationBlockAnalysisContext context) => Analyze(context);
+        private static void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
+        {
+            using var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
+            context.RegisterOperationAction(
+                context => CollectPotentialDiagnosticOperations(context, potentialDiagnosticOperationsBuilder),
+                OperationKind.ParameterReference,
+                OperationKind.LocalReference);
 
-        private static void Analyze(OperationBlockAnalysisContext context)
+            var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
+            if (potentialDiagnosticOperations.IsEmpty)
+            {
+                return;
+            }
+
+            context.RegisterOperationBlockEndAction(context => Analyze(context, potentialDiagnosticOperations));
+        }
+
+        private static void CollectPotentialDiagnosticOperations(OperationAnalysisContext context, PooledHashSet<IOperation> builder)
+        {
+            var operation = context.Operation;
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            var wellKnownEnumerationMethods = GetWellKnownEnumerationMethods(wellKnownTypeProvider);
+            var wellKnownDelayExecutionMethods = GetWellKnownDelayExecutionMethod(wellKnownTypeProvider);
+
+            if (operation is IParameterReferenceOperation { Type: { SpecialType: SpecialType.System_Collections_Generic_IEnumerable_T } }
+                or ILocalReferenceOperation { Type: { SpecialType: SpecialType.System_Collections_Generic_IEnumerable_T } }
+                && IsParameterOrLocalEnumerated(operation, wellKnownDelayExecutingMethods: wellKnownDelayExecutionMethods, wellKnownEnumerationMethods: wellKnownEnumerationMethods))
+            {
+                builder.Add(operation);
+            }
+        }
+
+        private static void Analyze(OperationBlockAnalysisContext context, ImmutableHashSet<IOperation> potentialDiagnosticOperations)
         {
             var cfg = context.OperationBlocks.GetControlFlowGraph();
             if (cfg == null)
@@ -86,44 +126,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
-            var wellKnownLinqMethodsCauseEnumeration = GetWellKnownLinqMethodsCausingEnumeration(wellKnownTypeProvider);
-
-            using var blockToTargetInvocationOperationsMapBuilder = PooledDictionary<BasicBlock, ImmutableArray<IOperation>>.GetInstance();
             var basicBlocks = cfg.Blocks;
-            foreach (var block in basicBlocks)
-            {
-                if (!block.IsReachable || block.Operations.IsEmpty)
-                {
-                    continue;
-                }
-
-                using var arrayBuilder = ArrayBuilder<IOperation>.GetInstance();
-                foreach (var operation in block.Operations)
-                {
-                    var immediateExecutedInvocationOperations = GetOperationsCausingEnumeration(operation, wellKnownLinqMethodsCauseEnumeration);
-                    if (immediateExecutedInvocationOperations.IsEmpty)
-                    {
-                        continue;
-                    }
-
-                    arrayBuilder.AddRange(immediateExecutedInvocationOperations);
-                }
-
-                blockToTargetInvocationOperationsMapBuilder.Add(block, arrayBuilder.ToImmutable());
-            }
-
-            if (blockToTargetInvocationOperationsMapBuilder.Count == 0)
-            {
-                return;
-            }
-
-            var blockToTargetInvocationOperationsMap = blockToTargetInvocationOperationsMapBuilder.ToImmutableDictionary();
-
             var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
-                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownLinqMethodsCauseEnumeration),
+                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownEnumerationLinqMethods),
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
@@ -146,7 +153,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         foreach (var value in analysisValues)
                         {
-                            if (value is InvocationCountAbstractValue invocationCountAbstractValue)
+                            if (value is EnumerationInvocationAnalysisValue invocationCountAbstractValue)
                             {
                                 context.ReportDiagnostic(invocationCountAbstractValue.InvocationOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
                             }
@@ -157,8 +164,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         private static GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
-            GlobalFlowStateAnalysisContext context, ImmutableArray<IMethodSymbol> wellKnownLinqMethodsCausingEnumeration)
-            => new InvocationCountDataFlowOperationVisitor(context, wellKnownLinqMethodsCausingEnumeration);
+            GlobalFlowStateAnalysisContext context, ImmutableArray<IMethodSymbol> wellKnownEnumerationLinqMethods)
+            => new InvocationCountDataFlowOperationVisitor(context, wellKnownEnumerationLinqMethods);
 
         private static ImmutableArray<IOperation> GetOperationsCausingEnumeration(
             IOperation root,
@@ -195,15 +202,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownLinqMethodsCausingEnumeration(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
+            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod);
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDelayExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
+            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod);
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownMethods(WellKnownTypeProvider wellKnownTypeProvider, string typeName, ImmutableArray<string> methodNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-
-            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable, out var systemLinqEnumerableType))
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
             {
-                foreach (var methodName in s_wellKnownLinqMethods)
+                foreach (var methodName in methodNames)
                 {
-                    builder.AddRange(systemLinqEnumerableType.GetMembers(methodName).OfType<IMethodSymbol>());
+                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
                 }
             }
 

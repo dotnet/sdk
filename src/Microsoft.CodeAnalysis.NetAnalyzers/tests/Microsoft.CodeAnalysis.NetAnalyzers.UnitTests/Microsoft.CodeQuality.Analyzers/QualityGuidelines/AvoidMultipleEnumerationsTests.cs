@@ -283,6 +283,29 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
+
+        [Fact]
+        public async Task Test()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag, IEnumerable<int>[] array, IEnumerable<int> j)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        foreach (var c in [|i|].Select(z => z))
+        {
+        }
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         [Fact]
         public async Task TestInvocationWithForEachLoop()
         {
