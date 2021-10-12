@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -10,12 +11,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     public sealed partial class AvoidMultipleEnumerations
     {
-        private static bool IsParameterOrLocalEnumerated(
+        private static bool IsParameterOrLocalOrArrayElementEnumerated(
             IOperation parameterOrLocalReferenceOperation,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
         {
-            RoslynDebug.Assert(parameterOrLocalReferenceOperation is ILocalReferenceOperation or IParameterReferenceOperation);
+            RoslynDebug.Assert(parameterOrLocalReferenceOperation is ILocalReferenceOperation or IParameterReferenceOperation or IArrayElementReferenceOperation);
 
             // 1. ForEach Loop that enumerate local or parameter
             if (IsTheExpressionOfForEachLoop(parameterOrLocalReferenceOperation))
@@ -135,6 +136,26 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // TODO: Consider hard code all the linq method case here to make it more accurate
             return wellKnownDelayExecutingMethods.Contains(targetMethod)
                    && argumentOperationToCheck.Parameter.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
+            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod);
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDelayExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
+            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod);
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownMethods(WellKnownTypeProvider wellKnownTypeProvider, string typeName, ImmutableArray<string> methodNames)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+            {
+                foreach (var methodName in methodNames)
+                {
+                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
+                }
+            }
+
+            return builder.ToImmutable();
         }
     }
 }

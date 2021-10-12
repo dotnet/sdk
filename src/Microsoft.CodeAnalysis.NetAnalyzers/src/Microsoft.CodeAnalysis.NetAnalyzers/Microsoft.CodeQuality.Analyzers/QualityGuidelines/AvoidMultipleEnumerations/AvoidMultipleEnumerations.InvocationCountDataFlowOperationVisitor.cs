@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -16,86 +12,71 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         internal class InvocationCountDataFlowOperationVisitor : GlobalFlowStateDataFlowOperationVisitor
         {
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayExecutionMethods;
             private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
 
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayingMethods;
-
-            public InvocationCountDataFlowOperationVisitor(
-                GlobalFlowStateAnalysisContext analysisContext,
+            public InvocationCountDataFlowOperationVisitor(GlobalFlowStateAnalysisContext analysisContext,
+                ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
-                : base(analysisContext, hasPredicatedGlobalState: true)
+                : base(analysisContext,
+                    hasPredicatedGlobalState: true)
             {
+                _wellKnownDelayExecutionMethods = wellKnownDelayExecutionMethods;
                 _wellKnownEnumerationMethods = wellKnownEnumerationMethods;
             }
 
             public override GlobalFlowStateAnalysisValueSet VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
+                var value = base.VisitParameterReference(operation, argument);
                 if (operation.Parameter.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                    && operation.Parent is IArgumentOperation argumentOperation)
+                    && IsParameterOrLocalOrArrayElementEnumerated(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods))
                 {
+
 
                 }
 
-                return base.VisitParameterReference(operation, argument);
+                return value;
             }
 
             public override GlobalFlowStateAnalysisValueSet VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
-                if (operation.Local.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
-                {
-                    var parent = operation.Parent;
-
-                }
-
-                return base.VisitLocalReference(operation, argument);
-            }
-
-            public override GlobalFlowStateAnalysisValueSet VisitFlowCapture(IFlowCaptureOperation operation, object? argument)
-            {
-                return base.VisitFlowCapture(operation, argument);
-            }
-
-            private bool IsInForEachLoop(IOperation operation)
-            {
-                if (operation.Parent.Parent is IForEachLoopOperation)
+                var value = base.VisitLocalReference(operation, argument);
+                if (operation.Local.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    && IsParameterOrLocalOrArrayElementEnumerated(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods))
                 {
 
-                }
-
-                return false;
-            }
-
-            public override GlobalFlowStateAnalysisValueSet VisitInvocation_NonLambdaOrDelegateOrLocalFunction(
-                IMethodSymbol method,
-                IOperation? visitedInstance,
-                ImmutableArray<IArgumentOperation> visitedArguments,
-                bool invokedAsDelegate,
-                IOperation originalOperation,
-                GlobalFlowStateAnalysisValueSet defaultValue)
-            {
-                var value = base.VisitInvocation_NonLambdaOrDelegateOrLocalFunction(method, visitedInstance, visitedArguments, invokedAsDelegate, originalOperation, defaultValue);
-
-                if (_wellKnownEnumerationMethods.Contains(method)
-                    && !visitedArguments.IsEmpty
-                    && AnalysisEntityFactory.TryCreate(visitedArguments[0].Value, out var analysisEntity))
-                {
-                    if (HasAbstractValue(analysisEntity))
-                    {
-                        var existingAbstractValue = GetAbstractValue(analysisEntity);
-                        var newAbstractValue = existingAbstractValue.WithAdditionalAnalysisValues(
-                            GlobalFlowStateAnalysisValueSet.Create(new EnumerationInvocationAnalysisValue(originalOperation)), negate: false);
-                        SetAbstractValue(analysisEntity, newAbstractValue);
-                        return newAbstractValue;
-                    }
-                    else
-                    {
-                        var newAbstractValue = GlobalFlowStateAnalysisValueSet.Create(new EnumerationInvocationAnalysisValue(originalOperation));
-                        SetAbstractValue(analysisEntity, newAbstractValue);
-                        return newAbstractValue;
-                    }
                 }
 
                 return value;
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitArrayElementReference(IArrayElementReferenceOperation operation, object? argument)
+            {
+                var value = base.VisitArrayElementReference(operation, argument);
+                if (operation.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    && IsParameterOrLocalOrArrayElementEnumerated(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods))
+                {
+
+                }
+
+                return value;
+            }
+
+            private GlobalFlowStateAnalysisValueSet CreateAndMergeInvocationCountAnalysisValue(AnalysisEntity analysisEntity)
+            {
+                if (GlobalState.Kind == GlobalFlowStateAnalysisValueSetKind.Known)
+                {
+                    var trackingAnalysisValues = GlobalState.AnalysisValues;
+                    var oneTimeInvocation = new InvocationCountAnalysisValue(analysisEntity, InvocationTimes.One);
+                    if (trackingAnalysisValues.Contains(oneTimeInvocation))
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                }
             }
         }
     }
