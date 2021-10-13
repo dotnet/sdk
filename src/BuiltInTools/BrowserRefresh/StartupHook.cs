@@ -9,6 +9,6 @@ internal class StartupHook
     {
         // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
         // We'll configure an environment variable that will indicate to blazor-wasm that the middleware is available.
-        Environment.SetEnvironmentVariable("_ASPNETCORE_BROWSER_TOOLS", "true");
+        Environment.SetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS", "true");
     }
 }
