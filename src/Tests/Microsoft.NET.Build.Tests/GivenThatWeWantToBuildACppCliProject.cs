@@ -19,7 +19,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
+        [FullMSBuildOnlyFact]
         public void It_builds_and_runs()
         {
             var testAsset = _testAssetsManager
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
             var exe = Path.Combine( //find the platform directory
                 new DirectoryInfo(Path.Combine(testAsset.TestRoot, "CSConsoleApp", "bin")).GetDirectories().Single().FullName,
                 "Debug",
-                "net5.0",
+                ToolsetInfo.CurrentTargetFramework,
                 "CSConsoleApp.exe");
 
             var runCommand = new RunExeCommand(Log, exe);
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("Hello, World!");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
+        [FullMSBuildOnlyFact]
         public void Given_no_restore_It_builds_cpp_project()
         {
             var testAsset = _testAssetsManager
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/3785")]
+        [FullMSBuildOnlyFact]
         public void Given_Wpf_framework_reference_It_builds_cpp_project()
         {
             var testAsset = _testAssetsManager
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_EnableComHosting()
         {
             var testAsset = _testAssetsManager
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.NoSupportCppEnableComHosting);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_fullframework()
         {
             var testAsset = _testAssetsManager
@@ -123,7 +123,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.NETFrameworkWithoutUsingNETSdkDefaults);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void It_fails_with_error_message_on_tfm_lower_than_3_1()
         {
             var testAsset = _testAssetsManager
@@ -140,7 +140,7 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining(Strings.CppRequiresTFMVersion31);
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/11008")]
+        [FullMSBuildOnlyFact]
         public void When_run_with_selfcontained_It_fails_with_error_message()
         {
             var testAsset = _testAssetsManager
