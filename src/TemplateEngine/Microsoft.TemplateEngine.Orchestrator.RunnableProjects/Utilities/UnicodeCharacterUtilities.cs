@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Globalization;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
@@ -86,14 +88,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
         /// <summary>
         /// Check that the name is a valid Unicode identifier.
         /// </summary>
-        public static bool IsValidIdentifier(string name)
+        public static bool IsValidIdentifier(string? name)
         {
             if (string.IsNullOrEmpty(name))
             {
                 return false;
             }
 
-            if (!IsIdentifierStartCharacter(name[0]))
+            if (!IsIdentifierStartCharacter(name![0]))
             {
                 return false;
             }

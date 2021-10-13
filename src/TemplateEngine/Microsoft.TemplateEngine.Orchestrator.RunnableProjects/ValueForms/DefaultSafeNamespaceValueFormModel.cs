@@ -5,9 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities;
 using Newtonsoft.Json.Linq;
 
@@ -37,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             return new DefaultSafeNamespaceValueFormModel(name);
         }
 
-        public virtual string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)
+        public virtual string Process(IReadOnlyDictionary<string, IValueForm>? forms, string value)
         {
             const char invalidCharacterReplacement = '_';
 
