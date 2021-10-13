@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "msimons@microsoft.com" <MichaelSimons>
+Date: Tue, 19 Oct 2021 14:32:25 +0000
+Subject: [PATCH] Project changes to eliminate prebuilts
+
+---
+ src/dotnet-format.csproj | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/src/dotnet-format.csproj b/src/dotnet-format.csproj
+index dbc94b8..994e539 100644
+--- a/src/dotnet-format.csproj
++++ b/src/dotnet-format.csproj
+@@ -19,7 +19,6 @@
+     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+ 
+     <!-- Always run on the latest runtime installed. -->
+-    <RuntimeFrameworkVersion>6.0.0-preview.7.21317.1</RuntimeFrameworkVersion>
+     <RollForward>LatestMajor</RollForward>
+ 
+     <IsPackable>true</IsPackable>
+@@ -29,7 +28,7 @@
+       These identifiers are for generating the shim'd core executables for signing. Not all options
+       from $(RoslynPortableRuntimeIdentifiers) work or make sense in this context.
+     -->
+-    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
++    <PackAsToolShimRuntimeIdentifiers Condition=" '$(DotnetBuildFromSource)' != 'true' ">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
+   </PropertyGroup>
+ 
+   <ItemGroup>

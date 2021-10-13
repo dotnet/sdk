@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "msimons@microsoft.com" <MichaelSimons>
+Date: Tue, 19 Oct 2021 18:59:23 +0000
+Subject: [PATCH] Fix humanizer assembly version
+
+Patch for https://github.com/dotnet/source-build/pull/2539
+---
+ .../humanizer/0001-Fix-building-in-a-source-build-context.patch | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/patches/humanizer/0001-Fix-building-in-a-source-build-context.patch b/patches/humanizer/0001-Fix-building-in-a-source-build-context.patch
+index 8d31028..7a5e5f3 100644
+--- a/patches/humanizer/0001-Fix-building-in-a-source-build-context.patch
++++ b/patches/humanizer/0001-Fix-building-in-a-source-build-context.patch
+@@ -24,7 +24,7 @@ index 842a373..e018285 100644
+      <TargetFramework>netstandard1.0</TargetFramework>    
+      <Authors>Mehdi Khalili, Oren Novotny</Authors>
+      <PackageLicenseUrl>https://raw.githubusercontent.com/Humanizr/Humanizer/master/LICENSE</PackageLicenseUrl>
+-+    <PackageVersion>2.2.0</PackageVersion>
+++    <Version>2.2.0</Version>
+      <PackageProjectUrl>https://github.com/Humanizr/Humanizer</PackageProjectUrl>
+      <MinClientVersion>2.12</MinClientVersion>
+      <Description>A micro-framework that turns your normal strings, type names, enum fields, date fields ETC into a human friendly format</Description>    
