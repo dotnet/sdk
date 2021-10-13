@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
                 }
 
                 bool isValidFirstCharacter = safeValueStr.Length == 0 && UnicodeCharacterUtilities.IsIdentifierStartCharacter(value[i]);
-                bool isValidPartCharacter = safeValueStr.Length > 0 && UnicodeCharacterUtilities.IsIdentifierPartCharacter(value[i]);
+                bool isValidPartCharacter = safeValueStr.Length > 0 && (value[i] == '.' || UnicodeCharacterUtilities.IsIdentifierPartCharacter(value[i]));
 
                 if (isValidFirstCharacter || isValidPartCharacter)
                 {

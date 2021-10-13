@@ -21,6 +21,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("ÇağrışımÖrüntüsü", "ÇağrışımÖrüntüsü")]
         [InlineData("number of sockets", "number_of_sockets")]
         [InlineData("НоваяПеременная", "НоваяПеременная")]
+        [InlineData("Company.Product", "Company.Product")]
+        [InlineData("b913671e-9e12-4ed6-a350-3c44e6b34502", "b913671e.9e12.4ed6.a350.3c44e6b34502")]
         public void SafeNamespaceWorksAsExpected(string input, string expected)
         {
             var model = new DefaultSafeNamespaceValueFormModel();

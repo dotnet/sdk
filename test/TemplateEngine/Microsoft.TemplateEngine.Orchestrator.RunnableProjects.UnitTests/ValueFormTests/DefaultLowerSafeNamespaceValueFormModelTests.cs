@@ -21,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("ÇağrışımÖrüntüsü", "çağrışımörüntüsü")]
         [InlineData("number of sockets", "number_of_sockets")]
         [InlineData("НоваяПеременная", "новаяпеременная")]
+        [InlineData("Company.Product", "company.product")]
         public void LowerSafeNamespaceWorksAsExpected(string input, string expected)
         {
             var model = new DefaultLowerSafeNamespaceValueFormModel();
