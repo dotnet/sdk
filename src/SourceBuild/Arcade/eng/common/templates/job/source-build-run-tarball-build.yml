@@ -17,11 +17,11 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCorePublic-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64.Open
+      name: NetCore1ESPool-Public
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCoreInternal-Pool
-      queue: BuildPool.Ubuntu.1604.Amd64
+      name: NetCore1ESPool-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
   strategy:
     matrix:
       Fedora33-Online:
