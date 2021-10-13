@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Eric Erhardt <eric.erhardt@microsoft.com>
+Date: Tue, 12 Oct 2021 19:40:56 +0000
+Subject: [PATCH 2/2] Eliminate usages of pre-built packages during
+ source-build
+
+* Don't build MSBuild tasks for netfx during source-build
+* Don't build Microsoft.Windows.Compatibility during source-build
+* Don't build test projects during source-build
+* Don't restore Microsoft.DiaSymReader.Native
+* Don't build source generators that target older Roslyn versions
+* Don't build ILStripTask since it uses a Mono.Cecil "sources" NuGet package that isn't part of source-build
+
+See https://github.com/dotnet/source-build/issues/2421 for details.
+Backported to runtime with https://github.com/dotnet/runtime/pull/60315.
+---
+ Directory.Build.props                                       | 4 ++++
+ eng/Subsets.props                                           | 2 +-
+ .../pkg/sfx/Microsoft.NETCore.App/Directory.Build.props     | 2 +-
+ .../src/Microsoft.Extensions.Logging.Abstractions.csproj    | 3 ++-
+ .../src/Microsoft.NETCore.Platforms.csproj                  | 4 ++--
+ src/libraries/System.Text.Json/src/System.Text.Json.csproj  | 3 ++-
+ src/libraries/src.proj                                      | 5 +++++
+ src/tasks/Directory.Build.props                             | 3 +++
+ src/tasks/installer.tasks/installer.tasks.csproj            | 6 +++---
+ src/tasks/tasks.proj                                        | 5 +++++
+ 10 files changed, 28 insertions(+), 9 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 58c7f876aea..c58a9d1a047 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -52,6 +52,10 @@
+     <NetCoreAppCurrentToolTargetFrameworkMoniker>$(NetCoreAppCurrentIdentifier),Version=v$(NetCoreAppToolCurrentVersion)</NetCoreAppCurrentToolTargetFrameworkMoniker>
+     <MicrosoftNetCoreAppFrameworkName>Microsoft.NETCore.App</MicrosoftNetCoreAppFrameworkName>
+     <NetCoreAppCurrentBrandName>.NET $(NetCoreAppCurrentVersion)</NetCoreAppCurrentBrandName>
++
++    <NetFrameworkToolCurrent>net472</NetFrameworkToolCurrent>
++    <!-- Don't build for NETFramework during source-build. -->
++    <NetFrameworkToolCurrent Condition="'$(DotNetBuildFromSource)' == 'true'"></NetFrameworkToolCurrent>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+diff --git a/eng/Subsets.props b/eng/Subsets.props
+index a7c5fb0e96e..b2292ac98e6 100644
+--- a/eng/Subsets.props
++++ b/eng/Subsets.props
+@@ -72,7 +72,7 @@
+     <DefaultHostSubsets Condition="'$(RuntimeFlavor)' != '$(PrimaryRuntimeFlavor)' and '$(TargetsMobile)' != 'true'">host.native</DefaultHostSubsets>
+ 
+     <DefaultPacksSubsets>packs.product</DefaultPacksSubsets>
+-    <DefaultPacksSubsets Condition="'$(BuildMonoAOTCrossCompilerOnly)' != 'true'">$(DefaultPacksSubsets)+packs.tests</DefaultPacksSubsets>
++    <DefaultPacksSubsets Condition="'$(BuildMonoAOTCrossCompilerOnly)' != 'true' and '$(DotNetBuildFromSource)' != 'true'">$(DefaultPacksSubsets)+packs.tests</DefaultPacksSubsets>
+     <DefaultPacksSubsets Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultPacksSubsets)+packs.installers</DefaultPacksSubsets>
+   </PropertyGroup>
+ 
+diff --git a/src/installer/pkg/sfx/Microsoft.NETCore.App/Directory.Build.props b/src/installer/pkg/sfx/Microsoft.NETCore.App/Directory.Build.props
+index 15d09343b05..09069935a00 100644
+--- a/src/installer/pkg/sfx/Microsoft.NETCore.App/Directory.Build.props
++++ b/src/installer/pkg/sfx/Microsoft.NETCore.App/Directory.Build.props
+@@ -238,7 +238,7 @@
+     <ExcludeFromClosure Include="@(NetFxReference)" />
+  </ItemGroup>
+ 
+-  <ItemGroup>
++  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <!-- Add a reference to Microsoft.DiaSymReader.Native if one does not already exist. -->
+     <PackageReference Include="Microsoft.DiaSymReader.Native"
+                       Exclude="@(PackageReference)"
+diff --git a/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/Microsoft.Extensions.Logging.Abstractions.csproj b/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/Microsoft.Extensions.Logging.Abstractions.csproj
+index 0d3728bcac0..c4c29046201 100644
+--- a/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/Microsoft.Extensions.Logging.Abstractions.csproj
++++ b/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/Microsoft.Extensions.Logging.Abstractions.csproj
+@@ -36,7 +36,8 @@ Microsoft.Extensions.Logging.Abstractions.NullLogger</PackageDescription>
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <AnalyzerReference Include="..\gen\Microsoft.Extensions.Logging.Generators.Roslyn3.11.csproj" />
++    <AnalyzerReference Include="..\gen\Microsoft.Extensions.Logging.Generators.Roslyn3.11.csproj"
++                       Condition="'$(DotNetBuildFromSource)' != 'true'" />
+     <AnalyzerReference Include="..\gen\Microsoft.Extensions.Logging.Generators.Roslyn4.0.csproj" />
+   </ItemGroup>
+ 
+diff --git a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+index 4968a69f531..b941586e3d6 100644
+--- a/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
++++ b/src/libraries/Microsoft.NETCore.Platforms/src/Microsoft.NETCore.Platforms.csproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>$(NetCoreAppToolCurrent);net472</TargetFrameworks>
++    <TargetFrameworks>$(NetCoreAppToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
+     <!-- This project should not build against the live built .NETCoreApp targeting pack as it contributes to the build itself. -->
+     <UseLocalTargetingRuntimePack>false</UseLocalTargetingRuntimePack>
+     <PackageId>$(MSBuildProjectName)</PackageId>
+@@ -21,7 +21,7 @@
+     <AdditionalRuntimeIdentifiers Condition="'$(DotNetBuildFromSource)' == 'true'">$(AdditionalRuntimeIdentifiers);$(OutputRID)</AdditionalRuntimeIdentifiers>
+   </PropertyGroup>
+ 
+-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <Compile Include="BuildTask.Desktop.cs" />
+     <Compile Include="AssemblyResolver.cs" />
+     <Compile Include="$(CoreLibSharedDir)System\Diagnostics\CodeAnalysis\UnconditionalSuppressMessageAttribute.cs" />
+diff --git a/src/libraries/System.Text.Json/src/System.Text.Json.csproj b/src/libraries/System.Text.Json/src/System.Text.Json.csproj
+index 4b7f0bc75ce..bba18ce24ed 100644
+--- a/src/libraries/System.Text.Json/src/System.Text.Json.csproj
++++ b/src/libraries/System.Text.Json/src/System.Text.Json.csproj
+@@ -351,7 +351,8 @@ System.Text.Json.Utf8JsonReader</PackageDescription>
+     <ProjectReference Include="$(LibrariesProjectRoot)Microsoft.Bcl.AsyncInterfaces\src\Microsoft.Bcl.AsyncInterfaces.csproj" />
+   </ItemGroup>
+   <ItemGroup>
+-    <AnalyzerReference Include="..\gen\System.Text.Json.SourceGeneration.Roslyn3.11.csproj" />
++    <AnalyzerReference Include="..\gen\System.Text.Json.SourceGeneration.Roslyn3.11.csproj"
++                       Condition="'$(DotNetBuildFromSource)' != 'true'" />
+     <AnalyzerReference Include="..\gen\System.Text.Json.SourceGeneration.Roslyn4.0.csproj" />
+   </ItemGroup>
+ </Project>
+diff --git a/src/libraries/src.proj b/src/libraries/src.proj
+index 8b38ce5b449..4e0fea066f7 100644
+--- a/src/libraries/src.proj
++++ b/src/libraries/src.proj
+@@ -14,6 +14,11 @@
+                      Microsoft.Windows.Compatibility\src\Microsoft.Windows.Compatibility.csproj"
+              Condition="'$(BuildAllConfigurations)' != 'true'" />
+ 
++    <!-- These projects do not need to be built during source-build. -->
++    <_allSrc Remove="Microsoft.Extensions.DependencyInjection.Specification.Tests\src\Microsoft.Extensions.DependencyInjection.Specification.Tests.csproj;
++                     Microsoft.Windows.Compatibility\src\Microsoft.Windows.Compatibility.csproj"
++             Condition="'$(DotNetBuildFromSource)' == 'true'" />
++
+     <NonNetCoreAppProject Include="@(_allSrc)"
+                           Exclude="@(NetCoreAppLibrary->'%(Identity)\src\%(Identity).csproj');
+                                    $(MSBuildThisFileDirectory)Microsoft.VisualBasic.Core\src\Microsoft.VisualBasic.Core.vbproj;
+diff --git a/src/tasks/Directory.Build.props b/src/tasks/Directory.Build.props
+index 695833da3db..859bedc8f33 100644
+--- a/src/tasks/Directory.Build.props
++++ b/src/tasks/Directory.Build.props
+@@ -3,6 +3,9 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworkForNETFrameworkTasks>net472</TargetFrameworkForNETFrameworkTasks>
++    <!-- Don't build for NETFramework during source-build. -->
++    <TargetFrameworkForNETFrameworkTasks Condition="'$(DotNetBuildFromSource)' == 'true'"></TargetFrameworkForNETFrameworkTasks>
++
+     <TargetFrameworkForNETCoreTasks>net6.0</TargetFrameworkForNETCoreTasks>
+   </PropertyGroup>
+ </Project>
+diff --git a/src/tasks/installer.tasks/installer.tasks.csproj b/src/tasks/installer.tasks/installer.tasks.csproj
+index 5cff57cdefb..98c370fdfed 100644
+--- a/src/tasks/installer.tasks/installer.tasks.csproj
++++ b/src/tasks/installer.tasks/installer.tasks.csproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>$(TargetFrameworkForNETCoreTasks);net461</TargetFrameworks>
++    <TargetFrameworks>$(NetCoreAppToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
+     <IsShipping>false</IsShipping>
+     <RunAnalyzers>false</RunAnalyzers>
+   </PropertyGroup>
+@@ -10,12 +10,12 @@
+     <PackageReference Include="NuGet.ProjectModel" Version="$(NugetProjectModelVersion)" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition="'$(TargetFramework)' == '$(TargetFrameworkForNETCoreTasks)'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+     <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
+     <Reference Include="Microsoft.Build.Framework" />
+     <Reference Include="Microsoft.Build.Utilities.v4.0" />
+diff --git a/src/tasks/tasks.proj b/src/tasks/tasks.proj
+index 9c62f8b76b9..03a049e1bf4 100644
+--- a/src/tasks/tasks.proj
++++ b/src/tasks/tasks.proj
+@@ -1,6 +1,11 @@
+ <Project Sdk="Microsoft.Build.Traversal">
+   <ItemGroup>
+     <ProjectReference Include="$(MSBuildThisFileDirectory)**\*.csproj" />
++
++    <!-- These projects do not need to be built during source-build. -->
++    <!-- For example, they may take dependencies on pre-built packages that aren't build-from-source. -->
++    <ProjectReference Remove="ILStripTask\ILStrip.csproj"
++                      Condition="'$(DotNetBuildFromSource)' == 'true'" />
+   </ItemGroup>
+ 
+   <!--
