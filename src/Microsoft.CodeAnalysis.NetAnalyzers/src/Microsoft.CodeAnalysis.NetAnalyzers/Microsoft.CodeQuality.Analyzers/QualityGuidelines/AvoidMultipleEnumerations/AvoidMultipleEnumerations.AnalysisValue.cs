@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 
@@ -16,14 +17,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private class InvocationCountAnalysisValue : CacheBasedEquatable<InvocationCountAnalysisValue>, IAbstractAnalysisValue
         {
-            public AnalysisEntity EnumeratedEntity { get; }
+            public ISymbol EnumeratedSymbol { get; }
 
             public InvocationTimes InvocationTimes { get; }
 
 
-            public InvocationCountAnalysisValue(AnalysisEntity enumeratedEntity, InvocationTimes invocationTimes)
+            public InvocationCountAnalysisValue(ISymbol enumeratedSymbol, InvocationTimes invocationTimes)
             {
-                EnumeratedEntity = enumeratedEntity;
+                EnumeratedSymbol = enumeratedSymbol;
                 InvocationTimes = invocationTimes;
             }
 
@@ -31,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 if (other is InvocationCountAnalysisValue otherValue)
                 {
-                    return EnumeratedEntity.Equals(otherValue.EnumeratedEntity) && InvocationTimes == otherValue.InvocationTimes;
+                    return EnumeratedSymbol.Equals(otherValue.EnumeratedSymbol) && InvocationTimes == otherValue.InvocationTimes;
                 }
 
                 return false;
@@ -44,14 +45,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
             {
-                hashCode.Add(EnumeratedEntity.GetHashCode());
+                hashCode.Add(EnumeratedSymbol.GetHashCode());
                 hashCode.Add(InvocationTimes.GetHashCode());
             }
 
             protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<InvocationCountAnalysisValue> obj)
             {
                 var other = (InvocationCountAnalysisValue)obj;
-                return other.EnumeratedEntity.GetHashCode() == EnumeratedEntity.GetHashCode()
+                return other.EnumeratedSymbol.GetHashCode() == EnumeratedSymbol.GetHashCode()
                    && other.InvocationTimes.GetHashCode() == InvocationTimes.GetHashCode();
             }
         }

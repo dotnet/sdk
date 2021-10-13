@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 var value = base.VisitParameterReference(operation, argument);
                 return operation.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                    ? VisitLocalOrParameterOrArrayElement(operation, value)
+                    ? VisitLocalOrParameter(operation, operation.Parameter, value)
                     : value;
             }
 
@@ -42,24 +42,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 var value = base.VisitLocalReference(operation, argument);
                 return operation.Local.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                    ? VisitLocalOrParameterOrArrayElement(operation, value)
+                    ? VisitLocalOrParameter(operation, operation.Local, value)
                     : value;
             }
 
-            public override GlobalFlowStateAnalysisValueSet VisitArrayElementReference(IArrayElementReferenceOperation operation, object? argument)
+            private GlobalFlowStateAnalysisValueSet VisitLocalOrParameter(
+                IOperation operation, ISymbol symbol, GlobalFlowStateAnalysisValueSet defaultValue)
             {
-                var value = base.VisitArrayElementReference(operation, argument);
-                return operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                    ? VisitLocalOrParameterOrArrayElement(operation, value)
-                    : value;
-            }
-
-            private GlobalFlowStateAnalysisValueSet VisitLocalOrParameterOrArrayElement(IOperation operation, GlobalFlowStateAnalysisValueSet defaultValue)
-            {
-                if (AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
-                    && (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods) || IsGetEnumeratorOfForEachLoopInvoked(operation)))
+                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods)
+                    || IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
-                    var newValue = CreateAnalysisValueSet(analysisEntity);
+                    var newValue = CreateAnalysisValueSet(symbol);
                     MergeAndSetGlobalState(newValue);
                     return newValue;
                 }
@@ -89,10 +82,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }
 
-            private GlobalFlowStateAnalysisValueSet CreateAnalysisValueSet(AnalysisEntity analysisEntity)
+            private GlobalFlowStateAnalysisValueSet CreateAnalysisValueSet(ISymbol symbol)
             {
-                var oneTimeAnalysisValue = new InvocationCountAnalysisValue(analysisEntity, InvocationTimes.OneTime);
-                var twoOrMoreTimesAnalysisValue = new InvocationCountAnalysisValue(analysisEntity, InvocationTimes.TwoOrMore);
+                var oneTimeAnalysisValue = new InvocationCountAnalysisValue(symbol, InvocationTimes.OneTime);
+                var twoOrMoreTimesAnalysisValue = new InvocationCountAnalysisValue(symbol, InvocationTimes.TwoOrMore);
 
                 if (ContainsAnalysisValue(twoOrMoreTimesAnalysisValue, GlobalState) || ContainsAnalysisValue(oneTimeAnalysisValue, GlobalState))
                 {
@@ -119,13 +112,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 if (!analysisValueSet.Parents.IsEmpty)
                 {
-                    var containsOneTimeValue = true;
+                    var containsAnalysisValue = true;
                     foreach (var parentValueSet in analysisValueSet.Parents)
                     {
-                        containsOneTimeValue = containsOneTimeValue && ContainsAnalysisValue(value, parentValueSet);
+                        containsAnalysisValue &= ContainsAnalysisValue(value, parentValueSet);
                     }
 
-                    return containsOneTimeValue;
+                    return containsAnalysisValue;
                 }
 
                 return false;

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -7,7 +8,9 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -95,8 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
-                OperationKind.LocalReference,
-                OperationKind.ArrayElementReference);
+                OperationKind.LocalReference);
 
             operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
                 context => Analyze(context, wellKnownTypeProvider, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
@@ -109,14 +111,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             PooledHashSet<IOperation> builder)
         {
             var operation = context.Operation;
-            if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+            if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                && (IsOperationEnumeratedByMethodInvocation(operation, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods)
+                     || IsOperationEnumeratedByForEachLoop(operation, wellKnownDelayExecutionMethods)))
             {
-                var mightCauseEnumeration = IsOperationEnumeratedByMethodInvocation(operation, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods)
-                    || IsOperationEnumeratedByForEachLoop(operation, wellKnownDelayExecutionMethods);
-                if (mightCauseEnumeration)
-                {
-                    builder.Add(operation);
-                }
+                builder.Add(operation);
             }
         }
 
@@ -157,6 +156,55 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 return;
             }
+
+            foreach (var potentialDiagnosticOperation in potentialDiagnosticOperations)
+            {
+                var analysisValueSet = analysisResult[potentialDiagnosticOperation.Kind, potentialDiagnosticOperation.Syntax];
+                if (potentialDiagnosticOperation is ILocalReferenceOperation localReferenceOperation)
+                {
+                    if (EnumerateTwice(localReferenceOperation.Local, analysisValueSet))
+                    {
+                        context.ReportDiagnostic(potentialDiagnosticOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                    }
+                }
+                else if (potentialDiagnosticOperation is IParameterReferenceOperation parameterReferenceOperation)
+                {
+                    if (EnumerateTwice(parameterReferenceOperation.Parameter, analysisValueSet))
+                    {
+                        context.ReportDiagnostic(potentialDiagnosticOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                    }
+                }
+            }
+        }
+
+        private static bool EnumerateTwice(ISymbol symbol, GlobalFlowStateAnalysisValueSet analysisValueSet)
+        {
+            if (analysisValueSet.Kind != GlobalFlowStateAnalysisValueSetKind.Known)
+            {
+                return false;
+            }
+
+            foreach (var analysisValue in analysisValueSet.AnalysisValues)
+            {
+                if (analysisValue is InvocationCountAnalysisValue { InvocationTimes: InvocationTimes.TwoOrMore } invocationCountAnalysisValue
+                    && invocationCountAnalysisValue.EnumeratedSymbol.Equals(symbol))
+                {
+                    return true;
+                }
+            }
+
+            if (!analysisValueSet.Parents.IsEmpty)
+            {
+                var allParentsContainsAreEnumeratedTwice = true;
+                foreach (var parent in analysisValueSet.Parents)
+                {
+                    allParentsContainsAreEnumeratedTwice &= EnumerateTwice(symbol, analysisValueSet);
+                }
+
+                return allParentsContainsAreEnumeratedTwice;
+            }
+
+            return false;
         }
     }
 }

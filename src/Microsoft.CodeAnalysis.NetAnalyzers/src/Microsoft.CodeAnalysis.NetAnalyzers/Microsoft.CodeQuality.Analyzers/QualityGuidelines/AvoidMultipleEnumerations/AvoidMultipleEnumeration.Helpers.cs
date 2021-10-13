@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
         {
-            RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation or IArrayElementReferenceOperation);
+            RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return false;
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IOperation operation,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods)
         {
-            RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation or IArrayElementReferenceOperation);
+            RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return false;
