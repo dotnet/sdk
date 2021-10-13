@@ -1,0 +1,139 @@
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+
+using System.Collections.Immutable;
+using Analyzer.Utilities;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
+using Microsoft.CodeAnalysis.Operations;
+
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
+{
+    public partial class AvoidMultipleEnumerations
+    {
+        internal abstract class InvocationCountDataFlowOperationVisitor : GlobalFlowStateDataFlowOperationVisitor
+        {
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayExecutionMethods;
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
+            private readonly IMethodSymbol? _getEnumeratorMethod;
+
+            protected InvocationCountDataFlowOperationVisitor(GlobalFlowStateAnalysisContext analysisContext,
+                ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+                ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+                IMethodSymbol? getEnumeratorMethod)
+                : base(analysisContext, hasPredicatedGlobalState: true)
+            {
+                _wellKnownDelayExecutionMethods = wellKnownDelayExecutionMethods;
+                _wellKnownEnumerationMethods = wellKnownEnumerationMethods;
+                _getEnumeratorMethod = getEnumeratorMethod;
+            }
+
+            protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
+
+            public override GlobalFlowStateAnalysisValueSet VisitParameterReference(IParameterReferenceOperation operation, object? argument)
+            {
+                var value = base.VisitParameterReference(operation, argument);
+                return operation.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    ? VisitLocalOrParameterOrArrayElement(operation, value)
+                    : value;
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitLocalReference(ILocalReferenceOperation operation, object? argument)
+            {
+                var value = base.VisitLocalReference(operation, argument);
+                return operation.Local.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    ? VisitLocalOrParameterOrArrayElement(operation, value)
+                    : value;
+            }
+
+            public override GlobalFlowStateAnalysisValueSet VisitArrayElementReference(IArrayElementReferenceOperation operation, object? argument)
+            {
+                var value = base.VisitArrayElementReference(operation, argument);
+                return operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                    ? VisitLocalOrParameterOrArrayElement(operation, value)
+                    : value;
+            }
+
+            private GlobalFlowStateAnalysisValueSet VisitLocalOrParameterOrArrayElement(IOperation operation, GlobalFlowStateAnalysisValueSet defaultValue)
+            {
+                if (AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
+                    && (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods) || IsGetEnumeratorOfForEachLoopInvoked(operation)))
+                {
+                    var newValue = CreateAnalysisValueSet(analysisEntity);
+                    MergeAndSetGlobalState(newValue);
+                    return newValue;
+                }
+
+                return defaultValue;
+            }
+
+            private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
+            {
+                RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation or IArrayElementReferenceOperation);
+                var operationToCheck = SkipDelayExecutingMethodIfNeeded(operation, _wellKnownDelayExecutionMethods);
+
+                // Make sure it has IEnumerable type, not some other type like list, array, etc...
+                if (operationToCheck.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+                {
+                    return false;
+                }
+
+                // Check 1: Expression of ForEachLoop would be converted to IEnumerable.
+                // Check 2: The result of the Conversion would be invoked by GetEnumerator method
+                // Check 3: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
+                // because the Operation in CFG doesn't have that information.
+                return operationToCheck.Parent is IConversionOperation conversionOperation
+                   && IsImplicitConventionToIEnumerable(conversionOperation)
+                   && conversionOperation.Parent is IInvocationOperation invocationOperation
+                   && invocationOperation.TargetMethod.OriginalDefinition.Equals(_getEnumeratorMethod)
+                   && IsExpressionOfForEachStatement(invocationOperation.Syntax);
+            }
+
+            private GlobalFlowStateAnalysisValueSet CreateAnalysisValueSet(AnalysisEntity analysisEntity)
+            {
+                var oneTimeAnalysisValue = new InvocationCountAnalysisValue(analysisEntity, InvocationTimes.OneTime);
+                var twoOrMoreTimesAnalysisValue = new InvocationCountAnalysisValue(analysisEntity, InvocationTimes.TwoOrMore);
+
+                if (ContainsAnalysisValue(twoOrMoreTimesAnalysisValue, GlobalState) || ContainsAnalysisValue(oneTimeAnalysisValue, GlobalState))
+                {
+                    return GlobalFlowStateAnalysisValueSet.Create(
+                        ImmutableHashSet.Create<IAbstractAnalysisValue>(oneTimeAnalysisValue, twoOrMoreTimesAnalysisValue),
+                        parents: ImmutableHashSet<GlobalFlowStateAnalysisValueSet>.Empty,
+                        height: 0);
+                }
+
+                return GlobalFlowStateAnalysisValueSet.Create(oneTimeAnalysisValue);
+            }
+
+            private static bool ContainsAnalysisValue(InvocationCountAnalysisValue value, GlobalFlowStateAnalysisValueSet analysisValueSet)
+            {
+                if (analysisValueSet.Kind != GlobalFlowStateAnalysisValueSetKind.Known)
+                {
+                    return false;
+                }
+
+                if (analysisValueSet.AnalysisValues.Contains(value))
+                {
+                    return true;
+                }
+
+                if (!analysisValueSet.Parents.IsEmpty)
+                {
+                    var containsOneTimeValue = true;
+                    foreach (var parentValueSet in analysisValueSet.Parents)
+                    {
+                        containsOneTimeValue = containsOneTimeValue && ContainsAnalysisValue(value, parentValueSet);
+                    }
+
+                    return containsOneTimeValue;
+                }
+
+                return false;
+            }
+
+            private static bool IsImplicitConventionToIEnumerable(IConversionOperation conversionOperation)
+                => conversionOperation.Conversion.IsImplicit
+                   && conversionOperation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+        }
+    }
+}

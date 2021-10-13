@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -10,8 +11,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
-    public sealed partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
+    public abstract partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
         private const string RuleId = "CA1850";
 
@@ -64,7 +64,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.ToList",
             "System.Linq.Enumerable.ToLookup");
 
-        private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray<string>.Empty;
+        private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray.Create(
+            "System.Linq.Enumerable.Select");
+
+        internal abstract GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
+            GlobalFlowStateAnalysisContext context,
+            ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+            IMethodSymbol? getEnumeratorMethod);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -73,67 +80,72 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             context.RegisterCompilationStartAction(CompilationStartAction);
         }
 
-        private static void CompilationStartAction(CompilationStartAnalysisContext context)
+        private void CompilationStartAction(CompilationStartAnalysisContext context)
         {
             context.RegisterOperationBlockStartAction(OnOperationBlockStart);
         }
 
-        private static void OnOperationBlockStart(OperationBlockStartAnalysisContext context)
+        private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
-            using var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
-
-            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var wellKnownEnumerationMethods = GetWellKnownEnumerationMethods(wellKnownTypeProvider);
             var wellKnownDelayExecutionMethods = GetWellKnownDelayExecutionMethod(wellKnownTypeProvider);
 
-            context.RegisterOperationAction(
+            using var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
+            operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
                 OperationKind.LocalReference,
                 OperationKind.ArrayElementReference);
 
-            var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
-            if (potentialDiagnosticOperations.IsEmpty)
-            {
-                return;
-            }
-
-            context.RegisterOperationBlockEndAction(context => Analyze(context, wellKnownTypeProvider, wellKnownEnumerationMethods, wellKnownDelayExecutionMethods, potentialDiagnosticOperations));
+            operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
+                context => Analyze(context, wellKnownTypeProvider, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
         }
 
-        private static void CollectPotentialDiagnosticOperations(
+        private void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             PooledHashSet<IOperation> builder)
         {
             var operation = context.Operation;
-
-            if (operation.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                && IsParameterOrLocalOrArrayElementEnumerated(operation, wellKnownDelayExecutingMethods: wellKnownDelayExecutionMethods, wellKnownEnumerationMethods: wellKnownEnumerationMethods))
+            if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
-                builder.Add(operation);
+                var mightCauseEnumeration = IsOperationEnumeratedByMethodInvocation(operation, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods)
+                    || IsOperationEnumeratedByForEachLoop(operation, wellKnownDelayExecutionMethods);
+                if (mightCauseEnumeration)
+                {
+                    builder.Add(operation);
+                }
             }
         }
 
-        private static void Analyze(
+        private void Analyze(
             OperationBlockAnalysisContext context,
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-            ImmutableHashSet<IOperation> potentialDiagnosticOperations)
+            PooledHashSet<IOperation> potentialDiagnosticOperations)
         {
+            if (potentialDiagnosticOperations.Count == 0)
+            {
+                return;
+            }
+
             var cfg = context.OperationBlocks.GetControlFlowGraph();
             if (cfg == null)
             {
                 return;
             }
 
-            var basicBlocks = cfg.Blocks;
+            var getEnumeratorSymbol = wellKnownTypeProvider
+                .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable)
+                ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
+
             var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
-                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods),
+                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
@@ -146,11 +158,5 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
         }
-
-        private static GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
-            GlobalFlowStateAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
-            => new InvocationCountDataFlowOperationVisitor(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods);
     }
 }
