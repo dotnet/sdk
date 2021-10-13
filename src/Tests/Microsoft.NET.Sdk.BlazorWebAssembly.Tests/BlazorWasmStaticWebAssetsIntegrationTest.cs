@@ -228,7 +228,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var numFilesUpdated = 0;
             foreach (var f in manifest.Assets)
             {
-                if (Regex.Match(f.Identity, DotNet5JSRegexPattern).Success)
+                if (Regex.Match(f.RelativePath, DotNet5JSRegexPattern).Success)
                 {
                     f.Identity = Regex.Replace(f.Identity, DotNet5JSRegexPattern, DotNet5JSTemplate);
                     f.RelativePath = Regex.Replace(f.RelativePath, DotNet5JSRegexPattern, DotNet5JSTemplate);
