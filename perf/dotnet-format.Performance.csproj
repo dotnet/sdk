@@ -14,6 +14,7 @@
 
     <!-- Always run on the latest runtime installed. -->
     <RollForward>LatestMajor</RollForward>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
