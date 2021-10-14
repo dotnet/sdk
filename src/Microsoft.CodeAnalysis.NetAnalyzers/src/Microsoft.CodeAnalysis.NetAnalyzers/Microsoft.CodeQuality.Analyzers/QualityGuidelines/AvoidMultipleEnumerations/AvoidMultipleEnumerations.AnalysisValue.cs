@@ -15,27 +15,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             TwoOrMore
         }
 
-        private class InvocationCountAnalysisValue : CacheBasedEquatable<InvocationCountAnalysisValue>, IAbstractAnalysisValue
+        private class InvocationCountAnalysisValue : CacheBasedEquatable<IAbstractAnalysisValue>, IAbstractAnalysisValue
         {
             public ISymbol EnumeratedSymbol { get; }
 
             public InvocationTimes InvocationTimes { get; }
 
-
             public InvocationCountAnalysisValue(ISymbol enumeratedSymbol, InvocationTimes invocationTimes)
             {
                 EnumeratedSymbol = enumeratedSymbol;
                 InvocationTimes = invocationTimes;
-            }
-
-            public bool Equals(IAbstractAnalysisValue other)
-            {
-                if (other is InvocationCountAnalysisValue otherValue)
-                {
-                    return EnumeratedSymbol.Equals(otherValue.EnumeratedSymbol) && InvocationTimes == otherValue.InvocationTimes;
-                }
-
-                return false;
             }
 
             public IAbstractAnalysisValue GetNegatedValue()
@@ -49,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 hashCode.Add(InvocationTimes.GetHashCode());
             }
 
-            protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<InvocationCountAnalysisValue> obj)
+            protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<IAbstractAnalysisValue> obj)
             {
                 var other = (InvocationCountAnalysisValue)obj;
                 return other.EnumeratedSymbol.GetHashCode() == EnumeratedSymbol.GetHashCode()

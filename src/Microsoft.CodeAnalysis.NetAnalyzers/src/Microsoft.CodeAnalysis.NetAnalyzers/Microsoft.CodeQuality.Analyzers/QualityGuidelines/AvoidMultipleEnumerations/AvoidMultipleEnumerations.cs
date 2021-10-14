@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -8,7 +7,6 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -48,6 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.Average",
             "System.Linq.Enumerable.Contains",
             "System.Linq.Enumerable.Count",
+            "System.Linq.Enumerable.DefaultIfEmpty",
             "System.Linq.Enumerable.ElementAt",
             "System.Linq.Enumerable.ElementAtOrDefault",
             "System.Linq.Enumerable.First",
@@ -68,7 +67,34 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.ToLookup");
 
         private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray.Create(
-            "System.Linq.Enumerable.Select");
+            "System.Linq.Enumerable.Append",
+            "System.Linq.Enumerable.AsEnumerable",
+            "System.Linq.Enumerable.Cast",
+            "System.Linq.Enumerable.Concat",
+            "System.Linq.Enumerable.Distinct",
+            "System.Linq.Enumerable.Except",
+            "System.Linq.Enumerable.GroupBy",
+            "System.Linq.Enumerable.GroupJoin",
+            "System.Linq.Enumerable.Intersect",
+            "System.Linq.Enumerable.Join",
+            "System.Linq.Enumerable.OfType",
+            "System.Linq.Enumerable.OrderBy",
+            "System.Linq.Enumerable.OrderByDescending",
+            "System.Linq.Enumerable.Prepend",
+            "System.Linq.Enumerable.Range",
+            "System.Linq.Enumerable.Repeat",
+            "System.Linq.Enumerable.Reverse",
+            "System.Linq.Enumerable.Select",
+            "System.Linq.Enumerable.SelectMany",
+            "System.Linq.Enumerable.Skip",
+            "System.Linq.Enumerable.SkipLast",
+            "System.Linq.Enumerable.SkipWhile",
+            "System.Linq.Enumerable.Take",
+            "System.Linq.Enumerable.TakeLast",
+            "System.Linq.Enumerable.ThenBy",
+            "System.Linq.Enumerable.ThenByDescending",
+            "System.Linq.Enumerable.Union",
+            "System.Linq.Enumerable.Where");
 
         internal abstract GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateAnalysisContext context,
@@ -104,7 +130,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 context => Analyze(context, wellKnownTypeProvider, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
         }
 
-        private void CollectPotentialDiagnosticOperations(
+        private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
@@ -138,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var getEnumeratorSymbol = wellKnownTypeProvider
-                .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable)
+                .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1)
                 ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
 
             var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
@@ -175,36 +201,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
             }
-        }
-
-        private static bool EnumerateTwice(ISymbol symbol, GlobalFlowStateAnalysisValueSet analysisValueSet)
-        {
-            if (analysisValueSet.Kind != GlobalFlowStateAnalysisValueSetKind.Known)
-            {
-                return false;
-            }
-
-            foreach (var analysisValue in analysisValueSet.AnalysisValues)
-            {
-                if (analysisValue is InvocationCountAnalysisValue { InvocationTimes: InvocationTimes.TwoOrMore } invocationCountAnalysisValue
-                    && invocationCountAnalysisValue.EnumeratedSymbol.Equals(symbol))
-                {
-                    return true;
-                }
-            }
-
-            if (!analysisValueSet.Parents.IsEmpty)
-            {
-                var allParentsContainsAreEnumeratedTwice = true;
-                foreach (var parent in analysisValueSet.Parents)
-                {
-                    allParentsContainsAreEnumeratedTwice &= EnumerateTwice(symbol, analysisValueSet);
-                }
-
-                return allParentsContainsAreEnumeratedTwice;
-            }
-
-            return false;
         }
     }
 }

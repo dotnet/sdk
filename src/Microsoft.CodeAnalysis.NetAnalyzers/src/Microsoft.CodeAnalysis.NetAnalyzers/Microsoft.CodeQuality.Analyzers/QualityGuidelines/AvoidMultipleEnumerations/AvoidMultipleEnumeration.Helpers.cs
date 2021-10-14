@@ -1,10 +1,12 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -103,9 +105,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var targetMethod = invocationOperation.TargetMethod;
             var parameter = argumentOperationToCheck.Parameter;
-            if (wellKnownMethodCausingEnumeration.Contains(targetMethod)
-                && parameter.Name == "Source"
-                && argumentOperationToCheck.Value.Type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+            if (wellKnownMethodCausingEnumeration.Contains(targetMethod.OriginalDefinition)
+                && parameter.Name == "source"
+                && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return true;
             }
@@ -155,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 var typePrefix = type + ".";
                 foreach (var methodName in methodNames)
                 {
-                    if (methodName.StartsWith(typePrefix))
+                    if (methodName.StartsWith(typePrefix, StringComparison.Ordinal))
                     {
                         builder.AddRange(type.GetMembers(methodName[typePrefix.Length..]).Cast<IMethodSymbol>());
                     }
@@ -163,6 +165,36 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             return builder.ToImmutable();
+        }
+
+        private static bool EnumerateTwice(ISymbol symbol, GlobalFlowStateAnalysisValueSet analysisValueSet)
+        {
+            if (analysisValueSet.Kind != GlobalFlowStateAnalysisValueSetKind.Known)
+            {
+                return false;
+            }
+
+            foreach (var analysisValue in analysisValueSet.AnalysisValues)
+            {
+                if (analysisValue is InvocationCountAnalysisValue { InvocationTimes: InvocationTimes.TwoOrMore } invocationCountAnalysisValue
+                    && invocationCountAnalysisValue.EnumeratedSymbol.Equals(symbol))
+                {
+                    return true;
+                }
+            }
+
+            if (!analysisValueSet.Parents.IsEmpty)
+            {
+                var allParentsContainsAreEnumeratedTwice = true;
+                foreach (var parent in analysisValueSet.Parents)
+                {
+                    allParentsContainsAreEnumeratedTwice &= EnumerateTwice(symbol, analysisValueSet);
+                }
+
+                return allParentsContainsAreEnumeratedTwice;
+            }
+
+            return false;
         }
     }
 }

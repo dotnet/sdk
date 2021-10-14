@@ -283,7 +283,6 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-
         [Fact]
         public async Task Test()
         {
@@ -297,6 +296,7 @@ public class Bar
     public void Sub(bool flag, IEnumerable<int>[] array, IEnumerable<int> j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
+        [|i|].First();
         foreach (var c in [|i|].Select(z => z))
         {
         }

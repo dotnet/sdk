@@ -12,7 +12,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
         Inherits AvoidMultipleEnumerations
 
         Friend Overrides Function CreateOperationVisitor(context As GlobalFlowStateAnalysisContext, wellKnownDelayExecutionMethods As ImmutableArray(Of IMethodSymbol), wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol), getEnumeratorMethod As IMethodSymbol) As GlobalFlowStateDataFlowOperationVisitor
-            Throw New NotImplementedException
+            Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
         End Function
     End Class
 End Namespace
