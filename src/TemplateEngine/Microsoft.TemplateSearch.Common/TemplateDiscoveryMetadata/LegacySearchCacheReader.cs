@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -34,16 +35,10 @@ namespace Microsoft.TemplateSearch.Common
                         {
                             if (discoveryMetadata.AdditionalData.TryGetValue(reader.Key, out object? legacyData))
                             {
-                                Type legacyDataType = legacyData.GetType();
-                                if (legacyDataType.IsGenericType
-                                    && legacyDataType.GetGenericTypeDefinition() == typeof(Dictionary<,>)
-                                    && legacyDataType.GetGenericArguments()[0] == typeof(string))
+                                IDictionary? dict = legacyData as IDictionary;
+                                if (dict?.Contains(template.Identity) ?? false)
                                 {
-                                    dynamic dict = Convert.ChangeType(legacyData, legacyDataType);
-                                    if (dict.ContainsKey(template.Identity))
-                                    {
-                                        data[reader.Key] = dict[template.Identity];
-                                    }
+                                    data[reader.Key] = dict[template.Identity];
                                 }
                             }
                         }
