@@ -17,23 +17,20 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCore1ESPool-Svc-Public
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+      name: NetCorePublic-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64
   strategy:
     matrix:
       Fedora33-Online:
         _runOnline: true
         _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-
-      # TODO: Don't run offline in Pr validation until prebuilts are stabilized/removed, otherwise dependency flow continuously breaks PR validation.
-      # https://github.com/dotnet/source-build/issues/2490
-      ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
-        Fedora33-Offline:
-          _runOnline: false
-          _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+      # Disable until prebuilts are eliminated
+      # Fedora33-Offline:
+      #   _runOnline: false
+      #   _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
   timeoutInMinutes: 210
   variables:
     _TarballDir: $(Build.StagingDirectory)/tarball

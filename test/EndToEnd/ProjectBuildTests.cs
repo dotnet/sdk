@@ -15,6 +15,8 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        private static readonly string currentTfm = "net7.0";
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -26,6 +28,13 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
+            var project = XDocument.Load(projectPath);
+            var ns = project.Root.Name.Namespace;
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
+            project.Save(projectPath);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -71,6 +80,8 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
 
             project.Save(projectPath);
 
@@ -366,8 +377,9 @@ namespace EndToEnd.Tests
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
 
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 6)
+            if (latestMajorVersion == 7)
             {
+                // TODO: Update 
                 return "net6.0";
             }
             throw new Exception("Unsupported version of SDK");

@@ -11,6 +11,7 @@
   <Target Name="InitializeChecksumItemGroup">
     <ItemGroup>
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.svg" />
+      <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.wixpdb" />
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.sha" />
       <FilesToExcludeForChecksum Include="$(ArtifactsShippingPackagesDir)*.cab" />

@@ -1,0 +1,42 @@
+From 3e0c6887921670b5d9e312b121791307516a4ce2 Mon Sep 17 00:00:00 2001
+From: dseefeld <dseefeld@microsoft.com>
+Date: Wed, 18 Aug 2021 11:41:59 +0000
+Subject: [PATCH] Disable CA1416 for ProcessExtensions
+
+Since source-build loads an updated version of code analysis, this
+warning is showing up here.  Disable warning, since code is meant
+to be windows only.
+
+Eliminates errors like:
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(38,20): error CA1416: This call site is reachable on all platforms. 'ManagementObjectCollection.ManagementObjectEnumerator.MoveNext()' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(35,55): error CA1416: This call site is reachable on all platforms. 'ManagementObjectSearcher.Get()' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(36,80): error CA1416: This call site is reachable on all platforms. 'ManagementObjectCollection.GetEnumerator()' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(38,60): error CA1416: This call site is reachable on all platforms. 'ManagementObjectCollection.ManagementObjectEnumerator.Current' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(34,49): error CA1416: This call site is reachable on all platforms. 'ManagementObjectSearcher' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+    /src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs(38,60): error CA1416: This call site is reachable on all platforms. 'ManagementBaseObject.GetPropertyValue(string)' is only supported on: 'windows'. [/src/tb-installer/src/sdk.5fab7585de482237f470634489b969a1bd03e063/artifacts/source-build/self/src/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj]
+---
+ .../Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs  | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs b/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs
+index a9e9880c7..82519dc63 100644
+--- a/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs
++++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Extensions/ProcessExtensions.cs
+@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils
+     /// </summary>
+     public static class ProcessExtensions
+     {
++#pragma warning disable CA1416
+         /// <summary>
+         /// Returns the parent process of this process by querying the Win32_Process class.
+         /// </summary>
+@@ -37,5 +38,6 @@ public static int GetParentProcessId(this Process process)
+ 
+             return enumerator.MoveNext() ? Convert.ToInt32(enumerator.Current.GetPropertyValue("ParentProcessId")) : -1;
+         }
++#pragma warning restore CA1416
+     }
+ }
+-- 
+2.31.1
+

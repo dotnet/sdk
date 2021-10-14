@@ -336,44 +336,47 @@
 
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
+      <!-- While we don't have 7.0 templates available (need SDK update, choose the 6.0 templates -->
+      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '6.0'"/>
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
     </PropertyGroup>
     
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
-                      '$(SdkMSIInstallerFile)' ^
-                      '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedArmNetCoreAppHostPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
-                      '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
-                      '$(FinalizerExe)' ^
-                      '$(LatestTemplateMsiInstallerFile)' ^
-                      '$(ManifestsMsiInstallerFile)' ^
-                      '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
-                      '$(WixRoot)' ^
-                      '$(SdkBrandName)' ^
-                      '$(MsiVersion)' ^
-                      '$(SDKBundleVersion)' ^
-                      '$(Version)' ^
-                      '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
-                      '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
-                      '$(SdkDependencyKeyName)' ^
-                      '$(Architecture)' ^
-                      '$(MicrosoftNETCoreAppRuntimePackageVersion)' ^
-                      '$(MicrosoftAspNetCoreAppRuntimePackageVersion)' ^
-                      '$(CliProductBandVersion)' ^
+                      -CLISDKMSIFile '$(SdkMSIInstallerFile)' ^
+                      -ASPNETRuntimeWixLibFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxWixLibFileName)' ^
+                      -SharedFxMSIFile '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
+                      -HostFxrMSIFile '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
+                      -SharedHostMSIFile '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
+                      -WinFormsAndWpfMSIFile '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
+                      -NetCoreAppTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
+                      -NetStandardTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)' ^
+                      -NetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
+                      -AlternateNetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)' ^
+                      -ArmNetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedArmNetCoreAppHostPackInstallerFileName)' ^
+                      -Arm64NetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
+                      -AspNetTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
+                      -WindowsDesktopTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
+                      -FinalizerExe '$(FinalizerExe)' ^
+                      -TemplatesMSIFile '$(LatestTemplateMsiInstallerFile)' ^
+                      -ManifestsMSIFile '$(ManifestsMsiInstallerFile)' ^
+                      -DotnetBundleOutput '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
+                      -WixRoot '$(WixRoot)' ^
+                      -ProductMoniker '$(SdkBrandName)' ^
+                      -DotnetMSIVersion '$(MsiVersion)' ^
+                      -SDKBundleVersion '$(SDKBundleVersion)' ^
+                      -DotnetCLINugetVersion '$(Version)' ^
+                      -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
+                      -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
+                      -DependencyKeyName '$(SdkDependencyKeyName)' ^
+                      -Architecture '$(Architecture)' ^
+                      -DotNetRuntimeVersion '$(MicrosoftNETCoreAppRuntimePackageVersion)' ^
+                      -AspNetCoreVersion '$(MicrosoftAspNetCoreAppRuntimePackageVersion)' ^
+                      -SDKProductBandVersion '$(CliProductBandVersion)' ^
                       -InformationAction Continue " />
     <ItemGroup>
         <BundleMsiWixSrcFiles Include="$(WixRoot)\bundle.wixobj" />

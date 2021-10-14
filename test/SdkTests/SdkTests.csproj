@@ -95,6 +95,7 @@
       <RuntimeVersionToInstall Include="3.0.0" />
       <RuntimeVersionToInstall Include="3.1.0" />
       <RuntimeVersionToInstall Include="5.0.0" />
+      <RuntimeVersionToInstall Include="6.0.0-rc.2.21452.2" />
     </ItemGroup>
     
   </Target>

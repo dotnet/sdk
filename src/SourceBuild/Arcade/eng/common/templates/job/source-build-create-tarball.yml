@@ -6,11 +6,11 @@ jobs:
   displayName: Source-Build Create Tarball
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      name: NetCore1ESPool-Svc-Public
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+      name: NetCorePublic-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
+      name: NetCoreInternal-Pool
+      queue: BuildPool.Ubuntu.1604.Amd64
   variables:
     _BuildConfig: Release
   workspace:
