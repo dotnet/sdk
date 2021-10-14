@@ -3,6 +3,7 @@
 
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Filters;
@@ -96,7 +97,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
             using (var jsonReader = new JsonTextReader(textReader))
             {
-                return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, null);
+                return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
             }
         }
 

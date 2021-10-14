@@ -89,89 +89,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         }
 
         [Fact]
-        public void CanReadCliData()
-        {
-            string testDir = TestUtils.CreateTemporaryFolder();
-            using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
-
-            new DotnetCommand(
-                _log,
-                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
-                "--basePath",
-                testDir,
-                "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
-                "-v")
-                .Execute()
-                .Should()
-                .ExitWith(0);
-
-            string[] cacheFilePaths = new[]
-            {
-                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json"),
-                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")
-            };
-            var settingsPath = TestUtils.CreateTemporaryFolder();
-
-            foreach (var cacheFilePath in cacheFilePaths)
-            {
-                Assert.True(File.Exists(cacheFilePath));
-                new DotnetNew3Command(_log)
-                      .WithCustomHive(settingsPath)
-                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                      .Execute()
-                      .Should()
-                      .ExitWith(0)
-                      .And.NotHaveStdErr();
-
-                new DotnetNew3Command(_log, "CliHostFile", "--search")
-                    .WithCustomHive(settingsPath)
-                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
-                    .Should()
-                    .ExitWith(0)
-                    .And.NotHaveStdErr()
-                    .And.NotHaveStdOutContaining("Exception")
-                    .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
-                    .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
-
-                new DotnetNew3Command(_log, "--search", "--param")
-                     .WithCustomHive(settingsPath)
-                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                     .Execute()
-                     .Should()
-                     .ExitWith(0)
-                     .And.NotHaveStdErr()
-                     .And.NotHaveStdOutContaining("Exception")
-                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
-                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
-
-                new DotnetNew3Command(_log, "--search", "-p")
-                    .WithCustomHive(settingsPath)
-                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
-                    .Should()
-                    .ExitWith(0)
-                    .And.NotHaveStdErr()
-                    .And.NotHaveStdOutContaining("Exception")
-                    .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
-                    .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
-
-                new DotnetNew3Command(_log, "--search", "--test-param")
-                    .WithCustomHive(settingsPath)
-                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
-                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
-                    .Execute()
-                    .Should().Fail();
-            }
-        }
-
-        [Fact]
         public void CanReadAuthor()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
@@ -460,6 +377,148 @@ Package Test.Templates was unlisted."
             Assert.Equal(0, jObjectV1["PackToTemplateMap"]?.Children<JProperty>().Count());
             var jObjectV2 = JObject.Parse(File.ReadAllText(cacheV2Path));
             Assert.Equal(0, jObjectV2["TemplatePackages"]?.Count());
+        }
+
+        [Fact]
+        public void CanReadCliData()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v")
+                .Execute()
+                .Should()
+                .ExitWith(0);
+
+            string[] cacheFilePaths = new[]
+            {
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json"),
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")
+            };
+            var settingsPath = TestUtils.CreateTemporaryFolder();
+            CheckTemplateOptionsSearch(cacheFilePaths, settingsPath);
+        }
+
+        [Fact]
+        public void CanReadCliDataFromDiff()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "false")
+                .Execute()
+                .Should()
+                .ExitWith(0);
+
+            string[] cacheFilePaths = new[]
+            {
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json"),
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")
+            };
+            var settingsPath = TestUtils.CreateTemporaryFolder();
+            CheckTemplateOptionsSearch(cacheFilePaths, settingsPath);
+
+            string testDir2 = TestUtils.CreateTemporaryFolder();
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir2,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v",
+                "--diff",
+                "true",
+                "--diff-override-cache",
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json"))
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdOutContaining("not changed: 1");
+
+            string[] updatedCacheFilePaths = new[]
+            {
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfo.json"),
+                Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")
+            };
+            CheckTemplateOptionsSearch(updatedCacheFilePaths, settingsPath);
+        }
+
+        private void CheckTemplateOptionsSearch(IEnumerable<string> cacheFilePaths, string settingsPath)
+        {
+            foreach (var cacheFilePath in cacheFilePaths)
+            {
+                Assert.True(File.Exists(cacheFilePath));
+                new DotnetNew3Command(_log)
+                      .WithCustomHive(settingsPath)
+                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                      .Execute()
+                      .Should()
+                      .ExitWith(0)
+                      .And.NotHaveStdErr();
+
+                new DotnetNew3Command(_log, "CliHostFile", "--search")
+                    .WithCustomHive(settingsPath)
+                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                    .Execute()
+                    .Should()
+                    .ExitWith(0)
+                    .And.NotHaveStdErr()
+                    .And.NotHaveStdOutContaining("Exception")
+                    .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
+                    .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
+
+                new DotnetNew3Command(_log, "--search", "--param")
+                     .WithCustomHive(settingsPath)
+                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                     .Execute()
+                     .Should()
+                     .ExitWith(0)
+                     .And.NotHaveStdErr()
+                     .And.NotHaveStdOutContaining("Exception")
+                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
+                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
+
+                new DotnetNew3Command(_log, "--search", "-p")
+                    .WithCustomHive(settingsPath)
+                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                    .Execute()
+                    .Should()
+                    .ExitWith(0)
+                    .And.NotHaveStdErr()
+                    .And.NotHaveStdOutContaining("Exception")
+                    .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
+                    .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
+
+                new DotnetNew3Command(_log, "--search", "--test-param")
+                    .WithCustomHive(settingsPath)
+                    .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
+                    .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
+                    .Execute()
+                    .Should().Fail();
+            }
         }
     }
 }
