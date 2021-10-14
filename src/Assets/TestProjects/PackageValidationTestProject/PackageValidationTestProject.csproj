@@ -20,7 +20,7 @@
 
   <PropertyGroup>
     <DotNetCompatibilityAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)\bin\$(Configuration)\netstandard2.0\Microsoft.DotNet.Compatibility.dll</DotNetCompatibilityAssembly>
-    <DotNetCompatibilityAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\bin\$(Configuration)\$(CurrentTargetFramework)\Microsoft.DotNet.Compatibility.dll</DotNetCompatibilityAssembly>
+    <DotNetCompatibilityAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\bin\$(Configuration)\net6.0\Microsoft.DotNet.Compatibility.dll</DotNetCompatibilityAssembly>
   </PropertyGroup>
 
 </Project>
