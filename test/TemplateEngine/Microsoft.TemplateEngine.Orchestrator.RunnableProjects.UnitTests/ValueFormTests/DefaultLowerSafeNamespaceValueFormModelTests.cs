@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("", "")]
         [InlineData("Ⅻ〇˙–⿻𠀀𠀁𪛕𪛖", "ⅻ〇_______")]
         [InlineData("𒁊𒁫¶ĚΘঊਇ", "___ěθঊਇ")]
-        [InlineData("9heLLo", "_hello")]
+        [InlineData("9heLLo", "_9hello")]
         [InlineData("broken-clock32", "broken_clock32")]
         [InlineData(";MyWord;", "_myword_")]
         [InlineData("&&*", "___")]

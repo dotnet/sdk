@@ -54,11 +54,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
                     continue;
                 }
 
-                bool isValidFirstCharacter = safeValueStr.Length == 0 && UnicodeCharacterUtilities.IsIdentifierStartCharacter(value[i]);
-                bool isValidPartCharacter = safeValueStr.Length > 0 && (value[i] == '.' || UnicodeCharacterUtilities.IsIdentifierPartCharacter(value[i]));
+                bool isFirstCharacterOfIdentifier = safeValueStr.Length == 0 || safeValueStr[safeValueStr.Length - 1] == '.';
+                bool isValidFirstCharacter = UnicodeCharacterUtilities.IsIdentifierStartCharacter(value[i]);
+                bool isValidPartCharacter = UnicodeCharacterUtilities.IsIdentifierPartCharacter(value[i]);
 
-                if (isValidFirstCharacter || isValidPartCharacter)
+                if (isFirstCharacterOfIdentifier && !isValidFirstCharacter && isValidPartCharacter)
                 {
+                    // This character cannot be at the beginning, but is good otherwise. Prefix it with something valid.
+                    safeValueStr.Append(invalidCharacterReplacement);
+                    safeValueStr.Append(value[i]);
+                }
+                else if ((isFirstCharacterOfIdentifier && isValidFirstCharacter) ||
+                        (!isFirstCharacterOfIdentifier && isValidPartCharacter) ||
+                        (safeValueStr.Length > 0 && i < value.Length - 1 && value[i] == '.'))
+                {
+                    // This character is allowed to be where it is.
                     safeValueStr.Append(value[i]);
                 }
                 else
