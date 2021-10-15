@@ -354,7 +354,7 @@
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
       </UrisToDownload>
-      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace('https://dotnetcli.blob.core.windows.net/dotnet/', 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
       </UrisToDownload>
@@ -363,7 +363,7 @@
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
         <token>$(DotNetRuntimeSourceFeedKey)</token>
       </UrisToDownload>
-      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.PrivateBaseUrl)').Replace('https://dotnetclimsrc.blob.core.windows.net/dotnet/', 'https://dotnetbuilds.blob.core.windows.net/internal/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.PrivateBaseUrl)').Replace($(InternalBaseURL), 'https://dotnetbuilds.blob.core.windows.net/internal/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
         <token>$(dotnetbuilds-internal-container-read-token-base64)</token>
