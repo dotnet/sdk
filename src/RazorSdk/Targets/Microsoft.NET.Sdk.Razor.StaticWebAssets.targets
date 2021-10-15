@@ -740,7 +740,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <ItemGroup>
         <FileWrites Include="$(StaticWebAssetsReferenceUpToDateMarkersListPath)" />
-        <FileWrites Include="$(StaticWebAssetsUpToDateMarker)" />
       </ItemGroup>
 
       <MergeConfigurationProperties
@@ -826,7 +825,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </PropertyGroup>
 
       <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
-        Condition="'$(_ShouldReadBuildManifestAndUpdateItemGroup)' == 'true' and Exists($(StaticWebAssetBuildManifestPath))">
+        Condition="'$(_ShouldReadBuildManifestAndUpdateItemGroup)' == 'true'">
         <Output TaskParameter="Assets" ItemName="_CachedBuildStaticWebAssets" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildStaticWebAssetDiscoveryPatterns" />
       </ReadStaticWebAssetsManifestFile>
