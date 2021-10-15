@@ -303,8 +303,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
       <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
+      <StaticWebAssetsUpToDateMarker>$(_StaticWebAssetsManifestBase)staticwebassets.assetref.txt</StaticWebAssetsUpToDateMarker>
+      <StaticWebAssetsReferenceUpToDateMarkersListPath>$(_StaticWebAssetsManifestBase)staticwebassets.uptodate.txt</StaticWebAssetsReferenceUpToDateMarkersListPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
+
+      <!-- Targets invoked for retrieving referenced assets from referencing projects -->
+      <StaticWebAssetsGetPublishAssetsTargets Condition="'$(StaticWebAssetsGetPublishAssetsTargets)' == ''">ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems</StaticWebAssetsGetPublishAssetsTargets>
+      <StaticWebAssetsGetBuildAssetsTargets Condition="'$(StaticWebAssetsGetBuildAssetsTargets)' == ''">GetCurrentProjectBuildStaticWebAssetItems</StaticWebAssetsGetBuildAssetsTargets>
 
       <!-- Temporary files -->
       <_GeneratedStaticWebAssetsPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssets.props</_GeneratedStaticWebAssetsPropsFile>
@@ -711,20 +717,28 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectsConfiguration" />
       </MSBuild>
 
-    <MergeConfigurationProperties
-      CandidateConfigurations="@(_ReferencedProjectsConfiguration)"
-      ProjectReferences="@(_StaticWebAssetProjectReference)">
+      <ItemGroup>
+        <_StaticWebAssetsUpToDateMarkers Include="%(_ReferencedProjectsConfiguration.DesignTimeUpToDateMarker)"
+          Condition="'%(_ReferencedProjectsConfiguration.DesignTimeUpToDateMarker)' != ''" />
+      </ItemGroup>
 
-      <Output TaskParameter="ProjectConfigurations" ItemName="StaticWebAssetProjectConfiguration" />
-    </MergeConfigurationProperties>
+      <WriteLinesToFile Lines="@(_StaticWebAssetsUpToDateMarkers)" File="$(StaticWebAssetsReferenceUpToDateMarkersListPath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
+      <ItemGroup>
+        <FileWrites Include="$(StaticWebAssetsReferenceUpToDateMarkersListPath)" />
+        <FileWrites Include="$(StaticWebAssetsUpToDateMarker)" />
+      </ItemGroup>
+
+      <MergeConfigurationProperties
+        CandidateConfigurations="@(_ReferencedProjectsConfiguration)"
+        ProjectReferences="@(_StaticWebAssetProjectReference)">
+
+        <Output TaskParameter="ProjectConfigurations" ItemName="StaticWebAssetProjectConfiguration" />
+      </MergeConfigurationProperties>
 
     </Target>
 
     <Target Name="GetStaticWebAssetsProjectConfiguration" Returns="@(_StaticWebAssetThisProjectConfiguration)" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
-      <PropertyGroup>
-        <StaticWebAssetsGetPublishAssetsTargets Condition="'$(StaticWebAssetsGetPublishAssetsTargets)' == ''">ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems</StaticWebAssetsGetPublishAssetsTargets>
-        <StaticWebAssetsGetBuildAssetsTargets Condition="'$(StaticWebAssetsGetBuildAssetsTargets)' == ''">GetCurrentProjectBuildStaticWebAssetItems</StaticWebAssetsGetBuildAssetsTargets>
-      </PropertyGroup>
       <ItemGroup>
         <_StaticWebAssetThisProjectConfiguration Include="$(MSBuildProjectFullPath)">
           <Version>2</Version>
@@ -735,6 +749,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           <GetPublishAssetsTargets>$(StaticWebAssetsGetPublishAssetsTargets)</GetPublishAssetsTargets>
           <AdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties)</AdditionalPublishProperties>
           <AdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove)</AdditionalPublishPropertiesToRemove>
+          <DesignTimeUpToDateMarker>$(StaticWebAssetsUpToDateMarker)</DesignTimeUpToDateMarker>
         </_StaticWebAssetThisProjectConfiguration>
       </ItemGroup>
     </Target>
@@ -797,7 +812,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </PropertyGroup>
 
       <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
-        Condition="'$(_ShouldReadBuildManifestAndUpdateItemGroup)' == 'true'">
+        Condition="'$(_ShouldReadBuildManifestAndUpdateItemGroup)' == 'true' and Exists($(StaticWebAssetBuildManifestPath))">
         <Output TaskParameter="Assets" ItemName="_CachedBuildStaticWebAssets" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildStaticWebAssetDiscoveryPatterns" />
       </ReadStaticWebAssetsManifestFile>
@@ -994,6 +1009,51 @@ Copyright (c) .NET Foundation. All rights reserved.
       <TfmSpecificPackageFile Include="%(_PackStaticWebAssetWithTargetPath.Identity)">
         <PackagePath>%(_PackStaticWebAssetWithTargetPath.TargetPath)</PackagePath>
       </TfmSpecificPackageFile>
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="EnsureStaticWebAssetsUpToDateMarkersList"
+    Condition="!Exists($(StaticWebAssetsReferenceUpToDateMarkersListPath))"
+    DependsOnTargets="ResolveReferencedProjectsStaticWebAssetsConfiguration" />
+
+  <Target
+    Name="StaticWebAssetsUpToDateCheckInputsDesignTime"
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+    BeforeTargets="CollectUpToDateCheckInputDesignTime">
+
+    <ReadLinesFromFile File="$(StaticWebAssetsReferenceUpToDateMarkersListPath)">
+      <Output TaskParameter="Lines" ItemName="_ReferencedProjectsUpToDateMarkers" />
+    </ReadLinesFromFile>
+
+    <ItemGroup>
+      <UpToDateCheckInput SchemaName="Static Web Assets" Set="StaticWebAssets" Include="$(StaticWebAssetsReferenceUpToDateMarkersListPath)" />
+      <UpToDateCheckInput SchemaName="Static Web Assets" Set="StaticWebAssets" Include="@(_ReferencedProjectsUpToDateMarkers)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="EmitStaticWebAssetsUpToDateCheckMarker"
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+    AfterTargets="GenerateStaticWebAssetsManifest">
+
+    <CallTarget Targets="$(StaticWebAssetsGetBuildAssetsTargets)">
+      <Output TaskParameter="TargetOutputs" ItemName="_ReferencedStaticWebAssetsUpToDate" />
+    </CallTarget>
+
+    <WriteLinesToFile File="$(StaticWebAssetsUpToDateMarker)" Lines="@(_ReferencedStaticWebAssetsUpToDate)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+
+  </Target>
+
+  <Target
+    Name="StaticWebAssetsUpToDateCheckBuiltDesignTime"
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+    BeforeTargets="CollectUpToDateCheckBuiltDesignTime">
+
+    <ItemGroup>
+      <UpToDateCheckOutput SchemaName="Static Web Assets" Set="StaticWebAssets" Include="$(StaticWebAssetBuildManifestPath)" />
     </ItemGroup>
 
   </Target>
