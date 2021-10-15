@@ -44,6 +44,9 @@
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
 - PR merged into `dotnet/roslyn-analyzers`.
+- Validate the analyzer's behavior with end-to-end testing using the command-line and Visual Studio:
+  - Use `dotnet new console` and `dotnet build` from the command-line, updating the code to introduce diagnostics and ensuring warnings/errors are reported at the command-line
+  - Use Visual Studio to create a new project, introduce diagnostics, and observe the warnings/errors/info messages without invoking a build
 
 ## Testing against the Runtime and Roslyn-analyzers repo
 
