@@ -432,9 +432,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       ManifestPath="$(StaticWebAssetDevelopmentManifestPath)">
     </GenerateStaticWebAssetsDevelopmentManifest>
 
-    <WriteLinesToFile File="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" Lines="2.0" WriteOnlyWhenDifferent="true" />
+    <ComputeReferenceStaticWebAssetItems
+      Assets="@(StaticWebAsset)"
+      Patterns="@(StaticWebAssetDiscoveryPattern)"
+      ProjectMode="$(StaticWebAssetProjectMode)"
+      AssetKind="Build"
+      Source="$(PackageId)"
+    >
+      <Output TaskParameter="StaticWebAssets" ItemName="_ReferencedStaticWebAssetsUpToDate" />
+      <Output TaskParameter="DiscoveryPatterns" ItemName="_ReferencedStaticWebAssetsUpToDate" />
+    </ComputeReferenceStaticWebAssetItems>
+    
+    <WriteLinesToFile File="$(StaticWebAssetsUpToDateMarker)" Lines="@(_ReferencedStaticWebAssetsUpToDate)" WriteOnlyWhenDifferent="true" Overwrite="true" />
 
+    <WriteLinesToFile File="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" Lines="2.0" WriteOnlyWhenDifferent="true" />
+    
     <ItemGroup>
+      <FileWrites Include="$(StaticWebAssetsUpToDateMarker)" />
       <FileWrites Include="$(StaticWebAssetBuildManifestPath)" />
       <FileWrites Include="$(StaticWebAssetDevelopmentManifestPath)" />
       <FileWrites Include="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" />
@@ -1031,19 +1045,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UpToDateCheckInput SchemaName="Static Web Assets" Set="StaticWebAssets" Include="$(StaticWebAssetsReferenceUpToDateMarkersListPath)" />
       <UpToDateCheckInput SchemaName="Static Web Assets" Set="StaticWebAssets" Include="@(_ReferencedProjectsUpToDateMarkers)" />
     </ItemGroup>
-
-  </Target>
-
-  <Target
-    Name="EmitStaticWebAssetsUpToDateCheckMarker"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration"
-    AfterTargets="GenerateStaticWebAssetsManifest">
-
-    <CallTarget Targets="$(StaticWebAssetsGetBuildAssetsTargets)">
-      <Output TaskParameter="TargetOutputs" ItemName="_ReferencedStaticWebAssetsUpToDate" />
-    </CallTarget>
-
-    <WriteLinesToFile File="$(StaticWebAssetsUpToDateMarker)" Lines="@(_ReferencedStaticWebAssetsUpToDate)" WriteOnlyWhenDifferent="true" Overwrite="true" />
 
   </Target>
 
