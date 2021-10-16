@@ -1784,7 +1784,7 @@
     <value>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</value>
   </data>
   <data name="DoNotDisableTokenValidationChecksMessage" xml:space="preserve">
-    <value>TokenValidationParameters.{0} should not be set to false as it disables important validation.</value>
+    <value>TokenValidationParameters.{0} should not be set to false as it disables important validation</value>
   </data>
   <data name="DoNotAlwaysSkipTokenValidationInDelegatesTitle" xml:space="preserve">
     <value>Do not always skip token validation in delegates</value>

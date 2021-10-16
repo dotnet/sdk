@@ -474,17 +474,17 @@
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
         <source>By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</source>
-        <target state="new">By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</target>
+        <target state="translated">중요한 TokenValidationParameter 유효성 검사 대리자를 true로 설정하면 발급자의 토큰이나 만료된 토큰의 유효성이 잘못 검사될 수 있는 중요한 인증 보호 장치가 비활성화됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesMessage">
         <source>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</source>
-        <target state="new">The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</target>
+        <target state="translated">{0}은(는) 항상 true를 반환하는 함수로 설정됩니다. 유효성 검사 대리자를 설정하면 기본 유효성 검사를 무시하고, 항상 true를 반환하면 이 유효성 검사가 완전히 비활성화됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesTitle">
         <source>Do not always skip token validation in delegates</source>
-        <target state="new">Do not always skip token validation in delegates</target>
+        <target state="translated">대리자에서 토큰 유효성 검사를 항상 건너뛰지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
@@ -499,7 +499,7 @@
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserializationMessage">
         <source>When deserializing an instance of class {0}, method {1} can call dangerous method {2}. The potential method invocations are: {3}.</source>
-        <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다</target>
+        <target state="translated">{0} 클래스의 인스턴스를 역직렬화할 때 {1} 메서드가 위험한 메서드 {2}을(를) 호출할 수 있습니다. 잠재적인 메서드 호출은 {3}입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallOverridableMethodsInConstructorsDescription">
@@ -659,17 +659,17 @@
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksDescription">
         <source>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</source>
-        <target state="new">Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</target>
+        <target state="translated">토큰 유효성 검사는 토큰 유효성을 검사하는 동안 모든 측면이 분석되고 확인되도록 합니다. 유효성 검사를 끄면 신뢰할 수 없는 토큰이 유효성 검사를 통과하도록 허용하여 보안 허점이 발생할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksMessage">
-        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation.</source>
-        <target state="new">TokenValidationParameters.{0} should not be set to false as it disables important validation.</target>
+        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation</source>
+        <target state="translated">TokenValidationParameters.{0}은(는) 중요한 유효성 검사를 비활성화하므로 false로 설정하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksTitle">
         <source>Do not disable token validation checks</source>
-        <target state="new">Do not disable token validation checks</target>
+        <target state="translated">토큰 유효성 검사를 비활성화하지 마세요</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">

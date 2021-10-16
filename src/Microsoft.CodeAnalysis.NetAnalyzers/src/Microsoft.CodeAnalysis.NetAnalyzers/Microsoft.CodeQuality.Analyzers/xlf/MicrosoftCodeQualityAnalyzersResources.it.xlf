@@ -234,7 +234,7 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">Rimuovi caratteri di sottolineatura</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
