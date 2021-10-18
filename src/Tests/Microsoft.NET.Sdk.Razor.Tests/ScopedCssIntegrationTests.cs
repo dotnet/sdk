@@ -547,7 +547,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
             build = new BuildCommand(ProjectDirectory);
-            build.Execute("/t:UpdateScopedCss").Should().Pass();
+            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
             var fileInfo = new FileInfo(bundlePath);
             fileInfo.Should().Exist();
@@ -578,7 +578,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             File.WriteAllLines(scopedCssFile, File.ReadAllLines(scopedCssFile).Concat(new[] { "body { background-color: orangered; }" }));
 
             build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            build.Execute("/t:UpdateScopedCss").Should().Pass();
+            build.Execute("/t:UpdateStaticWebAssetsDesignTime").Should().Pass();
 
             var fileInfo = new FileInfo(bundlePath);
             fileInfo.Should().Exist();

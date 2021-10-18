@@ -405,7 +405,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="StaticWebAssetsPrepareForRun" DependsOnTargets="$(StaticWebAssetsPrepareForRunDependsOn)" />
 
   <!-- Invoked by VS to re-generate scoped css bundle during hot reload -->
-  <Target Name="UpdateScopedCss" DependsOnTargets="ResolveReferencedProjectsStaticWebAssets;GenerateComputedBuildStaticWebAssets" />
+  <Target Name="UpdateStaticWebAssetsDesignTime" DependsOnTargets="ResolveReferencedProjectsStaticWebAssets;GenerateComputedBuildStaticWebAssets" />
 
   <Target Name="GenerateComputedBuildStaticWebAssets" DependsOnTargets="$(GenerateComputedBuildStaticWebAssetsDependsOn)" />
 
