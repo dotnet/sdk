@@ -102,7 +102,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       _AddPublishBlazorBootJsonToStaticWebAssets;
     </ResolvePublishStaticWebAssetsDependsOn>
 
-    <GenerateStaticWebAssetsPublishManifestDependsOn Condition="$(WasmBuildingForNestedPublish) != 'true'">
+    <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(WasmBuildingForNestedPublish)' != 'true'">
       $(GenerateStaticWebAssetsPublishManifestDependsOn);
       GeneratePublishBlazorBootJson;
     </GenerateStaticWebAssetsPublishManifestDependsOn>
