@@ -31,11 +31,8 @@
     <BuildCommandArgs Condition="'$(TargetOS)' == 'OSX'">$(BuildCommandArgs) /p:CoreSetupRid=osx-x64</BuildCommandArgs>
     <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:CoreSetupRid=$(TargetRid)</BuildCommandArgs>
 
-    <!-- Consume the source-built Core-Setup. This line must be removed to source-build CLI without source-building Core-Setup first. -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:CoreSetupBlobRootUrl=file:%2F%2F$(SourceBuiltAssetsDir)</BuildCommandArgs>
-
-    <!-- location to pick up the toolset binaries from.  This must be removed to source-build core-sdk without building toolset first -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotnetToolsetBlobRootUrl=file:%2F%2F$(SourceBuiltAssetsDir)</BuildCommandArgs>
+    <!-- Consume the source-built Core-Setup and toolset. This line must be removed to source-build CLI without source-building Core-Setup first. -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PublicBaseURL=file:%2F%2F$(SourceBuiltAssetsDir)</BuildCommandArgs>
 
     <BuildCommandArgs>$(BuildCommandArgs) /p:UsePortableLinuxSharedFramework=false</BuildCommandArgs>
 
