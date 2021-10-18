@@ -73,7 +73,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableAutoWasmPublishApp>true</DisableAutoWasmPublishApp>
     <EnableDefaultWasmAssembliesToBundle>false</EnableDefaultWasmAssembliesToBundle>
     <WasmNestedPublishAppDependsOn>_GatherWasmFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
-    <BlazorEnableCompression Condition="$(WasmBuildingForNestedPublish) == 'true'">false</BlazorEnableCompression>
+    <BlazorEnableCompression Condition="'$(WasmBuildingForNestedPublish)' == 'true'">false</BlazorEnableCompression>
     <WasmNestedPublishAppPreTarget>ComputeFilesToPublish</WasmNestedPublishAppPreTarget>
   </PropertyGroup>
 
