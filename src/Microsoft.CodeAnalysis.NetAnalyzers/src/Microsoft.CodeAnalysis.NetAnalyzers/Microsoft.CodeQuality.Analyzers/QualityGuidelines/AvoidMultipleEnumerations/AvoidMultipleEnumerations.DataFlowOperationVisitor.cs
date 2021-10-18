@@ -10,13 +10,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     public partial class AvoidMultipleEnumerations
     {
-        internal abstract class InvocationCountDataFlowOperationVisitor : GlobalFlowStateDataFlowOperationVisitor
+        internal abstract class InvocationCountValueSetFlowOperationVisitor : GlobalFlowStateValueSetFlowOperationVisitor
         {
             private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayExecutionMethods;
             private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
-            protected InvocationCountDataFlowOperationVisitor(GlobalFlowStateAnalysisContext analysisContext,
+            protected InvocationCountValueSetFlowOperationVisitor(GlobalFlowStateAnalysisContext analysisContext,
                 ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
                 IMethodSymbol? getEnumeratorMethod)

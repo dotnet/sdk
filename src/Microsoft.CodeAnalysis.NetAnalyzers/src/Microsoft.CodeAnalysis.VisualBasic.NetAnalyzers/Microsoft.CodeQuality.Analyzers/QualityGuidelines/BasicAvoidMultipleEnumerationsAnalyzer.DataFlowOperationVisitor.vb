@@ -7,7 +7,7 @@ Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Public NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Private Class BasicInvocationCountDataFlowOperationVisitor
-            Inherits InvocationCountDataFlowOperationVisitor
+            Inherits InvocationCountValueSetFlowOperationVisitor
 
             Public Sub New(analysisContext As GlobalFlowStateAnalysisContext,
                            wellKnownDelayExecutionMethods As ImmutableArray(Of IMethodSymbol),

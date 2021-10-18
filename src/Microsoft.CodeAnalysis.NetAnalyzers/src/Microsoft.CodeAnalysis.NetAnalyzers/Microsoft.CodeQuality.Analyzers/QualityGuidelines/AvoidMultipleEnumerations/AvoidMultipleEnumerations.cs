@@ -96,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.Union",
             "System.Linq.Enumerable.Where");
 
-        internal abstract GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
+        internal abstract GlobalFlowStateValueSetFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,

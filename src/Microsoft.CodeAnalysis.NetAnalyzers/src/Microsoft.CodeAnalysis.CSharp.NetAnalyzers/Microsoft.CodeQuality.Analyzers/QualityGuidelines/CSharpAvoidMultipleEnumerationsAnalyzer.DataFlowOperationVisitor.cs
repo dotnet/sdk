@@ -8,9 +8,9 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
 {
     public partial class CSharpAvoidMultipleEnumerationsAnalyzer
     {
-        private sealed class CSharpInvocationCountDataFlowOperationVisitor : InvocationCountDataFlowOperationVisitor
+        private sealed class CSharpInvocationCountValueSetFlowOperationVisitor : InvocationCountValueSetFlowOperationVisitor
         {
-            public CSharpInvocationCountDataFlowOperationVisitor(
+            public CSharpInvocationCountValueSetFlowOperationVisitor(
                 GlobalFlowStateAnalysisContext analysisContext,
                 ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,

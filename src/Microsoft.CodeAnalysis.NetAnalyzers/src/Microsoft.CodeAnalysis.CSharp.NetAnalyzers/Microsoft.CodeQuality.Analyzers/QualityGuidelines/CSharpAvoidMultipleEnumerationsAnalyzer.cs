@@ -10,11 +10,11 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed partial class CSharpAvoidMultipleEnumerationsAnalyzer : AvoidMultipleEnumerations
     {
-        internal override GlobalFlowStateDataFlowOperationVisitor CreateOperationVisitor(
+        internal override GlobalFlowStateValueSetFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             IMethodSymbol? getEnumeratorMethod)
-            => new CSharpInvocationCountDataFlowOperationVisitor(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod);
+            => new CSharpInvocationCountValueSetFlowOperationVisitor(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod);
     }
 }
