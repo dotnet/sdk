@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Mon, 18 Oct 2021 14:25:29 -0500
+Subject: [PATCH] Enable targeting pack build during source-build
+
+For prebuilt removal: https://github.com/dotnet/source-build/issues/2506
+
+Upstream PR to main: https://github.com/dotnet/aspnetcore/pull/37652
+---
+ Directory.Build.props                                      | 1 -
+ Directory.Build.targets                                    | 4 ++--
+ .../CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj    | 7 +++++++
+ 3 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 204df64da7..77045590cd 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -142,7 +142,6 @@
+     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
+ 
+     <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
+-    <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
+     <IsTargetingPackBuilding
+         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index 6e30c30881..1f1616124b 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -1,10 +1,10 @@
+ ﻿<Project>
+ 
+   <PropertyGroup>
+-    <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
++    <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, and ref/ assemblies in source build. -->
+     <!-- Analyzer package are needed in source build for WebSDK -->
+     <ExcludeFromSourceBuild
+-        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
++        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(MSBuildProjectName)' != '$(TargetingPackName)' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+ 
+     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
+      suppress all targets for TestProjects using ExcludeFromBuild. -->
+diff --git a/src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj b/src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj
+index d70178504e..02bad93889 100644
+--- a/src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj
++++ b/src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj
+@@ -2,6 +2,13 @@
+   <PropertyGroup>
+     <Description>CSharp CodeFixes for ASP.NET Core.</Description>
+     <IsShippingPackage>false</IsShippingPackage>
++    <!--
++      This project is fed into the targeting pack build, so it needs to be built during
++      source-build. One way to build it is to mark it as an analyzers project. If this project's
++      name ended in '.Analyzers', it would automatically be marked as an analyzers project, but it
++      doesn't in this case. Mark it manually, instead.
++    -->
++    <IsAnalyzersProject>true</IsAnalyzersProject>
+     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+     <TargetFramework>netstandard2.0</TargetFramework>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
