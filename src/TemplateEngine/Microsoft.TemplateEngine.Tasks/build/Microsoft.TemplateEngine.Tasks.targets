@@ -3,7 +3,7 @@
     <TemplatingTasksAssembly>$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Microsoft.TemplateEngine.Tasks.dll</TemplatingTasksAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="LocalizeTemplates" AssemblyFile="$(TemplatingTasksAssembly)" />
+  <UsingTask TaskName="LocalizeTemplates" AssemblyFile="$(TemplatingTasksAssembly)" TaskFactory="TaskHostFactory"/>
 
   <Target Name="LocalizeTemplatesAfterBuild" Condition="'$(LocalizeTemplates)' == 'true'" BeforeTargets="AfterBuild">
     <LocalizeTemplates TemplateFolder="$(LocalizableTemplatesPath)" SearchSubfolders="true" Languages="$(TemplateLanguages)"/>
