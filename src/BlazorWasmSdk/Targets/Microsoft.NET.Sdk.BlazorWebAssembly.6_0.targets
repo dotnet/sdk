@@ -74,7 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultWasmAssembliesToBundle>false</EnableDefaultWasmAssembliesToBundle>
     <WasmNestedPublishAppDependsOn>_GatherWasmFilesToPublish;$(WasmNestedPublishAppDependsOn)</WasmNestedPublishAppDependsOn>
     <BlazorEnableCompression Condition="'$(WasmBuildingForNestedPublish)' == 'true'">false</BlazorEnableCompression>
-    <WasmNestedPublishAppPreTarget>ComputeFilesToPublish</WasmNestedPublishAppPreTarget>
+    <_WasmNestedPublishAppPreTarget>ComputeFilesToPublish</_WasmNestedPublishAppPreTarget>
   </PropertyGroup>
 
   <ItemGroup>
