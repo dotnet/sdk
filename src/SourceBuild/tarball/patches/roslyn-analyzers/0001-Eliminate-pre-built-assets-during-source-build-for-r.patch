@@ -1,0 +1,211 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Eric Erhardt <eric.erhardt@microsoft.com>
+Date: Tue, 19 Oct 2021 11:12:25 -0500
+Subject: [PATCH] Eliminate pre-built assets during source-build for
+ roslyn-analyzers
+
+This is taking the approach used in previous versions of source-build: update the dependency versions of Microsoft.CodeAnalysis to the version currently being built by source-build. This is a short-term solution to get unblocked in the 6.0.0 timeframe. In the future, the previous Microsoft.CodeAnalysis versions will be available in SBRP.
+
+* Remove SourceBuildPackageVersionPropsPath at the top of Versions.props. The PVP from source-build will be imported after the repo's Versions.props
+* Workaround a naming collison with DocumentBasedFixAllProvider. The latest Roslyn has a class with the same name.
+* Remove hard-coded versions to Microsoft.CodeAnalysis in ResxSourceGenerator, Roslyn.Diagnostics.Analyzers, and GenerateDocumentationAndConfigFiles, so the latest gets picked up.
+* Exclude ReleaseNotesUtil from source-build since it brings in the 3.1 app host. This tool shouldn't be needed during source-build.
+* Disable BannedApiAnalyzers when in source-build. Other previously built code analysis packages are disabled already.
+
+Contributes to https://github.com/dotnet/source-build/issues/2420
+Contributes to https://github.com/dotnet/source-build/issues/2527
+---
+ eng/Versions.props                                 | 14 --------------
+ src/Directory.Build.targets                        |  5 +++--
+ .../Core/MetaAnalyzers/Fixers/PreferIsKindFix.cs   |  2 +-
+ ....CodeAnalysis.ResxSourceGenerator.CSharp.csproj |  1 -
+ ...Analysis.ResxSourceGenerator.VisualBasic.csproj |  1 -
+ ...crosoft.CodeAnalysis.ResxSourceGenerator.csproj |  1 -
+ .../DoNotDirectlyAwaitATask.Fixer.cs               |  2 +-
+ .../Roslyn.Diagnostics.CSharp.Analyzers.csproj     |  2 +-
+ .../Core/Roslyn.Diagnostics.Analyzers.csproj       |  1 -
+ ...Roslyn.Diagnostics.VisualBasic.Analyzers.vbproj |  2 +-
+ .../GenerateDocumentationAndConfigFiles.csproj     |  1 -
+ ...umentationAndConfigFilesForBrokenRuntime.csproj |  4 +---
+ src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj |  1 +
+ 13 files changed, 9 insertions(+), 28 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 46d30b3bd..635f8bb5c 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -1,18 +1,4 @@
+ <Project>
+-  <Import Project="$(SourceBuildPackageVersionPropsPath)" Condition="'$(SourceBuildPackageVersionPropsPath)' != ''" />
+-  <PropertyGroup>
+-    <!--
+-      Binaries that need to be executable during source build are restricted to versions available within source build.
+-      This section defines executable versions of packages which are referenced via lower-version reference assemblies
+-      during the build.
+-    -->
+-    <SystemCollectionsImmutableExecutableVersion>$(SystemCollectionsImmutableVersion)</SystemCollectionsImmutableExecutableVersion>
+-    <SystemCollectionsImmutableExecutableVersion Condition="'$(SystemCollectionsImmutableExecutableVersion)' == ''">5.0.0</SystemCollectionsImmutableExecutableVersion>
+-    <SystemReflectionMetadataExecutableVersion>$(SystemReflectionMetadataVersion)</SystemReflectionMetadataExecutableVersion>
+-    <SystemReflectionMetadataExecutableVersion Condition="'$(SystemReflectionMetadataExecutableVersion)' == ''">5.0.0</SystemReflectionMetadataExecutableVersion>
+-    <MicrosoftCodeAnalysisExecutableVersion>$(MicrosoftCodeAnalysisVersion)</MicrosoftCodeAnalysisExecutableVersion>
+-    <MicrosoftCodeAnalysisExecutableVersion Condition="'$(MicrosoftCodeAnalysisExecutableVersion)' == ''">3.8.0</MicrosoftCodeAnalysisExecutableVersion>
+-  </PropertyGroup>
+   <PropertyGroup>
+     <VersionPrefix>3.3.3</VersionPrefix>
+     <PreReleaseVersionLabel>beta1</PreReleaseVersionLabel>
+diff --git a/src/Directory.Build.targets b/src/Directory.Build.targets
+index c7c28fd9f..e5be9e028 100644
+--- a/src/Directory.Build.targets
++++ b/src/Directory.Build.targets
+@@ -35,8 +35,9 @@
+       <Link>AnalyzerReleases\$(AssemblyName)\AnalyzerReleases.Shipped.md</Link>
+     </None>
+   </ItemGroup>
+-  
+-  <ItemGroup>
++
++  <!-- Disable code analysis for source build -->
++  <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
+     <AdditionalFiles Include="$(MSBuildThisFileDirectory)\BannedSymbols.txt" Condition="'$(BannedSymbolsOptOut)' != 'true'" />
+   </ItemGroup>
+diff --git a/src/Microsoft.CodeAnalysis.Analyzers/Core/MetaAnalyzers/Fixers/PreferIsKindFix.cs b/src/Microsoft.CodeAnalysis.Analyzers/Core/MetaAnalyzers/Fixers/PreferIsKindFix.cs
+index 7a6877e0e..a0cbd06e7 100644
+--- a/src/Microsoft.CodeAnalysis.Analyzers/Core/MetaAnalyzers/Fixers/PreferIsKindFix.cs
++++ b/src/Microsoft.CodeAnalysis.Analyzers/Core/MetaAnalyzers/Fixers/PreferIsKindFix.cs
+@@ -48,7 +48,7 @@ private async Task<Document> ConvertKindToIsKindAsync(Document document, TextSpa
+ 
+         protected abstract void FixDiagnostic(DocumentEditor editor, SyntaxNode nodeToFix);
+ 
+-        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
++        private sealed class CustomFixAllProvider : Analyzer.Utilities.DocumentBasedFixAllProvider
+         {
+             private readonly PreferIsKindFix _fixer;
+ 
+diff --git a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.csproj b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.csproj
+index 114e30a43..e38f8549f 100644
+--- a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.csproj
++++ b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp/Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.csproj
+@@ -7,7 +7,6 @@
+ 
+     <!-- Avoid ID conflicts with the package project. -->
+     <PackageId>*$(MSBuildProjectFile)*</PackageId>
+-    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.csproj b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.csproj
+index a44df8a50..cba084cd5 100644
+--- a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.csproj
++++ b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic/Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.csproj
+@@ -7,7 +7,6 @@
+ 
+     <!-- Avoid ID conflicts with the package project. -->
+     <PackageId>*$(MSBuildProjectFile)*</PackageId>
+-    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.csproj b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.csproj
+index 46a4fca6b..c9fa15584 100644
+--- a/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.csproj
++++ b/src/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator/Microsoft.CodeAnalysis.ResxSourceGenerator.csproj
+@@ -7,7 +7,6 @@
+ 
+     <!-- Avoid ID conflicts with the package project. -->
+     <PackageId>*$(MSBuildProjectFile)*</PackageId>
+-    <MicrosoftCodeAnalysisVersion>3.9.0</MicrosoftCodeAnalysisVersion>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs b/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
+index 738fdebf2..6d13947ce 100644
+--- a/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
++++ b/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
+@@ -82,7 +82,7 @@ private class MyCodeAction : DocumentChangeAction
+             }
+         }
+ 
+-        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
++        private sealed class CustomFixAllProvider : Analyzer.Utilities.DocumentBasedFixAllProvider
+         {
+             public static readonly CustomFixAllProvider Instance = new();
+ 
+diff --git a/src/Roslyn.Diagnostics.Analyzers/CSharp/Roslyn.Diagnostics.CSharp.Analyzers.csproj b/src/Roslyn.Diagnostics.Analyzers/CSharp/Roslyn.Diagnostics.CSharp.Analyzers.csproj
+index e62266894..b858d7097 100644
+--- a/src/Roslyn.Diagnostics.Analyzers/CSharp/Roslyn.Diagnostics.CSharp.Analyzers.csproj
++++ b/src/Roslyn.Diagnostics.Analyzers/CSharp/Roslyn.Diagnostics.CSharp.Analyzers.csproj
+@@ -10,7 +10,7 @@
+     <InternalsVisibleTo Include="Roslyn.Diagnostics.Analyzers.UnitTests" />
+   </ItemGroup>
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion)" />
++    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+   </ItemGroup>
+   <Import Project="..\..\Utilities\Refactoring.CSharp\Refactoring.CSharp.Utilities.projitems" Label="Shared" />
+ </Project>
+\ No newline at end of file
+diff --git a/src/Roslyn.Diagnostics.Analyzers/Core/Roslyn.Diagnostics.Analyzers.csproj b/src/Roslyn.Diagnostics.Analyzers/Core/Roslyn.Diagnostics.Analyzers.csproj
+index 60450aee0..3489028d4 100644
+--- a/src/Roslyn.Diagnostics.Analyzers/Core/Roslyn.Diagnostics.Analyzers.csproj
++++ b/src/Roslyn.Diagnostics.Analyzers/Core/Roslyn.Diagnostics.Analyzers.csproj
+@@ -7,7 +7,6 @@
+       Restore would conclude that there is a cyclic dependency between us and the Roslyn.Diagnostics.Analyzers package.
+     -->
+     <PackageId>*$(MSBuildProjectFile)*</PackageId>
+-    <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion)</MicrosoftCodeAnalysisVersion>
+   </PropertyGroup>
+   <ItemGroup>
+     <InternalsVisibleTo Include="Roslyn.Diagnostics.CSharp.Analyzers" />
+diff --git a/src/Roslyn.Diagnostics.Analyzers/VisualBasic/Roslyn.Diagnostics.VisualBasic.Analyzers.vbproj b/src/Roslyn.Diagnostics.Analyzers/VisualBasic/Roslyn.Diagnostics.VisualBasic.Analyzers.vbproj
+index 509a3c069..737a2cf24 100644
+--- a/src/Roslyn.Diagnostics.Analyzers/VisualBasic/Roslyn.Diagnostics.VisualBasic.Analyzers.vbproj
++++ b/src/Roslyn.Diagnostics.Analyzers/VisualBasic/Roslyn.Diagnostics.VisualBasic.Analyzers.vbproj
+@@ -7,7 +7,7 @@
+     <ProjectReference Include="..\Core\Roslyn.Diagnostics.Analyzers.csproj" />
+   </ItemGroup>
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion)" />
++    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+   </ItemGroup>
+   <Import Project="..\..\Utilities\Refactoring.VisualBasic\Refactoring.VisualBasic.Utilities.projitems" Label="Shared" />
+ </Project>
+\ No newline at end of file
+diff --git a/src/Tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj b/src/Tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj
+index c00a9ab5d..74f5f4d5a 100644
+--- a/src/Tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj
++++ b/src/Tools/GenerateDocumentationAndConfigFiles/GenerateDocumentationAndConfigFiles.csproj
+@@ -5,7 +5,6 @@
+     <NonShipping>true</NonShipping>
+     <UseAppHost>false</UseAppHost>
+     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+-    <MicrosoftCodeAnalysisVersion>$(MicrosoftCodeAnalysisForRoslynDiagnosticsAnalyzersVersion)</MicrosoftCodeAnalysisVersion>
+   </PropertyGroup>
+   <ItemGroup>
+     <Compile Include="..\..\Microsoft.CodeAnalysis.Analyzers\Core\MetaAnalyzers\ReleaseTrackingHelper.cs" Link="ReleaseTrackingHelper.cs" />
+diff --git a/src/Tools/GenerateDocumentationAndConfigFilesForBrokenRuntime/GenerateDocumentationAndConfigFilesForBrokenRuntime.csproj b/src/Tools/GenerateDocumentationAndConfigFilesForBrokenRuntime/GenerateDocumentationAndConfigFilesForBrokenRuntime.csproj
+index fa2233feb..f19ae8d4d 100644
+--- a/src/Tools/GenerateDocumentationAndConfigFilesForBrokenRuntime/GenerateDocumentationAndConfigFilesForBrokenRuntime.csproj
++++ b/src/Tools/GenerateDocumentationAndConfigFilesForBrokenRuntime/GenerateDocumentationAndConfigFilesForBrokenRuntime.csproj
+@@ -12,8 +12,6 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisExecutableVersion)" />
+-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableExecutableVersion)" />
+-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataExecutableVersion)" />
++    <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+   </ItemGroup>
+ </Project>
+diff --git a/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
+index fe90e93ca..01b64e055 100644
+--- a/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
++++ b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
+@@ -3,6 +3,7 @@
+     <OutputType>Exe</OutputType>
+     <TargetFramework>netcoreapp3.1</TargetFramework>
+     <NonShipping>true</NonShipping>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>  
+   <ItemGroup>
+     <PackageReference Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
