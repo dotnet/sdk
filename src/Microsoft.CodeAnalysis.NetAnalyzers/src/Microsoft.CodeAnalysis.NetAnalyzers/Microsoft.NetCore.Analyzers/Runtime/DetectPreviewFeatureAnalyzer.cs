@@ -220,6 +220,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected abstract SyntaxNode? GetPreviewSyntaxNodeForFieldsOrEvents(ISymbol fieldOrEventSymbol, ISymbol previewSymbol);
 
+        protected abstract SyntaxNode? GetPreviewImplementsClauseSyntaxNodeForMethodOrProperty(ISymbol methodOrPropertySymbol, ISymbol previewSymbol);
+
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -573,7 +575,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 if (SymbolIsAnnotatedAsPreview(baseInterfaceMember, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol))
                 {
                     string baseInterfaceMemberName = baseInterfaceMember.ContainingSymbol != null ? baseInterfaceMember.ContainingSymbol.Name + "." + baseInterfaceMember.Name : baseInterfaceMember.Name;
-                    ReportDiagnosticWithCustomMessageIfItExists(context, baseInterfaceMember, propertyOrMethodSymbol, requiresPreviewFeaturesSymbols, ImplementsPreviewMethodRule, ImplementsPreviewMethodRuleWithCustomMessage, propertyOrMethodSymbol.Name, baseInterfaceMemberName);
+                    SyntaxNode? previewImplementsClause = null;
+
+                    if (propertyOrMethodSymbol.Language is LanguageNames.VisualBasic)
+                    {
+                        previewImplementsClause = GetPreviewImplementsClauseSyntaxNodeForMethodOrProperty(propertyOrMethodSymbol, baseInterfaceMember);
+                    }
+
+                    if (previewImplementsClause != null)
+                    {
+                        ReportDiagnosticWithCustomMessageIfItExists(context, previewImplementsClause, baseInterfaceMember, requiresPreviewFeaturesSymbols,
+                            ImplementsPreviewMethodRule, ImplementsPreviewMethodRuleWithCustomMessage, propertyOrMethodSymbol.Name, baseInterfaceMemberName);
+                    }
+                    else
+                    {
+                        ReportDiagnosticWithCustomMessageIfItExists(context, baseInterfaceMember, propertyOrMethodSymbol, requiresPreviewFeaturesSymbols,
+                            ImplementsPreviewMethodRule, ImplementsPreviewMethodRuleWithCustomMessage, propertyOrMethodSymbol.Name, baseInterfaceMemberName);
+                    }
                 }
             }
 

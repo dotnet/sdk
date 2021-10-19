@@ -5,6 +5,9 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicDetectPreviewFeatureAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
@@ -58,6 +61,29 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("GetterNullableArray", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(5).WithArguments("GetterNullableArray", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
+
+            var vbInput = @" 
+        Imports System
+        Imports System.Runtime.Versioning
+        Imports System.Collections.Generic
+        Module Preview_Feature_Scratch
+            Public Class Program
+                Public Function Getter(foo As Dictionary(Of Int32, {|#0:Foo|})) As Dictionary(Of Int32, {|#1:Foo|})
+                    Return foo
+                End Function
+            End Class
+
+            <RequiresPreviewFeatures>
+            Public Class Foo
+            End Class
+
+        End Module
+            ";
+
+            var testVb = TestVB(vbInput);
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await testVb.RunAsync();
         }
 
         [Fact]
@@ -91,6 +117,31 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
+
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
+Imports System.Collections.Generic
+
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function Getter(ByVal foo As List(Of List(Of List(Of {|#0:Foo|})))) As List(Of List(Of List(Of {|#1:Foo|})))
+            Return foo
+        End Function
+
+        Private Shared Sub Main(ByVal args As String())
+        End Sub
+    End Class
+
+    <RequiresPreviewFeatures>
+    Public Class Foo
+    End Class
+End Namespace
+";
+            var testVb = TestVB(vbInput);
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(1).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await testVb.RunAsync();
         }
 
         [Fact]
@@ -124,6 +175,32 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             await test.RunAsync();
+
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
+
+Namespace Preview_Feature_Scratch
+    <RequiresPreviewFeatures>
+    Class Program
+        Public Function Getter(ByVal foo As Foo) As Foo
+            Return foo
+        End Function
+
+        Private Shared Sub Main(ByVal args As String())
+            Dim prog As Program = New Program()
+            prog.Getter(New Foo())
+        End Sub
+    End Class
+
+    <RequiresPreviewFeatures>
+    Public Class Foo
+    End Class
+End Namespace
+";
+
+            var vbTest = TestVB(vbInput);
+            await vbTest.RunAsync();
         }
 
         [Fact]
@@ -168,6 +245,33 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRuleWithCustomMessage).WithLocation(3).WithArguments("GetterNullable", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRuleWithCustomMessage).WithLocation(4).WithArguments("GetterNullable", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await test.RunAsync();
+
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
+
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function Getter(ByVal foo As {|#0:Foo|}) As {|#2:Foo|}
+            Return foo
+        End Function
+
+        Private Shared Sub Main(ByVal args As String())
+            Dim prog As Program = New Program()
+            prog.Getter({|#1:New Foo()|})
+        End Sub
+    End Class
+
+    <RequiresPreviewFeatures(""Lib is in preview."", Url:=""https://aka.ms/aspnet/kestrel/http3reqs"")>
+    Public Class Foo
+    End Class
+End Namespace
+";
+            var testVb = TestVB(vbInput);
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRuleWithCustomMessage).WithLocation(0).WithArguments("Getter", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(1).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRuleWithCustomMessage).WithLocation(2).WithArguments("Getter", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
+            await testVb.RunAsync();
         }
 
         [Fact]
@@ -212,6 +316,28 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(3).WithArguments("GetterNullable", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(4).WithArguments("GetterNullable", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
+
+            var vbInput = @" 
+        Imports System
+        Imports System.Runtime.Versioning
+        Module Preview_Feature_Scratch
+            Public Class Program
+                Public Function Getter(foo As {|#0:Foo|}) As {|#2:Foo|}
+                    Return foo
+                End Function
+            End Class
+
+            <RequiresPreviewFeatures>
+            Public Structure Foo
+            End Structure
+
+        End Module
+            ";
+
+            var testVb = TestVB(vbInput);
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(0).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(2).WithArguments("Getter", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await testVb.RunAsync();
         }
 
         [Fact]

@@ -5,6 +5,9 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicDetectPreviewFeatureAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
@@ -85,6 +88,40 @@ namespace Preview_Feature_Scratch
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(5).WithArguments("_value", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(6).WithArguments("_value", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
+
+            var vbInput = @" 
+Imports System
+Imports System.Runtime.Versioning
+Imports System.Collections.Generic
+Module Preview_Feature_Scratch
+    Public Class {|#2:AFoo|}(Of T As Foo)
+        <RequiresPreviewFeatures>
+        Private _value As Foo
+
+        Public Property Value() As {|#0:Foo|}
+            Get
+                Return {|#4:_value|}
+            End Get
+            Set(ByVal value As {|#1:Foo|})
+                {|#5:_value|} = value
+            End Set
+        End Property
+    End Class
+
+    <RequiresPreviewFeatures>
+    Public Class Foo
+
+    End Class
+End Module
+            ";
+
+            var testVb = TestVB(vbInput);
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodReturnsPreviewTypeRule).WithLocation(0).WithArguments("get_Value", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.MethodUsesPreviewTypeAsParameterRule).WithLocation(1).WithArguments("set_Value", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(2).WithArguments("AFoo", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(4).WithArguments("_value", DetectPreviewFeatureAnalyzer.DefaultURL));
+            testVb.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(5).WithArguments("_value", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await testVb.RunAsync();
         }
 
         [Fact]
@@ -363,6 +400,32 @@ namespace Preview_Feature_Scratch
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Foo", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
+
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
+
+Namespace Preview_Feature_Scratch
+    Public Class Foo
+        Implements {|#0:IFoo|}
+
+        <RequiresPreviewFeatures>
+        Public ReadOnly Property Value As Decimal Implements IFoo.Value
+            Get
+                Return 1.1D
+            End Get
+        End Property
+    End Class
+
+    <RequiresPreviewFeatures>
+    Interface IFoo
+        ReadOnly Property Value As Decimal
+    End Interface
+End Namespace
+";
+            var vbTest = TestVB(vbInput);
+            vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("Foo", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await vbTest.RunAsync();
         }
 
         [Fact]
