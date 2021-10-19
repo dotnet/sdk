@@ -19,6 +19,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!-- Always run on the latest runtime installed. -->
+    <RuntimeFrameworkVersion Condition=" '$(DotnetBuildFromSource)' != 'true' ">6.0.0-preview.7.21317.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
