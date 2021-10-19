@@ -1,11 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -119,7 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownEnumerationMethods = GetWellKnownEnumerationMethods(wellKnownTypeProvider);
             var wellKnownDelayExecutionMethods = GetWellKnownDelayExecutionMethod(wellKnownTypeProvider);
 
-            using var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
+            var potentialDiagnosticOperationsBuilder = new HashSet<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
@@ -133,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             OperationAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-            PooledHashSet<IOperation> builder)
+            HashSet<IOperation> builder)
         {
             var operation = context.Operation;
             if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
@@ -149,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-            PooledHashSet<IOperation> potentialDiagnosticOperations)
+            HashSet<IOperation> potentialDiagnosticOperations)
         {
             if (potentialDiagnosticOperations.Count == 0)
             {
@@ -180,8 +180,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            using var diagnoticOperations = PooledHashSet<IOperation>.GetInstance();
-
+            var diagnoticOperations = new HashSet<IOperation>();
             foreach (var block in cfg.Blocks)
             {
                 var result = analysisResult[block].Data;

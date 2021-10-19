@@ -83,7 +83,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             if (IsDelayExecutingInvocation(invocationOperation, argumentOperation, wellKnownDelayExecutingMethods))
             {
                 // If the current invocation is delay executing method, and we can walk up the invocation chain, check the parent.
-                if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation)
+                if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
+                    && IsDelayExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDelayExecutingMethods))
                 {
                     return GetLastDelayExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDelayExecutingMethods);
                 }
@@ -115,9 +116,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // e.g.
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
-            if (parameter.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes
-                    .Any(constraintType => constraintType.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T))
+            if (parameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
+                && typeParameterSymbol.ConstraintTypes.Any(type => type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T))
             {
                 return true;
             }

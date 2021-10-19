@@ -3,7 +3,6 @@
 using System.Collections.Immutable;
 using Analyzer.Utilities;
 using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.Operations;
@@ -44,15 +43,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 var value = base.VisitLocalReference(operation, argument);
                 return operation.Local.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                    && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
-                        ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
-                        : value;
-            }
-
-            public override InvocationCountAnalysisValue VisitArrayElementReference(IArrayElementReferenceOperation operation, object? argument)
-            {
-                var value = base.VisitArrayElementReference(operation, argument);
-                return operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
                     && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
                         ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
                         : value;
@@ -109,12 +99,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 InvocationCountAnalysisValue value)
             {
                 var invocationSet = new TrackingInvocationSet(ImmutableHashSet.Create(operation), InvocationCount.One);
-                var builder = PooledDictionary<AnalysisEntity, TrackingInvocationSet>.GetInstance();
-                builder.Add(analysisEntity, invocationSet);
-
                 var analysisValue = new InvocationCountAnalysisValue(
-                    builder.ToImmutableDictionary(),
+                    ImmutableDictionary<AnalysisEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
                     InvocationCountAnalysisValueKind.Known);
+
                 return value.Kind == InvocationCountAnalysisValueKind.Known
                     ? InvocationCountAnalysisValue.Merge(analysisValue, value)
                     : analysisValue;
