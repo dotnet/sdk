@@ -3,6 +3,12 @@ From: Logan Bussell <36081148+lbussell@users.noreply.github.com>
 Date: Tue, 19 Oct 2021 16:57:47 +0000
 Subject: [PATCH] force Microsoft.Build to 16.5.0 with RefOnly prefix
 
+PR for applying this patch: https://github.com/dotnet/roslyn/pull/57165
+
+By default, the projects reference Microsoft.Build 16.5.0, which has netcoreapp2.1 and net472 support. The new 17.0.0-...
+version built during source-build only has net6.0. This causes Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj to fail.
+Adding 16.5.0 to SBRP and dodging the override by renaming each package version property is the safe way to fix it.
+
 ---
  eng/Versions.props                                | 15 +++++++++------
  .../Microsoft.Build.Tasks.CodeAnalysis.csproj     |  4 ++--
