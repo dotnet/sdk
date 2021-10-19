@@ -33,32 +33,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="sourcelink" />
+    <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
   </ItemGroup>
 
-  <!-- TODO: Temporarily skip this target for now until source-build NuGet packaging is built 
-       and packaged into source-built artifacts for 6.0.
-       See https://github.com/dotnet/source-build/issues/2285 -->
-  <Target Name="UsePreviouslySourceBuiltNuGet"
-          Condition=" 'true' == 'false' "
-          BeforeTargets="RepoBuild">
-    <ItemGroup>
-      <PreviouslySourceBuiltNuGetPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)NuGet.Packaging.*.nupkg" />
-    </ItemGroup>
-
-    <Error
-      Text="Unable to find any previously source built NuGet.Packaging version to use in Arcade SDK tooling."
-      Condition="'@(PreviouslySourceBuiltNuGetPackageFile)' == ''" />
-
-    <ReadNuGetPackageInfos PackagePaths="@(PreviouslySourceBuiltNuGetPackageFile)">
-      <Output TaskParameter="PackageInfoItems" ItemName="PreviouslySourceBuiltNuGetPackageInfo" />
-    </ReadNuGetPackageInfos>
-
-    <PropertyGroup>
-      <PreviouslySourceBuiltNuGetVersion>%(PreviouslySourceBuiltNuGetPackageInfo.PackageVersion)</PreviouslySourceBuiltNuGetVersion>
-      <BuildCommand>$(BuildCommand) /p:NuGetVersion=$(PreviouslySourceBuiltNuGetVersion)</BuildCommand>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <RepositoryReference Include="sourcelink" />
+  </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

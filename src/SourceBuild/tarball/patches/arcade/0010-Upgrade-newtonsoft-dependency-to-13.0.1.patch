@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "msimons@microsoft.com" <MichaelSimons>
+Date: Mon, 18 Oct 2021 19:31:58 +0000
+Subject: [PATCH] Upgrade newtonsoft dependency to 13.0.1
+
+---
+ Directory.Build.props                                  | 10 ----------
+ eng/Versions.props                                     |  2 +-
+ .../Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj     |  2 --
+ .../Microsoft.DotNet.Helix.Sdk.Tests.csproj            |  2 ++
+ .../Microsoft.DotNet.VersionTools.Tasks.Tests.csproj   |  2 ++
+ 5 files changed, 5 insertions(+), 13 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 960eb6c9..37feef5e 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -18,16 +18,6 @@
+     <NoWarn>$(NoWarn);NU1603</NoWarn>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+-    <!--    
+-      When building using source-build the process is:
+-      - Newtonsoft.Json versions 9.0.1 and 12.0.2 are built by source-build
+-      - Version 12.0.2 is written to Version.props
+-      - Arcade needs to use 9.0.1 so we need to override Version.props value here
+-    -->
+-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+-  </PropertyGroup>
+-
+   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
+     <!--
+       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
+diff --git a/eng/Versions.props b/eng/Versions.props
+index ca9aee2c..3d3dadfe 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -40,7 +40,7 @@
+     <MoqVersion>4.8.3</MoqVersion>
+     <MonoOptionsVersion>5.3.0.1</MonoOptionsVersion>
+     <McMasterExtensionsCommandLineUtils>2.3.0</McMasterExtensionsCommandLineUtils>
+-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
++    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+     <SystemTextJsonVersion>4.7.0</SystemTextJsonVersion>
+     <NuGetVersioningVersion>4.4.0</NuGetVersioningVersion>
+     <NuGetVersion>5.6.0-preview.2.6489</NuGetVersion>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
+index dba28495..1b13d643 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
+@@ -17,8 +17,6 @@
+     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
+     <PackageReference Include="Microsoft.SymbolUploader" Version="$(MicrosoftSymbolUploaderVersion)" />
+     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+-    <!-- This is here so that we agree with the feed tasks project's transitive reference to NewtonSoft.Json and Azure.Core -->
+-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj b/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
+index 5de33cd0..fbe08347 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
++++ b/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
+@@ -11,6 +11,8 @@
+     <PackageReference Include="coverlet.collector" Version="1.0.1" />
+     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+     <PackageReference Include="Moq" Version="4.8.3" />
++    <!-- This is here so that we agree with the project's transitive references to NewtonSoft.Json -->
++    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+     <PackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebVersion)" />
+   </ItemGroup>
+ 
+diff --git a/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj b/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
+index 7d9fb9a1..193648cb 100644
+--- a/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
++++ b/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
+@@ -7,6 +7,8 @@
+   <ItemGroup>
+     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
+     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
++    <!-- This is here so that we agree with the project's transitive references to NewtonSoft.Json -->
++    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
+     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
+   </ItemGroup>
+ 
