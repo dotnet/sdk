@@ -4,11 +4,10 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
-using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -96,8 +95,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "System.Linq.Enumerable.Union",
             "System.Linq.Enumerable.Where");
 
-        internal abstract GlobalFlowStateValueSetFlowOperationVisitor CreateOperationVisitor(
-            GlobalFlowStateAnalysisContext context,
+        internal abstract InvocationCountDataFlowOperationVisitor CreateOperationVisitor(
+            InvocationCountAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             IMethodSymbol? getEnumeratorMethod);
@@ -167,39 +166,53 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1)
                 ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
 
-            var analysisResult = GlobalFlowStateAnalysis.TryGetOrComputeResult(
+            var analysisResult = InvocationCountAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
-                globalFlowStateAnalysisContext => CreateOperationVisitor(globalFlowStateAnalysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
+                analysisContext => CreateOperationVisitor(analysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
-                performValueContentAnalysis: false,
-                pessimisticAnalysis: false,
-                out var valueContentAnalysisResult);
+                pessimisticAnalysis: false);
 
             if (analysisResult == null)
             {
                 return;
             }
 
-            foreach (var potentialDiagnosticOperation in potentialDiagnosticOperations)
+            using var diagnoticOperations = PooledHashSet<IOperation>.GetInstance();
+
+            foreach (var block in cfg.Blocks)
             {
-                var analysisValueSet = analysisResult[potentialDiagnosticOperation.Kind, potentialDiagnosticOperation.Syntax];
-                if (potentialDiagnosticOperation is ILocalReferenceOperation localReferenceOperation)
+                var result = analysisResult[block].Data;
+                if (result.IsEmpty)
                 {
-                    if (EnumerateTwice(localReferenceOperation.Local, analysisValueSet))
+                    continue;
+                }
+
+                // AnalysisResult is shared per block, so just pick the first one to report diagnostic
+                var globalAnalysisResult = result.First().Value;
+                if (globalAnalysisResult.Kind != InvocationCountAnalysisValueKind.Known)
+                {
+                    continue;
+                }
+
+                foreach (var kvp in globalAnalysisResult.TrackedEntities)
+                {
+                    var trackedInvocationSet = kvp.Value;
+                    if (trackedInvocationSet.TotalCount == InvocationCount.TwoOrMoreTime)
                     {
-                        context.ReportDiagnostic(potentialDiagnosticOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                        foreach (var operation in trackedInvocationSet.Operations)
+                        {
+                            diagnoticOperations.Add(operation);
+                        }
                     }
                 }
-                else if (potentialDiagnosticOperation is IParameterReferenceOperation parameterReferenceOperation)
-                {
-                    if (EnumerateTwice(parameterReferenceOperation.Parameter, analysisValueSet))
-                    {
-                        context.ReportDiagnostic(potentialDiagnosticOperation.CreateDiagnostic(MultipleEnumerableDescriptor));
-                    }
-                }
+            }
+
+            foreach (var operation in diagnoticOperations)
+            {
+                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
             }
         }
     }

@@ -6,7 +6,6 @@ using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -165,36 +164,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             return builder.ToImmutable();
-        }
-
-        private static bool EnumerateTwice(ISymbol symbol, GlobalFlowStateAnalysisValueSet analysisValueSet)
-        {
-            if (analysisValueSet.Kind != GlobalFlowStateAnalysisValueSetKind.Known)
-            {
-                return false;
-            }
-
-            foreach (var analysisValue in analysisValueSet.AnalysisValues)
-            {
-                if (analysisValue is InvocationCountAnalysisValue { InvocationTimes: InvocationTimes.TwoOrMore } invocationCountAnalysisValue
-                    && invocationCountAnalysisValue.EnumeratedSymbol.Equals(symbol))
-                {
-                    return true;
-                }
-            }
-
-            if (!analysisValueSet.Parents.IsEmpty)
-            {
-                var allParentsContainsAreEnumeratedTwice = true;
-                foreach (var parent in analysisValueSet.Parents)
-                {
-                    allParentsContainsAreEnumeratedTwice &= EnumerateTwice(symbol, analysisValueSet);
-                }
-
-                return allParentsContainsAreEnumeratedTwice;
-            }
-
-            return false;
         }
     }
 }

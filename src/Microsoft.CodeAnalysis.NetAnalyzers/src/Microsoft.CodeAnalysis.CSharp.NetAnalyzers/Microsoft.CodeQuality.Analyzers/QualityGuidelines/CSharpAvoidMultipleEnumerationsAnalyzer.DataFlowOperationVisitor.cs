@@ -1,20 +1,20 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 
 namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     public partial class CSharpAvoidMultipleEnumerationsAnalyzer
     {
-        private sealed class CSharpInvocationCountValueSetFlowOperationVisitor : InvocationCountValueSetFlowOperationVisitor
+        private sealed class CSharpInvocationCountValueSetFlowOperationVisitor : AvoidMultipleEnumerationsFlowOperationVisitor
         {
             public CSharpInvocationCountValueSetFlowOperationVisitor(
-                GlobalFlowStateAnalysisContext analysisContext,
+                InvocationCountAnalysisContext context,
                 ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-                IMethodSymbol? getEnumeratorMethod) : base(analysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
+                IMethodSymbol? getEnumeratorMethod) : base(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
             {
             }
 
