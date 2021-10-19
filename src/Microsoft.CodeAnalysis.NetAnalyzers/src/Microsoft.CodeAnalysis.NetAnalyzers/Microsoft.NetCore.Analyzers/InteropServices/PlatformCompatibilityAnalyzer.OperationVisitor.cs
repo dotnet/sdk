@@ -160,15 +160,17 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     using var infosBuilder = ArrayBuilder<PlatformMethodValue>.GetInstance();
                     if (PlatformMethodValue.TryDecode(method, visitedArguments, DataFlowAnalysisContext.ValueContentAnalysisResult, _osPlatformType, infosBuilder))
                     {
+                        var version = EmptyVersion;
                         for (var i = 0; i < infosBuilder.Count; i++)
                         {
                             var newValue = GlobalFlowStateAnalysisValueSet.Create(infosBuilder[i]);
                             value = i == 0 ? newValue : GlobalFlowStateAnalysis.GlobalFlowStateAnalysisValueSetDomain.Instance.Merge(value, newValue);
+                            version = infosBuilder[i].Version;
                         }
 
                         infosBuilder.Clear();
                         var attributes = method.GetAttributes();
-                        if (HasAnyGuardAttribute(attributes, out var mappedAttributes) && TryDecodeGuardAttributes(mappedAttributes, infosBuilder))
+                        if (HasAnyGuardAttribute(attributes, version, out var mappedAttributes) && TryDecodeGuardAttributes(mappedAttributes, infosBuilder))
                         {
                             for (var i = 0; i < infosBuilder.Count; i++)
                             {
@@ -190,6 +192,40 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 return value;
+            }
+
+            private static bool HasAnyGuardAttribute(ImmutableArray<AttributeData> attributes, Version expectedVersion, [NotNullWhen(true)] out SmallDictionary<string, Versions>? mappedAttributes)
+            {
+                mappedAttributes = null;
+
+                foreach (var attribute in attributes)
+                {
+                    if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute &&
+                        TryParsePlatformNameAndVersion(attribute, out var platformName, out var _))
+                    {
+                        mappedAttributes ??= new(StringComparer.OrdinalIgnoreCase);
+                        if (!mappedAttributes.TryGetValue(platformName, out var versions))
+                        {
+                            versions = new Versions();
+                            mappedAttributes.Add(platformName, versions);
+                        }
+
+                        if (attribute.AttributeClass.Name == SupportedOSPlatformGuardAttribute)
+                        {
+                            versions.SupportedFirst = expectedVersion;
+                        }
+                        else if (versions.UnsupportedFirst == null)
+                        {
+                            versions.UnsupportedFirst = expectedVersion;
+                        }
+                        else
+                        {
+                            versions.UnsupportedSecond = expectedVersion;
+                        }
+                    }
+                }
+
+                return mappedAttributes != null;
             }
 
             public override GlobalFlowStateAnalysisValueSet VisitFieldReference(IFieldReferenceOperation operation, object? argument)

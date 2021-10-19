@@ -254,77 +254,77 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
         <source>The logging message template should not vary between calls.</source>
-        <target state="new">The logging message template should not vary between calls.</target>
+        <target state="translated">Le modèle de message de journalisation ne doit pas varier entre les appels.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
         <source>The logging message template should not vary between calls to '{0}'</source>
-        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <target state="translated">Le modèle de message de journalisation ne doit pas varier entre les appels à '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
         <source>Template should be a static expression</source>
-        <target state="new">Template should be a static expression</target>
+        <target state="translated">Le modèle doit être une expression statique.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <target state="translated">Le nombre de paramètres fournis dans le modèle de message de journalisation ne correspond pas au nombre d’espaces réservés nommés.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <target state="translated">Le nombre de paramètres fournis dans le modèle de message de journalisation ne correspond pas au nombre d’espaces réservés nommés.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
         <source>Parameter count mismatch</source>
-        <target state="new">Parameter count mismatch</target>
+        <target state="translated">Nombre de paramètres incorrects.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <target state="translated">Les espaces réservés nommés dans le modèle de message de journalisation ne doivent pas être composés uniquement de caractères numériques.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <target state="translated">Les espaces réservés nommés dans le modèle de message de journalisation ne doivent pas être composés uniquement de caractères numériques.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
         <source>Named placeholders should not be numeric values</source>
-        <target state="new">Named placeholders should not be numeric values</target>
+        <target state="translated">Les espaces réservés nommés ne doivent pas être des valeurs numériques.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <target state="translated">Pour de meilleures performances, utilisez les délégués LoggerMessage.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
         <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <target state="translated">Pour de meilleures performances, utilisez les délégués LoggerMessage au lieu d’appeler ' {0} '.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
         <source>Use the LoggerMessage delegates</source>
-        <target state="new">Use the LoggerMessage delegates</target>
+        <target state="translated">Utiliser les délégués LoggerMessage</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
         <source>Use PascalCase for named placeholders in the logging message template.</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <target state="translated">Utilisez casse Pascal pour les espaces réservés nommés dans le modèle de message de journalisation.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
         <source>Use PascalCase for named placeholders in the logging message template</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <target state="translated">Utilisez casse Pascal pour les espaces réservés nommés dans le modèle de message de journalisation.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
         <source>Use PascalCase for named placeholders</source>
-        <target state="new">Use PascalCase for named placeholders</target>
+        <target state="translated">Utiliser casse Pascal pour les espaces réservés nommés</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

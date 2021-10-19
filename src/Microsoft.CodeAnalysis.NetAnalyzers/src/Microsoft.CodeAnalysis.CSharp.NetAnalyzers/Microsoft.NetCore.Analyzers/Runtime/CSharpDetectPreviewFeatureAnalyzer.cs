@@ -257,6 +257,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         return ret;
                     }
                 }
+                else if (typeSymbolDefinition is InterfaceDeclarationSyntax interfaceDeclaration)
+                {
+                    SeparatedSyntaxList<BaseTypeSyntax> baseListTypes = interfaceDeclaration.BaseList.Types;
+                    if (TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(baseListTypes, previewInterfaceSymbol, out ret))
+                    {
+                        return ret;
+                    }
+                }
             }
 
             return ret;
@@ -294,5 +302,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         private static bool IsIdentifierNameSyntax(TypeSyntax identifier, ISymbol previewInterfaceSymbol) => identifier is IdentifierNameSyntax identifierName && IsSyntaxToken(identifierName.Identifier, previewInterfaceSymbol) ||
           identifier is NullableTypeSyntax nullable && IsIdentifierNameSyntax(nullable.ElementType, previewInterfaceSymbol);
+
+        protected override SyntaxNode? GetPreviewImplementsClauseSyntaxNodeForMethodOrProperty(ISymbol methodSymbol, ISymbol previewSymbol)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

@@ -254,77 +254,77 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
         <source>The logging message template should not vary between calls.</source>
-        <target state="new">The logging message template should not vary between calls.</target>
+        <target state="translated">Szablon wiadomości rejestrowania nie powinien się różnić między wywołaniami.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
         <source>The logging message template should not vary between calls to '{0}'</source>
-        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <target state="translated">Szablon wiadomości rejestrowania nie powinien się różnić między wywołaniami elementu „{0}”</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
         <source>Template should be a static expression</source>
-        <target state="new">Template should be a static expression</target>
+        <target state="translated">Szablon powinien być wyrażeniem statycznym</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <target state="translated">Liczba parametrów podanych w szablonie wiadomości rejestrowania jest niezgodna z liczbą nazwanych symboli zastępczych.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <target state="translated">Liczba parametrów podanych w szablonie wiadomości rejestrowania jest niezgodna z liczbą nazwanych symboli zastępczych</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
         <source>Parameter count mismatch</source>
-        <target state="new">Parameter count mismatch</target>
+        <target state="translated">Niezgodność liczby parametrów</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <target state="translated">Nazwane symbole zastępcze w szablonie wiadomości rejestrowania nie powinny składać się tylko z samych cyfr.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <target state="translated">Nazwane symbole zastępcze w szablonie wiadomości rejestrowania nie powinny składać się tylko z samych cyfr</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
         <source>Named placeholders should not be numeric values</source>
-        <target state="new">Named placeholders should not be numeric values</target>
+        <target state="translated">Nazwane symbole zastępcze nie powinny być wartościami liczbowymi</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <target state="translated">Aby zwiększyć wydajność, użyj delegatów LoggerMessage.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
         <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <target state="translated">Aby zwiększyć wydajność, użyj delegatów LoggerMessage zamiast wywoływać metodę „{0}”</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
         <source>Use the LoggerMessage delegates</source>
-        <target state="new">Use the LoggerMessage delegates</target>
+        <target state="translated">Użyj delegatów LoggerMessage</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
         <source>Use PascalCase for named placeholders in the logging message template.</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <target state="translated">Użyj formatu PascalCase dla nazwanych symboli zastępczych w szablonie wiadomości rejestrowania.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
         <source>Use PascalCase for named placeholders in the logging message template</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <target state="translated">Użyj formatu PascalCase dla nazwanych symboli zastępczych w szablonie wiadomości rejestrowania</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
         <source>Use PascalCase for named placeholders</source>
-        <target state="new">Use PascalCase for named placeholders</target>
+        <target state="translated">Używanie języka PascalCase dla nazwanych symboli zastępczych</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

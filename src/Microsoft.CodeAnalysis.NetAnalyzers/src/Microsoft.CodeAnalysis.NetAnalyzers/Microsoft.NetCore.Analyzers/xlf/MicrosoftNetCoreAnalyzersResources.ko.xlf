@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AddPublicParameterlessConstructor">
         <source>Add a public constructor that takes zero parameters</source>
-        <target state="new">Add a public constructor that takes zero parameters</target>
+        <target state="translated">매개 변수가 0인 공개 생성자를 추가합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
@@ -129,17 +129,17 @@
       </trans-unit>
       <trans-unit id="BufferBlockCopyDescription">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <target state="translated">'Buffer.BlockCopy'는 'count' 인수에 대해 복사할 바이트 수를 예상합니다. 'Array.Length'를 사용하면 복사해야 하는 바이트 수가 일치하지 않을 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BufferBlockCopyLengthMessage">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <target state="translated">'Buffer.BlockCopy'는 'count' 인수에 대해 복사할 바이트 수를 예상합니다. 'Array.Length'를 사용하면 복사해야 하는 바이트 수가 일치하지 않을 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="BufferBlockCopyLengthTitle">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</target>
+        <target state="translated">'Buffer.BlockCopy'는 'count' 인수에 대해 복사할 바이트 수를 예상합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -338,23 +338,33 @@
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
-        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
         <source>An assembly has to opt into preview features before using them.</source>
-        <target state="new">An assembly has to opt into preview features before using them.</target>
+        <target state="translated">어셈블리는 기능을 사용하기 전에 미리 보기 기능을 선택해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
-        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
+        <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
         <source>This API requires opting into preview features</source>
-        <target state="new">This API requires opting into preview features</target>
+        <target state="translated">이 API는 미리 보기 기능을 선택해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
@@ -1014,17 +1024,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
         <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">단일 작업에 'WaitAll'을 사용하면 대신 성능이 저하되거나 작업을 기다리거나 반환할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
         <source>Replace 'WaitAll' with single 'Wait'</source>
-        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
+        <target state="translated">'WaitAll'을 단일 'Wait'으로 교체</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
         <source>Do not use 'WaitAll' with a single task</source>
-        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <target state="translated">단일 작업에 'WaitAll'을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
@@ -1064,17 +1074,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
         <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">단일 작업에 'WhenAll'을 사용하면 대신 성능이 저하되거나 작업을 기다리거나 반환할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
         <source>Replace 'WhenAll' call with argument</source>
-        <target state="new">Replace 'WhenAll' call with argument</target>
+        <target state="translated">'WhenAll' 호출을 인수로 대체</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
         <source>Do not use 'WhenAll' with a single task</source>
-        <target state="new">Do not use 'WhenAll' with a single task</target>
+        <target state="translated">단일 작업에 'WhenAll'을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
@@ -1089,22 +1099,27 @@
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
         <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
-        <target state="new">Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</target>
+        <target state="translated">기능적인 'DynamicInterfaceCastableImplementationAttribute' 속성 인터페이스를 제공하려면 Visual Basic에서 지원되지 않는 기본 인터페이스 멤버 기능이 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
         <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
-        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <target state="translated">Visual Basic에서 'DynamicInterfaceCastableImplementation' 인터페이스 제공은 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
         <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
-        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <target state="translated">Visual Basic에서 'DynamicInterfaceCastableImplementation' 인터페이스 제공은 지원되지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
-        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1189,7 +1204,7 @@
       </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
-        <target state="new">Implement inherited interfaces</target>
+        <target state="translated">상속된 인터페이스 구현</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
@@ -1258,13 +1273,23 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
-        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
-        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1329,17 +1354,17 @@
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationDescription">
         <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
-        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+        <target state="translated">'DynamicInterfaceCastableImplementationAttribute' 특성이 있는 형식은 'IDynamicInterfaceCastable' 형식을 구현하는 형식에 대한 인터페이스 구현으로 작동합니다. 그 결과, 다른 경우에는 'IDynamicInterfaceCastable'을 구현하는 형식이 해당 항목을 제공하지 않기 때문에 상속된 인터페이스에 정의된 모든 멤버의 구현을 제공해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationMessage">
         <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
-        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</target>
+        <target state="translated">'{0}' 형식에 'DynamicInterfaceCastableImplementationAttribute'가 적용되었지만 상속된 인터페이스에 정의된 모든 인터페이스 멤버의 구현을 제공하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationTitle">
         <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
-        <target state="new">All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
+        <target state="translated">부모 인터페이스에 선언된 모든 멤버는 DynamicInterfaceCastableImplementation 속성 인터페이스에서 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1429,17 +1454,17 @@
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
         <source>Convert to static method</source>
-        <target state="new">Convert to static method</target>
+        <target state="translated">정적 메서드로 변환</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
         <source>Converting an instance method to a static method may produce invalid code</source>
-        <target state="new">Converting an instance method to a static method may produce invalid code</target>
+        <target state="translated">인스턴스 메서드를 정적 메서드로 변환하면 잘못된 코드가 생성될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
         <source>Make the constructor that takes zero parameters 'public'</source>
-        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <target state="translated">매개 변수가 0인 생성자를 '공개'로 설정</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1559,27 +1584,37 @@
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
         <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
-        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</target>
+        <target state="translated">'IDynamicInterfaceCastable'을 구현하는 형식은 메타데이터에서 동적 인터페이스를 구현하지 않을 수 있으므로 이 형식에 정의된 명시적 구현이 아닌 인스턴스 인터페이스 멤버에 대한 호출은 런타임에 실패할 가능성이 높습니다. 런타임 오류를 방지하려면 새 인터페이스 멤버를 '정적'으로 표시하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
         <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
-        <target state="new">The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+        <target state="translated">'{1}' 형식의 '{0}' 멤버는 '{1}'에 'DynamicInterfaceImplementationAttribute'가 적용되었으므로 '정적'으로 표시되어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
         <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
-        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</target>
+        <target state="translated">'DynamicInterfaceCastableImplementationAttribute'가 있는 인터페이스에 정의된 멤버는 '정적'이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
-        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
-        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+      <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1599,17 +1634,17 @@
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="new">Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</target>
+        <target state="translated">모듈 이니셜라이저는 응용 프로그램 코드가 실행을 시작하기 전에 응용 프로그램의 구성 요소가 초기화되도록 하기 위해 응용 프로그램 코드에서 사용하기 위한 것입니다. 라이브러리 코드가 'ModuleInitializer' 메서드를 선언하면 응용 프로그램 초기화를 방해할 수 있으며 해당 응용 프로그램의 트리밍 기능에 제한이 생길 수도 있습니다. 따라서 라이브러리 코드는 'ModuleInitializer' 특성을 사용해서는 안 되며 대신 라이브러리 내의 구성 요소를 초기화하는 데 사용할 수 있는 메서드를 노출하고 응용 프로그램 초기화 중에 응용 프로그램이 메서드를 호출할 수 있도록 해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
         <source>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</source>
-        <target state="new">The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</target>
+        <target state="translated">'ModuleInitializer' 특성은 애플리케이션 코드 또는 고급 원본 생성기 시나리오에서만 사용하기 위한 것입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle">
         <source>The 'ModuleInitializer' attribute should not be used in libraries</source>
-        <target state="new">The 'ModuleInitializer' attribute should not be used in libraries</target>
+        <target state="translated">'ModuleInitializer' 특성은 라이브러리에서 사용하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1673,8 +1708,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
-        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1799,57 +1839,57 @@
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringCodefixTitle">
         <source>Replace 'Substring' with 'AsSpan'</source>
-        <target state="new">Replace 'Substring' with 'AsSpan'</target>
+        <target state="translated">'Substring'을 'AsSpan'으로 바꿉니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan'은 'Substring'보다 효율적입니다. 'Substring'은 O(n) 문자열 복사를 수행하는 반면 'AsSpan'은 수행하지 않으며 일정한 비용이 듭니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
         <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available</target>
+        <target state="translated">범위 기반 오버로드를 사용할 수 있는 경우 'Substring'보다 'AsSpan'을 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringTitle">
         <source>Prefer 'AsSpan' over 'Substring'</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <target state="translated">''Substring'보다 'AsSpan' 우선적으로 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
-        <target state="new">Use 'ContainsKey'</target>
+        <target state="translated">'ContainsKey' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
         <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
-        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <target state="translated">'ContainsKey'는 일반적으로 O(1)인 반면 'Keys.Contains'는 경우에 따라 O(n)일 수 있습니다. 또한 많은 사전 구현은 할당을 줄이기 위해 Keys 컬렉션을 느리게 초기화합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
         <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
+        <target state="translated">사전 형식 '{0}'에 대해 'Keys.Contains'보다 'ContainsKey'를 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
         <source>Prefer Dictionary.Contains methods</source>
-        <target state="new">Prefer Dictionary.Contains methods</target>
+        <target state="translated">Dictionary.Contains 메서드를 우선적으로 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
         <source>Use 'ContainsValue'</source>
-        <target state="new">Use 'ContainsValue'</target>
+        <target state="translated">'ContainsValue' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
         <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
-        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
+        <target state="translated">많은 사전 구현이 Values ​​컬렉션을 느리게 초기화합니다. 불필요한 할당을 피하려면 'Values.Contains'보다 'ContainsValue'를 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">
         <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
+        <target state="translated">사전 형식 '{0}'에 대해 'Values.Contains'보다 'ContainsValue'를 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -1989,32 +2029,32 @@
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
         <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
-        <target state="new">Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'에서 파생된 형식에 대한 포함 형식만큼 표시되는 매개 변수 없는 생성자를 제공하면 원본 생성 interop 솔루션의 성능과 사용이 향상됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
         <source>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'에서 파생된 '{0}' 형식에 대한 포함 형식만큼 표시되는 매개 변수 없는 생성자를 제공합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
         <source>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'에서 파생된 구체적인 형식에 대한 포함 형식만큼 표시되는 매개 변수 없는 생성자를 제공합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
         <source>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</source>
-        <target state="new">To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</target>
+        <target state="translated">성능을 향상시키려면 'Stream'의 서브클래스를 지정할 때 메모리 기반 비동기 메서드를 재정의하세요. 그런 다음 메모리 기반 방법의 관점에서 배열 기반 방법을 구현합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
         <source>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</source>
-        <target state="new">'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</target>
+        <target state="translated">'{0}'은(는) 배열 기반 '{1}'을 재정의하지만 메모리 기반 '{2}'은(는) 재정의하지 않습니다. 성능을 향상시키려면 메모리 기반 '{2}'을(를) 재정의하는 것이 좋습니다.</target>
         <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">
         <source>Provide memory-based overrides of async methods when subclassing 'Stream'</source>
-        <target state="new">Provide memory-based overrides of async methods when subclassing 'Stream'</target>
+        <target state="translated">'Stream’의 서브클래스를 지정할 때 비동기 메서드의 메모리 기반 재정의 제공</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -2024,7 +2064,7 @@
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
-        <target state="new">Replace string literal with char literal</target>
+        <target state="translated">문자열 리터럴을 char 리터럴로 바꾸기</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
@@ -2314,7 +2354,7 @@
       </trans-unit>
       <trans-unit id="StaticAndAbstractRequiresPreviewFeatures">
         <source>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <target state="translated">'정적' 및 '추상' 한정자를 모두 사용하려면 미리 보기 기능을 선택해야 합니다. 자세한 내용은 https://aka.ms/dotnet-warnings/preview-features를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -2389,22 +2429,22 @@
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextDescription">
         <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
-        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <target state="translated">Task 반환 메서드 내부에서 메서드의 비동기 버전이 있는 경우 이를 사용합니다.</target>
         <note>{Locked="Task"}</note>
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
-        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <target state="translated">'{0}'은(는) 동기적으로 차단됩니다. 대신 '{1}'을(를) 기다리세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
         <source>'{0}' synchronously blocks. Use await instead.</source>
-        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <target state="translated">'{0}'은(는) 동기적으로 차단됩니다. 대신 대기를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextTitle">
         <source>Call async methods when in an async method</source>
-        <target state="new">Call async methods when in an async method</target>
+        <target state="translated">비동기 메서드에 있을 때 비동기 메서드 호출</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
@@ -2424,22 +2464,22 @@
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
         <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
-        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <target state="translated">'CancellationToken.ThrowIfCancellationRequested'로 교체</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
         <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
-        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <target state="translated">'ThrowIfCancellationRequested'는 토큰이 취소되었는지 자동으로 확인하고 취소된 경우 'OperationCanceledException'을 발생시킵니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
         <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <target state="translated">'IsCancellationRequested'를 확인하고 'OperationCanceledException'을 발생시키는 대신 'ThrowIfCancellationRequested'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <target state="translated">'ThrowIfCancellationRequested' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2474,22 +2514,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
         <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
-        <target state="new">'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</target>
+        <target state="translated">'Environment.CurrentManagedThreadId'는 'Thread.CurrentThread.ManagedThreadId'보다 간단하고 빠릅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdFix">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdMessage">
         <source>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</target>
+        <target state="translated">'Thread.CurrentThread.ManagedThreadId' 대신 'Environment.CurrentManagedThreadId' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdTitle">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
@@ -2514,22 +2554,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathDescription">
         <source>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</source>
-        <target state="new">'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</target>
+        <target state="translated">'Environment.ProcessPath'는 'Process.GetCurrentProcess().MainModule.FileName'보다 간단하고 빠릅니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathFix">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">'Environment.ProcessPath' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathMessage">
         <source>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</source>
-        <target state="new">Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</target>
+        <target state="translated">'Process.GetCurrentProcess().MainModule.FileName' 대신 'Environment.ProcessPath' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathTitle">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">'Environment.ProcessPath' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2624,82 +2664,82 @@
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">'string.Equals' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareDescription">
         <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
-        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <target state="translated">'string.Compare'의 결과를 0과 비교하는 대신 'string.Equals'를 사용하는 것이 더욱 명확하고 빠를 가능성이 높습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareMessage">
         <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
-        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <target state="translated">'string.Compare'의 결과를 0과 비교하는 대신 'string.Equals'를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">'string.Equals' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
         <source>Use 'AsSpan' with 'string.Concat'</source>
-        <target state="new">Use 'AsSpan' with 'string.Concat'</target>
+        <target state="translated">'string.Concat'과 함께 'AsSpan' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatDescription">
         <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
-        <target state="new">It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
+        <target state="translated">'Substring' 및 연결 연산자 대신 'AsSpan' 및 'string.Concat'을 사용하는 것이 더 효율적입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatMessage">
         <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
-        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
+        <target state="translated">'Substring' 대신 스팬 기반 'string.Concat' 및 'AsSpan' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatTitle">
         <source>Use span-based 'string.Concat'</source>
-        <target state="new">Use span-based 'string.Concat'</target>
+        <target state="translated">범위 기반 'string.Concat' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
         <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
-        <target state="new">'string.Contains(char)' is available as a better performing overload for single char lookup.</target>
+        <target state="translated">'string.Contains(char)'는 단일 문자 조회를 위한 더 나은 성능의 오버로드로 사용할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
-        <target state="new">Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</target>
+        <target state="translated">단일 문자 검색 시 'string.Contains(string)' 대신 'string.Contains(char)' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
         <source>Use char literal for a single character lookup</source>
-        <target state="new">Use char literal for a single character lookup</target>
+        <target state="translated">단일 문자 조회에 char 리터럴 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
-        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <target state="translated">플랫폼 호환성 분석기에는 유효한 플랫폼 이름과 버전이 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringInvalidVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <target state="translated">버전 '{0}'은(는) 플랫폼 '{1}'에 유효하지 않습니다. 이 플랫폼에는 2{2} 부분이 있는 버전을 사용하세요.</target>
         <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
       </trans-unit>
       <trans-unit id="UseValidPlatformStringNoVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <target state="translated">버전 '{0}'은(는) 플랫폼 '{1}'에 유효하지 않습니다. 이 플랫폼의 버전을 사용하지 마세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringTitle">
         <source>Use valid platform string</source>
-        <target state="new">Use valid platform string</target>
+        <target state="translated">유효한 플랫폼 문자열 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringUnknownPlatform">
         <source>The platform '{0}' is not a known platform name</source>
-        <target state="new">The platform '{0}' is not a known platform name</target>
+        <target state="translated">플랫폼 '{0}'은(는) 알려진 플랫폼 이름이 아닙니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
@@ -2768,8 +2808,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
-        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
     </body>

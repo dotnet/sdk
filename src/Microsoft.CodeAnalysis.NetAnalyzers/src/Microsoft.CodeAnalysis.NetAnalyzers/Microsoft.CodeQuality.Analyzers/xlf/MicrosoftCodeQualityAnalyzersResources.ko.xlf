@@ -254,77 +254,77 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
         <source>The logging message template should not vary between calls.</source>
-        <target state="new">The logging message template should not vary between calls.</target>
+        <target state="translated">로깅 메시지 템플릿은 호출 간에 달라지지 않아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
         <source>The logging message template should not vary between calls to '{0}'</source>
-        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <target state="translated">로깅 메시지 템플릿은 {0}에 대한 호출 간에 달라지지 않아야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
         <source>Template should be a static expression</source>
-        <target state="new">Template should be a static expression</target>
+        <target state="translated">템플릿은 정적 표현식이어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <target state="translated">로깅 메시지 템플릿에 제공된 매개 변수 수가 명명된 자리 표시자의 수와 일치하지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <target state="translated">로깅 메시지 템플릿에 제공된 매개 변수 수가 명명된 자리 표시자의 수와 일치하지 않습니다</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
         <source>Parameter count mismatch</source>
-        <target state="new">Parameter count mismatch</target>
+        <target state="translated">매개 변수의 개수가 일치하지 않음</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자는 숫자로만 구성되어서는 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자는 숫자로만 구성되어서는 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
         <source>Named placeholders should not be numeric values</source>
-        <target state="new">Named placeholders should not be numeric values</target>
+        <target state="translated">명명된 자리 표시자는 숫자 값이 아니어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <target state="translated">성능 향상을 위해 LoggerMessage 대리자를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
         <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <target state="translated">성능 향상을 위해 '{0}'을(를) 호출하는 대신 LoggerMessage 대리자를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
         <source>Use the LoggerMessage delegates</source>
-        <target state="new">Use the LoggerMessage delegates</target>
+        <target state="translated">LoggerMessage 대리자 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
         <source>Use PascalCase for named placeholders in the logging message template.</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <target state="translated">로깅 메시지 템플릿에서 명명된 자리 표시자에 대해 PascalCase를 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
         <source>Use PascalCase for named placeholders in the logging message template</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자에 PascalCase 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
         <source>Use PascalCase for named placeholders</source>
-        <target state="new">Use PascalCase for named placeholders</target>
+        <target state="translated">명명된 자리 표시자에 대해 PascalCase 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AddPublicParameterlessConstructor">
         <source>Add a public constructor that takes zero parameters</source>
-        <target state="new">Add a public constructor that takes zero parameters</target>
+        <target state="translated">Aggiungere un costruttore pubblico che accetta zero parametri</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
@@ -129,17 +129,17 @@
       </trans-unit>
       <trans-unit id="BufferBlockCopyDescription">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <target state="translated">Con 'Buffer.BlockCopy' è previsto il numero di byte da copiare per l'argomento 'count'. Se si usa 'Array.Length', il numero di byte da copiare potrebbe non corrispondere.</target>
         <note />
       </trans-unit>
       <trans-unit id="BufferBlockCopyLengthMessage">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</target>
+        <target state="translated">Con 'Buffer.BlockCopy' è previsto il numero di byte da copiare per l'argomento 'count'. Se si usa 'Array.Length', il numero di byte da copiare potrebbe non corrispondere.</target>
         <note />
       </trans-unit>
       <trans-unit id="BufferBlockCopyLengthTitle">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
-        <target state="new">'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</target>
+        <target state="translated">Con 'Buffer.BlockCopy' è previsto il numero di byte da copiare per l'argomento 'count'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -338,23 +338,33 @@
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
-        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
         <source>An assembly has to opt into preview features before using them.</source>
-        <target state="new">An assembly has to opt into preview features before using them.</target>
+        <target state="translated">Un assembly deve acconsentire esplicitamente alle funzionalità di anteprima prima di usarle.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
-        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
+        <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
         <source>This API requires opting into preview features</source>
-        <target state="new">This API requires opting into preview features</target>
+        <target state="translated">Per questa API è necessario acconsentire esplicitamente alle funzionalità di anteprima</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
@@ -1014,17 +1024,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
         <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">L'uso di 'WaitAll' con una singola attività potrebbe influire negativamente sulle prestazioni. In alternativa, attendere o restituire l'attività.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
         <source>Replace 'WaitAll' with single 'Wait'</source>
-        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
+        <target state="translated">Sostituire 'WaitAll' con 'Wait' singolo</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
         <source>Do not use 'WaitAll' with a single task</source>
-        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <target state="translated">Non usare 'WaitAll' con una singola attività</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
@@ -1064,17 +1074,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
         <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">L'uso di 'WhenAll' con una singola attività potrebbe influire negativamente sulle prestazioni. In alternativa, attendere o restituire l'attività.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
         <source>Replace 'WhenAll' call with argument</source>
-        <target state="new">Replace 'WhenAll' call with argument</target>
+        <target state="translated">Sostituire la chiamata 'WhenAll' con argomento</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
         <source>Do not use 'WhenAll' with a single task</source>
-        <target state="new">Do not use 'WhenAll' with a single task</target>
+        <target state="translated">Non usare 'WhenAll' con una singola attività</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
@@ -1089,22 +1099,27 @@
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
         <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
-        <target state="new">Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</target>
+        <target state="translated">Se si specifica un'interfaccia funzionale alla quale è stato applicato l'attributo 'DynamicInterfaceCastableImplementationAttribute', è richiesta la funzionalità dei membri di interfaccia predefinita che non è supportata in Visual Basic.</target>
         <note />
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
         <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
-        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <target state="translated">In Visual Basic non è supportata la specifica di un'interfaccia 'DynamicInterfaceCastableImplementation'</target>
         <note />
       </trans-unit>
       <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
         <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
-        <target state="new">Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</target>
+        <target state="translated">In Visual Basic non è supportata la specifica di un'interfaccia 'DynamicInterfaceCastableImplementation'</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
-        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1189,7 +1204,7 @@
       </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
-        <target state="new">Implement inherited interfaces</target>
+        <target state="translated">Implementare interfacce ereditate</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
@@ -1258,13 +1273,23 @@
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
-        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
-        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1329,17 +1354,17 @@
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationDescription">
         <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
-        <target state="new">Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</target>
+        <target state="translated">I tipi ai quali è stato applicato l'attributo 'DynamicInterfaceCastableImplementationAttribute' fungono da un'implementazione di interfaccia per un tipo che implementa il tipo 'IDynamicInterfaceCastable'. Di conseguenza, deve fornire un'implementazione di tutti i membri definiti nelle interfacce ereditate, perché il tipo che implementa 'IDynamicInterfaceCastable' non le fornisce diversamente.</target>
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationMessage">
         <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
-        <target state="new">Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</target>
+        <target state="translated">Al tipo '{0}' è applicato l'elemento 'DynamicInterfaceCastableImplementationAttribute', che però non fornisce un'implementazione di tutti i membri di interfaccia definiti nelle interfacce ereditate</target>
         <note />
       </trans-unit>
       <trans-unit id="InterfaceMembersMissingImplementationTitle">
         <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
-        <target state="new">All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</target>
+        <target state="translated">Per tutti i membri dichiarati nelle interfacce padre devono esistere un'implementazione in un'interfaccia alla quale è stata applicato l'attributo DynamicInterfaceCastableImplementation</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1429,17 +1454,17 @@
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
         <source>Convert to static method</source>
-        <target state="new">Convert to static method</target>
+        <target state="translated">Converti nel metodo statico</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
         <source>Converting an instance method to a static method may produce invalid code</source>
-        <target state="new">Converting an instance method to a static method may produce invalid code</target>
+        <target state="translated">La conversione di un metodo di istanza in un metodo statico potrebbe produrre codice non valido</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
         <source>Make the constructor that takes zero parameters 'public'</source>
-        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <target state="translated">Impostare come 'public' il costruttore che accetta zero parametri</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1559,27 +1584,37 @@
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
         <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
-        <target state="new">Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</target>
+        <target state="translated">Dal momento che un tipo che implementa 'IDynamicInterfaceCastable' non può implementare un'interfaccia dinamica nei metadati, le chiamate a un membro di interfaccia di istanza che non è un'implementazione esplicita definita in questo tipo potrebbero non riuscire in fase di esecuzione. Contrassegnare i membri della nuova interfaccia come 'static' per evitare errori di runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
         <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
-        <target state="new">The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</target>
+        <target state="translated">Il membro '{0}' nel tipo '{1}' deve essere contrassegnato come 'static' perché a '{1}' è stato applicato l'attributo 'DynamicInterfaceImplementationAttribute'</target>
         <note />
       </trans-unit>
       <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
         <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
-        <target state="new">Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</target>
+        <target state="translated">I membri definiti in un'interfaccia con 'DynamicInterfaceCastableImplementationAttribute' devono essere 'static'</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
-        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
-      <trans-unit id="MethodUsesPreviewTypeAsParamaterMessage">
-        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+      <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1599,17 +1634,17 @@
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="new">Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</target>
+        <target state="translated">La presenza di inizializzatori di modulo nel codice dell'applicazione assicura che i componenti di un'applicazione vengano inizializzati prima dell'inizio dell'esecuzione del codice dell'applicazione. La dichiarazione di un modulo 'ModuleInitializer' nel codice della libreria può interferire con l'inizializzazione dell'applicazione e causare limitazioni alle funzionalità di trimming di tale applicazione. Il codice della libreria non deve quindi utilizzare l'attributo 'ModuleInitializer', ma esporre metodi utilizzabili per inizializzare tutti i componenti nella libreria e consentire all'applicazione di richiamare il metodo durante l'inizializzazione dell'applicazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
         <source>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</source>
-        <target state="new">The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</target>
+        <target state="translated">L'attributo 'ModuleInitializer' deve essere usato solo nel codice dell'applicazione o in scenari avanzati di generatori di origine</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle">
         <source>The 'ModuleInitializer' attribute should not be used in libraries</source>
-        <target state="new">The 'ModuleInitializer' attribute should not be used in libraries</target>
+        <target state="translated">L'attributo 'ModuleInitializer' non deve essere usato nelle librerie</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1673,8 +1708,13 @@
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
-        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1799,57 +1839,57 @@
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringCodefixTitle">
         <source>Replace 'Substring' with 'AsSpan'</source>
-        <target state="new">Replace 'Substring' with 'AsSpan'</target>
+        <target state="translated">Sostituire 'Substring' con 'AsSpan'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan' è più efficace di 'Substring'. 'Substring' esegue una copia della stringa O(n), mentre 'AsSpan' non la esegue e ha un costo costante.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
         <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available</target>
+        <target state="translated">Preferire 'AsSpan' a 'Substring' quando sono disponibili overload basati su span</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringTitle">
         <source>Prefer 'AsSpan' over 'Substring'</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <target state="translated">Preferire 'AsSpan' a 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
-        <target state="new">Use 'ContainsKey'</target>
+        <target state="translated">Usare 'ContainsKey'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
         <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
-        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <target state="translated">'ContainsKey' è in genere O(1), mentre in alcuni casi 'Keys.Contains' può essere O(n). Inoltre, molte implementazioni del dizionario inizializzano in modo differito la raccolta Keys per ridurre le allocazioni.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
         <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
+        <target state="translated">Preferire 'ContainsKey' a 'Keys.Contains' per il tipo di dizionario '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
         <source>Prefer Dictionary.Contains methods</source>
-        <target state="new">Prefer Dictionary.Contains methods</target>
+        <target state="translated">Preferire i metodi Dictionary.Contains</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
         <source>Use 'ContainsValue'</source>
-        <target state="new">Use 'ContainsValue'</target>
+        <target state="translated">Usare 'ContainsValue'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
         <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
-        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
+        <target state="translated">Molte implementazioni del dizionario inizializzano in modo differito la raccolta Values. Per evitare allocazioni non necessarie, preferire 'ContainsValue' a 'Values.Contains'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">
         <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
+        <target state="translated">Preferire 'ContainsValue' a 'Values.Contains' per il tipo di dizionario '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -1989,32 +2029,32 @@
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
         <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
-        <target state="new">Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <target state="translated">La specifica di un costruttore senza parametri visibile come tipo che lo contiene per un tipo derivato da 'System.Runtime.InteropServices.SafeHandle' offre prestazioni migliori e ne consente l'utilizzo in soluzioni di interoperabilità generate da origini.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
         <source>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <target state="translated">Specificare un costruttore senza parametri visibile come il tipo che lo contiene per il tipo '{0}' derivato da 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
         <source>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <target state="translated">Specificare un costruttore senza parametri visibile come il tipo che lo contiene per i tipi concreti derivati da 'System.Runtime.InteropServices.SafeHandle'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
         <source>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</source>
-        <target state="new">To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</target>
+        <target state="translated">Per migliorare le prestazioni, eseguire l'override dei metodi asincroni basati sulla memoria durante la creazione di una sottoclasse 'Stream'. Implementare quindi i metodi basati su matrice nei termini dei metodi basati sulla memoria.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
         <source>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</source>
-        <target state="new">'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</target>
+        <target state="translated">'{0}' esegue l'override di '{1}' basato su matrice, ma non di '{2}' basato sulla memoria. Per migliorare le prestazioni, provare a eseguire l'override di '{2}' basato sulla memoria.</target>
         <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">
         <source>Provide memory-based overrides of async methods when subclassing 'Stream'</source>
-        <target state="new">Provide memory-based overrides of async methods when subclassing 'Stream'</target>
+        <target state="translated">Specificare override basati sulla memoria dei metodi asincroni durante la creazione di una sottoclasse 'Stream'</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -2024,7 +2064,7 @@
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
-        <target state="new">Replace string literal with char literal</target>
+        <target state="translated">Sostituire il valore letterale stringa con il valore letterale char</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
@@ -2314,7 +2354,7 @@
       </trans-unit>
       <trans-unit id="StaticAndAbstractRequiresPreviewFeatures">
         <source>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <target state="translated">Per l'uso di entrambi i modificatori 'static' e 'abstract' è richiesto il consenso esplicito per le funzionalità di anteprima. Per altre informazioni, vedere https://aka.ms/dotnet-warnings/preview-features.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -2389,22 +2429,22 @@
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextDescription">
         <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
-        <target state="new">When inside a Task-returning method, use the async version of methods, if they exist.</target>
+        <target state="translated">All'interno di un metodo che restituisce Task, utilizzare la versione asincrona dei metodi, se presenti.</target>
         <note>{Locked="Task"}</note>
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage">
         <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
-        <target state="new">'{0}' synchronously blocks. Await '{1}' instead.</target>
+        <target state="translated">'{0}' si blocca in modalità sincrona. In alternativa, usare await '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
         <source>'{0}' synchronously blocks. Use await instead.</source>
-        <target state="new">'{0}' synchronously blocks. Use await instead.</target>
+        <target state="translated">'{0}' si blocca in modalità sincrona. In alternativa, usare await.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAsyncMethodInAsyncContextTitle">
         <source>Call async methods when in an async method</source>
-        <target state="new">Call async methods when in an async method</target>
+        <target state="translated">Chiamare metodi asincroni in un metodo asincrono</target>
         <note />
       </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
@@ -2424,22 +2464,22 @@
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
         <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
-        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <target state="translated">Sostituire con 'CancellationToken.ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
         <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
-        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <target state="translated">'ThrowIfCancellationRequested' controlla automaticamente se il token è stato annullato e, in tal caso, genera un'eccezione 'OperationCanceledException'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
         <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <target state="translated">Usare 'ThrowIfCancellationRequested' invece di selezionare 'IsCancellationRequested' e generare 'OperationCanceledException'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <target state="translated">Usare 'ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2474,22 +2514,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
         <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
-        <target state="new">'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' è più semplice e rapido di 'Thread.CurrentThread.ManagedThreadId'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdFix">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">Usare 'Environment.CurrentManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdMessage">
         <source>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</target>
+        <target state="translated">Usare 'Environment.CurrentManagedThreadId' invece di 'Thread.CurrentThread.ManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdTitle">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">Usare 'Environment.CurrentManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
@@ -2514,22 +2554,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathDescription">
         <source>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</source>
-        <target state="new">'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</target>
+        <target state="translated">'Environment.ProcessPath' è più semplice e rapido rispetto a 'Process.GetCurrentProcess().MainModule.FileName'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathFix">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">Usare 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathMessage">
         <source>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</source>
-        <target state="new">Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</target>
+        <target state="translated">Usare 'Environment.ProcessPath' invece di 'Process.GetCurrentProcess().MainModule.FileName'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathTitle">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">Usare 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2624,82 +2664,82 @@
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">Usare 'string.Equals'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareDescription">
         <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
-        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <target state="translated">Risulta più immediato e probabilmente più rapido usare 'string.Equals' invece di confrontare il risultato di 'string.Compare' con zero.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareMessage">
         <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
-        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <target state="translated">Usare 'string.Equals' invece di confrontare il risultato di 'string.Compare' con 0</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">Usare 'string.Equals'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
         <source>Use 'AsSpan' with 'string.Concat'</source>
-        <target state="new">Use 'AsSpan' with 'string.Concat'</target>
+        <target state="translated">Usare 'AsSpan' con 'string.Concat'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatDescription">
         <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
-        <target state="new">It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
+        <target state="translated">È più efficace usare 'AsSpan' e 'String.Concat' invece di 'Substring' e un operatore di concatenazione.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatMessage">
         <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
-        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
+        <target state="translated">Usare 'string.Concat' e 'AsSpan' basati su span invece di 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanBasedStringConcatTitle">
         <source>Use span-based 'string.Concat'</source>
-        <target state="new">Use span-based 'string.Concat'</target>
+        <target state="translated">Usare 'string.Concat' basato su span</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
         <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
-        <target state="new">'string.Contains(char)' is available as a better performing overload for single char lookup.</target>
+        <target state="translated">Per la ricerca di caratteri singoli è possibile usare come overload 'string.Contains(char)' che offre prestazioni migliori.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
-        <target state="new">Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</target>
+        <target state="translated">Usare 'string.Contains(char)' invece di 'string.Contains(string)' durante la ricerca di un singolo carattere</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
         <source>Use char literal for a single character lookup</source>
-        <target state="new">Use char literal for a single character lookup</target>
+        <target state="translated">Usare il valore letterale char per la ricerca di un singolo carattere</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
-        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <target state="translated">Con l'analizzatore della compatibilità della piattaforma sono richiesti un nome e una versione di piattaforma validi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringInvalidVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <target state="translated">La versione '{0}' non è valida per la piattaforma '{1}'. Usare una versione con 2{2} parti per questa piattaforma.</target>
         <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
       </trans-unit>
       <trans-unit id="UseValidPlatformStringNoVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <target state="translated">La versione '{0}' non è valida per la piattaforma '{1}'. Non usare versioni per questa piattaforma.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringTitle">
         <source>Use valid platform string</source>
-        <target state="new">Use valid platform string</target>
+        <target state="translated">Usare una stringa di piattaforma valida</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringUnknownPlatform">
         <source>The platform '{0}' is not a known platform name</source>
-        <target state="new">The platform '{0}' is not a known platform name</target>
+        <target state="translated">La piattaforma '{0}' non corrisponde a un nome di piattaforma noto</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
@@ -2768,8 +2808,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
-        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
         <note />
       </trans-unit>
     </body>

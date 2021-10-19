@@ -254,77 +254,77 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
         <source>The logging message template should not vary between calls.</source>
-        <target state="new">The logging message template should not vary between calls.</target>
+        <target state="translated">ログ メッセージ テンプレートは、呼び出しによって異なるべきではありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
         <source>The logging message template should not vary between calls to '{0}'</source>
-        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <target state="translated">ログ メッセージ テンプレートは、'{0}' への呼び出しによって異なるべきではありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
         <source>Template should be a static expression</source>
-        <target state="new">Template should be a static expression</target>
+        <target state="translated">テンプレートは静的な式にする必要があります</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <target state="translated">ログ メッセージ テンプレートで指定されたパラメーターの数が、名前付きプレースホルダーの数と一致しません。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <target state="translated">ログ メッセージ テンプレートで指定されたパラメーターの数が、名前付きプレースホルダーの数と一致しません</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
         <source>Parameter count mismatch</source>
-        <target state="new">Parameter count mismatch</target>
+        <target state="translated">パラメーター カウントが不一致</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <target state="translated">ログ メッセージ テンプレートの名前付きプレースホルダーは、数字のみで構成することはできません。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <target state="translated">ログ メッセージ テンプレートの名前付きプレースホルダーを数字のみで構成することはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
         <source>Named placeholders should not be numeric values</source>
-        <target state="new">Named placeholders should not be numeric values</target>
+        <target state="translated">名前付きプレースホルダーを数値にすることはできません</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <target state="translated">パフォーマンスを向上させるには、LoggerMessage デリゲートを使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
         <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <target state="translated">パフォーマンスを向上させるには、'{0}' を呼び出す代わりに LoggerMessage デリゲートを使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
         <source>Use the LoggerMessage delegates</source>
-        <target state="new">Use the LoggerMessage delegates</target>
+        <target state="translated">LoggerMessage デリゲートを使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
         <source>Use PascalCase for named placeholders in the logging message template.</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <target state="translated">ログ メッセージ テンプレートの名前付きプレースホルダーには PascalCase を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
         <source>Use PascalCase for named placeholders in the logging message template</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <target state="translated">ログ メッセージ テンプレートで名前付きプレースホルダーに PascalCase を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
         <source>Use PascalCase for named placeholders</source>
-        <target state="new">Use PascalCase for named placeholders</target>
+        <target state="translated">名前付きプレースホルダーに PascalCase を使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

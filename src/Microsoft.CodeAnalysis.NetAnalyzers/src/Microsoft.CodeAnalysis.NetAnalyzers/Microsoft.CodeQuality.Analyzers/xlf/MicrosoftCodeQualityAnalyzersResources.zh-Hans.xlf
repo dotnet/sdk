@@ -254,77 +254,77 @@
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
         <source>The logging message template should not vary between calls.</source>
-        <target state="new">The logging message template should not vary between calls.</target>
+        <target state="translated">日志记录消息模板不应因调用而异。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
         <source>The logging message template should not vary between calls to '{0}'</source>
-        <target state="new">The logging message template should not vary between calls to '{0}'</target>
+        <target state="translated">日志记录消息模板在对“{0}”的调用之间不应存在不同。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
         <source>Template should be a static expression</source>
-        <target state="new">Template should be a static expression</target>
+        <target state="translated">模板应为静态表达式</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders.</target>
+        <target state="translated">日志记录消息模板中所提供参数的数量与已命名占位符的数量不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
         <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
-        <target state="new">Number of parameters supplied in the logging message template do not match the number of named placeholders</target>
+        <target state="translated">日志记录消息模板中所提供参数的数量与已命名占位符的数量不匹配</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
         <source>Parameter count mismatch</source>
-        <target state="new">Parameter count mismatch</target>
+        <target state="translated">参数计数不匹配。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters.</target>
+        <target state="translated">日志记录消息模板中的已命名占位符不应仅由数值字符组成。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
         <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
-        <target state="new">Named placeholders in the logging message template should not be comprised of only numeric characters</target>
+        <target state="translated">日志记录消息模板中的已命名占位符不应仅由数字字符组成</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
         <source>Named placeholders should not be numeric values</source>
-        <target state="new">Named placeholders should not be numeric values</target>
+        <target state="translated">已命名占位符不应是数值</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
         <source>For improved performance, use the LoggerMessage delegates.</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates.</target>
+        <target state="translated">若要提高性能，请使用 LoggerMessage 委托。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
         <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
-        <target state="new">For improved performance, use the LoggerMessage delegates instead of calling '{0}'</target>
+        <target state="translated">为了提高性能，请使用 LoggerMessage 委托，而不是调用“{0}”</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
         <source>Use the LoggerMessage delegates</source>
-        <target state="new">Use the LoggerMessage delegates</target>
+        <target state="translated">使用 LoggerMessage 委托</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
         <source>Use PascalCase for named placeholders in the logging message template.</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template.</target>
+        <target state="translated">在日志记录消息模板中将 PascalCase 用于已命名占位符。</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
         <source>Use PascalCase for named placeholders in the logging message template</source>
-        <target state="new">Use PascalCase for named placeholders in the logging message template</target>
+        <target state="translated">在日志记录消息模板中将 PascalCase 用于已命名占位符</target>
         <note />
       </trans-unit>
       <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
         <source>Use PascalCase for named placeholders</source>
-        <target state="new">Use PascalCase for named placeholders</target>
+        <target state="translated">将 PascalCase 用于已命名占位符</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
