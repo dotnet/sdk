@@ -13,18 +13,12 @@ PR for applying this patch: https://github.com/dotnet/roslyn/pull/57165
 ---
  eng/SourceBuild.props                                       | 2 +-
  .../Core/Tests}/Directory.Build.props                       | 0
- .../CodeAnalysis.Debugging}/Directory.Build.props           | 0
- src/Dependencies/Microsoft.NetFX20/Directory.Build.props    | 6 ++++++
- src/Dependencies/PooledObjects/Directory.Build.props        | 6 ++++++
  src/Features/LanguageServer/Directory.Build.props           | 6 ++++++
  src/Features/Lsif/Directory.Build.props                     | 6 ++++++
  src/NuGet/VisualStudio/Directory.Build.props                | 6 ++++++
  .../Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj        | 2 --
- 9 files changed, 31 insertions(+), 3 deletions(-)
- rename src/{Dependencies => CodeStyle/Core/Tests}/Directory.Build.props (100%)
- rename src/{Features => Dependencies/CodeAnalysis.Debugging}/Directory.Build.props (100%)
- create mode 100644 src/Dependencies/Microsoft.NetFX20/Directory.Build.props
- create mode 100644 src/Dependencies/PooledObjects/Directory.Build.props
+ 6 files changed, 19 insertions(+), 3 deletions(-)
+ rename src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
  create mode 100644 src/Features/LanguageServer/Directory.Build.props
  create mode 100644 src/Features/Lsif/Directory.Build.props
  create mode 100644 src/NuGet/VisualStudio/Directory.Build.props
@@ -42,38 +36,10 @@ index 182f8a9cdb1..92e316a4744 100644
      </PropertyGroup>
    </Target>
  
-diff --git a/src/Dependencies/Directory.Build.props b/src/CodeStyle/Core/Tests/Directory.Build.props
-similarity index 100%
-rename from src/Dependencies/Directory.Build.props
-rename to src/CodeStyle/Core/Tests/Directory.Build.props
-diff --git a/src/Features/Directory.Build.props b/src/Dependencies/CodeAnalysis.Debugging/Directory.Build.props
+diff --git a/src/Features/Directory.Build.props b/src/CodeStyle/Core/Tests/Directory.Build.props
 similarity index 100%
 rename from src/Features/Directory.Build.props
-rename to src/Dependencies/CodeAnalysis.Debugging/Directory.Build.props
-diff --git a/src/Dependencies/Microsoft.NetFX20/Directory.Build.props b/src/Dependencies/Microsoft.NetFX20/Directory.Build.props
-new file mode 100644
-index 00000000000..6eef643958f
---- /dev/null
-+++ b/src/Dependencies/Microsoft.NetFX20/Directory.Build.props
-@@ -0,0 +1,6 @@
-+<Project>
-+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-+  <PropertyGroup>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-+  </PropertyGroup>
-+</Project>
-diff --git a/src/Dependencies/PooledObjects/Directory.Build.props b/src/Dependencies/PooledObjects/Directory.Build.props
-new file mode 100644
-index 00000000000..6eef643958f
---- /dev/null
-+++ b/src/Dependencies/PooledObjects/Directory.Build.props
-@@ -0,0 +1,6 @@
-+<Project>
-+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-+  <PropertyGroup>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-+  </PropertyGroup>
-+</Project>
+rename to src/CodeStyle/Core/Tests/Directory.Build.props
 diff --git a/src/Features/LanguageServer/Directory.Build.props b/src/Features/LanguageServer/Directory.Build.props
 new file mode 100644
 index 00000000000..6eef643958f
@@ -111,7 +77,7 @@ index 00000000000..6eef643958f
 +  </PropertyGroup>
 +</Project>
 diff --git a/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj b/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
-index 3bd6d6398e3..2edf2da6d1a 100644
+index 76d0dc36da1..a65fc35f1c3 100644
 --- a/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
 +++ b/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
 @@ -7,8 +7,6 @@
