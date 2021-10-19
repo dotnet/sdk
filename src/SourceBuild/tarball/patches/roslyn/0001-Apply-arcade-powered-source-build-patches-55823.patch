@@ -1,0 +1,27 @@
+From 1a415d2019d74bcf009134326d1c25798589de64 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Tue, 19 Oct 2021 11:39:32 -0500
+Subject: [PATCH] Apply arcade-powered source-build patches (#55823)
+
+* Don't include desktop artifacts that don't exist in source-build.
+Source-build doesn't have these artifacts available, even when we eventually will build desktop TFMs, because Roslyn is one of the first builds in source-build.  Instead Roslyn is picking up reference packages that don't have the `lib` directory which is causing a build failure.  This disables the attempt to grab these desktop artifacts so source-build just skips them instead.
+---
+ .../DesktopCompilerArtifacts.targets                            | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/NuGet/Microsoft.Net.Compilers.Toolset/DesktopCompilerArtifacts.targets b/src/NuGet/Microsoft.Net.Compilers.Toolset/DesktopCompilerArtifacts.targets
+index c8b87ab6958..107ff051b51 100644
+--- a/src/NuGet/Microsoft.Net.Compilers.Toolset/DesktopCompilerArtifacts.targets
++++ b/src/NuGet/Microsoft.Net.Compilers.Toolset/DesktopCompilerArtifacts.targets
+@@ -20,7 +20,7 @@
+     VS training data to the assemblies they produce.
+   -->
+ 
+-  <Target Name="InitializeDesktopCompilerArtifacts">
++  <Target Name="InitializeDesktopCompilerArtifacts" Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <ItemGroup>
+       
+       <!-- The Roslyn built binaries must be taken from these locations because this is the location where signing occurs -->
+-- 
+2.31.1
+
