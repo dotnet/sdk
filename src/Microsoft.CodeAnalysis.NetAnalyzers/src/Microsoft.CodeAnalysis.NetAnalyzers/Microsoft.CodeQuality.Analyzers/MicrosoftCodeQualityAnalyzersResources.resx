@@ -1313,10 +1313,10 @@
   </data>
   <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
     <value>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</value>
-    <comment>'IEnumerable' is a well-known interface name. It should not be translated</comment>
+    <comment>{Locked="IEnumerable"}</comment>
   </data>
   <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
     <value>Possible multiple enumerations over 'IEnumerable' collection</value>
-    <comment>'IEnumerable' is a well-known interface name. It should not be translated</comment>
+    <comment>{Locked="IEnumerable"}</comment>
   </data>
 </root>
