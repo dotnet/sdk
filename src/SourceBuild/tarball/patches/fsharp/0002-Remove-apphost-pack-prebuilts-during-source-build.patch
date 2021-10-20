@@ -1,0 +1,127 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Tue, 19 Oct 2021 19:34:11 -0500
+Subject: [PATCH] Remove apphost pack prebuilts during source-build
+
+Add a check to eng/build.sh to avoid running the bootstrapping twice: once in the outer build and again in the inner build.
+
+Sets UseAppHost=false during source-build for the projects that build during bootstrapping. Pass the DotNetBuildFromSource property through the environment in eng/SourceBuild.props so it takes effect.
+---
+ eng/SourceBuild.props                         |  2 +-
+ eng/build.sh                                  | 51 ++++++++++---------
+ .../AssemblyCheck/AssemblyCheck.fsproj        |  1 +
+ src/buildtools/fslex/fslex.fsproj             |  1 +
+ src/buildtools/fsyacc/fsyacc.fsproj           |  1 +
+ 5 files changed, 32 insertions(+), 24 deletions(-)
+
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 22c929f28..903ee00d3 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -41,7 +41,7 @@
+     <Exec
+       Command="./build.sh --bootstrap --skipBuild"
+       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
+-      EnvironmentVariables="@(InnerBuildEnv)" />
++      EnvironmentVariables="@(InnerBuildEnv);DotNetBuildFromSource=true" />
+   </Target>
+ 
+ </Project>
+diff --git a/eng/build.sh b/eng/build.sh
+index 9a2aa0083..6af422237 100755
+--- a/eng/build.sh
++++ b/eng/build.sh
+@@ -240,29 +240,34 @@ function BuildSolution {
+   node_reuse=false
+ 
+   # build bootstrap tools
+-  bootstrap_config=Proto
+-  bootstrap_dir=$artifacts_dir/Bootstrap
+-  if [[ "$force_bootstrap" == true ]]; then
+-     rm -fr $bootstrap_dir
+-  fi
+-  if [ ! -f "$bootstrap_dir/fslex.dll" ]; then
+-    BuildMessage="Error building tools"
+-    MSBuild "$repo_root/src/buildtools/buildtools.proj" \
+-      /restore \
+-      /p:Configuration=$bootstrap_config
+-
+-    mkdir -p "$bootstrap_dir"
+-    cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net5.0 $bootstrap_dir/fslex
+-    cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net5.0 $bootstrap_dir/fsyacc
+-  fi
+-  if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
+-    BuildMessage="Error building bootstrap"
+-    MSBuild "$repo_root/proto.proj" \
+-      /restore \
+-      /p:Configuration=$bootstrap_config \
+-
+-
+-    cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net5.0 $bootstrap_dir/fsc
++  # source_build=true means we are currently in the outer/wrapper source-build,
++  # and building bootstrap needs to wait. The source-build targets will run this
++  # script again without setting source_build=true when it is done setting up
++  # the build environment. See 'eng/SourceBuild.props'.
++  if [[ "$source_build" != true ]]; then
++    bootstrap_config=Proto
++    bootstrap_dir=$artifacts_dir/Bootstrap
++    if [[ "$force_bootstrap" == true ]]; then
++      rm -fr $bootstrap_dir
++    fi
++    if [ ! -f "$bootstrap_dir/fslex.dll" ]; then
++      BuildMessage="Error building tools"
++      MSBuild "$repo_root/src/buildtools/buildtools.proj" \
++        /restore \
++        /p:Configuration=$bootstrap_config
++
++      mkdir -p "$bootstrap_dir"
++      cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net5.0 $bootstrap_dir/fslex
++      cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net5.0 $bootstrap_dir/fsyacc
++    fi
++    if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
++      BuildMessage="Error building bootstrap"
++      MSBuild "$repo_root/proto.proj" \
++        /restore \
++        /p:Configuration=$bootstrap_config
++
++      cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net5.0 $bootstrap_dir/fsc
++    fi
+   fi
+ 
+   if [[ "$skip_build" != true ]]; then
+diff --git a/src/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/src/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+index 464b6ef78..5c78bbe6d 100644
+--- a/src/buildtools/AssemblyCheck/AssemblyCheck.fsproj
++++ b/src/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+@@ -4,6 +4,7 @@
+     <OutputType>Exe</OutputType>
+     <TargetFramework>net5.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/buildtools/fslex/fslex.fsproj b/src/buildtools/fslex/fslex.fsproj
+index 1959ce59c..3d63bf6bf 100644
+--- a/src/buildtools/fslex/fslex.fsproj
++++ b/src/buildtools/fslex/fslex.fsproj
+@@ -5,6 +5,7 @@
+     <TargetFramework>net5.0</TargetFramework>
+     <DefineConstants>INTERNALIZED_FSLEXYACC_RUNTIME;$(DefineConstants)</DefineConstants>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/buildtools/fsyacc/fsyacc.fsproj b/src/buildtools/fsyacc/fsyacc.fsproj
+index 5d1b7141f..63b63c5de 100644
+--- a/src/buildtools/fsyacc/fsyacc.fsproj
++++ b/src/buildtools/fsyacc/fsyacc.fsproj
+@@ -5,6 +5,7 @@
+     <TargetFramework>net5.0</TargetFramework>
+     <DefineConstants>INTERNALIZED_FSLEXYACC_RUNTIME;$(DefineConstants)</DefineConstants>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+ 
+   <ItemGroup>
