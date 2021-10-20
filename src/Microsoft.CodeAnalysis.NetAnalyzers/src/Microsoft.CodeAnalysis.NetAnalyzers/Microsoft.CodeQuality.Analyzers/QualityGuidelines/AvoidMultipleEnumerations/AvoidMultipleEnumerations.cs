@@ -125,7 +125,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownDeferredExecutionMethodsTakeOneIEnumerable = GetWellKnownDeferredExecutionMethodsTakeOneIEnumerable(wellKnownTypeProvider);
             var wellKnownDeferredExecutionMethodsTakeTwoIEnumerables = GetWellKnownDeferredExecutionMethodTakesTwoIEnumerables(wellKnownTypeProvider);
 
-            var potentialDiagnosticOperationsBuilder = new HashSet<IOperation>();
+            var potentialDiagnosticOperationsBuilder = ImmutableHashSet.CreateBuilder<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(context, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
@@ -140,7 +140,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
             ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-            HashSet<IOperation> builder)
+            ImmutableHashSet<IOperation>.Builder builder)
         {
             var operation = context.Operation;
             if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
@@ -157,9 +157,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
             ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
-            HashSet<IOperation> potentialDiagnosticOperations)
+            ImmutableHashSet<IOperation>.Builder potentialDiagnosticOperationsBuilder)
         {
-            if (potentialDiagnosticOperations.Count == 0)
+            var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
+            if (potentialDiagnosticOperations.IsEmpty)
             {
                 return;
             }
@@ -196,34 +197,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var diagnosticOperations = new HashSet<IOperation>();
-            foreach (var block in cfg.Blocks)
+            foreach (var operation in potentialDiagnosticOperations)
             {
-                if (!block.IsReachable)
+                var result = analysisResult[operation.Kind, operation.Syntax];
+                if (result.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
                 {
                     continue;
                 }
 
-                var result = analysisResult[block].Data;
-                if (result.IsEmpty)
-                {
-                    continue;
-                }
-
-                // AnalysisResult is shared per block, so just pick the first one to report diagnostic
-                var globalAnalysisResult = result.First().Value;
-                if (globalAnalysisResult.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
-                {
-                    continue;
-                }
-
-                foreach (var kvp in globalAnalysisResult.TrackedEntities)
+                foreach (var kvp in result.TrackedEntities)
                 {
                     var trackedInvocationSet = kvp.Value;
                     if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime)
                     {
-                        foreach (var operation in trackedInvocationSet.Operations)
+                        foreach (var trackedOperation in trackedInvocationSet.Operations)
                         {
-                            diagnosticOperations.Add(operation);
+                            diagnosticOperations.Add(trackedOperation);
                         }
                     }
                 }

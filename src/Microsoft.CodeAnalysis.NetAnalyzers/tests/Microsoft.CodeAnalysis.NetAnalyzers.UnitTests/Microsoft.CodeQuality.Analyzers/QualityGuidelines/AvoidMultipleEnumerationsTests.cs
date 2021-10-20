@@ -56,7 +56,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestForEachLoop()
+        public async Task TestForEachLoop1()
         {
             var code = @"
 using System;
@@ -73,6 +73,28 @@ public class Bar
             [|i|].Count();
             [|j|].DefaultIfEmpty();
         }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestForEachLoop2()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        foreach (var c in [|i|])
+        {
+        }
+        [|i|].Count();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -96,32 +118,6 @@ public class Bar
             [|i|].ElementAt(100);
             [|j|].ElementAtOrDefault(100);
         }
-    }
-}";
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
-
-        [Fact]
-        public async Task TestUnreachableCode()
-        {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
-public class Bar
-{
-    public void Sub()
-    {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
-        if (false)
-        {
-            i.First();
-            i.First();
-        }
-
-        [|i|].First();
-        [|i|].First();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -213,7 +209,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestOneInvocationAfterIfBranch()
+        public async Task TestOneInvocationAfterIfBranch1()
         {
             var code = @"
 using System;
@@ -233,7 +229,7 @@ public class Bar
         {
             [|i|].ToList();
         }
-        else (b == 5)
+        else
         {
             [|i|].Min();
         }
@@ -246,7 +242,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestOneInvocationAfterIfBranch3()
+        public async Task TestOneInvocationAfterIfBranch2()
         {
             var code = @"
 using System;
@@ -258,6 +254,9 @@ public class Bar
     public void Sub(int b, IEnumerable<int> j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
+        [|i|].First();
+        [|j|].First();
+
         if (b == 1)
         {
             [|i|].First();
@@ -273,9 +272,6 @@ public class Bar
             [|i|].First();
             [|j|].First();
         }
-
-        i.First();
-        j.First();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -509,7 +505,7 @@ public class Bar
         {
             [|i|].ToArray();
         }
-        else if (i.Max() == 10)
+        else if ([|i|].Max() == 10)
         {
         }
     }
@@ -534,6 +530,7 @@ public class Bar
         if ([|i|].Any() && [|i|].Max() == 10)
         {
         }
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -555,6 +552,7 @@ public class Bar
         if ([|i|].Any() || [|i|].Max() == 10)
         {
         }
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -576,6 +574,7 @@ public class Bar
         while ([|i|].Min() == 10)
         {
         }
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -597,6 +596,7 @@ public class Bar
         if ([|i|].Any() || [|i|].Max() == 10)
         {
         }
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -620,6 +620,7 @@ public class Bar
         }
 
         [|i|].Min();
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -641,6 +642,7 @@ public class Bar
         while ([|i|].Min() == 10)
         {
         }
+    }
 }";
 
             await VerifyCS.VerifyAnalyzerAsync(code);
