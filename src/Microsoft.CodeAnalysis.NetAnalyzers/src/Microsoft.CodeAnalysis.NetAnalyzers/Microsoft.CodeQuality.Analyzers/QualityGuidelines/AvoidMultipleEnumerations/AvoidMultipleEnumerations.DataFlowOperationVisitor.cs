@@ -13,17 +13,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayExecutionMethods;
+            private readonly ImmutableArray<IMethodSymbol> _wellKnownDeferredExecutionMethods;
             private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+                ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
                 IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
             {
-                _wellKnownDelayExecutionMethods = wellKnownDelayExecutionMethods;
+                _wellKnownDeferredExecutionMethods = wellKnownDeferredExecutionMethods;
                 _wellKnownEnumerationMethods = wellKnownEnumerationMethods;
                 _getEnumeratorMethod = getEnumeratorMethod;
             }
@@ -51,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameterOrArrayElement(
                 IOperation operation, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
             {
-                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods)
+                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDeferredExecutionMethods, _wellKnownEnumerationMethods)
                     || IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
                     var newValue = CreateAnalysisValue(analysisEntity, operation, value);
@@ -74,7 +74,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDelayExecutingMethodIfNeeded(operation, _wellKnownDelayExecutionMethods);
+                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _wellKnownDeferredExecutionMethods);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (operationToCheck.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)

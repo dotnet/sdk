@@ -8,6 +8,7 @@ using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -17,8 +18,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
-            MicrosoftCodeQualityAnalyzersResources.CreateLocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsTitle)),
-            MicrosoftCodeQualityAnalyzersResources.CreateLocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsMessage)),
+            CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsTitle)),
+            CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.Disabled,
             description: null,
@@ -27,13 +28,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(MultipleEnumerableDescriptor);
 
-        // The parameter name used in the enumeration method to indicate the source.
-        // e.g.
-        // public static TSource First<TSource>(this System.Collections.Generic.IEnumerable<TSource> source, Func<TSource, bool> predicate);
-        private const string parameterNameInLinqMethod = "source";
-
         /// <summary>
-        /// All the collections that have a convertion method from IEnumerable.
+        /// All the collections that have a conversion method from IEnumerable.
         /// e.g. ToImmutableArray()
         /// </summary>
         private static readonly ImmutableArray<(string typeName, string methodName)> s_wellKnownImmutableCollectionsHaveCovertMethod = ImmutableArray.Create(
@@ -71,7 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ToList",
             "ToLookup");
 
-        private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_wellKnownDeferredExecutionLinqMethod = ImmutableArray.Create(
             "Append",
             "AsEnumerable",
             "Cast",
@@ -103,7 +99,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             IMethodSymbol? getEnumeratorMethod);
 
@@ -123,28 +119,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var wellKnownEnumerationMethods = GetWellKnownEnumerationMethods(wellKnownTypeProvider);
-            var wellKnownDelayExecutionMethods = GetWellKnownDelayExecutionMethod(wellKnownTypeProvider);
+            var wellKnownDeferredExecutionMethods = GetWellKnownDeferredExecutionMethod(wellKnownTypeProvider);
 
             var potentialDiagnosticOperationsBuilder = new HashSet<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
-                context => CollectPotentialDiagnosticOperations(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
+                context => CollectPotentialDiagnosticOperations(context, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
                 OperationKind.LocalReference);
 
             operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
-                context => Analyze(context, wellKnownTypeProvider, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
+                context => Analyze(context, wellKnownTypeProvider, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
         }
 
         private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             HashSet<IOperation> builder)
         {
             var operation = context.Operation;
             if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                && (IsOperationEnumeratedByMethodInvocation(operation, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods)
-                     || IsOperationEnumeratedByForEachLoop(operation, wellKnownDelayExecutionMethods)))
+                && (IsOperationEnumeratedByMethodInvocation(operation, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods)
+                     || IsOperationEnumeratedByForEachLoop(operation, wellKnownDeferredExecutionMethods)))
             {
                 builder.Add(operation);
             }
@@ -153,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void Analyze(
             OperationBlockAnalysisContext context,
             WellKnownTypeProvider wellKnownTypeProvider,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             HashSet<IOperation> potentialDiagnosticOperations)
         {
@@ -177,7 +173,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
-                analysisContext => CreateOperationVisitor(analysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
+                analysisContext => CreateOperationVisitor(analysisContext, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
@@ -188,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            var diagnoticOperations = new HashSet<IOperation>();
+            var diagnosticOperations = new HashSet<IOperation>();
             foreach (var block in cfg.Blocks)
             {
                 var result = analysisResult[block].Data;
@@ -211,13 +207,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         foreach (var operation in trackedInvocationSet.Operations)
                         {
-                            diagnoticOperations.Add(operation);
+                            diagnosticOperations.Add(operation);
                         }
                     }
                 }
             }
 
-            foreach (var operation in diagnoticOperations)
+            foreach (var operation in diagnosticOperations)
             {
                 context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
             }

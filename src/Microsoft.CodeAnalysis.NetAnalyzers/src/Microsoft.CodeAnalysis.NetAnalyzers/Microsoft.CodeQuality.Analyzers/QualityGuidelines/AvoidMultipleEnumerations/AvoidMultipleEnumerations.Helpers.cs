@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
@@ -22,13 +22,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDelayExecutingMethodIfNeeded(operation, wellKnownDelayExecutingMethods);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethods);
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownEnumerationMethods);
         }
 
-        private static IOperation SkipDelayExecutingMethodIfNeeded(
+        private static IOperation SkipDeferredExecutingMethodIfNeeded(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -36,8 +36,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // e.g.
                 // c.Select(i => i + 1).Where(i != 10).First();
                 // Go to the Where() invocation.
-                var lastDelayExecutingInvocation = GetLastDelayExecutingInvocation(argumentOperation, invocationOperation, wellKnownDelayExecutingMethods);
-                return lastDelayExecutingInvocation ?? operation;
+                var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(argumentOperation, invocationOperation, wellKnownDeferredExecutingMethods);
+                return lastDeferredExecutingInvocation ?? operation;
             }
 
             return operation;
@@ -45,7 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
@@ -53,7 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDelayExecutingMethodIfNeeded(operation, wellKnownDelayExecutingMethods);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethods);
             return IsTheExpressionOfForEachLoop(operationToCheck);
         }
 
@@ -74,18 +74,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        private static IInvocationOperation? GetLastDelayExecutingInvocation(
+        private static IInvocationOperation? GetLastDeferredExecutingInvocation(
             IArgumentOperation argumentOperation,
             IInvocationOperation invocationOperation,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
         {
-            if (IsDelayExecutingInvocation(invocationOperation, argumentOperation, wellKnownDelayExecutingMethods))
+            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownDeferredExecutingMethods))
             {
                 // If the current invocation is delay executing method, and we can walk up the invocation chain, check the parent.
                 if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                    && IsDelayExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDelayExecutingMethods))
+                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDeferredExecutingMethods))
                 {
-                    return GetLastDelayExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDelayExecutingMethods);
+                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDeferredExecutingMethods);
                 }
 
                 // This is the last delay executing invocation
@@ -105,10 +105,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var targetMethod = invocationOperation.TargetMethod;
             var parameter = argumentOperationToCheck.Parameter;
 
-            // Don't rely one the sequence of the argument to prevent this case
-            // var x = Enumerable.First(predicate: x => x != 10, bar);
             if (wellKnownMethodCausingEnumeration.Contains(targetMethod.OriginalDefinition)
-                && parameter.Name == parameterNameInLinqMethod
+                && targetMethod.IsExtensionMethod
+                && !targetMethod.Parameters.IsEmpty
+                && parameter.Equals(targetMethod.Parameters[0])
                 && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return true;
@@ -128,39 +128,52 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        private static bool IsDelayExecutingInvocation(
+        private static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> wellKnownDelayExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
             var targetMethod = invocationOperation.TargetMethod;
             // TODO: Consider hard code all the linq method cases here to make it more accurate
-            return wellKnownDelayExecutingMethods.Contains(targetMethod.OriginalDefinition)
+            return wellKnownDeferredExecutingMethods.Contains(targetMethod.OriginalDefinition)
                    && argumentOperationToCheck.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
         }
 
         private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            // Get linq method
             GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownLinqMethodsCausingEnumeration, builder);
 
+            // Get immutable collection conversion method, like ToImmutableArray()
             foreach (var (typeName, methodName) in s_wellKnownImmutableCollectionsHaveCovertMethod)
             {
                 if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
                 {
-                    builder.AddRange(type.GetMembers(methodName).Cast<IMethodSymbol>());
+                    var methods = type.GetMembers(methodName);
+                    foreach (var method in methods)
+                    {
+                        // Usually there are two overloads for these methods, like ToImmutableArray,
+                        // it has two overloads, one convert from ImmutableArray.Builder and one covert from IEnumerable<T>
+                        // and we only want the last one
+                        if (method is IMethodSymbol { Parameters: { Length: > 0 } parameters, IsExtensionMethod: true } methodSymbol
+                            && parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                        {
+                            builder.AddRange(methodSymbol);
+                        }
+                    }
                 }
             }
 
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownDelayExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethod, builder);
             return builder.ToImmutable();
         }
 

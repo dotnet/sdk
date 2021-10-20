@@ -12,8 +12,8 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Public NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Inherits AvoidMultipleEnumerations
 
-        Friend Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownDelayExecutionMethods As ImmutableArray(Of IMethodSymbol), wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol), getEnumeratorMethod As IMethodSymbol) As GlobalFlowStateDictionaryFlowOperationVisitor
-            Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
+        Friend Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownDeferredExecutionMethods As ImmutableArray(Of IMethodSymbol), wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol), getEnumeratorMethod As IMethodSymbol) As GlobalFlowStateDictionaryFlowOperationVisitor
+            Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
         End Function
     End Class
 End Namespace
