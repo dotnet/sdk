@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Wed, 20 Oct 2021 14:38:14 +0000
+Subject: [PATCH 1/2] Upgrade Microsoft.NETFramework.ReferenceAssemblies from
+ 1.0.0 to 1.0.2
+
+Backport PR: https://github.com/dotnet/linker/pull/2326
+---
+ src/ILLink.Tasks/ILLink.Tasks.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ILLink.Tasks/ILLink.Tasks.csproj b/src/ILLink.Tasks/ILLink.Tasks.csproj
+index 0ecf5d1..7501ecb 100644
+--- a/src/ILLink.Tasks/ILLink.Tasks.csproj
++++ b/src/ILLink.Tasks/ILLink.Tasks.csproj
+@@ -53,6 +53,6 @@
+     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" PrivateAssets="All" ExcludeAssets="Runtime" />
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" Condition=" '$(TargetFramework)' == 'net472' " PrivateAssets="All" Publish="True" />
+ 
+-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0" />
++    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.2" />
+   </ItemGroup>
+ </Project>
