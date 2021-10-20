@@ -13,7 +13,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
@@ -22,13 +23,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethods);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(
+                operation,
+                wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+                wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownEnumerationMethods);
         }
 
         private static IOperation SkipDeferredExecutingMethodIfNeeded(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -36,7 +41,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // e.g.
                 // c.Select(i => i + 1).Where(i != 10).First();
                 // Go to the Where() invocation.
-                var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(argumentOperation, invocationOperation, wellKnownDeferredExecutingMethods);
+                var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(
+                    argumentOperation,
+                    invocationOperation,
+                    wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+                    wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
                 return lastDeferredExecutingInvocation ?? operation;
             }
 
@@ -45,7 +54,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
@@ -53,7 +63,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethods);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
             return IsTheExpressionOfForEachLoop(operationToCheck);
         }
 
@@ -77,18 +87,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static IInvocationOperation? GetLastDeferredExecutingInvocation(
             IArgumentOperation argumentOperation,
             IInvocationOperation invocationOperation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
         {
-            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownDeferredExecutingMethods))
+            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables))
             {
-                // If the current invocation is delay executing method, and we can walk up the invocation chain, check the parent.
+                // If the current invocation is deferred executing method, and we can walk up the invocation chain, check the parent.
                 if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDeferredExecutingMethods))
+                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables))
                 {
-                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDeferredExecutingMethods);
+                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
                 }
 
-                // This is the last delay executing invocation
+                // This is the last deferred executing invocation
                 return invocationOperation;
             }
 
@@ -131,14 +142,34 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethods)
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
+            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
-
             var targetMethod = invocationOperation.TargetMethod;
-            // TODO: Consider hard code all the linq method cases here to make it more accurate
-            return wellKnownDeferredExecutingMethods.Contains(targetMethod.OriginalDefinition)
-                   && argumentOperationToCheck.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+            if (argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+            {
+                return false;
+            }
+
+            var argumentMatchingParameter = argumentOperationToCheck.Parameter;
+            // Method like Select, Where, etc.. only take one IEnumerable, and it is the first parameter.
+            if (wellKnownDeferredExecutingMethodsTakeOneIEnumerable.Contains(targetMethod.OriginalDefinition)
+                && !targetMethod.Parameters.IsEmpty
+                && targetMethod.Parameters[0].Equals(argumentMatchingParameter))
+            {
+                return true;
+            }
+
+            // Method like Concat, Except, etc.. take two IEnumerable, and it is the first parameter or second parameter.
+            if (wellKnownDeferredExecutionMethodsTakeTwoIEnumerables.Contains(targetMethod.OriginalDefinition)
+                && targetMethod.Parameters.Length > 1
+                && (targetMethod.Parameters[0].Equals(argumentMatchingParameter) || targetMethod.Parameters[1].Equals(argumentMatchingParameter)))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
@@ -170,10 +201,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethodsTakeOneIEnumerable(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethod, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethodsTakeOneIEnumerable, builder);
+            return builder.ToImmutable();
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethodTakesTwoIEnumerables(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethodsTakeTwoIEnumerables, builder);
             return builder.ToImmutable();
         }
 

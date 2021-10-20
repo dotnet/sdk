@@ -10,10 +10,11 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Inherits AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
-                           wellKnownDeferredExecutionMethods As ImmutableArray(Of IMethodSymbol),
+                           wellKnownDeferredExecutionMethodsTakeOneIEnumerable As ImmutableArray(Of IMethodSymbol),
+                           wellKnownDeferredExecutionMethodsTakeTwoIEnumerables As ImmutableArray(Of IMethodSymbol),
                            wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol),
                            getEnumeratorMethod As IMethodSymbol)
-                MyBase.New(analysisContext, wellKnownDeferredExecutionMethods, wellKnownEnumerationMethods, getEnumeratorMethod)
+                MyBase.New(analysisContext, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods, getEnumeratorMethod)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean
