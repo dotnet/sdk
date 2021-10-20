@@ -9,18 +9,24 @@ projects and exclude a few projects that shouldn't be in source-build.
 
 The newly included projects are used by downstream repos.
 
-PR for applying this patch: https://github.com/dotnet/roslyn/pull/57165
+See https://github.com/dotnet/roslyn/pull/57165
 ---
  eng/SourceBuild.props                                       | 2 +-
  .../Core/Tests}/Directory.Build.props                       | 0
+ src/Features/CSharp/Portable/Directory.Build.props          | 6 ++++++
+ src/Features/Core/Portable/Directory.Build.props            | 6 ++++++
  src/Features/LanguageServer/Directory.Build.props           | 6 ++++++
  src/Features/Lsif/Directory.Build.props                     | 6 ++++++
+ src/Features/VisualBasic/Portable/Directory.Build.props     | 6 ++++++
  src/NuGet/VisualStudio/Directory.Build.props                | 6 ++++++
  .../Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj        | 2 --
- 6 files changed, 19 insertions(+), 3 deletions(-)
+ 9 files changed, 37 insertions(+), 3 deletions(-)
  rename src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
+ create mode 100644 src/Features/CSharp/Portable/Directory.Build.props
+ create mode 100644 src/Features/Core/Portable/Directory.Build.props
  create mode 100644 src/Features/LanguageServer/Directory.Build.props
  create mode 100644 src/Features/Lsif/Directory.Build.props
+ create mode 100644 src/Features/VisualBasic/Portable/Directory.Build.props
  create mode 100644 src/NuGet/VisualStudio/Directory.Build.props
 
 diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
@@ -40,6 +46,30 @@ diff --git a/src/Features/Directory.Build.props b/src/CodeStyle/Core/Tests/Direc
 similarity index 100%
 rename from src/Features/Directory.Build.props
 rename to src/CodeStyle/Core/Tests/Directory.Build.props
+diff --git a/src/Features/CSharp/Portable/Directory.Build.props b/src/Features/CSharp/Portable/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/Features/CSharp/Portable/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
+diff --git a/src/Features/Core/Portable/Directory.Build.props b/src/Features/Core/Portable/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/Features/Core/Portable/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
 diff --git a/src/Features/LanguageServer/Directory.Build.props b/src/Features/LanguageServer/Directory.Build.props
 new file mode 100644
 index 00000000000..6eef643958f
@@ -57,6 +87,18 @@ new file mode 100644
 index 00000000000..6eef643958f
 --- /dev/null
 +++ b/src/Features/Lsif/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
+diff --git a/src/Features/VisualBasic/Portable/Directory.Build.props b/src/Features/VisualBasic/Portable/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/Features/VisualBasic/Portable/Directory.Build.props
 @@ -0,0 +1,6 @@
 +<Project>
 +  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
