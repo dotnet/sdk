@@ -5,8 +5,7 @@ Subject: [PATCH] Build Microsoft.DotNet.Build.Tasks.Workloads for net6.0
 
 ---
  .../src/Microsoft.DotNet.Build.Tasks.Workloads.csproj         | 1 +
- .../src/VisualStudioComponent.cs                              | 4 ++++
- 2 files changed, 5 insertions(+)
+ 1 files changed, 1 insertions(+)
 
 diff --git a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj
 index ae34705a..bda5d581 100644
@@ -20,22 +19,6 @@ index ae34705a..bda5d581 100644
      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
      <LangVersion>Latest</LangVersion>
      <IsPackable>true</IsPackable>
-diff --git a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/VisualStudioComponent.cs b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/VisualStudioComponent.cs
-index ee7e9d6d..b69b6823 100644
---- a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/VisualStudioComponent.cs
-+++ b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/VisualStudioComponent.cs
-@@ -247,7 +247,11 @@ public TaskItem Generate(string projectPath)
-             // processing direct pack dependencies
-             if (workload.Extends?.Count() > 0)
-             {
-+#if NET6_0
-+                foreach (WorkloadId dependency in workload.Extends)
-+#else
-                 foreach (WorkloadDefinitionId dependency in workload.Extends)
-+#endif
-                 {
-                     // Component dependencies, aka. workload extensions only have minimum version dependencies.
-                     component.AddDependency($"{Utils.ToSafeId(dependency.ToString())}", new Version("1.0.0.0"), maxVersion: null);
 -- 
 2.29.2
 

@@ -13,20 +13,20 @@ Temporary workaround until source-build is built with recent source-built.
  1 file changed, 4 insertions(+)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index 960eb6c9..fa87aaac 100644
+index 37feef5..c5aee85 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
 @@ -18,6 +18,10 @@
      <IsShipping>false</IsShipping>
    </PropertyGroup>
- 
+
 +  <PropertyGroup>
 +    <NoWarn>$(NoWarn);NU1603</NoWarn>
 +  </PropertyGroup>
 +
-   <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-     <!--    
-       When building using source-build the process is:
+   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
+     <!--
+       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
 -- 
 2.29.2
 
