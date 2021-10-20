@@ -3,8 +3,14 @@ From: Chris Rummel <crummel@microsoft.com>
 Date: Tue, 19 Oct 2021 11:39:32 -0500
 Subject: [PATCH] Apply arcade-powered source-build patches (#55823)
 
-* Don't include desktop artifacts that don't exist in source-build.
-Source-build doesn't have these artifacts available, even when we eventually will build desktop TFMs, because Roslyn is one of the first builds in source-build.  Instead Roslyn is picking up reference packages that don't have the `lib` directory which is causing a build failure.  This disables the attempt to grab these desktop artifacts so source-build just skips them instead.
+Don't include desktop artifacts that don't exist in source-build.
+Source-build doesn't have these artifacts available, even when we eventually will
+build desktop TFMs, because Roslyn is one of the first builds in source-build.
+Instead Roslyn is picking up reference packages that don't have the `lib` directory
+which is causing a build failure.  This disables the attempt to grab these desktop
+artifacts so source-build just skips them instead.
+
+Backported to roslyn with https://github.com/dotnet/roslyn/pull/55823
 ---
  .../DesktopCompilerArtifacts.targets                            | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
