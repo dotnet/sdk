@@ -20,6 +20,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      From roslyn Versions.props:
+        The version of Roslyn we build Source Generators against that are built in this
+         repository. This must be lower than MicrosoftNetCompilersToolsetVersion,
+         but not higher than our minimum dogfoodable Visual Studio version, or else
+         the generators we build would load on the command line but not load in IDEs.
+      In source-build these don't need to be pinned and can use the source-built versions since it doesn't
+      need to support VS.
+    -->
+    <ExtraPackageVersionPropsPackageInfo Include="SourceGeneratorMicrosoftCodeAnalysisVersion" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="source-build" />
