@@ -73,10 +73,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
-                RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation or IArrayElementReferenceOperation);
+                RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
                 var operationToCheck = SkipDelayExecutingMethodIfNeeded(operation, _wellKnownDelayExecutionMethods);
 
-                // Make sure it has IEnumerable type, not some other type like list, array, etc...
+                // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (operationToCheck.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
                 {
                     return false;

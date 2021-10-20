@@ -15,85 +15,91 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private const string RuleId = "CA1850";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(
-            nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsTitle),
-            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-            typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(
-            nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsMessage),
-            MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-            typeof(MicrosoftCodeQualityAnalyzersResources));
-
         private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            MicrosoftCodeQualityAnalyzersResources.CreateLocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsTitle)),
+            MicrosoftCodeQualityAnalyzersResources.CreateLocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.AvoidMultipleEnumerationsMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.Disabled,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-            ImmutableArray.Create(MultipleEnumerableDescriptor);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(MultipleEnumerableDescriptor);
 
-        private static readonly ImmutableArray<string> s_wellKnownLinqMethodsCauseEnumeration = ImmutableArray.Create(
-            "System.Linq.Enumerable.Aggregate",
-            "System.Linq.Enumerable.All",
-            "System.Linq.Enumerable.Any",
-            "System.Linq.Enumerable.Average",
-            "System.Linq.Enumerable.Contains",
-            "System.Linq.Enumerable.Count",
-            "System.Linq.Enumerable.DefaultIfEmpty",
-            "System.Linq.Enumerable.ElementAt",
-            "System.Linq.Enumerable.ElementAtOrDefault",
-            "System.Linq.Enumerable.First",
-            "System.Linq.Enumerable.FirstOrDefault",
-            "System.Linq.Enumerable.Last",
-            "System.Linq.Enumerable.LastOrDefault",
-            "System.Linq.Enumerable.LongCount",
-            "System.Linq.Enumerable.Max",
-            "System.Linq.Enumerable.Min",
-            "System.Linq.Enumerable.SequenceEqual",
-            "System.Linq.Enumerable.Single",
-            "System.Linq.Enumerable.SingleOrDefault",
-            "System.Linq.Enumerable.Sum",
-            "System.Linq.Enumerable.ToArray",
-            "System.Linq.Enumerable.ToDictionary",
-            "System.Linq.Enumerable.ToHashSet",
-            "System.Linq.Enumerable.ToList",
-            "System.Linq.Enumerable.ToLookup");
+        // The parameter name used in the enumeration method to indicate the source.
+        // e.g.
+        // public static TSource First<TSource>(this System.Collections.Generic.IEnumerable<TSource> source, Func<TSource, bool> predicate);
+        private const string parameterNameInLinqMethod = "source";
+
+        /// <summary>
+        /// All the collections that have a convertion method from IEnumerable.
+        /// e.g. ToImmutableArray()
+        /// </summary>
+        private static readonly ImmutableArray<(string typeName, string methodName)> s_wellKnownImmutableCollectionsHaveCovertMethod = ImmutableArray.Create(
+            ("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
+            ("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
+            ("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
+            ("System.Collections.Immutable.ImmutableList", "ToImmutableList"),
+            ("System.Collections.Immutable.ImmutableSortedDictionary", "ToImmutableSortedDictionary"),
+            ("System.Collections.Immutable.ImmutableSortedSet", "ToImmutableSortedSet"));
+
+        private static readonly ImmutableArray<string> s_wellKnownLinqMethodsCausingEnumeration = ImmutableArray.Create(
+            "Aggregate",
+            "All",
+            "Any",
+            "Average",
+            "Contains",
+            "Count",
+            "DefaultIfEmpty",
+            "ElementAt",
+            "ElementAtOrDefault",
+            "First",
+            "FirstOrDefault",
+            "Last",
+            "LastOrDefault",
+            "LongCount",
+            "Max",
+            "Min",
+            "SequenceEqual",
+            "Single",
+            "SingleOrDefault",
+            "Sum",
+            "ToArray",
+            "ToDictionary",
+            "ToHashSet",
+            "ToList",
+            "ToLookup");
 
         private static readonly ImmutableArray<string> s_wellKnownDelayExecutionLinqMethod = ImmutableArray.Create(
-            "System.Linq.Enumerable.Append",
-            "System.Linq.Enumerable.AsEnumerable",
-            "System.Linq.Enumerable.Cast",
-            "System.Linq.Enumerable.Concat",
-            "System.Linq.Enumerable.Distinct",
-            "System.Linq.Enumerable.Except",
-            "System.Linq.Enumerable.GroupBy",
-            "System.Linq.Enumerable.GroupJoin",
-            "System.Linq.Enumerable.Intersect",
-            "System.Linq.Enumerable.Join",
-            "System.Linq.Enumerable.OfType",
-            "System.Linq.Enumerable.OrderBy",
-            "System.Linq.Enumerable.OrderByDescending",
-            "System.Linq.Enumerable.Prepend",
-            "System.Linq.Enumerable.Range",
-            "System.Linq.Enumerable.Repeat",
-            "System.Linq.Enumerable.Reverse",
-            "System.Linq.Enumerable.Select",
-            "System.Linq.Enumerable.SelectMany",
-            "System.Linq.Enumerable.Skip",
-            "System.Linq.Enumerable.SkipLast",
-            "System.Linq.Enumerable.SkipWhile",
-            "System.Linq.Enumerable.Take",
-            "System.Linq.Enumerable.TakeLast",
-            "System.Linq.Enumerable.ThenBy",
-            "System.Linq.Enumerable.ThenByDescending",
-            "System.Linq.Enumerable.Union",
-            "System.Linq.Enumerable.Where");
+            "Append",
+            "AsEnumerable",
+            "Cast",
+            "Concat",
+            "Distinct",
+            "Except",
+            "GroupBy",
+            "GroupJoin",
+            "Intersect",
+            "Join",
+            "OfType",
+            "OrderBy",
+            "OrderByDescending",
+            "Prepend",
+            "Range",
+            "Repeat",
+            "Reverse",
+            "Select",
+            "SelectMany",
+            "Skip",
+            "SkipLast",
+            "SkipWhile",
+            "Take",
+            "TakeLast",
+            "ThenBy",
+            "ThenByDescending",
+            "Union",
+            "Where");
 
         internal abstract InvocationCountDataFlowOperationVisitor CreateOperationVisitor(
             InvocationCountAnalysisContext context,
@@ -162,6 +168,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
+            // In CFG blocks there is no foreach loop related Operation, so use the
+            // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbol = wellKnownTypeProvider
                 .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1)
                 ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
@@ -199,7 +207,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 foreach (var kvp in globalAnalysisResult.TrackedEntities)
                 {
                     var trackedInvocationSet = kvp.Value;
-                    if (trackedInvocationSet.TotalCount == InvocationCount.TwoOrMoreTime)
+                    if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime)
                     {
                         foreach (var operation in trackedInvocationSet.Operations)
                         {

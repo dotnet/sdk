@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
@@ -105,8 +104,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var targetMethod = invocationOperation.TargetMethod;
             var parameter = argumentOperationToCheck.Parameter;
+
+            // Don't rely one the sequence of the argument to prevent this case
+            // var x = Enumerable.First(predicate: x => x != 10, bar);
             if (wellKnownMethodCausingEnumeration.Contains(targetMethod.OriginalDefinition)
-                && parameter.Name == "source"
+                && parameter.Name == parameterNameInLinqMethod
                 && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return true;
@@ -140,30 +142,41 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
-            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownLinqMethodsCauseEnumeration);
-
-        private static ImmutableArray<IMethodSymbol> GetWellKnownDelayExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
-            => GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod);
-
-        private static ImmutableArray<IMethodSymbol> GetWellKnownMethods(
-            WellKnownTypeProvider wellKnownTypeProvider,
-            string typeName,
-            ImmutableArray<string> methodNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownLinqMethodsCausingEnumeration, builder);
+
+            foreach (var (typeName, methodName) in s_wellKnownImmutableCollectionsHaveCovertMethod)
             {
-                var typePrefix = type + ".";
-                foreach (var methodName in methodNames)
+                if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
                 {
-                    if (methodName.StartsWith(typePrefix, StringComparison.Ordinal))
-                    {
-                        builder.AddRange(type.GetMembers(methodName[typePrefix.Length..]).Cast<IMethodSymbol>());
-                    }
+                    builder.AddRange(type.GetMembers(methodName).Cast<IMethodSymbol>());
                 }
             }
 
             return builder.ToImmutable();
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetWellKnownDelayExecutionMethod(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDelayExecutionLinqMethod, builder);
+            return builder.ToImmutable();
+        }
+
+        private static void GetWellKnownMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            string typeName,
+            ImmutableArray<string> methodNames,
+            ArrayBuilder<IMethodSymbol> builder)
+        {
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+            {
+                foreach (var methodName in methodNames)
+                {
+                    builder.AddRange(type.GetMembers(methodName).Cast<IMethodSymbol>());
+                }
+            }
         }
     }
 }

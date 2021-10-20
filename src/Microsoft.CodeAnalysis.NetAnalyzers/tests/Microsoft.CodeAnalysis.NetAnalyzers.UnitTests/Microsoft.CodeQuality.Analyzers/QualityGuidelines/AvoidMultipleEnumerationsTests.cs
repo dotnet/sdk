@@ -359,6 +359,38 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestInvocationWithForEachLoop4()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        foreach (var c in [|i|].Select(m => m + 1).Where(m => m != 100))
+        {
+            [|i|].Where(x => x != 100).First();
+        }
+
+        [|i|].Select(k => k + 1).Skip(100).First();
+
+        foreach (var c2 in [|j|].Select(m => m + 1).Where(m => m != 100))
+        {
+            [|j|].Where(x => x != 100).First();
+        }
+
+        [|j|].Select(k => k + 1).Skip(100).First();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
         public async Task TestInvocationAcceptObject()
         {
             var code = @"
@@ -436,6 +468,30 @@ public class Bar
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
     {
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestExplicteInvocations()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        Enumerable.First(predicate: x => x != 100, source: [|i|]);
+        [|i|].First();
+
+        Enumerable.First(predicate: x => x != 100, source: [|h|]);
+        [|h|].First();
     }
 }";
 
