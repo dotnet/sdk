@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -38,7 +37,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             var builtIns = new List<(Type, IIdentifiedComponent)>();
             if (loadBuiltInTemplates)
             {
-                builtIns.Add((typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackagesProviderFactory()));
+                builtIns.AddRange(BuiltInTemplatePackagesProviderFactory.GetComponents());
             }
 
             return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>());

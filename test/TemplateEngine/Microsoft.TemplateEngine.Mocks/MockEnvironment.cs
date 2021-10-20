@@ -8,20 +8,6 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockEngineEnvironmentSettings : IEngineEnvironmentSettings
-    {
-        [Obsolete("ISettingsLoader is obsolete.")]
-        public ISettingsLoader SettingsLoader { get { throw new NotImplementedException(); } }
-
-        public ITemplateEngineHost Host { get; set; }
-
-        public IEnvironment Environment { get; set; }
-
-        public IPathInfo Paths { get { throw new NotImplementedException(); } }
-
-        public IComponentManager Components { get; set; }
-    }
-
     public class MockEnvironment : IEnvironment
     {
         private readonly Dictionary<string, string> _environmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
