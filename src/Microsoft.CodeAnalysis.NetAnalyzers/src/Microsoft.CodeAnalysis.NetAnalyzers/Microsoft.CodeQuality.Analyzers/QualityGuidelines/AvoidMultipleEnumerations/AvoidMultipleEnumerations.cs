@@ -5,7 +5,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
+using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -101,8 +101,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "Union",
             "Where");
 
-        internal abstract InvocationCountDataFlowOperationVisitor CreateOperationVisitor(
-            InvocationCountAnalysisContext context,
+        internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
+            GlobalFlowStateDictionaryAnalysisContext context,
             ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
             ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
             IMethodSymbol? getEnumeratorMethod);
@@ -174,7 +174,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1)
                 ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
 
-            var analysisResult = InvocationCountAnalysis.TryGetOrComputeResult(
+            var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
                 analysisContext => CreateOperationVisitor(analysisContext, wellKnownDelayExecutionMethods, wellKnownEnumerationMethods, getEnumeratorSymbol),
@@ -199,7 +199,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 // AnalysisResult is shared per block, so just pick the first one to report diagnostic
                 var globalAnalysisResult = result.First().Value;
-                if (globalAnalysisResult.Kind != InvocationCountAnalysisValueKind.Known)
+                if (globalAnalysisResult.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
                 {
                     continue;
                 }

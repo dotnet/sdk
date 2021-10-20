@@ -1,15 +1,15 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 Imports System.Collections.Immutable
-Imports Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis
+Imports Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Public NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Private Class BasicInvocationCountDataFlowOperationVisitor
-            Inherits AvoidMultipleEnumerationsFlowOperationVisitor
+            Inherits AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
 
-            Public Sub New(analysisContext As InvocationCountAnalysisContext,
+            Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
                            wellKnownDelayExecutionMethods As ImmutableArray(Of IMethodSymbol),
                            wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol),
                            getEnumeratorMethod As IMethodSymbol)

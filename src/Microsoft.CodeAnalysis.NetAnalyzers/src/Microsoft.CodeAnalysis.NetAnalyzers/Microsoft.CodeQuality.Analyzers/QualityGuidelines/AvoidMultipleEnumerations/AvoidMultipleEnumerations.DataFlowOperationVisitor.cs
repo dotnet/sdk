@@ -2,7 +2,7 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
-using Analyzer.Utilities.FlowAnalysis.Analysis.InvocationCountAnalysis;
+using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.Operations;
@@ -11,14 +11,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     public partial class AvoidMultipleEnumerations
     {
-        internal abstract class AvoidMultipleEnumerationsFlowOperationVisitor : InvocationCountDataFlowOperationVisitor
+        internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly ImmutableArray<IMethodSymbol> _wellKnownDelayExecutionMethods;
             private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
-            protected AvoidMultipleEnumerationsFlowOperationVisitor(
-                InvocationCountAnalysisContext analysisContext,
+            protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
+                GlobalFlowStateDictionaryAnalysisContext analysisContext,
                 ImmutableArray<IMethodSymbol> wellKnownDelayExecutionMethods,
                 ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
                 IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
@@ -30,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
 
-            public override InvocationCountAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
+            public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
                 var value = base.VisitParameterReference(operation, argument);
                 return operation.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
@@ -39,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         : value;
             }
 
-            public override InvocationCountAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
+            public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
                 var value = base.VisitLocalReference(operation, argument);
                 return operation.Local.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
@@ -48,8 +48,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         : value;
             }
 
-            private InvocationCountAnalysisValue VisitLocalOrParameterOrArrayElement(
-                IOperation operation, AnalysisEntity analysisEntity, InvocationCountAnalysisValue value)
+            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameterOrArrayElement(
+                IOperation operation, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
             {
                 if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDelayExecutionMethods, _wellKnownEnumerationMethods)
                     || IsGetEnumeratorOfForEachLoopInvoked(operation))
@@ -62,11 +62,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return value;
             }
 
-            private void UpdateGlobalValue(InvocationCountAnalysisValue value)
+            private void UpdateGlobalValue(GlobalFlowStateDictionaryAnalysisValue value)
             {
-                if (value.Kind == InvocationCountAnalysisValueKind.Known)
+                if (value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known)
                 {
-                    var newState = InvocationCountAnalysisValue.Merge(GlobalState, value);
+                    var newState = GlobalFlowStateDictionaryAnalysisValue.Merge(GlobalState, value);
                     SetAbstractValue(GlobalEntity, newState);
                 }
             }
@@ -93,18 +93,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }
 
-            private static InvocationCountAnalysisValue CreateAnalysisValue(
+            private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
                 AnalysisEntity analysisEntity,
                 IOperation operation,
-                InvocationCountAnalysisValue value)
+                GlobalFlowStateDictionaryAnalysisValue value)
             {
                 var invocationSet = new TrackingInvocationSet(ImmutableHashSet.Create(operation), InvocationCount.One);
-                var analysisValue = new InvocationCountAnalysisValue(
+                var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
                     ImmutableDictionary<AnalysisEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
-                    InvocationCountAnalysisValueKind.Known);
+                    GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
-                return value.Kind == InvocationCountAnalysisValueKind.Known
-                    ? InvocationCountAnalysisValue.Merge(analysisValue, value)
+                return value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
+                    ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, value)
                     : analysisValue;
             }
 
