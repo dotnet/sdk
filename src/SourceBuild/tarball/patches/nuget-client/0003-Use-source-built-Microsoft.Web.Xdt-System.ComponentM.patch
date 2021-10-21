@@ -1,7 +1,7 @@
-From fecc40e502197e65804177b2aec49a7a5422ed6e Mon Sep 17 00:00:00 2001
+From abf05bf4b06ab5d47372d166b7bb6c2c6bb4e6a2 Mon Sep 17 00:00:00 2001
 From: Davis Goodin <dagood@microsoft.com>
 Date: Thu, 10 Dec 2020 16:17:55 -0600
-Subject: [PATCH 3/5] Use source-built Microsoft.Web.Xdt &
+Subject: [PATCH 3/8] Use source-built Microsoft.Web.Xdt &
  System.ComponentModel.Composition
 
 ---
@@ -9,7 +9,7 @@ Subject: [PATCH 3/5] Use source-built Microsoft.Web.Xdt &
  1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/build/packages.targets b/build/packages.targets
-index 6f72ac3fd..8317f3903 100644
+index 614a0ca68..ab0064b66 100644
 --- a/build/packages.targets
 +++ b/build/packages.targets
 @@ -15,6 +15,12 @@
@@ -39,5 +39,5 @@ index 6f72ac3fd..8317f3903 100644
            The Microsoft.VisualStudio.SDK metapackage brings in System.Threading.Tasks.Dataflow 4.11.1 (assembly version 4.9.5.0).
            However, our MSBuild integration tests use Microsoft.Build 16.8.0, which requires System.Threading.Tasks.Dataflow 4.9.0 (assembly version 4.9.3.0).
 -- 
-2.18.0
+2.31.1
 

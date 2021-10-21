@@ -1,7 +1,7 @@
-From 9e35a4d319f3288a50bdaf5b32661764761aa0e9 Mon Sep 17 00:00:00 2001
+From c77a8c754381600ec891c5601b2c5cd9c8945d26 Mon Sep 17 00:00:00 2001
 From: Chris Rummel <crummel@microsoft.com>
 Date: Thu, 19 Aug 2021 10:59:36 -0500
-Subject: [PATCH 4/5] Build script changes to support ArPow from tarball.
+Subject: [PATCH 4/8] Build script changes to support ArPow from tarball.
 
 ---
  eng/source-build/build.sh          | 27 +++++++++++++++++++++++++--
@@ -9,7 +9,7 @@ Subject: [PATCH 4/5] Build script changes to support ArPow from tarball.
  2 files changed, 29 insertions(+), 4 deletions(-)
 
 diff --git a/eng/source-build/build.sh b/eng/source-build/build.sh
-index 3bb69b2b0..aaff8ef0f 100755
+index 3bb69b2b0..ee1221d56 100755
 --- a/eng/source-build/build.sh
 +++ b/eng/source-build/build.sh
 @@ -13,6 +13,25 @@ while [[ -h $source ]]; do
@@ -54,7 +54,7 @@ index 3bb69b2b0..aaff8ef0f 100755
 -"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog"
 +"$DOTNET" msbuild "$scriptroot/source-build.proj" /p:Configuration=$configuration /p:DotNetBuildFromSource=true /p:ArcadeBuildFromSource=true "/p:RepoRoot=$scriptroot/../../" "/bl:$scriptroot/../../artifacts/source-build/self/log/source-build.binlog" $args
 diff --git a/eng/source-build/source-build.proj b/eng/source-build/source-build.proj
-index 6f90f9793..91ea2d032 100644
+index 72058ac88..cbdd6d819 100644
 --- a/eng/source-build/source-build.proj
 +++ b/eng/source-build/source-build.proj
 @@ -4,6 +4,8 @@
@@ -84,5 +84,5 @@ index 6f90f9793..91ea2d032 100644
              />
  
 -- 
-2.18.0
+2.31.1
 

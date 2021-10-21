@@ -1,15 +1,19 @@
-From e0e1d72dfa8881244a76c3dbcc63aa73c05546f4 Mon Sep 17 00:00:00 2001
+From 98fd2091519fa4c6d9ab850eaea92700b00803dc Mon Sep 17 00:00:00 2001
 From: Michael Simons <msimons@microsoft.com>
 Date: Tue, 17 Aug 2021 21:13:07 +0000
-Subject: [PATCH] Update netcoreapp TFMs to 6.0
+Subject: [PATCH 2/8] Update netcoreapp TFMs to 6.0
 
 ---
- build/common.project.props | 10 +++++-----
- build/common.targets       |  2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ build/common.project.props                             | 10 +++++-----
+ build/common.targets                                   |  2 +-
+ src/NuGet.Core/NuGet.Common/NuGet.Common.csproj        |  1 -
+ .../NuGet.Configuration/NuGet.Configuration.csproj     |  1 -
+ .../NuGet.Frameworks/NuGet.Frameworks.csproj           |  1 -
+ .../NuGet.Versioning/NuGet.Versioning.csproj           |  1 -
+ 6 files changed, 6 insertions(+), 10 deletions(-)
 
 diff --git a/build/common.project.props b/build/common.project.props
-index 80433ed60..8acc4e0bb 100644
+index e2e3c0c11..000702f58 100644
 --- a/build/common.project.props
 +++ b/build/common.project.props
 @@ -13,17 +13,17 @@
@@ -36,7 +40,7 @@ index 80433ed60..8acc4e0bb 100644
      <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
      <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
 diff --git a/build/common.targets b/build/common.targets
-index cf5a70c62..8827686a7 100644
+index 6fd5bd260..3de830b25 100644
 --- a/build/common.targets
 +++ b/build/common.targets
 @@ -6,7 +6,7 @@
@@ -48,6 +52,54 @@ index cf5a70c62..8827686a7 100644
      <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
      <IsCore>true</IsCore>
    </PropertyGroup>
+diff --git a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+index e30a079eb..c2b8fe241 100644
+--- a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
++++ b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+@@ -5,7 +5,6 @@
+   <PropertyGroup>
+     <Description>Common utilities and interfaces for all NuGet libraries.</Description>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
+     <PackProject>true</PackProject>
+diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+index bbc5ba480..fc4d42502 100644
+--- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
++++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+@@ -6,7 +6,6 @@
+     <Description>NuGet's configuration settings implementation.</Description>
+     <NoWarn>$(NoWarn);CS1591</NoWarn>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <PackProject>true</PackProject>
+     <Shipping>true</Shipping>
+diff --git a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+index 65f261dc1..f29551741 100644
+--- a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
++++ b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+@@ -5,7 +5,6 @@
+   <PropertyGroup>
+     <Description>NuGet's understanding of target frameworks.</Description>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net40</TargetFrameworks>
+     <TargetFramework />
+     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
+     <PackProject>true</PackProject>
+diff --git a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj b/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
+index 180293944..8498664b9 100644
+--- a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
++++ b/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
+@@ -4,7 +4,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <Description>NuGet's implementation of Semantic Versioning.</Description>
+     <PackageTags>semver;semantic versioning</PackageTags>
 -- 
-2.29.2
+2.31.1
 
