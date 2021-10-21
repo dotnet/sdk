@@ -1,29 +1,49 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Logan Bussell <36081148+lbussell@users.noreply.github.com>
-Date: Tue, 19 Oct 2021 16:57:47 +0000
-Subject: [PATCH] force Microsoft.Build to 16.5.0 with RefOnly prefix
+From: Joey Robichaud <jorobich@microsoft.com>
+Date: Wed, 20 Oct 2021 13:40:38 -0700
+Subject: [PATCH] Add Features projects to SourceBuild
 
-PR for applying this patch: https://github.com/dotnet/roslyn/pull/57165
-
-By default, the projects reference Microsoft.Build 16.5.0, which has netcoreapp2.1 and net472 support. The new 17.0.0-...
-version built during source-build only has net6.0. This causes Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj to fail.
-Adding 16.5.0 to SBRP and dodging the override by renaming each package version property is the safe way to fix it.
-
+For additional details see https://github.com/dotnet/roslyn/issues/57270
+Patch created from: https://github.com/dotnet/roslyn/pull/57277
 ---
- eng/Versions.props                                | 15 +++++++++------
- .../Microsoft.Build.Tasks.CodeAnalysis.csproj     |  4 ++--
- ...soft.Build.Tasks.CodeAnalysis.UnitTests.csproj |  6 +++---
- .../Extension/Roslyn.Compilers.Extension.csproj   |  6 +++---
- ...sis.LanguageServerIndexFormat.Generator.csproj |  2 +-
- src/Tools/AnalyzerRunner/AnalyzerRunner.csproj    |  4 ++--
- src/Tools/IdeBenchmarks/IdeBenchmarks.csproj      |  2 +-
- .../IdeCoreBenchmarks/IdeCoreBenchmarks.csproj    |  4 ++--
- ...crosoft.CodeAnalysis.Workspaces.MSBuild.csproj |  6 +++---
- ...deAnalysis.Workspaces.MSBuild.UnitTests.csproj |  4 ++--
- 10 files changed, 28 insertions(+), 25 deletions(-)
+ eng/SourceBuild.props                               |  2 +-
+ eng/Versions.props                                  | 13 ++++++++-----
+ .../Core/Tests}/Directory.Build.props               |  0
+ .../Microsoft.Build.Tasks.CodeAnalysis.csproj       |  6 +++---
+ ...rosoft.Build.Tasks.CodeAnalysis.UnitTests.csproj |  6 +++---
+ .../Extension/Roslyn.Compilers.Extension.csproj     |  6 +++---
+ src/Dependencies/Directory.Build.props              |  3 ---
+ .../Microsoft.CodeAnalysis.CSharp.Features.csproj   |  5 +++++
+ .../Portable/Microsoft.CodeAnalysis.Features.csproj | 10 ++++++++--
+ src/Features/LanguageServer/Directory.Build.props   |  6 ++++++
+ src/Features/Lsif/Directory.Build.props             |  6 ++++++
+ ...crosoft.CodeAnalysis.VisualBasic.Features.vbproj |  4 ++++
+ src/NuGet/VisualStudio/Directory.Build.props        |  6 ++++++
+ src/Tools/AnalyzerRunner/AnalyzerRunner.csproj      |  2 +-
+ .../IdeCoreBenchmarks/IdeCoreBenchmarks.csproj      |  2 +-
+ ...Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj |  8 +++-----
+ ...CodeAnalysis.Workspaces.MSBuild.UnitTests.csproj |  4 ++--
+ 17 files changed, 60 insertions(+), 29 deletions(-)
+ rename src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
+ create mode 100644 src/Features/LanguageServer/Directory.Build.props
+ create mode 100644 src/Features/Lsif/Directory.Build.props
+ create mode 100644 src/NuGet/VisualStudio/Directory.Build.props
 
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 182f8a9cdb1..92e316a4744 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -11,7 +11,7 @@
+   -->
+   <Target Name="ConfigureInnerBuildArg" BeforeTargets="GetSourceBuildCommandConfiguration">
+     <PropertyGroup>
+-      <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\Compilers.sln"</InnerBuildArgs>
++      <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\Roslyn.sln"</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 
 diff --git a/eng/Versions.props b/eng/Versions.props
-index e835ef04d52..0eb674c462e 100644
+index e835ef04d52..d432c9a6a96 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
 @@ -38,7 +38,7 @@
@@ -41,7 +61,7 @@ index e835ef04d52..0eb674c462e 100644
      <ICSharpCodeDecompilerVersion>6.1.0.5902</ICSharpCodeDecompilerVersion>
 -    <MicrosoftBuildVersion>$(MicrosoftBuildPackagesVersion)</MicrosoftBuildVersion>
 -    <MicrosoftBuildFrameworkVersion>$(MicrosoftBuildPackagesVersion)</MicrosoftBuildFrameworkVersion>
--    <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
+     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
 -    <MicrosoftBuildRuntimeVersion>$(MicrosoftBuildPackagesVersion)</MicrosoftBuildRuntimeVersion>
 -    <MicrosoftBuildTasksCoreVersion>$(MicrosoftBuildPackagesVersion)</MicrosoftBuildTasksCoreVersion>
 +    <!--
@@ -49,16 +69,28 @@ index e835ef04d52..0eb674c462e 100644
 +    -->
 +    <RefOnlyMicrosoftBuildVersion>$(RefOnlyMicrosoftBuildPackagesVersion)</RefOnlyMicrosoftBuildVersion>
 +    <RefOnlyMicrosoftBuildFrameworkVersion>$(RefOnlyMicrosoftBuildPackagesVersion)</RefOnlyMicrosoftBuildFrameworkVersion>
-+    <RefOnlyMicrosoftBuildLocatorVersion>1.2.6</RefOnlyMicrosoftBuildLocatorVersion>
 +    <RefOnlyMicrosoftBuildRuntimeVersion>$(RefOnlyMicrosoftBuildPackagesVersion)</RefOnlyMicrosoftBuildRuntimeVersion>
 +    <RefOnlyMicrosoftBuildTasksCoreVersion>$(RefOnlyMicrosoftBuildPackagesVersion)</RefOnlyMicrosoftBuildTasksCoreVersion>
      <NuGetVisualStudioContractsVersion>6.0.0-preview.0.15</NuGetVisualStudioContractsVersion>
      <MicrosoftVisualStudioRpcContractsVersion>16.10.23</MicrosoftVisualStudioRpcContractsVersion>
      <!--
+diff --git a/src/Features/Directory.Build.props b/src/CodeStyle/Core/Tests/Directory.Build.props
+similarity index 100%
+rename from src/Features/Directory.Build.props
+rename to src/CodeStyle/Core/Tests/Directory.Build.props
 diff --git a/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj b/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj
-index 8c6bb122fb2..c00d19d4d29 100644
+index 8c6bb122fb2..cc743d09032 100644
 --- a/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj
 +++ b/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj
+@@ -11,7 +11,7 @@
+     <AssemblyVersion/>
+     <!-- CA1819 (Properties should not return arrays) disabled as it is very common across this project. -->
+     <NoWarn>$(NoWarn);CA1819</NoWarn>
+-    
++
+     <!-- NuGet -->
+     <IsPackable>true</IsPackable>
+     <PackageId>Microsoft.CodeAnalysis.Build.Tasks</PackageId>
 @@ -51,8 +51,8 @@
      <EmbeddedResource Update="ErrorString.resx" GenerateSource="true" />
    </ItemGroup>
@@ -104,68 +136,152 @@ index 3644afb8c2f..ed4259ec61b 100644
      <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />
      <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingVersion)" />
      <PackageReference Include="Microsoft.VisualStudio.Validation" Version="$(MicrosoftVisualStudioValidationVersion)" />
-diff --git a/src/Features/Lsif/Generator/Microsoft.CodeAnalysis.LanguageServerIndexFormat.Generator.csproj b/src/Features/Lsif/Generator/Microsoft.CodeAnalysis.LanguageServerIndexFormat.Generator.csproj
-index 80e7b11f9ea..8e1cb47fb98 100644
---- a/src/Features/Lsif/Generator/Microsoft.CodeAnalysis.LanguageServerIndexFormat.Generator.csproj
-+++ b/src/Features/Lsif/Generator/Microsoft.CodeAnalysis.LanguageServerIndexFormat.Generator.csproj
-@@ -42,7 +42,7 @@
-   </Target>
- 
-   <ItemGroup>
--    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
-+    <PackageReference Include="Microsoft.Build.Locator" Version="$(RefOnlyMicrosoftBuildLocatorVersion)" />
-     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
-     <PackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandLineExperimentalVersion)" />
+diff --git a/src/Dependencies/Directory.Build.props b/src/Dependencies/Directory.Build.props
+index 6eef643958f..12d9ad073ec 100644
+--- a/src/Dependencies/Directory.Build.props
++++ b/src/Dependencies/Directory.Build.props
+@@ -1,6 +1,3 @@
+ <Project>
+   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+-  <PropertyGroup>
+-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+-  </PropertyGroup>
+ </Project>
+diff --git a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj b/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
+index a82a820316c..9dac307c856 100644
+--- a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
++++ b/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
+@@ -60,6 +60,11 @@
+       <Link>InternalUtilities\LambdaUtilities.cs</Link>
+     </Compile>
    </ItemGroup>
++  <ItemGroup>
++    <Compile Remove="EditAndContinue\**\*.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Include="EditAndContinue\BreakpointSpans.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Include="EditAndContinue\SyntaxUtilities.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++  </ItemGroup>
+   <ItemGroup>
+     <EmbeddedResource Update="CSharpFeaturesResources.resx" GenerateSource="true" />
+   </ItemGroup>
+diff --git a/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj b/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
+index 1af351cc77b..943443c55bc 100644
+--- a/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
++++ b/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
+@@ -7,7 +7,7 @@
+     <TargetFrameworks>netcoreapp3.1;netstandard2.0</TargetFrameworks>
+     <ApplyNgenOptimization Condition="'$(TargetFramework)' == 'netstandard2.0'">full</ApplyNgenOptimization>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+-    
++
+     <!-- NuGet -->
+     <IsPackable>true</IsPackable>
+     <PackageDescription>
+@@ -129,7 +129,13 @@
+     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
+     <PackageReference Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
+     <PackageReference Include="Microsoft.CodeAnalysis.AnalyzerUtilities" Version="$(MicrosoftCodeAnalysisAnalyzerUtilitiesVersion)" />
+-    <PackageReference Include="Microsoft.VisualStudio.Debugger.Contracts" Version="$(MicrosoftVisualStudioDebuggerContractsVersion)" />
++    <PackageReference Include="Microsoft.VisualStudio.Debugger.Contracts" Version="$(MicrosoftVisualStudioDebuggerContractsVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
++  </ItemGroup>
++  <ItemGroup>
++    <Compile Remove="EditAndContinue\**\*.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Include="EditAndContinue\EditAndContinueMethodDebugInfoReader.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Remove="ExternalAccess\UnitTesting\API\UnitTestingHotReloadService.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Remove="ExternalAccess\Watch\Api\WatchHotReloadService.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+   </ItemGroup>
+   <Import Project="..\..\..\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems" Label="Shared" />
+   <Import Project="..\..\..\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems" Label="Shared" />
+diff --git a/src/Features/LanguageServer/Directory.Build.props b/src/Features/LanguageServer/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/Features/LanguageServer/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
+diff --git a/src/Features/Lsif/Directory.Build.props b/src/Features/Lsif/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/Features/Lsif/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
+diff --git a/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj b/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
+index ac8c80c68fb..d17a5d84802 100644
+--- a/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
++++ b/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
+@@ -55,6 +55,10 @@
+       <Link>InternalUtilities\LambdaUtilities.vb</Link>
+     </Compile>
+   </ItemGroup>
++  <ItemGroup>
++    <Compile Remove="EditAndContinue\**\*.vb" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <Compile Include="EditAndContinue\BreakpointSpans.vb" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++  </ItemGroup>
+   <ItemGroup>
+     <EmbeddedResource Update="VBFeaturesResources.resx" GenerateSource="true" Namespace="Microsoft.CodeAnalysis.VisualBasic" />
+   </ItemGroup>
+diff --git a/src/NuGet/VisualStudio/Directory.Build.props b/src/NuGet/VisualStudio/Directory.Build.props
+new file mode 100644
+index 00000000000..6eef643958f
+--- /dev/null
++++ b/src/NuGet/VisualStudio/Directory.Build.props
+@@ -0,0 +1,6 @@
++<Project>
++  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
++  <PropertyGroup>
++    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
++  </PropertyGroup>
++</Project>
 diff --git a/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj b/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj
-index 6e1cbe46285..c0826b08af6 100644
+index 6e1cbe46285..8ca3cbb28f0 100644
 --- a/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj
 +++ b/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj
-@@ -23,8 +23,8 @@
+@@ -23,7 +23,7 @@
    <ItemGroup>
      <PackageReference Include="SQLitePCLRaw.bundle_green" Version="$(SQLitePCLRawbundle_greenVersion)" PrivateAssets="all" />
      <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(MicrosoftVisualStudioCompositionVersion)" />
 -    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
--    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
 +    <PackageReference Include="Microsoft.Build.Framework" Version="$(RefOnlyMicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
-+    <PackageReference Include="Microsoft.Build.Locator" Version="$(RefOnlyMicrosoftBuildLocatorVersion)" />
+     <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
      <PackageReference Include="System.Buffers" Version="$(SystemBuffersVersion)" />
      <PackageReference Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionVersion)" />
-     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowVersion)" />
-diff --git a/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj b/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
-index b6ab0e38e59..34e6a5f22fe 100644
---- a/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
-+++ b/src/Tools/IdeBenchmarks/IdeBenchmarks.csproj
-@@ -12,7 +12,7 @@
-   <ItemGroup>
-     <PackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
-     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsVersion)" />
--    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
-+    <PackageReference Include="Microsoft.Build.Locator" Version="$(RefOnlyMicrosoftBuildLocatorVersion)" />
-     <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(MicrosoftVisualStudioCompositionVersion)" />
-     <PackageReference Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" Version="$(MicrosoftVisualStudioImagingInterop140DesignTimeVersion)" />
-   </ItemGroup>
 diff --git a/src/Tools/IdeCoreBenchmarks/IdeCoreBenchmarks.csproj b/src/Tools/IdeCoreBenchmarks/IdeCoreBenchmarks.csproj
-index 305f94cba17..7e156fc302d 100644
+index 305f94cba17..e2373f8a3d6 100644
 --- a/src/Tools/IdeCoreBenchmarks/IdeCoreBenchmarks.csproj
 +++ b/src/Tools/IdeCoreBenchmarks/IdeCoreBenchmarks.csproj
-@@ -29,9 +29,9 @@
+@@ -29,7 +29,7 @@
      <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="$(BenchmarkDotNetDiagnosticsWindowsVersion)" />
      <!-- This is to avoid a version conflict during build -->
      <PackageReference Include="System.CodeDom" Version="$(SystemCodeDomVersion)" />
 -    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
 +    <PackageReference Include="Microsoft.Build.Framework" Version="$(RefOnlyMicrosoftBuildFrameworkVersion)" ExcludeAssets="Runtime" PrivateAssets="All" />
      <PackageReference Include="Microsoft.VisualStudio.Composition" Version="$(MicrosoftVisualStudioCompositionVersion)" />
--    <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
-+    <PackageReference Include="Microsoft.Build.Locator" Version="$(RefOnlyMicrosoftBuildLocatorVersion)" />
+     <PackageReference Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
      <PackageReference Include="System.Buffers" Version="$(SystemBuffersVersion)" />
-     <PackageReference Include="System.ComponentModel.Composition" Version="$(SystemComponentModelCompositionVersion)" />
-     <PackageReference Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowVersion)" />
 diff --git a/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj b/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
-index 3bd6d6398e3..76d0dc36da1 100644
+index 3bd6d6398e3..a65fc35f1c3 100644
 --- a/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
 +++ b/src/Workspaces/Core/MSBuild/Microsoft.CodeAnalysis.Workspaces.MSBuild.csproj
-@@ -24,9 +24,9 @@
+@@ -7,8 +7,6 @@
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);WORKSPACE_MSBUILD</DefineConstants>
+-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+-
+     <!-- NuGet -->
+     <IsPackable>true</IsPackable>
+     <PackageDescription>
+@@ -24,9 +22,9 @@
      </Compile>
    </ItemGroup>
    <ItemGroup>
