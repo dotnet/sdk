@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// All the collections that have a conversion method from IEnumerable.
         /// e.g. ToImmutableArray()
         /// </summary>
-        private static readonly ImmutableArray<(string typeName, string methodName)> s_wellKnownImmutableCollectionsHaveCovertMethod = ImmutableArray.Create(
+        private static readonly ImmutableArray<(string typeName, string methodName)> s_immutableCollectionsTypeNamesAndConvensionMethods = ImmutableArray.Create(
             ("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
             ("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
             ("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
@@ -40,7 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ("System.Collections.Immutable.ImmutableSortedDictionary", "ToImmutableSortedDictionary"),
             ("System.Collections.Immutable.ImmutableSortedSet", "ToImmutableSortedSet"));
 
-        private static readonly ImmutableArray<string> s_wellKnownLinqMethodsCausingEnumeration = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_linqOneParameterEnumeratedMethods = ImmutableArray.Create(
             "Aggregate",
             "All",
             "Any",
@@ -57,7 +57,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "LongCount",
             "Max",
             "Min",
-            "SequenceEqual",
             "Single",
             "SingleOrDefault",
             "Sum",
@@ -67,7 +66,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ToList",
             "ToLookup");
 
-        private static readonly ImmutableArray<string> s_wellKnownDeferredExecutionLinqMethodsTakeOneIEnumerable = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_linqTwoParametersEnumeratedMethods = ImmutableArray.Create(
+            "SequenceEqual");
+
+        private static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
             "Append",
             "AsEnumerable",
             "Cast",
@@ -91,7 +93,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ThenByDescending",
             "Where");
 
-        private static readonly ImmutableArray<string> s_wellKnownDeferredExecutionLinqMethodsTakeTwoIEnumerables = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_linqTwoParametersDeferredMethods = ImmutableArray.Create(
             "Concat",
             "Except",
             "GroupJoin",
@@ -101,9 +103,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
             IMethodSymbol? getEnumeratorMethod);
 
         public override void Initialize(AnalysisContext context)
@@ -121,31 +124,47 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
-            var wellKnownEnumerationMethods = GetWellKnownEnumerationMethods(wellKnownTypeProvider);
-            var wellKnownDeferredExecutionMethodsTakeOneIEnumerable = GetWellKnownDeferredExecutionMethodsTakeOneIEnumerable(wellKnownTypeProvider);
-            var wellKnownDeferredExecutionMethodsTakeTwoIEnumerables = GetWellKnownDeferredExecutionMethodTakesTwoIEnumerables(wellKnownTypeProvider);
+            var oneParameterDeferredMethods = GetOneParameterDeferredMethods(wellKnownTypeProvider);
+            var twoParametersDeferredMethods = GetTwoParametersDeferredMethods(wellKnownTypeProvider);
+
+            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider);
+            var twoParametersEnumeratedMethods = GetTwoParametersEnumeratedMethods(wellKnownTypeProvider);
 
             var potentialDiagnosticOperationsBuilder = ImmutableHashSet.CreateBuilder<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
-                context => CollectPotentialDiagnosticOperations(context, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder),
+                context => CollectPotentialDiagnosticOperations(
+                    context,
+                    oneParameterDeferredMethods,
+                    twoParametersDeferredMethods,
+                    oneParameterEnumeratedMethods,
+                    twoParametersEnumeratedMethods,
+                    potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
                 OperationKind.LocalReference);
 
             operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
-                context => Analyze(context, wellKnownTypeProvider, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods, potentialDiagnosticOperationsBuilder));
+                context => Analyze(
+                    context,
+                    wellKnownTypeProvider,
+                    oneParameterDeferredMethods,
+                    twoParametersDeferredMethods,
+                    oneParameterEnumeratedMethods,
+                    twoParametersEnumeratedMethods,
+                    potentialDiagnosticOperationsBuilder));
         }
 
         private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
             ImmutableHashSet<IOperation>.Builder builder)
         {
             var operation = context.Operation;
             if (operation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
-                && (IsOperationEnumeratedByMethodInvocation(operation, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods)
-                     || IsOperationEnumeratedByForEachLoop(operation, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)))
+                && (IsOperationEnumeratedByMethodInvocation(operation, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods)
+                     || IsOperationEnumeratedByForEachLoop(operation, oneParameterDeferredMethods, twoParametersDeferredMethods)))
             {
                 builder.Add(operation);
             }
@@ -154,9 +173,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void Analyze(
             OperationBlockAnalysisContext context,
             WellKnownTypeProvider wellKnownTypeProvider,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParameterEnumeratedMethods,
             ImmutableHashSet<IOperation>.Builder potentialDiagnosticOperationsBuilder)
         {
             var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
@@ -182,9 +202,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 context.OwningSymbol,
                 analysisContext => CreateOperationVisitor(
                     analysisContext,
-                    wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-                    wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-                    wellKnownEnumerationMethods,
+                    oneParameterDeferredMethods,
+                    twoParametersDeferredMethods,
+                    oneParameterEnumeratedMethods,
+                    twoParameterEnumeratedMethods,
                     getEnumeratorSymbol),
                 wellKnownTypeProvider,
                 context.Options,

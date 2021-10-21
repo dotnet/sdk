@@ -12,15 +12,17 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     {
         internal override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
             IMethodSymbol? getEnumeratorMethod)
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
-                wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-                wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-                wellKnownEnumerationMethods,
+                oneParameterDeferredMethods,
+                twoParametersDeferredMethods,
+                oneParameterEnumeratedMethods,
+                twoParametersEnumeratedMethods,
                 getEnumeratorMethod);
     }
 }

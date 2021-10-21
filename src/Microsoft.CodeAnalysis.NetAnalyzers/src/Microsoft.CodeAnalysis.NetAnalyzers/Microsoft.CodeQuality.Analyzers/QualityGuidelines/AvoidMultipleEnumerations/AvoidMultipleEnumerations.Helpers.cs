@@ -13,9 +13,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-            ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
+            ImmutableArray<IMethodSymbol> oneParameterDeferredExecutingMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
@@ -25,9 +26,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var operationToCheck = SkipDeferredExecutingMethodIfNeeded(
                 operation,
-                wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-                wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
-            return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownEnumerationMethods);
+                oneParameterDeferredExecutingMethods,
+                twoParametersDeferredMethods);
+            return IsOperationEnumeratedByInvocation(operationToCheck, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods);
         }
 
         private static IOperation SkipDeferredExecutingMethodIfNeeded(
@@ -74,11 +75,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation.Parent is IConversionOperation { Parent: IForEachLoopOperation };
         }
 
-        private static bool IsOperationEnumeratedByInvocation(IOperation operation, ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods)
+        private static bool IsOperationEnumeratedByInvocation(
+            IOperation operation,
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
-                return IsInvocationCausingEnumerationOverArgument(invocationOperation, argumentOperation, wellKnownEnumerationMethods);
+                return IsInvocationCausingEnumerationOverArgument(
+                    invocationOperation,
+                    argumentOperation,
+                    oneParameterEnumeratedMethods,
+                    twoParametersEnumeratedMethods);
             }
 
             return false;
@@ -109,17 +117,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsInvocationCausingEnumerationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> wellKnownMethodCausingEnumeration)
+            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
             var targetMethod = invocationOperation.TargetMethod;
             var parameter = argumentOperationToCheck.Parameter;
 
-            if (wellKnownMethodCausingEnumeration.Contains(targetMethod.OriginalDefinition)
+            if (oneParameterEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.IsExtensionMethod
                 && !targetMethod.Parameters.IsEmpty
                 && parameter.Equals(targetMethod.Parameters[0])
+                && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+            {
+                return true;
+            }
+
+            // SequentialEqual would enumerate two parameters
+            if (twoParametersEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
+                && targetMethod.IsExtensionMethod
+                && targetMethod.Parameters.Length > 1
+                && (parameter.Equals(targetMethod.Parameters[0]) || parameter.Equals(targetMethod.Parameters[1]))
                 && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
             {
                 return true;
@@ -142,8 +161,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParameterDeferredMethods)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
@@ -154,7 +173,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var argumentMatchingParameter = argumentOperationToCheck.Parameter;
             // Method like Select, Where, etc.. only take one IEnumerable, and it is the first parameter.
-            if (wellKnownDeferredExecutingMethodsTakeOneIEnumerable.Contains(targetMethod.OriginalDefinition)
+            if (oneParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
                 && !targetMethod.Parameters.IsEmpty
                 && targetMethod.Parameters[0].Equals(argumentMatchingParameter))
             {
@@ -162,7 +181,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             // Method like Concat, Except, etc.. take two IEnumerable, and it is the first parameter or second parameter.
-            if (wellKnownDeferredExecutionMethodsTakeTwoIEnumerables.Contains(targetMethod.OriginalDefinition)
+            if (twoParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.Parameters.Length > 1
                 && (targetMethod.Parameters[0].Equals(argumentMatchingParameter) || targetMethod.Parameters[1].Equals(argumentMatchingParameter)))
             {
@@ -172,14 +191,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownEnumerationMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
             // Get linq method
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownLinqMethodsCausingEnumeration, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqOneParameterEnumeratedMethods, builder);
 
             // Get immutable collection conversion method, like ToImmutableArray()
-            foreach (var (typeName, methodName) in s_wellKnownImmutableCollectionsHaveCovertMethod)
+            foreach (var (typeName, methodName) in s_immutableCollectionsTypeNamesAndConvensionMethods)
             {
                 if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
                 {
@@ -201,17 +220,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethodsTakeOneIEnumerable(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetTwoParametersEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethodsTakeOneIEnumerable, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqTwoParametersEnumeratedMethods, builder);
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetWellKnownDeferredExecutionMethodTakesTwoIEnumerables(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetOneParameterDeferredMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_wellKnownDeferredExecutionLinqMethodsTakeTwoIEnumerables, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqOneParameterDeferredMethods, builder);
+            return builder.ToImmutable();
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetTwoParametersDeferredMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqTwoParametersDeferredMethods, builder);
             return builder.ToImmutable();
         }
 

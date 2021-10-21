@@ -12,11 +12,12 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
         Inherits AvoidMultipleEnumerations
 
         Friend Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext,
-                                                         wellKnownDeferredExecutionMethodsTakeOneIEnumerable As ImmutableArray(Of IMethodSymbol),
-                                                         wellKnownDeferredExecutionMethodsTakeTwoIEnumerables As ImmutableArray(Of IMethodSymbol),
-                                                         wellKnownEnumerationMethods As ImmutableArray(Of IMethodSymbol),
+                                                         oneParameterDeferredMethods As ImmutableArray(Of IMethodSymbol),
+                                                         twoParametersDeferredMethods As ImmutableArray(Of IMethodSymbol),
+                                                         oneParameterEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
+                                                         twoParametersEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
                                                          getEnumeratorMethod As IMethodSymbol) As GlobalFlowStateDictionaryFlowOperationVisitor
-            Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownDeferredExecutionMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, wellKnownEnumerationMethods, getEnumeratorMethod)
+            Return New BasicInvocationCountDataFlowOperationVisitor(context, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersDeferredMethods, getEnumeratorMethod)
         End Function
     End Class
 End Namespace

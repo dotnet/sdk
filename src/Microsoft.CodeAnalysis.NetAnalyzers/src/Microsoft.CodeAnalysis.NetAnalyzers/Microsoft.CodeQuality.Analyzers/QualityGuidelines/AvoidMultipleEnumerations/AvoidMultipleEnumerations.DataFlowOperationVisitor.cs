@@ -13,21 +13,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownDeferredExecutionMethodsTakeOneIEnumerable;
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownDeferredExecutionMethodsTakeTwoIEnumerables;
-            private readonly ImmutableArray<IMethodSymbol> _wellKnownEnumerationMethods;
+            private readonly ImmutableArray<IMethodSymbol> _oneParameterDeferredMethods;
+            private readonly ImmutableArray<IMethodSymbol> _twoParametersDeferredMethods;
+            private readonly ImmutableArray<IMethodSymbol> _oneParameterEnumeratedMethods;
+            private readonly ImmutableArray<IMethodSymbol> _twoParametersEnumeratedMethods;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeOneIEnumerable,
-                ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables,
-                ImmutableArray<IMethodSymbol> wellKnownEnumerationMethods,
+                ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+                ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+                ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
+                ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
                 IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
             {
-                _wellKnownDeferredExecutionMethodsTakeOneIEnumerable = wellKnownDeferredExecutionMethodsTakeOneIEnumerable;
-                _wellKnownDeferredExecutionMethodsTakeTwoIEnumerables = wellKnownDeferredExecutionMethodsTakeTwoIEnumerables;
-                _wellKnownEnumerationMethods = wellKnownEnumerationMethods;
+                _oneParameterDeferredMethods = oneParameterDeferredMethods;
+                _twoParametersDeferredMethods = twoParametersDeferredMethods;
+                _oneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
+                _twoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
                 _getEnumeratorMethod = getEnumeratorMethod;
             }
 
@@ -54,7 +57,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameterOrArrayElement(
                 IOperation operation, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
             {
-                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownDeferredExecutionMethodsTakeOneIEnumerable, _wellKnownDeferredExecutionMethodsTakeTwoIEnumerables, _wellKnownEnumerationMethods)
+                if (IsOperationEnumeratedByMethodInvocation(
+                        operation,
+                        _oneParameterDeferredMethods,
+                         _twoParametersDeferredMethods,
+                        _oneParameterEnumeratedMethods,
+                        _twoParametersEnumeratedMethods)
                     || IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
                     var newValue = CreateAnalysisValue(analysisEntity, operation, value);
@@ -77,7 +85,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _wellKnownDeferredExecutionMethodsTakeOneIEnumerable, _wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
+                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _oneParameterDeferredMethods, _twoParametersDeferredMethods);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (operationToCheck.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)

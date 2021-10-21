@@ -435,7 +435,6 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-
         [Fact]
         public async Task TestInvocationOnBranch1()
         {
@@ -883,7 +882,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestTakesTwoIEnumerables()
+        public async Task TestTakesTwoIEnumerables1()
         {
             var code = @"
 using System;
@@ -897,6 +896,26 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         [|i|].Concat([|h|]).ToArray();
         [|h|].Concat([|i|]).ToList();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestTakesTwoIEnumerables2()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        [|i|].SequenceEqual([|h|]);
+        [|h|].SequenceEqual([|i|]);
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
