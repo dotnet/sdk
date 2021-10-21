@@ -38,9 +38,14 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target DependsOnTargets="ResolveReferences" Name="CopyProjectReferencesToPackage">
+  <Target Name="CleanOutputDirectory" BeforeTargets="Restore">
+    <RemoveDir Directories="$(OutDir)"/>
+  </Target>
+
+  <Target DependsOnTargets="Build" Name="CopyProjectReferencesToPackage">
     <ItemGroup>
-      <BuildOutputInPackage Include="$(OutDir)/*"/>
+      <BuildOutputInPackage Include="$(OutDir)/**/*" Exclude="$(OutDir)/Microsoft.Build.Utilities.Core.dll;$(OutDir)/Microsoft.Build.Framework.dll" />
     </ItemGroup>
   </Target>
+
 </Project>
