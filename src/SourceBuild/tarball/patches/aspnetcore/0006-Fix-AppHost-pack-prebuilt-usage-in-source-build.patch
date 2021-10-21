@@ -1,41 +1,50 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Davis Goodin <dagood@microsoft.com>
-Date: Mon, 18 Oct 2021 18:45:16 -0500
+Date: Wed, 20 Oct 2021 16:17:54 -0500
 Subject: [PATCH] Fix AppHost pack prebuilt usage in source-build
 
 This avoids downloading a prebuilt apphost pack.
 
 Upstream PR: https://github.com/dotnet/aspnetcore/pull/37672
 ---
- Directory.Build.props | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ Directory.Build.props                              | 14 ++++++++++++--
+ .../src/Microsoft.AspNetCore.App.Ref.csproj        |  1 +
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index dc1f355411..e2dea35567 100644
+index 204df64da7..7280c12748 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
-@@ -197,9 +197,21 @@
- 
+@@ -198,8 +198,18 @@
    <!-- The location of the local installation of the .NET Core shared framework. -->
    <PropertyGroup>
--    <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
+     <LocalDotNetRoot>$(RepoRoot).dotnet\</LocalDotNetRoot>
 -    <!-- Override the SDK default and point to local .dotnet folder. -->
 -    <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
 +    <!--
-+      Override the SDK default and point to local .dotnet folder. This is required to work around
-+      several limitations in the way the .NET SDK finds shared frameworks and targeting packs. It
-+      allows tests to use shared frameworks and targeting packs.
++      Override the SDK default and point to local .dotnet folder. This is done to work around
++      limitations in the way the .NET SDK finds shared frameworks and targeting packs. It allows
++      tests to use the shared frameworks and targeting packs that were just built.
 +
 +      However, source-build needs this to not happen while building projects that rely on the
 +      AppHost framework pack. Source-build installs an SDK in a custom location outside this
 +      repository, and setting NetCoreTargetingPackRoot to a different location causes source-build
 +      to restore the AppHost pack as a prebuilt rather than using the one that's present in the SDK.
-+
-+      This condition still allows the Microsoft.AspNetCore.App.Ref and .Runtime projects to publish
-+      to this location, so they don't modify the existing SDK being used by source-build.
++      Source-build doesn't run tests, so the property is simply conditioned out.
 +    -->
-+    <LocalDotNetRoot Condition="'$(DotNetBuildFromSource)' != 'true' or '$(UseAppHost)' != 'true'">$(RepoRoot).dotnet\</LocalDotNetRoot>
-+    <NetCoreTargetingPackRoot Condition="'$(LocalDotNetRoot)' != ''">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
++    <NetCoreTargetingPackRoot Condition="'$(DotNetBuildFromSource)' != 'true'">$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
    </PropertyGroup>
  
    <Import Project="eng\tools\RepoTasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+diff --git a/src/Framework/App.Ref/src/Microsoft.AspNetCore.App.Ref.csproj b/src/Framework/App.Ref/src/Microsoft.AspNetCore.App.Ref.csproj
+index 0cb7503c04..3a0832ee21 100644
+--- a/src/Framework/App.Ref/src/Microsoft.AspNetCore.App.Ref.csproj
++++ b/src/Framework/App.Ref/src/Microsoft.AspNetCore.App.Ref.csproj
+@@ -211,6 +211,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
+   <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
+   <Target Name="_InstallTargetingPackIntoLocalDotNet"
+           DependsOnTargets="_ResolveTargetingPackContent"
++          Condition="'$(DotNetBuildFromSource)' != 'true'"
+           Inputs="@(RefPackContent)"
+           Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(RecursiveDir)%(FileName)%(Extension)')">
+     <RemoveDir Directories="$(LocalInstallationOutputPath)" />
