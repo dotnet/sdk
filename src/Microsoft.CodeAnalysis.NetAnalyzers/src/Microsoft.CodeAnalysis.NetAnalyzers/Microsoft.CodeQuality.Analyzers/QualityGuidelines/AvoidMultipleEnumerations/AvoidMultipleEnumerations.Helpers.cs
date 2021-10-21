@@ -22,27 +22,51 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(
+            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(
                 operation,
                 wellKnownSymbolsInfo);
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
         }
 
-        private static IOperation SkipDeferredExecutingMethodIfNeeded(
+        private static IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation
-                && IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo))
+            if (IsImplicitConversion(operation.Parent))
             {
-                // Skip the linq chain in the middle if needed.
+                // Go to the implicit conversion if needed
                 // e.g.
-                // c.Select(i => i + 1).Where(i != 10).First();
-                // Go to the Where() invocation.
-                return GetLastDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo);
+                // void Bar (IOrderedEnumerable<T> c)
+                // {
+                //      c.First();
+                // }
+                // here 'c' would be converted to IEnumerable<T>
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
+            }
+
+            if (IsOperationTheArgumentOfDeferredInvocation(operation.Parent, wellKnownSymbolsInfo))
+            {
+                // This operation is used as an argument of a deferred execution method.
+                // Check if the invocation of the deferred execution method is used in another deferred execution method.
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, wellKnownSymbolsInfo);
             }
 
             return operation;
+        }
+
+        private static bool IsImplicitConversion(IOperation operation)
+        {
+            // Check if this is a conversion operation targeting IEnumerable<T> or IEnumerable,
+            // and this conversion is passed into another deferred execution method.
+            // This is used in methods chain like
+            // 1. Cast<T> and OfType<T>, which takes IEnumerable as the first parameter. For example:
+            // c.Select(i => i + 1).Cast<long>();
+            // 'c.Select(i => i + 1)' has IEnumerable<T> type, and will be implicitly converted to IEnumerable. Then the conversion result would be passed to Cast<long>().
+            // 2. OrderBy, ThenBy, etc.. which returns IOrderedIEnumerable<T>. For this example,
+            // c.OrderBy(i => i.Key).Select(m => m + 1);
+            // 'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
+            return operation is IConversionOperation { IsImplicit: true } conversionOperation
+                   && conversionOperation.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable;
         }
 
         private static bool IsOperationEnumeratedByForEachLoop(
@@ -55,15 +79,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownSymbolsInfo);
-            return IsTheExpressionOfForEachLoop(operationToCheck);
-        }
-
-        private static bool IsTheExpressionOfForEachLoop(IOperation operation)
-        {
-            // ForEach loop would convert all the expression to IEnumerable<T> before call the GetEnumerator method.
-            // So the expression would be wrapped with a ConversionOperation
-            return operation.Parent is IConversionOperation { Parent: IForEachLoopOperation };
+            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, wellKnownSymbolsInfo);
+            return operationToCheck.Parent is IForLoopOperation;
         }
 
         private static bool IsOperationEnumeratedByInvocation(
@@ -79,41 +96,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             return false;
-        }
-
-        private static IInvocationOperation GetLastDeferredExecutingInvocation(
-            IInvocationOperation invocationOperation,
-            IArgumentOperation argumentOperation,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
-        {
-            RoslynDebug.Assert(IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo));
-
-            // 1. If the parent invocation is deferred executing method, and we can walk up the invocation chain to continue check the parent.
-            if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo))
-            {
-                return GetLastDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo);
-            }
-
-            // 2. If the parent is a conversion operation targeting IEnumerable<T> or IEnumerable,
-            // and this conversion is passed into another deferred execution method. Continue to check the parent.
-            // This is used in methods like
-            // 1. Cast<T> and OfType<T>, which takes IEnumerable as the first parameter. For example:
-            // c.Select(i => i + 1).Cast<long>();
-            // 'c.Select(i => i + 1)' has IEnumerable<T> type, and will be implicitly converted to IEnumerable. Then the conversion result would be passed to Cast<long>().
-            // 2. OrderBy, ThenBy, etc.. which returns IOrderedIEnumerable<T>. For this example,
-            // c.OrderBy(i => i.Key).Select(m => m + 1);
-            // 'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
-            if (invocationOperation.Parent is IConversionOperation { IsImplicit: true } conversionOperation
-                && conversionOperation.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
-                && conversionOperation.Parent is IArgumentOperation { Parent: IInvocationOperation conversionInvocationParent } conversionArgumentParent
-                && IsDeferredExecutingInvocation(conversionInvocationParent, conversionArgumentParent, wellKnownSymbolsInfo))
-            {
-                return GetLastDeferredExecutingInvocation(conversionInvocationParent, conversionArgumentParent, wellKnownSymbolsInfo);
-            }
-
-            // This is the last deferred executing invocation
-            return invocationOperation;
         }
 
         private static bool IsInvocationCausingEnumerationOverArgument(
@@ -157,6 +139,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             // TODO: we might want to have an attribute support here to mark a argument as 'enumerated'
             return false;
+        }
+
+        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
+                && IsDeferredExecutingInvocation(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
         }
 
         private static bool IsDeferredExecutingInvocation(

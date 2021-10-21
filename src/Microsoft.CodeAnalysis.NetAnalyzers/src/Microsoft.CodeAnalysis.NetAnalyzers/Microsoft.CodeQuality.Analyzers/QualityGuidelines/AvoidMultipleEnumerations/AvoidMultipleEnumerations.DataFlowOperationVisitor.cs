@@ -71,7 +71,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _wellKnownSymbolsInfo);
+                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (!IsDeferredType(operationToCheck.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -79,11 +79,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return false;
                 }
 
-                // Check 1: Expression of ForEachLoop would be converted to IEnumerable.
+                // Check 1: Expression of ForEachLoop would be implicitly converted to IEnumerable.
                 // Check 2: The result of the Conversion would be invoked by GetEnumerator method
                 // Check 3: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
                 // because the Operation in CFG doesn't have that information.
-                return operationToCheck.Parent is IConversionOperation conversionOperation
+                return operationToCheck is IConversionOperation conversionOperation
                    && IsImplicitConventionToDeferredType(conversionOperation)
                    && conversionOperation.Parent is IInvocationOperation invocationOperation
                    && invocationOperation.TargetMethod.OriginalDefinition.Equals(_getEnumeratorMethod)
