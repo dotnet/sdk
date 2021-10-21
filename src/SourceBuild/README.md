@@ -6,7 +6,7 @@ to build .NET from source.
 For more information, see
 [dotnet/source-build](https://github.com/dotnet/source-build).
 
-## Local development workflow
+## Local development workflow 
 
 These are the steps used by some members of the .NET source-build team to create
 a tarball and build it on a local machine as part of the development cycle:
