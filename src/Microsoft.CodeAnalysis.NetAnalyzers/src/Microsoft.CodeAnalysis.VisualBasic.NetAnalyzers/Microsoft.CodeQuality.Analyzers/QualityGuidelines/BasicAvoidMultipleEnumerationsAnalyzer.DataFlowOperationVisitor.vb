@@ -14,8 +14,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
                            twoParametersDeferredMethods As ImmutableArray(Of IMethodSymbol),
                            oneParameterEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
                            twoParametersEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
+                           additionalDeferredTypes As ImmutableArray(Of ITypeSymbol),
                            getEnumeratorMethod As IMethodSymbol)
-                MyBase.New(analysisContext, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, getEnumeratorMethod)
+                MyBase.New(analysisContext, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferredTypes, getEnumeratorMethod)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean

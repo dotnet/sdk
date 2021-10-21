@@ -17,6 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private readonly ImmutableArray<IMethodSymbol> _twoParametersDeferredMethods;
             private readonly ImmutableArray<IMethodSymbol> _oneParameterEnumeratedMethods;
             private readonly ImmutableArray<IMethodSymbol> _twoParametersEnumeratedMethods;
+            private readonly ImmutableArray<ITypeSymbol> _additionalDeferredTypes;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
@@ -25,12 +26,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
                 ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
                 ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+                ImmutableArray<ITypeSymbol> additionalDeferredTypes,
                 IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
             {
                 _oneParameterDeferredMethods = oneParameterDeferredMethods;
                 _twoParametersDeferredMethods = twoParametersDeferredMethods;
                 _oneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
                 _twoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
+                _additionalDeferredTypes = additionalDeferredTypes;
                 _getEnumeratorMethod = getEnumeratorMethod;
             }
 
@@ -39,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
                 var value = base.VisitParameterReference(operation, argument);
-                return operation.Parameter.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                return IsDeferredType(operation.Parameter.Type.OriginalDefinition, _additionalDeferredTypes)
                     && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
                         ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
                         : value;
@@ -48,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
                 var value = base.VisitLocalReference(operation, argument);
-                return operation.Local.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T
+                return IsDeferredType(operation.Local.Type.OriginalDefinition, _additionalDeferredTypes)
                     && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
                         ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
                         : value;
@@ -62,7 +65,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         _oneParameterDeferredMethods,
                          _twoParametersDeferredMethods,
                         _oneParameterEnumeratedMethods,
-                        _twoParametersEnumeratedMethods)
+                        _twoParametersEnumeratedMethods,
+                        _additionalDeferredTypes)
                     || IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
                     var newValue = CreateAnalysisValue(analysisEntity, operation, value);
@@ -85,10 +89,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _oneParameterDeferredMethods, _twoParametersDeferredMethods);
+                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _oneParameterDeferredMethods, _twoParametersDeferredMethods, _additionalDeferredTypes);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
-                if (operationToCheck.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+                if (!IsDeferredType(operationToCheck.Type.OriginalDefinition, _additionalDeferredTypes))
                 {
                     return false;
                 }
@@ -98,7 +102,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // Check 3: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
                 // because the Operation in CFG doesn't have that information.
                 return operationToCheck.Parent is IConversionOperation conversionOperation
-                   && IsImplicitConventionToIEnumerable(conversionOperation)
+                   && IsImplicitConventionToDeferredType(conversionOperation)
                    && conversionOperation.Parent is IInvocationOperation invocationOperation
                    && invocationOperation.TargetMethod.OriginalDefinition.Equals(_getEnumeratorMethod)
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
@@ -119,9 +123,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     : analysisValue;
             }
 
-            private static bool IsImplicitConventionToIEnumerable(IConversionOperation conversionOperation)
-                => conversionOperation.Conversion.IsImplicit
-                   && conversionOperation.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T;
+            private bool IsImplicitConventionToDeferredType(IConversionOperation conversionOperation)
+                => conversionOperation.Conversion.IsImplicit && IsDeferredType(conversionOperation.Type.OriginalDefinition, _additionalDeferredTypes);
         }
     }
 }

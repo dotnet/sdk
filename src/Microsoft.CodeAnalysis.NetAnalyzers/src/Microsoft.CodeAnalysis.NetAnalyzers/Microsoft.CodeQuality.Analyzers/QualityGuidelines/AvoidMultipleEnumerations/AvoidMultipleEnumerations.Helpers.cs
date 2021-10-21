@@ -3,6 +3,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
@@ -13,28 +14,31 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredExecutingMethods,
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
             ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+            if (!IsDeferredType(operation.Type.OriginalDefinition, additionalDeferTypes))
             {
                 return false;
             }
 
             var operationToCheck = SkipDeferredExecutingMethodIfNeeded(
                 operation,
-                oneParameterDeferredExecutingMethods,
-                twoParametersDeferredMethods);
-            return IsOperationEnumeratedByInvocation(operationToCheck, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods);
+                oneParameterDeferredMethods,
+                twoParametersDeferredMethods,
+                additionalDeferTypes);
+            return IsOperationEnumeratedByInvocation(operationToCheck, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferTypes);
         }
 
         private static IOperation SkipDeferredExecutingMethodIfNeeded(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -45,8 +49,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(
                     argumentOperation,
                     invocationOperation,
-                    wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-                    wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
+                    oneParameterDeferredMethods,
+                    twoParametersDeferredMethods,
+                    additionalDeferTypes);
                 return lastDeferredExecutingInvocation ?? operation;
             }
 
@@ -55,16 +60,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (operation.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+            if (!IsDeferredType(operation.Type.OriginalDefinition, additionalDeferTypes))
             {
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes);
             return IsTheExpressionOfForEachLoop(operationToCheck);
         }
 
@@ -78,7 +84,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -86,7 +93,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     invocationOperation,
                     argumentOperation,
                     oneParameterEnumeratedMethods,
-                    twoParametersEnumeratedMethods);
+                    twoParametersEnumeratedMethods,
+                    additionalDeferTypes);
             }
 
             return false;
@@ -95,16 +103,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static IInvocationOperation? GetLastDeferredExecutingInvocation(
             IArgumentOperation argumentOperation,
             IInvocationOperation invocationOperation,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutingMethodsTakeOneIEnumerable,
-            ImmutableArray<IMethodSymbol> wellKnownDeferredExecutionMethodsTakeTwoIEnumerables)
+            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
+            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
-            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables))
+            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes))
             {
                 // If the current invocation is deferred executing method, and we can walk up the invocation chain, check the parent.
                 if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables))
+                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes))
                 {
-                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownDeferredExecutingMethodsTakeOneIEnumerable, wellKnownDeferredExecutionMethodsTakeTwoIEnumerables);
+                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes);
                 }
 
                 // This is the last deferred executing invocation
@@ -118,7 +127,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods)
+            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
@@ -129,7 +139,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && targetMethod.IsExtensionMethod
                 && !targetMethod.Parameters.IsEmpty
                 && parameter.Equals(targetMethod.Parameters[0])
-                && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
             {
                 return true;
             }
@@ -139,7 +149,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && targetMethod.IsExtensionMethod
                 && targetMethod.Parameters.Length > 1
                 && (parameter.Equals(targetMethod.Parameters[0]) || parameter.Equals(targetMethod.Parameters[1]))
-                && argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
             {
                 return true;
             }
@@ -149,7 +159,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
             if (parameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes.Any(type => type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T))
+                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type.OriginalDefinition, additionalDeferTypes)))
             {
                 return true;
             }
@@ -162,11 +172,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
             ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParameterDeferredMethods)
+            ImmutableArray<IMethodSymbol> twoParameterDeferredMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
-            if (argumentOperationToCheck.Value.Type.OriginalDefinition.SpecialType != SpecialType.System_Collections_Generic_IEnumerable_T)
+            if (!IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
             {
                 return false;
             }
@@ -214,6 +225,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             builder.AddRange(methodSymbol);
                         }
                     }
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        private static bool IsDeferredType(ITypeSymbol type, ImmutableArray<ITypeSymbol> additionalSymbolsToCheck)
+            => type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T || additionalSymbolsToCheck.Contains(type);
+
+        private static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
+        {
+            using var builder = ArrayBuilder<ITypeSymbol>.GetInstance();
+            foreach (var name in typeNames)
+            {
+                if (compilation.TryGetOrCreateTypeByMetadataName(name, out var typeSymbol))
+                {
+                    builder.Add(typeSymbol);
                 }
             }
 

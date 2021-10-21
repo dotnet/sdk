@@ -16,7 +16,8 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
                 ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
                 ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-                IMethodSymbol? getEnumeratorMethod) : base(context, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, getEnumeratorMethod)
+                ImmutableArray<ITypeSymbol> additionalDeferTypes,
+                IMethodSymbol? getEnumeratorMethod) : base(context, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferTypes, getEnumeratorMethod)
             {
             }
 

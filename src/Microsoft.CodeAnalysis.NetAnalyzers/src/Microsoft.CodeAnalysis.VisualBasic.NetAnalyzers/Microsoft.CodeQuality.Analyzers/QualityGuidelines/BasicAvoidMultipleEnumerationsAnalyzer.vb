@@ -16,8 +16,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
                                                          twoParametersDeferredMethods As ImmutableArray(Of IMethodSymbol),
                                                          oneParameterEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
                                                          twoParametersEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
+                                                         additionalDeferredTypes As ImmutableArray(Of ITypeSymbol),
                                                          getEnumeratorMethod As IMethodSymbol) As GlobalFlowStateDictionaryFlowOperationVisitor
-            Return New BasicInvocationCountDataFlowOperationVisitor(context, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersDeferredMethods, getEnumeratorMethod)
+            Return New BasicInvocationCountDataFlowOperationVisitor(context, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersDeferredMethods, additionalDeferredTypes, getEnumeratorMethod)
         End Function
     End Class
 End Namespace

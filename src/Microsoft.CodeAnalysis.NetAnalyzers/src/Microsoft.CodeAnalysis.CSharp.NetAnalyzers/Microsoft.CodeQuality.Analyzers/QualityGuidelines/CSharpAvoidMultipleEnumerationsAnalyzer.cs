@@ -16,6 +16,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
             ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
             ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferTypes,
             IMethodSymbol? getEnumeratorMethod)
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
@@ -23,6 +24,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 twoParametersDeferredMethods,
                 oneParameterEnumeratedMethods,
                 twoParametersEnumeratedMethods,
+                additionalDeferTypes,
                 getEnumeratorMethod);
     }
 }
