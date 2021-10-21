@@ -3,15 +3,17 @@ From: dseefeld <dseefeld@microsoft.com>
 Date: Wed, 20 Oct 2021 21:49:51 +0000
 Subject: [PATCH] Remove dependency on MS.VS.Setup.Configuration.Interop
 
+Removes prebuilts.
+
+Background Issue: https://github.com/dotnet/source-build/issues/2542
 ---
  eng/Packages.props                             | 3 ---
  src/Build/Microsoft.Build.csproj               | 4 +++-
  src/Directory.BeforeCommon.targets             | 2 +-
  src/Samples/Directory.Build.props              | 1 +
- src/Samples/Directory.Build.targets            | 2 +-
  src/Tasks/Microsoft.Build.Tasks.csproj         | 4 +++-
  src/Utilities/Microsoft.Build.Utilities.csproj | 2 +-
- 7 files changed, 10 insertions(+), 8 deletions(-)
+ 6 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/eng/Packages.props b/eng/Packages.props
 index 2de607c5d..1668addc9 100644
@@ -68,19 +70,6 @@ index 6b9d6cd9f..317ef14a6 100644
    </PropertyGroup>
  
    <!-- Import parent props -->
-diff --git a/src/Samples/Directory.Build.targets b/src/Samples/Directory.Build.targets
-index 78b52aab8..db80eff4d 100644
---- a/src/Samples/Directory.Build.targets
-+++ b/src/Samples/Directory.Build.targets
-@@ -2,7 +2,7 @@
- 
-   <ItemGroup>
-     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="all"/>
--    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
-+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(DotNetBuildFromSource)' != 'true'" />
-   </ItemGroup>
- 
-   <!-- Import parent targets -->
 diff --git a/src/Tasks/Microsoft.Build.Tasks.csproj b/src/Tasks/Microsoft.Build.Tasks.csproj
 index d8f81bf99..3a5514094 100644
 --- a/src/Tasks/Microsoft.Build.Tasks.csproj

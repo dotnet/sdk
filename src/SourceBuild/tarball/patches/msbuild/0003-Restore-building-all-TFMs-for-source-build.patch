@@ -1,9 +1,11 @@
 From b7f0c8d910b5fa110be7f34816c4934f61643d08 Mon Sep 17 00:00:00 2001
 From: Chris Rummel <crummel@microsoft.com>
 Date: Wed, 20 Oct 2021 15:19:29 -0500
-Subject: [PATCH] Restore building all TFMs for source-build to support NuGet
- to support templating.
+Subject: [PATCH] Restore building all TFMs for source-build
 
+Required for omnisharp, nuget-client, templating
+
+Background Issue: https://github.com/dotnet/source-build/issues/2542
 ---
  src/Directory.Build.props | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
