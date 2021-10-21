@@ -412,6 +412,13 @@ namespace EndToEnd.Tests
                 {
                     buildArgs += $" --framework {framework}";
                 }
+                
+                // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
+                if (language == "F#")
+                {
+                    buildArgs += $" /p:_NETCoreSdkIsPreview=true";
+                }
+            
                 string dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
                 new BuildCommand()
                      .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
