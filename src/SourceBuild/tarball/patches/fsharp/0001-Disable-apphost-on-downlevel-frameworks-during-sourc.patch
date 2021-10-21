@@ -1,18 +1,34 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Davis Goodin <dagood@microsoft.com>
-Date: Tue, 19 Oct 2021 19:34:11 -0500
-Subject: [PATCH] Remove apphost pack prebuilts during source-build
+Date: Tue, 19 Oct 2021 16:11:51 -0500
+Subject: [PATCH] Disable apphost on downlevel frameworks during source-build
 
-Add a check to eng/build.sh to avoid running the bootstrapping twice: once in the outer build and again in the inner build.
+During source-build, disable apphost build for 'fsi' and 'fsc', and
+'fsyacc', 'fslex', and 'AssemblyCheck' during the bootstrap build.
 
-Sets UseAppHost=false during source-build for the projects that build during bootstrapping. Pass the DotNetBuildFromSource property through the environment in eng/SourceBuild.props so it takes effect.
+Creating an apphost for a net5.0 project while building with a net6.0
+SDK downloads the apphost pack as a prebuilt. Stopping the projects from
+creating the apphost removes the prebuilt for source-build.
+
+To make disabling the apphost work in the bootstrapping build, add a
+check to eng/build.sh to skip the bootstrap build if we're currently
+running the "outer" source-build. That gives source-build the ability to
+run bootstrapping on its own terms. Now, when eng/SourceBuild.props runs
+bootstrapping, it can pass the DotNetBuildFromSource property through
+the environment so it takes effect.
+
+See: https://github.com/dotnet/fsharp/issues/12282
+
+PR: https://github.com/dotnet/fsharp/pull/12286
 ---
  eng/SourceBuild.props                         |  2 +-
  eng/build.sh                                  | 51 ++++++++++---------
  .../AssemblyCheck/AssemblyCheck.fsproj        |  1 +
  src/buildtools/fslex/fslex.fsproj             |  1 +
  src/buildtools/fsyacc/fsyacc.fsproj           |  1 +
- 5 files changed, 32 insertions(+), 24 deletions(-)
+ src/fsharp/fsc/fsc.fsproj                     |  1 +
+ src/fsharp/fsi/fsi.fsproj                     |  1 +
+ 7 files changed, 34 insertions(+), 24 deletions(-)
 
 diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
 index 22c929f28..903ee00d3 100644
@@ -125,3 +141,27 @@ index 5d1b7141f..63b63c5de 100644
    </PropertyGroup>
  
    <ItemGroup>
+diff --git a/src/fsharp/fsc/fsc.fsproj b/src/fsharp/fsc/fsc.fsproj
+index 7fa31fc21..04025c297 100644
+--- a/src/fsharp/fsc/fsc.fsproj
++++ b/src/fsharp/fsc/fsc.fsproj
+@@ -12,6 +12,7 @@
+     <OtherFlags>$(OtherFlags) --maxerrors:20 --extraoptimizationloops:1</OtherFlags>
+     <NGenBinary>true</NGenBinary>
+     <UseAppHost>true</UseAppHost>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">
+diff --git a/src/fsharp/fsi/fsi.fsproj b/src/fsharp/fsi/fsi.fsproj
+index 9fd9b1333..eace6c166 100644
+--- a/src/fsharp/fsi/fsi.fsproj
++++ b/src/fsharp/fsi/fsi.fsproj
+@@ -13,6 +13,7 @@
+     <Win32Resource>fsi.res</Win32Resource>
+     <NGenBinary>true</NGenBinary>
+     <UseAppHost>true</UseAppHost>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(TargetFramework)' == 'net472'">

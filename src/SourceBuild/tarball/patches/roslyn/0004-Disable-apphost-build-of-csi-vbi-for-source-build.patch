@@ -3,7 +3,13 @@ From: Davis Goodin <dagood@microsoft.com>
 Date: Tue, 19 Oct 2021 19:38:52 -0500
 Subject: [PATCH] Disable apphost build of 'csi', 'vbi' for source-build
 
-Creating an apphost for a netcoreapp3.1 project uses the apphost pack as a prebuilt. Stopping these projects from creating the apphost removes the prebuilt for source-build.
+Creating an apphost for a netcoreapp3.1 project uses the apphost pack as a
+prebuilt. Stopping these projects from creating the apphost removes the prebuilt
+for source-build.
+
+See: https://github.com/dotnet/roslyn/issues/57233
+
+PR: https://github.com/dotnet/roslyn/pull/57306
 ---
  src/Interactive/csi/csi.csproj | 1 +
  src/Interactive/vbi/vbi.vbproj | 1 +
