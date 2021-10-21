@@ -954,14 +954,14 @@ public class Bar
     public void Sub()
     {
         IEnumerable<int> x = Enumerable.Range(1, 10);
-        var c1 = [|x|].Append(1).AsEnumerable().Cast<Object>().Distinct()
+        var c1 = [|x|].Append(1).Cast<Object>().Distinct()
             .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
             .ThenBy(i => i).ThenByDescending(i => i)
             .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
             .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
             .Where(i => i != 10).ToArray();
 
-        var c2 = [|x|].Append(1).AsEnumerable().Cast<Object>().Distinct()
+        var c2 = [|x|].Append(1).Cast<Object>().Distinct()
             .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
             .ThenBy(i => i).ThenByDescending(i => i)
             .Prepend(1).Reverse().Select(i => i + 1).Skip(100)

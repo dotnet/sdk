@@ -32,17 +32,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
+            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation
+                && IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo))
             {
                 // Skip the linq chain in the middle if needed.
                 // e.g.
                 // c.Select(i => i + 1).Where(i != 10).First();
                 // Go to the Where() invocation.
-                var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(
-                    argumentOperation,
-                    invocationOperation,
-                    wellKnownSymbolsInfo);
-                return lastDeferredExecutingInvocation ?? operation;
+                return GetLastDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo);
             }
 
             return operation;
@@ -84,25 +81,39 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        private static IInvocationOperation? GetLastDeferredExecutingInvocation(
-            IArgumentOperation argumentOperation,
+        private static IInvocationOperation GetLastDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
+            IArgumentOperation argumentOperation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo))
-            {
-                // If the current invocation is deferred executing method, and we can walk up the invocation chain, check the parent.
-                if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo))
-                {
-                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownSymbolsInfo);
-                }
+            RoslynDebug.Assert(IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo));
 
-                // This is the last deferred executing invocation
-                return invocationOperation;
+            // 1. If the parent invocation is deferred executing method, and we can walk up the invocation chain to continue check the parent.
+            if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
+                && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo))
+            {
+                return GetLastDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo);
             }
 
-            return null;
+            // 2. If the parent is a conversion operation targeting IEnumerable<T> or IEnumerable,
+            // and this conversion is passed into another deferred execution method. Continue to check the parent.
+            // This is used in methods like
+            // 1. Cast<T> and OfType<T>, which takes IEnumerable as the first parameter. For example:
+            // c.Select(i => i + 1).Cast<long>();
+            // 'c.Select(i => i + 1)' has IEnumerable<T> type, and will be implicitly converted to IEnumerable. Then the conversion result would be passed to Cast<long>().
+            // 2. OrderBy, ThenBy, etc.. which returns IOrderedIEnumerable<T>. For this example,
+            // c.OrderBy(i => i.Key).Select(m => m + 1);
+            // 'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
+            if (invocationOperation.Parent is IConversionOperation { IsImplicit: true } conversionOperation
+                && conversionOperation.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
+                && conversionOperation.Parent is IArgumentOperation { Parent: IInvocationOperation conversionInvocationParent } conversionArgumentParent
+                && IsDeferredExecutingInvocation(conversionInvocationParent, conversionArgumentParent, wellKnownSymbolsInfo))
+            {
+                return GetLastDeferredExecutingInvocation(conversionInvocationParent, conversionArgumentParent, wellKnownSymbolsInfo);
+            }
+
+            // This is the last deferred executing invocation
+            return invocationOperation;
         }
 
         private static bool IsInvocationCausingEnumerationOverArgument(
@@ -209,8 +220,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static bool IsDeferredType(ITypeSymbol type, ImmutableArray<ITypeSymbol> additionalSymbolsToCheck)
-            => type.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T || additionalSymbolsToCheck.Contains(type);
+        private static bool IsDeferredType(ITypeSymbol type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
+            => type.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
+               || additionalTypesToCheck.Contains(type);
 
         private static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
         {
