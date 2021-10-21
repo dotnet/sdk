@@ -10,7 +10,6 @@ Subject: [PATCH] Add Features projects to SourceBuild
  .../Microsoft.Build.Tasks.CodeAnalysis.csproj   |  6 +++---
  ...ft.Build.Tasks.CodeAnalysis.UnitTests.csproj |  6 +++---
  .../Extension/Roslyn.Compilers.Extension.csproj |  6 +++---
- ...soft.CodeAnalysis.Collections.Package.csproj |  1 +
  ...icrosoft.CodeAnalysis.CSharp.Features.csproj |  5 +++++
  .../Microsoft.CodeAnalysis.Features.csproj      | 10 ++++++++--
  .../LanguageServer/Directory.Build.props        |  6 ++++++
@@ -22,7 +21,7 @@ Subject: [PATCH] Add Features projects to SourceBuild
  .../IdeCoreBenchmarks/IdeCoreBenchmarks.csproj  |  2 +-
  ...osoft.CodeAnalysis.Workspaces.MSBuild.csproj |  8 +++-----
  ...Analysis.Workspaces.MSBuild.UnitTests.csproj |  4 ++--
- 18 files changed, 69 insertions(+), 29 deletions(-)
+ 17 files changed, 68 insertions(+), 29 deletions(-)
  rename src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
  create mode 100644 src/Features/LanguageServer/Directory.Build.props
  create mode 100644 src/Features/Lsif/Directory.Build.props
@@ -139,18 +138,6 @@ index 3644afb8c2f..ed4259ec61b 100644
      <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />
      <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingVersion)" />
      <PackageReference Include="Microsoft.VisualStudio.Validation" Version="$(MicrosoftVisualStudioValidationVersion)" />
-diff --git a/src/Dependencies/Collections/Microsoft.CodeAnalysis.Collections.Package.csproj b/src/Dependencies/Collections/Microsoft.CodeAnalysis.Collections.Package.csproj
-index 22cab2f5f03..cfc79989175 100644
---- a/src/Dependencies/Collections/Microsoft.CodeAnalysis.Collections.Package.csproj
-+++ b/src/Dependencies/Collections/Microsoft.CodeAnalysis.Collections.Package.csproj
-@@ -7,6 +7,7 @@
-     <DebugType>none</DebugType>
-     <GenerateDependencyFile>false</GenerateDependencyFile>
-     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
- 
-     <!-- NuGet -->
-     <IsPackable>true</IsPackable>
 diff --git a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj b/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
 index a82a820316c..9dac307c856 100644
 --- a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
