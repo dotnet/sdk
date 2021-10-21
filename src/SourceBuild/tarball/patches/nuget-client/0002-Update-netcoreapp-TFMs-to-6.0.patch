@@ -17,7 +17,7 @@ index 80433ed60..8acc4e0bb 100644
      <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
      <NETFXTargetFramework>net472</NETFXTargetFramework>
 -    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
-+    <NETCoreTargetFramework>netcoreapp2.1;net6.0</NETCoreTargetFramework>
++    <NETCoreTargetFramework>net6.0</NETCoreTargetFramework>
      <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
      <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
 -    <NetStandardVersion>netstandard2.0</NetStandardVersion>
