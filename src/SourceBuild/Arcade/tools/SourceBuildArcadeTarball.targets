@@ -292,7 +292,9 @@
 
     <ItemGroup>
       <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
-      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltPrebuiltsTarballName).$(PrivateSourceBuiltPrebuiltsPackageVersion).tar.gz" />
+      <ArtifactUrls
+        Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltPrebuiltsTarballName).$(PrivateSourceBuiltPrebuiltsPackageVersion).tar.gz"
+        Condition="'$(PrivateSourceBuiltPrebuiltsPackageVersion)' != ''" />
     </ItemGroup>
 
     <WriteLinesToFile

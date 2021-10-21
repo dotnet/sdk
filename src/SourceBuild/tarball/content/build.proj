@@ -133,7 +133,8 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"
-          AfterTargets="Build">
+          AfterTargets="Build"
+          Condition="Exists('$(ResultingPrebuiltPackagesDir)')">
 
     <PropertyGroup>
       <TarballFileVersion>$(PrivateSourceBuiltPrebuiltsPackageVersionPrefix)$([MSBuild]::Add($(PrivateSourceBuiltPrebuiltsPackageVersionSuffix), 1))</TarballFileVersion>
