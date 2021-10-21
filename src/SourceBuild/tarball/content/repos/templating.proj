@@ -16,6 +16,8 @@
   <ItemGroup>
     <RepositoryReference Include="clicommandlineparser" />
     <RepositoryReference Include="source-build" />
+    <!-- temporarily introduce an artificial reference so templating builds after our NuGet changes -->
+    <RepositoryReference Include="nuget-client" />
   </ItemGroup>
 
   <ItemGroup>
