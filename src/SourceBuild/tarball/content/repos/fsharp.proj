@@ -4,6 +4,12 @@
   <PropertyGroup>
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
+    <!--
+      dotnet/fsharp has a custom eng/build.sh script that handles its own sourcebuild arg
+      differently from the ArcadeBuildFromSource MSBuild arg. Including both args is fine, but the
+      custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
+    -->
+    <BuildCommandArgs>$(BuildCommandArgs) --sourcebuild</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <OutputPlacementRepoApiImplemented>false</OutputPlacementRepoApiImplemented>

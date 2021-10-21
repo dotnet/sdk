@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Tue, 19 Oct 2021 19:38:52 -0500
+Subject: [PATCH] Disable apphost build of 'csi', 'vbi' for source-build
+
+Creating an apphost for a netcoreapp3.1 project uses the apphost pack as a
+prebuilt. Stopping these projects from creating the apphost removes the prebuilt
+for source-build.
+
+See: https://github.com/dotnet/roslyn/issues/57233
+
+PR: https://github.com/dotnet/roslyn/pull/57306
+---
+ src/Interactive/csi/csi.csproj | 1 +
+ src/Interactive/vbi/vbi.vbproj | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Interactive/csi/csi.csproj b/src/Interactive/csi/csi.csproj
+index 3970bb4e9ea..e96beb550d2 100644
+--- a/src/Interactive/csi/csi.csproj
++++ b/src/Interactive/csi/csi.csproj
+@@ -6,6 +6,7 @@
+     <OutputType>Exe</OutputType>
+     <RootNamespace>CSharpInteractive</RootNamespace>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+   <ItemGroup Label="Project References">
+     <ProjectReference Include="..\..\Compilers\Core\Portable\Microsoft.CodeAnalysis.csproj" />
+diff --git a/src/Interactive/vbi/vbi.vbproj b/src/Interactive/vbi/vbi.vbproj
+index 5bbdf7f03a7..5f732d71534 100644
+--- a/src/Interactive/vbi/vbi.vbproj
++++ b/src/Interactive/vbi/vbi.vbproj
+@@ -6,6 +6,7 @@
+     <OutputType>Exe</OutputType>
+     <StartupObject>Sub Main</StartupObject>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+     <RootNamespace></RootNamespace>
+   </PropertyGroup>
+   <ItemGroup Label="Project References">
