@@ -10,8 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="source-build" />
     <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="source-build" />
   </ItemGroup>
 
   <ItemGroup>
