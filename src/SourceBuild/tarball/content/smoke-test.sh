@@ -330,11 +330,13 @@ function runWebTests() {
     doCommand C# mvc "$@" new restore build run multi-rid-publish
     doCommand C# webapi "$@" new restore build multi-rid-publish
     doCommand C# razor "$@" new restore build run multi-rid-publish
-    doCommand C# blazorwasm "$@" new restore build run publish
+    # Requires prereqs (non-source-built packages) - re-enable with https://github.com/dotnet/source-build/issues/2550
+    # doCommand C# blazorwasm "$@" new restore build run publish
     doCommand C# blazorserver "$@" new restore build run publish
 
     doCommand F# web "$@" new restore build run multi-rid-publish
-    doCommand F# mvc "$@" new restore build run multi-rid-publish
+    # Requires prereqs (non-source-built packages) - re-enable with https://github.com/dotnet/source-build/issues/2550
+    # doCommand F# mvc "$@" new restore build run multi-rid-publish
     doCommand F# webapi "$@" new restore build run multi-rid-publish
 }
 
@@ -518,6 +520,7 @@ function runXmlDocTests() {
         System.Xml.Serialization.xml
         System.Xml.xml
         System.Xml.XmlDocument.xml
+        WindowsBase.xml
     )
 
     aspnetcoreappIgnoreList=(
