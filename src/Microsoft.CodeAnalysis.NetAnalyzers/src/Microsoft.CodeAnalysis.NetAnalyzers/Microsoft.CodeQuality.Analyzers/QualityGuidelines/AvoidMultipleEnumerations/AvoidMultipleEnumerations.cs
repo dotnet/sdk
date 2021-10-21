@@ -85,7 +85,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         private static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
             "Append",
-            "AsEnumerable",
             "Cast",
             "Distinct",
             "GroupBy",
@@ -103,6 +102,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "SkipWhile",
             "Take",
             "TakeLast",
+            "TakeWhile",
             "ThenBy",
             "ThenByDescending",
             "Where");
@@ -120,11 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo,
             IMethodSymbol? getEnumeratorMethod);
 
         public override void Initialize(AnalysisContext context)
@@ -152,15 +148,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
+            var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
+                oneParameterDeferredMethods,
+                twoParametersDeferredMethods,
+                oneParameterEnumeratedMethods,
+                twoParametersEnumeratedMethods,
+                additionalDeferTypes);
+
             var potentialDiagnosticOperationsBuilder = ImmutableHashSet.CreateBuilder<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(
                     context,
-                    oneParameterDeferredMethods,
-                    twoParametersDeferredMethods,
-                    oneParameterEnumeratedMethods,
-                    twoParametersEnumeratedMethods,
-                    additionalDeferTypes,
+                    wellKnownSymbolsInfo,
                     potentialDiagnosticOperationsBuilder),
                 OperationKind.ParameterReference,
                 OperationKind.LocalReference);
@@ -169,29 +168,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 context => Analyze(
                     context,
                     wellKnownTypeProvider,
-                    oneParameterDeferredMethods,
-                    twoParametersDeferredMethods,
-                    oneParameterEnumeratedMethods,
-                    twoParametersEnumeratedMethods,
-                    additionalDeferTypes,
+                    wellKnownSymbolsInfo,
                     potentialDiagnosticOperationsBuilder));
         }
 
         private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo,
             ImmutableHashSet<IOperation>.Builder builder)
         {
             var operation = context.Operation;
-            if (IsDeferredType(operation.Type.OriginalDefinition, additionalDeferTypes))
+            if (IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferTypes)
-                    || IsOperationEnumeratedByForEachLoop(operation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes);
-
+                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo) || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
                 if (isEnumerated)
                     builder.Add(operation);
             }
@@ -200,11 +189,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void Analyze(
             OperationBlockAnalysisContext context,
             WellKnownTypeProvider wellKnownTypeProvider,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParameterEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo,
             ImmutableHashSet<IOperation>.Builder potentialDiagnosticOperationsBuilder)
         {
             var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
@@ -230,11 +215,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 context.OwningSymbol,
                 analysisContext => CreateOperationVisitor(
                     analysisContext,
-                    oneParameterDeferredMethods,
-                    twoParametersDeferredMethods,
-                    oneParameterEnumeratedMethods,
-                    twoParameterEnumeratedMethods,
-                    additionalDeferTypes,
+                    wellKnownSymbolsInfo,
                     getEnumeratorSymbol),
                 wellKnownTypeProvider,
                 context.Options,

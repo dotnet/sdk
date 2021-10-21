@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Immutable;
 using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
@@ -12,19 +11,11 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     {
         internal override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo,
             IMethodSymbol? getEnumeratorMethod)
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
-                oneParameterDeferredMethods,
-                twoParametersDeferredMethods,
-                oneParameterEnumeratedMethods,
-                twoParametersEnumeratedMethods,
-                additionalDeferTypes,
+                wellKnownSymbolsInfo,
                 getEnumeratorMethod);
     }
 }

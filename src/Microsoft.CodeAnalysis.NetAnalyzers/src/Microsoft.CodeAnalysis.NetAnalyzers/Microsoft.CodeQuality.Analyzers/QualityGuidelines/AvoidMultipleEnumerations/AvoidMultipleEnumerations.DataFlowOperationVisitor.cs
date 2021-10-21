@@ -13,27 +13,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
-            private readonly ImmutableArray<IMethodSymbol> _oneParameterDeferredMethods;
-            private readonly ImmutableArray<IMethodSymbol> _twoParametersDeferredMethods;
-            private readonly ImmutableArray<IMethodSymbol> _oneParameterEnumeratedMethods;
-            private readonly ImmutableArray<IMethodSymbol> _twoParametersEnumeratedMethods;
-            private readonly ImmutableArray<ITypeSymbol> _additionalDeferredTypes;
+            private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
             private readonly IMethodSymbol? _getEnumeratorMethod;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-                ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-                ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-                ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-                ImmutableArray<ITypeSymbol> additionalDeferredTypes,
+                WellKnownSymbolsInfo wellKnownSymbolsInfo,
                 IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
             {
-                _oneParameterDeferredMethods = oneParameterDeferredMethods;
-                _twoParametersDeferredMethods = twoParametersDeferredMethods;
-                _oneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
-                _twoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
-                _additionalDeferredTypes = additionalDeferredTypes;
+                _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
                 _getEnumeratorMethod = getEnumeratorMethod;
             }
 
@@ -42,7 +30,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
                 var value = base.VisitParameterReference(operation, argument);
-                return IsDeferredType(operation.Parameter.Type.OriginalDefinition, _additionalDeferredTypes)
+                return IsDeferredType(operation.Parameter.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)
                     && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
                         ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
                         : value;
@@ -51,7 +39,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
                 var value = base.VisitLocalReference(operation, argument);
-                return IsDeferredType(operation.Local.Type.OriginalDefinition, _additionalDeferredTypes)
+                return IsDeferredType(operation.Local.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)
                     && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
                         ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
                         : value;
@@ -60,13 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameterOrArrayElement(
                 IOperation operation, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
             {
-                if (IsOperationEnumeratedByMethodInvocation(
-                        operation,
-                        _oneParameterDeferredMethods,
-                         _twoParametersDeferredMethods,
-                        _oneParameterEnumeratedMethods,
-                        _twoParametersEnumeratedMethods,
-                        _additionalDeferredTypes)
+                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo)
                     || IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
                     var newValue = CreateAnalysisValue(analysisEntity, operation, value);
@@ -89,10 +71,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _oneParameterDeferredMethods, _twoParametersDeferredMethods, _additionalDeferredTypes);
+                var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
-                if (!IsDeferredType(operationToCheck.Type.OriginalDefinition, _additionalDeferredTypes))
+                if (!IsDeferredType(operationToCheck.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
                     return false;
                 }
@@ -124,7 +106,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             private bool IsImplicitConventionToDeferredType(IConversionOperation conversionOperation)
-                => conversionOperation.Conversion.IsImplicit && IsDeferredType(conversionOperation.Type.OriginalDefinition, _additionalDeferredTypes);
+                => conversionOperation.Conversion.IsImplicit && IsDeferredType(conversionOperation.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
     }
 }

@@ -14,31 +14,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (!IsDeferredType(operation.Type.OriginalDefinition, additionalDeferTypes))
+            if (!IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
 
             var operationToCheck = SkipDeferredExecutingMethodIfNeeded(
                 operation,
-                oneParameterDeferredMethods,
-                twoParametersDeferredMethods,
-                additionalDeferTypes);
-            return IsOperationEnumeratedByInvocation(operationToCheck, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferTypes);
+                wellKnownSymbolsInfo);
+            return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
         }
 
         private static IOperation SkipDeferredExecutingMethodIfNeeded(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -49,9 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 var lastDeferredExecutingInvocation = GetLastDeferredExecutingInvocation(
                     argumentOperation,
                     invocationOperation,
-                    oneParameterDeferredMethods,
-                    twoParametersDeferredMethods,
-                    additionalDeferTypes);
+                    wellKnownSymbolsInfo);
                 return lastDeferredExecutingInvocation ?? operation;
             }
 
@@ -60,17 +50,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (!IsDeferredType(operation.Type.OriginalDefinition, additionalDeferTypes))
+            if (!IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
 
-            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes);
+            var operationToCheck = SkipDeferredExecutingMethodIfNeeded(operation, wellKnownSymbolsInfo);
             return IsTheExpressionOfForEachLoop(operationToCheck);
         }
 
@@ -83,18 +71,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
                 return IsInvocationCausingEnumerationOverArgument(
                     invocationOperation,
                     argumentOperation,
-                    oneParameterEnumeratedMethods,
-                    twoParametersEnumeratedMethods,
-                    additionalDeferTypes);
+                    wellKnownSymbolsInfo);
             }
 
             return false;
@@ -103,17 +87,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static IInvocationOperation? GetLastDeferredExecutingInvocation(
             IArgumentOperation argumentOperation,
             IInvocationOperation invocationOperation,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes))
+            if (IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo))
             {
                 // If the current invocation is deferred executing method, and we can walk up the invocation chain, check the parent.
                 if (invocationOperation.Parent is IArgumentOperation { Parent: IInvocationOperation parentInvocationOperation } parentArgumentOperation
-                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes))
+                    && IsDeferredExecutingInvocation(parentInvocationOperation, parentArgumentOperation, wellKnownSymbolsInfo))
                 {
-                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, oneParameterDeferredMethods, twoParametersDeferredMethods, additionalDeferTypes);
+                    return GetLastDeferredExecutingInvocation(parentArgumentOperation, parentInvocationOperation, wellKnownSymbolsInfo);
                 }
 
                 // This is the last deferred executing invocation
@@ -126,30 +108,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsInvocationCausingEnumerationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
             var targetMethod = invocationOperation.TargetMethod;
             var parameter = argumentOperationToCheck.Parameter;
 
-            if (oneParameterEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
+            if (wellKnownSymbolsInfo.OneParameterEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.IsExtensionMethod
                 && !targetMethod.Parameters.IsEmpty
                 && parameter.Equals(targetMethod.Parameters[0])
-                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
+                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
 
             // SequentialEqual would enumerate two parameters
-            if (twoParametersEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
+            if (wellKnownSymbolsInfo.TwoParametersEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.IsExtensionMethod
                 && targetMethod.Parameters.Length > 1
                 && (parameter.Equals(targetMethod.Parameters[0]) || parameter.Equals(targetMethod.Parameters[1]))
-                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
+                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
@@ -159,7 +139,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
             if (parameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type.OriginalDefinition, additionalDeferTypes)))
+                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
             {
                 return true;
             }
@@ -171,20 +151,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParameterDeferredMethods,
-            ImmutableArray<ITypeSymbol> additionalDeferTypes)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
-            if (!IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, additionalDeferTypes))
+            if (!IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
 
             var argumentMatchingParameter = argumentOperationToCheck.Parameter;
             // Method like Select, Where, etc.. only take one IEnumerable, and it is the first parameter.
-            if (oneParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
+            if (wellKnownSymbolsInfo.OneParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
                 && !targetMethod.Parameters.IsEmpty
                 && targetMethod.Parameters[0].Equals(argumentMatchingParameter))
             {
@@ -192,7 +170,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             // Method like Concat, Except, etc.. take two IEnumerable, and it is the first parameter or second parameter.
-            if (twoParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
+            if (wellKnownSymbolsInfo.TwoParametersDeferredMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.Parameters.Length > 1
                 && (targetMethod.Parameters[0].Equals(argumentMatchingParameter) || targetMethod.Parameters[1].Equals(argumentMatchingParameter)))
             {

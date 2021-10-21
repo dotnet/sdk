@@ -1,5 +1,4 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
-Imports System.Collections.Immutable
 Imports Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
@@ -10,13 +9,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Inherits AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
-                           oneParameterDeferredMethods As ImmutableArray(Of IMethodSymbol),
-                           twoParametersDeferredMethods As ImmutableArray(Of IMethodSymbol),
-                           oneParameterEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
-                           twoParametersEnumeratedMethods As ImmutableArray(Of IMethodSymbol),
-                           additionalDeferredTypes As ImmutableArray(Of ITypeSymbol),
+                           wellKnownSymbolsInfo as WellKnownSymbolsInfo,
                            getEnumeratorMethod As IMethodSymbol)
-                MyBase.New(analysisContext, oneParameterDeferredMethods, twoParametersDeferredMethods, oneParameterEnumeratedMethods, twoParametersEnumeratedMethods, additionalDeferredTypes, getEnumeratorMethod)
+                MyBase.New(analysisContext, wellKnownSymbolsInfo, getEnumeratorMethod)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean
