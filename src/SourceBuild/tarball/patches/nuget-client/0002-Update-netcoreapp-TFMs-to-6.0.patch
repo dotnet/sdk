@@ -1,4 +1,4 @@
-From 98fd2091519fa4c6d9ab850eaea92700b00803dc Mon Sep 17 00:00:00 2001
+From bb17144917b0e242214a10467507db5f987e3af8 Mon Sep 17 00:00:00 2001
 From: Michael Simons <msimons@microsoft.com>
 Date: Tue, 17 Aug 2021 21:13:07 +0000
 Subject: [PATCH 2/8] Update netcoreapp TFMs to 6.0
@@ -6,11 +6,13 @@ Subject: [PATCH 2/8] Update netcoreapp TFMs to 6.0
 ---
  build/common.project.props                             | 10 +++++-----
  build/common.targets                                   |  2 +-
+ .../NuGet.Build.Tasks.Pack.csproj                      |  2 +-
  src/NuGet.Core/NuGet.Common/NuGet.Common.csproj        |  1 -
- .../NuGet.Configuration/NuGet.Configuration.csproj     |  1 -
+ .../NuGet.Configuration/NuGet.Configuration.csproj     |  3 +--
  .../NuGet.Frameworks/NuGet.Frameworks.csproj           |  1 -
+ .../NuGet.PackageManagement.csproj                     |  2 +-
  .../NuGet.Versioning/NuGet.Versioning.csproj           |  1 -
- 6 files changed, 6 insertions(+), 10 deletions(-)
+ 8 files changed, 9 insertions(+), 13 deletions(-)
 
 diff --git a/build/common.project.props b/build/common.project.props
 index e2e3c0c11..000702f58 100644
@@ -52,6 +54,19 @@ index 6fd5bd260..3de830b25 100644
      <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
      <IsCore>true</IsCore>
    </PropertyGroup>
+diff --git a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+index f11dd752b..babf5bbef 100644
+--- a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
++++ b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+@@ -177,7 +177,7 @@
+       <!-- Build from source can't use ILMerge. -->
+       <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
+       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">Desktop/</PackagePathDir>
+-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
++      <PackagePathDir Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0'">CoreCLR/</PackagePathDir>
+     </PropertyGroup>
+     <ItemGroup>
+       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
 diff --git a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
 index e30a079eb..c2b8fe241 100644
 --- a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
@@ -65,7 +80,7 @@ index e30a079eb..c2b8fe241 100644
      <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
      <PackProject>true</PackProject>
 diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
-index bbc5ba480..fc4d42502 100644
+index bbc5ba480..b1d16aa51 100644
 --- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
 +++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
 @@ -6,7 +6,6 @@
@@ -76,6 +91,15 @@ index bbc5ba480..fc4d42502 100644
      <TargetFramework />
      <PackProject>true</PackProject>
      <Shipping>true</Shipping>
+@@ -29,7 +28,7 @@
+     <Reference Include="System.Xml.Linq" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net6.0' ">
+     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+   </ItemGroup>
+ 
 diff --git a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
 index 65f261dc1..f29551741 100644
 --- a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
@@ -88,6 +112,19 @@ index 65f261dc1..f29551741 100644
      <TargetFramework />
      <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
      <PackProject>true</PackProject>
+diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+index dfbfcaa8d..7de38de78 100644
+--- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
++++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+@@ -35,7 +35,7 @@
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFramework)' == 'net6.0' ">
+     <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
 diff --git a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj b/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
 index 180293944..8498664b9 100644
 --- a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
