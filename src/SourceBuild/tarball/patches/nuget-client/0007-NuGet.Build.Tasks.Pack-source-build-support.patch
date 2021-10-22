@@ -1,4 +1,4 @@
-From e4fcd14ceca14d4b1995b4244e33923eef7b9f55 Mon Sep 17 00:00:00 2001
+From 36e519a13431f36cd30e44a91d3b4f81c6753528 Mon Sep 17 00:00:00 2001
 From: Michael Simons <msimons@microsoft.com>
 Date: Fri, 27 Aug 2021 01:52:56 +0000
 Subject: [PATCH 7/8] NuGet.Build.Tasks.Pack source-build support
@@ -8,11 +8,11 @@ Subject: [PATCH 7/8] NuGet.Build.Tasks.Pack source-build support
  1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
-index babf5bbef..769406b67 100644
+index d4f11aad5..f4d083e52 100644
 --- a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
 +++ b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
 @@ -180,13 +180,16 @@
-       <PackagePathDir Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0'">CoreCLR/</PackagePathDir>
+       <PackagePathDir Condition="'$(TargetFramework)' == 'netstandard2.0'">CoreCLR/</PackagePathDir>
      </PropertyGroup>
      <ItemGroup>
 -      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
