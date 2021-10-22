@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
@@ -44,7 +44,7 @@
 
   <Target DependsOnTargets="Build" Name="CopyProjectReferencesToPackage">
     <ItemGroup>
-      <BuildOutputInPackage Include="$(OutDir)/**/*"/>
+      <BuildOutputInPackage Include="$(OutDir)/**/*" Exclude="$(OutDir)/Microsoft.Build.Utilities.Core.dll;$(OutDir)/Microsoft.Build.Framework.dll" />
     </ItemGroup>
   </Target>
 
