@@ -36,6 +36,13 @@ jobs:
         testRunTitle: '$(_os) $(_configuration)'
       condition: always()
     - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: 'Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
+    - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
@@ -67,6 +74,13 @@ jobs:
         mergeTestResults: true
         testRunTitle: '$(_os) $(_configuration)'
       condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: 'Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
@@ -100,6 +114,13 @@ jobs:
         mergeTestResults: true
         testRunTitle: 'Spanish $(_os) $(_configuration)'
       condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: 'Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
