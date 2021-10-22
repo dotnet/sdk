@@ -53,8 +53,8 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
-        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</source>
-        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</target>
+        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</source>
+        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">

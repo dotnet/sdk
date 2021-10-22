@@ -1312,7 +1312,7 @@
     <value>Add operator overload named alternate</value>
   </data>
   <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
-    <value>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try convert it to other collections.</value>
+    <value>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</value>
     <comment>{Locked="IEnumerable"}</comment>
   </data>
   <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
