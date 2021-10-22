@@ -20,13 +20,15 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> j)
+    public void Sub(int[] j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
         var c = [|i|].All(x => x == 100);
         var d = [|i|].Any();
-        var e = [|j|].Average();
-        var f = [|j|].Count();
+        var e = j.Average();
+        var f = j.Count();
+        var g = [|i|].Average();
+        var h = [|i|].Count();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -42,13 +44,14 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> j)
+    public void Sub(int[] j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
         for (int k = 0; k < 100; k++)
         {
             [|i|].Aggregate((m, n) => m + n);
-            [|j|].Contains(100);
+            j.Contains(100);
+            [|i|].Contains(100);
         }
     }
 }";
@@ -56,7 +59,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestForEachLoop1()
+        public async Task TestInvocationsInForEachLoop()
         {
             var code = @"
 using System;
@@ -67,10 +70,10 @@ public class Bar
 {
     public void Sub(IEnumerable<int> j)
     {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
+        var i = Enumerable.Range(1, 10).ToArray();
         foreach (var c in Enumerable.Range(1, 10))
         {
-            [|i|].Count();
+            i.Count();
             [|j|].DefaultIfEmpty();
         }
     }
@@ -79,7 +82,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestForEachLoop2()
+        public async Task TestInvocationsAfterForEachLoop()
         {
             var code = @"
 using System;
@@ -95,6 +98,28 @@ public class Bar
         {
         }
         [|i|].Count();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationsAfterForEachLoopForArray()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var i = Enumerable.Range(1, 10).ToArray();
+        foreach (var c in i.Select(p => p))
+        {
+        }
+        i.Count();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -135,24 +160,24 @@ public class Bar
 {
     public void Sub(int b, IEnumerable<int> j)
     {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
+        var i = Enumerable.Range(1, 10).ToArray();
         if (b == 1)
         {
-            [|i|].First();
+            i.First();
             [|j|].FirstOrDefault();
         }
         else if (b == 3)
         {
-            [|i|].Last();
+            i.Last();
             [|j|].LastOrDefault();
         }
         else
         {
-            [|i|].LongCount();
+            i.LongCount();
             [|j|].Max();
         }
 
-        [|i|].Min();
+        i.Min();
         [|j|].Single();
     }
 }";
@@ -177,6 +202,31 @@ public class Bar
         {
             [|i|].Except([|h|]).ToList();
             [|i|].Intersect([|h|]).ToList();
+        }
+
+        i.Max();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestInvocationAfterIfbranchForArray()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h, int x)
+    {
+        var i = Enumerable.Range(1, 10).ToArray();
+        if (x == 1)
+        {
+            i.Except([|h|]).ToList();
+            i.Intersect([|h|]).ToList();
         }
 
         i.Max();
@@ -218,23 +268,27 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(int b)
+    public void Sub(int b, int[] c)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
         if (b == 1)
         {
-            [|i|].ToArray();
+            [|i|].SingleOrDefault();
+            c.Max();
         }
         else if (b == 3)
         {
             [|i|].ToList();
+            c.Min();
         }
         else
         {
             [|i|].Min();
+            c.Average();
         }
 
         [|i|].Sum();
+        c.First();
     }
 }";
 
@@ -253,23 +307,23 @@ public class Bar
 {
     public void Sub(int b, IEnumerable<int> j)
     {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
-        [|i|].First();
-        [|j|].First();
+        var i = Enumerable.Range(1, 10).ToArray();
+        i.First();
+        [|j|].SingleOrDefault();
 
         if (b == 1)
         {
-            [|i|].First();
+            i.First();
             [|j|].First();
         }
         else if (b == 3)
         {
-            [|i|].First();
+            i.First();
             [|j|].First();
         }
         else if (b == 5)
         {
-            [|i|].First();
+            i.First();
             [|j|].First();
         }
     }
@@ -290,19 +344,23 @@ public class Bar
     public void Sub(bool flag, IEnumerable<int> j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
+        var k = Enumerable.Range(1, 10).ToArray();
         if (flag)
         {
             [|i|].Single();
             [|j|].SingleOrDefault();
+            k.Single();
         }
         else
         {
             [|i|].Sum();
             [|j|].ToArray();
+            k.Last();
         }
 
         [|i|].ToDictionary(x => x);
         [|j|].First();
+        k.LastOrDefault();
     }
 }";
 
@@ -322,10 +380,12 @@ public class Bar
     public void Sub(bool flag, IEnumerable<int> j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
+        var k = Enumerable.Range(1, 10).ToArray();
         if (flag)
         {
             [|i|].Single();
             [|j|].SingleOrDefault();
+            k.Sum();
         }
 
         [|i|].ToDictionary(x => x);
@@ -333,6 +393,9 @@ public class Bar
 
         [|j|].First();
         [|j|].Min();
+
+        k.Sum();
+        k.Sum();
     }
 }";
 
@@ -352,13 +415,16 @@ public class Bar
     public void Sub(int b, IEnumerable<int> j)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
+        var k = Enumerable.Range(1, 10).ToArray();
         if (b == 0)
         {
             [|i|].Single();
+            k.ElementAt(10);
         }
         else if (b == 1)
         {
             [|j|].SingleOrDefault();
+            k.ElementAtOrDefault(10);
         }
 
         [|i|].ToDictionary(x => x);
@@ -366,6 +432,9 @@ public class Bar
 
         [|j|].Min();
         [|j|].First();
+
+        k.ToHashSet();
+        k.LongCount();
     }
 }";
 
@@ -481,6 +550,14 @@ public class Bar
         else if ([|i|].Max() == 10)
         {
         }
+
+        var j = Enumerable.Range(1, 10).ToArray();
+        if (j.Any())
+        {
+        }
+        else if (j.Max() == 10)
+        {
+        }
     }
 }";
 
@@ -507,6 +584,15 @@ public class Bar
         else if ([|i|].Max() == 10)
         {
         }
+
+        var j = Enumerable.Range(1, 10).ToArray();
+        if (j.Any())
+        {
+            j.ToDictionary(l => l);
+        }
+        else if (j.Max() == 10)
+        {
+        }
     }
 }";
 
@@ -527,6 +613,10 @@ public class Bar
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
         if ([|i|].Any() && [|i|].Max() == 10)
+        {
+        }
+        var j = Enumerable.Range(1, 10).ToArray();
+        if (j.Any() && j.Max() == 10)
         {
         }
     }
@@ -551,6 +641,11 @@ public class Bar
         if ([|i|].Any() || [|i|].Max() == 10)
         {
         }
+
+        var j = Enumerable.Range(1, 10).ToArray();
+        if (j.Any() || j.Max() == 10)
+        {
+        }
     }
 }";
 
@@ -573,6 +668,11 @@ public class Bar
         while ([|i|].Min() == 10)
         {
         }
+
+        var j = Enumerable.Range(1, 10).ToArray();
+        while (j.Min() == 10)
+        {
+        }
     }
 }";
 
@@ -592,55 +692,18 @@ public class Bar
     public void Sub()
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        if ([|i|].Any() || [|i|].Max() == 10)
-        {
-        }
-    }
-}";
-
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
-
-        [Fact]
-        public async Task TestInvocationOnBranch8()
-        {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
-public class Bar
-{
-    public void Sub()
-    {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
         if ([|i|].Any())
         {
         }
 
         [|i|].Min();
-    }
-}";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
-
-        [Fact]
-        public async Task TestInvocationOnBranch9()
-        {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
-public class Bar
-{
-    public void Sub()
-    {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
-        while ([|i|].Min() == 10)
+        var j = Enumerable.Range(1, 10).ToArray();
+        if (j.Any())
         {
         }
+
+        j.Min();
     }
 }";
 
@@ -702,6 +765,12 @@ public class Bar
         }
 
         [|j|].ToImmutableArray();
+
+        var k = Enumerable.Range(1, 10).ToArray();
+        foreach (var c3 in k.Select(m => m + 1).Where(m => m != 100))
+        {
+        }
+        k.ToImmutableArray();
     }
 }";
 
@@ -710,37 +779,6 @@ public class Bar
 
         [Fact]
         public async Task TestInvocationWithForEachLoop3()
-        {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-
-public class Bar
-{
-    public void Sub(IEnumerable<int> j)
-    {
-        IEnumerable<int> i = Enumerable.Range(1, 10);
-        foreach (var c in [|i|].Select(m => m + 1).Where(m => m != 100))
-        {
-        }
-
-        [|i|].Select(k => k + 1).Skip(100).ToImmutableDictionary(x => x);
-
-        foreach (var c2 in [|j|].Select(m => m + 1).Where(m => m != 100))
-        {
-        }
-
-        [|j|].Select(k => k + 1).Skip(100).ToImmutableHashSet();
-    }
-}";
-
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
-
-        [Fact]
-        public async Task TestInvocationWithForEachLoop4()
         {
             var code = @"
 using System;
@@ -766,6 +804,14 @@ public class Bar
         }
 
         [|j|].Select(k => k + 1).Skip(100).First();
+
+        var o = Enumerable.Range(1, 10).ToArray();
+        foreach (var c3 in o.Select(m => m + 1).Where(m => m != 100))
+        {
+            o.Where(x => x != 100).ToImmutableSortedDictionary(m => m, n => n);
+        }
+
+        o.Select(k => k + 1).Skip(100).First();
     }
 }";
 
@@ -958,15 +1004,54 @@ public class Bar
             .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
             .ThenBy(i => i).ThenByDescending(i => i)
             .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
+            .SkipWhile(i => i == 99).SkipLast(100).Take(1).TakeWhile(i => i == 100).TakeLast(100)
             .Where(i => i != 10).ToArray();
 
         var c2 = [|x|].Append(1).Cast<Object>().Distinct()
             .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
             .ThenBy(i => i).ThenByDescending(i => i)
             .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
+            .SkipWhile(i => i == 99).SkipLast(100).Take(1).TakeWhile(i => i == 100).TakeLast(100)
             .Where(i => i != 10).First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestGroupBy()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        IEnumerable<int> x = Enumerable.Range(1, 10);
+        var z = [|x|].GroupBy(i => i.GetHashCode()).ToArray();
+        var z2 = [|x|].GroupBy(i => i.GetHashCode()).ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestSelectMany()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<IEnumerable<int>> y)
+    {
+        var a = [|y|].SelectMany(x => x).ToArray();
+        var b = [|y|].SelectMany(x => x.ToArray()).ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1006,6 +1091,26 @@ public class Bar
     {
         [|h|].Where(i => i != 10).ToArray();
         [|h|].ToList();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestExecutionInTheMiddle()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        [|h|].ToArray().Select(j => j + 1).Where(x => x != 100);
+        [|h|].ToArray().Select(j => j + 1).Where(x => x != 100);
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);

@@ -92,8 +92,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "OrderBy",
             "OrderByDescending",
             "Prepend",
-            "Range",
-            "Repeat",
             "Reverse",
             "Select",
             "SelectMany",
