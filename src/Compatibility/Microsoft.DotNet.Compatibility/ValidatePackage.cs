@@ -17,9 +17,6 @@ namespace Microsoft.DotNet.Compatibility
 {
     public class ValidatePackage : TaskBase
     {
-        private const string CODE_ANALYSIS_ASSEMBLY_NAME = "Microsoft.CodeAnalysis";
-        private const string CODE_ANALYSIS_CSHARP_ASSEMBLY_NAME = "Microsoft.CodeAnalysis.CSharp";
-
         [Required]
         public string PackageTargetPath { get; set; }
 
@@ -120,57 +117,39 @@ namespace Microsoft.DotNet.Compatibility
 #if NETCOREAPP
         private Assembly ResolverForRoslyn(AssemblyLoadContext context, AssemblyName assemblyName)
         {
-            if (assemblyName.Name.StartsWith(CODE_ANALYSIS_ASSEMBLY_NAME))
-            {
-                (string requested, string extra) = GetRoslynPathsToLoad(assemblyName.Name);
-                Assembly asm = context.LoadFromAssemblyPath(requested);
-                ThrowIfVersionIsLower(assemblyName.Version, asm.GetName().Version);
-
-                // Being extra defensive but we want to avoid that we accidentally load two different versions of either
-                // of the roslyn assemblies from a different location, so let's load them both on the first request.
-                Assembly _ = context.LoadFromAssemblyPath(extra);
-
-                return asm;
-            }
-
-            return null;
+            return LoadRoslyn(assemblyName, path => context.LoadFromAssemblyPath(path));
         }
 #else
         private Assembly ResolverForRoslyn(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new(args.Name);
-            if (name.Name.StartsWith(CODE_ANALYSIS_ASSEMBLY_NAME))
-            {
-                (string requested, string extra) = GetRoslynPathsToLoad(name.Name);
-                Assembly asm = Assembly.LoadFrom(requested);
-                ThrowIfVersionIsLower(name.Version, asm.GetName().Version);
-
-                // Being extra defensive but we want to avoid that we accidentally load two different versions of either
-                // of the roslyn assemblies from a different location, so let's load them both on the first request.
-                Assembly _ = Assembly.LoadFrom(extra);
-
-                return asm;
-            }
-            return null;
+            return LoadRoslyn(name, path => Assembly.LoadFrom(path));
         }
 #endif
 
-        private (string requested, string extra) GetRoslynPathsToLoad(string name)
+        private Assembly LoadRoslyn(AssemblyName name, Func<string, Assembly> loadFromPath)
         {
-            string requested = Path.Combine(RoslynAssembliesPath, $"{name}.dll");
-            string extra = name == CODE_ANALYSIS_ASSEMBLY_NAME ?
-                Path.Combine(RoslynAssembliesPath, $"{CODE_ANALYSIS_CSHARP_ASSEMBLY_NAME}.dll") :
-                Path.Combine(RoslynAssembliesPath, $"{CODE_ANALYSIS_ASSEMBLY_NAME}.dll");
-
-            return (requested, extra);
-        }
-
-        private static void ThrowIfVersionIsLower(Version expected, Version actual)
-        {
-            if (actual < expected)
+            const string codeAnalysisName = "Microsoft.CodeAnalysis";
+            const string codeAnalysisCsharpName = "Microsoft.CodeAnalysis.CSharp";
+            if (name.Name == codeAnalysisName || name.Name == codeAnalysisCsharpName)
             {
-                throw new Exception(string.Format(Resources.UpdateSdkVersion, actual, expected));
+                Assembly asm = loadFromPath(Path.Combine(RoslynAssembliesPath, $"{name.Name}.dll"));
+                Version resolvedVersion = asm.GetName().Version;
+                if (resolvedVersion < name.Version)
+                {
+                    throw new Exception(string.Format(Resources.UpdateSdkVersion, resolvedVersion, name.Version));
+                }
+
+                // Being extra defensive but we want to avoid that we accidentally load two different versions of either
+                // of the roslyn assemblies from a different location, so let's load them both on the first request.
+                Assembly _ = name.Name == codeAnalysisName ?
+                    loadFromPath(Path.Combine(RoslynAssembliesPath, $"{codeAnalysisCsharpName}.dll")) :
+                    loadFromPath(Path.Combine(RoslynAssembliesPath, $"{codeAnalysisName}.dll"));
+
+                return asm;
             }
+
+            return null;
         }
     }
 }
