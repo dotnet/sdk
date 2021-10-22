@@ -6,6 +6,7 @@ Subject: [PATCH] Restore building all TFMs for source-build
 Required for omnisharp, nuget-client, templating
 
 Background Issue: https://github.com/dotnet/source-build/issues/2542
+Patch removal issue: https://github.com/dotnet/source-build/issues/2556
 ---
  src/Directory.Build.props | 3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
