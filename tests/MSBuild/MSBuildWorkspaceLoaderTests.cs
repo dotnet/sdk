@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             {
                 if (ignoredDiagnostics is not null)
                 {
-                    TestOutputHelper.WriteLine($"Ignoring compiler diagnostics: {string.Join(", ", ignoredDiagnostics)}");
+                    TestOutputHelper.WriteLine($"Ignoring compiler diagnostics: \"{string.Join("\", \"", ignoredDiagnostics)}\"");
                 }
 
                 // Clean up previous run
@@ -126,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 
             // Unnecessary using directives are reported with a severty of Hidden
             var diagnostics = compilation.GetDiagnostics()
-                .Where(diagnostic => diagnostic.Severity > DiagnosticSeverity.Hidden && !ignoredDiagnostics.Contains(diagnostic.Id));
+                .Where(diagnostic => diagnostic.Severity > DiagnosticSeverity.Hidden && ignoredDiagnostics?.Contains(diagnostic.Id) != true);
 
             Assert.Empty(diagnostics);
         }
