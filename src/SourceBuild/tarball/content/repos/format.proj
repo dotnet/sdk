@@ -18,6 +18,8 @@
 
       Pick an arbitrary representative package to pass in as MicrosoftExtensionsVersion so it uses
       the source-built version from the PVP.
+
+      See https://github.com/dotnet/format/issues/1400
     -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftExtensionsVersion" Version="%24(MicrosoftExtensionsDependencyInjectionVersion)" />
   </ItemGroup>
