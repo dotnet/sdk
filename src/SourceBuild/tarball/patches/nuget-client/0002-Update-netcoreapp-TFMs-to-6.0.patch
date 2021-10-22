@@ -96,7 +96,7 @@ index bbc5ba480..be230f29b 100644
    </ItemGroup>
  
 -  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0' ">
      <PackageReference Include="System.Security.Cryptography.ProtectedData" />
    </ItemGroup>
  
@@ -121,7 +121,7 @@ index dfbfcaa8d..bfca46bec 100644
    </ItemGroup>
  
 -  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0' ">
      <PackageReference Include="System.ComponentModel.Composition" />
    </ItemGroup>
  
