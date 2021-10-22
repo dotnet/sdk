@@ -26,7 +26,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
+    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=120000
       displayName: Build and Test
     - task: PublishTestResults@2
       inputs:
@@ -39,7 +39,7 @@ jobs:
       displayName: Publish Workspace Loader Projects
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
-        ArtifactName: 'Workspace Loader Projects'
+        ArtifactName: '$(_os) $(_configuration) - Workspace Loader Projects'
       continueOnError: true
       condition: not(succeeded())
     - task: PublishBuildArtifacts@1
@@ -64,7 +64,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000
       displayName: Build and Test
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results
@@ -78,7 +78,7 @@ jobs:
       displayName: Publish Workspace Loader Projects
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
-        ArtifactName: 'Workspace Loader Projects'
+        ArtifactName: '$(_os) $(_configuration) - Workspace Loader Projects'
       continueOnError: true
       condition: not(succeeded())
     - task: PublishBuildArtifacts@1
@@ -104,7 +104,7 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 10
   steps:
-    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000 /p:TestRunnerAdditionalArguments="-verbose"
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=120000
       displayName: Build and Test
     - task: PublishTestResults@2
       displayName: Publish xUnit Test Results
@@ -118,7 +118,7 @@ jobs:
       displayName: Publish Workspace Loader Projects
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
-        ArtifactName: 'Workspace Loader Projects'
+        ArtifactName: 'Spanish $(_os) $(_configuration) - Workspace Loader Projects'
       continueOnError: true
       condition: not(succeeded())
     - task: PublishBuildArtifacts@1
