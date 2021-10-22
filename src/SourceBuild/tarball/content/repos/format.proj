@@ -10,22 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--
-      dotnet/format has a single property MicrosoftExtensionsVersion that controls the version of
-      all packages like 'Microsoft.Extensions.*'. But, there is no package called
-      "Microsoft.Extensions", so the source-built version isn't used and dotnet/format downloads an
-      old version that comes from SBRP and fails at runtime, when you try to use dotnet-format.
-
-      Pick an arbitrary representative package to pass in as MicrosoftExtensionsVersion so it uses
-      the source-built version from the PVP.
-
-      See https://github.com/dotnet/format/issues/1400
-    -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftExtensionsVersion" Version="%24(MicrosoftExtensionsDependencyInjectionVersion)" />
-  </ItemGroup>
-
-
-  <ItemGroup>
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="source-build" />

@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Fri, 22 Oct 2021 13:26:33 -0500
+Subject: [PATCH] Fix MicrosoftExtensionsVersion
+
+Move it to eng/Versions.props to make it overridable, and rename it to match an actual package ID.
+
+See https://github.com/dotnet/format/issues/1400
+---
+ Directory.Packages.props | 7 +++----
+ eng/Versions.props       | 1 +
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 6b628c2..9b579ea 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -2,7 +2,6 @@
+   <!-- <Import Project="eng\Versions.props" /> -->
+ 
+   <PropertyGroup>
+-    <MicrosoftExtensionsVersion>5.0.0</MicrosoftExtensionsVersion>
+     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
+     <NuGetVersion>6.0.0-preview.4.221</NuGetVersion>
+   </PropertyGroup>
+@@ -25,9 +24,9 @@
+     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
+-    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsVersion)" />
+-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
++    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
++    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
++    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+     <PackageVersion Include="NuGet.Common" Version="$(NuGetVersion)" />
+     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetVersion)" />
+     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
+diff --git a/eng/Versions.props b/eng/Versions.props
+index b1990aa..f6ddbbd 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -15,6 +15,7 @@
+   <PropertyGroup>
+     <MicrosoftBuildVersion>16.11.0</MicrosoftBuildVersion>
+     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.2</MicrosoftCodeAnalysisAnalyzersVersion>
++    <MicrosoftExtensionsDependencyInjectionVersion>5.0.0</MicrosoftExtensionsDependencyInjectionVersion>
+     <!-- Dependencies from https://github.com/dotnet/roslyn -->
+     <MicrosoftNETCoreCompilersPackageVersion>4.0.0-6.21515.3</MicrosoftNETCoreCompilersPackageVersion>
+     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
