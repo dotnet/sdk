@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     public abstract partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
-        private const string RuleId = "CA1850";
+        private const string RuleId = "CA1851";
 
         private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
