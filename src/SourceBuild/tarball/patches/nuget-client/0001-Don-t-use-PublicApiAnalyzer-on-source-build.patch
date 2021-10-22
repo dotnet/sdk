@@ -1,16 +1,17 @@
-From 198d70708016e5406e0d525567ca58962e222399 Mon Sep 17 00:00:00 2001
+From 335f32e48fd5604cdb1340ec04d6503a3e43d783 Mon Sep 17 00:00:00 2001
 From: Michael Simons <msimons@microsoft.com>
 Date: Tue, 17 Aug 2021 21:09:35 +0000
-Subject: [PATCH 1/8] Don't use PublicApiAnalyzer on source-build
+Subject: [PATCH] Don't use PublicApiAnalyzer on source-build
 
 CSC : warning AD0001: Analyzer 'Microsoft.CodeAnalysis.PublicApiAnalyzers.DeclarePublicApiAnalyzer' threw an exception of type 'System.NullReferenceException' with message 'Object reference not set to an instance of an object.'.
 CSC : error CS2001: Source file '/repos/installer2/artifacts/tarball/src/nuget-client.7363366401b43f4ea250394db8dad3707e9a9636/src/NuGet.Core/NuGet.Common/PublicAPI/net6.0/PublicAPI.Shipped.txt' could not be found.
+
 ---
  build/common.targets | 5 +++++
  1 file changed, 5 insertions(+)
 
 diff --git a/build/common.targets b/build/common.targets
-index 7a353ebf8..6fd5bd260 100644
+index 2c387f576..cf5a70c62 100644
 --- a/build/common.targets
 +++ b/build/common.targets
 @@ -65,6 +65,11 @@
@@ -26,5 +27,5 @@ index 7a353ebf8..6fd5bd260 100644
    <PropertyGroup Condition=" '$(IsBuildOnlyXPLATProjects)' != 'true' and '$(PackProject)' == 'true' ">
      <UsePublicApiAnalyzer Condition=" '$(UsePublicApiAnalyzer)' == '' " >true</UsePublicApiAnalyzer>
 -- 
-2.31.1
+2.29.2
 

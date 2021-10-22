@@ -1,7 +1,7 @@
-From 4af707e198a2531f45ae56566cb49fd796070c59 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Chris Rummel <crummel@microsoft.com>
 Date: Wed, 21 Jul 2021 17:33:03 -0500
-Subject: [PATCH 8/8] Update Microsoft.Extensions.CommandLineUtils reference
+Subject: [PATCH] Update Microsoft.Extensions.CommandLineUtils reference
 
 Microsoft.Extensions.CommandLineUtils is obsolete and no longer being built. Because of this it can't be source-built.
 Microsoft.Extensions.CommandLineUtils.Sources is handled as a text-only SBRP.
@@ -11,7 +11,7 @@ Microsoft.Extensions.CommandLineUtils.Sources is handled as a text-only SBRP.
  2 files changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/build/packages.targets b/build/packages.targets
-index ab0064b66..534f26ae3 100644
+index 614a0ca68..f6be9619e 100644
 --- a/build/packages.targets
 +++ b/build/packages.targets
 @@ -8,6 +8,7 @@
@@ -22,7 +22,7 @@ index ab0064b66..534f26ae3 100644
      </PropertyGroup>
  
      <!-- Test and package versions -->
-@@ -37,7 +38,7 @@
+@@ -31,7 +32,7 @@
          <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
          <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
          <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
@@ -44,6 +44,3 @@ index 21015c00a..e306cdee4 100644
      <PackageReference Include="System.Diagnostics.Debug" />
    </ItemGroup>
  
--- 
-2.31.1
-

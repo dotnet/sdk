@@ -1,7 +1,7 @@
-From 2df1980c2c657c364bf86f35830396f9d1b6e5c9 Mon Sep 17 00:00:00 2001
+From d3c633ad00408b2b6122b70d9a152d1ab79c8378 Mon Sep 17 00:00:00 2001
 From: Chris Rummel <crummel@microsoft.com>
 Date: Thu, 19 Aug 2021 11:01:04 -0500
-Subject: [PATCH 5/8] Upgrade to .NET 6 SDK.
+Subject: [PATCH 2/2] Upgrade to .NET 6 SDK.
 
 ---
  .../NuGet.Commands/SignCommand/CertificateProvider.cs       | 4 ++--
@@ -94,10 +94,10 @@ index 7c9595268..1ca751850 100644
  #else
              object result;
 diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
-index c7bcb54bb..30d86fcc9 100644
+index 67a1726b6..0534e936e 100644
 --- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
 +++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
-@@ -113,7 +113,7 @@ internal HttpRetryHandler(IEnvironmentVariableReader environmentVariableReader)
+@@ -81,7 +81,7 @@ public class HttpRetryHandler : IHttpRetryHandler
                          headerStopwatch = new Stopwatch();
                          stopwatches.Add(headerStopwatch);
                      }
@@ -120,5 +120,5 @@ index b9ab58ce7..ebf738e52 100644
                          new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
                          out stopwatches))
 -- 
-2.31.1
+2.18.0
 
