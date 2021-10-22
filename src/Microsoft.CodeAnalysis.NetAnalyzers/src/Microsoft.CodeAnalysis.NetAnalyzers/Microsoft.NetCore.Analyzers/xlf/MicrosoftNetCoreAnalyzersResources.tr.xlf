@@ -1892,6 +1892,26 @@
         <target state="translated">Sözlük türü '{0}' için 'Values.Contains' yerine 'ContainsValue' tercih edin</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="new">Replace with 'HashData' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream', ilk bağımsız değişken olarak 'Memory&lt;Byte&gt;' alan bir 'ReadAsync' aşırı yüklemesine ve ilk bağımsız değişken olarak 'ReadOnlyMemory&lt;Byte&gt;' alan bir 'WriteAsync' aşırı yüklemesine sahip. Daha verimli olan bellek tabanlı aşırı yüklemeleri çağırmayı tercih edin.</target>

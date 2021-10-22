@@ -1892,6 +1892,26 @@
         <target state="translated">Предпочтительное использование "ContainsValue" вместо "Vаlues.Contains" для словаря типа "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="new">Replace with 'HashData' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" содержит перегрузку "ReadAsync", которая принимает в качестве первого аргумента "Memory&lt;Byte&gt;", и перегрузку "WriteAsync", которая принимает в качестве первого аргумента "ReadOnlyMemory&lt;Byte&gt;". Старайтесь использовать перегрузки на основе памяти, которые являются более эффективными.</target>

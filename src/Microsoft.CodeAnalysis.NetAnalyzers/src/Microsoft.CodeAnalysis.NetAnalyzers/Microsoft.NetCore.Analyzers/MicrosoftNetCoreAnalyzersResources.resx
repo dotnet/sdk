@@ -1716,6 +1716,18 @@
   <data name="ReplaceStringLiteralWithCharLiteralCodeActionTitle" xml:space="preserve">
     <value>Replace string literal with char literal</value>
   </data>
+  <data name="PreferHashDataOverComputeHashAnalyzerTitle" xml:space="preserve">
+    <value>Prefer static 'HashData' method over 'ComputeHash'</value>
+  </data>
+  <data name="PreferHashDataOverComputeHashAnalyzerDescription" xml:space="preserve">
+    <value>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</value>
+  </data>
+  <data name="PreferHashDataOverComputeHashAnalyzerMessage" xml:space="preserve">
+    <value>Prefer static '{0}.HashData' method over 'ComputeHash'</value>
+  </data>
+  <data name="PreferHashDataCodefixTitle" xml:space="preserve">
+    <value>Replace with 'HashData' method</value>
+  </data>
   <data name="DetectPreviewFeaturesDescription" xml:space="preserve">
     <value>An assembly has to opt into preview features before using them.</value>
   </data>

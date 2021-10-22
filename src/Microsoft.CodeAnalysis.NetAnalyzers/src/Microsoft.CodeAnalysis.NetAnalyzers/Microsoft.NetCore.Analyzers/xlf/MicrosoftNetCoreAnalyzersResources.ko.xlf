@@ -1892,6 +1892,26 @@
         <target state="translated">사전 형식 '{0}'에 대해 'Values.Contains'보다 'ContainsValue'를 우선적으로 사용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="new">Replace with 'HashData' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">'Stream'에 첫 번째 인수로 'Memory&lt;Byte&gt;'를 사용하는 'ReadAsync' 오버로드와 첫 번째 인수로 'ReadOnlyMemory&lt;Byte&gt;'를 사용하는 'WriteAsync' 오버로드가 있습니다. 더 효율적인 메모리 기반 오버로드를 호출하는 것이 좋습니다.</target>

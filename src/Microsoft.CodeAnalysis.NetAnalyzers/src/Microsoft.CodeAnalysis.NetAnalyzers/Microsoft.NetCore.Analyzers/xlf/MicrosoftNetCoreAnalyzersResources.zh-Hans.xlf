@@ -1892,6 +1892,26 @@
         <target state="translated">对于字典类型“{0}”，首选 “ContainsValue” 而不是 “Values.Contains”。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="new">Replace with 'HashData' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>
         <target state="translated">"Stream" 有一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "ReadAsync" 重载和一个将 "Memory&lt;Byte&gt;" 作为第一个参数的 "WriteAsync" 重载。首选调用基于内存的重载，它们的效率更高。</target>
