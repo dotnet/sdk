@@ -3,18 +3,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.PackageValidation;
 using Microsoft.NET.Build.Tasks;
 using NuGet.RuntimeModel;
+#if NETCOREAPP
+using System.Runtime.Loader;
+#endif
 
 namespace Microsoft.DotNet.Compatibility
 {
     public class ValidatePackage : TaskBase
     {
+        private const string CODE_ANALYSIS_ASSEMBLY_NAME = "Microsoft.CodeAnalysis";
+        private const string CODE_ANALYSIS_CSHARP_ASSEMBLY_NAME = "Microsoft.CodeAnalysis.CSharp";
+
         [Required]
         public string PackageTargetPath { get; set; }
 
@@ -43,14 +48,23 @@ namespace Microsoft.DotNet.Compatibility
 
         public override bool Execute()
         {
+#if NETCOREAPP
+            AssemblyLoadContext currentContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
+            currentContext.Resolving += ResolverForRoslyn;
+#else
             AppDomain.CurrentDomain.AssemblyResolve += ResolverForRoslyn;
+#endif
             try
             {
                 return base.Execute();
             }
             finally
             {
+#if NETCOREAPP
+                currentContext.Resolving -= ResolverForRoslyn;
+#else
                 AppDomain.CurrentDomain.AssemblyResolve -= ResolverForRoslyn;
+#endif
             }
         }
 
@@ -103,20 +117,60 @@ namespace Microsoft.DotNet.Compatibility
             }
         }
 
+#if NETCOREAPP
+        private Assembly ResolverForRoslyn(AssemblyLoadContext context, AssemblyName assemblyName)
+        {
+            if (assemblyName.Name.StartsWith(CODE_ANALYSIS_ASSEMBLY_NAME))
+            {
+                (string requested, string extra) = GetRoslynPathsToLoad(assemblyName.Name);
+                Assembly asm = context.LoadFromAssemblyPath(requested);
+                ThrowIfVersionIsLower(assemblyName.Version, asm.GetName().Version);
+
+                // Being extra defensive but we want to avoid that we accidentally load two different versions of either
+                // of the roslyn assemblies from a different location, so let's load them both on the first request.
+                Assembly _ = context.LoadFromAssemblyPath(extra);
+
+                return asm;
+            }
+
+            return null;
+        }
+#else
         private Assembly ResolverForRoslyn(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new(args.Name);
-            if (name.Name == "Microsoft.CodeAnalysis" || name.Name == "Microsoft.CodeAnalysis.CSharp")
+            if (name.Name.StartsWith(CODE_ANALYSIS_ASSEMBLY_NAME))
             {
-                Assembly asm = Assembly.LoadFrom(Path.Combine(RoslynAssembliesPath, $"{name.Name}.dll"));
-                Version version = asm.GetName().Version;
-                if (version < name.Version)
-                {
-                    throw new Exception(string.Format(Resources.UpdateSdkVersion, version, name.Version));
-                }
+                (string requested, string extra) = GetRoslynPathsToLoad(name.Name);
+                Assembly asm = Assembly.LoadFrom(requested);
+                ThrowIfVersionIsLower(name.Version, asm.GetName().Version);
+
+                // Being extra defensive but we want to avoid that we accidentally load two different versions of either
+                // of the roslyn assemblies from a different location, so let's load them both on the first request.
+                Assembly _ = Assembly.LoadFrom(extra);
+
                 return asm;
             }
             return null;
+        }
+#endif
+
+        private (string requested, string extra) GetRoslynPathsToLoad(string name)
+        {
+            string requested = Path.Combine(RoslynAssembliesPath, $"{name}.dll");
+            string extra = name == CODE_ANALYSIS_ASSEMBLY_NAME ?
+                Path.Combine(RoslynAssembliesPath, $"{CODE_ANALYSIS_CSHARP_ASSEMBLY_NAME}.dll") :
+                Path.Combine(RoslynAssembliesPath, $"{CODE_ANALYSIS_ASSEMBLY_NAME}.dll");
+
+            return (requested, extra);
+        }
+
+        private static void ThrowIfVersionIsLower(Version expected, Version actual)
+        {
+            if (actual < expected)
+            {
+                throw new Exception(string.Format(Resources.UpdateSdkVersion, actual, expected));
+            }
         }
     }
 }
