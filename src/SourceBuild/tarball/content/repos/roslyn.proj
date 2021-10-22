@@ -30,6 +30,10 @@
       need to support VS.
     -->
     <ExtraPackageVersionPropsPackageInfo Include="SourceGeneratorMicrosoftCodeAnalysisVersion" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemCollectionsImmutableVersion" Version="%24(SystemCollectionsImmutableVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemReflectionMetadataVersion" Version="%24(SystemReflectionMetadataVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemRuntimeCompilerServicesUnsafeVersion" Version="%24(SystemRuntimeCompilerServicesUnsafeVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemTextEncodingCodePagesVersion" Version="%24(SystemTextEncodingCodePagesVersion)" />
   </ItemGroup>
 
   <ItemGroup>
