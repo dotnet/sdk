@@ -1,7 +1,9 @@
-From aed379060eb37815d1eebd1cb5232d5a0cc931bc Mon Sep 17 00:00:00 2001
+From de74c87d3f9364be1f3bdba43844c8de92704757 Mon Sep 17 00:00:00 2001
 From: Michael Simons <msimons@microsoft.com>
 Date: Tue, 17 Aug 2021 21:13:07 +0000
 Subject: [PATCH 2/8] Update netcoreapp TFMs to 6.0
+
+Patch removal is tracked by https://github.com/dotnet/source-build/issues/2555.
 
 ---
  build/common.project.props                             | 10 +++++-----
@@ -80,7 +82,7 @@ index e30a079eb..c2b8fe241 100644
      <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
      <PackProject>true</PackProject>
 diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
-index bbc5ba480..be230f29b 100644
+index bbc5ba480..18b597c74 100644
 --- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
 +++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
 @@ -6,7 +6,6 @@
@@ -113,7 +115,7 @@ index 65f261dc1..f29551741 100644
      <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
      <PackProject>true</PackProject>
 diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
-index dfbfcaa8d..bfca46bec 100644
+index dfbfcaa8d..a6bb51d6b 100644
 --- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
 +++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
 @@ -35,7 +35,7 @@

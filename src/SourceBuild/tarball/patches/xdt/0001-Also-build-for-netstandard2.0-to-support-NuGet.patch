@@ -3,6 +3,8 @@ From: Chris Rummel <crummel@microsoft.com>
 Date: Thu, 21 Oct 2021 16:29:32 -0500
 Subject: [PATCH] Also build for netstandard2.0 to support NuGet.
 
+Patch removal is tracked by https://github.com/dotnet/source-build/issues/2557.
+
 ---
  .../Microsoft.Web.XmlTransform.csproj                           | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
