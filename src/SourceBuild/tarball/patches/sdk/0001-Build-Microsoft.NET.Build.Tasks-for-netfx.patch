@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Eric Erhardt <eric.erhardt@microsoft.com>
+Date: Fri, 22 Oct 2021 20:48:25 +0000
+Subject: [PATCH] Build Microsoft.NET.Build.Tasks for netfx
+
+Required for omnisharp to work with a source-built .NET SDK.
+
+Patch removal issue: https://github.com/dotnet/sdk/issues/22281
+---
+ .../Microsoft.DotNet.Compatibility.csproj                  | 1 -
+ .../Microsoft.DotNet.PackageValidation.csproj              | 7 ++++++-
+ .../Microsoft.NET.Build.Extensions.Tasks.csproj            | 1 -
+ .../Microsoft.NET.Build.Tasks.csproj                       | 1 -
+ 4 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj b/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
+index 92624be845..f9f8e46329 100644
+--- a/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
++++ b/src/Compatibility/Microsoft.DotNet.Compatibility/Microsoft.DotNet.Compatibility.csproj
+@@ -2,7 +2,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net6.0;net472</TargetFrameworks>
+-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+     <IsShippingPackage>true</IsShippingPackage>
+     <StrongNameKeyId>Open</StrongNameKeyId>
+diff --git a/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj b/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
+index 7a8b648652..4f820adb72 100644
+--- a/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
++++ b/src/Compatibility/Microsoft.DotNet.PackageValidation/Microsoft.DotNet.PackageValidation.csproj
+@@ -2,7 +2,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net6.0;net472</TargetFrameworks>
+-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
+     <StrongNameKeyId>Open</StrongNameKeyId>
+   </PropertyGroup>
+ 
+@@ -15,6 +14,12 @@
+     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
+   </ItemGroup>
+ 
++  <!-- This is working around a source-build issue with NuGet. Since NuGet isn't building for netfx in source-build, this reference isn't getting set automatically -->
++  <!-- This can be removed once NuGet builds for netfx in source-build. -->
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++    <Reference Include="System.IO.Compression" />
++  </ItemGroup>
++
+   <ItemGroup>
+     <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
+   </ItemGroup>
+diff --git a/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
+index 13ada82225..280fbdc83e 100644
+--- a/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj
+@@ -16,7 +16,6 @@
+     <OutputType>Library</OutputType>
+     <RootNamespace>Microsoft.NET.Build.Tasks</RootNamespace>
+     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+diff --git a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+index 604ef43bf2..bce39c67d4 100644
+--- a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+@@ -13,7 +13,6 @@
+     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
+     <OutputType>Library</OutputType>
+     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">$(SdkTargetFramework)</TargetFrameworks>
+     <Nullable>annotations</Nullable>
+   </PropertyGroup>
+ 
