@@ -3,13 +3,18 @@ From: Davis Goodin <dagood@microsoft.com>
 Date: Fri, 22 Oct 2021 13:26:33 -0500
 Subject: [PATCH] Fix MicrosoftExtensionsVersion
 
-Move it to eng/Versions.props to make it overridable, and rename it to match an actual package ID.
+Move it to eng/Versions.props to make it overridable, and rename it to match an
+actual package ID.
+
+Update paramater nullability in src/Logging/SimpleConsoleLogger.cs to be
+source-compatible with the 6.0 version of these packages.
 
 See https://github.com/dotnet/format/issues/1400
 ---
- Directory.Packages.props | 7 +++----
- eng/Versions.props       | 1 +
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ Directory.Packages.props           | 7 +++----
+ eng/Versions.props                 | 1 +
+ src/Logging/SimpleConsoleLogger.cs | 2 +-
+ 3 files changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Directory.Packages.props b/Directory.Packages.props
 index 6b628c2..9b579ea 100644
@@ -48,3 +53,16 @@ index b1990aa..f6ddbbd 100644
      <!-- Dependencies from https://github.com/dotnet/roslyn -->
      <MicrosoftNETCoreCompilersPackageVersion>4.0.0-6.21515.3</MicrosoftNETCoreCompilersPackageVersion>
      <!-- Dependencies from https://github.com/dotnet/command-line-api -->
+diff --git a/src/Logging/SimpleConsoleLogger.cs b/src/Logging/SimpleConsoleLogger.cs
+index c361f84..fd8015c 100644
+--- a/src/Logging/SimpleConsoleLogger.cs
++++ b/src/Logging/SimpleConsoleLogger.cs
+@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
+             _minimalErrorLevel = minimalErrorLevel;
+         }
+ 
+-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
++        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+         {
+             if (!IsEnabled(logLevel))
+             {
