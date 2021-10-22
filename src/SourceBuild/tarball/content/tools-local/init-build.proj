@@ -46,8 +46,16 @@
           WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)"
           Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
 
-    <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltPrebuiltsTarballName).*.tar.gz"
-          WorkingDirectory="$(PrebuiltPackagesPath)" />
+    <!--
+      Check for a prebuilt dependency tarball and extract if exists. If there isn't one, we expect
+      the build to be working without prebuilts.
+    -->
+    <ItemGroup>
+      <SourceBuiltPrebuiltsTarballFile Include="$(ExternalTarballsDir)$(SourceBuiltPrebuiltsTarballName).*.tar.gz" />
+    </ItemGroup>
+    <Exec Command="tar -xzf %(SourceBuiltPrebuiltsTarballFile.FullPath)"
+          WorkingDirectory="$(PrebuiltPackagesPath)"
+          Condition="'@(SourceBuiltPrebuiltsTarballFile)' != ''" />
 
     <!-- Move SBRP packages to reference packages location -->
     <MakeDir Directories="$(ReferencePackagesDir)" />
