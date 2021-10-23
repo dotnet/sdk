@@ -1,0 +1,43 @@
+From 7f35d623761748721496abcbae2d6f11d4cf1ca8 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Fri, 22 Oct 2021 21:12:51 -0500
+Subject: [PATCH] Re-enable fullfx TFM in NuGet.
+
+---
+ build/common.project.props                                     | 3 +--
+ .../NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj       | 2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/build/common.project.props b/build/common.project.props
+index 000702f58..b29968eaf 100644
+--- a/build/common.project.props
++++ b/build/common.project.props
+@@ -18,11 +18,10 @@
+     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
+     <NetStandardVersion>netstandard2.0;net6.0</NetStandardVersion>
+     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
+-    <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true' OR '$(IsXPlat)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
++    <TargetFrameworksExe Condition="'$(IsXPlat)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
+     <TargetFrameworksExeForSigning>$(TargetFrameworksExe);net6.0</TargetFrameworksExeForSigning>
+     <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);net6.0</TargetFrameworksExeForSigning>
+     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+-    <TargetFrameworksLibrary Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
+     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);netcoreapp5.0</TargetFrameworksLibraryForCrossVerificationTests>
+     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
+diff --git a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+index f4d083e52..c4eb79b4c 100644
+--- a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
++++ b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+@@ -176,7 +176,7 @@
+     <PropertyGroup>
+       <!-- Build from source can't use ILMerge. -->
+       <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
+-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">Desktop/</PackagePathDir>
++      <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)'">Desktop/</PackagePathDir>
+       <PackagePathDir Condition="'$(TargetFramework)' == 'netstandard2.0'">CoreCLR/</PackagePathDir>
+     </PropertyGroup>
+     <ItemGroup>
+-- 
+2.31.1
+
