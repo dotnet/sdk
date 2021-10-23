@@ -3,14 +3,29 @@ From: Chris Rummel <crummel@microsoft.com>
 Date: Wed, 20 Oct 2021 15:19:29 -0500
 Subject: [PATCH] Restore building all TFMs for source-build
 
-Required for omnisharp, nuget-client, templating
+Required for omnisharp, nuget-client, templating, sdk
 
 Background Issue: https://github.com/dotnet/source-build/issues/2542
 Patch removal issue: https://github.com/dotnet/source-build/issues/2556
 ---
- src/Directory.Build.props | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ src/Build/Microsoft.Build.csproj | 3 +--
+ src/Directory.Build.props        | 3 +--
+ 2 files changed, 2 insertions(+), 4 deletions(-)
 
+diff --git a/src/Build/Microsoft.Build.csproj b/src/Build/Microsoft.Build.csproj
+index f75408633..8dc86355a 100644
+--- a/src/Build/Microsoft.Build.csproj
++++ b/src/Build/Microsoft.Build.csproj
+@@ -4,8 +4,7 @@
+   <Import Project="..\Shared\DebuggingSources.proj" />
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net6.0</TargetFrameworks>
+-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);net6.0</TargetFrameworks>
++    <TargetFrameworks>$(FullFrameworkTFM);net6.0</TargetFrameworks>
+     <TargetFrameworks Condition="'$(MonoBuild)'=='true'">$(RuntimeOutputTargetFrameworks)</TargetFrameworks>
+     <RootNamespace>Microsoft.Build</RootNamespace>
+     <AssemblyName>Microsoft.Build</AssemblyName>
 diff --git a/src/Directory.Build.props b/src/Directory.Build.props
 index b0e233194..7e0c7d8c8 100644
 --- a/src/Directory.Build.props
