@@ -13,11 +13,11 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
         Protected Overrides Function GetFieldDeclarationNode(node As SyntaxNode) As SyntaxNode
             Dim fieldNode = node
-            While fieldNode IsNot Nothing AndAlso fieldNode.Kind() <> SyntaxKind.FieldDeclaration
+            While fieldNode IsNot Nothing AndAlso Not fieldNode.IsKind(SyntaxKind.FieldDeclaration)
                 fieldNode = fieldNode.Parent
             End While
 
-            Return If(fieldNode?.Kind() = SyntaxKind.FieldDeclaration, fieldNode, Nothing)
+            Return If(fieldNode.IsKind(SyntaxKind.FieldDeclaration), fieldNode, Nothing)
         End Function
     End Class
 End Namespace

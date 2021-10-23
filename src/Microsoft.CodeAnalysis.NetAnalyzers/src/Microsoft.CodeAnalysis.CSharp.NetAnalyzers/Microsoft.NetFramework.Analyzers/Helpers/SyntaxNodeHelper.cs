@@ -297,7 +297,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
         public override bool IsObjectCreationExpressionUnderFieldDeclaration([NotNullWhen(returnValue: true)] SyntaxNode? node)
         {
             return node != null &&
-                   node.Kind() == SyntaxKind.ObjectCreationExpression &&
+                   node.IsKind(SyntaxKind.ObjectCreationExpression) &&
                    node.AncestorsAndSelf().OfType<FieldDeclarationSyntax>().FirstOrDefault() != null;
         }
 
