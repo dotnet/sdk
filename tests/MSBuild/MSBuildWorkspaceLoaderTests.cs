@@ -30,10 +30,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [MSBuildTheory(typeof(WindowsOnly))]
         [InlineData("winforms")]
         [InlineData("winformslib")]
-        [InlineData("wpf")]
+        // Skip="https://github.com/dotnet/format/issues/1402"
+        // [InlineData("wpf")]
+        // [InlineData("wpfusercontrollib")]
         [InlineData("wpflib")]
         [InlineData("wpfcustomcontrollib")]
-        [InlineData("wpfusercontrollib")]
         public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName)
         {
             await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp);
@@ -47,7 +48,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [InlineData("mvc")]
         [InlineData("angular")]
         [InlineData("react")]
-        [InlineData("reactredux")]
+        // Skip="https://github.com/dotnet/format/issues/1402"
+        // [InlineData("reactredux")]
         [InlineData("blazorserver")]
         [InlineData("blazorwasm")]
         [InlineData("classlib")]
