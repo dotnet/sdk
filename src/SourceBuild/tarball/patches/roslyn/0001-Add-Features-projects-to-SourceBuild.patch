@@ -1,4 +1,4 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From d1fd2aa5e216e49f9da38b0000d006184c540ff2 Mon Sep 17 00:00:00 2001
 From: Joey Robichaud <jorobich@microsoft.com>
 Date: Wed, 20 Oct 2021 13:40:38 -0700
 Subject: [PATCH] Add Features projects to SourceBuild
@@ -10,22 +10,20 @@ Subject: [PATCH] Add Features projects to SourceBuild
  .../Microsoft.Build.Tasks.CodeAnalysis.csproj   |  6 +++---
  ...ft.Build.Tasks.CodeAnalysis.UnitTests.csproj |  6 +++---
  .../Extension/Roslyn.Compilers.Extension.csproj |  6 +++---
- ...icrosoft.CodeAnalysis.CSharp.Features.csproj |  5 +++++
- .../Microsoft.CodeAnalysis.Features.csproj      | 10 ++++++++--
- .../LanguageServer/Directory.Build.props        |  6 ++++++
- src/Features/Lsif/Directory.Build.props         |  6 ++++++
- ...oft.CodeAnalysis.VisualBasic.Features.vbproj |  4 ++++
- src/NuGet/VisualStudio/Directory.Build.props    |  6 ++++++
+ .../Microsoft.CodeAnalysis.Features.csproj      |  2 +-
+ .../{ => LanguageServer}/Directory.Build.props  |  0
+ src/Features/{ => Lsif}/Directory.Build.props   |  0
+ .../VisualStudio}/Directory.Build.props         |  0
  src/Tools/AnalyzerRunner/AnalyzerRunner.csproj  |  2 +-
  src/Tools/BuildBoss/ProjectCheckerUtil.cs       |  7 ++++---
  .../IdeCoreBenchmarks/IdeCoreBenchmarks.csproj  |  2 +-
  ...osoft.CodeAnalysis.Workspaces.MSBuild.csproj |  8 +++-----
  ...Analysis.Workspaces.MSBuild.UnitTests.csproj |  4 ++--
- 17 files changed, 68 insertions(+), 29 deletions(-)
- rename src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
- create mode 100644 src/Features/LanguageServer/Directory.Build.props
- create mode 100644 src/Features/Lsif/Directory.Build.props
- create mode 100644 src/NuGet/VisualStudio/Directory.Build.props
+ 15 files changed, 34 insertions(+), 28 deletions(-)
+ copy src/{Features => CodeStyle/Core/Tests}/Directory.Build.props (100%)
+ copy src/Features/{ => LanguageServer}/Directory.Build.props (100%)
+ copy src/Features/{ => Lsif}/Directory.Build.props (100%)
+ rename src/{Features => NuGet/VisualStudio}/Directory.Build.props (100%)
 
 diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
 index 182f8a9cdb1..92e316a4744 100644
@@ -41,7 +39,7 @@ index 182f8a9cdb1..92e316a4744 100644
    </Target>
  
 diff --git a/eng/Versions.props b/eng/Versions.props
-index e835ef04d52..34cab5c4755 100644
+index 679e77c5e19..96b3981a12c 100644
 --- a/eng/Versions.props
 +++ b/eng/Versions.props
 @@ -38,7 +38,7 @@
@@ -78,8 +76,8 @@ index e835ef04d52..34cab5c4755 100644
      <!--
 diff --git a/src/Features/Directory.Build.props b/src/CodeStyle/Core/Tests/Directory.Build.props
 similarity index 100%
-rename from src/Features/Directory.Build.props
-rename to src/CodeStyle/Core/Tests/Directory.Build.props
+copy from src/Features/Directory.Build.props
+copy to src/CodeStyle/Core/Tests/Directory.Build.props
 diff --git a/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj b/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj
 index 8c6bb122fb2..cc743d09032 100644
 --- a/src/Compilers/Core/MSBuildTask/Microsoft.Build.Tasks.CodeAnalysis.csproj
@@ -138,24 +136,8 @@ index 3644afb8c2f..ed4259ec61b 100644
      <PackageReference Include="Microsoft.VisualStudio.SDK.Analyzers" Version="$(MicrosoftVisualStudioSDKAnalyzersVersion)" PrivateAssets="all" />
      <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(MicrosoftVisualStudioThreadingVersion)" />
      <PackageReference Include="Microsoft.VisualStudio.Validation" Version="$(MicrosoftVisualStudioValidationVersion)" />
-diff --git a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj b/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
-index a82a820316c..9dac307c856 100644
---- a/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
-+++ b/src/Features/CSharp/Portable/Microsoft.CodeAnalysis.CSharp.Features.csproj
-@@ -60,6 +60,11 @@
-       <Link>InternalUtilities\LambdaUtilities.cs</Link>
-     </Compile>
-   </ItemGroup>
-+  <ItemGroup>
-+    <Compile Remove="EditAndContinue\**\*.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Include="EditAndContinue\BreakpointSpans.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Include="EditAndContinue\SyntaxUtilities.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+  </ItemGroup>
-   <ItemGroup>
-     <EmbeddedResource Update="CSharpFeaturesResources.resx" GenerateSource="true" />
-   </ItemGroup>
 diff --git a/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj b/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
-index 1af351cc77b..943443c55bc 100644
+index 1af351cc77b..8ecad0bac56 100644
 --- a/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
 +++ b/src/Features/Core/Portable/Microsoft.CodeAnalysis.Features.csproj
 @@ -7,7 +7,7 @@
@@ -167,72 +149,18 @@ index 1af351cc77b..943443c55bc 100644
      <!-- NuGet -->
      <IsPackable>true</IsPackable>
      <PackageDescription>
-@@ -129,7 +129,13 @@
-     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
-     <PackageReference Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
-     <PackageReference Include="Microsoft.CodeAnalysis.AnalyzerUtilities" Version="$(MicrosoftCodeAnalysisAnalyzerUtilitiesVersion)" />
--    <PackageReference Include="Microsoft.VisualStudio.Debugger.Contracts" Version="$(MicrosoftVisualStudioDebuggerContractsVersion)" />
-+    <PackageReference Include="Microsoft.VisualStudio.Debugger.Contracts" Version="$(MicrosoftVisualStudioDebuggerContractsVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-+  </ItemGroup>
-+  <ItemGroup>
-+    <Compile Remove="EditAndContinue\**\*.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Include="EditAndContinue\EditAndContinueMethodDebugInfoReader.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Remove="ExternalAccess\UnitTesting\API\UnitTestingHotReloadService.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Remove="ExternalAccess\Watch\Api\WatchHotReloadService.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-   </ItemGroup>
-   <Import Project="..\..\..\Compilers\Core\AnalyzerDriver\AnalyzerDriver.projitems" Label="Shared" />
-   <Import Project="..\..\..\Dependencies\CodeAnalysis.Debugging\Microsoft.CodeAnalysis.Debugging.projitems" Label="Shared" />
-diff --git a/src/Features/LanguageServer/Directory.Build.props b/src/Features/LanguageServer/Directory.Build.props
-new file mode 100644
-index 00000000000..6eef643958f
---- /dev/null
-+++ b/src/Features/LanguageServer/Directory.Build.props
-@@ -0,0 +1,6 @@
-+<Project>
-+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-+  <PropertyGroup>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-+  </PropertyGroup>
-+</Project>
-diff --git a/src/Features/Lsif/Directory.Build.props b/src/Features/Lsif/Directory.Build.props
-new file mode 100644
-index 00000000000..6eef643958f
---- /dev/null
-+++ b/src/Features/Lsif/Directory.Build.props
-@@ -0,0 +1,6 @@
-+<Project>
-+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-+  <PropertyGroup>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-+  </PropertyGroup>
-+</Project>
-diff --git a/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj b/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
-index ac8c80c68fb..d17a5d84802 100644
---- a/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
-+++ b/src/Features/VisualBasic/Portable/Microsoft.CodeAnalysis.VisualBasic.Features.vbproj
-@@ -55,6 +55,10 @@
-       <Link>InternalUtilities\LambdaUtilities.vb</Link>
-     </Compile>
-   </ItemGroup>
-+  <ItemGroup>
-+    <Compile Remove="EditAndContinue\**\*.vb" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+    <Compile Include="EditAndContinue\BreakpointSpans.vb" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-+  </ItemGroup>
-   <ItemGroup>
-     <EmbeddedResource Update="VBFeaturesResources.resx" GenerateSource="true" Namespace="Microsoft.CodeAnalysis.VisualBasic" />
-   </ItemGroup>
-diff --git a/src/NuGet/VisualStudio/Directory.Build.props b/src/NuGet/VisualStudio/Directory.Build.props
-new file mode 100644
-index 00000000000..6eef643958f
---- /dev/null
-+++ b/src/NuGet/VisualStudio/Directory.Build.props
-@@ -0,0 +1,6 @@
-+<Project>
-+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
-+  <PropertyGroup>
-+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
-+  </PropertyGroup>
-+</Project>
+diff --git a/src/Features/Directory.Build.props b/src/Features/LanguageServer/Directory.Build.props
+similarity index 100%
+copy from src/Features/Directory.Build.props
+copy to src/Features/LanguageServer/Directory.Build.props
+diff --git a/src/Features/Directory.Build.props b/src/Features/Lsif/Directory.Build.props
+similarity index 100%
+copy from src/Features/Directory.Build.props
+copy to src/Features/Lsif/Directory.Build.props
+diff --git a/src/Features/Directory.Build.props b/src/NuGet/VisualStudio/Directory.Build.props
+similarity index 100%
+rename from src/Features/Directory.Build.props
+rename to src/NuGet/VisualStudio/Directory.Build.props
 diff --git a/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj b/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj
 index 6e1cbe46285..8ca3cbb28f0 100644
 --- a/src/Tools/AnalyzerRunner/AnalyzerRunner.csproj
@@ -332,3 +260,6 @@ index 3d0c6e993c0..06773c65e8d 100644
    </ItemGroup>
    <ItemGroup>
      <Reference Include="System.Xaml">
+-- 
+2.31.1
+
