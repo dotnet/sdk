@@ -125,11 +125,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>5.0.12-servicing.21514.7</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>5.0.12-servicing.21523.4</MicrosoftNETSdkWindowsDesktopPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <MicrosoftWindowsDesktopAppVersion>5.0.12-servicing.21514.8</MicrosoftWindowsDesktopAppVersion>
+    <MicrosoftWindowsDesktopAppVersion>5.0.12-servicing.21523.4</MicrosoftWindowsDesktopAppVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
