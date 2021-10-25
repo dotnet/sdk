@@ -90,27 +90,5 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 }
             }
         }
-
-        /// <summary>
-        /// This is for use in tests so that MSBuild is only invoked serially
-        /// </summary>
-        internal static async Task<Workspace?> LockedLoadAsync(
-            string solutionOrProjectPath,
-            WorkspaceType workspaceType,
-            string? binaryLogPath,
-            bool logWorkspaceWarnings,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
-            await Guard.WaitAsync();
-            try
-            {
-                return await LoadAsync(solutionOrProjectPath, workspaceType, binaryLogPath, logWorkspaceWarnings, logger, cancellationToken);
-            }
-            finally
-            {
-                Guard.Release();
-            }
-        }
     }
 }
