@@ -16,7 +16,7 @@ parameters:
   default: true
 
 pool:
-    name: Hosted Ubuntu 1604
+    vmImage: ubuntu-20.04
 
 steps:
 - checkout: self
