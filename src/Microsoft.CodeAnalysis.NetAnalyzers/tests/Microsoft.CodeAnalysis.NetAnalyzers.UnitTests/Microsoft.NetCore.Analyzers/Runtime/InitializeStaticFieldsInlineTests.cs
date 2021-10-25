@@ -6,10 +6,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpInitializeStaticFieldsInlineFixer>;
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicInitializeStaticFieldsInlineFixer>;
+    Microsoft.NetCore.Analyzers.Runtime.InitializeStaticFieldsInlineFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
