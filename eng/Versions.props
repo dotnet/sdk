@@ -26,5 +26,7 @@
   -->
   <PropertyGroup>
     <DiscoverEditorConfigFiles>true</DiscoverEditorConfigFiles>
+    <!-- MSBuildTheory test discovery fails from ./test.sh without this set. -->
+    <UseVSTestRunner>true</UseVSTestRunner>
   </PropertyGroup>
 </Project>

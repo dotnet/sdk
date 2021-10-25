@@ -460,7 +460,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolutionFilter_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await NuGetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
+            var restoreExitCode = await Utilities.DotNetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(

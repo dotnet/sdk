@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
+using Microsoft.CodeAnalysis.Tools.Tests.XUnit;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Xunit;
 using Xunit.Abstractions;
@@ -36,14 +37,14 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             try
             {
                 // Restore the Analyzer packages that have been added to `for_analyzer_formatter/analyzer_project/analyzer_project.csproj`
-                var exitCode = await NuGetHelper.PerformRestore(s_analyzerProjectFilePath, TestOutputHelper);
+                var exitCode = await DotNetHelper.PerformRestore(s_analyzerProjectFilePath, TestOutputHelper);
                 Assert.Equal(0, exitCode);
 
                 // Load the analyzer_project into a MSBuildWorkspace.
                 var workspacePath = Path.Combine(TestProjectsPathHelper.GetProjectsDirectory(), s_analyzerProjectFilePath);
 
                 MSBuildRegistrar.RegisterInstance();
-                var analyzerWorkspace = await MSBuildWorkspaceLoader.LockedLoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
+                var analyzerWorkspace = await MSBuildWorkspaceLoader.LoadAsync(workspacePath, WorkspaceType.Project, binaryLogPath: null, logWorkspaceWarnings: true, logger, CancellationToken.None);
 
                 TestOutputHelper.WriteLine(logger.GetLog());
 
@@ -67,7 +68,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
         private IEnumerable<AnalyzerReference> GetAnalyzerReferences(string prefix)
             => _analyzerReferencesProject.AnalyzerReferences.Where(reference => reference.Display.StartsWith(prefix));
 
-        [Fact]
+        [MSBuildFact]
         public async Task TestStyleCopBlankLineFixer_RemovesUnnecessaryBlankLines()
         {
             var analyzerReferences = GetAnalyzerReferences("StyleCop");
@@ -121,7 +122,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task TestIDisposableAnalyzer_AddsUsing()
         {
             var analyzerReferences = GetAnalyzerReferences("IDisposable");
@@ -167,7 +168,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Analyzers, analyzerReferences: analyzerReferences);
         }
 
-        [Fact]
+        [MSBuildFact]
         public async Task TestLoadingAllAnalyzers_LoadsDependenciesFromAllSearchPaths()
         {
             // Loads all analyzer references.
