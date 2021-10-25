@@ -69,13 +69,13 @@
     <ItemGroup>
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())"
+                       DestinationPath="%(BundledManifests.SdkFeatureBand)/$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())"
                        RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
                        WorkloadManifestId="%(WorkloadManifestId)"/>
                        
       <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
-                       DestinationPath="$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/localize"/>
+                       DestinationPath="%(BundledManifests.SdkFeatureBand)/$([MSBuild]::ValueOrDefault('%(WorkloadManifestId)', '').ToLower())/localize"/>
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
