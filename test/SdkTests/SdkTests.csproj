@@ -220,14 +220,14 @@
       <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     
-    <Exec Command="$(ToolRunPrefix)dotnet new tool-manifest"
+    <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet new tool-manifest"
       WorkingDirectory="$(TestLocalToolFolder)"
       EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
       
-      <InstallToolCommand>dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
+      <InstallToolCommand>$(RedistLayoutPath)dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
     </PropertyGroup>
     
@@ -265,7 +265,7 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <Exec Command="$(ToolRunPrefix)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
+    <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
           EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
   </Target>
