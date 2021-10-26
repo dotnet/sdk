@@ -158,10 +158,6 @@ static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasShortNamePa
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions.HasTypeMismatch(this Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo! templateMatchInfo) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsChoice(this Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string! author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string! baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string! classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.LanguageFilter(string! language) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.MatchesAllCriteria.get -> System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.MatchesAtLeastOneCriteria.get -> System.Func<Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo!, bool>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.NameFilter(string! name) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!

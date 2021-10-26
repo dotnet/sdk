@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Classification"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates..</returns>
-        public static Func<ITemplateInfo, MatchInfo?> ClassificationFilter(string classification)
+        public static Func<ITemplateInfo, MatchInfo?> ClassificationFilter(string? classification)
         {
             return (template) =>
             {
@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Language"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>
-        public static Func<ITemplateInfo, MatchInfo?> LanguageFilter(string language)
+        public static Func<ITemplateInfo, MatchInfo?> LanguageFilter(string? language)
         {
             return (template) =>
             {
@@ -166,7 +166,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// - adds match disposition <see cref="MatchInfo.BuiltIn.Baseline"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>
-        public static Func<ITemplateInfo, MatchInfo?> BaselineFilter(string baselineName)
+        public static Func<ITemplateInfo, MatchInfo?> BaselineFilter(string? baselineName)
         {
             return (template) =>
             {
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return null;
                 }
 
-                if (template.BaselineInfo != null && template.BaselineInfo.ContainsKey(baselineName))
+                if (template.BaselineInfo != null && template.BaselineInfo.ContainsKey(baselineName!))
                 {
                     return new MatchInfo(MatchInfo.BuiltIn.Baseline, baselineName, MatchKind.Exact);
                 }
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// - <see cref="MatchInfo.BuiltIn.Author"/> with <see cref="MatchKind.Mismatch"/> otherwise.<br/>
         /// </summary>
         /// <returns> the predicate to be used when filtering the templates.</returns>
-        public static Func<ITemplateInfo, MatchInfo?> AuthorFilter(string author)
+        public static Func<ITemplateInfo, MatchInfo?> AuthorFilter(string? author)
         {
             return (template) =>
             {
@@ -211,7 +211,7 @@ namespace Microsoft.TemplateEngine.Utils
 
                 int authorIndex = template.Author!.IndexOf(author, StringComparison.CurrentCultureIgnoreCase);
 
-                if (authorIndex == 0 && template.Author.Length == author.Length)
+                if (authorIndex == 0 && template.Author.Length == author!.Length)
                 {
                     return new MatchInfo(MatchInfo.BuiltIn.Author, author, MatchKind.Exact);
                 }
