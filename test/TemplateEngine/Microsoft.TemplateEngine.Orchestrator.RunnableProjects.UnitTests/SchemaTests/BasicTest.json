@@ -23,10 +23,12 @@
       "type": "parameter",
       "description": "The target framework for the project.",
       "datatype": "choice",
+      "displayName": "Target framework",
       "choices": [
         {
           "choice": "netcoreapp1.1",
-          "description": "Target netcoreapp1.1"
+          "description": "Target netcoreapp1.1",
+          "displayName": ".NET Core 1.1"
         }
       ],
       "defaultValue": "netcoreapp1.1"
