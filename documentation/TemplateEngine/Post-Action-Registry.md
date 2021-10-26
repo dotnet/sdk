@@ -92,6 +92,7 @@ Used to run a script after create.
      - `executable` (string): The executable to launch.
      - `args` (string): The arguments to pass to the executable.
      - `redirectStandardOutput` (bool) (optional): Whether or not to redirect stdout for the process (prevents output from being displayed if true). The default value is true.
+     - `redirectStandardError` (bool) (optional): Defines whether or not the stderr should be redirected. If the output is redirected, it prevents it from being displayed. The default value is true. Available since .NET SDK 6.0.100.
    - `manualInstructions` (required)
  - **Supported in**:
    - `dotnet new3`
@@ -107,7 +108,8 @@ The working directory for the launched executable is set to the root of the outp
   "args": {
     "executable": "setup.cmd",
     "args": "",
-    "redirectStandardOutput": false
+    "redirectStandardOutput": false,
+    "redirectStandardError": false
   },
   "manualInstructions": [{
      "text": "Run 'setup.cmd'"
