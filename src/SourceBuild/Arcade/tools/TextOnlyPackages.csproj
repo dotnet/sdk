@@ -50,7 +50,7 @@
     <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.100" Version="[$(MauiWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
   </ItemGroup>
 
