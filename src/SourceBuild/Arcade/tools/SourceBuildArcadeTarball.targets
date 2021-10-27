@@ -337,6 +337,59 @@
         " />
     </ItemGroup>
 
+    <ItemGroup>
+      <!-- ttf, woff, woff2, eot are permissible font related content -->
+      <AllowedTextOnlyExtensions Include="
+        .-;
+        .bowerrc;
+        .config;
+        .cs;
+        .cshtml;
+        .csproj;
+        .css;
+        .db;
+        .editorconfig;
+        .env;
+        .env.development;
+        .eot;
+        .fs;
+        .fsproj;
+        .gitignore;
+        .gitkeep;
+        .html;
+        .ico;
+        .js;
+        .json;
+        .map;
+        .md;
+        .nuspec;
+        .otf;
+        .png;
+        .props;
+        .proto;
+        .razor;
+        .sln;
+        .svg;
+        .targets;
+        .ts;
+        .ttf;
+        .tsx;
+        .txt;
+        .vb;
+        .vbproj;
+        .woff;
+        .woff2;
+        browserslist;
+        browserslistrc;
+        LICENSE;" />
+
+      <UnsupportedTextOnlyPackageContent Include="@(TextOnlyPackageContent)" />
+      <UnsupportedTextOnlyPackageContent Remove="$(TextOnlyDirectory)/**/*$([System.String]::Copy('%(AllowedTextOnlyExtensions.Identity)').ToLowerInvariant())" />
+      <UnsupportedTextOnlyPackageContent Remove="$(TextOnlyDirectory)/**/*$([System.String]::Copy('%(AllowedTextOnlyExtensions.Identity)').ToUpperInvariant())" />
+    </ItemGroup>
+
+    <Error Text="Unsupported content found in text-only packages: @(UnsupportedTextOnlyPackageContent)" Condition=" '@(UnsupportedTextOnlyPackageContent)' != '' " />
+
     <Copy
       SourceFiles="@(TextOnlyPackageContent)"
       DestinationFiles="@(TextOnlyPackageContent->'$(TextOnlyPackageTarballDir)$(DirectoryName)/%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -344,3 +397,4 @@
   </Target>
 
 </Project>
+

@@ -168,8 +168,8 @@ function doCommand() {
 
     dotnetCmd=${dotnetDir}/dotnet
 
-    # rename '#'' to 'Sharp' to workaround https://github.com/dotnet/aspnetcore/issues/36900
-    projectDir="${lang//"#"/"Sharp"}_${proj}"
+    # rename '#'' to 'Sharp' to workaround https://github.com/dotnet/roslyn/issues/51692
+    projectDir="${lang//#/Sharp}_${proj}"
     mkdir "${projectDir}"
     cd "${projectDir}"
 
@@ -296,18 +296,18 @@ function runAllTests() {
     if [ "$excludeNonWebTests" == "false" ]; then
         doCommand C# console new restore build run multi-rid-publish
         doCommand C# classlib new restore build multi-rid-publish
-        # doCommand C# xunit new restore test
-        # doCommand C# mstest new restore test
+        doCommand C# xunit new restore test
+        doCommand C# mstest new restore test
 
         doCommand VB console new restore build run multi-rid-publish
         doCommand VB classlib new restore build multi-rid-publish
-        # doCommand VB xunit new restore test
-        # doCommand VB mstest new restore test
+        doCommand VB xunit new restore test
+        doCommand VB mstest new restore test
 
-        # doCommand F# console new restore build run multi-rid-publish
-        # doCommand F# classlib new restore build multi-rid-publish
-        # doCommand F# xunit new restore test
-        # doCommand F# mstest new restore test
+        doCommand F# console new restore build run multi-rid-publish
+        doCommand F# classlib new restore build multi-rid-publish
+        doCommand F# xunit new restore test
+        doCommand F# mstest new restore test
     fi
 
     if [ "$excludeWebTests" == "false" ]; then
@@ -329,12 +329,12 @@ function runWebTests() {
     doCommand C# mvc "$@" new restore build run multi-rid-publish
     doCommand C# webapi "$@" new restore build multi-rid-publish
     doCommand C# razor "$@" new restore build run multi-rid-publish
-    # doCommand C# blazorwasm "$@" new restore build run publish
+    doCommand C# blazorwasm "$@" new restore build run publish
     doCommand C# blazorserver "$@" new restore build run publish
 
-    # doCommand F# web "$@" new restore build run multi-rid-publish
-    # doCommand F# mvc "$@" new restore build run multi-rid-publish
-    # doCommand F# webapi "$@" new restore build run multi-rid-publish
+    doCommand F# web "$@" new restore build run multi-rid-publish
+    doCommand F# mvc "$@" new restore build run multi-rid-publish
+    doCommand F# webapi "$@" new restore build run multi-rid-publish
 }
 
 function runXmlDocTests() {
@@ -521,6 +521,7 @@ function runXmlDocTests() {
 
     aspnetcoreappIgnoreList=(
         Microsoft.AspNetCore.App.Analyzers.xml
+        Microsoft.AspNetCore.App.CodeFixes.xml
         Microsoft.Extensions.Logging.Generators.resources.xml
         Microsoft.Extensions.Logging.Generators.xml
     )

@@ -44,6 +44,12 @@
     <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" Version="[$(AspNetCorePackageVersionFor50Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
 
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.100" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.100" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.100" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.100" Version="[$(MauiWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-6.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
   </ItemGroup>
