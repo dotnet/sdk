@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         public void CanRunTask()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
-            TestUtils.DirectoryCopy("Resources\\BasicTemplatePackage", tmpDir, true);
+            TestUtils.DirectoryCopy("Resources/BasicTemplatePackage", tmpDir, true);
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
                 .Should()
                 .Pass();
 
-            string locFolder = Path.Combine(tmpDir, "content\\TemplateWithSourceName\\.template.config\\localize");
+            string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.True(Directory.Exists(locFolder));
             Assert.Equal(14, Directory.GetFiles(locFolder).Length);
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         public void CanRunTaskSelectedLangs()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
-            TestUtils.DirectoryCopy("Resources\\TemplatePackageEnDe", tmpDir, true);
+            TestUtils.DirectoryCopy("Resources/TemplatePackageEnDe", tmpDir, true);
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
                 .Should()
                 .Pass();
 
-            string locFolder = Path.Combine(tmpDir, "content\\TemplateWithSourceName\\.template.config\\localize");
+            string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.True(Directory.Exists(locFolder));
             Assert.Equal(2, Directory.GetFiles(locFolder).Length);
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         public void CanRunTaskSelectedTemplates()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
-            TestUtils.DirectoryCopy("Resources\\TemplatePackagePartiallyLocalized", tmpDir, true);
+            TestUtils.DirectoryCopy("Resources/TemplatePackagePartiallyLocalized", tmpDir, true);
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
@@ -94,8 +94,8 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
                 .Should()
                 .Pass();
 
-            string locFolder = Path.Combine(tmpDir, "content\\localized\\.template.config\\localize");
-            string noLocFolder = Path.Combine(tmpDir, "content\\non-localized\\.template.config\\localize");
+            string locFolder = Path.Combine(tmpDir, "content/localized/.template.config/localize");
+            string noLocFolder = Path.Combine(tmpDir, "content/non-localized/.template.config/localize");
 
             Assert.True(Directory.Exists(locFolder));
             Assert.Equal(14, Directory.GetFiles(locFolder).Length);
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         public void CanRunTaskAndDetectError()
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
-            TestUtils.DirectoryCopy("Resources\\InvalidTemplatePackage", tmpDir, true);
+            TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage", tmpDir, true);
             TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
                 .And.HaveStdOutContaining("Build FAILED.")
                 .And.HaveStdOutContaining("error : Each child of \"//postActions\" should have a unique id");
 
-            string locFolder = Path.Combine(tmpDir, "content\\TemplateWithSourceName\\.template.config\\localize");
+            string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 
             Assert.False(Directory.Exists(locFolder));
             Directory.Delete(tmpDir, true);
