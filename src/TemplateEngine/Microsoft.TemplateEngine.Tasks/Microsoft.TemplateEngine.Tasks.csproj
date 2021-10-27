@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NETStandardTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(NETStandardTargetFramework)</TargetFrameworks>
     <Description>MSBuild tasks to for template authoring.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
@@ -38,10 +38,13 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target DependsOnTargets="Build" Name="CopyProjectReferencesToPackage">
+  <Target Name="CleanOutputDirectory" BeforeTargets="Restore">
+    <RemoveDir Directories="$(OutDir)"/>
+  </Target>
+
+  <Target Name="CopyProjectReferencesToPackage">
     <ItemGroup>
       <BuildOutputInPackage Include="$(OutDir)/**/*" Exclude="$(OutDir)/Microsoft.Build.Utilities.Core.dll;$(OutDir)/Microsoft.Build.Framework.dll" />
     </ItemGroup>
   </Target>
-
 </Project>
