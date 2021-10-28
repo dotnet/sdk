@@ -6,7 +6,7 @@
     <BundledManifests Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.macOS" />
     <BundledManifests Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(MauiWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.Maui" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Sdk.tvOS" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-6.0.100" SdkFeatureBand="6.0.100" Version="$(MonoWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Mono.ToolChain" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-7.0.100" SdkFeatureBand="7.0.100" Version="$(MonoWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Mono.ToolChain" />
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Manifest-7.0.100" SdkFeatureBand="7.0.100" Version="$(EmscriptenWorkloadManifestVersion)" WorkloadManifestId="Microsoft.NET.Workload.Emscripten" />
   </ItemGroup>
 
