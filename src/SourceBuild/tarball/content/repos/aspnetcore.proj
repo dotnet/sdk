@@ -24,6 +24,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--
+      From aspnetcore Versions.props:
+          Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
+          This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
+      In source-build these don't need to be pinned and can use the source-built versions since it doesn't
+      need to support VS 2019.
+    -->
+    <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpVersion" Version="%24(MicrosoftCodeAnalysisCSharpVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion" Version="%24(MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="source-build" />
     <RepositoryReference Include="runtime" />

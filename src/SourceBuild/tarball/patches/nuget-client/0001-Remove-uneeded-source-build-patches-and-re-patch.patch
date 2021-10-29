@@ -1,0 +1,296 @@
+From 157de59d479f2ed179b9b777eaf2b769871e3bf6 Mon Sep 17 00:00:00 2001
+From: Matt Mitchell <mmitche@microsoft.com>
+Date: Sat, 23 Oct 2021 16:41:24 -0700
+Subject: [PATCH] Remove uneeded source build patches and re-patch
+
+---
+ build/common.project.props                       | 16 ++++++----------
+ build/packages.targets                           |  3 ++-
+ .../NuGet.Build.Tasks.Pack.csproj                |  4 ++--
+ .../NuGet.CommandLine.XPlat.csproj               |  2 +-
+ .../SignCommand/CertificateProvider.cs           |  4 ++--
+ src/NuGet.Core/NuGet.Common/NuGet.Common.csproj  |  1 -
+ .../NuGet.Configuration.csproj                   |  3 +--
+ .../NuGet.Frameworks/NuGet.Frameworks.csproj     |  3 +--
+ .../NuGet.PackageManagement.csproj               |  2 +-
+ .../Signing/Authoring/SignPackageRequest.cs      |  2 ++
+ .../NuGet.Packaging/Signing/Cms/NativeUtility.cs |  2 ++
+ .../HttpSource/HttpRequestMessageExtensions.cs   |  6 +++---
+ .../HttpSource/HttpRetryHandler.cs               |  2 +-
+ .../HttpSourceAuthenticationHandler.cs           |  2 +-
+ .../NuGet.Versioning/NuGet.Versioning.csproj     |  1 -
+ 15 files changed, 25 insertions(+), 28 deletions(-)
+
+diff --git a/build/common.project.props b/build/common.project.props
+index 79a935391..65e482b83 100644
+--- a/build/common.project.props
++++ b/build/common.project.props
+@@ -10,24 +10,20 @@
+ 
+   <!-- Common -->
+   <PropertyGroup>
+-    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
+     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+     <NETFXTargetFramework>net472</NETFXTargetFramework>
+-    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+-    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NETCoreTargetFramework>
++    <NETCoreTargetFramework>net6.0</NETCoreTargetFramework>
+     <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
+-    <NetStandardVersion>netstandard2.0</NetStandardVersion>
+-    <NetStandardVersion Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NetStandardVersion>
++    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
++    <NetStandardVersion>netstandard2.0;net6.0</NetStandardVersion>
+     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
+     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true' OR '$(IsXPlat)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
+-    <TargetFrameworksExeForSigning>$(TargetFrameworksExe);netcoreapp5.0</TargetFrameworksExeForSigning>
+-    <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp5.0</TargetFrameworksExeForSigning>
+-    <TargetFrameworksExeForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksExe);net6.0</TargetFrameworksExeForSigning>
++    <TargetFrameworksExeForSigning>$(TargetFrameworksExe);net6.0</TargetFrameworksExeForSigning>
++    <TargetFrameworksExeForSigning Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);net6.0</TargetFrameworksExeForSigning>
+     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+     <TargetFrameworksLibrary Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NetStandardVersion)</TargetFrameworksLibrary>
+-    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);netcoreapp5.0</TargetFrameworksLibraryForSigning>
+-    <TargetFrameworksLibraryForSigning Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
++    <TargetFrameworksLibraryForSigning>$(TargetFrameworksLibrary);net6.0</TargetFrameworksLibraryForSigning>
+     <TargetFrameworksLibraryForCrossVerificationTests>$(NETFXTargetFramework);netcoreapp5.0</TargetFrameworksLibraryForCrossVerificationTests>
+     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
+     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
+diff --git a/build/packages.targets b/build/packages.targets
+index c11557248..0e7dd7861 100644
+--- a/build/packages.targets
++++ b/build/packages.targets
+@@ -10,6 +10,7 @@
+         <CryptographyPackagesVersion>5.0.0</CryptographyPackagesVersion>
+         <NuGetCoreV2Version>2.14.0-rtm-832</NuGetCoreV2Version>
+         <ProjectSystemManagedVersion>17.0.0-beta1-10402-05</ProjectSystemManagedVersion>
++        <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion Condition="'$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)' == ''">5.0.1-rtm.21063.7</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+     </PropertyGroup>
+ 
+     <!-- Test and package versions -->
+@@ -33,7 +34,7 @@
+         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+         <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
+         <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
+-        <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
++        <PackageReference Update="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Framework" Version="$(VSFrameworkVersion)" />
+         <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
+         <PackageReference Update="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
+diff --git a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+index c94acffd8..f4d083e52 100644
+--- a/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
++++ b/src/NuGet.Core/NuGet.Build.Tasks.Pack/NuGet.Build.Tasks.Pack.csproj
+@@ -177,7 +177,7 @@
+       <!-- Build from source can't use ILMerge. -->
+       <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
+       <PackagePathDir Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">Desktop/</PackagePathDir>
+-      <PackagePathDir Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">CoreCLR/</PackagePathDir>
++      <PackagePathDir Condition="'$(TargetFramework)' == 'netstandard2.0'">CoreCLR/</PackagePathDir>
+     </PropertyGroup>
+     <ItemGroup>
+       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll" Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">
+@@ -189,7 +189,7 @@
+       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
+         <PackagePath>$(PackagePathDir)</PackagePath>
+       </TfmSpecificPackageFile>
+-    </ItemGroup>    
++    </ItemGroup>
+   </Target>
+ 
+   <Import Project="$(BuildCommonDirectory)common.targets"/>
+diff --git a/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj b/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj
+index 21015c00a..e306cdee4 100644
+--- a/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj
++++ b/src/NuGet.Core/NuGet.CommandLine.XPlat/NuGet.CommandLine.XPlat.csproj
+@@ -18,7 +18,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" />
++    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+     <PackageReference Include="System.Diagnostics.Debug" />
+   </ItemGroup>
+ 
+diff --git a/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs b/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
+index c6ea71243..beac41889 100644
+--- a/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
++++ b/src/NuGet.Core/NuGet.Commands/SignCommand/CertificateProvider.cs
+@@ -115,7 +115,7 @@ public static async Task<X509Certificate2Collection> GetCertificatesAsync(Certif
+ 
+             return resultCollection;
+         }
+-
++#pragma warning disable CS1998
+         private static async Task<X509Certificate2> LoadCertificateFromFileAsync(CertificateSourceOptions options)
+         {
+             X509Certificate2 cert;
+@@ -154,7 +154,7 @@ private static async Task<X509Certificate2> LoadCertificateFromFileAsync(Certifi
+ 
+             return cert;
+         }
+-
++#pragma warning restore CS1998
+         private static X509Certificate2Collection LoadCertificateFromStore(CertificateSourceOptions options)
+         {
+             X509Certificate2Collection resultCollection = null;
+diff --git a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+index e30a079eb..c2b8fe241 100644
+--- a/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
++++ b/src/NuGet.Core/NuGet.Common/NuGet.Common.csproj
+@@ -5,7 +5,6 @@
+   <PropertyGroup>
+     <Description>Common utilities and interfaces for all NuGet libraries.</Description>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>
+     <PackProject>true</PackProject>
+diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+index bbc5ba480..18b597c74 100644
+--- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
++++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+@@ -6,7 +6,6 @@
+     <Description>NuGet's configuration settings implementation.</Description>
+     <NoWarn>$(NoWarn);CS1591</NoWarn>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <PackProject>true</PackProject>
+     <Shipping>true</Shipping>
+@@ -29,7 +28,7 @@
+     <Reference Include="System.Xml.Linq" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0' ">
+     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+   </ItemGroup>
+ 
+diff --git a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+index b78b1f2ea..a89b516c6 100644
+--- a/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
++++ b/src/NuGet.Core/NuGet.Frameworks/NuGet.Frameworks.csproj
+@@ -4,8 +4,7 @@
+ 
+   <PropertyGroup>
+     <Description>NuGet's understanding of target frameworks.</Description>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(TargetFrameworksLibrary);netstandard2.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworksLibrary);net40</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.0</TargetFrameworks>
+     <TargetFramework />
+     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>
+     <PackProject>true</PackProject>
+diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+index dfbfcaa8d..a6bb51d6b 100644
+--- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
++++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+@@ -35,7 +35,7 @@
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'net6.0' ">
+     <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
+diff --git a/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs b/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
+index e0cfae99f..ce19f2d6e 100644
+--- a/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
++++ b/src/NuGet.Core/NuGet.Packaging/Signing/Authoring/SignPackageRequest.cs
+@@ -98,7 +98,9 @@ protected virtual void Dispose(bool disposing)
+                 Chain?.Dispose();
+ 
+ #if IS_SIGNING_SUPPORTED
++#pragma warning disable CA1416
+                 PrivateKey?.Dispose();
++#pragma warning restore CA1416
+ #endif
+             }
+ 
+diff --git a/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs b/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
+index 565ac60b7..d57e38a65 100644
+--- a/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
++++ b/src/NuGet.Core/NuGet.Packaging/Signing/Cms/NativeUtility.cs
+@@ -120,7 +120,9 @@ internal static SignedCms NativeSign(CmsSigner cmsSigner, byte[] data, CngKey pr
+ 
+             signerInfo.cbSize = (uint)Marshal.SizeOf(signerInfo);
+             signerInfo.pCertInfo = MarshalUtility.PtrToStructure<CERT_CONTEXT>(cmsSigner.Certificate.Handle).pCertInfo;
++#pragma warning disable CA1416
+             signerInfo.hCryptProvOrhNCryptKey = privateKey.Handle.DangerousGetHandle();
++#pragma warning restore CA1416
+             signerInfo.HashAlgorithm.pszObjId = cmsSigner.DigestAlgorithm.Value;
+ 
+             if (cmsSigner.SignerIdentifierType == SubjectIdentifierType.SubjectKeyIdentifier)
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
+index 7c9595268..1ca751850 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRequestMessageExtensions.cs
+@@ -34,7 +34,7 @@ internal static HttpRequestMessage Clone(this HttpRequestMessage request)
+                 clone.Headers.TryAddWithoutValidation(header.Key, header.Value);
+             }
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             var clonedOptions = (IDictionary<string, object>)clone.Options;
+             foreach (var option in request.Options)
+             {
+@@ -118,7 +118,7 @@ public static void SetConfiguration(this HttpRequestMessage request, HttpRequest
+                 throw new ArgumentNullException(nameof(configuration));
+             }
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             request.Options.Set(new HttpRequestOptionsKey<HttpRequestMessageConfiguration>(NuGetConfigurationKey), configuration);
+ #else
+             request.Properties[NuGetConfigurationKey] = configuration;
+@@ -128,7 +128,7 @@ public static void SetConfiguration(this HttpRequestMessage request, HttpRequest
+         private static T GetProperty<T>(this HttpRequestMessage request, string key)
+         {
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+             if (request.Options.TryGetValue<T>(new HttpRequestOptionsKey<T>(key), out T result))
+ #else
+             object result;
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
+index c7bcb54bb..30d86fcc9 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpRetryHandler.cs
+@@ -113,7 +113,7 @@ internal HttpRetryHandler(IEnvironmentVariableReader environmentVariableReader)
+                         headerStopwatch = new Stopwatch();
+                         stopwatches.Add(headerStopwatch);
+                     }
+-#if NET5_0
++#if NET5_0 || NET6_0
+                     requestMessage.Options.Set(new HttpRequestOptionsKey<List<Stopwatch>>(StopwatchPropertyName), stopwatches);
+ #else
+                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
+diff --git a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
+index b9ab58ce7..ebf738e52 100644
+--- a/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
++++ b/src/NuGet.Core/NuGet.Protocol/HttpSource/HttpSourceAuthenticationHandler.cs
+@@ -98,7 +98,7 @@ protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage
+                 {
+                     List<Stopwatch> stopwatches = null;
+ 
+-#if NET5_0
++#if NET5_0 || NET6_0
+                     if (request.Options.TryGetValue(
+                         new HttpRequestOptionsKey<List<Stopwatch>>(HttpRetryHandler.StopwatchPropertyName),
+                         out stopwatches))
+diff --git a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj b/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
+index 180293944..8498664b9 100644
+--- a/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
++++ b/src/NuGet.Core/NuGet.Versioning/NuGet.Versioning.csproj
+@@ -4,7 +4,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">$(TargetFrameworks);net45</TargetFrameworks>
+     <TargetFramework />
+     <Description>NuGet's implementation of Semantic Versioning.</Description>
+     <PackageTags>semver;semantic versioning</PackageTags>
+-- 
+2.31.1
+

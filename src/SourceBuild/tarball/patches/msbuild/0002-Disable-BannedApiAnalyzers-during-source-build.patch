@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Tue, 12 Oct 2021 18:14:59 -0500
+Subject: [PATCH] Disable BannedApiAnalyzers during source-build
+
+BannedApiAnalyzers has some intentional old dependencies and it's not feasible
+to build it during source-build. Remove this usage to remove a prebuilt.
+https://github.com/dotnet/msbuild/issues/6961
+---
+ eng/Packages.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Packages.props b/eng/Packages.props
+index 0f478634f..3cc09a008 100644
+--- a/eng/Packages.props
++++ b/eng/Packages.props
+@@ -45,11 +45,11 @@
+ 
+   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
+     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All"/>
++    <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
+   </ItemGroup>
+ 
+   <ItemGroup>
+     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+-    <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
+   </ItemGroup>
+ 
+ </Project>

@@ -151,6 +151,7 @@
     <ArcadeBootstrapSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(ArcadeBootstrapVersion)" Location="$(ArcadeBootstrapDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)" />
     <ArcadePackagingOverride Include="Microsoft.DotNet.Build.Tasks.Packaging" Group="ARCADE_PACKAGING" Version="$(arcadeOutputPackageVersion)"/>
     <ArcadeTargetFrameworkSdkOverride Include="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk" Group="ARCADE_TGT_FX_SDK" Version="$(arcadeOutputPackageVersion)"/>
+    <ArcadeSharedFrameworkSdkOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Group="ARCADE_SHARED_FX_SDK" Version="$(arcadeOutputPackageVersion)"/>
     <ILSdkOverride Include="Microsoft.NET.Sdk.IL" Group="IL" />
     <MsBuildTraversalSdkOverride Include="Microsoft.Build.Traversal" Group="MSBUILD_TRAVERSAL" Version="2.0.2"/>
   </ItemGroup>

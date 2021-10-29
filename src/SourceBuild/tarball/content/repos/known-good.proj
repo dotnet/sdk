@@ -54,6 +54,7 @@
         <!-- Tier 4 -->
         <RepositoryReference Include="aspnetcore" />
         <RepositoryReference Include="deployment-tools" />
+        <RepositoryReference Include="format" />
         <RepositoryReference Include="nuget-client" />
 
         <!-- Tier 5 -->

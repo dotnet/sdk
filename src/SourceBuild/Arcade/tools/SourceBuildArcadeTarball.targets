@@ -248,6 +248,20 @@
     </ItemGroup>
 
     <Delete Files="@(TarballSrcBinaryToRemove)" />
+
+    <!-- We have some not-strictly-required files that are under non-open source licenses.
+         See https://github.com/dotnet/source-build/issues/2359.
+         Remove them. -->
+    <ItemGroup>
+      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\humanizer\samples\**\*.js" />
+      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*nuget-client.*\**\EndToEnd\**\jquery-validation-unobtrusive\*.js" />
+      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*nuget-client.*\**\EndToEnd\**\jquery-validation-unobtrusive\.bower.json" />
+      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*aspnetcore.*\**\samples\**\jquery-validation-unobtrusive\.bower.json" />
+      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*aspnetcore.*\**\samples\**\jquery-validation-unobtrusive\*.js" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Deleting files with questionable licenses: @(TarballSrcNonOpenSourceFiles, ' ')" />
+    <Delete Files="@(TarballSrcNonOpenSourceFiles)" />
   </Target>
 
   <Target Name="RestoreTextOnlyPackages">
@@ -294,7 +308,9 @@
 
     <ItemGroup>
       <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltArtifactsTarballName).$(PrivateSourceBuiltArtifactsPackageVersion).tar.gz" />
-      <ArtifactUrls Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltPrebuiltsTarballName).$(PrivateSourceBuiltPrebuiltsPackageVersion).tar.gz" />
+      <ArtifactUrls
+        Include="$(SourceBuiltArtifactsTarballUrl)$(SourceBuiltPrebuiltsTarballName).$(PrivateSourceBuiltPrebuiltsPackageVersion).tar.gz"
+        Condition="'$(PrivateSourceBuiltPrebuiltsPackageVersion)' != ''" />
     </ItemGroup>
 
     <WriteLinesToFile

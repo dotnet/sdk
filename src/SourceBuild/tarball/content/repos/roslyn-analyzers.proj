@@ -2,12 +2,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <!-- roslyn-analyzers does not want to build with the source build packages as this more closely mimics their repo build.
-    To make this easier, the use of DotNetPackageVersionPropsPath is disabled and its versions.props explicitly imports
-    $(SourceBuildPackageVersionPropsPath) at the beginning. -->
-    <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('/p:DotNetPackageVersionPropsPath="$(PackageVersionPropsPath)"', ''))</BuildCommandArgs>
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildPackageVersionPropsPath="$(PackageVersionPropsPath)"</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <RepoApiImplemented>false</RepoApiImplemented>

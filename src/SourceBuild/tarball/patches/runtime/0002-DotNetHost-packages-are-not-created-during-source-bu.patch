@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Eric Erhardt <eric.erhardt@microsoft.com>
+Date: Mon, 18 Oct 2021 15:47:39 -0500
+Subject: [PATCH] DotNetHost packages are not created during source-build
+
+The subset `host.pkg` is not producing the DotNetHost* NuGet packages. This is because the "Pack" target is getting invoked on the pkgprojs, but pkgprojs expect the "Build" target to be called. Since the "Pack" target is overriden in the Directory.Build.targets to be empty, no one is calling the "Build" target on the pkgprojs.
+
+In an official build, a later subset `packs.tests` comes through and builds `Microsoft.DotNet.CoreSetup.Packaging.Tests.csproj`, which explicitly calls "Build" on the pkgprojs. So official builds still get these packages produced.
+
+In source-build, we are no longer building the `packs.tests` subset, so the packages are not produced.
+
+See also:
+* https://github.com/dotnet/runtime/pull/60575
+* https://github.com/dotnet/runtime/pull/60577
+---
+ src/installer/Directory.Build.targets | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/installer/Directory.Build.targets b/src/installer/Directory.Build.targets
+index c6e8cf1a140..dccb8277ba7 100644
+--- a/src/installer/Directory.Build.targets
++++ b/src/installer/Directory.Build.targets
+@@ -15,5 +15,5 @@
+   <Import Project="..\..\Directory.Build.targets" />
+ 
+   <!-- Provide default targets which can be hooked onto or overridden as necessary -->
+-  <Target Name="Pack" />
++  <Target Name="Pack" DependsOnTargets="Build" />
+ </Project>

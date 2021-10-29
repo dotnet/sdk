@@ -133,8 +133,22 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"
-          AfterTargets="Build">
+          AfterTargets="Build"
+          DependsOnTargets="
+            CheckIfPrebuiltsExistToPack;
+            CreatePrebuiltsTarballIfPrebuiltsExist"/>
 
+  <Target Name="CheckIfPrebuiltsExistToPack">
+    <!-- Directory existence doesn't mean there are files inside. Use a pattern to find files. -->
+    <ItemGroup>
+      <PrebuiltFile Include="$(ResultingPrebuiltPackagesDir)**" />
+    </ItemGroup>
+
+    <Message Text="Found @(PrebuiltFile->Count()) files in prebuilt packages dir." Importance="High" />
+  </Target>
+
+  <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
+          Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
       <TarballFileVersion>$(PrivateSourceBuiltPrebuiltsPackageVersionPrefix)$([MSBuild]::Add($(PrivateSourceBuiltPrebuiltsPackageVersionSuffix), 1))</TarballFileVersion>
       <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
