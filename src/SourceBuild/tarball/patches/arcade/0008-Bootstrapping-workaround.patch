@@ -24,9 +24,9 @@ index 37feef5..c5aee85 100644
 +    <NoWarn>$(NoWarn);NU1603</NoWarn>
 +  </PropertyGroup>
 +
-   <PropertyGroup Condition="'$(DotNetBuildOffline)' == 'true'">
-     <!--
-       Arcade has a special version prop for CodeAnalysis.CSharp in GenFacades
+   <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+     <!--    
+       When building using source-build the process is:
 -- 
 2.29.2
 

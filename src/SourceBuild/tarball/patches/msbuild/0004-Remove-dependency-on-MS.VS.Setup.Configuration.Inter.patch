@@ -34,9 +34,9 @@ index d08e337c5..3b173aee5 100644
 --- a/src/Build/Microsoft.Build.csproj
 +++ b/src/Build/Microsoft.Build.csproj
 @@ -38,8 +38,10 @@
-     <PackageReference Include="System.Reflection.Metadata" Condition="'$(MonoBuild)' == 'true'" />
-   </ItemGroup>
- 
+    <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
+  </ItemGroup>
+
 -  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
 +  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(DotNetBuildFromSource)' != 'true'">
      <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
