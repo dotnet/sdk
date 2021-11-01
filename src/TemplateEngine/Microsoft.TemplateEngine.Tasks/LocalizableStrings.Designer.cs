@@ -63,27 +63,27 @@ namespace Microsoft.TemplateEngine.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to &apos;LocalizeTemplates&apos; stopped processing the following file, because the operation was cancelled: {0}.
         /// </summary>
-        internal static string command_localize_log_file_processing_cancelled {
+        internal static string Command_Localize_Log_FileProcessingCancelled {
             get {
-                return ResourceManager.GetString("command_localize_log_file_processing_cancelled", resourceCulture);
+                return ResourceManager.GetString("Command_Localize_Log_FileProcessingCancelled", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The property &apos;TemplateFolder&apos; should be set for &apos;LocalizeTemplates&apos; target..
         /// </summary>
-        internal static string command_localize_log_templatefolder_not_set {
+        internal static string Command_Localize_Log_TemplateFolderNotSet {
             get {
-                return ResourceManager.GetString("command_localize_log_templatefolder_not_set", resourceCulture);
+                return ResourceManager.GetString("Command_Localize_Log_TemplateFolderNotSet", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to find &apos;template.json&apos; file under the path &apos;{0}&apos;..
         /// </summary>
-        internal static string command_localize_log_templateJsonNotFound {
+        internal static string Command_Localize_Log_TemplateJsonNotFound {
             get {
-                return ResourceManager.GetString("command_localize_log_templateJsonNotFound", resourceCulture);
+                return ResourceManager.GetString("Command_Localize_Log_TemplateJsonNotFound", resourceCulture);
             }
         }
     }

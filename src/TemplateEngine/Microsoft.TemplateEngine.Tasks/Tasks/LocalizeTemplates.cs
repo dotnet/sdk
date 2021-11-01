@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Tasks
         {
             if (string.IsNullOrWhiteSpace(TemplateFolder))
             {
-                Log.LogError(LocalizableStrings.command_localize_log_templatefolder_not_set);
+                Log.LogError(LocalizableStrings.Command_Localize_Log_TemplateFolderNotSet);
                 return false;
             }
 
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Tasks
 
             if (templateJsonFiles.Count == 0)
             {
-                Log.LogError(LocalizableStrings.command_localize_log_templateJsonNotFound, TemplateFolder);
+                Log.LogError(LocalizableStrings.Command_Localize_Log_TemplateJsonNotFound, TemplateFolder);
                 return false;
             }
 
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Tasks
 
             try
             {
-                Task.Run(() => Task.WhenAll(runningExportTasks.Select(t => t.Task))).GetAwaiter().GetResult();
+                Task.WhenAll(runningExportTasks.Select(t => t.Task)).Wait();
             }
             catch (Exception)
             {
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Tasks
             {
                 if (pathTaskPair.Task.IsCanceled)
                 {
-                    Log.LogError(LocalizableStrings.command_localize_log_file_processing_cancelled, pathTaskPair.TemplateJsonPath);
+                    Log.LogError(LocalizableStrings.Command_Localize_Log_FileProcessingCancelled, pathTaskPair.TemplateJsonPath);
                 }
                 else if (pathTaskPair.Task.IsFaulted)
                 {

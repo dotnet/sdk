@@ -117,19 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="command_localize_log_file_processing_cancelled" xml:space="preserve">
+  <data name="Command_Localize_Log_FileProcessingCancelled" xml:space="preserve">
     <value>'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</value>
     <comment>Do not localize: 'LocalizeTemplates'.
 {0} is the full path to a file, such as 'C:/Users/someguy/Desktop/template.json'</comment>
   </data>
-  <data name="command_localize_log_templatefolder_not_set" xml:space="preserve">
+  <data name="Command_Localize_Log_TemplateFolderNotSet" xml:space="preserve">
     <value>The property 'TemplateFolder' should be set for 'LocalizeTemplates' target.</value>
     <comment>Do not localize: 
 - 'TemplateFolder'
 - 'LocalizeTemplates'
 'Target' and 'property' are referring to MSBuild concepts with the same names.</comment>
   </data>
-  <data name="command_localize_log_templateJsonNotFound" xml:space="preserve">
+  <data name="Command_Localize_Log_TemplateJsonNotFound" xml:space="preserve">
     <value>Failed to find 'template.json' file under the path '{0}'.</value>
     <comment>Do not localize: 'template.json'</comment>
   </data>
