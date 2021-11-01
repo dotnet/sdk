@@ -1115,5 +1115,29 @@ public class Bar
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
+
+        [Fact]
+        public async Task TestAssignmentAfterEnumeration()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        var d1 = [|h|].ToArray();
+        var d2 = [|h|].ToArray();
+
+        h = Enumerable.Range(1, 10);
+        h.First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+
+        }
     }
 }
