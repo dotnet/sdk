@@ -2,24 +2,24 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="command_localize_log_file_processing_cancelled">
+      <trans-unit id="Command_Localize_Log_FileProcessingCancelled">
         <source>'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</source>
         <target state="new">'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</target>
         <note>Do not localize: 'LocalizeTemplates'.
 {0} is the full path to a file, such as 'C:/Users/someguy/Desktop/template.json'</note>
       </trans-unit>
-      <trans-unit id="command_localize_log_templateJsonNotFound">
-        <source>Failed to find 'template.json' file under the path '{0}'.</source>
-        <target state="new">Failed to find 'template.json' file under the path '{0}'.</target>
-        <note>Do not localize: 'template.json'</note>
-      </trans-unit>
-      <trans-unit id="command_localize_log_templatefolder_not_set">
+      <trans-unit id="Command_Localize_Log_TemplateFolderNotSet">
         <source>The property 'TemplateFolder' should be set for 'LocalizeTemplates' target.</source>
         <target state="new">The property 'TemplateFolder' should be set for 'LocalizeTemplates' target.</target>
         <note>Do not localize: 
 - 'TemplateFolder'
 - 'LocalizeTemplates'
 'Target' and 'property' are referring to MSBuild concepts with the same names.</note>
+      </trans-unit>
+      <trans-unit id="Command_Localize_Log_TemplateJsonNotFound">
+        <source>Failed to find 'template.json' file under the path '{0}'.</source>
+        <target state="new">Failed to find 'template.json' file under the path '{0}'.</target>
+        <note>Do not localize: 'template.json'</note>
       </trans-unit>
     </body>
   </file>
