@@ -80,7 +80,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, wellKnownSymbolsInfo);
-            return operationToCheck.Parent is IForLoopOperation;
+            return operationToCheck.Parent is IForEachLoopOperation;
         }
 
         private static bool IsOperationEnumeratedByInvocation(

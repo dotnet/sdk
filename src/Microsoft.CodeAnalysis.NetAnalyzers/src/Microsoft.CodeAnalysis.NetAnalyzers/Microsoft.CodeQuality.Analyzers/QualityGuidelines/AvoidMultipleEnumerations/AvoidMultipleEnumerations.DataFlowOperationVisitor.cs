@@ -40,11 +40,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return value;
                 }
 
-                if (!AnalysisEntityFactory.TryCreate(operation, out var analysisEntity))
-                {
-                    return value;
-                }
-
                 if (!TryGetInvocationEntity(operation, out var invocationEntity))
                 {
                     return value;
@@ -64,11 +59,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 }
 
                 if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
-                {
-                    return value;
-                }
-
-                if (!AnalysisEntityFactory.TryCreate(operation, out var analysisEntity))
                 {
                     return value;
                 }

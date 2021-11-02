@@ -1127,7 +1127,7 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> h, int i)
+    public void Sub(IEnumerable<int> h)
     {
         var d = [|h|].ToArray();
         var d2 = [|h|].ToArray();
@@ -1141,7 +1141,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestCallTheSameLocal()
+        public async Task TestLocalAssignment()
         {
             var code = @"
 using System;
@@ -1151,13 +1151,61 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub()
+    public void Sub(IEnumerable<int> h)
     {
-        var e1 = Enumerable.Range(1, 10);
-        [|e1|].First();
+        [|h|].ToArray();
+        var c = h;
 
-        var e2 = e1;
-        [|e2|].First();
+        [|c|].First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+
+        }
+
+        [Fact]
+        public async Task TestInvocationWithAssignment()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag, IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        var j = i;
+        var k = j;
+
+        var n = h;
+        var m = n;
+        
+        if (flag)
+        {
+            foreach (var x in [|k|])
+            {
+            }
+
+            foreach (var x in [|m|])
+            {
+            }
+        }
+        else
+        {
+            var d = [|i|].First();
+            var d2 = [|h|].First();
+        }
+        
+        foreach (var z in [|j|])
+        {
+        }
+
+        foreach (var z in [|n|])
+        {
+        }
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
