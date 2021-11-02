@@ -3,9 +3,10 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
-using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -83,7 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 }
 
                 var result = pointToAnalysisResult[operation.Kind, operation.Syntax];
-                if (result.Kind != CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis.PointsToAbstractValueKind.KnownLocations)
+                if (result.Kind != PointsToAbstractValueKind.KnownLocations)
                 {
                     return false;
                 }

@@ -2,16 +2,17 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
-namespace Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     internal class GlobalFlowStateDictionaryAnalysisValue : CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue>
     {
         /// <summary>
         /// The core analysis value of <see cref="GlobalFlowStateDictionaryAnalysis"/>.
-        /// Key is the <see cref="InvocationEntity"/> tracked my the analysis. Value is the state of the <see cref="AnalysisEntity"/>.
+        /// Key is the <see cref="InvocationEntity"/> tracked by the analysis. Value is the state of the <see cref="AnalysisEntity"/>.
         /// </summary>
         public ImmutableDictionary<InvocationEntity, TrackingInvocationSet> TrackedEntities { get; }
 

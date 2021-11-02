@@ -1,9 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
-namespace Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     internal class InvocationEntity : CacheBasedEquatable<InvocationEntity>
     {

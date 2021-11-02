@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.GlobalFlowStateAnalysis;
 
-namespace Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     using GlobalFlowStateDictionaryAnalysisData = DictionaryAnalysisData<AnalysisEntity, GlobalFlowStateDictionaryAnalysisValue>;
     using GlobalFlowStateDictionaryAnalysisResult = DataFlowAnalysisResult<GlobalFlowStateDictionaryBlockAnalysisResult, GlobalFlowStateDictionaryAnalysisValue>;
@@ -100,7 +100,7 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnal
         protected override void UpdateValuesForAnalysisData(GlobalFlowStateDictionaryAnalysisData targetAnalysisData)
             => UpdateValuesForAnalysisData(targetAnalysisData, CurrentAnalysisData);
 
-        protected static void SetAbstractValue(GlobalFlowStateDictionaryAnalysisData analysisData, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
+        private static void SetAbstractValue(GlobalFlowStateDictionaryAnalysisData analysisData, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
         {
             if (value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known)
             {

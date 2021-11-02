@@ -2,7 +2,7 @@
 
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
-namespace Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis
+namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     internal class GlobalFlowStateDictionaryAnalysisValueDomain : AbstractValueDomain<GlobalFlowStateDictionaryAnalysisValue>
     {
