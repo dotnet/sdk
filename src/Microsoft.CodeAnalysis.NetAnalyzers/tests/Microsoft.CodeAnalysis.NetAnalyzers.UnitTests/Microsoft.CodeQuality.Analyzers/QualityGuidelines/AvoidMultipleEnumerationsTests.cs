@@ -1127,9 +1127,9 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> h)
+    public void Sub(IEnumerable<int> h, int i)
     {
-        var d1 = [|h|].ToArray();
+        var d = [|h|].ToArray();
         var d2 = [|h|].ToArray();
 
         h = Enumerable.Range(1, 10);
@@ -1138,6 +1138,29 @@ public class Bar
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
 
+        }
+
+        [Fact]
+        public async Task TestCallTheSameLocal()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var e1 = Enumerable.Range(1, 10);
+        [|e1|].First();
+
+        var e2 = e1;
+        [|e2|].First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
     }
 }

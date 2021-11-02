@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.FlowAnalysis.Analysis.GlobalFlowStateDictionaryAnalysis;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -30,33 +30,76 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
                 var value = base.VisitParameterReference(operation, argument);
-                return IsDeferredType(operation.Parameter.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)
-                    && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
-                        ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
-                        : value;
+                if (!IsDeferredType(operation.Parameter.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                {
+                    return value;
+                }
+
+                if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
+                {
+                    return value;
+                }
+
+                if (!AnalysisEntityFactory.TryCreate(operation, out var analysisEntity))
+                {
+                    return value;
+                }
+
+                if (!TryGetInvocationEntity(operation, out var invocationEntity))
+                {
+                    return value;
+                }
+
+                var newValue = CreateAnalysisValue(invocationEntity, operation, value);
+                UpdateGlobalValue(newValue);
+                return newValue;
             }
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
                 var value = base.VisitLocalReference(operation, argument);
-                return IsDeferredType(operation.Local.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)
-                    && AnalysisEntityFactory.TryCreate(operation, out var analysisEntity)
-                        ? VisitLocalOrParameterOrArrayElement(operation, analysisEntity, value)
-                        : value;
-            }
-
-            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameterOrArrayElement(
-                IOperation operation, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
-            {
-                if (IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo)
-                    || IsGetEnumeratorOfForEachLoopInvoked(operation))
+                if (!IsDeferredType(operation.Local.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
-                    var newValue = CreateAnalysisValue(analysisEntity, operation, value);
-                    UpdateGlobalValue(newValue);
-                    return newValue;
+                    return value;
                 }
 
-                return value;
+                if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
+                {
+                    return value;
+                }
+
+                if (!AnalysisEntityFactory.TryCreate(operation, out var analysisEntity))
+                {
+                    return value;
+                }
+
+                if (!TryGetInvocationEntity(operation, out var invocationEntity))
+                {
+                    return value;
+                }
+
+                var newValue = CreateAnalysisValue(invocationEntity, operation, value);
+                UpdateGlobalValue(newValue);
+                return newValue;
+            }
+
+            private bool TryGetInvocationEntity(IOperation operation, [NotNullWhen(true)] out InvocationEntity? invocationEntity)
+            {
+                var pointToAnalysisResult = DataFlowAnalysisContext.PointsToAnalysisResult;
+                invocationEntity = null;
+                if (pointToAnalysisResult is null)
+                {
+                    return false;
+                }
+
+                var result = pointToAnalysisResult[operation.Kind, operation.Syntax];
+                if (result.Kind != CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis.PointsToAbstractValueKind.KnownLocations)
+                {
+                    return false;
+                }
+
+                invocationEntity = new InvocationEntity(result.Locations);
+                return true;
             }
 
             private void UpdateGlobalValue(GlobalFlowStateDictionaryAnalysisValue value)
@@ -91,13 +134,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
-                AnalysisEntity analysisEntity,
+                InvocationEntity analysisEntity,
                 IOperation operation,
                 GlobalFlowStateDictionaryAnalysisValue value)
             {
                 var invocationSet = new TrackingInvocationSet(ImmutableHashSet.Create(operation), InvocationCount.One);
+
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
-                    ImmutableDictionary<AnalysisEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
+                    ImmutableDictionary<InvocationEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
                     GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
                 return value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
