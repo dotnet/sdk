@@ -1134,6 +1134,11 @@ public class Bar
 
         h = Enumerable.Range(1, 10);
         h.First();
+
+        h = Enumerable.Range(1, 100);
+        foreach (var i in h)
+        {
+        }
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1141,7 +1146,35 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestLocalAssignment()
+        public async Task TestForEachLoopForLocalAssignment()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var d = Enumerable.Range(1, 100);
+        foreach (var i in [|d|])
+        {
+        }
+
+        var e = d;
+        foreach (var i in [|e|])
+        {
+        }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+
+        }
+
+        [Fact]
+        public async Task TestInvocationLocalAssignment()
         {
             var code = @"
 using System;
