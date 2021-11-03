@@ -990,6 +990,8 @@ public class Bar
         [Fact]
         public async Task TestDelayExecutions()
         {
+            // SkipLast and TakeLast are unavailable for NET472
+#if NETCOREAPP2_0_OR_GREATER
             var code = @"
 using System;
 using System.Linq;
@@ -1016,6 +1018,36 @@ public class Bar
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
+#endif
+
+#if NET472
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub()
+    {
+        IEnumerable<int> x = Enumerable.Range(1, 10);
+        var c1 = [|x|].Append(1).Cast<Object>().Distinct()
+            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
+            .ThenBy(i => i).ThenByDescending(i => i)
+            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
+            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
+            .Where(i => i != 10).ToArray();
+
+        var c2 = [|x|].Append(1).Cast<Object>().Distinct()
+            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
+            .ThenBy(i => i).ThenByDescending(i => i)
+            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
+            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
+            .Where(i => i != 10).First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+#endif
         }
 
         [Fact]
