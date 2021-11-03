@@ -31,7 +31,12 @@ namespace Microsoft.TemplateEngine.Utils
             Type = jObject.ToString(nameof(Type)) ?? "parameter";
             DataType = jObject.ToString(nameof(DataType)) ?? "string";
             Description = jObject.ToString(nameof(Description));
-            Priority = Enum.TryParse(jObject.ToString(nameof(Priority)), out TemplateParameterPriority value) ? value : default;
+
+            int priority = jObject.ToInt32(nameof(Priority));
+            Priority = Enum.IsDefined(typeof(TemplateParameterPriority), priority) ? (TemplateParameterPriority)priority : default;
+
+            Priority = (TemplateParameterPriority)jObject.ToInt32(nameof(Priority));
+
             DefaultValue = jObject.ToString(nameof(DefaultValue));
             DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
             DisplayName = jObject.ToString(nameof(DisplayName));
