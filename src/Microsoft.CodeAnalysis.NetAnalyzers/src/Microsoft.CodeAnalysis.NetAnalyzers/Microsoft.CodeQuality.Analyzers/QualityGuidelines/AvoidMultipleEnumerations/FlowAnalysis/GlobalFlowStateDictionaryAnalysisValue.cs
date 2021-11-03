@@ -10,10 +10,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal class GlobalFlowStateDictionaryAnalysisValue : CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue>
     {
-        /// <summary>
-        /// The core analysis value of <see cref="GlobalFlowStateDictionaryAnalysis"/>.
-        /// Key is the <see cref="InvocationEntity"/> tracked by the analysis. Value is the state of the <see cref="AnalysisEntity"/>.
-        /// </summary>
         public ImmutableDictionary<InvocationEntity, TrackingInvocationSet> TrackedEntities { get; }
 
         public GlobalFlowStateDictionaryAnalysisValueKind Kind { get; }
@@ -33,23 +29,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Merge <param name="value1"/> and <param name="value2"/>
         /// </summary>
-        /// <remarks>
-        /// e.g.
-        /// {
-        ///     "entity1" : ["1", "2", "3"]
-        ///     "entity2" : "1"
-        /// }
-        /// {
-        ///     "entity1" : ["2", "3", "4"]
-        ///     "entity3" : "1"
-        /// }
-        /// After intersection, the result would be
-        /// {
-        ///     "entity1" : ["1", "2", "3", "4"]
-        ///     "entity2" : "1"
-        ///     "entity3" : "1"
-        /// }
-        /// </remarks>
         public static GlobalFlowStateDictionaryAnalysisValue Merge(GlobalFlowStateDictionaryAnalysisValue value1, GlobalFlowStateDictionaryAnalysisValue value2)
         {
             if (value1.TrackedEntities.Count == 0)
@@ -104,6 +83,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 }
                 else
                 {
+                    // If there is no such entity, intersect it with an empty value
+                    // e.g.
+                    // if (i == 10)
+                    // {
+                    //     Bar.ToArray();
+                    // }
+                    // else
+                    // {
+                    // }
+                    // The AnalysisValue after the if-else branch should be Zero Times.
                     builder[key] = InvocationSetHelpers.Intersect(invocationSet, TrackingInvocationSet.Empty);
                 }
             }

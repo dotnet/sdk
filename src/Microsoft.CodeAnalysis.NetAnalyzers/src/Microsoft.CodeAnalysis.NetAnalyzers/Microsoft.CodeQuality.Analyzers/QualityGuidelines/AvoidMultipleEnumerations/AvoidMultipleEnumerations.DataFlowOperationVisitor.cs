@@ -36,19 +36,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return value;
                 }
 
-                if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
-                {
-                    return value;
-                }
-
-                if (!TryGetInvocationEntity(operation, out var invocationEntity))
-                {
-                    return value;
-                }
-
-                var newValue = CreateAnalysisValue(invocationEntity, operation, value);
-                UpdateGlobalValue(newValue);
-                return newValue;
+                return CreateAndUpdateAnalysisValue(operation, value);
             }
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
@@ -59,17 +47,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return value;
                 }
 
+                return CreateAndUpdateAnalysisValue(operation, value);
+            }
+
+            private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(IOperation operation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            {
                 if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
-                    return value;
+                    return defaultValue;
                 }
 
                 if (!TryGetInvocationEntity(operation, out var invocationEntity))
                 {
-                    return value;
+                    return defaultValue;
                 }
 
-                var newValue = CreateAnalysisValue(invocationEntity, operation, value);
+                var newValue = CreateAnalysisValue(invocationEntity, operation, defaultValue);
                 UpdateGlobalValue(newValue);
                 return newValue;
             }
