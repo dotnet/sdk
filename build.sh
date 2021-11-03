@@ -8,4 +8,8 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+# Set max number of files open, helps avoid errors during NuGet restore
+# See https://github.com/dotnet/core-eng/issues/14808
+ulimit -n 16384
+
 . "$ScriptRoot/eng/common/build.sh" --build --restore "$@"
