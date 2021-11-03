@@ -292,7 +292,6 @@
         <PackageGroup Id="PG_WorkloadManifests">
             @(BundledManifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
                 <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-                <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
             </MsiPackage>', '
             ')
         </PackageGroup>
