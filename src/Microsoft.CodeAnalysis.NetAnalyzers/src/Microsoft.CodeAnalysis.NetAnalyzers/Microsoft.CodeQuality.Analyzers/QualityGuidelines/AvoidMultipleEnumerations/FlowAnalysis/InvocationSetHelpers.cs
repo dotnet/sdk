@@ -40,7 +40,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // {
             //    Bar.First();
             // }
-            // Then 'Bar' is only guranteed to be enumerated once after the if-else statement
+            // Then 'Bar' is only guaranteed to be enumerated once after the if-else statement
             var totalCount = Min(set1.EnumerationCount, set2.EnumerationCount);
             foreach (var operation in set1.Operations)
             {
@@ -55,14 +55,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
         }
 
-        public static InvocationCount Min(InvocationCount count1, InvocationCount count2)
+        private static InvocationCount Min(InvocationCount count1, InvocationCount count2)
         {
             // Unknown = -1, Zero = 0, One = 1, TwoOrMoreTime = 2
             var min = Math.Min((int)count1, (int)count2);
             return (InvocationCount)min;
         }
 
-        public static InvocationCount AddInvocationCount(InvocationCount count1, InvocationCount count2)
+        private static InvocationCount AddInvocationCount(InvocationCount count1, InvocationCount count2)
             => (count1, count2) switch
             {
                 (InvocationCount.None, _) => InvocationCount.None,

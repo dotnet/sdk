@@ -12,6 +12,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     public partial class AvoidMultipleEnumerations
     {
+        /// <summary>
+        /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
+        /// </summary>
         private static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -28,6 +31,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
         }
 
+        /// <summary>
+        /// Skip the deferred method call and conversion operation in linq methods call chain
+        /// </summary>
         private static IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -69,6 +75,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                    && conversionOperation.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable;
         }
 
+        /// <summary>
+        /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by for each loop
+        /// </summary>
         private static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -117,7 +126,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return true;
             }
 
-            // SequentialEqual would enumerate two parameters
+            // Example: SequentialEqual would enumerate two parameters
             if (wellKnownSymbolsInfo.TwoParametersEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
                 && targetMethod.IsExtensionMethod
                 && targetMethod.Parameters.Length > 1
@@ -182,7 +191,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            // Get linq method
+            // Get linq methods
             GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqOneParameterEnumeratedMethods, builder);
 
             // Get immutable collection conversion method, like ToImmutableArray()

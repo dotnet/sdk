@@ -8,7 +8,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal class InvocationEntity : CacheBasedEquatable<InvocationEntity>
     {
-        public ImmutableHashSet<AbstractLocation> Locations { get; }
+        private ImmutableHashSet<AbstractLocation> Locations { get; }
 
         public InvocationEntity(ImmutableHashSet<AbstractLocation> locations)
         {
