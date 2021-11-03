@@ -2,6 +2,7 @@
 # Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 param(
+    [Parameter(Mandatory=$true)][string]$WorkloadManifestWxsFile,
     [Parameter(Mandatory=$true)][string]$CLISDKMSIFile,
     [Parameter(Mandatory=$true)][string]$ASPNETRuntimeWixLibFile,
     [Parameter(Mandatory=$true)][string]$SharedFxMSIFile,
@@ -18,7 +19,6 @@ param(
     [Parameter(Mandatory=$true)][string]$WindowsDesktopTargetingPackMSIFile,
     [Parameter(Mandatory=$true)][string]$FinalizerExe,
     [Parameter(Mandatory=$true)][string]$TemplatesMSIFile,
-    [Parameter(Mandatory=$true)][string]$ManifestsMSIFile,
     [Parameter(Mandatory=$true)][string]$DotnetBundleOutput,
     [Parameter(Mandatory=$true)][string]$WixRoot,
     [Parameter(Mandatory=$true)][string]$ProductMoniker,
@@ -78,7 +78,7 @@ function RunCandleForBundle
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
         -ext WixTagExtension.dll `
-        "$AuthWsxRoot\bundle.wxs"
+        "$AuthWsxRoot\bundle.wxs" "$WorkloadManifestWxsFile"
 
     Write-Information "Candle output: $candleOutput"
 
@@ -97,11 +97,14 @@ function RunLightForBundle
     $result = $true
     pushd "$WixRoot"
 
+    $WorkloadManifestWixobjFile = [System.IO.Path]::GetFileNameWithoutExtension($WorkloadManifestWxsFile) + ".wixobj"
+
     Write-Information "Running light for bundle.."
 
     $lightOutput = .\light.exe -nologo `
         -cultures:en-us `
         bundle.wixobj `
+        $WorkloadManifestWixobjFile `
         $ASPNETRuntimeWixlibFile `
         -ext WixBalExtension.dll `
         -ext WixUtilExtension.dll `
