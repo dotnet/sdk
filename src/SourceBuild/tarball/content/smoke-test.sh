@@ -601,6 +601,56 @@ function runXmlDocTests() {
     fi
 }
 
+function runOmniSharpTests() {
+    dotnetCmd=${dotnetDir}/dotnet
+
+    rm -rf workdir
+    mkdir workdir
+    pushd workdir
+
+    curl -sSLO "https://github.com/OmniSharp/omnisharp-roslyn/releases/latest/download/omnisharp-linux-x64.tar.gz"
+
+    mkdir omnisharp
+    pushd omnisharp
+    tar xf "../omnisharp-linux-x64.tar.gz"
+    popd
+
+    # 'blazorwasm' requires prereqs (non-source-built packages) - re-enable with https://github.com/dotnet/source-build/issues/2550
+    for project in blazorserver classlib console mstest mvc nunit web webapp webapi worker xunit ; do
+
+        mkdir hello-$project
+        pushd hello-$project
+
+        "${dotnetCmd}" new $project
+        popd
+
+        ./omnisharp/run -s "$(readlink -f hello-$project)" > omnisharp.log &
+
+        sleep 5
+
+        pkill -P $$
+
+        # Omnisharp spawns off a number of processes. They all include the
+        # current directory as a process argument, so use that to identify and
+        # kill them.
+        pgrep -f "$(pwd)"
+
+        kill "$(pgrep -f "$(pwd)")"
+
+        cat omnisharp.log
+
+        if grep ERROR omnisharp.log; then
+            echo "test failed"
+            exit 1
+        else
+            echo "OK"
+        fi
+
+    done
+
+    popd
+}
+
 function resetCaches() {
     rm -rf "$testingHome"
     mkdir "$testingHome"
@@ -683,10 +733,7 @@ echo SDK under test is:
 export NUGET_PACKAGES="$restoredPackagesDir"
 SOURCE_BUILT_PKGS_PATH="$SCRIPT_ROOT/artifacts/obj/$buildArch/$configuration/blob-feed/packages/"
 export DOTNET_ROOT="$dotnetDir"
-# OSX also requires DOTNET_ROOT to be on the PATH
-if [ "$(uname)" == 'Darwin' ]; then
-    export PATH="$dotnetDir:$PATH"
-fi
+export PATH="$dotnetDir:$PATH"
 
 # Run all tests, local restore sources first, online restore sources second
 if [ "$excludeLocalTests" == "false" ]; then
@@ -726,5 +773,7 @@ if [ "$excludeOnlineTests" == "false" ]; then
 fi
 
 runXmlDocTests
+
+runOmniSharpTests
 
 echo "ALL TESTS PASSED!"
