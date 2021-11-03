@@ -31,7 +31,9 @@
     <PackageDownload Include="@(BundledManifests->'%(NupkgId)')" >
       <Version>[%(Version)]</Version>
     </PackageDownload>
-
+  </ItemGroup>
+  
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' ">
     <PackageDownload Include="@(BundledManifests->'%(MsiNupkgId)')" >
       <Version>[%(Version)]</Version>
     </PackageDownload>
