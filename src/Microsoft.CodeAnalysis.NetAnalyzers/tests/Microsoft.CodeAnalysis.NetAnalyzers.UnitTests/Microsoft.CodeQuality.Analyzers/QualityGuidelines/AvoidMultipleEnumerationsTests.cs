@@ -1275,5 +1275,55 @@ public class Bar
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
+
+        [Fact]
+        public async Task TestForEachForIEnumerable()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable h)
+    {
+        foreach (var i in [|h|])
+        {
+        }
+
+        foreach (var i in [|h|])
+        {
+        }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestForEachForIOrderedEnumerable()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IOrderedEnumerable<int> h)
+    {
+        foreach (var i in [|h|])
+        {
+        }
+
+        foreach (var i in [|h|])
+        {
+        }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
     }
 }

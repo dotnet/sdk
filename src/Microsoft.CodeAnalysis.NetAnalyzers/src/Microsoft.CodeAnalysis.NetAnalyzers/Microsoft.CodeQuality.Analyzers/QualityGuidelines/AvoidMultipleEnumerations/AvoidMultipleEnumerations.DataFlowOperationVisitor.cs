@@ -15,15 +15,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
-            private readonly IMethodSymbol? _getEnumeratorMethod;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                WellKnownSymbolsInfo wellKnownSymbolsInfo,
-                IMethodSymbol? getEnumeratorMethod) : base(analysisContext)
+                WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
-                _getEnumeratorMethod = getEnumeratorMethod;
             }
 
             protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
@@ -113,7 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return operationToCheck is IConversionOperation conversionOperation
                    && IsImplicitConventionToDeferredType(conversionOperation)
                    && conversionOperation.Parent is IInvocationOperation invocationOperation
-                   && invocationOperation.TargetMethod.OriginalDefinition.Equals(_getEnumeratorMethod)
+                   && _wellKnownSymbolsInfo.GetEnumeratorMethods.Contains(invocationOperation.TargetMethod.OriginalDefinition)
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }
 

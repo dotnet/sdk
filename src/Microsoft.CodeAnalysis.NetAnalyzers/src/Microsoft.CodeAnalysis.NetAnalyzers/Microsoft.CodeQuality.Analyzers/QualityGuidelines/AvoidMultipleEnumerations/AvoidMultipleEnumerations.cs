@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -118,8 +117,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo,
-            IMethodSymbol? getEnumeratorMethod);
+            WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -146,12 +144,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
+            // In CFG blocks there is no foreach loop related Operation, so use the
+            // the GetEnumerator method to find the foreach loop
+            var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
+
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
                 oneParameterDeferredMethods,
                 twoParametersDeferredMethods,
                 oneParameterEnumeratedMethods,
                 twoParametersEnumeratedMethods,
-                additionalDeferTypes);
+                additionalDeferTypes,
+                getEnumeratorSymbols);
 
             var potentialDiagnosticOperationsBuilder = ImmutableHashSet.CreateBuilder<IOperation>();
             operationBlockStartAnalysisContext.RegisterOperationAction(
@@ -202,19 +205,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            // In CFG blocks there is no foreach loop related Operation, so use the
-            // the GetEnumerator method to find the foreach loop
-            var getEnumeratorSymbol = wellKnownTypeProvider
-                .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1)
-                ?.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault() as IMethodSymbol;
-
             var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
                 cfg,
                 context.OwningSymbol,
                 analysisContext => CreateOperationVisitor(
                     analysisContext,
-                    wellKnownSymbolsInfo,
-                    getEnumeratorSymbol),
+                    wellKnownSymbolsInfo),
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,

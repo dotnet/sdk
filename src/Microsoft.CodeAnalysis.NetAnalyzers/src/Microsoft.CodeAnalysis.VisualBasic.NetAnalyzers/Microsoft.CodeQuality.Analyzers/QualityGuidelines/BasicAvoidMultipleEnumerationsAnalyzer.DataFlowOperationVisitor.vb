@@ -9,9 +9,8 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Inherits AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
-                           wellKnownSymbolsInfo as WellKnownSymbolsInfo,
-                           getEnumeratorMethod As IMethodSymbol)
-                MyBase.New(analysisContext, wellKnownSymbolsInfo, getEnumeratorMethod)
+                           wellKnownSymbolsInfo as WellKnownSymbolsInfo)
+                MyBase.New(analysisContext, wellKnownSymbolsInfo)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean

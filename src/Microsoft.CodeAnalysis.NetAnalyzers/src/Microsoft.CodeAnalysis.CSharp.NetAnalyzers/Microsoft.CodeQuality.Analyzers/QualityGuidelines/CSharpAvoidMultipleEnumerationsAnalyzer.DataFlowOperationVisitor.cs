@@ -11,11 +11,9 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
         {
             public CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext context,
-                WellKnownSymbolsInfo wellKnownSymbolsInfo,
-                IMethodSymbol? getEnumeratorMethod) : base(
+                WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(
                     context,
-                    wellKnownSymbolsInfo,
-                    getEnumeratorMethod)
+                    wellKnownSymbolsInfo)
             {
             }
 

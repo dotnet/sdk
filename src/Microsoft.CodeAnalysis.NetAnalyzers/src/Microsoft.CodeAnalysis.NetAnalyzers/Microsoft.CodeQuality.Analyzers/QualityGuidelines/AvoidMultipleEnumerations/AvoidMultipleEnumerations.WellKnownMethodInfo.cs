@@ -43,18 +43,25 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             /// </summary>
             public ImmutableArray<ITypeSymbol> AdditionalDeferredTypes { get; }
 
+            /// <summary>
+            /// IEnumerable.GetEnumerator() and IEnumerable'1.GetEnumerator()
+            /// </summary>
+            public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
+
             public WellKnownSymbolsInfo(
                 ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
                 ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
                 ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
                 ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-                ImmutableArray<ITypeSymbol> additionalDeferredTypes)
+                ImmutableArray<ITypeSymbol> additionalDeferredTypes,
+                ImmutableArray<IMethodSymbol> getEnumeratorMethods)
             {
                 OneParameterDeferredMethods = oneParameterDeferredMethods;
                 TwoParametersDeferredMethods = twoParametersDeferredMethods;
                 OneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
                 TwoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
                 AdditionalDeferredTypes = additionalDeferredTypes;
+                GetEnumeratorMethods = getEnumeratorMethods;
             }
         }
     }

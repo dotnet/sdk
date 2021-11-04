@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (IsImplicitConversion(operation.Parent))
+            if (IsImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
             {
                 // Go to the implicit conversion if needed
                 // e.g.
@@ -60,10 +60,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation;
         }
 
-        private static bool IsImplicitConversion(IOperation operation)
+        private static bool IsImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            // Check if this is a conversion operation targeting IEnumerable<T> or IEnumerable,
-            // and this conversion is passed into another deferred execution method.
+            // Check if this is a conversion operation targeting IEnumerable<T>, IEnumerable or other deferred types,
             // This is used in methods chain like
             // 1. Cast<T> and OfType<T>, which takes IEnumerable as the first parameter. For example:
             // c.Select(i => i + 1).Cast<long>();
@@ -71,8 +70,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // 2. OrderBy, ThenBy, etc.. which returns IOrderedIEnumerable<T>. For this example,
             // c.OrderBy(i => i.Key).Select(m => m + 1);
             // 'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
+            // 3. For each loop.
             return operation is IConversionOperation { IsImplicit: true } conversionOperation
-                   && conversionOperation.Type.OriginalDefinition.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable;
+                   && IsDeferredType(conversionOperation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>
@@ -211,6 +211,31 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             builder.AddRange(methodSymbol);
                         }
                     }
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable, out var nonGenericIEnumerable))
+            {
+                var method = nonGenericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
+                if (method is IMethodSymbol methodSymbol)
+                {
+                    builder.Add(methodSymbol);
+                }
+            }
+
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var genericIEnumerable))
+            {
+                var method = genericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
+                if (method is IMethodSymbol methodSymbol)
+                {
+                    builder.Add(methodSymbol);
                 }
             }
 

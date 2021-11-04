@@ -11,11 +11,9 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     {
         internal override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo,
-            IMethodSymbol? getEnumeratorMethod)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
-                wellKnownSymbolsInfo,
-                getEnumeratorMethod);
+                wellKnownSymbolsInfo);
     }
 }
