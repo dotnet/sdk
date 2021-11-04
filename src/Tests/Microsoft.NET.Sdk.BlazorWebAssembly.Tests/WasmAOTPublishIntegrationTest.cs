@@ -22,16 +22,16 @@ using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<str
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmPublishIntegrationTest : AspNetSdkTest
+    public class WasmAOTPublishIntegrationTest : WasmPublishIntegrationTest
     {
-        public WasmPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
+        public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
-        public void Publish_MinimalApp_Works()
+        public void AOT_Publish_MinimalApp_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, testInstance.TestRoot);
             publishCommand.Execute().Should().Pass()
@@ -59,11 +59,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithDefaultSettings_Works()
+        public void AOT_Publish_WithDefaultSettings_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
             publishCommand.Execute().Should().Pass();
@@ -104,11 +104,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_Works_WithLibraryUsingHintPath()
+        public void AOT_Publish_Works_WithLibraryUsingHintPath()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((project, document) =>
             {
@@ -152,11 +152,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithScopedCss_Works()
+        public void AOT_Publish_WithScopedCss_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
@@ -194,11 +194,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_InRelease_Works()
+        public void AOT_Publish_InRelease_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
@@ -230,11 +230,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithExistingWebConfig_Works()
+        public void AOT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
@@ -250,11 +250,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithNoBuild_Works()
+        public void AOT_Publish_WithNoBuild_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.Execute()
@@ -296,11 +296,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [Theory]
         [InlineData("different-path")]
         [InlineData("/different-path")]
-        public void Publish_WithStaticWebBasePathWorks(string basePath)
+        public void AOT_Publish_WithStaticWebBasePathWorks(string basePath)
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: basePath);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, identifier: basePath);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -358,10 +358,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [Theory]
         [InlineData("different-path/")]
         [InlineData("/different-path/")]
-        public void Publish_Hosted_WithStaticWebBasePathWorks(string basePath)
+        public void AOT_Publish_Hosted_WithStaticWebBasePathWorks(string basePath)
         {
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: basePath);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, identifier: basePath);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -423,11 +423,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithTrimmingdDisabled_Works()
+        public void AOT_Publish_WithTrimmingdDisabled_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -494,11 +494,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
+        public void AOT_Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -534,11 +534,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_DefaultSettings_Works()
+        public void AOT_Publish_HostedApp_DefaultSettings_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
@@ -618,11 +618,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
+        public void AOT_Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var wwwroot = Path.Combine(testInstance.TestRoot, "blazorwasm", "wwwroot");
             File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
@@ -651,11 +651,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_WithSatelliteAssemblies()
+        public void AOT_Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -700,11 +700,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [Fact]
         // Regression test for https://github.com/dotnet/aspnetcore/issues/18752
-        public void Publish_HostedApp_WithoutTrimming_Works()
+        public void AOT_Publish_HostedApp_WithoutTrimming_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -800,11 +800,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_WithNoBuild_Works()
+        public void AOT_Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var buildCommand = new BuildCommand(testInstance, "blazorhosted");
             buildCommand.Execute().Should().Pass();
@@ -853,12 +853,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_VisualStudio()
+        public void AOT_Publish_HostedApp_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             // Arrange
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
@@ -937,11 +937,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedAppWithScopedCss_VisualStudio()
+        public void AOT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
@@ -1029,10 +1029,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
         [Fact]
-        public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
+        public void AOT_Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((path, project) =>
             {
@@ -1078,11 +1078,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_WithRidSpecifiedInCLI_Works()
+        public void AOT_Publish_HostedApp_WithRidSpecifiedInCLI_Works()
         {
             // Arrange
             var testAppName = "BlazorHostedRID";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
@@ -1092,11 +1092,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostedApp_WithRid_Works()
+        public void AOT_Publish_HostedApp_WithRid_Works()
         {
             // Arrange
             var testAppName = "BlazorHostedRID";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
@@ -1186,11 +1186,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
+        public void AOT_Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             testInstance.WithProjectChanges((project) =>
             {
@@ -1224,12 +1224,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [Fact]
-        public void Publish_HostingMultipleBlazorWebApps_Works()
+        public void AOT_Publish_HostingMultipleBlazorWebApps_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/29264
             // Arrange
             var testAppName = "BlazorMultiApp";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "BlazorMultipleApps.Server"));
             publishCommand.Execute().Should().Pass();
@@ -1280,75 +1280,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "Newtonsoft.Json.dll.br")).Should().NotExist();
         }
 
-        protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
-        {
-            var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");
-            var bootManifestJson = File.ReadAllText(bootManifestResolvedPath);
-            var bootManifest = JsonSerializer.Deserialize<BootJsonData>(bootManifestJson);
-
-            VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.assembly);
-            VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.runtime);
-
-            if (bootManifest.resources.pdb != null)
+        private TestAsset CreateAspNetSdkTestAssetWithAot(
+            string testAsset,
+            string identifier = null) =>
+            CreateAspNetSdkTestAsset(testAsset, identifier: identifier)
+            .WithProjectChanges((project, document) =>
             {
-                VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.pdb);
-            }
-
-            if (bootManifest.resources.satelliteResources != null)
-            {
-                foreach (var resourcesForCulture in bootManifest.resources.satelliteResources.Values)
+                if (Path.GetFileNameWithoutExtension(project) == testAsset)
                 {
-                    VerifyBootManifestHashes(testAsset, blazorPublishDirectory, resourcesForCulture);
+                    document.Descendants("PropertyGroup").First().Add(new XElement("RunAOTCompilation", "true"));
                 }
-            }
-
-            static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory, ResourceHashesByNameDictionary resources)
-            {
-                foreach (var (name, hash) in resources)
-                {
-                    var relativePath = Path.Combine(blazorPublishDirectory, "_framework", name);
-                    new FileInfo(Path.Combine(testAsset.TestRoot, relativePath)).Should().HashEquals(ParseWebFormattedHash(hash));
-                }
-            }
-
-            static string ParseWebFormattedHash(string webFormattedHash)
-            {
-                Assert.StartsWith("sha256-", webFormattedHash);
-                return webFormattedHash.Substring(7);
-            }
-        }
-
-        protected void VerifyTypeGranularTrimming(string blazorPublishDirectory)
-        {
-            VerifyAssemblyHasTypes(Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.AspNetCore.Components.dll"), new[] {
-                    "Microsoft.AspNetCore.Components.RouteView",
-                    "Microsoft.AspNetCore.Components.RouteData",
-                    "Microsoft.AspNetCore.Components.CascadingParameterAttribute"
-                });
-        }
-
-        protected void VerifyAssemblyHasTypes(string assemblyPath, string[] expectedTypes)
-        {
-            new FileInfo(assemblyPath).Should().Exist();
-
-            using (var file = File.OpenRead(assemblyPath))
-            {
-                using var peReader = new PEReader(file);
-                var metadataReader = peReader.GetMetadataReader();
-                var types = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
-                {
-                    var type = metadataReader.GetTypeDefinition(t);
-                    return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
-                }).ToArray();
-                types.Should().Contain(expectedTypes);
-            }
-        }
-
-        protected static BootJsonData ReadBootJsonData(string path)
-        {
-            return JsonSerializer.Deserialize<BootJsonData>(
-                File.ReadAllText(path),
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-        }
+            });
     }
 }
