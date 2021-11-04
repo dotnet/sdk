@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Abbrechen</String>
   <String Id="FirstTimeWelcomeMessage">Die Installation war erfolgreich.
 
-Folgende Komponenten wurden unter [DOTNETHOME] installiert:
+Folgende Komponenten wurden installiert:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]

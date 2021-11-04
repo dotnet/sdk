@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">От&amp;мена</String>
   <String Id="FirstTimeWelcomeMessage">Установка выполнена.
 
-В "[DOTNETHOME]" установлены следующие компоненты:
+Установлены следующие компоненты:
     • Пакет SDK для .NET [DOTNETSDKVERSION]
     • Среда выполнения .NET [DOTNETRUNTIMEVERSION]
     • Среда выполнения ASP.NET Core [ASPNETCOREVERSION]

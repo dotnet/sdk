@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Zrušit</String>
   <String Id="FirstTimeWelcomeMessage">Instalace proběhla úspěšně.
 
-Do [DOTNETHOME] byly nainstalovány tyto součásti:
+Byly nainstalovány tyto součásti:
     • Sada .NET SDK [DOTNETSDKVERSION]
     • Modul runtime .NET [DOTNETRUNTIMEVERSION]
     • Modul runtime ASP.NET Core [ASPNETCOREVERSION]

@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Cancel</String>
   <String Id="FirstTimeWelcomeMessage">The installation was successful.
 
-The following products were installed at: '[DOTNETHOME]'
+The following products were installed:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]

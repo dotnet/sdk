@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">설치가 완료되었습니다.
 
-다음이 '[DOTNETHOME]'에 설치되었습니다.
+다음이 설치되었습니다.
     • .NET SDK [DOTNETSDKVERSION]
     • .NET 런타임 [DOTNETRUNTIMEVERSION]
     • ASP.NET Core 런타임 [ASPNETCOREVERSION]

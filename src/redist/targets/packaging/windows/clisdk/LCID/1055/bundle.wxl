@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;İptal</String>
   <String Id="FirstTimeWelcomeMessage">Yükleme başarılı oldu.
 
-Aşağıdakiler şu konumda yüklü: '[DOTNETHOME]'
+Aşağıdakiler şu yüklü:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Çalışma Zamanı [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Çalışma Zamanı [ASPNETCOREVERSION]

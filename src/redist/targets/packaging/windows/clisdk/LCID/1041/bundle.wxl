@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">インストールが成功しました。
 
-'[DOTNETHOME]' に以下がインストールされました
+以下がインストールされました
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]

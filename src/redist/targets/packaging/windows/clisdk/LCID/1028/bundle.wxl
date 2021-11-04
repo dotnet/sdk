@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">安裝成功。
 
-下列項目已安裝在: '[DOTNETHOME]'
+下列項目已安裝:
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]

@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">&amp;Anuluj</String>
   <String Id="FirstTimeWelcomeMessage">Instalacja zakończyła się pomyślnie.
 
-Następujące elementy zostały zainstalowane w: „[DOTNETHOME]”
+Następujące elementy zostały zainstalowane:
     • Zestaw .NET SDK [DOTNETSDKVERSION]
     • Środowisko uruchomieniowe platformy .NET [DOTNETRUNTIMEVERSION]
     • Środowisko uruchomieniowe platformy ASP.NET Core [ASPNETCOREVERSION]
