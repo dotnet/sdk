@@ -63,12 +63,7 @@ namespace Microsoft.DotNet.Compatibility.ErrorSuppression
             _readerWriterLock.EnterReadLock();
             try
             {
-                if (_noWarn.Contains(error.DiagnosticId))
-                {
-                    return true;
-                }
-
-                if (_validationSuppressions.Contains(error))
+                if (_noWarn.Contains(error.DiagnosticId) || _validationSuppressions.Contains(error))
                 {
                     return true;
                 }
