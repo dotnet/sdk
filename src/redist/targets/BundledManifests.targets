@@ -22,7 +22,7 @@
       <MsiNupkgId>%(Identity).Manifest-%(FeatureBand).Msi.$(MsiArchitectureForWorkloadManifests)</MsiNupkgId>
       <RestoredNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredNupkgContentPath>
       <RestoredMsiNupkgContentPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(MsiNupkgId)', '').ToLower())/$([MSBuild]::ValueOrDefault('%(Version)', '').ToLower())</RestoredMsiNupkgContentPath>
-      <RestoredMsiPathInNupkg>%(RestoredMsiNupkgContentPath)/data/%(NupkgId).%(Version)-$(MsiArchitectureForWorkloadManifests).msi</RestoredMsiPathInNupkg>
+      <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath('%(RestoredMsiNupkgContentPath)/data/%(NupkgId).%(Version)-$(MsiArchitectureForWorkloadManifests).msi'))</RestoredMsiPathInNupkg>
     </BundledManifests>
   </ItemGroup>
 
@@ -37,7 +37,39 @@
     <PackageDownload Include="@(BundledManifests->'%(MsiNupkgId)')" >
       <Version>[%(Version)]</Version>
     </PackageDownload>
+
+    <PackageReference Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
   </ItemGroup>
+
+  <Target Name="ValidateBundledManifestSigning"
+          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' ">
+
+    <PropertyGroup>
+      <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
+      <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
+      <SignCheckErrorLog Condition="'$(SignCheckErrorLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.errors.log</SignCheckErrorLog>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifests->'%(RestoredMsiPathInNupkg)')" />
+    </ItemGroup>
+
+    <Exec Command="$(SignCheckExe) ^
+                   --recursive ^
+                   -f UnsignedFiles ^
+                   -i @(SignCheckWorkloadManifestMsiInputFiles, ' ') ^
+                   -l $(SignCheckLog) ^
+                   -e $(SignCheckErrorLog)" />
+
+    <Error
+      Text="Signing validation failed for workload manifest MSI. Check $(SignCheckErrorLog) for more information."
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+
+    <Message
+      Text="##vso[artifact.upload containerfolder=LogFiles;artifactname=LogFiles]{SignCheckErrorLog}"
+      Condition="Exists($(SignCheckErrorLog)) and '$([System.IO.File]::ReadAllText($(SignCheckErrorLog)))' != ''" />
+    
+  </Target>
 
   <Target Name="LayoutManifests"
           DependsOnTargets="SetupBundledComponents">

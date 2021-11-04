@@ -280,7 +280,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateWorkloadManifestsWxs">
+  <Target Name="GenerateWorkloadManifestsWxs"
+          DependsOnTargets="ValidateBundledManifestSigning">
     <PropertyGroup>
       <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
       <WorkloadManifestsWxsContent>
