@@ -99,7 +99,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName);
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, "blazorhosted", "blazorwasm");
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // Publish
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorhosted"));
-            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true").Should().Pass();
+            publishCommand.Execute("/p:BuildProjectReferences=false /p:BuildInsideVisualStudio=true /p:Configuration=Release").Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
             var blazorPublishDirectory = Path.Combine(publishDirectory.ToString(), "wwwroot");
@@ -186,13 +186,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private TestAsset CreateAspNetSdkTestAssetWithAot(
             string testAsset,
-            string publishApp = null,
-            string identifier = null) =>
-            CreateAspNetSdkTestAsset(testAsset, identifier: identifier)
+            params string[] appsToAOT) =>
+            CreateAspNetSdkTestAsset(testAsset)
             .WithProjectChanges((project, document) =>
             {
-                var projToAOT = string.IsNullOrEmpty(publishApp) ? testAsset : publishApp;
-                if (Path.GetFileNameWithoutExtension(project) == projToAOT)
+                if (appsToAOT.Contains(Path.GetFileNameWithoutExtension(project)))
                 {
                     document.Descendants("PropertyGroup").First().Add(new XElement("RunAOTCompilation", "true"));
                 }
