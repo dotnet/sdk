@@ -61,7 +61,7 @@ Questo prodotto consente di raccogliere i dati sull'utilizzo
 Risorse
     • Documentazione di .NET https://aka.ms/dotnet-docs
     • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
-    • Note sulla versione https://aka.ms/dotnet5-release-notes
+    • Note sulla versione https://aka.ms/dotnet6-release-notes
     • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
