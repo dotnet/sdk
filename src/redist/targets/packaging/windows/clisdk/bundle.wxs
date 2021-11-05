@@ -10,16 +10,16 @@
           AboutUrl="https://aka.ms/netcorehelp/"
           Compressed="yes">
 
-    <bal:Condition Message="!(loc.InstallPathx64x86)">
+    <bal:Condition Message="#(loc.InstallPathx64x86)">
         WixBundleInstalled OR (NOT DOTNETHOME_X64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
-    <bal:Condition Message="!(loc.InstallPathARM64x86)">
+    <bal:Condition Message="#(loc.InstallPathARM64x86)">
         WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X86) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
     <!-- Permit same path on non-ARM64 machines since past SDKs always wrote this value -->
-    <bal:Condition Message="!(loc.InstallPathARM64x64)">
+    <bal:Condition Message="#(loc.InstallPathARM64x64)">
         WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X64) OR (NOT NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) OR DOTNETHOMESIMILARITYCHECKOVERRIDE
     </bal:Condition>
 
