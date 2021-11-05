@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -18,7 +19,7 @@ public class ComputeBlazorBuildAssetsTest
         // Arrange
         var taskInstance = new ComputeBlazorBuildAssets
         {
-            Candidates = new[] 
+            Candidates = new[]
             {
                 new TaskItem(@"x:\refassembly\file.dll", new Dictionary<string, string>()
                 {
@@ -58,22 +59,22 @@ public class ComputeBlazorBuildAssetsTest
             taskInstance.AssetCandidates,
             item =>
             {
-                Assert.Equal(@"x:\refassembly\file.dll", item.ItemSpec);
+                Assert.Equal(Path.GetFullPath(@"x:\refassembly\file.dll"), item.ItemSpec);
                 Assert.Equal(@"x:\refassembly\file.dll", item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll", item.ItemSpec);
+                Assert.Equal(Path.GetFullPath(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll"), item.ItemSpec);
                 Assert.Equal(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll", item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(@"x:\MyProject\bin\Debug\MyProject.dll", item.ItemSpec);
+                Assert.Equal(Path.GetFullPath(@"x:\MyProject\bin\Debug\MyProject.dll"), item.ItemSpec);
                 Assert.Equal(@"x:\MyProject\bin\Debug\MyProject.dll", item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(@"x:\MyProject\bin\Debug\MyProject.pdb", item.ItemSpec);
+                Assert.Equal(Path.GetFullPath(@"x:\MyProject\bin\Debug\MyProject.pdb"), item.ItemSpec);
                 Assert.Empty(item.GetMetadata("OriginalItemSpec"));
             });
     }
