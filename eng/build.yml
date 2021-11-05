@@ -142,27 +142,13 @@ jobs:
         displayName: Run Tests Cannot Run On Helix
         env:
           BuildConfig: $(_BuildConfig)
-      - script: eng/common/build.sh
-              --configuration $(_BuildConfig)
-              --prepareMachine
-              --ci
-              --restore
-              --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
-              /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
-              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-        displayName: Build Before Running Tests in Helix
-        condition: succeededOrFailed()
-        env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(_HelixApiToken)
       - script: ./artifacts/bin/redist/Debug/dotnet/dotnet workload install wasm-tools
         displayName: Install wasm-tools Workload
       - script: eng/common/build.sh
               --configuration $(_BuildConfig)
               --prepareMachine
               --ci
-              --no-restore
-              --no-build
+              --restore
               --test
               --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
               /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
