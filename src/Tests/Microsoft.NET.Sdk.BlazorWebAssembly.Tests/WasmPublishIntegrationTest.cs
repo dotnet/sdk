@@ -1098,6 +1098,86 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
         }
 
+        protected void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
+        {
+            var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Debug", "linux-x64");
+
+            // Make sure the main project exists
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "libhostfxr.so" // Verify that we're doing a self-contained deployment
+            });
+
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "RazorClassLibrary.dll",
+                "blazorwasm.dll",
+            });
+
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "wwwroot/_framework/blazor.boot.json",
+                "wwwroot/_framework/blazor.webassembly.js",
+                "wwwroot/_framework/dotnet.wasm",
+                "wwwroot/_framework/blazorwasm.dll",
+                "wwwroot/_framework/System.Text.Json.dll"
+            });
+
+
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                // Verify project references appear as static web assets
+                "wwwroot/_framework/RazorClassLibrary.dll",
+                // Also verify project references to the server project appear in the publish output
+                "RazorClassLibrary.dll",
+            });
+
+            // Verify static assets are in the publish directory
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "wwwroot/index.html"
+            });
+
+            // Verify static web assets from referenced projects are copied.
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "wwwroot/_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
+                "wwwroot/_content/RazorClassLibrary/styles.css",
+            });
+
+            if (!hosted)
+            {
+                // Verify web.config
+                publishDirectory.Should().HaveFiles(new[]
+                {
+                    "web.config"
+                });
+            }
+
+            VerifyBootManifestHashes(testInstance, Path.Combine(publishDirectory.ToString(), "wwwroot"));
+
+            // Verify compression works
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "wwwroot/_framework/dotnet.wasm.br",
+                "wwwroot/_framework/blazorwasm.dll.br",
+                "wwwroot/_framework/RazorClassLibrary.dll.br",
+                "wwwroot/_framework/System.Text.Json.dll.br"
+            });
+            publishDirectory.Should().HaveFiles(new[]
+            {
+                "wwwroot/_framework/dotnet.wasm.gz",
+                "wwwroot/_framework/blazorwasm.dll.gz",
+                "wwwroot/_framework/RazorClassLibrary.dll.gz",
+                "wwwroot/_framework/System.Text.Json.dll.gz"
+            });
+
+            VerifyServiceWorkerFiles(testInstance, Path.Combine(publishDirectory.ToString(), "wwwroot"),
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
         [Fact]
         public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
