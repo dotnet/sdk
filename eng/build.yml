@@ -135,6 +135,8 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
+      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
+        displayName: Install wasm-tools Workload
       - script: eng/runTestsCannotRunOnHelix.sh
                   --configuration $(_BuildConfig)
                   --ci
@@ -142,8 +144,6 @@ jobs:
         displayName: Run Tests Cannot Run On Helix
         env:
           BuildConfig: $(_BuildConfig)
-      - script: ./artifacts/bin/redist/Debug/dotnet/dotnet workload install wasm-tools
-        displayName: Install wasm-tools Workload
       - script: eng/common/build.sh
               --configuration $(_BuildConfig)
               --prepareMachine
