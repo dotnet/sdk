@@ -339,12 +339,12 @@
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
         <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” jest elementem pochodnym klasy w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” jest elementem pochodnym klasy w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -354,12 +354,12 @@
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
         <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">Korzystanie z „{0}” wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
         <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">{2} Korzystanie z „{0}” wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
@@ -474,17 +474,17 @@
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
         <source>By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</source>
-        <target state="new">By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</target>
+        <target state="translated">Poprzez ustawienie krytycznych delegowań walidacji TokenValidationParameter na wartość true nastąpi wyłączenie ważnych zabezpieczeń uwierzytelniania, co może spowodować nieprawidłową walidację tokenów od dowolnego wystawcy lub wygasłych tokenów.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesMessage">
         <source>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</source>
-        <target state="new">The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</target>
+        <target state="translated">{0} jest ustawiana na funkcję, która zawsze zwraca wartość true. Ustawienie delegowania walidacji spowoduje zastąpienie domyślnych ustawień walidacji i zwracanie wartości true, a ta walidacja zostanie całkowicie wyłączona.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesTitle">
         <source>Do not always skip token validation in delegates</source>
-        <target state="new">Do not always skip token validation in delegates</target>
+        <target state="translated">Nigdy nie pomijaj walidacji tokenów w delegacjach</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
@@ -659,17 +659,17 @@
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksDescription">
         <source>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</source>
-        <target state="new">Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</target>
+        <target state="translated">Sprawdzanie walidacji tokenu zagwarantuje, że podczas weryfikowania tokenów wszystkie aspekty zostaną poddane analizie i zweryfikowane. Wyłączenie walidacji może spowodować powstanie luk w zabezpieczeniach, umożliwiając niezaufanym tokenom przechodzenie przez proces walidacji.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksMessage">
-        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation.</source>
-        <target state="new">TokenValidationParameters.{0} should not be set to false as it disables important validation.</target>
+        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation</source>
+        <target state="translated">TokenValidationParameters. {0} nie należy ustawiać na wartość false, ponieważ spowoduje to wyłączenie ważnych weryfikacji</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableTokenValidationChecksTitle">
         <source>Do not disable token validation checks</source>
-        <target state="new">Do not disable token validation checks</target>
+        <target state="translated">Nie wyłączaj sprawdzania walidacji tokenów</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
@@ -1114,12 +1114,12 @@
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">Typ elementu „{0}” zawiera typ w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” — typ tego elementu zawiera typ w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1274,22 +1274,22 @@
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
         <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” ma zaimplementowany interfejs w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” ma zaimplementowany interfejs w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
         <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” ma zaimplementowaną metodę w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” ma zaimplementowaną metodę w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1599,22 +1599,22 @@
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
         <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” zwraca typ w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” zwraca typ w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
         <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” przyjmuje parametr w wersji zapoznawczej typu „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” przyjmuje parametr w wersji zapoznawczej typu „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1709,12 +1709,12 @@
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
         <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” przesłania metodę w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” przesłania metodę w wersji zapoznawczej „{1}” i dlatego wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1890,6 +1890,26 @@
       <trans-unit id="PreferDictionaryContainsValueMessage">
         <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
         <target state="translated">Preferuj wartość „ContainsValue” niż wartość „Values.Contains” dla typu słownika „{0}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="translated">Zamień na metodę „HashData”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="translated">Korzystanie z metody statycznej „HashData” jest wydajniejsze niż tworzenie wystąpienia HashAlgorithm i zarządzanie nim w celu wywołania „ComputeHash”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="translated">Preferuj metodę statyczną „{0}.HashData”, nie „ComputeHash”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="translated">Preferuj metodę statyczną „HashData”, nie „ComputeHash”</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2809,12 +2829,12 @@
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
         <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">„{0}” używa typu w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} „{0}” używa typu w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
         <note />
       </trans-unit>
     </body>

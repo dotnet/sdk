@@ -68,8 +68,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     if (!attributeInstance.ConstructorArguments.IsEmpty &&
                         attributeInstance.ConstructorArguments[0].Kind == TypedConstantKind.Primitive &&
-                        attributeInstance.ConstructorArguments[0].Value != null &
-                        attributeInstance.ConstructorArguments[0].Value.Equals(true))
+                        Equals(attributeInstance.ConstructorArguments[0].Value, true))
                     {
                         // Has the attribute, with the value 'true'.
                         context.ReportNoLocationDiagnostic(RuleChangeComVisible, context.Compilation.Assembly.Name);
@@ -91,8 +90,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     .GlobalNamespace
                     .GetMembers()
                     .OfType<INamedTypeSymbol>()
-                    .Where(s => s.DeclaredAccessibility == Accessibility.Public)
-                    .Any();
+                    .Any(s => s.DeclaredAccessibility == Accessibility.Public);
         }
     }
 }
