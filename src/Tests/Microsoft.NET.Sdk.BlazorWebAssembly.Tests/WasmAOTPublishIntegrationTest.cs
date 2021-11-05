@@ -19,24 +19,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmAOTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-        public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log)
-        {
-            var process = new Process();
-            process.StartInfo = new ProcessStartInfo
-            {
-                // WorkingDirectory = @"/",
-                // FileName = "cmd.exe",
-                FileName = "/bin/bash",
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-            };
-            process.Start();
-            process.StandardInput.WriteLine("/workspaces/sdk/artifacts/bin/redist/Debug/dotnet/dotnet workload install wasm-tools");
-            process.StandardInput.Flush();
-            process.StandardInput.Close();
-            process.WaitForExit();
-        }
+        public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
         public void AOT_Publish_InRelease_Works()
