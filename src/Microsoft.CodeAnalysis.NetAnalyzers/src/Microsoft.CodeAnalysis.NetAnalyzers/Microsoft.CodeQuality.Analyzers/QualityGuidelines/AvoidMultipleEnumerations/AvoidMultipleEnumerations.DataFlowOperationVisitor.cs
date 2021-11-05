@@ -103,13 +103,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return false;
                 }
 
-                // Check 1: Expression of ForEachLoop would be implicitly converted to IEnumerable.
-                // Check 2: The result of the Conversion would be invoked by GetEnumerator method
-                // Check 3: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
-                // because the Operation in CFG doesn't have that information.
-                return operationToCheck is IConversionOperation conversionOperation
-                   && IsImplicitConventionToDeferredType(conversionOperation)
-                   && conversionOperation.Parent is IInvocationOperation invocationOperation
+                // Check 1: Operation would be invoked by GetEnumerator method
+                // Check 2: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
+                // because the Operation in CFG doesn't have that information. (CFG will convert the for each operation to control flow blocks)
+                return operationToCheck.Parent is IInvocationOperation invocationOperation
                    && _wellKnownSymbolsInfo.GetEnumeratorMethods.Contains(invocationOperation.TargetMethod.OriginalDefinition)
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }
@@ -129,9 +126,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, value)
                     : analysisValue;
             }
-
-            private bool IsImplicitConventionToDeferredType(IConversionOperation conversionOperation)
-                => conversionOperation.Conversion.IsImplicit && IsDeferredType(conversionOperation.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
     }
 }

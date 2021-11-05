@@ -6,6 +6,10 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicAvoidMultipleEnumerationsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     public class AvoidMultipleEnumerationsTests
@@ -1324,6 +1328,29 @@ public class Bar
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestVBForEachLoop()
+        {
+            var code = @"
+Imports System
+Imports System.Linq
+Imports System.Collections
+Imports System.Collections.Generic
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            For Each item In [|h|]
+            Next
+
+            For Each item In [|h|]
+            Next
+        End Sub
+    End Class
+End Namespace";
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
     }
 }

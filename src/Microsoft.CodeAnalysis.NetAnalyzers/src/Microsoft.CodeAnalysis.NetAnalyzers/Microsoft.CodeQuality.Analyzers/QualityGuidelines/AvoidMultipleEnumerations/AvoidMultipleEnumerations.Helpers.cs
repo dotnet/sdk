@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (IsImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
+            if (IsValidImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
             {
                 // Go to the implicit conversion if needed
                 // e.g.
@@ -60,18 +60,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation;
         }
 
-        private static bool IsImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            // Check if this is a conversion operation targeting IEnumerable<T>, IEnumerable or other deferred types,
+            // Check if this is an implicit conversion operation convert from one delay type to another delay type.
             // This is used in methods chain like
             // 1. Cast<T> and OfType<T>, which takes IEnumerable as the first parameter. For example:
-            // c.Select(i => i + 1).Cast<long>();
-            // 'c.Select(i => i + 1)' has IEnumerable<T> type, and will be implicitly converted to IEnumerable. Then the conversion result would be passed to Cast<long>().
+            //    c.Select(i => i + 1).Cast<long>();
+            //    'c.Select(i => i + 1)' has IEnumerable<T> type, and will be implicitly converted to IEnumerable. Then the conversion result would be passed to Cast<long>().
             // 2. OrderBy, ThenBy, etc.. which returns IOrderedIEnumerable<T>. For this example,
-            // c.OrderBy(i => i.Key).Select(m => m + 1);
-            // 'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
-            // 3. For each loop.
+            //    c.OrderBy(i => i.Key).Select(m => m + 1);
+            //    'c.OrderBy(i => i.Key)' has IOrderedIEnumerable<T> type, and will be implicitly converted to IEnumerable<T> . Then the conversion result would be passed to Select()
+            // 3. For each loop in C#. C# binder would create a conversion for the collection before calling GetEnumerator()
+            //    Note: this is not true for VB, VB binder won't generate the conversion.
             return operation is IConversionOperation { IsImplicit: true } conversionOperation
+                   && IsDeferredType(conversionOperation.Operand.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
                    && IsDeferredType(conversionOperation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
