@@ -1098,7 +1098,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
         }
 
-        protected void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
+        private void AssertRIDPublishOuput(PublishCommand command, TestAsset testInstance, bool hosted = false)
         {
             var publishDirectory = command.GetOutputDirectory(DefaultTfm, "Debug", "linux-x64");
 
@@ -1271,6 +1271,39 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "BlazorMultipleApps.SecondClient.dll.br")).Should().Exist();
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "System.Private.CoreLib.dll.br")).Should().Exist();
             new FileInfo(Path.Combine(secondAppPublishDirectory, "_framework", "Newtonsoft.Json.dll.br")).Should().NotExist();
+        }
+
+        private void VerifyTypeGranularTrimming(string blazorPublishDirectory)
+        {
+            VerifyAssemblyHasTypes(Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.AspNetCore.Components.dll"), new[] {
+                    "Microsoft.AspNetCore.Components.RouteView",
+                    "Microsoft.AspNetCore.Components.RouteData",
+                    "Microsoft.AspNetCore.Components.CascadingParameterAttribute"
+                });
+        }
+
+        private void VerifyAssemblyHasTypes(string assemblyPath, string[] expectedTypes)
+        {
+            new FileInfo(assemblyPath).Should().Exist();
+
+            using (var file = File.OpenRead(assemblyPath))
+            {
+                using var peReader = new PEReader(file);
+                var metadataReader = peReader.GetMetadataReader();
+                var types = metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
+                {
+                    var type = metadataReader.GetTypeDefinition(t);
+                    return metadataReader.GetString(type.Namespace) + "." + metadataReader.GetString(type.Name);
+                }).ToArray();
+                types.Should().Contain(expectedTypes);
+            }
+        }
+
+        private static BootJsonData ReadBootJsonData(string path)
+        {
+            return JsonSerializer.Deserialize<BootJsonData>(
+                File.ReadAllText(path),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
     }
 }
