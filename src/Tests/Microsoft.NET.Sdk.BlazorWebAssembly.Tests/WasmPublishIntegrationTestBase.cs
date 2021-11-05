@@ -2,18 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.IO.Compression;
 using System.Text.Json;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
-using System.Xml.Linq;
-using Microsoft.NET.Sdk.BlazorWebAssembly;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
