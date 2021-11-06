@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     internal class NetSdkMsiInstallerServer : MsiInstallerBase
     {
         private bool _done;
+        private bool _shutdownRequested;
 
         public NetSdkMsiInstallerServer(InstallElevationContextBase elevationContext, PipeStreamSetupLogger logger)
             : base(elevationContext, logger)
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     switch (request.RequestType)
                     {
                         case InstallRequestType.Shutdown:
-                            Dispatcher.Reply(new InstallResponseMessage());
+                            _shutdownRequested = true;
                             _done = true;
                             break;
 
@@ -109,10 +110,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void Shutdown()
         {
-            Log?.LogMessage("Shutting down server.");
-
             // Restart the update agent if we shut it down.
             UpdateAgent.Start();
+
+            Log?.LogMessage("Shutting down server.");
+
+            if (_shutdownRequested)
+            {
+                Dispatcher.Reply(new InstallResponseMessage());
+            }
         }
 
         /// <summary>
@@ -158,7 +164,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string logPipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id, "log");
             NamedPipeServerStream logPipe = NamedPipeServerStreamAcl.Create(logPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message,
                 PipeOptions.None, 65535, 65535, pipeSecurity);
-            PipeStreamSetupLogger logger = new PipeStreamSetupLogger(logPipe, logPipeName);
+            PipeStreamSetupLogger logger = new(logPipe, logPipeName);
             InstallServerElevationContext elevationContext = new(serverPipe);
 
             return new NetSdkMsiInstallerServer(elevationContext, logger);

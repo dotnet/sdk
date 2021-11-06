@@ -30,16 +30,22 @@ namespace Microsoft.DotNet.ApiCompatibility
         public IEqualityComparer<ISymbol> EqualityComparer { get; }
 
         /// <summary>
+        /// Indicates if we should warn on missing references.
+        /// </summary>
+        public bool WarnOnMissingReferences { get; }
+
+        /// <summary>
         /// Instantiate an object with the desired settings.
         /// </summary>
         /// <param name="ruleRunnerFactory">The factory to create a <see cref="IRuleRunner"/></param>
         /// <param name="filter">The symbol filter.</param>
         /// <param name="equalityComparer">The comparer to map metadata.</param>
-        public ComparingSettings(RuleRunnerFactory ruleRunnerFactory = null, ISymbolFilter filter = null, IEqualityComparer<ISymbol> equalityComparer = null, bool includeInternalSymbols = false, bool strictMode = false, string leftName = null, string[] rightNames = null)
+        public ComparingSettings(RuleRunnerFactory ruleRunnerFactory = null, ISymbolFilter filter = null, IEqualityComparer<ISymbol> equalityComparer = null, bool includeInternalSymbols = false, bool strictMode = false, bool warnOnMissingReferences = false, string leftName = null, string[] rightNames = null)
         {
             Filter = filter ?? new SymbolAccessibilityBasedFilter(includeInternalSymbols: includeInternalSymbols);
             EqualityComparer = equalityComparer ?? new DefaultSymbolsEqualityComparer();
-            RuleRunnerFactory = ruleRunnerFactory ?? new RuleRunnerFactory(leftName, rightNames, EqualityComparer, includeInternalSymbols, strictMode);
+            RuleRunnerFactory = ruleRunnerFactory ?? new RuleRunnerFactory(leftName, rightNames, EqualityComparer, includeInternalSymbols, strictMode, warnOnMissingReferences);
+            WarnOnMissingReferences = warnOnMissingReferences;
         }
     }
 }

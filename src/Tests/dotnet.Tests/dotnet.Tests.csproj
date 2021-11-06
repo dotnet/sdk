@@ -25,7 +25,6 @@
     <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" />
     <Compile Include="..\dotnet-sdk-check.Tests\**\*.cs" LinkBase="dotnet-sdk-check" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
-    <Compile Include="..\dotnet-format.Tests\**\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
     <Compile Include="..\dotnet-install-tool.Tests\**\*.cs" LinkBase="dotnet-install-tool" />
     <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
@@ -144,6 +143,7 @@
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.PackageInstall.Tests\Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
@@ -156,5 +156,7 @@
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <!-- This package comes from dotnet/runtime-assets -->
+    <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 </Project>

@@ -34,13 +34,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         }
 
         private static RazorProjectEngine GetDeclarationProjectEngine(
-            IEnumerable<SourceGeneratorProjectItem> items,
+            SourceGeneratorProjectItem item,
+            IEnumerable<SourceGeneratorProjectItem> imports,
             RazorSourceGenerationOptions razorSourceGeneratorOptions)
         {
             var fileSystem = new VirtualRazorProjectFileSystem();
-            foreach (var item in items)
+            fileSystem.Add(item);
+            foreach (var import in imports)
             {
-                fileSystem.Add(item);
+                fileSystem.Add(import);
             }
 
             var discoveryProjectEngine = RazorProjectEngine.Create(razorSourceGeneratorOptions.Configuration, fileSystem, b =>
@@ -50,6 +52,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 {
                     options.SuppressPrimaryMethodBody = true;
                     options.SuppressChecksum = true;
+                    options.SupportLocalizedComponentNames = razorSourceGeneratorOptions.SupportLocalizedComponentNames;
                 }));
 
                 b.SetRootNamespace(razorSourceGeneratorOptions.RootNamespace);
@@ -101,6 +104,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 b.Features.Add(new ConfigureRazorCodeGenerationOptions(options =>
                 {
                     options.SuppressMetadataSourceChecksumAttributes = !razorSourceGeneratorOptions.GenerateMetadataSourceChecksumAttributes;
+                    options.SupportLocalizedComponentNames = razorSourceGeneratorOptions.SupportLocalizedComponentNames;
                 }));
 
                 b.Features.Add(new StaticTagHelperFeature { TagHelpers = tagHelpers });

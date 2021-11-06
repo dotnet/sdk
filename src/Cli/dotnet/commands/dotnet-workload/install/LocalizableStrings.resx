@@ -286,7 +286,7 @@
     <value>Provided rollback definition file {0} doesn't exist.</value>
   </data>
   <data name="RollbackDefinitionContainsExtraneousManifestIds" xml:space="preserve">
-    <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs.</value>
+    <value>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</value>
   </data>
   <data name="InsufficientPrivilegeToStartServer" xml:space="preserve">
     <value>Insufficient privilege to start the server.</value>
@@ -296,5 +296,29 @@
   </data>
   <data name="WorkloadUpdatesAvailable" xml:space="preserve">
     <value>Workload updates are available. Run `dotnet workload list` for more information.</value>
+  </data>
+  <data name="PendingReboot" xml:space="preserve">
+    <value>The machine has a pending reboot. Installation will continue, but you may need to restart.</value>
+  </data>
+  <data name="MsiProgressInstall" xml:space="preserve">
+    <value>Installing {0} </value>
+  </data>
+  <data name="MsiProgressRepair" xml:space="preserve">
+    <value>Repairing {0} </value>
+  </data>
+  <data name="MsiProgressUninstall" xml:space="preserve">
+    <value>Removing {0} </value>
+  </data>
+  <data name="UnknownInstallType" xml:space="preserve">
+    <value>Unknown installation type: {0}.</value>
+  </data>
+  <data name="GarbageCollectionFailed" xml:space="preserve">
+    <value>Warning: Workload garbage collection failed with error: {0}.</value>
+  </data>
+  <data name="FromCacheOptionArgumentName" xml:space="preserve">
+    <value>DIRECTORY</value>
+  </data>
+  <data name="DownloadToCacheOptionArgumentName" xml:space="preserve">
+    <value>DIRECTORY</value>
   </data>
 </root>

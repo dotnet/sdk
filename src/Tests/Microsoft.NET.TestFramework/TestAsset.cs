@@ -90,7 +90,23 @@ namespace Microsoft.NET.TestFramework
                 File.Copy(srcFile, destFile, true);
             }
 
+            this.UpdateCurrentTargetFramework();
+
             return this;
+        }
+
+        public TestAsset UpdateCurrentTargetFramework()
+        {
+            return WithTargetFramework(
+            p =>
+            {
+                var ns = p.Root.Name.Namespace;
+                var currentTargetFramework = p.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFramework").FirstOrDefault();
+                currentTargetFramework ??= p.Root.Elements(ns + "PropertyGroup").Elements(ns + "TargetFrameworks").FirstOrDefault();
+                currentTargetFramework?.SetValue(currentTargetFramework?.Value.Replace("$(CurrentTargetFramework)", 
+                                                                                        ToolsetInfo.CurrentTargetFramework));
+            },
+            ToolsetInfo.CurrentTargetFramework);
         }
 
         public TestAsset WithTargetFramework(string targetFramework, string projectName = null)
@@ -164,7 +180,6 @@ namespace Microsoft.NET.TestFramework
             {
                 FindProjectFiles();
             }
-
             foreach (var projectFile in _projectFiles)
             {
                 var project = XDocument.Load(projectFile);
@@ -177,8 +192,8 @@ namespace Microsoft.NET.TestFramework
                 }
             }
             return this;
-            
-        }
+
+            }
 
         public RestoreCommand GetRestoreCommand(ITestOutputHelper log, string relativePath = "")
         {

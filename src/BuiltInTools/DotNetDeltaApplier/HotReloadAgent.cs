@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.HotReload
         {
             // We need to execute MetadataUpdateHandlers in a well-defined order. For v1, the strategy that is used is to topologically
             // sort assemblies so that handlers in a dependency are executed before the dependent (e.g. the reflection cache action
-            // in System.Private.CoreLib is executed before System.Text.Json clears it's own cache.)
+            // in System.Private.CoreLib is executed before System.Text.Json clears its own cache.)
             // This would ensure that caches and updates more lower in the application stack are up to date
             // before ones higher in the stack are recomputed.
             var sortedAssemblies = TopologicalSort(AppDomain.CurrentDomain.GetAssemblies());
@@ -178,29 +178,28 @@ namespace Microsoft.Extensions.HotReload
 
         public void ApplyDeltas(IReadOnlyList<UpdateDelta> deltas)
         {
+            for (var i = 0; i < deltas.Count; i++)
+            {
+                var item = deltas[i];
+                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
+                    {
+                        MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
+                    }
+                }
+
+                // Additionally stash the deltas away so it may be applied to assemblies loaded later.
+                var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
+                cachedDeltas.Add(item);
+            }
+
             try
             {
-                // Defer discovering the receiving deltas until the first hot reload delta.
+                // Defer discovering metadata updata handlers until after hot reload deltas have been applied.
                 // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
                 _handlerActions ??= GetMetadataUpdateHandlerActions();
                 var handlerActions = _handlerActions;
-
-
-                for (var i = 0; i < deltas.Count; i++)
-                {
-                    var item = deltas[i];
-                    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-                    {
-                        if (TryGetModuleId(assembly) is Guid moduleId && moduleId == item.ModuleId)
-                        {
-                            MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);
-                        }
-                    }
-
-                    // Additionally stash the deltas away so it may be applied to assemblies loaded later.
-                    var cachedDeltas = _deltas.GetOrAdd(item.ModuleId, static _ => new());
-                    cachedDeltas.Add(item);
-                }
 
                 Type[]? updatedTypes = GetMetadataUpdateTypes(deltas);
 
@@ -247,11 +246,6 @@ namespace Microsoft.Extensions.HotReload
         {
             try
             {
-                // Defer discovering the receiving deltas until the first hot reload delta.
-                // This should give enough opportunity for AppDomain.GetAssemblies() to be sufficiently populated.
-                _handlerActions ??= GetMetadataUpdateHandlerActions();
-                var handlerActions = _handlerActions;
-
                 foreach (var item in deltas)
                 {
                     MetadataUpdater.ApplyUpdate(assembly, item.MetadataDelta, item.ILDelta, ReadOnlySpan<byte>.Empty);

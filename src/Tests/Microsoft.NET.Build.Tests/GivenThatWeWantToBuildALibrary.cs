@@ -703,7 +703,7 @@ class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp6.1")]
+        [InlineData("netcoreapp9.1")]
         [InlineData("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {
@@ -803,7 +803,7 @@ class Program
                 Name = "Library",
                 TargetFrameworks = "netstandard2.0",
                 // references from packages go through a different code path to be marked externally resolved.
-                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "10.0.1") }
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "13.0.1") }
             };
 
             var asset = _testAssetsManager.CreateTestProject(
@@ -914,7 +914,7 @@ class Program
                 testProject.AdditionalProperties["RollForward"] = rollForwardValue;
             }
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "11.0.2"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
             if (copyLocal.HasValue)
             {
                 testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = copyLocal.ToString().ToLower();
@@ -1060,6 +1060,30 @@ namespace ProjectNameWithSpaces
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1148");
+        }
+
+        [Fact]
+        public void It_Has_Unescaped_PackageConflictPreferredPackages_Values()
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("AppWithLibrary", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework, "TestLibrary");
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.TestRoot, "TestLibrary"), targetFramework, "PackageConflictPreferredPackages");
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            List<string> preferredPackages = getValuesCommand.GetValues();
+            preferredPackages.Should().NotBeEmpty();
+            preferredPackages.Count.Should().BeGreaterThan(1);
+
+            preferredPackages.Should().NotContain(packageName => packageName.Contains(';'),
+                because: "No package name should have a semicolon in it--PackageConflictPreferredPackages should be a semicolon delimited list of package names");
         }
     }
 }

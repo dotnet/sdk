@@ -23,16 +23,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool GarbageCollectionCalled = false;
         public MockInstallationRecordRepository InstallationRecordRepository;
         public bool FailingRollback;
+        public bool FailingGarbageCollection;
         private readonly string FailingPack;
 
         public int ExitCode => 0;
 
-        public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null, IList<PackInfo> installedPacks = null)
+        public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null, 
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false)
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
             FailingRollback = failingRollback;
             InstalledPacks = installedPacks ?? new List<PackInfo>();
             FailingPack = failingPack;
+            FailingGarbageCollection = failingGarbageCollection;
         }
 
         public void InstallWorkloadPack(PackInfo packInfo, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
@@ -50,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             InstallWorkloadPack(packInfo, sdkFeatureBand, offlineCache);
         }
 
-        public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand)
+        public void RollBackWorkloadPackInstall(PackInfo packInfo, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
         {
             if (FailingRollback)
             {
@@ -59,8 +62,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             RolledBackPacks.Add(packInfo);
         }
 
-        public void GarbageCollectInstalledWorkloadPacks()
+        public void GarbageCollectInstalledWorkloadPacks(DirectoryPath? offlineCache = null)
         {
+            if (FailingGarbageCollection)
+            {
+                throw new Exception("Failing garbage collection");
+            }
             GarbageCollectionCalled = true;
         }
 
@@ -79,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return InstallationRecordRepository;
         }
 
-        public void InstallWorkloadManifest(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
+        public void InstallWorkloadManifest(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
             InstalledManifests.Add((manifestId, manifestVersion, sdkFeatureBand, offlineCache));
         }

@@ -17,7 +17,8 @@
     <Compile Remove="commands\dotnet-new\**" />
     <Compile Include="commands\dotnet-new\*.cs" />
     <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" />
-    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <EmbeddedResource Include="commands\dotnet-new\*.zip" />
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Tools" />
@@ -97,18 +98,5 @@
   </ItemGroup>
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Installer\Windows\LocalizableStrings.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>LocalizableStrings.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Update="Installer\Windows\LocalizableStrings.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>LocalizableStrings.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
+  </ItemGroup> 
 </Project>

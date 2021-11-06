@@ -83,9 +83,9 @@ namespace Microsoft.NET.Build.Tests
                 expectedInfo.Remove(attributeToOptOut);
             }
 
-            expectedInfo.Add("TargetFrameworkAttribute", ".NETCoreApp,Version=v2.1");
+            expectedInfo.Add("TargetFrameworkAttribute", $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}");
 
-            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("netcoreapp2.1", "Release").FullName, "HelloWorld.dll");
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Release").FullName, "HelloWorld.dll");
             var actualInfo = AssemblyInfo.Get(assemblyPath);
 
             actualInfo.Should().Equal(expectedInfo);
@@ -386,7 +386,7 @@ namespace Microsoft.NET.Build.Tests
                         .WithWorkingDirectory(path)
                         .Execute("new", "console");
 
-                    string projectFile = Path.Combine(path, "LatestTargetFramework.csproj");
+                    string projectFile = Path.Combine(path, $"{Path.GetFileName(path)}.csproj");
                     XDocument projectXml = XDocument.Load(projectFile);
                     XNamespace ns = projectXml.Root.Name.Namespace;
                     _cachedLatestTargetFramework = projectXml.Root.Element(ns + "PropertyGroup").Element(ns + "TargetFramework").Value;
@@ -396,7 +396,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/20325")]
         [InlineData(true, true, "net5.0")]
         [InlineData(true, true, "")]
         [InlineData(true, false, "")]
@@ -477,7 +477,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld")
                 .WithSource()
-                .WithTargetFramework("net6.0")
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                 .WithProjectChanges((path, project) =>
                 {
                     var ns = project.Root.Name.Namespace;
@@ -490,7 +490,7 @@ namespace Microsoft.NET.Build.Tests
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
 
-            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory("net6.0").FullName, "HelloWorld.dll");
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, "HelloWorld.dll");
 
             var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
             bool contains = false;

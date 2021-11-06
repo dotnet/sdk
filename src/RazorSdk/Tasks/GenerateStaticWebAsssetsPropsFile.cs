@@ -1,7 +1,9 @@
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -36,6 +38,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public ITaskItem[] StaticWebAssets { get; set; }
 
+        public string PackagePathPrefix { get; set; } = "staticwebassets";
+        
+        public bool AllowEmptySourceType { get; set; }
+
         public override bool Execute()
         {
             if (!ValidateArguments())
@@ -56,14 +62,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var itemGroup = new XElement("ItemGroup");
             var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
                 .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
-            foreach(var element in orderedAssets)
+            foreach (var element in orderedAssets)
             {
-                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\{Normalize(element.GetMetadata(RelativePath))}))";
+                var fullPathExpression = @$"$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\{Normalize(element.GetMetadata(RelativePath))}))";
                 itemGroup.Add(new XElement("StaticWebAsset",
                     new XAttribute("Include", fullPathExpression),
                     new XElement(SourceType, "Package"),
                     new XElement(SourceId, element.GetMetadata(SourceId)),
-                    new XElement(ContentRoot, @"$(MSBuildThisFileDirectory)..\staticwebassets\"),
+                    new XElement(ContentRoot, @$"$(MSBuildThisFileDirectory)..\{Normalize(PackagePathPrefix)}\"),
                     new XElement(BasePath, element.GetMetadata(BasePath)),
                     new XElement(RelativePath, element.GetMetadata(RelativePath)),
                     new XElement(AssetKind, element.GetMetadata(AssetKind)),
@@ -116,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var webAsset = StaticWebAssets[i];
                 if (!EnsureRequiredMetadata(webAsset, SourceId) ||
-                    !EnsureRequiredMetadata(webAsset, SourceType, allowEmpty: true) ||
+                    !EnsureRequiredMetadata(webAsset, SourceType, allowEmpty: AllowEmptySourceType) ||
                     !EnsureRequiredMetadata(webAsset, ContentRoot) ||
                     !EnsureRequiredMetadata(webAsset, BasePath) ||
                     !EnsureRequiredMetadata(webAsset, RelativePath))
@@ -131,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
 
                 if (!ValidateMetadataMatches(firstAsset, webAsset, SourceId) ||
-                    !ValidateSourceType(webAsset))
+                    !ValidateSourceType(webAsset, allowEmpty: AllowEmptySourceType))
                 {
                     return false;
                 }
@@ -140,9 +146,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return true;
         }
 
-        private bool ValidateSourceType(ITaskItem candidate)
+        private bool ValidateSourceType(ITaskItem candidate, bool allowEmpty)
         {
             var candidateMetadata = candidate.GetMetadata(SourceType);
+            if (allowEmpty && string.IsNullOrEmpty(candidateMetadata))
+            {
+                return true;
+            }
+
             if (!(string.Equals("Discovered", candidateMetadata, StringComparison.Ordinal) || string.Equals("Computed", candidateMetadata, StringComparison.Ordinal)))
             {
                 Log.LogError($"Static web asset '{candidate.ItemSpec}' has invalid source type '{candidateMetadata}'.");

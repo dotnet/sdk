@@ -58,19 +58,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         foundProjectReference.GetMetadata("SetPlatform"),
                         foundProjectReference.GetMetadata("SetTargetFramework"));
 
-                    additionalBuildProperties = Regex.Replace(additionalBuildProperties, ";{2,}", ";");
-
-                    entry.SetMetadata("AdditionalBuildProperties", additionalBuildProperties);
+                    CleanupMetadata(entry, "AdditionalBuildProperties", additionalBuildProperties);
 
                     var buildPropertiesToRemove = string.Join(
                         ";", configuration.GetMetadata("AdditionalBuildPropertiesToRemove"),
-                        foundProjectReference.GetMetadata("GlobalPropertiesToRemove"));
+                        foundProjectReference.GetMetadata("GlobalPropertiesToRemove"),
+                        foundProjectReference.GetMetadata("UndefineProperties"));
 
-                    buildPropertiesToRemove = Regex.Replace(buildPropertiesToRemove, ";{2,}", ";");
-
-                    entry.SetMetadata(
-                        "AdditionalBuildPropertiesToRemove",
-                        buildPropertiesToRemove);
+                    CleanupMetadata(entry, "AdditionalBuildPropertiesToRemove", buildPropertiesToRemove);
 
                     var additionalPublishProperties = string.Join(
                         ";", configuration.GetMetadata("AdditionalPublishProperties"),
@@ -78,29 +73,31 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                         foundProjectReference.GetMetadata("SetPlatform"),
                         foundProjectReference.GetMetadata("SetTargetFramework"));
 
-                    additionalPublishProperties = Regex.Replace(additionalPublishProperties, ";{2,}", ";");
-
-                    entry.SetMetadata("AdditionalPublishProperties", additionalPublishProperties);
+                    CleanupMetadata(entry, "AdditionalPublishProperties", additionalPublishProperties);
 
                     var publishPropertiesToRemove = string.Join(
                         ";", configuration.GetMetadata("AdditionalPublishPropertiesToRemove"),
-                        foundProjectReference.GetMetadata("GlobalPropertiesToRemove"));
+                        foundProjectReference.GetMetadata("GlobalPropertiesToRemove"),
+                        foundProjectReference.GetMetadata("UndefineProperties"));
 
-                    publishPropertiesToRemove = Regex.Replace(publishPropertiesToRemove, ";{2,}", ";");
-
-                    entry.SetMetadata(
-                        "AdditionalPublishPropertiesToRemove",
-                        publishPropertiesToRemove);
+                    CleanupMetadata(entry, "AdditionalPublishPropertiesToRemove", publishPropertiesToRemove);
 
                     ProjectConfigurations[i] = entry;
                 }
             }
             catch (Exception ex)
             {
-                Log.LogError(ex.ToString());
+                Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: null);
             }
 
             return !Log.HasLoggedErrors;
+
+            static void CleanupMetadata(TaskItem entry, string metadataName, string metadataValue)
+            {
+                metadataValue = Regex.Replace(metadataValue, ";{2,}", ";");
+                metadataValue = metadataValue.Trim(';');
+                entry.SetMetadata(metadataName, metadataValue);
+            }
         }
 
         private ITaskItem FindMatchingProject(ITaskItem configuration)
@@ -112,14 +109,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 // All project references should define MSBuildSourceProjectFile but in the ASP.NET Core some special (malformed) references do not.
                 // We can be more lenient here and fallback to the project reference ItemSpec if not present.
                 referenceMetadata = !string.IsNullOrEmpty(referenceMetadata) ? referenceMetadata : projectReference.ItemSpec;
+                var configurationFullPath = configuration.GetMetadata("FullPath");
+                var projectReferenceFullPath = Path.GetFullPath(referenceMetadata);
                 var matchPath = string.Equals(
-                    configuration.GetMetadata("FullPath"),
-                    Path.GetFullPath(referenceMetadata),
-                    StringComparison.Ordinal);
+                    configurationFullPath,
+                    projectReferenceFullPath,
+                    OSPath.PathComparison);
 
                 if (matchPath)
                 {
+                    Log.LogMessage("Found project reference '{0}' for configuration item '{1}'.", configurationFullPath, projectReferenceFullPath);
                     return projectReference;
+                }
+                else
+                {
+                    Log.LogMessage("Rejected project reference '{0}' for configuration item '{1}' because paths don't match.", configurationFullPath, projectReferenceFullPath);
                 }
             }
 
