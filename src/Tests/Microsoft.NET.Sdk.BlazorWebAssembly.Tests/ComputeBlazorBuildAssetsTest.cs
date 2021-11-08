@@ -21,29 +21,29 @@ public class ComputeBlazorBuildAssetsTest
         {
             Candidates = new[]
             {
-                new TaskItem(@"x:\refassembly\file.dll", new Dictionary<string, string>()
+                new TaskItem(Path.Combine("x:", "refassembly", "file.dll"), new Dictionary<string, string>()
                 {
-                    ["OriginalItemSpec"] = @"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll",
+                    ["OriginalItemSpec"] = Path.Combine("x:", "MyRefProject", "bin", "Debug", "net6.0", "MyRefProject.dll"),
                     ["ReferenceSourceTarget"] = "ProjectReference",
                 }),
-                new TaskItem(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll", new Dictionary<string, string>()
+                new TaskItem(Path.Combine("x:", "MyRefProject", "bin", "Debug", "net6.0", "MyRefProject.dll"), new Dictionary<string, string>()
                 {
-                    ["OriginalItemSpec"] = @"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll",
+                    ["OriginalItemSpec"] = Path.Combine("x:", "MyRefProject", "bin", "Debug", "net6.0", "MyRefProject.dll"),
                     ["ReferenceSourceTarget"] = "ProjectReference",
                 }),
             },
             ProjectAssembly = new[]
             {
-                new TaskItem(@"x:\MyProject\bin\Debug\MyProject.dll", new Dictionary<string, object>
+                new TaskItem(Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.dll"), new Dictionary<string, object>
                 {
-                    ["OriginalItemSpec"] = @"x:\MyProject\obj\Debug\MyProject.dll",
+                    ["OriginalItemSpec"] = Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.dll"),
                 })
             },
             ProjectDebugSymbols = new[]
             {
-                new TaskItem(@"x:\MyProject\bin\Debug\MyProject.pdb", new Dictionary<string, object>
+                new TaskItem(Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.pdb"), new Dictionary<string, object>
                 {
-                    ["OriginalItemSpec"] = @"x:\MyProject\obj\Debug\MyProject.pdb",
+                    ["OriginalItemSpec"] = Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.pdb"),
                 })
             },
             SatelliteAssemblies = Array.Empty<ITaskItem>(),
@@ -59,22 +59,22 @@ public class ComputeBlazorBuildAssetsTest
             taskInstance.AssetCandidates,
             item =>
             {
-                Assert.Equal(Path.GetFullPath(@"x:\refassembly\file.dll"), item.ItemSpec);
-                Assert.Equal(@"x:\refassembly\file.dll", item.GetMetadata("OriginalItemSpec"));
+                Assert.Equal(Path.Combine("x:", "refassembly", "file.dll"), item.ItemSpec);
+                Assert.Equal(Path.Combine("x:", "refassembly", "file.dll"), item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(Path.GetFullPath(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll"), item.ItemSpec);
-                Assert.Equal(@"x:\MyRefProject\bin\Debug\net6.0\MyRefProject.dll", item.GetMetadata("OriginalItemSpec"));
+                Assert.Equal(Path.Combine("x:", "MyRefProject", "bin", "Debug", "net6.0", "MyRefProject.dll"), item.ItemSpec);
+                Assert.Equal(Path.Combine("x:", "MyRefProject", "bin", "Debug", "net6.0", "MyRefProject.dll"), item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(Path.GetFullPath(@"x:\MyProject\bin\Debug\MyProject.dll"), item.ItemSpec);
-                Assert.Equal(@"x:\MyProject\bin\Debug\MyProject.dll", item.GetMetadata("OriginalItemSpec"));
+                Assert.Equal(Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.dll"), item.ItemSpec);
+                Assert.Equal(Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.dll"), item.GetMetadata("OriginalItemSpec"));
             },
             item =>
             {
-                Assert.Equal(Path.GetFullPath(@"x:\MyProject\bin\Debug\MyProject.pdb"), item.ItemSpec);
+                Assert.Equal(Path.Combine("x:", "MyProject", "bin", "Debug", "MyProject.pdb"), item.ItemSpec);
                 Assert.Empty(item.GetMetadata("OriginalItemSpec"));
             });
     }
