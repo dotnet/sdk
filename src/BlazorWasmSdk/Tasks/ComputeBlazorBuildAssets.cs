@@ -133,7 +133,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     // Ignore it, and use the FullPath instead.
                     if (candidate.GetMetadata("ReferenceSourceTarget") == "ProjectReference")
                     {
-                        candidate.SetMetadata("OriginalItemSpec", candidate.GetMetadata("FullPath"));
+                        candidate.SetMetadata("OriginalItemSpec", candidate.ItemSpec);
                     }
 
                     var culture = candidate.GetMetadata("Culture");
