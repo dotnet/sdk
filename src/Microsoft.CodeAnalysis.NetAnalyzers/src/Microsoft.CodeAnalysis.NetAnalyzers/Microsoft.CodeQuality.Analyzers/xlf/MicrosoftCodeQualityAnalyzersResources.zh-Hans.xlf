@@ -53,9 +53,9 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
-        <source>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</source>
-        <target state="new">Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</target>
-        <note>{Locked="IEnumerable"}</note>
+        <source>To prevent unnecessary enumerations of the 'IEnumerable' collection, consider caching it first by calling a method such as 'ToList' or 'ToArray'</source>
+        <target state="new">To prevent unnecessary enumerations of the 'IEnumerable' collection, consider caching it first by calling a method such as 'ToList' or 'ToArray'</target>
+        <note>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">
         <source>Possible multiple enumerations over 'IEnumerable' collection</source>

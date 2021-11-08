@@ -1312,8 +1312,8 @@
     <value>Add operator overload named alternate</value>
   </data>
   <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
-    <value>Whenever an 'IEnumerable' collection is used, it will be enumerated. Try converting it to other collections.</value>
-    <comment>{Locked="IEnumerable"}</comment>
+    <value>To prevent unnecessary enumerations of the 'IEnumerable' collection, consider caching it first by calling a method such as 'ToList' or 'ToArray'</value>
+    <comment>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</comment>
   </data>
   <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
     <value>Possible multiple enumerations over 'IEnumerable' collection</value>
