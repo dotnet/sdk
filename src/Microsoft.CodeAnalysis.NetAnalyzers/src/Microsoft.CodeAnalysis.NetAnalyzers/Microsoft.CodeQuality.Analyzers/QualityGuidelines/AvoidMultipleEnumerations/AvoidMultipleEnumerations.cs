@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
 using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
+using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -136,11 +137,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
 
-            var oneParameterDeferredMethods = GetOneParameterDeferredMethods(wellKnownTypeProvider);
-            var twoParametersDeferredMethods = GetTwoParametersDeferredMethods(wellKnownTypeProvider);
+            var oneParameterDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqOneParameterDeferredMethods);
+            var twoParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersDeferredMethods);
 
-            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider);
-            var twoParametersEnumeratedMethods = GetTwoParametersEnumeratedMethods(wellKnownTypeProvider);
+            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_linqOneParameterEnumeratedMethods);
+            var twoParametersEnumeratedMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersEnumeratedMethods);
 
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);

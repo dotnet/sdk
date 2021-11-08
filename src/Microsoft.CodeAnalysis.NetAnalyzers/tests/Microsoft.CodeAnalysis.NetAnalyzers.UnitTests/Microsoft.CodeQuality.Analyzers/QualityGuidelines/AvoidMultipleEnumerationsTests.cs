@@ -1284,7 +1284,28 @@ public class Bar
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
+        }
 
+        [Fact]
+        public async Task TestInvocationLocalAssignmentWithDeferredMethodCall()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        [|h|].ToArray();
+        var c = h.Select(i => i + 1);
+
+        [|c|].First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]

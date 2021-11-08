@@ -10,14 +10,14 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    public partial class AvoidMultipleEnumerations
+    internal static class AvoidMultipleEnumerationsHelpers
     {
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
         /// </summary>
-        private static bool IsOperationEnumeratedByMethodInvocation(
+        public static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -34,9 +34,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Skip the deferred method call and conversion operation in linq methods call chain
         /// </summary>
-        private static IOperation SkipDeferredAndConversionMethodIfNeeded(
+        public static IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (IsValidImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
             {
@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation;
         }
 
-        private static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsValidImplicitConversion(IOperation operation, AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             // Check if this is an implicit conversion operation convert from one delay type to another delay type.
             // This is used in methods chain like
@@ -80,9 +80,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by for each loop
         /// </summary>
-        private static bool IsOperationEnumeratedByForEachLoop(
+        public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -96,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -116,7 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsInvocationCausingEnumerationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
@@ -160,19 +160,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if <param name="operation"/> is an argument that passed into a deferred invocation. (like Select, Where etc.)
         /// </summary>
-        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
-                && IsDeferredExecutingInvocation(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
+                && IsDeferredExecutingInvocation(
+                    invocationParentOperation,
+                    argumentParentOperation,
+                    wellKnownSymbolsInfo);
         }
 
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.
         /// </summary>
-        private static bool IsDeferredExecutingInvocation(
+        public static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
@@ -201,14 +204,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        private static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        public static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
+            ImmutableArray<string> linqMethodNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            // Get linq methods
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqOneParameterEnumeratedMethods, builder);
+            GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
+            return builder.ToImmutable();
+        }
 
+        private static void GetImmutableCollectionConversionMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<(string, string)> typeAndMethodNames,
+            ArrayBuilder<IMethodSymbol> builder)
+        {
             // Get immutable collection conversion method, like ToImmutableArray()
-            foreach (var (typeName, methodName) in s_immutableCollectionsTypeNamesAndConvensionMethods)
+            foreach (var (typeName, methodName) in typeAndMethodNames)
             {
                 if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
                 {
@@ -226,11 +238,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
             }
-
-            return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        public static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
 
@@ -255,7 +265,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
+        public static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
         {
             if (type == null)
             {
@@ -266,7 +276,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 || additionalTypesToCheck.Contains(type);
         }
 
-        private static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
+        public static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
         {
             using var builder = ArrayBuilder<ITypeSymbol>.GetInstance();
             foreach (var name in typeNames)
@@ -280,24 +290,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetTwoParametersEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        public static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqTwoParametersEnumeratedMethods, builder);
-            return builder.ToImmutable();
-        }
-
-        private static ImmutableArray<IMethodSymbol> GetOneParameterDeferredMethods(WellKnownTypeProvider wellKnownTypeProvider)
-        {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqOneParameterDeferredMethods, builder);
-            return builder.ToImmutable();
-        }
-
-        private static ImmutableArray<IMethodSymbol> GetTwoParametersDeferredMethods(WellKnownTypeProvider wellKnownTypeProvider)
-        {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, s_linqTwoParametersDeferredMethods, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, builder);
             return builder.ToImmutable();
         }
 
