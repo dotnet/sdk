@@ -179,7 +179,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableHashSet<IOperation>.Builder builder)
         {
             var operation = context.Operation;
-            if (IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo) || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
                 if (isEnumerated)

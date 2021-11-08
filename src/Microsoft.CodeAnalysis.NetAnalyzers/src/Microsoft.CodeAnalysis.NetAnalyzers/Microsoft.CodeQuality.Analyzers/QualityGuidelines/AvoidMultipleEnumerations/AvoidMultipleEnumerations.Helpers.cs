@@ -20,7 +20,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (!IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -73,8 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // 3. For each loop in C#. C# binder would create a conversion for the collection before calling GetEnumerator()
             //    Note: this is not true for VB, VB binder won't generate the conversion.
             return operation is IConversionOperation { IsImplicit: true } conversionOperation
-                   && IsDeferredType(conversionOperation.Operand.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
-                   && IsDeferredType(conversionOperation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
+                   && IsDeferredType(conversionOperation.Operand.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                   && IsDeferredType(conversionOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-            if (!IsDeferredType(operation.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -123,7 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && targetMethod.IsExtensionMethod
                 && !targetMethod.Parameters.IsEmpty
                 && parameter.Equals(targetMethod.Parameters[0])
-                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                && IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
@@ -133,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && targetMethod.IsExtensionMethod
                 && targetMethod.Parameters.Length > 1
                 && (parameter.Equals(targetMethod.Parameters[0]) || parameter.Equals(targetMethod.Parameters[1]))
-                && IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                && IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
@@ -165,7 +165,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
-            if (!IsDeferredType(argumentOperationToCheck.Value.Type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (!IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -244,9 +244,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static bool IsDeferredType(ITypeSymbol type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
-            => type.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
-               || additionalTypesToCheck.Contains(type);
+        private static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
+        {
+            if (type == null)
+            {
+                return false;
+            }
+
+            return type.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
+                || additionalTypesToCheck.Contains(type);
+        }
 
         private static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
         {
