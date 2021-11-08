@@ -134,7 +134,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   timeoutInMinutes: 5
   steps:
-    - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}"
+    - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
       displayName: Restore dependencies
     - script: dotnet run --project ./src/dotnet-format.csproj -c Release -- @validate.rsp
       displayName: Run dotnet-format
