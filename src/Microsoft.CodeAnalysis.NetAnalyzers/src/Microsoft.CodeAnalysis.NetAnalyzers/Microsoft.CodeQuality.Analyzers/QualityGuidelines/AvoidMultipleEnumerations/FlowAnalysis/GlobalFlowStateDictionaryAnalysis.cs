@@ -63,7 +63,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 wellKnownTypeProvider,
                 PointsToAnalysisKind.PartialWithoutTrackingFieldsAndProperties,
                 interproceduralAnalysisConfig,
-                interproceduralAnalysisPredicate);
+                interproceduralAnalysisPredicate,
+                pessimisticAnalysis: pessimisticAnalysis);
 
             var analysisContext = new GlobalFlowStateDictionaryAnalysisContext(
                 GlobalFlowStateDictionaryAnalysisValueDomain.Instance,

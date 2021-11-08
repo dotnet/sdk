@@ -214,6 +214,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 wellKnownTypeProvider,
                 context.Options,
                 MultipleEnumerableDescriptor,
+                // We are only interested in the state of parameters & locals. So no need to pessimistic for instance field.
                 pessimisticAnalysis: false);
 
             if (analysisResult == null)
