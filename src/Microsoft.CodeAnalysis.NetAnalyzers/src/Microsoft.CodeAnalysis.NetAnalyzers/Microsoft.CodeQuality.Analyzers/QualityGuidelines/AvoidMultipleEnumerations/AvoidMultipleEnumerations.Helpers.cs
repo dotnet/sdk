@@ -311,7 +311,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 foreach (var methodName in methodNames)
                 {
-                    builder.AddRange(type.GetMembers(methodName).Cast<IMethodSymbol>());
+                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
                 }
             }
         }
