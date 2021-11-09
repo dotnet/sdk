@@ -3,16 +3,11 @@
 
 using System.IO;
 using System.Text.Json;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
