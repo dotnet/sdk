@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -156,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 additionalDeferTypes,
                 getEnumeratorSymbols);
 
-            var potentialDiagnosticOperationsBuilder = ImmutableHashSet.CreateBuilder<IOperation>();
+            var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(
                     context,
@@ -176,7 +177,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
-            ImmutableHashSet<IOperation>.Builder builder)
+            PooledHashSet<IOperation> builder)
         {
             var operation = context.Operation;
             if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -191,17 +192,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             OperationBlockAnalysisContext context,
             WellKnownTypeProvider wellKnownTypeProvider,
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
-            ImmutableHashSet<IOperation>.Builder potentialDiagnosticOperationsBuilder)
+            PooledHashSet<IOperation> potentialDiagnosticOperations)
         {
-            var potentialDiagnosticOperations = potentialDiagnosticOperationsBuilder.ToImmutable();
-            if (potentialDiagnosticOperations.IsEmpty)
+            if (potentialDiagnosticOperations.Count == 0)
             {
+                potentialDiagnosticOperations.Free(CancellationToken.None);
                 return;
             }
 
             var cfg = context.OperationBlocks.GetControlFlowGraph();
             if (cfg == null)
             {
+                potentialDiagnosticOperations.Free(CancellationToken.None);
                 return;
             }
 
@@ -219,6 +221,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             if (analysisResult == null)
             {
+                potentialDiagnosticOperations.Free(CancellationToken.None);
                 return;
             }
 
@@ -248,6 +251,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
             }
+
+            potentialDiagnosticOperations.Free(CancellationToken.None);
         }
     }
 }
