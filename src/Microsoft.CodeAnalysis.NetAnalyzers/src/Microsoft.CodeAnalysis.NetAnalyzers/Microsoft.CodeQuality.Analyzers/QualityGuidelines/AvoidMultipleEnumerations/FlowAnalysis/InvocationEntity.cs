@@ -37,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public static ImmutableHashSet<InvocationEntity> Create(
             ImmutableHashSet<AbstractLocation> locations,
             PointsToAnalysisResult pointsToAnalysisResult,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             using var builder = PooledHashSet<InvocationEntity>.GetInstance();
             foreach (var location in locations)

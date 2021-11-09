@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -36,7 +36,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (IsValidImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
             {
@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation;
         }
 
-        private static bool IsValidImplicitConversion(IOperation operation, AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             // Check if this is an implicit conversion operation convert from one delay type to another delay type.
             // This is used in methods chain like
@@ -82,7 +82,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
             if (!IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
@@ -96,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
             {
@@ -116,7 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsInvocationCausingEnumerationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
@@ -160,7 +160,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if <param name="operation"/> is an argument that passed into a deferred invocation. (like Select, Where etc.)
         /// </summary>
-        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
                 && IsDeferredExecutingInvocation(
@@ -175,7 +175,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public static bool IsDeferredExecutingInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
-            AvoidMultipleEnumerations.WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
