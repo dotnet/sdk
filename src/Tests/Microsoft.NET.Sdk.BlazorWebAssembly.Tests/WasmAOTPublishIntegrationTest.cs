@@ -27,7 +27,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_InRelease_Works()
         {
             // Arrange
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -83,7 +83,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishDirectory.ToString(), "..", "web.config")).Should().Contain(webConfigContents);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
