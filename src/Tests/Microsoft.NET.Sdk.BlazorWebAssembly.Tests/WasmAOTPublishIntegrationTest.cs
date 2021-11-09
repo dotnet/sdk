@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -19,6 +20,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmAOTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
+        private static readonly HashSet<string> PackageReferencesToUpgrade = new HashSet<string>()
+        {
+            "Microsoft.AspNetCore.Components.WebAssembly",
+            "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
+            "System.Net.Http.Json"
+        };
+
         public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
@@ -176,6 +184,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 if (appsToAOT.Contains(Path.GetFileNameWithoutExtension(project)))
                 {
                     document.Descendants("PropertyGroup").First().Add(new XElement("RunAOTCompilation", "true"));
+
+                    foreach (var item in document.Descendants("PackageReference"))
+                    {
+                        item.SetAttributeValue("Version", "6.0.0");
+                    }
                 }
             });
     }
