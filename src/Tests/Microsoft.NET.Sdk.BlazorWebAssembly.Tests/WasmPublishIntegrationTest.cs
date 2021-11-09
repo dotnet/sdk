@@ -795,7 +795,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void Publish_HostedApp_WithNoBuild_Works()
         {
             // Arrange
@@ -848,7 +848,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void Publish_HostedApp_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -932,7 +932,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
