@@ -77,7 +77,7 @@ Note: if the user specifies a severity here it is used for both style and analyz
  - `--diagnostics`: A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.
  - `--severity`: The severity of diagnostics to fix. Allowed values are info, warn, and error.
 
-#### Unique options for `dotnet cleanup analyzers`
+#### Unique options for `dotnet format analyzers`
  - `--diagnostics`: A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.
  - `--severity`: The severity of diagnostics to fix. Allowed values are info, warn, and error.
 
