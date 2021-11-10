@@ -13,6 +13,7 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -32,7 +33,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, "blazorwasm");
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm" });
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
@@ -68,7 +69,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, "blazorwasm");
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm" });
 
             var webConfigContents = "test webconfig contents";
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "web.config"), webConfigContents);
@@ -88,7 +89,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
-            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, "blazorhosted", "blazorwasm");
+            var testInstance = CreateAspNetSdkTestAssetWithAot(testAppName, new [] { "blazorwasm", "blazorhosted" });
             File.WriteAllText(Path.Combine(testInstance.TestRoot, "blazorwasm", "App.razor.css"), "h1 { font-size: 16px; }");
 
             // VS builds projects individually and then a publish with BuildDependencies=false, but building the main project is a close enough approximation for this test.
@@ -175,11 +176,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private TestAsset CreateAspNetSdkTestAssetWithAot(
             string testAsset,
-            params string[] appsToAOT) =>
-            CreateAspNetSdkTestAsset(testAsset)
+            string[] projectsToAOT,
+            [CallerMemberName] string callerName = "") =>
+            CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AOT")
             .WithProjectChanges((project, document) =>
             {
-                if (appsToAOT.Contains(Path.GetFileNameWithoutExtension(project)))
+                if (projectsToAOT.Contains(Path.GetFileNameWithoutExtension(project)))
                 {
                     document.Descendants("PropertyGroup").First().Add(new XElement("RunAOTCompilation", "true"));
 
