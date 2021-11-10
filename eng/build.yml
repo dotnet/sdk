@@ -103,8 +103,6 @@ jobs:
           TestFullMSBuild: 'true'
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
-        displayName: Install wasm-tools Workload
       - powershell: eng\runHelixAndNonHelixInParallel.ps1
               -configuration $(_BuildConfig)
               -buildSourcesDirectory $(Build.SourcesDirectory)
