@@ -57,33 +57,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!TryGetInvocationEntity(operation, out var invocationEntity))
+                var enumerationEntities = EnumerationEntity.Create(
+                    operation,
+                    DataFlowAnalysisContext.PointsToAnalysisResult,
+                    _wellKnownSymbolsInfo);
+
+                var mergedValue = GlobalFlowStateDictionaryAnalysisValue.Empty;
+                foreach (var enumerationEntity in enumerationEntities)
                 {
-                    return defaultValue;
+                    var newValue = CreateAnalysisValue(enumerationEntity, operation, defaultValue);
+                    mergedValue = GlobalFlowStateDictionaryAnalysisValue.Merge(mergedValue, newValue);
+                    UpdateGlobalValue(newValue);
                 }
 
-                var newValue = CreateAnalysisValue(invocationEntity, operation, defaultValue);
-                UpdateGlobalValue(newValue);
-                return newValue;
-            }
-
-            private bool TryGetInvocationEntity(IOperation operation, [NotNullWhen(true)] out InvocationEntity? invocationEntity)
-            {
-                var pointToAnalysisResult = DataFlowAnalysisContext.PointsToAnalysisResult;
-                invocationEntity = null;
-                if (pointToAnalysisResult is null)
-                {
-                    return false;
-                }
-
-                var result = pointToAnalysisResult[operation.Kind, operation.Syntax];
-                if (result.Kind != PointsToAbstractValueKind.KnownLocations)
-                {
-                    return false;
-                }
-
-                invocationEntity = InvocationEntity.Create(result.Locations);
-                return true;
+                return mergedValue;
             }
 
             private void UpdateGlobalValue(GlobalFlowStateDictionaryAnalysisValue value)
@@ -115,14 +102,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
-                InvocationEntity analysisEntity,
+                EnumerationEntity analysisEntity,
                 IOperation operation,
                 GlobalFlowStateDictionaryAnalysisValue value)
             {
                 var invocationSet = new TrackingInvocationSet(ImmutableHashSet.Create(operation), InvocationCount.One);
 
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
-                    ImmutableDictionary<InvocationEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
+                    ImmutableDictionary<EnumerationEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
                     GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
                 return value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
