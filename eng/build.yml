@@ -137,8 +137,12 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
+
+    - ${{ if eq(parameters.agentOs, 'Darwin') }}:
       - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
         displayName: Install wasm-tools Workload
+
+    - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
       - script: eng/runTestsCannotRunOnHelix.sh
                   --configuration $(_BuildConfig)
                   --ci
