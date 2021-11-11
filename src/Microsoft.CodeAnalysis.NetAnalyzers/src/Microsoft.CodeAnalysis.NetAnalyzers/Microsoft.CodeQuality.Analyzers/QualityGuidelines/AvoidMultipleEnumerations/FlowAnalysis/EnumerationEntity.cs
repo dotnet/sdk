@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
@@ -37,30 +38,48 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return ImmutableHashSet<EnumerationEntity>.Empty;
             }
 
+            if (result.Locations.Any(location => !IsDeferredType(location.LocationType, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+            {
+                return ImmutableHashSet<EnumerationEntity>.Empty;
+            }
+
             return ImmutableHashSet<EnumerationEntity>.Empty;
         }
 
-        //private static ImmutableArray<DeferredTypeEntity> Collect(
-        //    IInvocationOperation invocationOperation,
-        //    PointsToAnalysisResult pointsToAnalysisResult,
-        //    WellKnownSymbolsInfo wellKnownSymbolsInfo)
-        //{
-        //    var builder = ArrayBuilder<DeferredTypeEntity>.GetInstance();
-        //    var queue = new Queue<IInvocationOperation>();
-        //    queue.Enqueue(invocationOperation);
-        //    while (queue.Count > 0)
-        //    {
-        //        var current = queue.Dequeue();
-        //        foreach (var argument in current.Arguments)
-        //        {
-        //            if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
-        //            {
-        //                var result = pointsToAnalysisResult[argument.Value]
+        private static ImmutableArray<DeferredTypeEntity> CreateEntityForLocation(
+            AbstractLocation abstractLocation,
+            PointsToAnalysisResult pointsToAnalysisResult,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            if (!IsDeferredType(abstractLocation.LocationType, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            {
+                return ImmutableArray<DeferredTypeEntity>.Empty;
+            }
 
-        //            }
-        //        }
-        //    }
-        //}
+
+        }
+
+        private static ImmutableArray<DeferredTypeEntity> Collect(
+            IInvocationOperation invocationOperation,
+            PointsToAnalysisResult pointsToAnalysisResult,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            var builder = ArrayBuilder<DeferredTypeEntity>.GetInstance();
+            var queue = new Queue<IInvocationOperation>();
+            queue.Enqueue(invocationOperation);
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                foreach (var argument in current.Arguments)
+                {
+                    if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
+                    {
+                        var result = pointsToAnalysisResult[argument.Value]
+
+                    }
+                }
+            }
+        }
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
         {
