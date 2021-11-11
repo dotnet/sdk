@@ -1312,7 +1312,7 @@
     <value>Add operator overload named alternate</value>
   </data>
   <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
-    <value>To prevent unnecessary enumerations of the 'IEnumerable' collection, consider caching it first by calling a method such as 'ToList' or 'ToArray'</value>
+    <value>Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.</value>
     <comment>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</comment>
   </data>
   <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
