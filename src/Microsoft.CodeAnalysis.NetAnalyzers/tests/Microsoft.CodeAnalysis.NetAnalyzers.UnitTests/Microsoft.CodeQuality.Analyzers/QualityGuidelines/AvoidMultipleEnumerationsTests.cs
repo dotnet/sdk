@@ -215,6 +215,32 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestInvocationBeforeIfbranch()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h, int x)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        [|i|].Max();
+        if (x == 1)
+        {
+            [|i|].Except([|h|]).ToList();
+            [|i|].Intersect([|h|]).ToList();
+        }
+
+        [|i|].Max();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
         public async Task TestInvocationAfterIfbranchForArray()
         {
             var code = @"
@@ -364,6 +390,35 @@ public class Bar
 
         [|i|].ToDictionary(x => x);
         [|j|].First();
+        k.LastOrDefault();
+    }
+}";
+
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact(Skip = "This test case would be resolved in following PR. The skip flag should not exist when merge into main.")]
+        public async Task TestExplicitDeclaration()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(bool flag)
+    {
+        IEnumerable<int> k = Enumerable.Range(1, 10).ToArray();
+        if (flag)
+        {
+            k.Single();
+        }
+        else
+        {
+            k.Last();
+        }
+
         k.LastOrDefault();
     }
 }";
