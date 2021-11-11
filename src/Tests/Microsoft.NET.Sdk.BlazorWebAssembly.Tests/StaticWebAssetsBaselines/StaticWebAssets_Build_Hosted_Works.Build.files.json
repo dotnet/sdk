@@ -291,6 +291,8 @@
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Cng.dll.gz",
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Csp.dll",
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Csp.dll.gz",
+  "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Encoding.dll",
+  "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Encoding.dll.gz",
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.OpenSsl.dll",
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.OpenSsl.dll.gz",
   "${ProjectPath}\\blazorhosted\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Primitives.dll",

@@ -2597,6 +2597,23 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\lib\\${Tfm}\\System.Security.Cryptography.Csp.dll"
     },
     {
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Encoding.dll",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Security.Cryptography.Encoding.dll",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "BlazorWebAssemblyResource",
+      "AssetTraitValue": "runtime",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\lib\\${Tfm}\\System.Security.Cryptography.Encoding.dll"
+    },
+    {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.OpenSsl.dll",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
@@ -6573,6 +6590,23 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Csp.dll"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/System.Security.Cryptography.Encoding.dll.gz]]",
+      "SourceId": "blazorwasm",
+      "SourceType": "Computed",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/System.Security.Cryptography.Encoding.dll.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Encoding.dll",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Security.Cryptography.Encoding.dll"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/System.Security.Cryptography.OpenSsl.dll.gz]]",
