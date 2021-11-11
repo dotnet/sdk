@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +16,10 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockTemplateInfo : ITemplateInfo, IXunitSerializable
     {
-        private string[] _parameters = Array.Empty<string>();
+        private string? _identity;
+        private string? _name;
+
+        private Dictionary<string, TemplateParameter> _parameters = new Dictionary<string, TemplateParameter>();
 
         private string[] _baselineInfo = Array.Empty<string>();
 
@@ -26,47 +31,44 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private Dictionary<string, string> _tags = new Dictionary<string, string>();
 
-        private Dictionary<string, string[]> _choiceParameters = new Dictionary<string, string[]>();
-
         public MockTemplateInfo()
         {
         }
 
-        public MockTemplateInfo(string shortName, string name = null, string identity = null, string groupIdentity = null, int precedence = 0, string author = null)
+        public MockTemplateInfo(string shortName, string? name = null, string?identity = null, string? groupIdentity = null, int precedence = 0, string? author = null)
             : this(new string[] { shortName }, name, identity, groupIdentity, precedence, author)
         {
         }
 
-        public MockTemplateInfo(string[] shortNames, string name = null, string identity = null, string groupIdentity = null, int precedence = 0, string author = null) : this()
+        public MockTemplateInfo(string[] shortNames, string? name = null, string? identity = null, string? groupIdentity = null, int precedence = 0, string? author = null) : this()
         {
             _shortNameList = shortNames;
             if (string.IsNullOrEmpty(name))
             {
-                Name = "Template " + shortNames[0];
+                _name = "Template " + shortNames[0];
             }
             else
             {
-                Name = name;
+                _name = name;
             }
 
             if (string.IsNullOrEmpty(identity))
             {
-                Identity = shortNames[0];
+                _identity = shortNames[0];
             }
             else
             {
-                Identity = identity;
+                _identity = identity;
             }
 
             Precedence = precedence;
             GroupIdentity = groupIdentity;
-            Identity = identity;
             Author = author;
         }
 
-        public string Author { get; private set; }
+        public string? Author { get; private set; }
 
-        public string Description { get; private set; }
+        public string? Description { get; private set; }
 
         public IReadOnlyList<string> Classifications
         {
@@ -76,17 +78,17 @@ namespace Microsoft.TemplateEngine.Mocks
             }
         }
 
-        public string DefaultName { get; }
+        public string? DefaultName { get; }
 
-        public string Identity { get; private set; }
+        public string Identity => _identity ?? throw new Exception($"{nameof(_identity)} was not initialized.");
 
         public Guid GeneratorId { get; }
 
-        public string GroupIdentity { get; private set; }
+        public string? GroupIdentity { get; private set; }
 
         public int Precedence { get; private set; }
 
-        public string Name { get; private set; }
+        public string Name => _name ?? throw new Exception($"{nameof(_name)} was not initialized.");
 
         public string ShortName
         {
@@ -115,30 +117,21 @@ namespace Microsoft.TemplateEngine.Mocks
                 List<ITemplateParameter> parameters = new List<ITemplateParameter>();
                 foreach (var param in _parameters)
                 {
-                    parameters.Add(new TemplateParameter(param, "parameter", "string"));
-                }
-                foreach (var param in _choiceParameters)
-                {
-                    parameters.Add(new TemplateParameter(
-                        param.Key,
-                        type: "parameter",
-                        datatype: "choice",
-                        choices: param.Value.ToDictionary(v => v, v => new ParameterChoice(null, null))));
-
+                    parameters.Add(param.Value);
                 }
                 return parameters;
             }            
         }
 
-        public string MountPointUri { get; }
+        public string MountPointUri => "FakeMountPoint";
 
-        public string ConfigPlace { get; }
+        public string ConfigPlace => "FakeConfigPlace";
 
-        public string LocaleConfigPlace { get; }
+        public string? LocaleConfigPlace { get; }
 
-        public string HostConfigPlace { get; }
+        public string? HostConfigPlace { get; }
 
-        public string ThirdPartyNotices { get; }
+        public string? ThirdPartyNotices { get; }
 
         public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo
         {
@@ -158,13 +151,9 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithParameters(params string[] parameters)
         {
-            if (_parameters.Length == 0)
+            foreach (var param in parameters)
             {
-                _parameters = parameters;
-            }
-            else
-            {
-                _parameters = _parameters.Concat(parameters).ToArray();
+                _parameters[param] = new TemplateParameter(param, "parameter", "string", priority: TemplateParameterPriority.Optional);
             }
             return this;
         }
@@ -177,7 +166,24 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithChoiceParameter(string name, params string[] values)
         {
-            _choiceParameters.Add(name, values);
+            _parameters.Add(name, new TemplateParameter(
+                name,
+                type: "parameter",
+                datatype: "choice",
+                priority: TemplateParameterPriority.Optional,
+                choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
+            return this;
+        }
+
+        public MockTemplateInfo WithChoiceParameter(string name, string[] values, bool isRequired = false, string? defaultValue = null)
+        {
+            _parameters.Add(name, new TemplateParameter(
+                name,
+                type: "parameter",
+                datatype: "choice",
+                priority: isRequired ? TemplateParameterPriority.Required : TemplateParameterPriority.Optional,
+                defaultValue: defaultValue,
+                choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
             return this;
         }
 
@@ -213,6 +219,17 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
+        public MockTemplateInfo WithParameter(string paramName, string paramType = "string", bool isRequired = false, string? defaultValue = null)
+        {
+            _parameters[paramName] = new TemplateParameter(
+                paramName,
+                "parameter",
+                paramType,
+                isRequired ? TemplateParameterPriority.Required : TemplateParameterPriority.Optional,
+                defaultValue: defaultValue);
+            return this;
+        }
+        
         public MockTemplateInfo WithPostActions(params Guid[] postActions)
         {
             if (_postActions.Length == 0)
@@ -230,19 +247,22 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public void Deserialize(IXunitSerializationInfo info)
         {
-            Name = info.GetValue<string>("template_name");
+            _name = info.GetValue<string>("template_name");
             Precedence = info.GetValue<int>("template_precedence");
-            Identity = info.GetValue<string>("template_identity");
+            _identity = info.GetValue<string>("template_identity");
             GroupIdentity = info.GetValue<string>("template_group");
             Description = info.GetValue<string>("template_description");
             Author = info.GetValue<string>("template_author");
-
-            _choiceParameters = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(info.GetValue<string>("template_choices"));
-            _tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(info.GetValue<string>("template_tags"));
-            _parameters = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_params"));
-            _baselineInfo = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_baseline"));
-            _classifications = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_classifications"));
-            _shortNameList = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_shortname"));
+            _tags = JsonConvert.DeserializeObject<Dictionary<string, string>>(info.GetValue<string>("template_tags"))
+                ?? throw new Exception("Deserialiation failed");
+            _parameters = JsonConvert.DeserializeObject<Dictionary<string, TemplateParameter>>(info.GetValue<string>("template_params"))
+                         ?? throw new Exception("Deserialiation failed");
+            _baselineInfo = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_baseline"))
+                         ?? throw new Exception("Deserialiation failed");
+            _classifications = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_classifications"))
+                         ?? throw new Exception("Deserialiation failed");
+            _shortNameList = JsonConvert.DeserializeObject<string[]>(info.GetValue<string>("template_shortname"))
+                         ?? throw new Exception("Deserialiation failed");
         }
 
         public void Serialize(IXunitSerializationInfo info)
@@ -255,7 +275,6 @@ namespace Microsoft.TemplateEngine.Mocks
             info.AddValue("template_description", Description, typeof(string));
             info.AddValue("template_author", Author, typeof(string));
 
-            info.AddValue("template_choices", JsonConvert.SerializeObject(_choiceParameters), typeof(string));
             info.AddValue("template_tags", JsonConvert.SerializeObject(_tags), typeof(string));
             info.AddValue("template_params", JsonConvert.SerializeObject(_parameters), typeof(string));
             info.AddValue("template_baseline", JsonConvert.SerializeObject(_baselineInfo), typeof(string));
@@ -300,14 +319,75 @@ namespace Microsoft.TemplateEngine.Mocks
             {
                 _ = sb.Append("Tags:" + string.Join(",", _tags.Select(t => t.Key + "(" + t.Value + ")")) + ";");
             }
-            if (_choiceParameters.Any())
-            {
-                _ = sb.Append("Choice parameters:" + string.Join(",", _choiceParameters.Select(t => t.Key + "(" + string.Join("|", t.Value) + ")")) + ";");
-            }
-
             return sb.ToString();
         }
 
         #endregion XUnitSerializable implementation
+
+        private class TemplateParameter : ITemplateParameter
+        {
+            [JsonConstructor]
+            internal TemplateParameter(
+                string name,
+                string type,
+                string datatype,
+                TemplateParameterPriority priority = default,
+                bool isName = false,
+                string? defaultValue = null,
+                string? defaultIfOptionWithoutValue = null,
+                string? description = null,
+                string? displayName = null,
+                IReadOnlyDictionary<string, ParameterChoice>? choices = null)
+            {
+                Name = name;
+                Type = type;
+                DataType = datatype;
+                Priority = priority;
+                IsName = isName;
+                DefaultValue = defaultValue;
+                DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
+                Description = description;
+                DisplayName = displayName;
+
+                if (this.IsChoice())
+                {
+                    Choices = choices ?? new Dictionary<string, ParameterChoice>();
+                }
+            }
+
+            [Obsolete("Use Description instead.")]
+            public string? Documentation => Description;
+
+            [JsonProperty]
+            public string Name { get; }
+
+            [JsonProperty]
+            public TemplateParameterPriority Priority { get; }
+
+            [JsonProperty]
+            public string Type { get; }
+
+            [JsonProperty]
+            public bool IsName { get; }
+
+            [JsonProperty]
+            public string? DefaultValue { get; }
+
+            [JsonProperty]
+            public string DataType { get; set; }
+
+            [JsonProperty]
+            public string? DefaultIfOptionWithoutValue { get; set; }
+
+            [JsonProperty]
+            public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; }
+
+            [JsonProperty]
+            public string? Description { get; }
+
+            [JsonProperty]
+            public string? DisplayName { get; }
+        }
     }
+
 }

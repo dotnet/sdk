@@ -379,7 +379,9 @@ Package Test.Templates was unlisted."
             Assert.Equal(0, jObjectV2["TemplatePackages"]?.Count());
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "Template options filtering is not implemented.")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliData()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
