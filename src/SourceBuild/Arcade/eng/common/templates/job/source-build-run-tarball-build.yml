@@ -30,7 +30,7 @@ jobs:
       Fedora33-Offline:
         _runOnline: false
         _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-  timeoutInMinutes: 210
+  timeoutInMinutes: 240
   variables:
     _TarballDir: $(Build.StagingDirectory)/tarball
     _BuildConfig: Release
