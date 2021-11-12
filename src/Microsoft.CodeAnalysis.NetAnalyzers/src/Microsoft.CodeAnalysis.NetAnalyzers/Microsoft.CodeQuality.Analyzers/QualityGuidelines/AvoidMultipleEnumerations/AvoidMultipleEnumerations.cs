@@ -237,7 +237,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 foreach (var kvp in result.TrackedEntities)
                 {
                     var trackedInvocationSet = kvp.Value;
-                    if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime)
+                    // Report if
+                    // 1. EnumerationCount is two or more times.
+                    // 2. There are two or more operations that might be involved.
+                    // (Note: 2. is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
+                    if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                     {
                         foreach (var trackedOperation in trackedInvocationSet.Operations)
                         {

@@ -208,7 +208,7 @@ public class Bar
             [|i|].Intersect([|h|]).ToList();
         }
 
-        i.Max();
+        [|i|].Max();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -515,15 +515,15 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         if (b == 0)
         {
-            i.Single();
+            [|i|].Single();
         }
         else if (b == 1)
         {
-            j.SingleOrDefault();
+            [|j|].SingleOrDefault();
         }
 
-        i.ToDictionary(x => x);
-        j.First();
+        [|i|].ToDictionary(x => x);
+        [|j|].First();
     }
 }";
 
