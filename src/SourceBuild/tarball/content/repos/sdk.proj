@@ -10,11 +10,6 @@
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
 
-    <!-- The sdk repo is building with an older version of the SDK where this property is
-         defaulted to false.  The SDK that source-build is using defaults it to true.
-         Set it to false to get old behavior for building the sdk repo. -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:ProduceReferenceAssembly=false</BuildCommandArgs>
-
     <!-- Pass in package version props using the Product Construction (ProdCon) API. -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:PB_PackageVersionPropsUrl=file:%2F%2F$(PackageVersionPropsPath)</BuildCommandArgs>
 
