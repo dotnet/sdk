@@ -28,6 +28,7 @@
       <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>21</VersionFeature31>
       <VersionFeature50>12</VersionFeature50>
+      <VersionFeature60>0</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
@@ -40,13 +41,12 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 6.0 has released, update these version numbers to 6.0.0 -->
-      <_NET60RuntimePackVersion>6.0.0-rc.2.21452.2</_NET60RuntimePackVersion>
-      <_NET60TargetingPackVersion>6.0.0-rc.2.21452.2</_NET60TargetingPackVersion>
-      <_WindowsDesktop60RuntimePackVersion>6.0.0-rc.2.21431.3</_WindowsDesktop60RuntimePackVersion>
-      <_WindowsDesktop60TargetingPackVersion>6.0.0-rc.2.21431.3</_WindowsDesktop60TargetingPackVersion>
-      <_AspNet60RuntimePackVersion>6.0.0-rc.2.21452.1</_AspNet60RuntimePackVersion>
-      <_AspNet60TargetingPackVersion>6.0.0-rc.2.21452.1</_AspNet60TargetingPackVersion>
+      <_NET60RuntimePackVersion>6.0.$(VersionFeature60)</_NET60RuntimePackVersion>
+      <_NET60TargetingPackVersion>6.0.0</_NET60TargetingPackVersion>
+      <_WindowsDesktop60RuntimePackVersion>6.0.$(VersionFeature60)</_WindowsDesktop60RuntimePackVersion>
+      <_WindowsDesktop60TargetingPackVersion>6.0.0</_WindowsDesktop60TargetingPackVersion>
+      <_AspNet60RuntimePackVersion>6.0.$(VersionFeature60)</_AspNet60RuntimePackVersion>
+      <_AspNet60TargetingPackVersion>6.0.0</_AspNet60TargetingPackVersion>
 
       <_NET50RuntimePackVersion>5.0.$(VersionFeature50)</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
