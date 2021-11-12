@@ -170,7 +170,7 @@
       Condition="$(IsRootRepo) != 'true'" />
 
     <Exec
-      Command="git submodule update --init --recursive"
+      Command="git submodule update --init --recursive --depth 1"
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <!-- Remove the git objects folder to free up tarball space -->
