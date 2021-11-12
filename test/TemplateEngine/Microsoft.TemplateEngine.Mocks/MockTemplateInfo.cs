@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        public MockTemplateInfo WithChoiceParameter(string name, string[] values, bool isRequired = false, string? defaultValue = null)
+        public MockTemplateInfo WithChoiceParameter(string name, string[] values, bool isRequired = false, string? defaultValue = null, string? defaultIfNoOptionValue = null)
         {
             _parameters.Add(name, new TemplateParameter(
                 name,
@@ -183,6 +183,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 datatype: "choice",
                 priority: isRequired ? TemplateParameterPriority.Required : TemplateParameterPriority.Optional,
                 defaultValue: defaultValue,
+                defaultIfOptionWithoutValue: defaultIfNoOptionValue,
                 choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
             return this;
         }
@@ -219,14 +220,15 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        public MockTemplateInfo WithParameter(string paramName, string paramType = "string", bool isRequired = false, string? defaultValue = null)
+        public MockTemplateInfo WithParameter(string paramName, string paramType = "string", bool isRequired = false, string? defaultValue = null, string? defaultIfNoOptionValue = null)
         {
             _parameters[paramName] = new TemplateParameter(
                 paramName,
                 "parameter",
                 paramType,
                 isRequired ? TemplateParameterPriority.Required : TemplateParameterPriority.Optional,
-                defaultValue: defaultValue);
+                defaultValue: defaultValue,
+                defaultIfOptionWithoutValue: defaultIfNoOptionValue);
             return this;
         }
         
