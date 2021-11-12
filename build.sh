@@ -10,6 +10,6 @@ ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 +# Run under sudo so we can set ulimit
 +# See https://github.com/dotnet/core-eng/issues/14808
-sudo "$ScriptRoot/build-ulimit.sh"
+sudo -E "$ScriptRoot/build-ulimit.sh"
 
 
