@@ -79,4 +79,7 @@
   <String Id="VisualStudioWarning">若預計要搭配 Visual Studio 使用 .NET 5.0，需要 Visual Studio 2022 17.0 或更新版本。&lt;A HREF="https://aka.ms/dotnet5-release-notes"&gt;深入了解&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">按一下 [\[]安裝[\[] 即表示您同意下列條款。</String>
+  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
 </WixLocalization>
