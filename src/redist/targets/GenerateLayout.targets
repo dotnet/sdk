@@ -34,9 +34,7 @@
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
       <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</InternalBaseURL>
 
-      <CoreSetupBlobRootUrl Condition="'$(CoreSetupBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</CoreSetupBlobRootUrl>
-      <DotnetExtensionsBlobRootUrl Condition="'$(DotnetExtensionsBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetExtensionsBlobRootUrl>
-      <DotnetToolsetBlobRootUrl Condition="'$(DotnetToolsetBlobRootUrl)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</DotnetToolsetBlobRootUrl>
+      <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</PublicBaseURL>
 
       <CoreSetupRid Condition="'$(CoreSetupRid)' == ''">$(HostRid)</CoreSetupRid>
       <CoreSetupRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd') and '$(DotNetBuildFromSource)' != 'true' ">$(OSName)-$(Architecture)</CoreSetupRid>
@@ -104,11 +102,11 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <CoreSetupRootUrl>$(CoreSetupBlobRootUrl)Runtime/</CoreSetupRootUrl>
-      <CoreSetupRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(CoreSetupBlobRootUrl)</CoreSetupRootUrl>
-      <AspNetCoreSharedFxRootUrl>$(CoreSetupBlobRootUrl)aspnetcore/Runtime/</AspNetCoreSharedFxRootUrl>
-      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(CoreSetupBlobRootUrl)</AspNetCoreSharedFxRootUrl>
-      <WinFormsAndWpfSharedFxRootUrl>$(CoreSetupBlobRootUrl)WindowsDesktop/</WinFormsAndWpfSharedFxRootUrl>
+      <CoreSetupRootUrl>$(PublicBaseURL)Runtime/</CoreSetupRootUrl>
+      <CoreSetupRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(PublicBaseURL)</CoreSetupRootUrl>
+      <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/</AspNetCoreSharedFxRootUrl>
+      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(PublicBaseURL)</AspNetCoreSharedFxRootUrl>
+      <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/</WinFormsAndWpfSharedFxRootUrl>
       <CoreSetupDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupDownloadDirectory>
       <CombinedSharedHostAndFrameworkArchive>$(CoreSetupDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
@@ -245,8 +243,8 @@
       </BundledInstallerComponent>
 
       <BundledLayoutComponent Include="ToolsetArchive">
-        <BaseUrl>$(DotnetToolsetBlobRootUrl)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(DotnetToolsetBlobRootUrl)</BaseUrl>
+        <BaseUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
+        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildOffline)' == 'true' ">$(PublicBaseURL)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
         <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
       </BundledLayoutComponent>
@@ -344,9 +342,7 @@
           Replaces the public base url with the private one.
         -->
         <PrivateBaseUrl>%(BaseUrl)</PrivateBaseUrl>
-        <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(CoreSetupBlobRootUrl)', '$(InternalBaseURL)'))</PrivateBaseUrl>
-        <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(DotnetExtensionsBlobRootUrl)', '$(InternalBaseURL)'))</PrivateBaseUrl>
-        <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(DotnetToolsetBlobRootUrl)', '$(InternalBaseURL)'))</PrivateBaseUrl>
+        <PrivateBaseUrl Condition="'$(InternalBuild)' == 'true'">$([System.String]::new('%(ComponentToDownload.PrivateBaseUrl)').Replace('$(PublicBaseURL)', '$(InternalBaseURL)'))</PrivateBaseUrl>
       </ComponentToDownload>
 
       <!-- Now transform the group of components into a list of Uris,
@@ -358,10 +354,19 @@
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
       </UrisToDownload>
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+      </UrisToDownload>
       <UrisToDownload Include="%(ComponentToDownload.PrivateBaseUrl)/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
         <token>$(DotNetRuntimeSourceFeedKey)</token>
+      </UrisToDownload>
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.PrivateBaseUrl)').Replace($(InternalBaseURL), 'https://dotnetbuilds.blob.core.windows.net/internal/'))/%(ComponentToDownload.DownloadFileName)" Condition="'%(ComponentToDownload.ShouldDownload)' == 'true' and '$(DotNetRuntimeSourceFeedKey)' != ''">
+        <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
+        <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
+        <token>$(dotnetbuilds-internal-container-read-token-base64)</token>
       </UrisToDownload>
     </ItemGroup>
     
