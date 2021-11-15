@@ -30,8 +30,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
         private sealed class CSharpPreferHashDataOverComputeHashFixHelper : PreferHashDataOverComputeHashFixHelper
         {
-            protected override SyntaxNode GetHashDataSyntaxNode(PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string hashTypeName, SyntaxNode computeHashNode)
+            protected override SyntaxNode GetHashDataSyntaxNode(PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string? namespacePrefix, string hashTypeName, SyntaxNode computeHashNode)
             {
+                string identifier = hashTypeName;
+                if (namespacePrefix is not null)
+                {
+                    identifier = $"{namespacePrefix}.{identifier}";
+                }
+
                 var argumentList = ((InvocationExpressionSyntax)computeHashNode).ArgumentList;
                 switch (computeType)
                 {
@@ -40,7 +46,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                         {
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName));
                             var arg = argumentList.Arguments[0];
                             if (arg.NameColon is not null)
@@ -77,7 +83,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             var asSpanInvoked = SyntaxFactory.InvocationExpression(asSpan, spanArgs);
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName));
                             var arg = SyntaxFactory.Argument(asSpanInvoked);
                             if (firstArg.NameColon is not null)
@@ -93,7 +99,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             // method has same parameter names
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.TryHashDataMethodName));
                             return SyntaxFactory.InvocationExpression(hashData, argumentList);
                         }
@@ -135,6 +141,42 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                         }
                 }
                 return root;
+            }
+
+            protected override string? GetQualifiedPrefixNamespaces(SyntaxNode computeHashNode, SyntaxNode? createNode)
+            {
+                var invocationNode = (InvocationExpressionSyntax)computeHashNode;
+                string? ns = null;
+                if (createNode is not null)
+                {
+                    var initliazerValue = ((VariableDeclaratorSyntax)createNode).Initializer.Value;
+                    if (initliazerValue is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Expression: MemberAccessExpressionSyntax originalType } })
+                    {
+                        ns = originalType.Expression.ToFullString();
+                    }
+                    else if (initliazerValue is ObjectCreationExpressionSyntax { Type: QualifiedNameSyntax { Left: QualifiedNameSyntax qualifiedNamespaceSyntax } })
+                    {
+                        ns = qualifiedNamespaceSyntax.ToFullString();
+                    }
+
+                }
+                else if (invocationNode.Expression is MemberAccessExpressionSyntax { Expression: InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Expression: MemberAccessExpressionSyntax originalType } } })
+                {
+                    // System.Security.Cryptography.SHA1.Create().ComputeHash(buffer)
+                    // .ComputeHash(buffer) InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    // .Create() InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    ns = originalType.Expression.ToFullString();
+                }
+                else if (invocationNode.Expression is MemberAccessExpressionSyntax { Expression: ObjectCreationExpressionSyntax { Type: QualifiedNameSyntax { Left: QualifiedNameSyntax qualifiedNamespaceSyntax } } })
+                {
+                    // new System.Security.Cryptography.SHA1Managed().ComputeHash(buffer)
+                    // .ComputeHash(buffer) InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    // new System.Security.Cryptography.SHA1Managed() ObjectCreationExpressionSyntax
+                    ns = qualifiedNamespaceSyntax.ToFullString();
+                }
+
+
+                return ns;
             }
         }
     }

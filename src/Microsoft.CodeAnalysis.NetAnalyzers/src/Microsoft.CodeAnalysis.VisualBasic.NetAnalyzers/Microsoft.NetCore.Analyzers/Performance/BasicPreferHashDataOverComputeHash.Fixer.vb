@@ -62,13 +62,17 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                 Return root
             End Function
 
-            Protected Overrides Function GetHashDataSyntaxNode(computeType As PreferHashDataOverComputeHashAnalyzer.ComputeType, hashTypeName As String, computeHashNode As SyntaxNode) As SyntaxNode
+            Protected Overrides Function GetHashDataSyntaxNode(computeType As PreferHashDataOverComputeHashAnalyzer.ComputeType, namespacePrefix As String, hashTypeName As String, computeHashNode As SyntaxNode) As SyntaxNode
+                Dim identifier = hashTypeName
+                If namespacePrefix IsNot Nothing Then
+                    identifier = namespacePrefix + "." + identifier
+                End If
                 Dim argumentList = DirectCast(computeHashNode, InvocationExpressionSyntax).ArgumentList
                 Select Case computeType
                     Case PreferHashDataOverComputeHashAnalyzer.ComputeType.ComputeHash
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                     SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName))
                         Dim arg = argumentList.Arguments(0)
@@ -101,7 +105,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Dim asSpanInvoked = SyntaxFactory.InvocationExpression(asSpan, spanArgs)
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                         SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName))
 
@@ -115,13 +119,71 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         ' method has same parameter names
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                     SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.TryHashDataMethodName))
                         Return SyntaxFactory.InvocationExpression(hashData, argumentList)
                 End Select
                 Debug.Fail("there is only 3 type of ComputeHash")
                 Throw New InvalidOperationException("there is only 3 type of ComputeHash")
+            End Function
+
+            Protected Overrides Function GetQualifiedPrefixNamespaces(computeHashNode As SyntaxNode, createNode As SyntaxNode) As String
+                Dim invocationNode = DirectCast(computeHashNode, InvocationExpressionSyntax)
+                Dim ns As String = Nothing
+                If createNode IsNot Nothing Then
+                    Dim variable = DirectCast(createNode, VariableDeclaratorSyntax)
+                    If variable.Initializer IsNot Nothing Then
+                        Dim initliazerValue = variable.Initializer.Value
+                        If TypeOf initliazerValue Is InvocationExpressionSyntax Then
+                            Dim invocationExpression = DirectCast(initliazerValue, InvocationExpressionSyntax)
+                            ns = GetNamespacePrefixes(invocationExpression)
+                        ElseIf TypeOf initliazerValue Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(initliazerValue, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    ElseIf TypeOf variable.AsClause Is AsNewClauseSyntax Then
+                        Dim asNewClause = DirectCast(variable.AsClause, AsNewClauseSyntax)
+                        Dim newExpression = asNewClause.NewExpression
+                        If TypeOf newExpression Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(newExpression, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    End If
+                Else
+                    Dim typeMember = TryCast(invocationNode.Expression, MemberAccessExpressionSyntax)
+                    If typeMember IsNot Nothing Then
+                        Dim typeExpression = typeMember.Expression
+                        If TypeOf typeExpression Is InvocationExpressionSyntax Then
+                            Dim invocationExpression = DirectCast(typeExpression, InvocationExpressionSyntax)
+                            ns = GetNamespacePrefixes(invocationExpression)
+                        ElseIf TypeOf typeExpression Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(typeExpression, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    End If
+                End If
+                Return ns
+            End Function
+            Private Shared Function GetNamespacePrefixes(objectCreation As ObjectCreationExpressionSyntax) As String
+                Dim qualifiedTypeName = TryCast(objectCreation.Type, QualifiedNameSyntax)
+                If qualifiedTypeName IsNot Nothing Then
+                    Dim qualifiedNamespace = TryCast(qualifiedTypeName.Left, QualifiedNameSyntax)
+                    If qualifiedNamespace IsNot Nothing Then
+                        Return qualifiedNamespace.ToString()
+                    End If
+                End If
+                Return Nothing
+            End Function
+            Private Shared Function GetNamespacePrefixes(invocationExpression As InvocationExpressionSyntax) As String
+                Dim invocationMemberAccess = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
+                If invocationMemberAccess IsNot Nothing Then
+                    Dim originalType = TryCast(invocationMemberAccess.Expression, MemberAccessExpressionSyntax)
+                    If originalType IsNot Nothing Then
+                        Return originalType.Expression.ToString()
+                    End If
+                End If
+                Return Nothing
             End Function
         End Class
     End Class
