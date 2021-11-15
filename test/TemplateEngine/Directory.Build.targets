@@ -9,5 +9,6 @@
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Update="xunit.abstractions" Version="2.0.3" />
     <PackageReference Update="Newtonsoft.Json.Schema" Version="3.0.13" />
+    <PackageReference Update="ApprovalTests" Version="5.4.7" />
   </ItemGroup>
 </Project>
