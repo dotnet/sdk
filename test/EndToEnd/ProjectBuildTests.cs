@@ -85,15 +85,13 @@ namespace EndToEnd.Tests
                 .Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
-        public void ItCanPublishArm64Winforms(string TargetFramework)
+        [WindowsOnlyFact]
+        public void ItCanPublishArm64Winforms()
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
 
-            string newArgs = $"winforms -f {TargetFramework} --no-restore";
+            string newArgs = "winforms --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -113,15 +111,13 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
-        public void ItCanPublishArm64Wpf(string TargetFramework)
+        [WindowsOnlyFact]
+        public void ItCanPublishArm64Wpf()
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
 
-            string newArgs = $"wpf -f {TargetFramework} --no-restore";
+            string newArgs = "wpf --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
