@@ -49,13 +49,47 @@
 
     <!-- Copy files specified in package references above from restored package dir to unpacked archive dir -->
     <Message Text="  Replacing restored files in $(UnpackedTarPath)" Importance="High" />
-    <Copy
-        SourceFiles="$(RestorePackagesPath)$([System.String]::copy('%(PackageReference.Identity)').ToLower()).%(PackageReference.Version).nupkg"
-        DestinationFiles="$(UnpackedTarPath)%(PackageReference.Identity).%(PackageReference.Version).nupkg" />
+    <MSBuild Projects="$(MSBuildProjectFile)"
+      Targets="CopyDownloadedPackage"
+      Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageReference.Identity);PackageVersion=%(PackageReference.Version)" />
 
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
     <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
 
+  </Target>
+
+  <Target Name="CopyDownloadedPackage">
+    <!--
+      Copy downloaded package to the output path.
+      Note: The package version may be different than the version specified
+      since the source-build build number can be different than the official
+      package build number.
+    -->
+    <ItemGroup>
+      <SourceFileName Include="$(SourcePath)$(PackageName.ToLower()).*.nupkg" />
+    </ItemGroup>
+    <PropertyGroup>
+      <DestinationFileName>@(SourceFileName->'%(Filename)')</DestinationFileName>
+      <NewVersion>$(DestinationFileName.Replace('$(PackageName.ToLower()).',''))</NewVersion>
+    </PropertyGroup>
+    <Copy
+      SourceFiles="@(SourceFileName)"
+      DestinationFiles="$(DestinationPath)$(PackageName).$(NewVersion).nupkg" />
+
+    <!--
+      Update the PackageVersions.props if restored version is
+      different than the specified version.
+    -->
+    <PropertyGroup>
+      <VersionTag>$([System.String]::concat('%3C','$(PackageName)','Version','%3E').Replace('.',''))</VersionTag>
+      <PackageVersionTag>$([System.String]::concat('%3C','$(PackageName)','PackageVersion','%3E').Replace('.',''))</PackageVersionTag>
+      <FilePath>$(DestinationPath)PackageVersions.props</FilePath>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(FilePath)"
+      Lines="$([System.IO.File]::ReadAllText($(FilePath)).Replace('$(VersionTag)$(PackageVersion)','$(VersionTag)$(NewVersion)').Replace('$(PackageVersionTag)$(PackageVersion)','$(PackageVersionTag)$(NewVersion)'))"
+      Overwrite="true"
+      Condition=" '$(PackageVersion)' != '$(NewVersion)' " />
   </Target>
 </Project>
