@@ -345,9 +345,9 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             try
             {
-                // Get the latest .NET 6 SDK instance.
+                // Get the latest .NET SDK instance.
                 var msBuildInstance = Build.Locator.MSBuildLocator.QueryVisualStudioInstances()
-                    .Where(instance => instance.Version.Major == 6)
+                    .Where(instance => instance.Version.Major >= 6)
                     .MaxBy(instance => instance.Version);
                 if (msBuildInstance is null)
                 {
