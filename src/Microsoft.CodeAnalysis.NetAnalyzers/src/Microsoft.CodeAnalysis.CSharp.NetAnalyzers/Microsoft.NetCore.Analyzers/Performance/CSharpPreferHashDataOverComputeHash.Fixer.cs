@@ -116,33 +116,72 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 {
                     case { Parent: UsingStatementSyntax usingStatement } when usingStatement.Declaration.Variables.Count == 1:
                         {
-                            var statements = usingStatement.Statement
-                                .ChildNodes()
-                                .Select(s => s.WithAdditionalAnnotations(Formatter.Annotation));
-                            root = root.TrackNodes(usingStatement);
-                            root = root.InsertNodesBefore(root.GetCurrentNode(usingStatement), statements);
-                            root = root.RemoveNode(root.GetCurrentNode(usingStatement), SyntaxRemoveOptions.KeepNoTrivia);
+                            root = MoveStatementsOutOfUsingStatementWithFormatting(root, usingStatement);
                             break;
                         }
-                    case { Parent: UsingStatementSyntax usingStatement }:
+                    case { Parent: UsingStatementSyntax }:
                         {
-                            root = root.RemoveNode(currentCreateNode, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, currentCreateNode);
                             break;
                         }
                     case { Parent: LocalDeclarationStatementSyntax localDeclarationStatementSyntax }:
                         {
-                            root = root.RemoveNode(localDeclarationStatementSyntax, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, localDeclarationStatementSyntax);
                             break;
                         }
                     case VariableDeclaratorSyntax variableDeclaratorSyntax:
                         {
-                            root = root.RemoveNode(variableDeclaratorSyntax, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, variableDeclaratorSyntax);
                             break;
                         }
                 }
                 return root;
             }
 
+            private SyntaxNode MoveStatementsOutOfUsingStatementWithFormatting(SyntaxNode root, UsingStatementSyntax usingStatement)
+            {
+                var block = (BlockSyntax)usingStatement.Statement;
+                var statements = block.Statements
+                    .Select((s, i) =>
+                    {
+                        var statement = s;
+                        if (i == 0)
+                        {
+                            var newTrivia = new SyntaxTriviaList();
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.GetLeadingTrivia());
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.CloseParenToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.CloseParenToken.TrailingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.OpenBraceToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.OpenBraceToken.TrailingTrivia);
+                            newTrivia = newTrivia.AddRange(statement.GetLeadingTrivia());
+                            statement = statement.WithLeadingTrivia(newTrivia);
+                        }
+
+                        if (i == block.Statements.Count - 1)
+                        {
+                            var newTrivia = statement.GetTrailingTrivia();
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.CloseBraceToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.CloseBraceToken.TrailingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.GetTrailingTrivia());
+                            statement = statement.WithTrailingTrivia(newTrivia);
+                        }
+                        return statement;
+                    });
+
+                var parent = usingStatement.Parent;
+                root = root.TrackNodes(parent);
+                var newParent = parent.TrackNodes(usingStatement);
+                newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingStatement), statements);
+                newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingStatement), SyntaxRemoveOptions.KeepNoTrivia)
+                    .WithAdditionalAnnotations(Formatter.Annotation);
+                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent);
+                return root;
+            }
+
+            protected override bool IsInterestingTrivia(SyntaxTriviaList triviaList)
+            {
+                return triviaList.Any(t => !t.IsKind(SyntaxKind.WhitespaceTrivia) && !t.IsKind(SyntaxKind.EndOfLineTrivia));
+            }
             protected override string? GetQualifiedPrefixNamespaces(SyntaxNode computeHashNode, SyntaxNode? createNode)
             {
                 var invocationNode = (InvocationExpressionSyntax)computeHashNode;

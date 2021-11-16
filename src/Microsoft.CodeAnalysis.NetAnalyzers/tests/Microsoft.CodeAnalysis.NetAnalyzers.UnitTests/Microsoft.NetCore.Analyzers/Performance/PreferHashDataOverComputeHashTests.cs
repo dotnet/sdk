@@ -3021,6 +3021,151 @@ End Class
             }
         }
 
+        [Fact]
+        public async Task CSharpTriviaCase()
+        {
+            await TestWithType(HashTypeMD5);
+
+            static async Task TestWithType(string hashType)
+            {
+                string csInput = $@"
+using System;
+using System.Security.Cryptography;
+
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+#if !SOMETHING
+        using (var {{|#1:hasher = {hashType}.Create()|}})  // test
+        {{  // test2
+            int line1 = 20;
+            byte[] digest = {{|#0:hasher.ComputeHash(buffer)|}};
+            int line2 = 10;
+    /* test3
+     a  */    }} 
+#else
+        byte[] digest = Array.Empty<byte>();
+#endif
+        //test4
+        using var {{|#3:hasher2 = {hashType}.Create()|}}; //test5
+        byte[] digest2 = {{|#2:hasher2.ComputeHash(buffer)|}};
+        //test6
+    }}
+}}
+";
+                string csFix = $@"
+using System;
+using System.Security.Cryptography;
+
+public class Test
+{{
+    public static void TestMethod()
+    {{
+        var buffer = new byte[1024];
+#if !SOMETHING
+        // test
+        // test2
+        int line1 = 20;
+        byte[] digest = {hashType}.HashData(buffer);
+        int line2 = 10;
+        /* test3
+         a  */
+#else
+        byte[] digest = Array.Empty<byte>();
+#endif
+        //test4
+        //test5
+        byte[] digest2 = {hashType}.HashData(buffer);
+        //test6
+    }}
+}}
+";
+                await TestCSAsync(
+                    csInput,
+                    csFix,
+                        VerifyCS.Diagnostic(PreferHashDataOverComputeHashAnalyzer.StringRule)
+                        .WithArguments($"System.Security.Cryptography.{hashType}")
+                        .WithLocation(0)
+                        .WithLocation(1),
+                        VerifyCS.Diagnostic(PreferHashDataOverComputeHashAnalyzer.StringRule)
+                        .WithArguments($"System.Security.Cryptography.{hashType}")
+                        .WithLocation(2)
+                        .WithLocation(3));
+            }
+        }
+
+        [Fact]
+        public async Task BasicTriviaCase()
+        {
+            await TestWithType(HashTypeMD5);
+
+            static async Task TestWithType(string hashType)
+            {
+                string vbInput = $@"
+Imports System
+Imports System.Security.Cryptography
+
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+#If Not SOMETHING
+        Using {{|#1:hasher As {hashType} = {hashType}.Create()|}} 'test
+            'test2
+            Dim line1 = 20
+            Dim digest As Byte() = {{|#0:hasher.ComputeHash(buffer)|}}
+            Dim line2 = 10
+        End Using 'test3
+#Else
+        Dim digest As Byte() = Array.Empty<byte>();
+#End If
+        'test4
+        Dim {{|#3:hasher2 As {hashType} = {hashType}.Create()|}} 'test5
+        Dim digest2 As Byte() = {{|#2:hasher2.ComputeHash(buffer)|}}
+        'test6
+    End Sub
+End Class
+";
+
+                string vbFix = $@"
+Imports System
+Imports System.Security.Cryptography
+
+Public Class Test
+    Public Shared Sub TestMethod()
+        Dim buffer = New Byte(1023) {{}}
+#If Not SOMETHING
+        'test
+        'test2
+        Dim line1 = 20
+        Dim digest As Byte() = {hashType}.HashData(buffer)
+        Dim line2 = 10
+        'test3
+#Else
+        Dim digest As Byte() = Array.Empty<byte>();
+#End If
+        'test4
+        'test5
+        Dim digest2 As Byte() = {hashType}.HashData(buffer)
+        'test6
+    End Sub
+End Class
+";
+                await TestVBAsync(
+                    vbInput,
+                    vbFix,
+                    VerifyVB.Diagnostic(PreferHashDataOverComputeHashAnalyzer.StringRule)
+                        .WithArguments($"System.Security.Cryptography.{hashType}")
+                        .WithLocation(0)
+                        .WithLocation(1),
+                    VerifyVB.Diagnostic(PreferHashDataOverComputeHashAnalyzer.StringRule)
+                        .WithArguments($"System.Security.Cryptography.{hashType}")
+                        .WithLocation(2)
+                        .WithLocation(3));
+            }
+        }
+
         private static VerifyCS.Test GetTestCS(string source, string corrected, ReferenceAssemblies referenceAssemblies)
         {
             var test = new VerifyCS.Test

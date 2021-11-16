@@ -391,10 +391,39 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 foreach (var disposeNode in hashInstanceTarget.DisposeNodes)
                 {
                     var trackedDisposeNode = root.GetCurrentNode(disposeNode);
-                    root = root.RemoveNode(trackedDisposeNode, SyntaxRemoveOptions.KeepNoTrivia);
+                    root = RemoveNodeWithFormatting(root, trackedDisposeNode);
                 }
                 return root;
             }
+            protected SyntaxNode RemoveNodeWithFormatting(SyntaxNode root, SyntaxNode nodeToRemove)
+            {
+                SyntaxRemoveOptions option = 0;
+                if (IsInterestingTrivia(nodeToRemove.GetLeadingTrivia()))
+                {
+                    option |= SyntaxRemoveOptions.KeepLeadingTrivia;
+                }
+                if (IsInterestingTrivia(nodeToRemove.GetTrailingTrivia()))
+                {
+                    option |= SyntaxRemoveOptions.KeepTrailingTrivia;
+                }
+                var parent = nodeToRemove.Parent;
+                root = root.TrackNodes(parent);
+                var newParent = parent.RemoveNode(nodeToRemove, option)
+                    .WithAdditionalAnnotations(Formatter.Annotation);
+                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent);
+                return root;
+            }
+
+            protected SyntaxTriviaList AddRangeIfInteresting(SyntaxTriviaList triviaList, SyntaxTriviaList triviaToAdd)
+            {
+                if (IsInterestingTrivia(triviaToAdd))
+                {
+                    triviaList = triviaList.AddRange(triviaToAdd);
+                }
+                return triviaList;
+            }
+
+            protected abstract bool IsInterestingTrivia(SyntaxTriviaList triviaList);
             protected abstract SyntaxNode GetHashDataSyntaxNode(PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string? namespacePrefix, string hashTypeName, SyntaxNode computeHashNode);
             protected abstract SyntaxNode FixHashCreateNode(SyntaxNode root, SyntaxNode createNode);
             protected abstract string? GetQualifiedPrefixNamespaces(SyntaxNode computeHashNode, SyntaxNode? createNode);

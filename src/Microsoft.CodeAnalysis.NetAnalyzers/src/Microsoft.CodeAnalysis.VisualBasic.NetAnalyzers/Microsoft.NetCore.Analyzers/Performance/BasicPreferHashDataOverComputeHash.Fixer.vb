@@ -35,31 +35,56 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Protected Overrides Function FixHashCreateNode(root As SyntaxNode, createNode As SyntaxNode) As SyntaxNode
                 Dim currentCreateNode = root.GetCurrentNode(createNode)
                 Dim currentCreateNodeParent = currentCreateNode.Parent
-                Dim usingStatement = TryCast(currentCreateNodeParent, UsingStatementSyntax)
-                If usingStatement IsNot Nothing Then
+
+                If TypeOf currentCreateNodeParent Is UsingStatementSyntax Then
+                    Dim usingStatement = DirectCast(currentCreateNodeParent, UsingStatementSyntax)
                     Dim usingBlock = TryCast(usingStatement.Parent, UsingBlockSyntax)
                     If usingBlock IsNot Nothing Then
                         If usingStatement.Variables.Count = 1 Then
-                            Dim statements = usingBlock.Statements.Select(Function(s) s.WithAdditionalAnnotations(Formatter.Annotation))
-                            root = root.TrackNodes(usingBlock)
-                            root = root.InsertNodesBefore(root.GetCurrentNode(usingBlock), statements)
-                            root = root.RemoveNode(root.GetCurrentNode(usingBlock), SyntaxRemoveOptions.KeepNoTrivia)
+                            root = MoveStatementsOutOfUsingBlockWithFormatting(root, usingBlock)
                         Else
-                            root = root.RemoveNode(currentCreateNode, SyntaxRemoveOptions.KeepNoTrivia)
+                            root = RemoveNodeWithFormatting(root, currentCreateNode)
                         End If
                     End If
-                Else
-                    Dim localDeclarationStatement = TryCast(currentCreateNodeParent, LocalDeclarationStatementSyntax)
-                    If localDeclarationStatement IsNot Nothing Then
-                        root = root.RemoveNode(localDeclarationStatement, SyntaxRemoveOptions.KeepNoTrivia)
-                    Else
-                        Dim variableDeclaratorSyntax = TryCast(currentCreateNode, VariableDeclaratorSyntax)
-                        If variableDeclaratorSyntax IsNot Nothing Then
-                            root = root.RemoveNode(variableDeclaratorSyntax, SyntaxRemoveOptions.KeepNoTrivia)
-                        End If
-                    End If
+                ElseIf TypeOf currentCreateNodeParent Is LocalDeclarationStatementSyntax Then
+                    Dim localDeclarationStatement = DirectCast(currentCreateNodeParent, LocalDeclarationStatementSyntax)
+                    root = RemoveNodeWithFormatting(root, localDeclarationStatement)
+                ElseIf TypeOf currentCreateNode Is VariableDeclaratorSyntax Then
+                    Dim variableDeclaratorSyntax = DirectCast(currentCreateNode, VariableDeclaratorSyntax)
+                    root = RemoveNodeWithFormatting(root, variableDeclaratorSyntax)
                 End If
                 Return root
+            End Function
+
+            Private Function MoveStatementsOutOfUsingBlockWithFormatting(root As SyntaxNode, usingBlock As UsingBlockSyntax) As SyntaxNode
+                Dim statements = usingBlock.Statements.Select(Function(s, i)
+                                                                  Dim statement = s
+                                                                  If i = 0 Then
+                                                                      Dim newTrivia = New SyntaxTriviaList()
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.GetLeadingTrivia())
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.UsingStatement.GetTrailingTrivia())
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, statement.GetLeadingTrivia())
+                                                                      statement = statement.WithLeadingTrivia(newTrivia)
+                                                                  ElseIf i = usingBlock.Statements.Count - 1 Then
+                                                                      Dim newTrivia = statement.GetTrailingTrivia()
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.EndUsingStatement.GetTrailingTrivia())
+                                                                      statement = statement.WithTrailingTrivia(newTrivia)
+                                                                  End If
+                                                                  Return statement
+                                                              End Function)
+                Dim parent = usingBlock.Parent
+                root = root.TrackNodes(parent)
+                Dim newParent = parent.TrackNodes(usingBlock)
+                newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingBlock), statements)
+                newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingBlock), SyntaxRemoveOptions.KeepNoTrivia).WithAdditionalAnnotations(Formatter.Annotation)
+                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent)
+                Return root
+            End Function
+
+            Protected Overrides Function IsInterestingTrivia(triviaList As SyntaxTriviaList) As Boolean
+                Return triviaList.Any(Function(t)
+                                          Return Not t.IsKind(SyntaxKind.WhitespaceTrivia) And Not t.IsKind(SyntaxKind.EndOfLineTrivia)
+                                      End Function)
             End Function
 
             Protected Overrides Function GetHashDataSyntaxNode(computeType As PreferHashDataOverComputeHashAnalyzer.ComputeType, namespacePrefix As String, hashTypeName As String, computeHashNode As SyntaxNode) As SyntaxNode
