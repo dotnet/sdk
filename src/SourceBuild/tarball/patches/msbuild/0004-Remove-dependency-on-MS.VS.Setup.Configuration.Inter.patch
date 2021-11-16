@@ -16,12 +16,12 @@ Background Issue: https://github.com/dotnet/source-build/issues/2542
  6 files changed, 9 insertions(+), 7 deletions(-)
 
 diff --git a/eng/Packages.props b/eng/Packages.props
-index 2de607c5d..1668addc9 100644
+index 494c9c0..7689042 100644
 --- a/eng/Packages.props
 +++ b/eng/Packages.props
 @@ -46,9 +46,6 @@
+ 
    <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All"/>
      <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
 -  </ItemGroup>
 -
@@ -34,7 +34,7 @@ index d08e337c5..3b173aee5 100644
 --- a/src/Build/Microsoft.Build.csproj
 +++ b/src/Build/Microsoft.Build.csproj
 @@ -38,8 +38,10 @@
-     <PackageReference Include="System.Reflection.Metadata" Condition="'$(MonoBuild)' == 'true'" />
+     <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
    </ItemGroup>
  
 -  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
