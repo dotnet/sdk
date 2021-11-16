@@ -454,9 +454,9 @@
         <target state="new">Assemblies were optimized for size. See: https://aka.ms/dotnet-illink</target>
         <note />
       </trans-unit>
-      <trans-unit id="ILLinkTimeAwareness">
-        <source>Running ILLink, this process might take a while</source>
-        <target state="new">Running ILLink, this process might take a while</target>
+      <trans-unit id="ILLinkRunning">
+        <source>Optimizing assemblies for size. This process might take a while</source>
+        <target state="new">Optimizing assemblies for size. This process might take a while</target>
         <note />
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
