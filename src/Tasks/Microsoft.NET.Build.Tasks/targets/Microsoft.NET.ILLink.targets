@@ -104,8 +104,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       '$(_TargetFrameworkVersionWithoutV)' >= '3.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' "
           DependsOnTargets="_RunILLink">
 
-    <NETSdkInformation ResourceName="ILLink_Info" />
-
+    <NETSdkInformation Condition="'$(_ILLinkExitCode)' == '' Or '$(_ILLinkExitCode)' == '0'" ResourceName="ILLinkOptimizedAssemblies" />
     <NETSdkError Condition="'$(_ILLinkExitCode)' != '' And '$(_ILLinkExitCode)' != '0'" ResourceName="ILLinkFailed" />
 
     <ItemGroup>
@@ -143,7 +142,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_ComputeManagedAssemblyToLink;PrepareForILLink"
           Inputs="$(MSBuildAllProjects);@(ManagedAssemblyToLink);@(TrimmerRootDescriptor);@(ReferencePath)"
           Outputs="$(_LinkSemaphore)">
-
+    <NETSdkInformation ResourceName="ILLinkTimeAwareness" />
     <!-- When running from Desktop MSBuild, DOTNET_HOST_PATH is not set.
          In this case, explicitly specify the path to the dotnet host. -->
     <PropertyGroup Condition=" '$(DOTNET_HOST_PATH)' == '' ">
