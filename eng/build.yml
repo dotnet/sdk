@@ -188,105 +188,106 @@ jobs:
       continueOnError: true	
       condition: always()
 
-- template: /eng/common/templates/job/job.yml
-  parameters:
-    name: ${{ parameters.agentOs }} AOT Tests
-    enableMicrobuild: true
-    enablePublishBuildAssets: true
-    enableTelemetry: true
-    enablePublishUsingPipelines: true
-    helixRepo: dotnet/sdk
-    pool: ${{ parameters.pool }}
-    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
-    ${{ if ne(parameters.strategy, '') }}:
-      strategy: ${{ parameters.strategy }}
-    workspace:
-      clean: all
-    variables:
-      - ${{ insert }}: ${{ parameters.variables }}
-      - _AgentOSName: ${{ parameters.agentOs }}
-      - _TeamName: DotNetCore
-      - _OfficialBuildIdArgs: ''
-      - _PublishArgs: ''
-      - _SignArgs: ''
-      - _HelixApiToken: ''
-      # Helix Testing requires a token when internally run
-      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        - group: DotNet-HelixApi-Access
-        - _HelixApiToken: $(HelixApiAccessToken)
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - group: dotnet-benchview
-        - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-        - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - _PerfIterations: 25
+- ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
+  - template: /eng/common/templates/job/job.yml
+    parameters:
+      name: ${{ parameters.agentOs }}_AOT_Tests
+      enableMicrobuild: true
+      enablePublishBuildAssets: true
+      enableTelemetry: true
+      enablePublishUsingPipelines: true
+      helixRepo: dotnet/sdk
+      pool: ${{ parameters.pool }}
+      timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+      ${{ if ne(parameters.strategy, '') }}:
+        strategy: ${{ parameters.strategy }}
+      workspace:
+        clean: all
+      variables:
+        - ${{ insert }}: ${{ parameters.variables }}
+        - _AgentOSName: ${{ parameters.agentOs }}
+        - _TeamName: DotNetCore
+        - _OfficialBuildIdArgs: ''
+        - _PublishArgs: ''
+        - _SignArgs: ''
+        - _HelixApiToken: ''
+        # Helix Testing requires a token when internally run
+        - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+          - group: DotNet-HelixApi-Access
+          - _HelixApiToken: $(HelixApiAccessToken)
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - group: dotnet-benchview
+          - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          - _PerfIterations: 25
 
-    steps:
-    - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(parameters.agentOs, 'Windows_NT', 'Darwin')) }}:
-      - task: PowerShell@2
-        displayName: Setup Private Feeds Credentials
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
-    - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
-      - script: eng\CIBuild.cmd
-                  -configuration $(_BuildConfig)
-                  $(_PublishArgs)
-                  $(_SignArgs)
-                  $(_OfficialBuildIdArgs)
-                  /p:Test=false
-                  $(_InternalRuntimeDownloadArgs)
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          HelixAccessToken: ${{ parameters.HelixAccessToken }}
+      steps:
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(parameters.agentOs, 'Windows_NT', 'Darwin')) }}:
+        - task: PowerShell@2
+          displayName: Setup Private Feeds Credentials
+          inputs:
+            filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+            arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
+        - script: eng\CIBuild.cmd
+                    -configuration $(_BuildConfig)
+                    $(_PublishArgs)
+                    $(_SignArgs)
+                    $(_OfficialBuildIdArgs)
+                    /p:Test=false
+                    $(_InternalRuntimeDownloadArgs)
+          displayName: Build
+          env:
+            BuildConfig: $(_BuildConfig)
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: ${{ parameters.HelixAccessToken }}
 
-    - ${{ if eq(parameters.agentOs, 'Darwin') }}:
-      - script: eng/common/cibuild.sh
-                  --configuration $(_BuildConfig)
-                  $(_SignArgs)
-                  $(_OfficialBuildIdArgs)
-                  $(_InternalRuntimeDownloadArgs)
-                  -p:Test=false
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
+      - ${{ if eq(parameters.agentOs, 'Darwin') }}:
+        - script: eng/common/cibuild.sh
+                    --configuration $(_BuildConfig)
+                    $(_SignArgs)
+                    $(_OfficialBuildIdArgs)
+                    $(_InternalRuntimeDownloadArgs)
+                    -p:Test=false
+          displayName: Build
+          env:
+            BuildConfig: $(_BuildConfig)
 
-    - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
-      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install --skip-manifest-update --no-cache wasm-tools
-        displayName: Install wasm-tools Workload
-      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/Debug/dotnet/dotnet test --configuration $(_BuildConfig) --filter WasmAOTPublishIntegrationTest $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
-        displayName: Run AOT Tests
+      - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install --skip-manifest-update --no-cache wasm-tools
+          displayName: Install wasm-tools Workload
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/Debug/dotnet/dotnet test --configuration $(_BuildConfig) --filter WasmAOTPublishIntegrationTest $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
+          displayName: Run AOT Tests
 
-      - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
-        condition: always()
+        - task: PublishTestResults@2
+          displayName: Publish Test Results	
+          inputs:	
+            testResultsFormat: xUnit	
+            testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
+            testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
+            buildPlatform: '$(BuildPlatform)'	
+            buildConfiguration: '$(_BuildConfig)'	
+          condition: always()
 
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-                    log/$(_BuildConfig)/**/*	
-                    TestResults/$(_BuildConfig)/**/*	
-                    SymStore/$(_BuildConfig)/**/*
-                    TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
-        condition: always()
+        - task: CopyFiles@2	
+          displayName: Gather Logs	
+          inputs:	
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
+            Contents: |	
+                      log/$(_BuildConfig)/**/*	
+                      TestResults/$(_BuildConfig)/**/*	
+                      SymStore/$(_BuildConfig)/**/*
+                      TargetFolder: '$(Build.ArtifactStagingDirectory)'	
+          continueOnError: true	
+          condition: always()
 
-      - task: PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
-        condition: always()
+        - task: PublishBuildArtifacts@1	
+          displayName: Publish Logs to VSTS	
+          inputs:	
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
+            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
+            publishLocation: Container	
+          continueOnError: true	
+          condition: always()
