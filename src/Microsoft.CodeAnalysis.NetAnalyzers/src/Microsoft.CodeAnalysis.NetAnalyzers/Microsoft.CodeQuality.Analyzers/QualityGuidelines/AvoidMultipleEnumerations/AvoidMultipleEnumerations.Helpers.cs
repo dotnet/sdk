@@ -148,7 +148,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
             if (parameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
             {
                 return true;
             }

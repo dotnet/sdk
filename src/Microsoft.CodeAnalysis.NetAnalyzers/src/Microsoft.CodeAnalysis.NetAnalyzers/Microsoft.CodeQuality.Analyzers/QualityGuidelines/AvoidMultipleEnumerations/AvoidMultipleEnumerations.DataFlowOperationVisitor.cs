@@ -28,26 +28,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
                 var value = base.VisitParameterReference(operation, argument);
-                if (!IsDeferredType(operation.Parameter.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                {
-                    return value;
-                }
-
-                return CreateAndUpdateAnalysisValue(operation, value);
+                return VisitLocalOrParameter(operation.Parameter.Type?.OriginalDefinition, operation, value);
             }
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitLocalReference(ILocalReferenceOperation operation, object? argument)
             {
                 var value = base.VisitLocalReference(operation, argument);
-                if (!IsDeferredType(operation.Local.Type.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                {
-                    return value;
-                }
-
-                return CreateAndUpdateAnalysisValue(operation, value);
+                return VisitLocalOrParameter(operation.Local.Type?.OriginalDefinition, operation, value);
             }
 
-            private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(IOperation operation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation operation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            {
+                if (!IsDeferredType(typeSymbol, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                {
+                    return defaultValue;
+                }
+
+                return CreateAndUpdateAnalysisValue(operation, defaultValue);
+            }
+
+            private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
+                IOperation operation,
+                GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
                 if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
                 {
