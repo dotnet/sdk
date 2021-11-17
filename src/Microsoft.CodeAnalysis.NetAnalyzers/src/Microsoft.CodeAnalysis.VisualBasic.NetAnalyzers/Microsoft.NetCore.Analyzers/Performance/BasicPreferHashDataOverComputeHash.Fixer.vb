@@ -35,40 +35,69 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Protected Overrides Function FixHashCreateNode(root As SyntaxNode, createNode As SyntaxNode) As SyntaxNode
                 Dim currentCreateNode = root.GetCurrentNode(createNode)
                 Dim currentCreateNodeParent = currentCreateNode.Parent
-                Dim usingStatement = TryCast(currentCreateNodeParent, UsingStatementSyntax)
-                If usingStatement IsNot Nothing Then
+
+                If TypeOf currentCreateNodeParent Is UsingStatementSyntax Then
+                    Dim usingStatement = DirectCast(currentCreateNodeParent, UsingStatementSyntax)
                     Dim usingBlock = TryCast(usingStatement.Parent, UsingBlockSyntax)
                     If usingBlock IsNot Nothing Then
                         If usingStatement.Variables.Count = 1 Then
-                            Dim statements = usingBlock.Statements.Select(Function(s) s.WithAdditionalAnnotations(Formatter.Annotation))
-                            root = root.TrackNodes(usingBlock)
-                            root = root.InsertNodesBefore(root.GetCurrentNode(usingBlock), statements)
-                            root = root.RemoveNode(root.GetCurrentNode(usingBlock), SyntaxRemoveOptions.KeepNoTrivia)
+                            root = MoveStatementsOutOfUsingBlockWithFormatting(root, usingBlock)
                         Else
-                            root = root.RemoveNode(currentCreateNode, SyntaxRemoveOptions.KeepNoTrivia)
+                            root = RemoveNodeWithFormatting(root, currentCreateNode)
                         End If
                     End If
-                Else
-                    Dim localDeclarationStatement = TryCast(currentCreateNodeParent, LocalDeclarationStatementSyntax)
-                    If localDeclarationStatement IsNot Nothing Then
-                        root = root.RemoveNode(localDeclarationStatement, SyntaxRemoveOptions.KeepNoTrivia)
-                    Else
-                        Dim variableDeclaratorSyntax = TryCast(currentCreateNode, VariableDeclaratorSyntax)
-                        If variableDeclaratorSyntax IsNot Nothing Then
-                            root = root.RemoveNode(variableDeclaratorSyntax, SyntaxRemoveOptions.KeepNoTrivia)
-                        End If
-                    End If
+                ElseIf TypeOf currentCreateNodeParent Is LocalDeclarationStatementSyntax Then
+                    Dim localDeclarationStatement = DirectCast(currentCreateNodeParent, LocalDeclarationStatementSyntax)
+                    root = RemoveNodeWithFormatting(root, localDeclarationStatement)
+                ElseIf TypeOf currentCreateNode Is VariableDeclaratorSyntax Then
+                    Dim variableDeclaratorSyntax = DirectCast(currentCreateNode, VariableDeclaratorSyntax)
+                    root = RemoveNodeWithFormatting(root, variableDeclaratorSyntax)
                 End If
                 Return root
             End Function
 
-            Protected Overrides Function GetHashDataSyntaxNode(computeType As PreferHashDataOverComputeHashAnalyzer.ComputeType, hashTypeName As String, computeHashNode As SyntaxNode) As SyntaxNode
+            Private Function MoveStatementsOutOfUsingBlockWithFormatting(root As SyntaxNode, usingBlock As UsingBlockSyntax) As SyntaxNode
+                Dim statements = usingBlock.Statements.Select(Function(s, i)
+                                                                  Dim statement = s
+                                                                  If i = 0 Then
+                                                                      Dim newTrivia = New SyntaxTriviaList()
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.GetLeadingTrivia())
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.UsingStatement.GetTrailingTrivia())
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, statement.GetLeadingTrivia())
+                                                                      statement = statement.WithLeadingTrivia(newTrivia)
+                                                                  ElseIf i = usingBlock.Statements.Count - 1 Then
+                                                                      Dim newTrivia = statement.GetTrailingTrivia()
+                                                                      newTrivia = AddRangeIfInteresting(newTrivia, usingBlock.EndUsingStatement.GetTrailingTrivia())
+                                                                      statement = statement.WithTrailingTrivia(newTrivia)
+                                                                  End If
+                                                                  Return statement
+                                                              End Function)
+                Dim parent = usingBlock.Parent
+                root = root.TrackNodes(parent)
+                Dim newParent = parent.TrackNodes(usingBlock)
+                newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingBlock), statements)
+                newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingBlock), SyntaxRemoveOptions.KeepNoTrivia).WithAdditionalAnnotations(Formatter.Annotation)
+                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent)
+                Return root
+            End Function
+
+            Protected Overrides Function IsInterestingTrivia(triviaList As SyntaxTriviaList) As Boolean
+                Return triviaList.Any(Function(t)
+                                          Return Not t.IsKind(SyntaxKind.WhitespaceTrivia) And Not t.IsKind(SyntaxKind.EndOfLineTrivia)
+                                      End Function)
+            End Function
+
+            Protected Overrides Function GetHashDataSyntaxNode(computeType As PreferHashDataOverComputeHashAnalyzer.ComputeType, namespacePrefix As String, hashTypeName As String, computeHashNode As SyntaxNode) As SyntaxNode
+                Dim identifier = hashTypeName
+                If namespacePrefix IsNot Nothing Then
+                    identifier = namespacePrefix + "." + identifier
+                End If
                 Dim argumentList = DirectCast(computeHashNode, InvocationExpressionSyntax).ArgumentList
                 Select Case computeType
                     Case PreferHashDataOverComputeHashAnalyzer.ComputeType.ComputeHash
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                     SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName))
                         Dim arg = argumentList.Arguments(0)
@@ -101,7 +130,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Dim asSpanInvoked = SyntaxFactory.InvocationExpression(asSpan, spanArgs)
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                         SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName))
 
@@ -115,13 +144,71 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         ' method has same parameter names
                         Dim hashData = SyntaxFactory.MemberAccessExpression(
                         SyntaxKind.SimpleMemberAccessExpression,
-                        SyntaxFactory.IdentifierName(hashTypeName),
+                        SyntaxFactory.ParseExpression(identifier),
                         SyntaxFactory.Token(SyntaxKind.DotToken),
                     SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.TryHashDataMethodName))
                         Return SyntaxFactory.InvocationExpression(hashData, argumentList)
                 End Select
                 Debug.Fail("there is only 3 type of ComputeHash")
                 Throw New InvalidOperationException("there is only 3 type of ComputeHash")
+            End Function
+
+            Protected Overrides Function GetQualifiedPrefixNamespaces(computeHashNode As SyntaxNode, createNode As SyntaxNode) As String
+                Dim invocationNode = DirectCast(computeHashNode, InvocationExpressionSyntax)
+                Dim ns As String = Nothing
+                If createNode IsNot Nothing Then
+                    Dim variable = DirectCast(createNode, VariableDeclaratorSyntax)
+                    If variable.Initializer IsNot Nothing Then
+                        Dim initliazerValue = variable.Initializer.Value
+                        If TypeOf initliazerValue Is InvocationExpressionSyntax Then
+                            Dim invocationExpression = DirectCast(initliazerValue, InvocationExpressionSyntax)
+                            ns = GetNamespacePrefixes(invocationExpression)
+                        ElseIf TypeOf initliazerValue Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(initliazerValue, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    ElseIf TypeOf variable.AsClause Is AsNewClauseSyntax Then
+                        Dim asNewClause = DirectCast(variable.AsClause, AsNewClauseSyntax)
+                        Dim newExpression = asNewClause.NewExpression
+                        If TypeOf newExpression Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(newExpression, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    End If
+                Else
+                    Dim typeMember = TryCast(invocationNode.Expression, MemberAccessExpressionSyntax)
+                    If typeMember IsNot Nothing Then
+                        Dim typeExpression = typeMember.Expression
+                        If TypeOf typeExpression Is InvocationExpressionSyntax Then
+                            Dim invocationExpression = DirectCast(typeExpression, InvocationExpressionSyntax)
+                            ns = GetNamespacePrefixes(invocationExpression)
+                        ElseIf TypeOf typeExpression Is ObjectCreationExpressionSyntax Then
+                            Dim objectCreation = DirectCast(typeExpression, ObjectCreationExpressionSyntax)
+                            ns = GetNamespacePrefixes(objectCreation)
+                        End If
+                    End If
+                End If
+                Return ns
+            End Function
+            Private Shared Function GetNamespacePrefixes(objectCreation As ObjectCreationExpressionSyntax) As String
+                Dim qualifiedTypeName = TryCast(objectCreation.Type, QualifiedNameSyntax)
+                If qualifiedTypeName IsNot Nothing Then
+                    Dim qualifiedNamespace = TryCast(qualifiedTypeName.Left, QualifiedNameSyntax)
+                    If qualifiedNamespace IsNot Nothing Then
+                        Return qualifiedNamespace.ToString()
+                    End If
+                End If
+                Return Nothing
+            End Function
+            Private Shared Function GetNamespacePrefixes(invocationExpression As InvocationExpressionSyntax) As String
+                Dim invocationMemberAccess = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
+                If invocationMemberAccess IsNot Nothing Then
+                    Dim originalType = TryCast(invocationMemberAccess.Expression, MemberAccessExpressionSyntax)
+                    If originalType IsNot Nothing Then
+                        Return originalType.Expression.ToString()
+                    End If
+                End If
+                Return Nothing
             End Function
         End Class
     End Class

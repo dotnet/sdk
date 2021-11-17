@@ -1271,23 +1271,34 @@ Rule ID | Missing Help Link | Title |
                         {
                             isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
                             var maxVersion = shippedReleaseData.Value.version;
+                            var foundReleaseTrackingEntry = false;
                             foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
                             {
-                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine) &&
-                                    releaseTrackingLine.EnabledByDefault.HasValue &&
-                                    releaseTrackingLine.DefaultSeverity.HasValue)
+                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
                                 {
-                                    isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
-                                    effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
+                                    foundReleaseTrackingEntry = true;
 
-                                    if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
+                                    if (releaseTrackingLine.EnabledByDefault.HasValue &&
+                                        releaseTrackingLine.DefaultSeverity.HasValue)
                                     {
-                                        isEnabledByDefault = true;
-                                        effectiveSeverity = DiagnosticSeverity.Warning;
-                                    }
+                                        isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
+                                        effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
 
-                                    break;
+                                        if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
+                                        {
+                                            isEnabledByDefault = true;
+                                            effectiveSeverity = DiagnosticSeverity.Warning;
+                                        }
+
+                                        break;
+                                    }
                                 }
+                            }
+
+                            if (!foundReleaseTrackingEntry)
+                            {
+                                // Rule is unshipped or first shipped in a version later than 'maxVersion', so mark it as disabled.
+                                isEnabledByDefault = false;
                             }
                         }
 

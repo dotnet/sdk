@@ -30,8 +30,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
         private sealed class CSharpPreferHashDataOverComputeHashFixHelper : PreferHashDataOverComputeHashFixHelper
         {
-            protected override SyntaxNode GetHashDataSyntaxNode(PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string hashTypeName, SyntaxNode computeHashNode)
+            protected override SyntaxNode GetHashDataSyntaxNode(PreferHashDataOverComputeHashAnalyzer.ComputeType computeType, string? namespacePrefix, string hashTypeName, SyntaxNode computeHashNode)
             {
+                string identifier = hashTypeName;
+                if (namespacePrefix is not null)
+                {
+                    identifier = $"{namespacePrefix}.{identifier}";
+                }
+
                 var argumentList = ((InvocationExpressionSyntax)computeHashNode).ArgumentList;
                 switch (computeType)
                 {
@@ -40,7 +46,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                         {
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName));
                             var arg = argumentList.Arguments[0];
                             if (arg.NameColon is not null)
@@ -77,7 +83,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             var asSpanInvoked = SyntaxFactory.InvocationExpression(asSpan, spanArgs);
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.HashDataMethodName));
                             var arg = SyntaxFactory.Argument(asSpanInvoked);
                             if (firstArg.NameColon is not null)
@@ -93,7 +99,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                             // method has same parameter names
                             var hashData = SyntaxFactory.MemberAccessExpression(
                                 SyntaxKind.SimpleMemberAccessExpression,
-                                SyntaxFactory.IdentifierName(hashTypeName),
+                                SyntaxFactory.ParseExpression(identifier),
                                 SyntaxFactory.IdentifierName(PreferHashDataOverComputeHashAnalyzer.TryHashDataMethodName));
                             return SyntaxFactory.InvocationExpression(hashData, argumentList);
                         }
@@ -110,31 +116,106 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 {
                     case { Parent: UsingStatementSyntax usingStatement } when usingStatement.Declaration.Variables.Count == 1:
                         {
-                            var statements = usingStatement.Statement
-                                .ChildNodes()
-                                .Select(s => s.WithAdditionalAnnotations(Formatter.Annotation));
-                            root = root.TrackNodes(usingStatement);
-                            root = root.InsertNodesBefore(root.GetCurrentNode(usingStatement), statements);
-                            root = root.RemoveNode(root.GetCurrentNode(usingStatement), SyntaxRemoveOptions.KeepNoTrivia);
+                            root = MoveStatementsOutOfUsingStatementWithFormatting(root, usingStatement);
                             break;
                         }
-                    case { Parent: UsingStatementSyntax usingStatement }:
+                    case { Parent: UsingStatementSyntax }:
                         {
-                            root = root.RemoveNode(currentCreateNode, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, currentCreateNode);
                             break;
                         }
                     case { Parent: LocalDeclarationStatementSyntax localDeclarationStatementSyntax }:
                         {
-                            root = root.RemoveNode(localDeclarationStatementSyntax, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, localDeclarationStatementSyntax);
                             break;
                         }
                     case VariableDeclaratorSyntax variableDeclaratorSyntax:
                         {
-                            root = root.RemoveNode(variableDeclaratorSyntax, SyntaxRemoveOptions.KeepNoTrivia);
+                            root = RemoveNodeWithFormatting(root, variableDeclaratorSyntax);
                             break;
                         }
                 }
                 return root;
+            }
+
+            private SyntaxNode MoveStatementsOutOfUsingStatementWithFormatting(SyntaxNode root, UsingStatementSyntax usingStatement)
+            {
+                var block = (BlockSyntax)usingStatement.Statement;
+                var statements = block.Statements
+                    .Select((s, i) =>
+                    {
+                        var statement = s;
+                        if (i == 0)
+                        {
+                            var newTrivia = new SyntaxTriviaList();
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.GetLeadingTrivia());
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.CloseParenToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.CloseParenToken.TrailingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.OpenBraceToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.OpenBraceToken.TrailingTrivia);
+                            newTrivia = newTrivia.AddRange(statement.GetLeadingTrivia());
+                            statement = statement.WithLeadingTrivia(newTrivia);
+                        }
+
+                        if (i == block.Statements.Count - 1)
+                        {
+                            var newTrivia = statement.GetTrailingTrivia();
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.CloseBraceToken.LeadingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, block.CloseBraceToken.TrailingTrivia);
+                            newTrivia = AddRangeIfInteresting(newTrivia, usingStatement.GetTrailingTrivia());
+                            statement = statement.WithTrailingTrivia(newTrivia);
+                        }
+                        return statement;
+                    });
+
+                var parent = usingStatement.Parent;
+                root = root.TrackNodes(parent);
+                var newParent = parent.TrackNodes(usingStatement);
+                newParent = newParent.InsertNodesBefore(newParent.GetCurrentNode(usingStatement), statements);
+                newParent = newParent.RemoveNode(newParent.GetCurrentNode(usingStatement), SyntaxRemoveOptions.KeepNoTrivia)
+                    .WithAdditionalAnnotations(Formatter.Annotation);
+                root = root.ReplaceNode(root.GetCurrentNode(parent), newParent);
+                return root;
+            }
+
+            protected override bool IsInterestingTrivia(SyntaxTriviaList triviaList)
+            {
+                return triviaList.Any(t => !t.IsKind(SyntaxKind.WhitespaceTrivia) && !t.IsKind(SyntaxKind.EndOfLineTrivia));
+            }
+            protected override string? GetQualifiedPrefixNamespaces(SyntaxNode computeHashNode, SyntaxNode? createNode)
+            {
+                var invocationNode = (InvocationExpressionSyntax)computeHashNode;
+                string? ns = null;
+                if (createNode is not null)
+                {
+                    var initliazerValue = ((VariableDeclaratorSyntax)createNode).Initializer.Value;
+                    if (initliazerValue is InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Expression: MemberAccessExpressionSyntax originalType } })
+                    {
+                        ns = originalType.Expression.ToFullString();
+                    }
+                    else if (initliazerValue is ObjectCreationExpressionSyntax { Type: QualifiedNameSyntax { Left: QualifiedNameSyntax qualifiedNamespaceSyntax } })
+                    {
+                        ns = qualifiedNamespaceSyntax.ToFullString();
+                    }
+
+                }
+                else if (invocationNode.Expression is MemberAccessExpressionSyntax { Expression: InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax { Expression: MemberAccessExpressionSyntax originalType } } })
+                {
+                    // System.Security.Cryptography.SHA1.Create().ComputeHash(buffer)
+                    // .ComputeHash(buffer) InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    // .Create() InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    ns = originalType.Expression.ToFullString();
+                }
+                else if (invocationNode.Expression is MemberAccessExpressionSyntax { Expression: ObjectCreationExpressionSyntax { Type: QualifiedNameSyntax { Left: QualifiedNameSyntax qualifiedNamespaceSyntax } } })
+                {
+                    // new System.Security.Cryptography.SHA1Managed().ComputeHash(buffer)
+                    // .ComputeHash(buffer) InvocationExpressionSyntax, MemberAccessExpressionSyntax
+                    // new System.Security.Cryptography.SHA1Managed() ObjectCreationExpressionSyntax
+                    ns = qualifiedNamespaceSyntax.ToFullString();
+                }
+
+
+                return ns;
             }
         }
     }

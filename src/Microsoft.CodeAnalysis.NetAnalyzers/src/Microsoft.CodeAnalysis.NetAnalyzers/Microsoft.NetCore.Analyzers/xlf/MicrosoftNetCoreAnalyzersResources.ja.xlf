@@ -339,12 +339,12 @@
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
         <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー クラス '{1}' から派生しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー クラス '{1}' から派生しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -354,12 +354,12 @@
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
         <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">'{0}' を使用するには、プレビュー機能を選択する必要があります。詳細については、「{1}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
         <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">{2} '{0}' を使用するには、プレビュー機能を選択する必要があります。詳細については、「{1}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
@@ -1114,12 +1114,12 @@
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' の型には、プレビューの種類 '{1}' が含まれており、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' の型には、プレビューの種類 '{1}' が含まれており、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1274,22 +1274,22 @@
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
         <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー インターフェイス '{1}' を実装しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー インターフェイス '{1}' を実装しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
         <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー メソッド '{1}' を実装しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー メソッド '{1}' を実装しているため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1599,22 +1599,22 @@
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
         <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー型 '{1}' を返すため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー型 '{1}' を返すため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
         <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' は、'{1}' 型のプレビュー パラメーターを受け取り、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' は、'{1}' 型のプレビュー パラメーターを受け取り、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1709,12 +1709,12 @@
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
         <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー メソッド '{1}' を上書きするため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー メソッド '{1}' を上書きするため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1894,22 +1894,22 @@
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
         <source>Replace with 'HashData' method</source>
-        <target state="new">Replace with 'HashData' method</target>
+        <target state="translated">'HashData' メソッドに置き換える</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
         <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
-        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <target state="translated">'ComputeHash' を呼び出すには、HashAlgorithm インスタンスを作成して管理するよりも、静的な 'HashData' メソッドを使用する方が効率的です。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
         <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
-        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <target state="translated">静的な '{0}.HashData' メソッドは 'ComputeHash' に優先します</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
         <source>Prefer static 'HashData' method over 'ComputeHash'</source>
-        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <target state="translated">静的な 'HashData' メソッドは 'ComputeHash' に優先します</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2829,12 +2829,12 @@
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
         <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' はプレビュー型 '{1}' を使用するため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' はプレビュー型 '{1}' を使用するため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
         <note />
       </trans-unit>
     </body>

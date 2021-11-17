@@ -12599,5 +12599,22 @@ class Program
     }
 }");
         }
+
+        [Fact, WorkItem(4147, "https://github.com/dotnet/roslyn-analyzers/issues/4147")]
+        public async Task Dispose_ValueIsObviouslyMemoryStream_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+    using System;
+    using System.IO;
+
+    class Program
+    {
+        public void TestCa2000()
+        {
+            var ms = new MemoryStream();
+            return;
+        }
+    }");
+        }
     }
 }

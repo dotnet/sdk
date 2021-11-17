@@ -339,12 +339,12 @@
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessage">
         <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 衍生自預覽類別 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 衍生自預覽類別 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
@@ -354,12 +354,12 @@
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
         <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">使用 '{0}' 必須加入預覽功能。如需詳細資訊，請參閱 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
         <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
-        <target state="new">{2} Using '{0}' requires opting into preview features. See {1} for more information.</target>
+        <target state="translated">{2} 使用 '{0}' 必須加入預覽功能。如需詳細資訊，請參閱 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
@@ -1114,12 +1114,12 @@
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1274,22 +1274,22 @@
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
         <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 會實作預覽介面 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 會實作預覽介面 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessage">
         <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 會實作預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 會實作預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1599,22 +1599,22 @@
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessage">
         <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 會傳回預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 會傳回預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
         <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 接受類型 '{1}' 的預覽參數，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 接受類型 '{1}' 的預覽參數，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -1709,12 +1709,12 @@
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessage">
         <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1894,22 +1894,22 @@
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
         <source>Replace with 'HashData' method</source>
-        <target state="new">Replace with 'HashData' method</target>
+        <target state="translated">以 'HashData' 方法取代</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
         <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
-        <target state="new">It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</target>
+        <target state="translated">使用靜態 'HashData' 方法比建立和管理 HashAlgorithm 執行個體來呼叫 'ComputeHash' 更有效率。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
         <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
-        <target state="new">Prefer static '{0}.HashData' method over 'ComputeHash'</target>
+        <target state="translated">偏好靜態 '{0}.HashData' 方法而非 'ComputeHash'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
         <source>Prefer static 'HashData' method over 'ComputeHash'</source>
-        <target state="new">Prefer static 'HashData' method over 'ComputeHash'</target>
+        <target state="translated">偏好靜態 'HashData' 方法而非 'ComputeHash'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -2829,12 +2829,12 @@
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessage">
         <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">'{0}' 使用預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
-        <target state="new">{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</target>
+        <target state="translated">{3} '{0}' 使用預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
     </body>

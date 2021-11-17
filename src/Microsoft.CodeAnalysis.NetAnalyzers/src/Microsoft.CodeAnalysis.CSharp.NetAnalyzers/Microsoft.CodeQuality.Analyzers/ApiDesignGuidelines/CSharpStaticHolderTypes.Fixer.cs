@@ -84,7 +84,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             }
 
             var constructor = (ConstructorDeclarationSyntax)member;
-            if (constructor.Modifiers.Any(m => m.Kind() == SyntaxKind.StaticKeyword))
+            if (constructor.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword)))
             {
                 return false;
             }
