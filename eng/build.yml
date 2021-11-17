@@ -275,10 +275,10 @@ jobs:
         inputs:	
           SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
           Contents: |	
-          log/$(_BuildConfig)/**/*	
-          TestResults/$(_BuildConfig)/**/*	
-          SymStore/$(_BuildConfig)/**/*
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
+                    log/$(_BuildConfig)/**/*	
+                    TestResults/$(_BuildConfig)/**/*	
+                    SymStore/$(_BuildConfig)/**/*
+                    TargetFolder: '$(Build.ArtifactStagingDirectory)'	
         continueOnError: true	
         condition: always()
 
