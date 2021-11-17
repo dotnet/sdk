@@ -258,7 +258,7 @@ jobs:
       - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install --skip-manifest-update --no-cache wasm-tools
           displayName: Install wasm-tools Workload
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/Debug/dotnet/dotnet test --configuration $(_BuildConfig) --filter WasmAOTPublishIntegrationTest $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet test --configuration $(_BuildConfig) --filter WasmAOTPublishIntegrationTest $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
           displayName: Run AOT Tests
 
         - task: PublishTestResults@2
