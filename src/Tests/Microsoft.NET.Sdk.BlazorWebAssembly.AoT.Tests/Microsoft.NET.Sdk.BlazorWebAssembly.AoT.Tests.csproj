@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
-    <DefineConstants Condition="'$(RunAoTTests)' == 'true'">$(DefineConstants);RUN_AOT_TESTS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
