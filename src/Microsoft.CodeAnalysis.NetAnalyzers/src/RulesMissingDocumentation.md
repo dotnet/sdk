@@ -9,7 +9,7 @@ CA1840 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1842 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842> | Do not use 'WhenAll' with a single task |
 CA1843 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843> | Do not use 'WaitAll' with a single task |
 CA1848 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848> | Use the LoggerMessage delegates |
-CA1850 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850> | Prefer static 'HashData' method over 'ComputeHash' |
+CA1851 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851> | Possible multiple enumerations of 'IEnumerable' collection |
 CA2017 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017> | Parameter count mismatch |
 CA2253 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253> | Named placeholders should not be numeric values |
 CA2254 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254> | Template should be a static expression |

@@ -52,6 +52,16 @@
         <target state="translated">避免无限递归</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.</source>
+        <target state="new">Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.</target>
+        <note>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="new">Possible multiple enumerations of 'IEnumerable' collection</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">按引用(使用 "out" 或 "ref")传递类型需要使用指针，了解值类型和引用类型有何不同，以及处理具有多个返回值的方法。此外，"out" 和 "ref" 参数之间的差异不太容易理解。</target>
