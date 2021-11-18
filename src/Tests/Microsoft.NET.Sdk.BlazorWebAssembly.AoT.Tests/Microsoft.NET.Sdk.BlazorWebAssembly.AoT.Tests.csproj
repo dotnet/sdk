@@ -56,10 +56,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\StaticWebAssetsBaselines\**" />
+    <EmbeddedResource Include="StaticWebAssetsBaselines\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\StaticWebAssetsBaselines\" />
+    <Folder Include="StaticWebAssetsBaselines\" />
   </ItemGroup>
 </Project>
