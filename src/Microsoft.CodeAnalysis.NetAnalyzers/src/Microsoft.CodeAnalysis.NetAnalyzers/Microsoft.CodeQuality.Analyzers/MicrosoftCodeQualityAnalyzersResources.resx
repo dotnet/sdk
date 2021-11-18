@@ -1316,7 +1316,7 @@
     <comment>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</comment>
   </data>
   <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
-    <value>Possible multiple enumerations over 'IEnumerable' collection</value>
+    <value>Possible multiple enumerations of 'IEnumerable' collection</value>
     <comment>{Locked="IEnumerable"}</comment>
   </data>
 </root>

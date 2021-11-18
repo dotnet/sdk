@@ -58,8 +58,8 @@
         <note>{Locked="IEnumerable"} {Locked="ToList"} {Locked="ToArray"}</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">
-        <source>Possible multiple enumerations over 'IEnumerable' collection</source>
-        <target state="new">Possible multiple enumerations over 'IEnumerable' collection</target>
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="new">Possible multiple enumerations of 'IEnumerable' collection</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
