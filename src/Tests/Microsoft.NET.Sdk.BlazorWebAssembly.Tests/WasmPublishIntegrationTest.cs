@@ -189,7 +189,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0")]
+        [Fact]
         public void Publish_InRelease_Works()
         {
             // Arrange
@@ -225,7 +225,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [RequiresMSBuildVersionFact("17.0.0")]
+        [Fact]
         public void Publish_WithExistingWebConfig_Works()
         {
             // Arrange

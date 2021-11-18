@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+#if RUN_AOT_TESTS
 
 using System;
 using System.Collections.Generic;
@@ -28,7 +29,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [AOTSupportedEnvironmentsOnlyFact("17.0.0")]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_InRelease_Works()
         {
             // Arrange
@@ -64,7 +65,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(blazorPublishDirectory, "css", "app.css")).Should().Contain(".publish");
         }
 
-        [AOTSupportedEnvironmentsOnlyFact("17.0.0")]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
@@ -84,7 +85,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(publishDirectory.ToString(), "..", "web.config")).Should().Contain(webConfigContents);
         }
 
-        [AOTSupportedEnvironmentsOnlyFact("17.0.0")]
+        [RequiresMSBuildVersionFact("17.0.0")]
         public void AOT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -193,3 +194,4 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
     }
 }
+#endif

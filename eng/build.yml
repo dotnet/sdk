@@ -250,7 +250,7 @@ jobs:
                 -restore
                 -test
                 -prepareMachine
-                -projects $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
+                -projects $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests.csproj
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
@@ -259,6 +259,7 @@ jobs:
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: ''
+              RunAoTTests: 'true'
 
       - ${{ if eq(parameters.agentOs, 'Darwin') }}:
         - script: eng/common/cibuild.sh
@@ -278,7 +279,7 @@ jobs:
                 --ci
                 --restore
                 --test
-                --projects $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj
+                --projects $(Build.SourcesDirectory)/src/Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests.csproj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
           displayName: Run AOT Tests in Helix
@@ -286,6 +287,7 @@ jobs:
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
+              RunAoTTests: 'true'
 
       - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
         - task: PublishTestResults@2
