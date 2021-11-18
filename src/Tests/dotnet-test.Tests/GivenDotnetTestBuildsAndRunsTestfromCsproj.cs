@@ -1,25 +1,19 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using System.IO;
 using System;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml;
-using System.Xml.Linq;
-using System.Reflection;
-using dotnet.Tests;
-using System.Runtime.InteropServices;
+using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Utilities;
-using System.Collections.Generic;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -503,6 +497,42 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Verify coverage file.
             DirectoryInfo d = new DirectoryInfo(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
+            Assert.Single(coverageFileInfos);
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [PlatformSpecificFact(TestPlatforms.Windows)]
+        public void ItCreatesCoberturaFileProvidedByCommandInResultsDirectory()
+        {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("12");
+
+            string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
+
+            // Delete resultsDirectory if it exist
+            if (Directory.Exists(resultsDirectory))
+            {
+                Directory.Delete(resultsDirectory, true);
+            }
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(
+                                            "--collect", "Code Coverage;Format=Cobertura",
+                                            "--results-directory", resultsDirectory);
+
+            // Verify test results
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     2");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().Contain("Failed:     1");
+            }
+
+            // Verify coverage file.
+            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            FileInfo[] coverageFileInfos = d.GetFiles("*.cobertura.xml", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
 
             result.ExitCode.Should().Be(1);
