@@ -223,9 +223,9 @@
         <note>{StrBegin="NETSDK1167: "}</note>
       </trans-unit>
       <trans-unit id="CompressionInSingleFileRequiresSelfContained">
-        <source>NETSDK1174: Compression in a single file bundle is only supported when publishing a self-contained application.</source>
-        <target state="translated">NETSDK1174: 자체 포함 애플리케이션이 게시된 경우 단일 파일 번들의 압축만 지원됩니다.</target>
-        <note>{StrBegin="NETSDK1174: "}</note>
+        <source>NETSDK1183: Compression in a single file bundle is only supported when publishing a self-contained application.</source>
+        <target state="translated">NETSDK1183: 자체 포함 애플리케이션이 게시된 경우 단일 파일 번들의 압축만 지원됩니다.</target>
+        <note>{StrBegin="NETSDK1183: "}</note>
       </trans-unit>
       <trans-unit id="ConflictingRuntimePackInformation">
         <source>NETSDK1133: There was conflicting information about runtime packs available for {0}:
