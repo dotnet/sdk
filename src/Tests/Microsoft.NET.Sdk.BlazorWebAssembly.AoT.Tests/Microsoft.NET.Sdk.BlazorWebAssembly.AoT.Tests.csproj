@@ -37,7 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.NET.Sdk.Razor.Tests\AspNetSdkBaselineTest.cs" Link="AspNetSdkBaselineTest.cs" />
     <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\WasmPublishIntegrationTestBase.cs" Link="WasmPublishIntegrationTestBase.cs" />
     <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\ServiceWorkerAssert.cs" Link="ServiceWorkerAssert.cs" />
   </ItemGroup>
@@ -53,13 +52,5 @@
     <ProjectReference Include="..\..\..\src\BlazorWasmSdk\Tasks\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\RazorSdk\Tasks\Microsoft.NET.Sdk.Razor.Tasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="StaticWebAssetsBaselines\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="StaticWebAssetsBaselines\" />
   </ItemGroup>
 </Project>
