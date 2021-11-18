@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 #if RUN_AOT_TESTS
 
 using System;
@@ -20,12 +21,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmAOTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-        private static readonly HashSet<string> PackageReferencesToUpgrade = new HashSet<string>()
-        {
-            "Microsoft.AspNetCore.Components.WebAssembly",
-            "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
-            "System.Net.Http.Json"
-        };
 
         public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
