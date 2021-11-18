@@ -243,7 +243,7 @@ jobs:
             BuildConfig: $(_BuildConfig)
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install --skip-manifest-update --no-cache wasm-tools
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
           displayName: Install wasm-tools Workload
         - powershell: $(Build.SourcesDirectory)/eng/common/build.ps1
                 -ci
@@ -271,7 +271,7 @@ jobs:
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install --skip-manifest-update --no-cache wasm-tools
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
           displayName: Install wasm-tools Workload
         - script: eng/common/build.sh
                 --configuration $(_BuildConfig)
