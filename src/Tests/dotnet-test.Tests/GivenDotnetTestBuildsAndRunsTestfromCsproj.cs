@@ -425,7 +425,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void ItCreatesCoverageFileWhenCodeCoverageEnabledByRunsettings()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("11");
@@ -466,7 +466,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void ItCreatesCoverageFileInResultsDirectory()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("12");
@@ -502,10 +502,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
         public void ItCreatesCoberturaFileProvidedByCommandInResultsDirectory()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("12");
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("15");
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -534,6 +534,47 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             DirectoryInfo d = new DirectoryInfo(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.cobertura.xml", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
+
+            result.ExitCode.Should().Be(1);
+        }
+
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        public void ItHandlesMultipleCollectCommandInResultsDirectory()
+        {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("16");
+
+            string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
+
+            // Delete resultsDirectory if it exist
+            if (Directory.Exists(resultsDirectory))
+            {
+                Directory.Delete(resultsDirectory, true);
+            }
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(
+                                            "--collect", "XPlat Code Coverage;arg1=val1",
+                                            "--collect", "Another Coverage Collector;arg1=val1",
+                                            "--results-directory", resultsDirectory);
+
+            // Verify test results
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     2");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().Contain("Failed:     1");
+                result.StdOut.Should().Contain("Unable to find a datacollector with friendly name 'XPlat Code Coverage'");
+                result.StdOut.Should().Contain("Could not find data collector 'XPlat Code Coverage'");
+                result.StdOut.Should().Contain("Unable to find a datacollector with friendly name 'Another Coverage Collector'");
+                result.StdOut.Should().Contain("Could not find data collector 'Another Coverage Collector'");
+            }
+
+            // Verify coverage file.
+            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
+            Assert.Empty(coverageFileInfos);
 
             result.ExitCode.Should().Be(1);
         }
@@ -632,7 +673,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.StartInfo.EnvironmentVariables.ContainsKey(dotnetRoot).Should().BeTrue($"because {dotnetRoot} should be set");
             result.StartInfo.EnvironmentVariables[dotnetRoot].Should().Be(Path.GetDirectoryName(dotnet));
         }
-
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
         {
