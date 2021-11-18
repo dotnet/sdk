@@ -246,6 +246,26 @@
             ]
           }
         },
+        "CA1851": {
+          "id": "CA1851",
+          "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpAvoidMultipleEnumerationsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -5795,6 +5815,26 @@
               "Visual Basic"
             ],
             "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1851": {
+          "id": "CA1851",
+          "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": false,
+            "typeName": "BasicAvoidMultipleEnumerationsAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Dataflow",
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]

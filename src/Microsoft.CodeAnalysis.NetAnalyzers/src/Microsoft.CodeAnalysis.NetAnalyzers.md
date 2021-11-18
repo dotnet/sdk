@@ -1476,6 +1476,18 @@ It is more efficient to use the static 'HashData' method over creating and manag
 |CodeFix|True|
 ---
 
+## [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851): Possible multiple enumerations of 'IEnumerable' collection
+
+Possible multiple enumerations of 'IEnumerable' collection in this method. To prevent unnecessary enumerations, consider caching it first by calling a method such as 'ToList' or 'ToArray'.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
