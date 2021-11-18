@@ -425,7 +425,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItCreatesCoverageFileWhenCodeCoverageEnabledByRunsettings()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("11");
@@ -466,7 +466,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItCreatesCoverageFileInResultsDirectory()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("12");
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItCreatesCoberturaFileProvidedByCommandInResultsDirectory()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("15");
@@ -538,7 +538,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)]
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItHandlesMultipleCollectCommandInResultsDirectory()
         {
             var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("16");
