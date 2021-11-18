@@ -254,7 +254,6 @@ jobs:
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-                $(_Test)
           displayName: Run AOT Tests in Helix
           condition: succeededOrFailed()
           env:
