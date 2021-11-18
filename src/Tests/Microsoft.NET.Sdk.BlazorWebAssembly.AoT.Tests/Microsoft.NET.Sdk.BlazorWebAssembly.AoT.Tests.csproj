@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
-    <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\WasmPublishIntegrationTestBase.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +38,8 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Sdk.Razor.Tests\AspNetSdkBaselineTest.cs" Link="AspNetSdkBaselineTest.cs" />
+    <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\WasmPublishIntegrationTestBase.cs" Link="WasmPublishIntegrationTestBase.cs" />
+    <Compile Include="..\Microsoft.NET.Sdk.BlazorWebAssembly.Tests\ServiceWorkerAssert.cs" Link="ServiceWorkerAssert.cs" />
   </ItemGroup>
   
   <ItemGroup>
