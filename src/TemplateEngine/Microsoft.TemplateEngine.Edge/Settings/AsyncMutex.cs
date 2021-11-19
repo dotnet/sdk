@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             _mutexName = mutexName;
             _token = token;
             _taskCompletionSource = new TaskCompletionSource<AsyncMutex>();
-            ThreadPool.QueueUserWorkItem(WaitLoop);
+            new Thread(WaitLoop).Start();
         }
 
         public bool IsLocked { get { return _isLocked; } }
