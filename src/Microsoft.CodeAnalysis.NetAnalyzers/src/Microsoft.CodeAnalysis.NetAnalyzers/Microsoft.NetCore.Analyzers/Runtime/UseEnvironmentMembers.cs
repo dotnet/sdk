@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UseEnvironmentProcessIdRule, UseEnvironmentProcessPathRule, UseEnvironmentCurrentManagedThreadIdRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(UseEnvironmentProcessIdRule, UseEnvironmentProcessPathRule, UseEnvironmentCurrentManagedThreadIdRule);
 
         public override void Initialize(AnalysisContext context)
         {
