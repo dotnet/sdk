@@ -14,16 +14,17 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 using System.Runtime.CompilerServices;
+using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
+namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 {
-    public class WasmAOTPublishIntegrationTest : WasmPublishIntegrationTestBase
+    public class WasmAoTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
 
-        public WasmAOTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
+        public WasmAoTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [RequiresMSBuildVersionFact("17.0.0")]
-        public void AOT_Publish_InRelease_Works()
+        public void AoT_Publish_InRelease_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
@@ -59,7 +60,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [RequiresMSBuildVersionFact("17.0.0")]
-        public void AOT_Publish_WithExistingWebConfig_Works()
+        public void AoT_Publish_WithExistingWebConfig_Works()
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
@@ -79,7 +80,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [RequiresMSBuildVersionFact("17.0.0")]
-        public void AOT_Publish_HostedAppWithScopedCss_VisualStudio()
+        public void AoT_Publish_HostedAppWithScopedCss_VisualStudio()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
             var testAppName = "BlazorHosted";
@@ -170,14 +171,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private TestAsset CreateAspNetSdkTestAssetWithAot(
             string testAsset,
-            string[] projectsToAOT,
+            string[] projectsToAoT,
             [CallerMemberName] string callerName = "") =>
-            CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AOT")
+            CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AoT")
             .WithProjectChanges((project, document) =>
             {
-                if (projectsToAOT.Contains(Path.GetFileNameWithoutExtension(project)))
+                if (projectsToAoT.Contains(Path.GetFileNameWithoutExtension(project)))
                 {
-                    document.Descendants("PropertyGroup").First().Add(new XElement("RunAOTCompilation", "true"));
+                    document.Descendants("PropertyGroup").First().Add(new XElement("RunAoTCompilation", "true"));
 
                     foreach (var item in document.Descendants("PackageReference"))
                     {
