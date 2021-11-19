@@ -133,10 +133,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         versionRange: versionRange,
                         targetFramework: _framework, verbosity: _verbosity);
 
-                    NuGetVersion productVersion = new NuGetVersion(Product.Version);
-
                     var framework = string.IsNullOrEmpty(_framework) && package.Frameworks.Count() > 0 ?
-                        package.Frameworks.Where(f => f.Version < productVersion.Version).MaxBy(f => f.Version) :
+                        package.Frameworks.Where(f => f.Version < (new NuGetVersion(Product.Version)).Version).MaxBy(f => f.Version) :
                         NuGetFramework.Parse(_framework);
 
                     string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
