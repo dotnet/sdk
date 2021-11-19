@@ -40,14 +40,14 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
                 if (parseResult.HasOption(SeverityOption) &&
-                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } defaultSeverity)
+                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } defaultSeverity)
                 {
                     formatOptions = formatOptions with { AnalyzerSeverity = GetSeverity(defaultSeverity) };
                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(defaultSeverity) };
                 }
 
                 if (parseResult.HasOption(DiagnosticsOption) &&
-                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
                 }
