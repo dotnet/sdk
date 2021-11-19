@@ -7,14 +7,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.TemplateEngine.Utils
+namespace Microsoft.TemplateEngine.Edge.Settings
 {
     /// <summary>
     /// Helper class to work with <see cref="Mutex"/> in <c>async</c> method, since <c>await</c>
     /// can switch to different thread and <see cref="Mutex.ReleaseMutex"/> must be called from same thread.
     /// Hence this helper class.
     /// </summary>
-    public sealed class AsyncMutex : IDisposable
+    internal sealed class AsyncMutex : IDisposable
     {
         private readonly TaskCompletionSource<AsyncMutex> _taskCompletionSource;
         private readonly ManualResetEvent _blockReleasingMutex = new ManualResetEvent(false);
