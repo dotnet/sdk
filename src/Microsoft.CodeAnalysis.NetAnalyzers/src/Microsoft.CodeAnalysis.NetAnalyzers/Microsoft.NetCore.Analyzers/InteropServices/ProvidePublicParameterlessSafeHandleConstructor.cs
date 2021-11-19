@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         internal const string RuleId = "CA1419";
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                                                         RuleId,
                                                         CreateLocalizableResourceString(nameof(ProvidePublicParameterlessSafeHandleConstructorTitle)),
                                                         CreateLocalizableResourceString(nameof(ProvidePublicParameterlessSafeHandleConstructorMessage)),

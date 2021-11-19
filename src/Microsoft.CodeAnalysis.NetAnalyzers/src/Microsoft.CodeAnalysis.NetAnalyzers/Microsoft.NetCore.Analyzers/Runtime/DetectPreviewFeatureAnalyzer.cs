@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(DetectPreviewFeaturesDescription));
         private static readonly ImmutableArray<SymbolKind> s_symbols = ImmutableArray.Create(SymbolKind.NamedType, SymbolKind.Method, SymbolKind.Property, SymbolKind.Field, SymbolKind.Event);
 
-        internal static DiagnosticDescriptor GeneralPreviewFeatureAttributeRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor GeneralPreviewFeatureAttributeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
                                                                                                                     CreateLocalizableResourceString(nameof(DetectPreviewFeaturesMessage)),
                                                                                                                     DiagnosticCategory.Usage,
@@ -36,7 +36,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     s_localizableDescription,
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
-        internal static DiagnosticDescriptor GeneralPreviewFeatureAttributeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor GeneralPreviewFeatureAttributeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
                                                                                                                     CreateLocalizableResourceString(nameof(DetectPreviewFeaturesMessageWithCustomMessagePlaceholder)),
                                                                                                                     DiagnosticCategory.Usage,
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                     isPortedFxCopRule: false,
                                                                                                                     isDataflowRule: false);
 
-        internal static DiagnosticDescriptor ImplementsPreviewInterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor ImplementsPreviewInterfaceRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewInterfaceMessage)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
-        internal static DiagnosticDescriptor ImplementsPreviewInterfaceRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor ImplementsPreviewInterfaceRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -62,7 +62,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
 
-        internal static DiagnosticDescriptor ImplementsPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor ImplementsPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -70,7 +70,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
-        internal static DiagnosticDescriptor ImplementsPreviewMethodRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor ImplementsPreviewMethodRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(ImplementsPreviewMethodMessageWithCustomMessagePlaceholder)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
 
-        internal static DiagnosticDescriptor OverridesPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor OverridesPreviewMethodRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(OverridesPreviewMethodMessage)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -87,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 s_localizableDescription,
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
-        internal static DiagnosticDescriptor OverridesPreviewMethodRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor OverridesPreviewMethodRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                 s_localizableTitle,
                                                                                                                 CreateLocalizableResourceString(nameof(OverridesPreviewMethodMessageWithCustomMessagePlaceholder)),
                                                                                                                 DiagnosticCategory.Usage,
@@ -96,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                 isPortedFxCopRule: false,
                                                                                                                 isDataflowRule: false);
 
-        internal static DiagnosticDescriptor DerivesFromPreviewClassRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor DerivesFromPreviewClassRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                              s_localizableTitle,
                                                                                                              CreateLocalizableResourceString(nameof(DerivesFromPreviewClassMessage)),
                                                                                                              DiagnosticCategory.Usage,
@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                              s_localizableDescription,
                                                                                                              isPortedFxCopRule: false,
                                                                                                              isDataflowRule: false);
-        internal static DiagnosticDescriptor DerivesFromPreviewClassRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor DerivesFromPreviewClassRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                              s_localizableTitle,
                                                                                                              CreateLocalizableResourceString(nameof(DerivesFromPreviewClassMessageWithCustomMessagePlaceholder)),
                                                                                                              DiagnosticCategory.Usage,
@@ -113,7 +113,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                              isPortedFxCopRule: false,
                                                                                                              isDataflowRule: false);
 
-        internal static DiagnosticDescriptor UsesPreviewTypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UsesPreviewTypeParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(UsesPreviewTypeParameterMessage)),
                                                                                                               DiagnosticCategory.Usage,
@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               s_localizableDescription,
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
-        internal static DiagnosticDescriptor UsesPreviewTypeParameterRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UsesPreviewTypeParameterRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder)),
                                                                                                               DiagnosticCategory.Usage,
@@ -130,7 +130,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor MethodReturnsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor MethodReturnsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(MethodReturnsPreviewTypeMessage)),
                                                                                                               DiagnosticCategory.Usage,
@@ -138,7 +138,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               s_localizableDescription,
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
-        internal static DiagnosticDescriptor MethodReturnsPreviewTypeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor MethodReturnsPreviewTypeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                               s_localizableTitle,
                                                                                                               CreateLocalizableResourceString(nameof(MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder)),
                                                                                                               DiagnosticCategory.Usage,
@@ -147,7 +147,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                               isPortedFxCopRule: false,
                                                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                       s_localizableTitle,
                                                                                                                       CreateLocalizableResourceString(nameof(MethodUsesPreviewTypeAsParameterMessage)),
                                                                                                                       DiagnosticCategory.Usage,
@@ -155,7 +155,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                       s_localizableDescription,
                                                                                                                       isPortedFxCopRule: false,
                                                                                                                       isDataflowRule: false);
-        internal static DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor MethodUsesPreviewTypeAsParameterRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                       s_localizableTitle,
                                                                                                                       CreateLocalizableResourceString(nameof(MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder)),
                                                                                                                       DiagnosticCategory.Usage,
@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                                       s_localizableDescription,
                                                                                                                       isPortedFxCopRule: false,
                                                                                                                       isDataflowRule: false);
-        internal static DiagnosticDescriptor FieldOrEventIsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor FieldOrEventIsPreviewTypeRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                         s_localizableTitle,
                                                                                                         CreateLocalizableResourceString(nameof(FieldIsPreviewTypeMessage)),
                                                                                                         DiagnosticCategory.Usage,
@@ -171,7 +171,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                         s_localizableDescription,
                                                                                                         isPortedFxCopRule: false,
                                                                                                         isDataflowRule: false);
-        internal static DiagnosticDescriptor FieldOrEventIsPreviewTypeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor FieldOrEventIsPreviewTypeRuleWithCustomMessage = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                         s_localizableTitle,
                                                                                                         CreateLocalizableResourceString(nameof(FieldIsPreviewTypeMessageWithCustomMessagePlaceholder)),
                                                                                                         DiagnosticCategory.Usage,
@@ -180,7 +180,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                                         isPortedFxCopRule: false,
                                                                                                         isDataflowRule: false);
 
-        internal static DiagnosticDescriptor StaticAbstractIsPreviewFeatureRule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor StaticAbstractIsPreviewFeatureRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                                                     s_localizableTitle,
                                                                                                                     CreateLocalizableResourceString(nameof(StaticAndAbstractRequiresPreviewFeatures)),
                                                                                                                     DiagnosticCategory.Usage,

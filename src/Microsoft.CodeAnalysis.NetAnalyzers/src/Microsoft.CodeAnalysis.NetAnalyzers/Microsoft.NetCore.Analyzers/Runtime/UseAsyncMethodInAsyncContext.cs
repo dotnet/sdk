@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextTitle));
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextDescription));
 
-        internal static DiagnosticDescriptor Descriptor = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor Descriptor = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       s_localizableTitle,
                                                                                       CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextMessage)),
                                                                                       DiagnosticCategory.Performance,
@@ -38,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                       isPortedFxCopRule: false,
                                                                                       isDataflowRule: false);
 
-        internal static DiagnosticDescriptor DescriptorNoAlternativeMethod = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor DescriptorNoAlternativeMethod = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
                                                                               CreateLocalizableResourceString(nameof(UseAsyncMethodInAsyncContextMessage_NoAlternative)),
                                                                               DiagnosticCategory.Performance,

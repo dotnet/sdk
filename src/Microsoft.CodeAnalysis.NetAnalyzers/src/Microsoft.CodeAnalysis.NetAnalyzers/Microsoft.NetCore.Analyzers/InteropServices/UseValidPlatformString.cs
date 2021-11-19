@@ -28,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseValidPlatformStringTitle));
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseValidPlatformStringDescription));
 
-        internal static DiagnosticDescriptor UnknownPlatform = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UnknownPlatform = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
                                                                               CreateLocalizableResourceString(nameof(UseValidPlatformStringUnknownPlatform)),
                                                                               DiagnosticCategory.Interoperability,
@@ -37,7 +37,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor InvalidVersion = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor InvalidVersion = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
                                                                               CreateLocalizableResourceString(nameof(UseValidPlatformStringInvalidVersion)),
                                                                               DiagnosticCategory.Interoperability,
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor NoVersion = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor NoVersion = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
                                                                               CreateLocalizableResourceString(nameof(UseValidPlatformStringNoVersion)),
                                                                               DiagnosticCategory.Interoperability,
