@@ -1,7 +1,6 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 using Test.Utilities;
 using Xunit;
@@ -25,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
         [Theory]
         [MemberData(nameof(NamedArgumentsData))]
-        public async Task GuardMethodWithNamedArgumentsTest(string arguments)
+        public async Task GuardMethodWithNamedArgumentsTestAsync(string arguments)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -55,11 +54,11 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task MethodsWithOsDependentTypeParameterGuarded()
+        public async Task MethodsWithOsDependentTypeParameterGuardedAsync()
         {
             var csSource = @"
 using System;
@@ -91,11 +90,11 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task PlatformDependentMethodsAndTypeParametersGuarded()
+        public async Task PlatformDependentMethodsAndTypeParametersGuardedAsync()
         {
             var csSource = @"
 using System;
@@ -120,23 +119,21 @@ public class Test
         }
         else
         {
-            [|WindowsOnlyMethod<BrowserOnlyType>()|];  // should flag for WindowsOnlyMethod method and BrowserOnlyType parameter
-            [|GenericMethod<WindowsOnlyType, BrowserOnlyType>()|]; // should flag for WindowsOnlyType and BrowserOnlyType parameters
+            {|#0:WindowsOnlyMethod<BrowserOnlyType>()|};  // should flag for WindowsOnlyMethod method and BrowserOnlyType parameter
+            {|#1:GenericMethod<WindowsOnlyType, BrowserOnlyType>()|}; // should flag for WindowsOnlyType and BrowserOnlyType parameters
         }
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(csSource, s_msBuildPlatforms,
-#pragma warning disable RS0030 // Do not used banned APIs
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(24, 13).WithArguments("BrowserOnlyType", "'browser'"),
-#pragma warning restore RS0030 // Do not used banned APIs
-#pragma warning disable RS0030 // Do not used banned APIs
-                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(25, 13).WithArguments("WindowsOnlyType", "'windows'"));
-#pragma warning restore RS0030 // Do not used banned APIs
+            await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("BrowserOnlyType", "'browser'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).WithArguments("Test.WindowsOnlyMethod<BrowserOnlyType>()", "'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("WindowsOnlyType", "'windows'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("BrowserOnlyType", "'browser'"));
         }
 
         [Fact]
-        public async Task SupportedUnsupportedRange_GuardedWithOr()
+        public async Task SupportedUnsupportedRange_GuardedWithOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -160,11 +157,11 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4932, "https://github.com/dotnet/roslyn-analyzers/issues/4932")]
-        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0()
+        public async Task GuardMethodWith3VersionPartsEquavalentTo4PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -194,11 +191,11 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0()
+        public async Task GuardMethodWith1VersionPartsEquavalentTo2PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -223,11 +220,11 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0()
+        public async Task GuardMethodWith2VersionPartsEquavalentTo3PartsWithLeading0Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -257,11 +254,11 @@ public class MSAL
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardsAroundSupported_SimpleIfElse()
+        public async Task GuardsAroundSupported_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -299,11 +296,152 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardsAroundSupported()
+        public async Task SupportedOnOsx_GuardedWithIsMacOSAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsWindows() ||
+            OperatingSystem.IsLinux() ||
+            OperatingSystem.IsMacOS())
+        {
+            Api();
+            Api2();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+        [|Api2()|]; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    [SupportedOSPlatform(""windows"")]
+    [SupportedOSPlatform(""Linux"")]
+    void Api() { }
+
+    [SupportedOSPlatform(""windows"")]
+    [SupportedOSPlatform(""Osx"")]
+    [SupportedOSPlatform(""Linux"")]
+    void Api2() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task UnsupportedOnOsx_GuardedWithIsMacOSAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (!OperatingSystem.IsWindows() &&
+            !OperatingSystem.IsLinux() &&
+            !OperatingSystem.IsMacOS())
+        {
+            Api();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api()' is unsupported on: 'macOS/OSX', 'windows'.
+    }
+
+    [UnsupportedOSPlatform(""windows"")]
+    [UnsupportedOSPlatform(""Linux"")]
+    [UnsupportedOSPlatform(""Osx"")]
+    void Api() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task SupportedOnOsxVersioned_GuardedWithIsMacOSVersionedAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsWindowsVersionAtLeast(10) ||
+            OperatingSystem.IsLinux() ||
+            OperatingSystem.IsMacOSVersionAtLeast(11))
+        {
+            Api();
+        }
+
+        [|Api()|]; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX' 10.1 and later, 'windows' 10.0 and later, 'Linux'.
+    }
+
+    [SupportedOSPlatform(""windows10.0"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""Osx10.1"")]
+    void Api() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task SupportedUnsupportedOnOsx_GuardedWithIsMacOS_MessageParameterTestAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+class Test
+{
+    public void Api_Usage()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            MacOsApi();
+            OsxApi();
+            {|#0:UnsupportedOsxApi()|};
+        }
+        else
+        {
+            {|#1:MacOsApi()|}; // This call site is reachable on all platforms. 'Test.Api()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+            {|#2:OsxApi()|}; // This call site is reachable on all platforms. 'Test.Api2()' is only supported on: 'macOS/OSX', 'Linux', 'windows'.
+            UnsupportedOsxApi();
+        }
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    void MacOsApi() { }
+
+    [SupportedOSPlatform(""Osx"")]
+    void OsxApi() { }
+
+    [UnsupportedOSPlatform(""Osx"")]
+    void UnsupportedOsxApi() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable)
+                    .WithLocation(0).WithArguments("Test.UnsupportedOsxApi()", "'macOS/OSX'", "'macOS/OSX'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms)
+                    .WithLocation(1).WithArguments("Test.MacOsApi()", "'macOS/OSX'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms)
+                    .WithLocation(2).WithArguments("Test.OsxApi()", "'macOS/OSX'"));
+        }
+
+        [Fact]
+        public async Task GuardsAroundSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -381,11 +519,11 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundSupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task MoreGuardsAroundSupported()
+        public async Task MoreGuardsAroundSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -442,11 +580,11 @@ namespace PlatformCompatDemo.SupportedUnupported
     }
 }" + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task MoreGuardsAroundUnSupported()
+        public async Task MoreGuardsAroundUnSupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -551,11 +689,11 @@ namespace PlatformCompatDemo.SupportedUnupported
     }
 }" + TargetTypesForTest;
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task GuardsAroundUnsupported()
+        public async Task GuardsAroundUnsupportedAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -633,11 +771,11 @@ namespace PlatformCompatDemo.Bugs.GuardsAroundUnsupported
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task SupportedUnsupportedRange_GuardedWithAnd()
+        public async Task SupportedUnsupportedRange_GuardedWithAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -660,11 +798,11 @@ class Test
     void Api() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task Unsupported_GuardedWith_IsOsNameMethods()
+        public async Task Unsupported_GuardedWith_IsOsNameMethodsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -729,11 +867,11 @@ class Test
     void NotForIos12OrLater() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4190, "https://github.com/dotnet/roslyn-analyzers/issues/4190")]
-        public async Task Unsupported_GuardedWith_DebugAssert_IsOsNameMethods()
+        public async Task Unsupported_GuardedWith_DebugAssert_IsOsNameMethodsAsync()
         {
             var source = @"
 using System;
@@ -815,7 +953,7 @@ class Test
     [UnsupportedOSPlatform(""ios12.1"")]
     void NotForIos12OrLater() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         public static IEnumerable<object[]> OperatingSystem_IsOsNameVersionAtLeast_MethodsTestData()
@@ -845,7 +983,7 @@ class Test
 
         [Theory]
         [MemberData(nameof(OperatingSystem_IsOsNameVersionAtLeast_MethodsTestData))]
-        public async Task GuardedWith_IsOsNameVersionAtLeast_SimpleIfElse(string osName, string isOsMethod, string version, bool versionMatch)
+        public async Task GuardedWith_IsOsNameVersionAtLeast_SimpleIfElseAsync(string osName, string isOsMethod, string version, bool versionMatch)
         {
             var match = versionMatch ? "OsSpecificMethod()" : "[|OsSpecificMethod()|]";
             var source = @"
@@ -870,7 +1008,7 @@ class Test
     void OsSpecificMethod() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         public static IEnumerable<object[]> OperatingSystem_IsOsName_MethodsTestData()
@@ -901,7 +1039,7 @@ class Test
 
         [Theory]
         [MemberData(nameof(OperatingSystem_IsOsName_MethodsTestData))]
-        public async Task GuardedWith_IsOsNameMethods_SimpleIfElse(string osName, string isOsMethod)
+        public async Task GuardedWith_IsOsNameMethods_SimpleIfElseAsync(string osName, string isOsMethod)
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -925,11 +1063,11 @@ class Test
     void OsSpecificMethod() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElse()
+        public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -962,11 +1100,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -990,11 +1128,54 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
+        }
+
+        [Fact]
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSX_GuardsMacOS()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            SupportsMacOS();
+            [|UnsupportsMacOS()|];
+            SupportsOSX();
+            [|UnsupportsOSX()|];
+        }
+        else
+        {
+            [|SupportsMacOS()|];
+            UnsupportsMacOS();
+            [|SupportsOSX()|];
+            UnsupportsOSX();
+        }
+    }
+
+    [SupportedOSPlatform(""macos"")]
+    void SupportsMacOS() { }
+
+    [UnsupportedOSPlatform(""MacOS"")]
+    void UnsupportsMacOS() { }
+
+    [SupportedOSPlatform(""OSX"")]
+    void SupportsOSX() { }
+
+    [UnsupportedOSPlatform(""osx"")]
+    void UnsupportsOSX() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1018,11 +1199,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElse()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_ValueCachedInLocal_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1047,11 +1228,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4119, "https://github.com/dotnet/roslyn-analyzers/issues/4119")]
-        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogic()
+        public async Task GuardedWith_RuntimeInformation_IsOSPlatform_OSPlatformCreate_MultipleValuesCachedWithConditionalLogicAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1106,11 +1287,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_Warns()
+        public async Task GuardedCalled_SimpleIfElse_VersionNotMatch_WarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1138,11 +1319,11 @@ public class WindowsSpecificApis
     public static void WindowsOnlyMethod() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task ReintroducingApiSupport_Guarded_NotWarn()
+        public async Task ReintroducingApiSupport_Guarded_NotWarnAsync()
         {
             var source = @"
 using System;
@@ -1172,14 +1353,14 @@ static class Some
 }
 ";
 
-            await VerifyAnalyzerAsyncCs(source,
+            await VerifyAnalyzerCSAsync(source,
                 VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.SupportedCsReachable).WithLocation(0).
                 WithArguments("Some.WindowsSpecificApi()", GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"),
                 GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityAllVersions, "windows")));
         }
 
         [Fact]
-        public async Task GuardedCalled_SimpleIf_NotWarns()
+        public async Task GuardedCalled_SimpleIf_NotWarnsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1197,7 +1378,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1213,11 +1394,11 @@ Public Class Test
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task GuardedCall_MultipleSimpleIfTests()
+        public async Task GuardedCall_MultipleSimpleIfTestsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1241,11 +1422,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_IsOSPlatformVersionAtLeast_SimpleIfElse()
+        public async Task GuardedWith_IsOSPlatformVersionAtLeast_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1269,11 +1450,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_AlternativeOf_IsOSPlatformEarlierThan()
+        public async Task GuardedWith_AlternativeOf_IsOSPlatformEarlierThanAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1302,11 +1483,11 @@ class Test
     [UnsupportedOSPlatform(""Windows10.0"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_Unsupported_SimpleIfElse()
+        public async Task GuardedWith_Unsupported_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1346,7 +1527,7 @@ class Test
     [UnsupportedOSPlatform(""Windows10.1.2.3"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1380,11 +1561,11 @@ Class Test
     Private Sub M3()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task OsDependentEnumValue_GuardedCall_SimpleIfElse()
+        public async Task OsDependentEnumValue_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1421,11 +1602,11 @@ public enum PlatformEnum
     NoPlatform
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task OsDependentProperty_GuardedCall_SimpleIfElse()
+        public async Task OsDependentProperty_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1469,11 +1650,11 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentPropertyWithInitializer_NoDiagnostic()
+        public async Task OsDependentPropertyWithInitializer_NoDiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1487,11 +1668,11 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentPropertyWithInitializer_Diagnostic()
+        public async Task OsDependentPropertyWithInitializer_DiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1505,11 +1686,11 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentFieldWithInitializer_NoDiagnostic()
+        public async Task OsDependentFieldWithInitializer_NoDiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1523,11 +1704,11 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact, WorkItem(4105, "https://github.com/dotnet/roslyn-analyzers/issues/4105")]
-        public async Task OsDependentFieldWithInitializer_Diagnostic()
+        public async Task OsDependentFieldWithInitializer_DiagnosticAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1541,11 +1722,11 @@ class C
 [UnsupportedOSPlatform(""windows"")]
 class A { }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task OsDependentConstructorOfClass_GuardedCall_SimpleIfElse()
+        public async Task OsDependentConstructorOfClass_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1576,11 +1757,11 @@ public class C
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task ConstructorAndMethodOfOsDependentClass_GuardedCall_SimpleIfElse()
+        public async Task ConstructorAndMethodOfOsDependentClass_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1608,7 +1789,7 @@ public class OsDependentClass
     public void Method2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -1631,11 +1812,11 @@ Public Class OsDependentClass
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task LocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1663,11 +1844,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1708,11 +1889,11 @@ public class Test
     [UnsupportedOSPlatform(""Windows10.0"")]
     public void UnsupportedWindows10() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromNotGuardedDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromNotGuardedDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1763,11 +1944,11 @@ public class Test
     public void UnsupportedWindows10() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromGuardedDifferentContext()
+        public async Task LocalFunctionCallsPlatformDependentMember_InvokedFromGuardedDifferentContextAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1820,11 +2001,11 @@ public class Test
     public void UnsupportedWindows10() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1856,11 +2037,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1898,11 +2079,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1945,11 +2126,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        public async Task LocalFunctionEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -1981,11 +2162,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCalls()
+        public async Task LocalFunctionMultipleCallsOsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2032,11 +2213,11 @@ public class Test
     public void Windows10OrLaterOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCalls()
+        public async Task LocalFunctionMultipleCalls_DifferentOrder_OsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2078,11 +2259,11 @@ public class Test
     public void WindowsOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCalls()
+        public async Task LocalFunctionWithUnrelatedLocalFunctionCallsOsDependentMember_GuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2115,11 +2296,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LocalFunctionUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2147,11 +2328,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LambdaCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2190,11 +2371,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4090, "https://github.com/dotnet/roslyn-analyzers/issues/4090")]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgument()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_DirectlyPassedAsArgumentAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2224,11 +2405,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2260,11 +2441,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_02Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2302,11 +2483,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_03Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2349,11 +2530,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_04Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2388,11 +2569,11 @@ public class Test
     public void M3() { _field(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_05Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2422,11 +2603,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_06Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2459,11 +2640,11 @@ public class Test
     public void M3(object a) { ((Action)a)(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_07Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2494,11 +2675,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08()
+        public async Task LambdaEscapedCallsOsDependentMember_GuardedCalls_SimpleIfElse_08Async()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2530,11 +2711,11 @@ public class Test
     public void M3(Action a) { a(); }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElse()
+        public async Task LambdaUnusedCallsOsDependentMember_GuardedCalls_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2562,11 +2743,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCalls()
+        public async Task LambdaMultipleCallsOsDependentMember_MixedGuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2613,11 +2794,11 @@ public class Test
     public void Windows10OrLaterOnly() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCalls()
+        public async Task LambdaWithUnrelatedLambdaCallsOsDependentMember_GuardedCallsAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2650,11 +2831,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LambdaContaingLocalFunctionCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2685,11 +2866,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElse()
+        public async Task LocalFunctionContainingLambdaCallsOsDependentMember_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2720,11 +2901,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4209, "https://github.com/dotnet/roslyn-analyzers/issues/4209")]
-        public async Task LambdaInvocationWithUnknownTarget_BeforeGuardedCall()
+        public async Task LambdaInvocationWithUnknownTarget_BeforeGuardedCallAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2754,11 +2935,11 @@ class Test
     void UnsupportedOnBrowser() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElse()
+        public async Task OsDependentEventAccessed_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2799,11 +2980,11 @@ public class Test
     public void M4() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task OsDependentMethodAssignedToDelegate_GuardedCall_SimpleIfElse()
+        public async Task OsDependentMethodAssignedToDelegate_GuardedCall_SimpleIfElseAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2831,11 +3012,11 @@ public class Test
     }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTest()
+        public async Task GuardedCall_SimpleIfElseIfElseTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2872,11 +3053,11 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithNegation()
+        public async Task GuardedCall_SimpleIfElseTestWithNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2896,11 +3077,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTestWithNegation()
+        public async Task GuardedCall_SimpleIfElseIfElseTestWithNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2922,11 +3103,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithNegationAndReturn()
+        public async Task GuardedCall_SimpleIfTestWithNegationAndReturnAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -2945,7 +3126,7 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -2962,11 +3143,11 @@ Public Class Test
     Public Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithLogicalAnd()
+        public async Task GuardedCall_SimpleIfTestWithLogicalAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3005,11 +3186,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalAnd()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3045,11 +3226,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3082,11 +3263,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3111,11 +3292,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegation()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndNegationAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3140,11 +3321,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseIfElseTestWithLogicalOr()
+        public async Task GuardedCall_SimpleIfElseIfElseTestWithLogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3191,11 +3372,11 @@ public class Test
     public void M2() { }
 }
 ";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAnd()
+        public async Task GuardedCall_SimpleIfElseTestWithLogicalOrAndAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3221,7 +3402,7 @@ class Test
     [UnsupportedOSPlatform(""windows10.0.2004"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source, s_msBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -3242,11 +3423,11 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource, s_msBuildPlatforms);
+            await VerifyAnalyzerVBAsync(vbSource, s_msBuildPlatforms);
         }
 
         [Fact]
-        public async Task GuardedWith_ControlFlowAndMultipleChecks()
+        public async Task GuardedWith_ControlFlowAndMultipleChecksAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3287,11 +3468,11 @@ class Test
     void M2() { }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_DebugAssertAnalysisTest()
+        public async Task GuardedWith_DebugAssertAnalysisTestAsync()
         {
             var source = @"
 using System;
@@ -3320,7 +3501,7 @@ class Test
     [SupportedOSPlatform(""Windows"")]
     void M3() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Diagnostics
@@ -3338,11 +3519,11 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task GuardedWith_ResultSavedInLocal()
+        public async Task GuardedWith_ResultSavedInLocalAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3372,11 +3553,11 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task GuardedWith_VersionSavedInLocal()
+        public async Task GuardedWith_VersionSavedInLocalAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3396,11 +3577,11 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task PlatformSavedInLocal_NotYetSupported() // TODO do we want to support it?
+        public async Task PlatformSavedInLocal_NotYetSupportedAsync() // TODO do we want to support it?
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3420,11 +3601,11 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact]
-        public async Task UnrelatedConditionCheckDoesNotInvalidateState()
+        public async Task UnrelatedConditionCheckDoesNotInvalidateStateAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3465,7 +3646,7 @@ class Test
     [SupportedOSPlatform(""Windows10.1.2.3"")]
     void M2() { }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
 
             var vbSource = @"
 Imports System.Runtime.Versioning
@@ -3498,11 +3679,11 @@ Class Test
     Private Sub M2()
     End Sub
 End Class";
-            await VerifyAnalyzerAsyncVb(vbSource);
+            await VerifyAnalyzerVBAsync(vbSource);
         }
 
         [Fact]
-        public async Task InterproceduralAnalysisTest()
+        public async Task InterproceduralAnalysisTestAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3533,11 +3714,11 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive\nbuild_property.TargetFramework = net5");
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
-        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldNotAnalyzed_WithoutInterproceduralAnalysis()
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldNotAnalyzed_WithoutInterproceduralAnalysisAsync()
         {
             var source = @"
 using System;
@@ -3596,11 +3777,11 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4282, "https://github.com/dotnet/roslyn-analyzers/issues/4282")]
-        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldAnalyzed_WithInterproceduralAnalysis()
+        public async Task LambdaPassedAsArgumentOrNotInvokedWithinContextWouldAnalyzed_WithInterproceduralAnalysisAsync()
         {
             var source = @"
 using System;
@@ -3657,11 +3838,11 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
         }
 
         [Fact, WorkItem(4182, "https://github.com/dotnet/roslyn-analyzers/issues/4182")]
-        public async Task LoopWithinGuardCheck()
+        public async Task LoopWithinGuardCheckAsync()
         {
             var source = @"
 using System;
@@ -3703,11 +3884,11 @@ namespace Repro
         public static IEnumerable<int> GetProcesses() => throw null;
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
-        public async Task LoopWithinGuardCheck_02()
+        public async Task LoopWithinGuardCheck_02Async()
         {
             var source = @"
 using System;
@@ -3735,11 +3916,11 @@ namespace Repro
         public static void WindowsSupported() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact, WorkItem(4372, "https://github.com/dotnet/roslyn-analyzers/issues/4372")]
-        public async Task LoopWithinGuardCheck_03()
+        public async Task LoopWithinGuardCheck_03Async()
         {
             var source = @"
 using System;
@@ -3767,11 +3948,11 @@ namespace Repro
         public static void WindowsSupported() { }
     }
 }";
-            await VerifyAnalyzerAsyncCs(source);
+            await VerifyAnalyzerCSAsync(source);
         }
 
         [Fact(Skip = "TODO: Analysis value not returned, needs to be fixed")]
-        public async Task InterproceduralAnalysisTest_LogicalOr()
+        public async Task InterproceduralAnalysisTest_LogicalOrAsync()
         {
             var source = @"
 using System.Runtime.Versioning;
@@ -3803,8 +3984,852 @@ class Test
     }
 }";
 
-            await VerifyAnalyzerAsyncCs(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+            await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
         }
+
+        [Fact]
+        public async Task GuardMembersWithSupportedGuardAttributesAsync()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatformGuard(""linux"")]
+    private bool IsLunuxSupported() => true;
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""Windows"")]
+    internal bool LinuxAndWindowsSupported { get; set; }
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""macOS"")]
+    [SupportedOSPlatformGuard(""Windows"")]
+    private readonly bool _http3Enabled;
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""macOS"")]
+    [SupportedOSPlatformGuard(""Windows"")]
+    [SupportedOSPlatformGuard(""Android"")]
+    private bool IsHttp3PlusAndroidEnabled() => false;
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""macOS"")]
+    [SupportedOSPlatformGuard(""Windows"")]
+    [UnsupportedOSPlatformGuard(""Android"")]
+    private readonly bool _http3EnabledNotAndroid;
+
+    void M1()
+    {
+        if (IsLunuxSupported()) // one of the support guarded, so no warning
+        {
+            SupportedOnWindowsLinuxOsx();    
+            SupportedOnLinux();
+        }
+
+        if (_http3Enabled)
+        {
+            SupportedOnWindowsLinuxOsx();  
+            [|SupportedOnLinux()|]; // only supported on linux but call site is reachable on 3, linux, windows, macos
+        }
+        else
+        {
+            {|#0:SupportedOnWindowsLinuxOsx()|}; // This call site is reachable on all platforms. 'Test.SupportedOnWindowsLinuxOsx()' is only supported on: 'Linux', 'macOS/OSX', 'windows'
+            {|#1:SupportedOnLinux()|}; // This call site is reachable on all platforms. 'Test.SupportedOnLinux()' is only supported on: 'linux'.
+        }
+
+        if (IsHttp3PlusAndroidEnabled()) // Android is not in the support list
+        {
+            {|#2:SupportedOnWindowsLinuxOsx()|}; // This call site is reachable on: 'Android'. 'Test.SupportedOnWindowsLinuxOsx()' is only supported on: 'Linux', 'macOS/OSX', 'windows'.        
+        }
+
+        if (_http3EnabledNotAndroid)
+        {
+            SupportedOnWindowsLinuxOsx();  
+            [|SupportedOnLinux()|];
+        }
+        
+        [|SupportedOnWindowsLinuxOsx()|];
+        Debug.Assert(LinuxAndWindowsSupported);
+        SupportedOnWindowsLinuxOsx();    
+        [|SupportedOnLinux()|];
+    }
+
+    [SupportedOSPlatform(""windows"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""OSX"")]
+    void SupportedOnWindowsLinuxOsx() { }
+
+    [SupportedOSPlatform(""linux"")]
+    void SupportedOnLinux() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(0).
+                    WithArguments("Test.SupportedOnWindowsLinuxOsx()", Join("'Linux'", "'macOS/OSX'", "'windows'")),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).
+                    WithArguments("Test.SupportedOnLinux()", "'linux'"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(2).
+                    WithArguments("Test.SupportedOnWindowsLinuxOsx()", Join("'Linux'", "'macOS/OSX'", "'windows'"), "'Android'"));
+        }
+
+        [Fact]
+        public async Task GuardMembersWithUnsupportedGuardAttributesAsync()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [UnsupportedOSPlatformGuard(""linux"")]
+    private readonly bool _linuxNotSupported;
+
+    [UnsupportedOSPlatformGuard(""linux"")]
+    [UnsupportedOSPlatformGuard(""Windows"")]
+    public bool LinuxAndWindowsNotSupported { get; }
+
+    [UnsupportedOSPlatformGuard(""linux"")]
+    [UnsupportedOSPlatformGuard(""ios"")]
+    [UnsupportedOSPlatformGuard(""Windows"")]
+    private bool IsLinuxWindowsIosNotSupported() => true;
+
+    [UnsupportedOSPlatformGuard(""linux"")]
+    [UnsupportedOSPlatformGuard(""ios"")]
+    [UnsupportedOSPlatformGuard(""Windows"")]
+    [UnsupportedOSPlatformGuard(""Android"")]
+    private readonly bool _linuxWindowsIosAndroidNotSupported;
+
+    void M1()
+    {
+        if (_linuxNotSupported)
+        {
+            UnsupportedOnLinux();
+            [|UnsupportedOnLinuxWindowsIos()|]; // This call site is reachable on all platforms. 'Test.UnsupportedOnLinuxWindowsIos()' is unsupported on: 'windows', 'ios'.
+        }
+
+        if (LinuxAndWindowsNotSupported)
+        {
+            UnsupportedOnLinux();
+            [|UnsupportedOnLinuxWindowsIos()|]; // This call site is reachable on all platforms. 'Test.UnsupportedOnLinuxWindowsIos()' is unsupported on: 'ios'.
+        }
+
+        if (_linuxWindowsIosAndroidNotSupported)
+        {
+            UnsupportedOnLinux();
+            UnsupportedOnLinuxWindowsIos();
+        }
+        else
+        {
+            [|UnsupportedOnLinux()|]; // This call site is reachable on: 'Windows', 'linux', 'Android'. 'Test.UnsupportedOnLinux()' is unsupported on: 'Linux'.
+            [|UnsupportedOnLinuxWindowsIos()|]; // This call site is reachable on: 'Android', 'Windows'. 'Test.UnsupportedOnLinuxWindowsIos()' is unsupported on: 'Linux', 'ios', 'windows'.
+        }
+
+        Debug.Assert(IsLinuxWindowsIosNotSupported());
+        UnsupportedOnLinux();
+        UnsupportedOnLinuxWindowsIos();
+    }
+
+
+    [UnsupportedOSPlatform(""Linux"")]
+    void UnsupportedOnLinux() { }
+
+    [UnsupportedOSPlatform(""windows"")]
+    [UnsupportedOSPlatform(""Linux"")]
+    [UnsupportedOSPlatform(""ios"")]
+    void UnsupportedOnLinuxWindowsIos() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task GuardMembersWithVersionedSupportedUnsupportedGuardAttributesAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatformGuard(""Windows10.0"")]
+    private bool IsWindow10Supported() => true;
+
+    [SupportedOSPlatformGuard(""linux4.8"")]
+    [SupportedOSPlatformGuard(""Windows10.0"")]
+    [SupportedOSPlatformGuard(""Osx14.1"")]
+    private readonly bool _linuxAndWindows10MacOS14Supported;
+
+    [UnsupportedOSPlatformGuard(""linux"")]
+    [UnsupportedOSPlatformGuard(""ios9.0"")]
+    [UnsupportedOSPlatformGuard(""Windows8.0"")]
+    private bool LinuxWindows8Ios9NotSupported { get; }
+
+    void M1()
+    {
+        if (IsWindow10Supported())
+        {
+            {|#0:UnsupportedOnLinuxWindows10Ios91()|}; // This call site is reachable on: 'Windows' 10.0 and later. 'Test.UnsupportedOnLinuxWindows10Ios91()' is unsupported on: 'windows' 10.0 and later.
+            SupportedOnWindows10LinuxMacOS14();
+            SupportedOnWindows8();
+        }
+
+        if (_linuxAndWindows10MacOS14Supported)
+        {
+            [|UnsupportedOnLinuxWindows10Ios91()|]; // This call site is reachable on: 'Windows' 10.0 and later. 'Test.UnsupportedOnLinuxWindows10Ios91()' is unsupported on: 'windows' 10.0 and later, 'Linux', 'ios' 9.1 and later.
+            SupportedOnWindows10LinuxMacOS14();
+            [|SupportedOnWindows8()|]; // This call site is reachable on: 'linux'. 'Test.SupportedOnWindows8()' is only supported on: 'windows' 8.0 and later.
+        }
+
+        if (LinuxWindows8Ios9NotSupported)
+        {
+            UnsupportedOnLinuxWindows10Ios91();
+            {|#1:SupportedOnWindows10LinuxMacOS14()|}; // This call site is reachable on all platforms. 'Test.SupportedOnWindows10LinuxMacOS14()' is only supported on: 'linux' 4.8 and later, 'macOS/OSX' 14.0 and later, 'windows' 10.0 and later.
+            {|#2:SupportedOnWindows8()|}; // This call site is reachable on all platforms. 'Test.SupportedOnWindows8()' is only supported on: 'windows' 8.0 and later.
+        }
+    }
+
+    [UnsupportedOSPlatform(""windows10.0"")]
+    [UnsupportedOSPlatform(""Linux"")]
+    [UnsupportedOSPlatform(""ios9.1"")]
+    void UnsupportedOnLinuxWindows10Ios91() { }
+
+    [SupportedOSPlatform(""windows10.0"")]
+    [SupportedOSPlatform(""linux4.8"")]
+    [SupportedOSPlatform(""macOS14.0"")]
+    void SupportedOnWindows10LinuxMacOS14() { }
+
+    [SupportedOSPlatform(""windows8.0"")]
+    void SupportedOnWindows8() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Test.UnsupportedOnLinuxWindows10Ios91()",
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"),
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "Windows", "10.0")),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(1).WithArguments("Test.SupportedOnWindows10LinuxMacOS14()",
+                    Join(GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "linux", "4.8"),
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "macOS/OSX", "14.0"),
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "10.0"))),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsAllPlatforms).WithLocation(2).WithArguments("Test.SupportedOnWindows8()",
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "windows", "8.0")));
+        }
+
+        [Fact]
+        public async Task GuardMembersWithSupportedUnsupportedVersionRangeGuardAttributesAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatformGuard(""Windows"")]
+    [UnsupportedOSPlatformGuard(""Windows10.0"")]
+    public bool SupportedUntilWindow10 => true;
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""Windows"")]
+    [UnsupportedOSPlatformGuard(""Windows10.0"")]
+    private bool IsSupportedUntilWindow10AndLinux() => false;
+
+    [UnsupportedOSPlatformGuard(""ios"")]
+    [SupportedOSPlatformGuard(""ios14.0"")]
+    [UnsupportedOSPlatformGuard(""ios18.0"")]
+    [UnsupportedOSPlatformGuard(""Windows8.0"")]
+    private readonly bool _windows8IosNotSupportedSupportedIos14_18;
+
+    void M1()
+    {
+        if (SupportedUntilWindow10)
+        {
+            {|#0:UnsupportedOnWindows8IosSupportsIos14_19()|}; // This call site is reachable on: 'Windows' 10.0 and before. 'Test.UnsupportedOnWindows8IosSupportsIos14_19()' is unsupported on: 'Windows' 8.0 and later.
+            SupportedOnWindowsUntil10AndLinux();
+            SupportedOnWindowsUntil10();
+        }
+
+        if (IsSupportedUntilWindow10AndLinux())
+        {
+            [|UnsupportedOnWindows8IosSupportsIos14_19()|]; // This call site is reachable on: 'linux', 'Windows' 10.0 and before. 'Test.UnsupportedOnWindows8IosSupportsIos14_19()' is supported on: 'ios' from version 14.0 to 19.0, 'Windows' 8.0 and later.
+            SupportedOnWindowsUntil10AndLinux();
+            {|#1:SupportedOnWindowsUntil10()|}; // This call site is reachable on: 'linux'. 'Test.SupportedOnWindowsUntil10()' is only supported on: 'Windows'.
+        }
+        else
+        {
+            [|UnsupportedOnWindows8IosSupportsIos14_19()|]; // This call site is reachable on all platforms. 'Test.UnsupportedOnWindows8IosSupportsIos14_19()' is supported on: 'ios' from version 14.0 to 19.0, 'Windows' 8.0 and later.
+            [|SupportedOnWindowsUntil10AndLinux()|]; // This call site is reachable on all platforms. 'Test.SupportedOnWindowsUntil10AndLinux()' is only supported on: 'linux', 'Windows' 10.0 and before.
+            [|SupportedOnWindowsUntil10()|]; // This call site is reachable on all platforms. 'Test.SupportedOnWindowsUntil10()' is only supported on: 'Windows' 10.0 and before.
+        }
+
+        if (_windows8IosNotSupportedSupportedIos14_18)
+        {
+            UnsupportedOnWindows8IosSupportsIos14_19();
+            [|SupportedOnWindowsUntil10AndLinux()|]; // This call site is reachable on: 'ios' 14.0 and later. 'Test.SupportedOnWindowsUntil10AndLinux()' is only supported on: 'linux', 'Windows'.
+            [|SupportedOnWindowsUntil10()|]; // This call site is reachable on: 'ios' 14.0 and later. 'Test.SupportedOnWindowsUntil10()' is only supported on: 'Windows'.      
+        }
+    }
+
+    [UnsupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""ios14.0"")]
+    [UnsupportedOSPlatform(""ios19.0"")]
+    [UnsupportedOSPlatform(""Windows8.0"")]
+    void UnsupportedOnWindows8IosSupportsIos14_19() { }
+
+    [SupportedOSPlatform(""linux"")]
+    [SupportedOSPlatform(""Windows"")]
+    [UnsupportedOSPlatform(""Windows10.0"")]
+    void SupportedOnWindowsUntil10AndLinux() { }
+
+    [SupportedOSPlatform(""Windows"")]
+    [UnsupportedOSPlatform(""Windows10.0"")]
+    void SupportedOnWindowsUntil10() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0).WithArguments("Test.UnsupportedOnWindows8IosSupportsIos14_19()",
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndLater, "Windows", "8.0"),
+                    GetFormattedString(MicrosoftNetCoreAnalyzersResources.PlatformCompatibilityVersionAndBefore, "Windows", "10.0")),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.OnlySupportedCsReachable).WithLocation(1).WithArguments("Test.SupportedOnWindowsUntil10()", "'Windows'", "'linux'"));
+        }
+
+        [Fact]
+        public async Task GuardAttributesFalsePositivesAsync()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatformGuard(""Windows10.0"")]
+    private string IsWindow10Supported() => ""true"";
+
+    [SupportedOSPlatformGuard(""linux"")]
+    [SupportedOSPlatformGuard(""Windows10.0"")]
+    private bool _linuxAndWindows10Supported;
+
+    [UnsupportedOSPlatformGuard(""linux"")]
+    [UnsupportedOSPlatformGuard(""ios9.0"")]
+    private bool LinuxIos9NotSupported { get; set;}
+
+    void M1()
+    {
+        if (IsWindow10Supported() == ""true"") // return type string, no effect
+        {
+            [|SupportedOnWindows10Linux()|];
+            [|SupportedOnWindows8()|];
+        }
+        _linuxAndWindows10Supported = true; // normal statements no effect
+        IsWindow10Supported();
+        [|SupportedOnWindows10Linux()|];
+        var value = _linuxAndWindows10Supported;
+        if (value)
+        {
+            IsWindow10Supported();
+            [|SupportedOnWindows8()|];
+            SupportedOnWindows10Linux();
+        }
+        if (_linuxAndWindows10Supported == true)
+        {
+            [|SupportedOnWindows8()|];
+            [|SupportedOnWindows10Linux()|]; // 39
+        }
+        var result = LinuxIos9NotSupported == true;  // not a guarding a block
+        [|UnsupportedOnLinuxIos91()|];
+
+        Debug.Assert(LinuxIos9NotSupported == false); // no effect when there is expression
+        [|UnsupportedOnLinuxIos91()|];
+
+        Debug.Assert(LinuxIos9NotSupported); // Assert should work
+        UnsupportedOnLinuxIos91();
+    }
+
+    [UnsupportedOSPlatform(""Linux"")]
+    [UnsupportedOSPlatform(""ios9.1"")]
+    void UnsupportedOnLinuxIos91() { }
+
+    [SupportedOSPlatform(""windows10.0"")]
+    [SupportedOSPlatform(""Linux"")]
+    void SupportedOnWindows10Linux() { }
+
+    [SupportedOSPlatform(""windows8.0"")]
+    void SupportedOnWindows8() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task GuardMemberWithinPlatformSpecificTypeShouldNowWarnAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    void M1()
+    {
+        [|UnsupportedBrowserType.M1()|];
+        [|UnsupportedBrowserType.M2()|];
+        if (UnsupportedBrowserType.IsSupported)
+        {
+            UnsupportedBrowserType.M1();
+            UnsupportedBrowserType.M2();
+        }
+        var t = [|new UnsupportedBrowserType()|];
+
+        [|WindowsOnlyType.M1()|];
+        [|WindowsOnlyType.M2()|];
+        if (WindowsOnlyType.IsSupported)
+        {
+            WindowsOnlyType.M1();
+            WindowsOnlyType.M2();
+        }
+        var w = [|new WindowsOnlyType()|];
+    }
+}
+
+[UnsupportedOSPlatform(""browser"")]
+class UnsupportedBrowserType
+{
+    public static void M1() { }
+    [UnsupportedOSPlatformGuard(""browser"")]
+    public static bool IsSupported { get; }
+    public static void M2() { }
+}
+[SupportedOSPlatform(""windows"")]
+class WindowsOnlyType
+{
+    public static void M1() { }
+    [SupportedOSPlatformGuard(""windows"")]
+    public static bool IsSupported { get; }
+    public static void M2() { }
+}
+";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+#if DEBUG
+        [Fact]
+        public async Task IosGuardsMacCatalystAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatform(""ios"")]
+    private void IosSupported() { }
+
+    [SupportedOSPlatform(""maccatalyst"")]
+    internal void SupportsMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""maccatalyst"")]
+    void SupportedOnIOSLinuxMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void UnsupportsMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""ios"")]
+    static void UnsupportsIos() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    static void SupportsIOSNotMacCatalyst() { }
+
+    void M1()
+    {
+        if (MockOperatingSystem.IsIOS())
+        {
+            SupportedOnIOSLinuxMacCatalyst();
+            [|SupportsMacCatalyst()|]; // This call site is reachable on: 'IOS'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            IosSupported();
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'maccatalyst'. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on: 'maccatalyst'. 'Test.UnsupportsIos()' is unsupported on: 'ios', 'maccatalyst'.
+            [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'maccatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+
+        if (MockOperatingSystem.IsMacCatalyst())
+        {          
+            SupportedOnIOSLinuxMacCatalyst();
+            SupportsMacCatalyst();
+            IosSupported();
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'MacCatalyst'. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on: 'MacCatalyst'. 'Test.UnsupportsIos()' is unsupported on: 'maccatalyst'.
+            [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'MacCatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+
+        if (MockOperatingSystem.IsIOS() && !MockOperatingSystem.IsMacCatalyst())
+        {            
+            SupportedOnIOSLinuxMacCatalyst();              
+            [|SupportsMacCatalyst()|];       // This call site is reachable on: 'IOS'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.     
+            IosSupported();
+            SupportsIOSNotMacCatalyst();
+            [|UnsupportsIos()|];             // This call site is reachable on: 'IOS'. 'Test.UnsupportsIos()' is unsupported on: 'ios'.
+            UnsupportsMacCatalyst();      
+        }
+    }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task IOSSupportGuardAttributesInferMacCatalystAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatform(""ios"")]
+    private void IosSupported() { }
+
+    [SupportedOSPlatform(""maccatalyst"")]
+    internal void SupportsMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""Linux"")]
+    [SupportedOSPlatform(""maccatalyst"")]
+    void SupportedOnIOSLinuxMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void UnsupportsMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""ios"")]
+    static void UnsupportsIos() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    static void SupportsIOSNotMacCatalyst() { }
+
+    [SupportedOSPlatformGuard(""ios"")] // maccatalyst inferred
+    public bool WorksOnIOS => true;
+
+    [SupportedOSPlatformGuard(""maccatalyst"")] // annotation not needed
+    [SupportedOSPlatformGuard(""ios"")] // therefore same as above guard
+    public bool WorksOnMacCatalystAndIOS => true;
+
+    [UnsupportedOSPlatformGuard(""maccatalyst"")] // excludes inferred guard
+    [SupportedOSPlatformGuard(""ios"")] // therefore only for IOS
+    public bool WorksOnIOSNotMacCatalyst => true;
+
+    [SupportedOSPlatformGuard(""maccatalyst"")] // only for mac
+    public bool WorksOnMacCatalyst => true;
+
+    void M1()
+    {
+        if (WorksOnIOS)
+        {
+            SupportedOnIOSLinuxMacCatalyst();
+            [|SupportsMacCatalyst()|]; // This call site is reachable on: 'ios'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            IosSupported();
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'maccatalyst'. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on: 'ios'. 'Test.UnsupportsIos()' is unsupported on: 'ios', 'maccatalyst'.
+            [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'ios', 'maccatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+
+        if (WorksOnMacCatalystAndIOS)
+        {
+            SupportedOnIOSLinuxMacCatalyst();
+            [|SupportsMacCatalyst()|]; // This call site is reachable on: 'ios'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            IosSupported();
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'maccatalyst'. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on: 'ios'. 'Test.UnsupportsIos()' is unsupported on: 'ios', 'maccatalyst'.
+            [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'ios', 'maccatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+
+        if (WorksOnMacCatalyst)
+        {          
+            SupportedOnIOSLinuxMacCatalyst();
+            SupportsMacCatalyst();
+            IosSupported();
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on: 'maccatalyst'. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on: 'maccatalyst'. 'Test.UnsupportsIos()' is unsupported on: 'maccatalyst'.
+            [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'maccatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+
+        if (WorksOnIOSNotMacCatalyst)
+        {            
+            SupportedOnIOSLinuxMacCatalyst();
+            [|SupportsMacCatalyst()|];       // This call site is reachable on all platforms. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.    
+            IosSupported();                  
+            SupportsIOSNotMacCatalyst();
+            [|UnsupportsIos()|];             // This call site is reachable on all platforms. 'Test.UnsupportsIos()' is unsupported on: 'ios', 'maccatalyst'.
+            UnsupportsMacCatalyst(); 
+        }
+    }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task IOSUnsupportGuardAttributesInferMacCatalystAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+class Test
+{
+    [SupportedOSPlatform(""ios"")]
+    private void IosSupported() { }
+
+    [SupportedOSPlatform(""maccatalyst"")]
+    internal void SupportsMacCatalyst() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [SupportedOSPlatform(""maccatalyst"")]
+    void SupportedOnIOSMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""maccatalyst"")]
+    static void UnsupportsMacCatalyst() { }
+
+    [UnsupportedOSPlatform(""ios"")]
+    static void UnsupportsIos() { }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""MacCatalyst"")]
+    static void SupportsIOSNotMacCatalyst() { }
+
+    [UnsupportedOSPlatformGuard(""ios"")] // // maccatalyst inferred
+    public bool DoesNotWorkOnIOS => true;
+
+    [UnsupportedOSPlatformGuard(""ios"")] // same as above guard
+    [UnsupportedOSPlatformGuard(""maccatalyst"")] // annotation has no effect
+    public bool DoesNotWorkOnIOSAndMacCatalyst => true;
+
+    [UnsupportedOSPlatformGuard(""maccatalyst"")] // only unsupported on macCatalyst
+    public bool DoesNotWorkOnMacCatalyst => true;
+
+    void M1()
+    {
+        if (DoesNotWorkOnIOS)
+        {
+            [|SupportedOnIOSMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportedOnIOSLinuxMacCatalyst()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsMacCatalyst()|];       // This call site is reachable on all platforms. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            [|IosSupported()|];              // This call site is reachable on all platforms. 'Test.IosSupported()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            UnsupportsIos();
+            UnsupportsMacCatalyst(); 
+        }
+
+        if (DoesNotWorkOnIOSAndMacCatalyst)
+        {
+            [|SupportedOnIOSMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportedOnIOSLinuxMacCatalyst()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsMacCatalyst()|];       // This call site is reachable on all platforms. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            [|IosSupported()|];              // This call site is reachable on all platforms. 'Test.IosSupported()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            UnsupportsIos();
+            UnsupportsMacCatalyst();
+        }
+
+        if (DoesNotWorkOnMacCatalyst)
+        {          
+            [|SupportedOnIOSMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportedOnIOSLinuxMacCatalyst()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsMacCatalyst()|];       // This call site is reachable on all platforms. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
+            [|IosSupported()|];              // This call site is reachable on all platforms. 'Test.IosSupported()' is only supported on: 'ios', 'maccatalyst'.
+            [|SupportsIOSNotMacCatalyst()|]; // This call site is reachable on all platforms. 'Test.SupportsIOSNotMacCatalyst()' is only supported on: 'ios'.
+            [|UnsupportsIos()|];             // This call site is reachable on all platforms. 'Test.UnsupportsIos()' is unsupported on: 'ios'.
+            UnsupportsMacCatalyst();     // This call site is reachable on: 'MacCatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
+        }
+    }
+}" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task OneOfSupportsNeedsGuard_AllOtherSuppressedByCallsite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+[UnsupportedOSPlatform(""MacCatalyst13.0"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|]; // This call site is reachable on: 'android' 23.0 and later, 'ios' 13.0 and later, 'windows' 8.1 and later. 'MyType' is only supported on: 'windows' 10.0.10240 and later.
+
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = new MyType();
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+    }
+}
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+[UnsupportedOSPlatform(""MacCatalyst13.0"")]
+class MyType { }
+" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task TwoOfSupportsNeedsGuard_AllOtherSuppressedByCallsite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""tvos13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+class MyUsage
+{
+    public void M()
+    {
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            var t = [|new MyType()|];
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            var t = [|new MyType()|];
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            var t = new MyType();
+        }
+    }
+}
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""tvos15.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+class MyType { }";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task OneOfSupportsNeedsGuard_OneNotSuppressedByCallSite()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[SupportedOSPlatform(""android23.0"")]
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows8.1"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|];
+
+        if (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = [|new MyType()|];
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = [|new MyType()|];
+        }
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+        {
+            t = new MyType();
+        }
+    }
+}
+
+[SupportedOSPlatform(""ios13.0"")]
+[SupportedOSPlatform(""windows10.0.10240"")]
+class MyType { }";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [Fact]
+        public async Task OneOfUnsupportsNeedsGuard()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+[UnsupportedOSPlatform(""android23.0"")]
+[UnsupportedOSPlatform(""ios13.0"")]
+[UnsupportedOSPlatform(""windows10.0.10240"")]
+[SupportedOSPlatform(""MacCatalyst13.0"")]
+class MyUsage
+{
+    public void M()
+    {
+        var t = [|new MyType()|]; // This call site is reachable on: 'windows' 10.0.10240 and before. 'MyType' is unsupported on: 'windows' 8.1 and later.
+        if (!OperatingSystem.IsWindows() || !OperatingSystem.IsWindowsVersionAtLeast(8, 1))
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindows())
+        {
+            t = new MyType();
+        }
+
+        if (!OperatingSystem.IsWindowsVersionAtLeast(8, 1))
+        {
+            t = new MyType();
+        }
+    }
+}
+[UnsupportedOSPlatform(""android23.0"")]
+[UnsupportedOSPlatform(""ios13.0"")]
+[UnsupportedOSPlatform(""windows8.1"")]
+[SupportedOSPlatform(""MacCatalyst13.0"")]
+class MyType { }
+" + MockApisCsSource;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        private readonly string MockApisCsSource = @"
+namespace System
+{
+    public class MockOperatingSystem
+    {
+        [SupportedOSPlatformGuard(""maccatalyst"")]
+        public static bool IsIOS() => true;
+        [SupportedOSPlatformGuard(""maccatalyst"")]
+        public static bool IsIOSVersionAtLeast(int major, int minor = 0, int build = 0) => false;
+        public static bool IsMacCatalyst() => false;
+        public static bool IsMacCatalystVersionAtLeast(int major, int minor = 0, int build = 0) => true;
+    }
+}
+";
+#endif
 
         private readonly string TargetTypesForTest = @"
 namespace PlatformCompatDemo.SupportedUnupported

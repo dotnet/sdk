@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class TestForNaNCorrectlyFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (resolution != null)
             {
                 var action = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage,
-                    async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
+                    async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
                     equivalenceKey: MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage);
 
                 context.RegisterCodeFix(action, context.Diagnostics);
@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static async Task<Document> ConvertToMethodInvocation(CodeFixContext context, FixResolution fixResolution)
+        private static async Task<Document> ConvertToMethodInvocationAsync(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
 

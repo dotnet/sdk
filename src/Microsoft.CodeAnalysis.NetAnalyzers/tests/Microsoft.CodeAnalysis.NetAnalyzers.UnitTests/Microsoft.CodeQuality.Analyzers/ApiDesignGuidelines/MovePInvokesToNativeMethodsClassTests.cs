@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #endregion
 
         [Fact]
-        public async Task CA1060ProperlyNamedClassCSharp()
+        public async Task CA1060ProperlyNamedClassCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -55,7 +55,7 @@ class UnsafeNativeMethods
         }
 
         [Fact]
-        public async Task CA1060ProperlyNamedClassBasic()
+        public async Task CA1060ProperlyNamedClassBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
@@ -81,7 +81,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1060ImproperlyNamedClassCSharp()
+        public async Task CA1060ImproperlyNamedClassCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -110,7 +110,7 @@ class ThirdClass
         }
 
         [Fact]
-        public async Task CA1060ImproperlyNamedClassCSharpWithScope()
+        public async Task CA1060ImproperlyNamedClassCSharpWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -136,7 +136,7 @@ class [|ThirdClass|]
         }
 
         [Fact]
-        public async Task CA1060ImproperlyNamedClassBasic()
+        public async Task CA1060ImproperlyNamedClassBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
@@ -165,7 +165,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1060ImproperlyNamedClassBasicWithScope()
+        public async Task CA1060ImproperlyNamedClassBasicWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
@@ -191,7 +191,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1060ClassesInNamespaceCSharp()
+        public async Task CA1060ClassesInNamespaceCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -215,7 +215,7 @@ namespace MyNamespace
         }
 
         [Fact]
-        public async Task CA1060ClassesInNamespaceBasic()
+        public async Task CA1060ClassesInNamespaceBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices
@@ -238,7 +238,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task CA1060NestedClassesCSharp()
+        public async Task CA1060NestedClassesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Runtime.InteropServices;
@@ -256,7 +256,7 @@ class Outer
         }
 
         [Fact]
-        public async Task CA1060NestedClassesBasic()
+        public async Task CA1060NestedClassesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Runtime.InteropServices

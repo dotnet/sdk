@@ -248,3 +248,42 @@ CA5402 | Security | Disabled | DoNotUseCreateEncryptorWithNonDefaultIV, [Documen
 CA5403 | Security | Disabled | DoNotHardCodeCertificate, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5403)
 IL3000 | Publish | Warning | AvoidAssemblyLocationInSingleFile, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3000)
 IL3001 | Publish | Warning | AvoidAssemblyLocationInSingleFile, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/il3001)
+
+## Release 6.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA1418 | Interoperability | Warning | UseValidPlatformString, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1418)
+CA1419 | Interoperability | Info | ProvidePublicParameterlessSafeHandleConstructor, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419)
+CA1727 | Naming | Hidden | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727)
+CA1839 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839)
+CA1840 | Performance | Info | UseEnvironmentMembers, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840)
+CA1841 | Performance | Info | PreferDictionaryContainsMethods, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1841)
+CA1842 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842)
+CA1843 | Performance | Info | DoNotUseWhenAllOrWaitAllWithSingleArgument, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843)
+CA1844 | Performance | Info | ProvideStreamMemoryBasedAsyncOverrides, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1844)
+CA1845 | Performance | Info | UseSpanBasedStringConcat, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1845)
+CA1846 | Performance | Info | PreferAsSpanOverSubstring, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846)
+CA1847 | Performance | Info | UseStringContainsCharOverloadWithSingleCharactersAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1847)
+CA1848 | Performance | Hidden | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848)
+CA2017 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2017)
+CA2018 | Reliability | Warning | BufferBlockCopyLengthAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2018)
+CA2250 | Usage | Info | UseCancellationTokenThrowIfCancellationRequested, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA2251 | Usage | Hidden | UseStringEqualsOverStringCompare, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2251)
+CA2252 | Usage | Error | DetectPreviewFeatureAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2252)
+CA2253 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2253)
+CA2254 | Usage | Info | LoggerMessageDefineAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2254)
+CA2255 | Usage | Warning | ModuleInitializerAttributeShouldNotBeUsedInLibraries, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255)
+CA2256 | Usage | Warning | InterfaceMembersMissingImplementation, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2256)
+CA2257 | Usage | Warning | MembersDeclaredOnImplementationTypeMustBeStatic, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2257)
+CA2258 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258)
+
+### Removed Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA1801 | Usage | Disabled | ReviewUnusedParametersAnalyzer, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1801)
+IL3000 | Publish | Disabled | Moved analyzer to mono/linker
+IL3001 | Publish | Disabled | Moved analyzer to mono/linker

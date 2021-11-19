@@ -234,12 +234,87 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">Rimuovi caratteri di sottolineatura</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Rimuovere il finalizzatore dal tipo '{0}', eseguire l'override di Dispose(bool disposing) e inserire la logica di finalizzazione nel percorso del codice in cui 'disposing' è false. In caso contrario, potrebbero verificarsi chiamate duplicate a Dispose perché il tipo di base '{1}' fornisce anche un finalizzatore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
+        <source>The logging message template should not vary between calls.</source>
+        <target state="translated">Il modello di messaggio di registrazione non deve variare tra una chiamata e l'altra.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
+        <source>The logging message template should not vary between calls to '{0}'</source>
+        <target state="translated">Il modello di messaggio di registrazione non deve variare tra una chiamata e l'altra a '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
+        <source>Template should be a static expression</source>
+        <target state="translated">Il modello deve essere un'espressione statica</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
+        <target state="translated">Il numero di parametri specificati nel modello di messaggio di registrazione non corrisponde al numero di segnaposto denominati.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
+        <target state="translated">Il numero di parametri specificati nel modello di messaggio di registrazione non corrisponde al numero di segnaposto denominati</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
+        <source>Parameter count mismatch</source>
+        <target state="translated">Numero di parametri non corrispondente</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="translated">I segnaposto denominati nel modello di messaggio di registrazione non devono contenere solo caratteri numerici.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
+        <target state="translated">I segnaposto denominati nel modello di messaggio di registrazione non devono contenere solo caratteri numerici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
+        <source>Named placeholders should not be numeric values</source>
+        <target state="translated">I segnaposto denominati non devono essere valori numerici</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
+        <source>For improved performance, use the LoggerMessage delegates.</source>
+        <target state="translated">Per prestazioni ottimali, usare i delegati di LoggerMessage.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
+        <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
+        <target state="translated">Per prestazioni ottimali, usare i delegati di LoggerMessage invece di chiamare '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
+        <source>Use the LoggerMessage delegates</source>
+        <target state="translated">Usare i delegati di LoggerMessage</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
+        <source>Use PascalCase for named placeholders in the logging message template.</source>
+        <target state="translated">Usare la notazione Pascal per i segnaposto denominati nel modello di messaggio di registrazione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
+        <source>Use PascalCase for named placeholders in the logging message template</source>
+        <target state="translated">Usare la notazione Pascal per i segnaposto denominati nel modello di messaggio di registrazione</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
+        <source>Use PascalCase for named placeholders</source>
+        <target state="translated">Usare la notazione Pascal per i segnaposto denominati</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

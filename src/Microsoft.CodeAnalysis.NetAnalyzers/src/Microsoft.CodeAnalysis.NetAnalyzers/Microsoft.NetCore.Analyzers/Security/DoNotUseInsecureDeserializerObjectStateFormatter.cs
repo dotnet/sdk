@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -9,17 +9,19 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For detecting deserialization with ObjectStateFormatter, which can result in remote code execution.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class DoNotUseInsecureDeserializerObjectStateFormatter : DoNotUseInsecureDeserializerMethodsBase
     {
-        internal static DiagnosticDescriptor RealMethodUsedDescriptor =
+        internal static readonly DiagnosticDescriptor RealMethodUsedDescriptor =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2315",
-                nameof(MicrosoftNetCoreAnalyzersResources.ObjectStateFormatterMethodUsedTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.ObjectStateFormatterMethodUsedMessage),
+                nameof(ObjectStateFormatterMethodUsedTitle),
+                nameof(ObjectStateFormatterMethodUsedMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,

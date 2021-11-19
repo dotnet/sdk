@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Microsoft.NetCore.Analyzers.Security.Helpers;
@@ -11,60 +11,37 @@ using System.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureCryptographicAlgorithmsAnalyzer : DiagnosticAnalyzer
     {
         internal const string DoNotUseWeakCryptographyRuleId = "CA5350";
         internal const string DoNotUseBrokenCryptographyRuleId = "CA5351";
 
-        private static readonly LocalizableString s_localizableDoNotUseWeakAlgorithmsTitle = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakCryptographicAlgorithms),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDoNotUseWeakAlgorithmsMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakCryptographicAlgorithmsMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDoNotUseWeakAlgorithmsDescription = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseWeakCryptographicAlgorithmsDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDoNotUseBrokenAlgorithmsTitle = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseBrokenCryptographicAlgorithms),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDoNotUseBrokenAlgorithmsMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseBrokenCryptographicAlgorithmsMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDoNotUseBrokenAlgorithmsDescription = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseBrokenCryptographicAlgorithmsDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor DoNotUseBrokenCryptographyRule =
+        internal static readonly DiagnosticDescriptor DoNotUseBrokenCryptographyRule =
             DiagnosticDescriptorHelper.Create(
                 DoNotUseBrokenCryptographyRuleId,
-                s_localizableDoNotUseBrokenAlgorithmsTitle,
-                s_localizableDoNotUseBrokenAlgorithmsMessage,
+                CreateLocalizableResourceString(nameof(DoNotUseBrokenCryptographicAlgorithms)),
+                CreateLocalizableResourceString(nameof(DoNotUseBrokenCryptographicAlgorithmsMessage)),
                 DiagnosticCategory.Security,
                 RuleLevel.IdeHidden_BulkConfigurable,
-                description: s_localizableDoNotUseBrokenAlgorithmsDescription,
+                description: CreateLocalizableResourceString(nameof(DoNotUseBrokenCryptographicAlgorithmsDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        internal static DiagnosticDescriptor DoNotUseWeakCryptographyRule =
+        internal static readonly DiagnosticDescriptor DoNotUseWeakCryptographyRule =
             DiagnosticDescriptorHelper.Create(
                 DoNotUseWeakCryptographyRuleId,
-                s_localizableDoNotUseWeakAlgorithmsTitle,
-                s_localizableDoNotUseWeakAlgorithmsMessage,
+                CreateLocalizableResourceString(nameof(DoNotUseWeakCryptographicAlgorithms)),
+                CreateLocalizableResourceString(nameof(DoNotUseWeakCryptographicAlgorithmsMessage)),
                 DiagnosticCategory.Security,
                 RuleLevel.IdeHidden_BulkConfigurable,
-                description: s_localizableDoNotUseWeakAlgorithmsDescription,
+                description: CreateLocalizableResourceString(nameof(DoNotUseWeakCryptographicAlgorithmsDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DoNotUseBrokenCryptographyRule, DoNotUseWeakCryptographyRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DoNotUseBrokenCryptographyRule, DoNotUseWeakCryptographyRule);
 
         public override void Initialize(AnalysisContext context)
         {

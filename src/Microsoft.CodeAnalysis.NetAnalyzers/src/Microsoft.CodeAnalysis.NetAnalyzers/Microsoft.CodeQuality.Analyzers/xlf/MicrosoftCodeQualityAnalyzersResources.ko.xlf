@@ -234,12 +234,87 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">밑줄 제거</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">'{0}' 형식에서 종료자를 제거하고 Dispose(bool disposing)를 재정의한 후 종료 논리를 'disposing'이 false인 코드 경로에 추가하세요. 그렇지 않으면, 기본 형식 '{1}'도 종료자를 제공할 때 중복된 Dispose 호출이 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
+        <source>The logging message template should not vary between calls.</source>
+        <target state="translated">로깅 메시지 템플릿은 호출 간에 달라지지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
+        <source>The logging message template should not vary between calls to '{0}'</source>
+        <target state="translated">로깅 메시지 템플릿은 {0}에 대한 호출 간에 달라지지 않아야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
+        <source>Template should be a static expression</source>
+        <target state="translated">템플릿은 정적 표현식이어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
+        <target state="translated">로깅 메시지 템플릿에 제공된 매개 변수 수가 명명된 자리 표시자의 수와 일치하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
+        <target state="translated">로깅 메시지 템플릿에 제공된 매개 변수 수가 명명된 자리 표시자의 수와 일치하지 않습니다</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
+        <source>Parameter count mismatch</source>
+        <target state="translated">매개 변수의 개수가 일치하지 않음</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자는 숫자로만 구성되어서는 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자는 숫자로만 구성되어서는 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
+        <source>Named placeholders should not be numeric values</source>
+        <target state="translated">명명된 자리 표시자는 숫자 값이 아니어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
+        <source>For improved performance, use the LoggerMessage delegates.</source>
+        <target state="translated">성능 향상을 위해 LoggerMessage 대리자를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
+        <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
+        <target state="translated">성능 향상을 위해 '{0}'을(를) 호출하는 대신 LoggerMessage 대리자를 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
+        <source>Use the LoggerMessage delegates</source>
+        <target state="translated">LoggerMessage 대리자 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
+        <source>Use PascalCase for named placeholders in the logging message template.</source>
+        <target state="translated">로깅 메시지 템플릿에서 명명된 자리 표시자에 대해 PascalCase를 사용합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
+        <source>Use PascalCase for named placeholders in the logging message template</source>
+        <target state="translated">로깅 메시지 템플릿의 명명된 자리 표시자에 PascalCase 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
+        <source>Use PascalCase for named placeholders</source>
+        <target state="translated">명명된 자리 표시자에 대해 PascalCase 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

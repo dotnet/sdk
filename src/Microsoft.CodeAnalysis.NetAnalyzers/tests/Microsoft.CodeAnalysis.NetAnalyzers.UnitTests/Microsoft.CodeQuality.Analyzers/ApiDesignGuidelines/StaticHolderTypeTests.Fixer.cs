@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -11,7 +11,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class StaticHolderTypeFixerTests
     {
         [Fact]
-        public async Task CA1052FixesNonStaticClassWithOnlyStaticDeclaredMembersCSharp()
+        public async Task CA1052FixesNonStaticClassWithOnlyStaticDeclaredMembersCSharpAsync()
         {
             const string Code = @"
 public class [|C|]
@@ -31,7 +31,7 @@ public static class C
         }
 
         [Fact]
-        public async Task CA1052FixesNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharp()
+        public async Task CA1052FixesNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
 public class [|C|]
@@ -52,7 +52,7 @@ public static class C
         }
 
         [Fact]
-        public async Task CA1052FixesNonStaticClassWithProtectedDefaultConstructorAndStaticMethodCSharp()
+        public async Task CA1052FixesNonStaticClassWithProtectedDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
 public class [|C|]
@@ -73,7 +73,7 @@ public static class C
         }
 
         [Fact]
-        public async Task CA1052FixesNonStaticClassWithPrivateDefaultConstructorAndStaticMethodCSharp()
+        public async Task CA1052FixesNonStaticClassWithPrivateDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
 public class [|C|]
@@ -94,7 +94,7 @@ public static class C
         }
 
         [Fact]
-        public async Task CA1052FixesNestedPublicNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharp()
+        public async Task CA1052FixesNestedPublicNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
 public class C
@@ -125,7 +125,7 @@ public class C
         }
 
         [Fact]
-        public async Task CA1052FixesNestedPublicClassInOtherwiseEmptyNonStaticClassCSharp()
+        public async Task CA1052FixesNestedPublicClassInOtherwiseEmptyNonStaticClassCSharpAsync()
         {
             const string Code = @"
 public class [|C|]

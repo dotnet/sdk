@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -11,34 +11,36 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public class EnumShouldNotHaveDuplicatedValues : DiagnosticAnalyzer
     {
         public const string RuleId = "CA1069";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(EnumShouldNotHaveDuplicatedValuesTitle));
 
-        private static readonly LocalizableString s_localizableMessageRuleDuplicatedValue = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleDuplicatedValue = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                            s_localizableTitle,
-                                                                                            s_localizableMessageRuleDuplicatedValue,
-                                                                                            DiagnosticCategory.Design,
-                                                                                            RuleLevel.IdeSuggestion,
-                                                                                            description: null,
-                                                                                            isPortedFxCopRule: false,
-                                                                                            isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleDuplicatedValue = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(EnumShouldNotHaveDuplicatedValuesMessageDuplicatedValue)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessageRuleDuplicatedBitwiseValuePart = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleDuplicatedBitwiseValuePart = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                                       s_localizableTitle,
-                                                                                                       s_localizableMessageRuleDuplicatedBitwiseValuePart,
-                                                                                                       DiagnosticCategory.Design,
-                                                                                                       RuleLevel.IdeSuggestion,
-                                                                                                       description: null,
-                                                                                                       isPortedFxCopRule: false,
-                                                                                                       isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleDuplicatedBitwiseValuePart = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(EnumShouldNotHaveDuplicatedValuesMessageDuplicatedBitwiseValuePart)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleDuplicatedValue, RuleDuplicatedBitwiseValuePart);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleDuplicatedValue, RuleDuplicatedBitwiseValuePart);
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -134,7 +136,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 void endVisitEnumSymbol(SymbolAnalysisContext context)
                 {
-                    var enumSymbol = (INamedTypeSymbol)context.Symbol;
                     // visit any duplicates which didn't have an initializer
                     foreach (var field in duplicates)
                     {

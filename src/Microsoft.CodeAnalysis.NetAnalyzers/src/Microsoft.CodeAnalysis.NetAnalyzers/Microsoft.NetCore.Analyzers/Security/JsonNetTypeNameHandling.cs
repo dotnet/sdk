@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -11,6 +11,8 @@ using Microsoft.NetCore.Analyzers.Security.Helpers;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// For using a <see cref="T:Newtonsoft.Json.TypeNameHandling"/> values other than None.
     /// </summary>
@@ -21,15 +23,15 @@ namespace Microsoft.NetCore.Analyzers.Security
         internal static readonly DiagnosticDescriptor Rule =
             SecurityHelpers.CreateDiagnosticDescriptor(
                 "CA2326",
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingTitle),
-                nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingMessage),
+                nameof(JsonNetTypeNameHandlingTitle),
+                nameof(JsonNetTypeNameHandlingMessage),
                 RuleLevel.Disabled,
                 isPortedFxCopRule: false,
                 isDataflowRule: false,
                 isReportedAtCompilationEnd: false,
-                descriptionResourceStringName: nameof(MicrosoftNetCoreAnalyzersResources.JsonNetTypeNameHandlingDescription));
+                descriptionResourceStringName: nameof(JsonNetTypeNameHandlingDescription));
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create<DiagnosticDescriptor>(Rule);
 
         public override void Initialize(AnalysisContext context)
@@ -102,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
 
                         return fieldReferenceOperation.Field.Name != "None";
-                    };
+                    }
                 });
         }
     }

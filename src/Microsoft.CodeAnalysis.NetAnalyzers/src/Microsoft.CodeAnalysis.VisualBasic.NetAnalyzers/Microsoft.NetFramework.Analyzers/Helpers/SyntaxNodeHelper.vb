@@ -1,4 +1,4 @@
-﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports Microsoft.NetFramework.Analyzers.Helpers
 Imports Microsoft.CodeAnalysis
@@ -295,7 +295,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function IsObjectCreationExpressionUnderFieldDeclaration(node As SyntaxNode) As Boolean
-            Return node IsNot Nothing And node.Kind() = SyntaxKind.ObjectCreationExpression _
+            Return node IsNot Nothing And node.IsKind(SyntaxKind.ObjectCreationExpression) _
                 And node.AncestorsAndSelf().OfType(Of FieldDeclarationSyntax)().FirstOrDefault() IsNot Nothing
         End Function
 

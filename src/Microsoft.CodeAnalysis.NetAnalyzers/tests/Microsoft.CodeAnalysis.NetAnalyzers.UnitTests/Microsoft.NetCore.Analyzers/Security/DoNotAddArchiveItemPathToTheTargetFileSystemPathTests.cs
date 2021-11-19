@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -32,7 +32,7 @@ namespace System.IO.Compression
 }";
 
         [Fact]
-        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_Diagnostic()
+        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO.Compression;
@@ -48,7 +48,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_File_Open_WithStringAndFileModeParameters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeParameters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -65,7 +65,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -82,7 +82,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_Diagnostic()
+        public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -99,7 +99,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_FileStream_Diagnostic()
+        public async Task Test_Sink_FileStream_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -116,7 +116,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_FileInfo_Diagnostic()
+        public async Task Test_Sink_FileInfo_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -133,7 +133,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sanitizer_String_StartsWith_NoDiagnostic()
+        public async Task Test_Sanitizer_String_StartsWith_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -154,7 +154,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnostic()
+        public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO.Compression;
@@ -169,7 +169,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sanitizer_Path_GetFileName_NoDiagnostic()
+        public async Task Test_Sanitizer_Path_GetFileName_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.IO;
@@ -186,7 +186,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_Sanitizer_String_Substring_Diagnostic()
+        public async Task Test_Sanitizer_String_Substring_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -208,7 +208,7 @@ class TestClass
         [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMethod")]
         [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMet*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (editorConfigText.Length == 0)

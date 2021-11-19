@@ -234,12 +234,87 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">Quitar caracteres de subrayado</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
         <source>Remove the finalizer from type '{0}', override Dispose(bool disposing), and put the finalization logic in the code path where 'disposing' is false. Otherwise, it might lead to duplicate Dispose invocations as the Base type '{1}' also provides a finalizer.</source>
         <target state="translated">Elimine el finalizador del tipo "{0}", reemplace el valor de "Dispose(bool disposing)" y coloque la lógica de finalización en la ruta de código de manera que el valor de "disposing" se establezca como falso. De lo contrario, se duplicarían las invocaciones de "Dispose" ya que el tipo Base "{1}" también ofrece un finalizador.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringDescription">
+        <source>The logging message template should not vary between calls.</source>
+        <target state="translated">La plantilla de mensaje de registro no debe variar entre llamadas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringMessage">
+        <source>The logging message template should not vary between calls to '{0}'</source>
+        <target state="translated">La plantilla de mensaje de registro no debe variar entre las llamadas a "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticConcatenationInFormatStringTitle">
+        <source>Template should be a static expression</source>
+        <target state="translated">La plantilla debe ser una expresión estática</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchDescription">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders.</source>
+        <target state="translated">El número de parámetros proporcionados en la plantilla de mensaje de registro no coincide con el número de marcadores de posición con nombre</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchMessage">
+        <source>Number of parameters supplied in the logging message template do not match the number of named placeholders</source>
+        <target state="translated">El número de parámetros proporcionados en la plantilla de mensaje de registro no coincide con el número de marcadores de posición con nombre</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticFormatParameterCountMismatchTitle">
+        <source>Parameter count mismatch</source>
+        <target state="translated">El recuento de parámetros no coincide</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringDescription">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters.</source>
+        <target state="translated">Los marcadores de posición con nombre de la plantilla de mensaje de registro no deben estar formados solo por caracteres numéricos.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringMessage">
+        <source>Named placeholders in the logging message template should not be comprised of only numeric characters</source>
+        <target state="translated">Los marcadores de posición con nombre de la plantilla de mensaje de registro no deben estar formados solo por caracteres numéricos</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticNumericsInFormatStringTitle">
+        <source>Named placeholders should not be numeric values</source>
+        <target state="translated">Los marcadores de posición con nombre no deben ser valores numéricos</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesDescription">
+        <source>For improved performance, use the LoggerMessage delegates.</source>
+        <target state="translated">Para mejorar el rendimiento, use los delegados LoggerMessage.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesMessage">
+        <source>For improved performance, use the LoggerMessage delegates instead of calling '{0}'</source>
+        <target state="translated">Para mejorar el rendimiento, use los delegados LoggerMessage en lugar de llamar a "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUseCompiledLogMessagesTitle">
+        <source>Use the LoggerMessage delegates</source>
+        <target state="translated">Usar los delegados LoggerMessage</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription">
+        <source>Use PascalCase for named placeholders in the logging message template.</source>
+        <target state="translated">Use PascalCase para marcadores de posición con nombre en la plantilla de mensaje de registro.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage">
+        <source>Use PascalCase for named placeholders in the logging message template</source>
+        <target state="translated">Usar PascalCase para marcadores de posición con nombre en la plantilla de mensaje de registro</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle">
+        <source>Use PascalCase for named placeholders</source>
+        <target state="translated">Usar PascalCase para marcadores de posición con nombre</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -22,21 +22,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         private readonly struct PlatformMethodValue : IAbstractAnalysisValue, IEquatable<PlatformMethodValue>
         {
-            private PlatformMethodValue(string invokedPlatformCheckMethodName, string platformPropertyName, Version version, bool negated)
+            internal PlatformMethodValue(string platformPropertyName, Version version, bool negated)
             {
-                InvokedMethodName = invokedPlatformCheckMethodName ?? throw new ArgumentNullException(nameof(invokedPlatformCheckMethodName));
                 PlatformName = platformPropertyName ?? throw new ArgumentNullException(nameof(platformPropertyName));
                 Version = version ?? throw new ArgumentNullException(nameof(version));
                 Negated = negated;
             }
 
-            public string InvokedMethodName { get; }
             public string PlatformName { get; }
             public Version Version { get; }
             public bool Negated { get; }
 
             public IAbstractAnalysisValue GetNegatedValue()
-                => new PlatformMethodValue(InvokedMethodName, PlatformName, Version, !Negated);
+                => new PlatformMethodValue(PlatformName, Version, !Negated);
 
             public static bool TryDecode(
                 IMethodSymbol invokedPlatformCheckMethod,
@@ -50,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (TryExtractPlatformName(invokedPlatformCheckMethod.Name, out var platformName))
                     {
-                        var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, new Version(0, 0), negated: false);
+                        var info = new PlatformMethodValue(platformName, EmptyVersion, negated: false);
                         infosBuilder.Add(info);
                         return true;
                     }
@@ -63,7 +61,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         Debug.Assert(osPlatformNamesBuilder.Count > 0);
                         for (var i = 0; i < osPlatformNamesBuilder.Count; i++)
                         {
-                            var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, osPlatformNamesBuilder[i], new Version(0, 0), negated: false);
+                            var info = new PlatformMethodValue(osPlatformNamesBuilder[i], EmptyVersion, negated: false);
                             infosBuilder.Add(info);
                         }
 
@@ -79,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (invokedPlatformCheckMethod.Name == IsOSPlatform &&
                                 TryParsePlatformNameAndVersion(literal.ConstantValue.Value.ToString(), out string platformName, out Version? version))
                             {
-                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                var info = new PlatformMethodValue(platformName, version, negated: false);
                                 infosBuilder.Add(info);
                                 return true;
                             }
@@ -87,7 +85,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 // OperatingSystem.IsOSPlatformVersionAtLeast(string platform, int major, int minor = 0, int build = 0, int revision = 0)
                                 Debug.Assert(invokedPlatformCheckMethod.Name == "IsOSPlatformVersionAtLeast");
-                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, literal.ConstantValue.Value.ToString(), version, negated: false);
+                                var info = new PlatformMethodValue(literal.ConstantValue.Value.ToString(), version, negated: false);
                                 infosBuilder.Add(info);
                                 return true;
                             }
@@ -98,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (TryExtractPlatformName(invokedPlatformCheckMethod.Name, out var platformName) &&
                                 TryDecodeOSVersion(arguments, valueContentAnalysisResult, out var version))
                             {
-                                var info = new PlatformMethodValue(invokedPlatformCheckMethod.Name, platformName, version, negated: false);
+                                var info = new PlatformMethodValue(platformName, version, negated: false);
                                 infosBuilder.Add(info);
                                 return true;
                             }
@@ -107,24 +105,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 return false;
-            }
-
-            private static bool TryExtractPlatformName(string methodName, [NotNullWhen(true)] out string? platformName)
-            {
-                if (!methodName.StartsWith(IsPrefix, StringComparison.Ordinal))
-                {
-                    platformName = null;
-                    return false;
-                }
-
-                if (methodName.EndsWith(OptionalSuffix, StringComparison.Ordinal))
-                {
-                    platformName = methodName.Substring(2, methodName.Length - 2 - OptionalSuffix.Length);
-                    return true;
-                }
-
-                platformName = methodName[2..];
-                return true;
             }
 
             private static bool TryDecodeRuntimeInformationIsOSPlatform(
@@ -141,7 +121,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if ((argumentValue is IPropertyReferenceOperation propertyReference) &&
                     propertyReference.Property.ContainingType.Equals(osPlatformType))
                 {
-                    decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    if (propertyReference.Property.Name.Equals(OSX, StringComparison.OrdinalIgnoreCase))
+                    {
+                        decodedOsPlatformNamesBuilder.Add(macOS);
+                    }
+                    else
+                    {
+                        decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    }
                     return true;
                 }
 
@@ -225,7 +212,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public override string ToString()
             {
-                var result = $"{InvokedMethodName};{PlatformName};{Version}";
+                var result = $"{PlatformName};{Version}";
                 if (Negated)
                 {
                     result = $"!{result}";
@@ -235,10 +222,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
 
             public bool Equals(PlatformMethodValue other)
-                => InvokedMethodName.Equals(other.InvokedMethodName, StringComparison.OrdinalIgnoreCase) &&
-                    PlatformName.Equals(other.PlatformName, StringComparison.OrdinalIgnoreCase) &&
-                    Version.Equals(other.Version) &&
-                    Negated == other.Negated;
+                => PlatformName.Equals(other.PlatformName, StringComparison.OrdinalIgnoreCase) &&
+                   Version.Equals(other.Version) &&
+                   Negated == other.Negated;
 
             public override bool Equals(object obj)
                 => obj is PlatformMethodValue otherInfo && Equals(otherInfo);
@@ -246,7 +232,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             public override int GetHashCode()
             {
                 return RoslynHashCode.Combine(
-                    InvokedMethodName.GetHashCode(),
                     PlatformName.GetHashCode(),
                     Version.GetHashCode(),
                     Negated.GetHashCode());

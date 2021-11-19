@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
@@ -297,7 +297,7 @@ namespace Microsoft.NetFramework.CSharp.Analyzers.Helpers
         public override bool IsObjectCreationExpressionUnderFieldDeclaration([NotNullWhen(returnValue: true)] SyntaxNode? node)
         {
             return node != null &&
-                   node.Kind() == SyntaxKind.ObjectCreationExpression &&
+                   node.IsKind(SyntaxKind.ObjectCreationExpression) &&
                    node.AncestorsAndSelf().OfType<FieldDeclarationSyntax>().FirstOrDefault() != null;
         }
 

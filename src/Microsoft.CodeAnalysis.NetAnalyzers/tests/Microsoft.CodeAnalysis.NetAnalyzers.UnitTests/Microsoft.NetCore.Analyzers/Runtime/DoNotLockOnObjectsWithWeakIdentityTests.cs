@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DoNotLockOnObjectsWithWeakIdentityTests
     {
         [Fact]
-        public async Task CA2002TestLockOnStrongType()
+        public async Task CA2002TestLockOnStrongTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2002TestLockOnWeakIdentities()
+        public async Task CA2002TestLockOnWeakIdentitiesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -163,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [Fact]
-        public async Task CA2002TestLockOnWeakIdentitiesWithScope()
+        public async Task CA2002TestLockOnWeakIdentitiesWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
             using System;
@@ -254,7 +254,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [Fact]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
-        public async Task CA2002_MonitorEnter_Diagnostic()
+        public async Task CA2002_MonitorEnter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
@@ -298,7 +298,7 @@ End Class
 
         [Fact]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
-        public async Task CA2002_MonitorTryEnter_Diagnostic()
+        public async Task CA2002_MonitorTryEnter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

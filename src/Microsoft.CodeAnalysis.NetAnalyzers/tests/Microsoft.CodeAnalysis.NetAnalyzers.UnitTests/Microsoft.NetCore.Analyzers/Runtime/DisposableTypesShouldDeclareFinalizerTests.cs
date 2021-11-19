@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class DisposableTypesShouldDeclareFinalizerTests
     {
         [Fact]
-        public async Task CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
+        public async Task CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
             var code = @"
 using System;
@@ -46,7 +46,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExists()
+        public async Task BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
             var code = @"
 Imports System
@@ -76,7 +76,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
             var code = @"
 using System;
@@ -110,7 +110,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExists()
+        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
             var code = @"
 Imports System
@@ -142,7 +142,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 using System;
@@ -172,7 +172,7 @@ public struct A : IDisposable // Although disposable structs are evil
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 Imports System
@@ -201,7 +201,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 using System;
@@ -227,7 +227,7 @@ public class A
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 Imports System
@@ -254,7 +254,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
+        public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
             var code = @"
 using System;
@@ -285,7 +285,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCode()
+        public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
             var code = @"
 Imports System
@@ -313,7 +313,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
+        public async Task CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 using System;
@@ -344,7 +344,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCode()
+        public async Task BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 Imports System
@@ -374,7 +374,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
+        public async Task CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 using System;
@@ -405,7 +405,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCode()
+        public async Task BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 Imports System
@@ -435,7 +435,7 @@ End Class
         }
 
         [Fact]
-        public async Task CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
+        public async Task CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 using System;
@@ -465,7 +465,7 @@ public class A : IDisposable
         }
 
         [Fact]
-        public async Task BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCode()
+        public async Task BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
 Imports System

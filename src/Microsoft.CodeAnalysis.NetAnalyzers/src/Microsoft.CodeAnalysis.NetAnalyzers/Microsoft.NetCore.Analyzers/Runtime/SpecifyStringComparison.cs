@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1307: Specify StringComparison
     /// </summary>
@@ -24,33 +26,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static readonly ImmutableArray<string> s_CA1310MethodNamesWithFirstStringParameter =
             ImmutableArray.Create("Compare", "StartsWith", "EndsWith", "IndexOf", "LastIndexOf");
 
-        private static readonly LocalizableString s_localizableCA1307Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableCA1307Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableCA1307Description = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1307Description), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule_CA1307 = DiagnosticDescriptorHelper.Create(
+            RuleId_CA1307,
+            CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1307Title)),
+            CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1307Message)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.Disabled,
+            description: CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1307Description)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor Rule_CA1307 = DiagnosticDescriptorHelper.Create(RuleId_CA1307,
-                                                                             s_localizableCA1307Title,
-                                                                             s_localizableCA1307Message,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.Disabled,
-                                                                             description: s_localizableCA1307Description,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule_CA1310 = DiagnosticDescriptorHelper.Create(
+            RuleId_CA1310,
+            CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1310Title)),
+            CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1310Message)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: CreateLocalizableResourceString(nameof(SpecifyStringComparisonCA1310Description)),
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableCA1310Title = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Title), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableCA1310Message = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Message), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableCA1310Description = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.SpecifyStringComparisonCA1310Description), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule_CA1310 = DiagnosticDescriptorHelper.Create(RuleId_CA1310,
-                                                                             s_localizableCA1310Title,
-                                                                             s_localizableCA1310Message,
-                                                                             DiagnosticCategory.Globalization,
-                                                                             RuleLevel.IdeHidden_BulkConfigurable,
-                                                                             description: s_localizableCA1310Description,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule_CA1307, Rule_CA1310);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {

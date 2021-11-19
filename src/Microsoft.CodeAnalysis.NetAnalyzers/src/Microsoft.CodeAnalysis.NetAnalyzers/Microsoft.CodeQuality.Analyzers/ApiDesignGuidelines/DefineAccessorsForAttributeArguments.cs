@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1019: Define accessors for attribute arguments
     ///
@@ -25,39 +27,39 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string MakePublicCase = "MakePublic";
         internal const string RemoveSetterCase = "RemoveSetter";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_defaultRuleMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsMessageDefault), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_increaseVisibilityMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_removeSetterMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DefineAccessorsForAttributeArgumentsMessageRemoveSetter), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(DefineAccessorsForAttributeArgumentsTitle));
 
-        internal static DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                    s_localizableTitle,
-                                                                                    s_defaultRuleMessage,
-                                                                                    DiagnosticCategory.Design,
-                                                                                    RuleLevel.Disabled,
-                                                                                    description: null,
-                                                                                    isPortedFxCopRule: true,
-                                                                                    isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DefineAccessorsForAttributeArgumentsMessageDefault)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor IncreaseVisibilityRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                               s_localizableTitle,
-                                                                                               s_increaseVisibilityMessage,
-                                                                                               DiagnosticCategory.Design,
-                                                                                               RuleLevel.Disabled,
-                                                                                               description: null,
-                                                                                               isPortedFxCopRule: true,
-                                                                                               isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor IncreaseVisibilityRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DefineAccessorsForAttributeArgumentsMessageIncreaseVisibility)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor RemoveSetterRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                         s_localizableTitle,
-                                                                                         s_removeSetterMessage,
-                                                                                         DiagnosticCategory.Design,
-                                                                                         RuleLevel.Disabled,
-                                                                                         description: null,
-                                                                                         isPortedFxCopRule: true,
-                                                                                         isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RemoveSetterRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DefineAccessorsForAttributeArgumentsMessageRemoveSetter)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: null,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule, IncreaseVisibilityRule, RemoveSetterRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DefaultRule, IncreaseVisibilityRule, RemoveSetterRule);
 
         public override void Initialize(AnalysisContext context)
         {

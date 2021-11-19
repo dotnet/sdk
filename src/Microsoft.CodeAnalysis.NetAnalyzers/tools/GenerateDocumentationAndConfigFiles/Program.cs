@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -30,18 +30,18 @@ namespace GenerateDocumentationAndConfigFiles
 
         public static async Task<int> Main(string[] args)
         {
-            const int expectedArguments = 22;
+            const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
 
             if (args.Length != expectedArguments)
             {
-                Console.Error.WriteLine($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}");
+                await Console.Error.WriteLineAsync($"Excepted {expectedArguments} arguments, found {args.Length}: {string.Join(';', args)}").ConfigureAwait(false);
                 return 1;
             }
 
             if (!args[0].StartsWith("-validateOnly:", StringComparison.OrdinalIgnoreCase))
             {
-                Console.Error.WriteLine($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.");
+                await Console.Error.WriteLineAsync($"Excepted the first argument to start with `{validateOnlyPrefix}`. found `{args[0]}`.").ConfigureAwait(false);
                 return 1;
             }
 
@@ -86,6 +86,11 @@ namespace GenerateDocumentationAndConfigFiles
                 releaseTrackingOptOut = false;
             }
 
+            if (!bool.TryParse(args[22], out var validateOffline))
+            {
+                validateOffline = false;
+            }
+
             var allRulesById = new SortedList<string, DiagnosticDescriptor>();
             var fixableDiagnosticIds = new HashSet<string>();
             var categories = new HashSet<string>();
@@ -96,7 +101,7 @@ namespace GenerateDocumentationAndConfigFiles
                 string path = Path.Combine(binDirectory, assemblyName, configuration, tfm, assembly);
                 if (!File.Exists(path))
                 {
-                    Console.Error.WriteLine($"'{path}' does not exist");
+                    await Console.Error.WriteLineAsync($"'{path}' does not exist").ConfigureAwait(false);
                     return 1;
                 }
 
@@ -196,12 +201,12 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (fileNamesWithValidationFailures.Count > 0)
             {
-                Console.Error.WriteLine("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:");
+                await Console.Error.WriteLineAsync("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` at the root of the repo to automatically update them:").ConfigureAwait(false);
                 fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileName}"));
                 return 1;
             }
 
-            if (!createGlobalConfigFiles())
+            if (!await createGlobalConfigFilesAsync().ConfigureAwait(false))
             {
                 return 2;
             }
@@ -361,8 +366,8 @@ $@"<Project>
                     }
 
                     var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    title = Regex.Replace(title, "(<.+?>)", "\\$1");
+
+                    title = escapeMarkdown(title);
 
                     if (!isFirstEntry)
                     {
@@ -382,8 +387,7 @@ $@"<Project>
 
                     // Double the line breaks to ensure they are rendered properly in markdown
                     description = Regex.Replace(description, "(\r?\n)", "$1$1");
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    description = escapeMarkdown(description);
                     // Add angle brackets around links to prevent violating MD034:
                     // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
                     // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
@@ -412,6 +416,10 @@ $@"<Project>
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
             }
+
+            // Escape generic arguments to ensure they are not considered as HTML elements, and also escape asterisks.
+            static string escapeMarkdown(string text)
+                => Regex.Replace(text, "(<.+?>)", "\\$1").Replace("*", @"\*");
 
             // based on https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
             void createAnalyzerSarifFile()
@@ -605,8 +613,8 @@ Rule ID | Missing Help Link | Title |
                         // However, we consider "missing" entries as invalid. This is to force updating the file when new rules are added.
                         if (!actualContent.Contains(line))
                         {
-                            Console.Error.WriteLine($"Missing entry in {fileWithPath}");
-                            Console.Error.WriteLine(line);
+                            await Console.Error.WriteLineAsync($"Missing entry in {fileWithPath}").ConfigureAwait(false);
+                            await Console.Error.WriteLineAsync(line).ConfigureAwait(false);
                             // The file is missing an entry. Mark it as invalid and break the loop as there is no need to continue validating.
                             fileNamesWithValidationFailures.Add(fileWithPath);
                             break;
@@ -624,13 +632,18 @@ Rule ID | Missing Help Link | Title |
                 }
                 return;
 
-                static async Task<bool> checkHelpLinkAsync(string helpLink)
+                async Task<bool> checkHelpLinkAsync(string helpLink)
                 {
                     try
                     {
                         if (!Uri.TryCreate(helpLink, UriKind.Absolute, out var uri))
                         {
                             return false;
+                        }
+
+                        if (validateOffline)
+                        {
+                            return true;
                         }
 
                         var request = new HttpRequestMessage(HttpMethod.Head, uri);
@@ -644,7 +657,7 @@ Rule ID | Missing Help Link | Title |
                 }
             }
 
-            bool createGlobalConfigFiles()
+            async Task<bool> createGlobalConfigFilesAsync()
             {
                 using var shippedFilesDataBuilder = ArrayBuilder<ReleaseTrackingData>.GetInstance();
                 using var versionsBuilder = PooledHashSet<Version>.GetInstance();
@@ -655,7 +668,7 @@ Rule ID | Missing Help Link | Title |
                     var assemblyPath = GetAssemblyPath(assembly);
                     if (!File.Exists(assemblyPath))
                     {
-                        Console.Error.WriteLine($"'{assemblyPath}' does not exist");
+                        await Console.Error.WriteLineAsync($"'{assemblyPath}' does not exist").ConfigureAwait(false);
                         return false;
                     }
 
@@ -667,7 +680,7 @@ Rule ID | Missing Help Link | Title |
                     catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                     {
-                        Console.Error.WriteLine(ex.Message);
+                        await Console.Error.WriteLineAsync(ex.Message).ConfigureAwait(false);
                         return false;
                     }
                 }
@@ -691,7 +704,7 @@ Rule ID | Missing Help Link | Title |
 
                         if (releaseTrackingOptOut)
                         {
-                            Console.Error.WriteLine($"'{shippedFile}' exists but was not expected");
+                            await Console.Error.WriteLineAsync($"'{shippedFile}' exists but was not expected").ConfigureAwait(false);
                             return false;
                         }
 
@@ -710,7 +723,7 @@ Rule ID | Missing Help Link | Title |
                         catch (Exception ex)
 #pragma warning restore CA1031 // Do not catch general exception types
                         {
-                            Console.Error.WriteLine(ex.Message);
+                            await Console.Error.WriteLineAsync(ex.Message).ConfigureAwait(false);
                             return false;
                         }
                     }
@@ -718,7 +731,7 @@ Rule ID | Missing Help Link | Title |
 
                 if (!releaseTrackingOptOut && !sawShippedFile)
                 {
-                    Console.Error.WriteLine($"Could not find any 'AnalyzerReleases.Shipped.md' file");
+                    await Console.Error.WriteLineAsync($"Could not find any 'AnalyzerReleases.Shipped.md' file").ConfigureAwait(false);
                     return false;
                 }
 
@@ -1134,7 +1147,7 @@ Rule ID | Missing Help Link | Title |
                 sortedRulesById,
                 shippedReleaseData);
             var directory = Directory.CreateDirectory(folder);
-            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName);
+            var editorconfigFilePath = Path.Combine(directory.FullName, editorconfigFileName.ToLowerInvariant());
             File.WriteAllText(editorconfigFilePath, text);
             return;
 
@@ -1163,11 +1176,11 @@ Rule ID | Missing Help Link | Title |
                     result.AppendLine();
 
                     // Append 'global_level' to ensure conflicts are properly resolved between different global configs:
-                    //   1. Lowest precedence (-2): Category-agnostic config generated by us.
-                    //   2. Higher precedence (-1): Category-specific config generated by us.
+                    //   1. Lowest precedence (-100): Category-agnostic config generated by us.
+                    //   2. Higher precedence (-99): Category-specific config generated by us.
                     //   3. Highest predence (non-negative integer): User provided config.
                     // See https://github.com/dotnet/roslyn/issues/48634 for further details.
-                    var globalLevel = category != null ? -1 : -2;
+                    var globalLevel = category != null ? -99 : -100;
                     result.AppendLine($@"global_level = {globalLevel}");
                     result.AppendLine();
                 }
@@ -1258,23 +1271,34 @@ Rule ID | Missing Help Link | Title |
                         {
                             isEnabledByDefault = isEnabledRuleForNonDefaultAnalysisMode;
                             var maxVersion = shippedReleaseData.Value.version;
+                            var foundReleaseTrackingEntry = false;
                             foreach (var shippedFile in shippedReleaseData.Value.shippedFiles)
                             {
-                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine) &&
-                                    releaseTrackingLine.EnabledByDefault.HasValue &&
-                                    releaseTrackingLine.DefaultSeverity.HasValue)
+                                if (shippedFile.TryGetLatestReleaseTrackingLine(rule.Id, maxVersion, out _, out var releaseTrackingLine))
                                 {
-                                    isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
-                                    effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
+                                    foundReleaseTrackingEntry = true;
 
-                                    if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
+                                    if (releaseTrackingLine.EnabledByDefault.HasValue &&
+                                        releaseTrackingLine.DefaultSeverity.HasValue)
                                     {
-                                        isEnabledByDefault = true;
-                                        effectiveSeverity = DiagnosticSeverity.Warning;
-                                    }
+                                        isEnabledByDefault = releaseTrackingLine.EnabledByDefault.Value && !releaseTrackingLine.IsRemovedRule;
+                                        effectiveSeverity = releaseTrackingLine.DefaultSeverity.Value;
 
-                                    break;
+                                        if (isEnabledRuleForNonDefaultAnalysisMode && !releaseTrackingLine.IsRemovedRule)
+                                        {
+                                            isEnabledByDefault = true;
+                                            effectiveSeverity = DiagnosticSeverity.Warning;
+                                        }
+
+                                        break;
+                                    }
                                 }
+                            }
+
+                            if (!foundReleaseTrackingEntry)
+                            {
+                                // Rule is unshipped or first shipped in a version later than 'maxVersion', so mark it as disabled.
+                                isEnabledByDefault = false;
                             }
                         }
 
@@ -1388,6 +1412,7 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
       <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
       <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}).editorconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
       <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
       <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
@@ -1437,8 +1462,8 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
            and an implied numerical option (such as '4') -->
       <!-- TODO: Remove hard-coded constants such as 4.0, 5.0 and 6.0 used below once these are exposed as properties from the SDK -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">4.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">5.0</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">6.0</{effectiveAnalysisLevelPropName}>
+      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">7.0</{effectiveAnalysisLevelPropName}>
 
       <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
       <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And

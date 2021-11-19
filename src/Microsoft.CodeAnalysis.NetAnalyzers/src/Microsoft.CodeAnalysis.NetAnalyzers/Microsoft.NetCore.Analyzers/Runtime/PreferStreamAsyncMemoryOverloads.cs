@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -11,6 +11,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1835: Prefer Memory/ReadOnlyMemory overloads for Stream ReadAsync/WriteAsync methods.
     ///
@@ -32,42 +34,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1835";
 
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PreferStreamAsyncMemoryOverloadsTitle));
+        private static readonly LocalizableString s_localizableMessage = CreateLocalizableResourceString(nameof(PreferStreamAsyncMemoryOverloadsMessage));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(PreferStreamAsyncMemoryOverloadsDescription));
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsTitle),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor PreferStreamReadAsyncMemoryOverloadsRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            s_localizableMessage,
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.PreferStreamAsyncMemoryOverloadsDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor PreferStreamWriteAsyncMemoryOverloadsRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            s_localizableMessage,
+            DiagnosticCategory.Performance,
+            RuleLevel.IdeSuggestion,
+            s_localizableDescription,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor PreferStreamReadAsyncMemoryOverloadsRule = DiagnosticDescriptorHelper.Create(
-                                                                                        RuleId,
-                                                                                        s_localizableTitle,
-                                                                                        s_localizableMessage,
-                                                                                        DiagnosticCategory.Performance,
-                                                                                        RuleLevel.IdeSuggestion,
-                                                                                        s_localizableDescription,
-                                                                                        isPortedFxCopRule: false,
-                                                                                        isDataflowRule: false);
-
-        internal static DiagnosticDescriptor PreferStreamWriteAsyncMemoryOverloadsRule = DiagnosticDescriptorHelper.Create(
-                                                                                        RuleId,
-                                                                                        s_localizableTitle,
-                                                                                        s_localizableMessage,
-                                                                                        DiagnosticCategory.Performance,
-                                                                                        RuleLevel.IdeSuggestion,
-                                                                                        s_localizableDescription,
-                                                                                        isPortedFxCopRule: false,
-                                                                                        isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
             ImmutableArray.Create(PreferStreamReadAsyncMemoryOverloadsRule, PreferStreamWriteAsyncMemoryOverloadsRule);
 
         public override void Initialize(AnalysisContext context)

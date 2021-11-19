@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class OperatorsShouldHaveSymmetricalOverloadsFixerTests
     {
         [Fact]
-        public async Task CSharpTestEquality()
+        public async Task CSharpTestEqualityAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -34,7 +34,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestOverloads1()
+        public async Task CSharpTestOverloads1Async()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -62,7 +62,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestInequality()
+        public async Task CSharpTestInequalityAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -82,7 +82,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestLessThan()
+        public async Task CSharpTestLessThanAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -102,7 +102,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestLessThanOrEqual()
+        public async Task CSharpTestLessThanOrEqualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -122,7 +122,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestGreaterThan()
+        public async Task CSharpTestGreaterThanAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -142,7 +142,7 @@ public class A
         }
 
         [Fact]
-        public async Task CSharpTestGreaterThanOrEqual()
+        public async Task CSharpTestGreaterThanOrEqualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"
@@ -162,7 +162,7 @@ public class A
         }
 
         [Fact]
-        public async Task VisualBasicTestEquality()
+        public async Task VisualBasicTestEqualityAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"
@@ -183,7 +183,7 @@ end class");
         }
 
         [Fact]
-        public async Task VisualBasicTestInequality()
+        public async Task VisualBasicTestInequalityAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"
@@ -204,7 +204,7 @@ end class");
         }
 
         [Fact]
-        public async Task VisualBasicTestLessThan()
+        public async Task VisualBasicTestLessThanAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"

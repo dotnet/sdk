@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -16,56 +16,58 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DisposeObjectsBeforeLosingScope : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2000";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableNotDisposedMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeNotDisposedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMayBeDisposedMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeMayBeDisposedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableNotDisposedOnExceptionPathsMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMayBeDisposedOnExceptionPathsMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DisposeObjectsBeforeLosingScopeDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeDescription));
 
-        internal static DiagnosticDescriptor NotDisposedRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                        s_localizableTitle,
-                                                                                        s_localizableNotDisposedMessage,
-                                                                                        DiagnosticCategory.Reliability,
-                                                                                        RuleLevel.Disabled,
-                                                                                        description: s_localizableDescription,
-                                                                                        isPortedFxCopRule: true,
-                                                                                        isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor NotDisposedRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeNotDisposedMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: true);
 
-        internal static DiagnosticDescriptor MayBeDisposedRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                          s_localizableTitle,
-                                                                                          s_localizableMayBeDisposedMessage,
-                                                                                          DiagnosticCategory.Reliability,
-                                                                                          RuleLevel.Disabled,
-                                                                                          description: s_localizableDescription,
-                                                                                          isPortedFxCopRule: true,
-                                                                                          isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor MayBeDisposedRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeMayBeDisposedMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: true);
 
-        internal static DiagnosticDescriptor NotDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                                        s_localizableTitle,
-                                                                                                        s_localizableNotDisposedOnExceptionPathsMessage,
-                                                                                                        DiagnosticCategory.Reliability,
-                                                                                                        RuleLevel.Disabled,
-                                                                                                        description: s_localizableDescription,
-                                                                                                        isPortedFxCopRule: true,
-                                                                                                        isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor NotDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeNotDisposedOnExceptionPathsMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: true);
 
-        internal static DiagnosticDescriptor MayBeDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                                                          s_localizableTitle,
-                                                                                                          s_localizableMayBeDisposedOnExceptionPathsMessage,
-                                                                                                          DiagnosticCategory.Reliability,
-                                                                                                          RuleLevel.Disabled,
-                                                                                                          description: s_localizableDescription,
-                                                                                                          isPortedFxCopRule: true,
-                                                                                                          isDataflowRule: true);
+        internal static readonly DiagnosticDescriptor MayBeDisposedOnExceptionPathsRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(DisposeObjectsBeforeLosingScopeMayBeDisposedOnExceptionPathsMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: true);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(NotDisposedRule, MayBeDisposedRule, NotDisposedOnExceptionPathsRule, MayBeDisposedOnExceptionPathsRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+            ImmutableArray.Create(NotDisposedRule, MayBeDisposedRule, NotDisposedOnExceptionPathsRule, MayBeDisposedOnExceptionPathsRule);
 
         public override void Initialize(AnalysisContext context)
         {

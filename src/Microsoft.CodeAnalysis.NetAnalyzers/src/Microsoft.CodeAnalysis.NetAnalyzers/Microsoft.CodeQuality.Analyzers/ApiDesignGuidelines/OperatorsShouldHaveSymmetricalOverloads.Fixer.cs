@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -17,13 +17,15 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2226: Operators should have symmetrical overloads
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -35,13 +37,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.RegisterCodeFix(
                 CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators,
-                    c => CreateChangedDocument(context, c),
-                    nameof(MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators)),
+                    c => CreateChangedDocumentAsync(context, c),
+                    nameof(Generate_missing_operators)),
                 context.Diagnostics);
             return Task.FromResult(true);
         }
 
-        private static async Task<Document> CreateChangedDocument(
+        private static async Task<Document> CreateChangedDocumentAsync(
             CodeFixContext context, CancellationToken cancellationToken)
         {
             var document = context.Document;
