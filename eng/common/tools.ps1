@@ -900,7 +900,7 @@ function Try-LogClientIpAddress()
     Write-Host "Attempting to log this client's IP for Azure Package feed telemetry purposes"
     try
     {
-        $result = Invoke-WebRequest -Uri "http://co1.msedge.net/fdv2/diagnostics.aspx" -UseBasicParsing
+        $result = Invoke-WebRequest -Uri "http://co1r5a.msedge.net/fdv2/diagnostics.aspx" -UseBasicParsing
         $lines = $result.Content.Split([Environment]::NewLine) 
         $socketIp = $lines | Select-String -Pattern "^Socket IP:.*"
         Write-Host $socketIp
