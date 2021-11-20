@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public static FormatOptions ParseVerbosityOption(this ParseResult parseResult, FormatOptions formatOptions)
         {
             if (parseResult.HasOption(VerbosityOption) &&
-                parseResult.ValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
+                parseResult.GetValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
             {
                 formatOptions = formatOptions with { LogLevel = GetLogLevel(verbosity) };
             }
@@ -169,8 +169,8 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (parseResult.HasOption(IncludeOption) || parseResult.HasOption(ExcludeOption))
             {
-                var fileToInclude = parseResult.ValueForOption(IncludeOption) ?? Array.Empty<string>();
-                var fileToExclude = parseResult.ValueForOption(ExcludeOption) ?? Array.Empty<string>();
+                var fileToInclude = parseResult.GetValueForOption(IncludeOption) ?? Array.Empty<string>();
+                var fileToExclude = parseResult.GetValueForOption(ExcludeOption) ?? Array.Empty<string>();
                 HandleStandardInput(logger, ref fileToInclude, ref fileToExclude);
                 formatOptions = formatOptions with { FileMatcher = SourceFileMatcher.CreateMatcher(fileToInclude, fileToExclude) };
             }
@@ -179,7 +179,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { ReportPath = string.Empty };
 
-                if (parseResult.ValueForOption(ReportOption) is string { Length: > 0 } reportPath)
+                if (parseResult.GetValueForOption(ReportOption) is string { Length: > 0 } reportPath)
                 {
                     formatOptions = formatOptions with { ReportPath = reportPath };
                 }
@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { BinaryLogPath = "format.binlog" };
 
-                if (parseResult.ValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
+                if (parseResult.GetValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
                 {
                     formatOptions = Path.GetExtension(binaryLogPath)?.Equals(".binlog") == false
                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })
@@ -285,7 +285,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             var currentDirectory = Environment.CurrentDirectory;
 
-            if (parseResult.ValueForArgument<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
+            if (parseResult.GetValueForArgument<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
             {
                 if (parseResult.HasOption(FolderOption))
                 {
