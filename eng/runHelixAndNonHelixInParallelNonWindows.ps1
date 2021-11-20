@@ -20,8 +20,7 @@
   "-test",
   "-projects", "$buildSourcesDirectory/src/Tests/UnitTests.proj",
   "/bl:$buildSourcesDirectory/artifacts/log/$configuration/TestInHelix.binlog",
-  "/p:_CustomHelixTargetQueue=$customHelixTargetQueue",
-  "/p:RunAoTTests=false")
+  "/p:_CustomHelixTargetQueue=$customHelixTargetQueue")
 
   $runTests = ("&'$PSScriptRoot/runTestsCannotRunOnHelix.sh' $runTestsCannotRunOnHelixArgs", "&'$PSScriptRoot/common/build.sh' $runTestsOnHelixArgs")
 

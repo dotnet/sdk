@@ -11,6 +11,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <PackageId>testSdkBlazorWasmAoT</PackageId>
+    <BuildHelixPayload Condition="'$(RunAoTTests)' != 'true'">false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
