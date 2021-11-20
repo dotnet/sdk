@@ -29,7 +29,8 @@
         "-test",
         "-projects", "$buildSourcesDirectory/src/Tests/UnitTests.proj",
         "/bl:$buildSourcesDirectory\artifacts\log\$configuration\TestInHelix.binlog",
-        "/p:_CustomHelixTargetQueue=$customHelixTargetQueue")
+        "/p:_CustomHelixTargetQueue=$customHelixTargetQueue",
+        "/p:RunAoTTests=false")
 
         parallel {
             Invoke-Expression "&'$engfolderPath\runTestsCannotRunOnHelix.ps1' $runTestsCannotRunOnHelixArgs"
