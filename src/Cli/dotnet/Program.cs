@@ -26,6 +26,11 @@ namespace Microsoft.DotNet.Cli
 
         public static int Main(string[] args)
         {
+            if (Console.IsOutputRedirected)
+            {
+                Console.OutputEncoding = Encoding.UTF8;
+            }
+
             DebugHelper.HandleDebugSwitch(ref args);
 
             // Capture the current timestamp to calculate the host overhead.
