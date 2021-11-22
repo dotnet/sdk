@@ -1,6 +1,4 @@
-﻿Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions
-static Microsoft.TemplateEngine.Utils.IFileSystemInfoExtensions.GetDisplayPath(this Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo! fileSystemInfo) -> string!
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string? author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
+﻿static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string? author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string? baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string? classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.LanguageFilter(string? language) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
