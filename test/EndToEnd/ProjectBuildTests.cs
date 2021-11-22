@@ -96,13 +96,20 @@ namespace EndToEnd.Tests
                 .Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [WindowsOnlyFact]
-        public void ItCanPublishArm64Winforms()
+        [WindowsOnlyTheory]
+        [InlineData("net5.0")]
+        [InlineData("current")]
+        public void ItCanPublishArm64Winforms(string TargetFramework)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
+            string TargetFrameworkParameter = "";
 
-            string newArgs = "winforms --no-restore";
+            if (TargetFramework != "current")
+            {
+                TargetFrameworkParameter = $"-f {TargetFramework}";
+            }
+            string newArgs = $"winforms {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -122,13 +129,21 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-        [WindowsOnlyFact]
-        public void ItCanPublishArm64Wpf()
+        [WindowsOnlyTheory]
+        [InlineData("net5.0")]
+        [InlineData("current")]
+        public void ItCanPublishArm64Wpf(string TargetFramework)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
+            string TargetFrameworkParameter = "";
 
-            string newArgs = "wpf --no-restore";
+            if (TargetFramework != "current")
+            {
+                TargetFrameworkParameter = $"-f {TargetFramework}";
+            }
+
+            string newArgs = $"wpf {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
