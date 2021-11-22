@@ -1,12 +1,22 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Buffers;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading;
 using Analyzer.Utilities;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
+using Microsoft.NetCore.Analyzers.Security;
 using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -38,39 +48,143 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return VisitLocalOrParameter(operation.Local.Type?.OriginalDefinition, operation, value);
             }
 
-            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation operation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation parameterOrLocalOperation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
                 if (!IsDeferredType(typeSymbol, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
                     return defaultValue;
                 }
 
-                return CreateAndUpdateAnalysisValue(operation, defaultValue);
-            }
-
-            private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
-                IOperation operation,
-                GlobalFlowStateDictionaryAnalysisValue defaultValue)
-            {
-                if (!IsOperationEnumeratedByMethodInvocation(operation, _wellKnownSymbolsInfo) && !IsGetEnumeratorOfForEachLoopInvoked(operation))
+                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalOperation, _wellKnownSymbolsInfo)
+                    && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalOperation))
                 {
                     return defaultValue;
                 }
 
-                var enumerationEntities = EnumerationEntity.Create(
-                    operation,
-                    DataFlowAnalysisContext.PointsToAnalysisResult,
-                    _wellKnownSymbolsInfo);
-
-                var mergedValue = GlobalFlowStateDictionaryAnalysisValue.Empty;
-                foreach (var enumerationEntity in enumerationEntities)
+                if (DataFlowAnalysisContext.PointsToAnalysisResult == null)
                 {
-                    var newValue = CreateAnalysisValue(enumerationEntity, operation, defaultValue);
-                    mergedValue = GlobalFlowStateDictionaryAnalysisValue.Merge(mergedValue, newValue);
-                    UpdateGlobalValue(newValue);
+                    return defaultValue;
                 }
 
-                return mergedValue;
+                var pointToResult = DataFlowAnalysisContext.PointsToAnalysisResult[parameterOrLocalOperation.Kind, parameterOrLocalOperation.Syntax];
+                if (pointToResult.Kind != PointsToAbstractValueKind.KnownLocations)
+                {
+                    return defaultValue;
+                }
+
+                if (pointToResult.Locations.Any(
+                    l => !IsDeferredType(l.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+                {
+                    return defaultValue;
+                }
+
+                var allEntities = CollectEntitiesForOperation(DataFlowAnalysisContext.PointsToAnalysisResult, parameterOrLocalOperation);
+                if (allEntities.IsEmpty)
+                {
+                    return defaultValue;
+                }
+
+                return CreateAndUpdateAnalysisValue(parameterOrLocalOperation, allEntities, defaultValue);
+            }
+
+            private ImmutableArray<IEnumerationEntity> CollectEntitiesForOperation(
+                PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
+            {
+                var queue = new Queue<IOperation>();
+                queue.Enqueue(parameterOrLocalOperation);
+
+                var resultBuilder = ArrayBuilder<IEnumerationEntity>.GetInstance();
+
+                while (queue.Count > 0)
+                {
+                    var currentOperation = queue.Dequeue();
+                    if (currentOperation is IParameterReferenceOperation or ILocalReferenceOperation)
+                    {
+                        var result = pointsToAnalysisResult[currentOperation];
+                        if (result.Kind != PointsToAbstractValueKind.KnownLocations || result.Locations.IsEmpty)
+                        {
+                            continue;
+                        }
+
+                        if (result.Locations.Count == 1)
+                        {
+                            var location = result.Locations.Single();
+                            var creationOperation = location.Creation;
+                            if (creationOperation == null && location.Symbol != null)
+                            {
+                                resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
+                            }
+
+                            if (creationOperation is IInvocationOperation invocationOperation)
+                            {
+                                if (invocationOperation.Arguments.Any(argument => IsDeferredExecutingInvocation(invocationOperation, argument, _wellKnownSymbolsInfo)))
+                                {
+                                    foreach (var argument in invocationOperation.Arguments)
+                                    {
+                                        if (IsDeferredExecutingInvocation(invocationOperation, argument, _wellKnownSymbolsInfo))
+                                        {
+                                            queue.Enqueue(argument.Value);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
+                                }
+                            }
+
+                            if (creationOperation is IParameterReferenceOperation or ILocalReferenceOperation
+                                && IsDeferredType(creationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                            {
+                                queue.Enqueue(creationOperation);
+                            }
+                        }
+                        else
+                        {
+                            resultBuilder.Add(DeferredTypeEntitySet.Create(result.Locations));
+                        }
+                    }
+                    else if (currentOperation is IConversionOperation conversionOperation
+                        && IsValidImplicitConversion(currentOperation, _wellKnownSymbolsInfo))
+                    {
+                        queue.Enqueue(conversionOperation.Operand);
+                    }
+                }
+
+                return resultBuilder.ToImmutableAndFree();
+            }
+
+            private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
+                IOperation parameterOrLocalOperation,
+                ImmutableArray<IEnumerationEntity> entities,
+                GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            {
+                var analysisValueForNewEntity = CreateAnalysisValue(entities, parameterOrLocalOperation, defaultValue);
+                UpdateGlobalValue(analysisValueForNewEntity);
+                return analysisValueForNewEntity;
+            }
+
+            private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
+                ImmutableArray<IEnumerationEntity> entities,
+                IOperation parameterOrLocalReferenceOperation,
+                GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            {
+                var trackingEntitiesBuilder = PooledDictionary<IEnumerationEntity, TrackingInvocationSet>.GetInstance();
+
+                foreach (var analysisEntity in entities)
+                {
+                    trackingEntitiesBuilder.Add(analysisEntity,
+                        new TrackingInvocationSet(ImmutableHashSet.Create(parameterOrLocalReferenceOperation),
+                        InvocationCount.One));
+                }
+
+                var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
+                    trackingEntitiesBuilder.ToImmutableDictionaryAndFree(),
+                    GlobalFlowStateDictionaryAnalysisValueKind.Known);
+
+                return defaultValue.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
+                    ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, defaultValue)
+                    : analysisValue;
             }
 
             private void UpdateGlobalValue(GlobalFlowStateDictionaryAnalysisValue value)
@@ -99,22 +213,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return operationToCheck.Parent is IInvocationOperation invocationOperation
                    && _wellKnownSymbolsInfo.GetEnumeratorMethods.Contains(invocationOperation.TargetMethod.OriginalDefinition)
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
-            }
-
-            private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
-                EnumerationEntity analysisEntity,
-                IOperation operation,
-                GlobalFlowStateDictionaryAnalysisValue value)
-            {
-                var invocationSet = new TrackingInvocationSet(ImmutableHashSet.Create(operation), InvocationCount.One);
-
-                var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
-                    ImmutableDictionary<EnumerationEntity, TrackingInvocationSet>.Empty.Add(analysisEntity, invocationSet),
-                    GlobalFlowStateDictionaryAnalysisValueKind.Known);
-
-                return value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
-                    ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, value)
-                    : analysisValue;
             }
         }
     }

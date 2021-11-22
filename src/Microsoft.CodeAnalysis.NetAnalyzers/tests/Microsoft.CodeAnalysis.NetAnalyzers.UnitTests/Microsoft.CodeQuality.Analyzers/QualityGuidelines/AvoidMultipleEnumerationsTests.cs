@@ -397,7 +397,7 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact(Skip = "This test case would be resolved in following PR. The skip flag should not exist when merge into main.")]
+        [Fact]
         public async Task TestExplicitDeclaration()
         {
             var code = @"

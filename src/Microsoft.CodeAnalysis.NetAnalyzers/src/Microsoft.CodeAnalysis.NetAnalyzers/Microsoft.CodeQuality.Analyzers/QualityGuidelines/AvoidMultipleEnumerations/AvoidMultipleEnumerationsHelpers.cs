@@ -60,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation;
         }
 
-        private static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        public static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             // Check if this is an implicit conversion operation convert from one delay type to another delay type.
             // This is used in methods chain like
