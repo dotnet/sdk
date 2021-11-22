@@ -64,6 +64,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var ienumerableType))
                 return;
 
+            var linqExpressionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
             compilationContext.RegisterOperationAction(OnOperationAction, OperationKind.Invocation);
 
             return;
@@ -86,18 +88,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //          - If the property's name is "Values", it must match the type substituted for TValue in the IDictionary`2 instance.
 
                 //  Once we have an applicable Contains method and an applicable property reference, we search for an applicable ContainsXXX
-                //  method on the IDictionary`2 receiver. 
+                //  method on the IDictionary`2 receiver.
 
                 //  A ContainsXXX method is applicable if:
                 //      1) It has a boolean return type
                 //      2) It is publically accessible
-                //      3) Its name is "ContainsKey" if property is "Keys", or "ContainsValue" if property is "Values". 
+                //      3) Its name is "ContainsKey" if property is "Keys", or "ContainsValue" if property is "Values".
                 //      4) It has exactly one parameter of the correct type:
-                //          - If the method is a "ContainsKey" method, its type must be TKey. 
+                //          - If the method is a "ContainsKey" method, its type must be TKey.
                 //          - If the method is a "ContainsValue" method, its type must be TValue.
 
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
+
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the comparison option so we want to bail-out.
+                if (invocation.IsWithinExpressionTree(linqExpressionType))
+                {
+                    return;
+                }
 
                 if (containsMethod.Name != ContainsMethodName
                     || containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean
@@ -109,13 +118,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 //  At this point, we know that the method being invoked is a method called "Contains" that has a boolean return type.
                 //  We also know that the method is being invoked on a property belonging to a type that implements IDictionary`2. We will
-                //  compare the types used to construct IDictionary`2 to the parameter type of the Contains method. 
+                //  compare the types used to construct IDictionary`2 to the parameter type of the Contains method.
 
                 ITypeSymbol keyType = constructedDictionaryType.TypeArguments[0];
                 ITypeSymbol valueType = constructedDictionaryType.TypeArguments[1];
 
                 //  We use Parameters.Last() because the first argument could be the key/value collection, depending
-                //  on whether the method is an extension method and whether the language is C# or Visual Basic. 
+                //  on whether the method is an extension method and whether the language is C# or Visual Basic.
 
                 ITypeSymbol containsParameterType = containsMethod.Parameters[^1].Type;
 
