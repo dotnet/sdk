@@ -152,10 +152,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836 = allowedTypesBuilder.ToImmutable();
 
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
                 context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
-                    operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
+                    operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
                     OperationKind.Invocation);
             }
 
@@ -177,6 +179,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void AnalyzeInvocationOperation(
             OperationAnalysisContext context,
+            INamedTypeSymbol? linqExpressionType,
             ImmutableHashSet<IMethodSymbol> syncMethods,
             ImmutableHashSet<IMethodSymbol> asyncMethods,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
@@ -217,8 +220,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
+            // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+            // that the underlying call doesn't have the Count/Length property so we want to bail-out.
+            var isWithinExpressionTree = invocationOperation.IsWithinExpressionTree(linqExpressionType);
+
             DetermineReportForInvocationAnalysis(context, invocationOperation, parentOperation,
-                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey, allowedTypesForCA1836);
+                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, isWithinExpressionTree,
+                originalDefinition.Name, operationKey, allowedTypesForCA1836);
         }
 
         private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
@@ -387,13 +395,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static void DetermineReportForInvocationAnalysis(
             OperationAnalysisContext context,
             IInvocationOperation invocationOperation, IOperation parent,
-            bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey,
+            bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, bool isWithinExpressionTree,
+            string methodName, string? operationKey,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             if (!shouldReplaceParent)
             {
                 // Parent expression doesn't met the criteria to be replaced; fallback on analysis for standalone call to Count().
-                if (!isAsync && !hasPredicate)
+                if (!isAsync && !hasPredicate && !isWithinExpressionTree)
                 {
                     AnalyzeCountInvocationOperation(context, invocationOperation);
                 }
@@ -403,40 +412,39 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 bool shouldNegateAny = !shouldNegateIsEmpty;
                 ReportCA1828(context, shouldNegateAny, operationKey!, methodName, parent);
             }
-            else
+            else if (!isWithinExpressionTree)
             {
                 ITypeSymbol? type = invocationOperation.GetInstanceType();
-                if (type != null)
+                if (type == null)
                 {
-                    // If the invocation has a predicate we can only suggest CA1827;
-                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
-                    if (hasPredicate)
-                    {
-                        bool shouldNegateAny = !shouldNegateIsEmpty;
-                        ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
-                    }
-                    else
-                    {
-                        if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
-                            TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
-                            !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
-                        {
-                            ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
-                        }
-                        else if (TypeContainsVisibleProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
-                        {
-                            ReportCA1829(context, Length, invocationOperation);
-                        }
-                        else if (TypeContainsVisibleProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
-                        {
-                            ReportCA1829(context, Count, invocationOperation);
-                        }
-                        else
-                        {
-                            bool shouldNegateAny = !shouldNegateIsEmpty;
-                            ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
-                        }
-                    }
+                    return;
+                }
+
+                // If the invocation has a predicate we can only suggest CA1827;
+                // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
+                if (hasPredicate)
+                {
+                    bool shouldNegateAny = !shouldNegateIsEmpty;
+                    ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
+                }
+                else if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                   TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                   !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
+                {
+                    ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
+                }
+                else if (TypeContainsVisibleProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
+                {
+                    ReportCA1829(context, Length, invocationOperation);
+                }
+                else if (TypeContainsVisibleProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
+                {
+                    ReportCA1829(context, Count, invocationOperation);
+                }
+                else
+                {
+                    bool shouldNegateAny = !shouldNegateIsEmpty;
+                    ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
                 }
             }
         }
