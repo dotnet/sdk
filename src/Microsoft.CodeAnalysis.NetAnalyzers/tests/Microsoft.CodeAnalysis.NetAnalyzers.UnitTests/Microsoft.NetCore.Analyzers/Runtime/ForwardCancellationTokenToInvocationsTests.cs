@@ -1005,7 +1005,7 @@ class C
 {
     async void M(CancellationToken ct)
     {
-        await [|MethodAsync|]();
+        await [|MethodAsync|]().ConfigureAwait(true);
     }
     Task MethodAsync() => Task.CompletedTask;
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
@@ -1018,7 +1018,7 @@ class C
 {
     async void M(CancellationToken ct)
     {
-        await MethodAsync(ct);
+        await MethodAsync(ct).ConfigureAwait(true);
     }
     Task MethodAsync() => Task.CompletedTask;
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
@@ -1722,40 +1722,6 @@ class C
         await MethodAsync(ct);
     }
     Task MethodAsync(TokenAlias c = default) => Task.CompletedTask;
-}
-            ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
-        }
-
-        [Fact]
-        public Task CS_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
-        {
-            string originalCode = @"
-using System.Threading;
-using System.Threading.Tasks;
-using TokenAlias = System.Threading.CancellationToken;
-class C
-{
-    async void M(TokenAlias ct)
-    {
-        await [|MethodAsync|]();
-    }
-    Task MethodAsync() => Task.CompletedTask;
-    Task MethodAsync(CancellationToken c) => Task.CompletedTask;
-}
-            ";
-            string fixedCode = @"
-using System.Threading;
-using System.Threading.Tasks;
-using TokenAlias = System.Threading.CancellationToken;
-class C
-{
-    async void M(TokenAlias ct)
-    {
-        await MethodAsync(ct);
-    }
-    Task MethodAsync() => Task.CompletedTask;
-    Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
             return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
@@ -3231,7 +3197,7 @@ Imports System.Threading.Tasks
 Class C
     Private Async Sub M(ByVal ct As CancellationToken)
         Dim o As O = New O()
-        Await o.[|MethodAsync|]()
+        Await o.[|MethodAsync|]().ConfigureAwait(True)
     End Sub
 End Class
 Class O
@@ -3249,7 +3215,7 @@ Imports System.Threading.Tasks
 Class C
     Private Async Sub M(ByVal ct As CancellationToken)
         Dim o As O = New O()
-        Await o.MethodAsync(ct)
+        Await o.MethodAsync(ct).ConfigureAwait(True)
     End Sub
 End Class
 Class O
