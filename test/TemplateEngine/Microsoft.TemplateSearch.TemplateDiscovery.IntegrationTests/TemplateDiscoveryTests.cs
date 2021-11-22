@@ -409,7 +409,9 @@ Package Test.Templates was unlisted."
             CheckTemplateOptionsSearch(cacheFilePaths, settingsPath);
         }
 
-        [Fact]
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "Template options filtering is not implemented.")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliDataFromDiff()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
