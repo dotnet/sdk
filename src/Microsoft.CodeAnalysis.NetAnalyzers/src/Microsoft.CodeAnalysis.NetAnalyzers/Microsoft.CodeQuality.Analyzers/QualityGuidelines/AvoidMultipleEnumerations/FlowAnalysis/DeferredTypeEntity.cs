@@ -9,7 +9,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// <summary>
     /// The entity that present a local or paramter and its creation operation (if possible)
     /// </summary>
-    internal class DeferredTypeEntity : CacheBasedEquatable<DeferredTypeEntity>, IEnumerationEntity
+    internal class DeferredTypeEntity : CacheBasedEquatable<DeferredTypeEntity>, IDeferredTypeEntity
     {
         public ISymbol? Symbol { get; }
 

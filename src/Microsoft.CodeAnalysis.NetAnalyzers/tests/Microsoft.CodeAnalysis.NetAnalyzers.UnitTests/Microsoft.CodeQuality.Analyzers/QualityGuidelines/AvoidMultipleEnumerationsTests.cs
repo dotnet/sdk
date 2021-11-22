@@ -1428,5 +1428,27 @@ Namespace NS
 End Namespace";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
+
+        [Fact]
+        public async Task Test()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> j)
+    {
+        var z = i.Concat(j);
+        [|i|].First();
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
     }
 }

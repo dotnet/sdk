@@ -1,22 +1,14 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
-using Microsoft.NetCore.Analyzers.Security;
 using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -87,13 +79,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return CreateAndUpdateAnalysisValue(parameterOrLocalOperation, allEntities, defaultValue);
             }
 
-            private ImmutableArray<IEnumerationEntity> CollectEntitiesForOperation(
+            private ImmutableArray<IDeferredTypeEntity> CollectEntitiesForOperation(
                 PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
             {
                 var queue = new Queue<IOperation>();
                 queue.Enqueue(parameterOrLocalOperation);
-
-                var resultBuilder = ArrayBuilder<IEnumerationEntity>.GetInstance();
+                var resultBuilder = ArrayBuilder<IDeferredTypeEntity>.GetInstance();
 
                 while (queue.Count > 0)
                 {
@@ -144,10 +135,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             resultBuilder.Add(DeferredTypeEntitySet.Create(result.Locations));
                         }
                     }
-                    else if (currentOperation is IConversionOperation conversionOperation
+
+                    if (currentOperation is IConversionOperation conversionOperation
                         && IsValidImplicitConversion(currentOperation, _wellKnownSymbolsInfo))
                     {
                         queue.Enqueue(conversionOperation.Operand);
+                    }
+
+                    if (currentOperation is IInvocationOperation invocationOperation1
+                        && !invocationOperation1.Arguments.Any(arg => IsDeferredExecutingInvocation(invocationOperation1, arg, _wellKnownSymbolsInfo)))
+                    {
+                        resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation1));
                     }
                 }
 
@@ -156,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
                 IOperation parameterOrLocalOperation,
-                ImmutableArray<IEnumerationEntity> entities,
+                ImmutableArray<IDeferredTypeEntity> entities,
                 GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
                 var analysisValueForNewEntity = CreateAnalysisValue(entities, parameterOrLocalOperation, defaultValue);
@@ -165,11 +163,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
-                ImmutableArray<IEnumerationEntity> entities,
+                ImmutableArray<IDeferredTypeEntity> entities,
                 IOperation parameterOrLocalReferenceOperation,
                 GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
-                var trackingEntitiesBuilder = PooledDictionary<IEnumerationEntity, TrackingInvocationSet>.GetInstance();
+                var trackingEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
 
                 foreach (var analysisEntity in entities)
                 {

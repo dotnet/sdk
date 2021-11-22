@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
-    internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IEnumerationEntity
+    internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {
         public ImmutableHashSet<DeferredTypeEntity> DeferredTypeEntities { get; }
 
