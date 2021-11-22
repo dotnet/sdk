@@ -37,16 +37,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-
-            INamedTypeSymbol? systemSingleType = model.Compilation.GetSpecialType(SpecialType.System_Single);
-            INamedTypeSymbol? systemDoubleType = model.Compilation.GetSpecialType(SpecialType.System_Double);
-
-            if (systemSingleType == null || systemDoubleType == null)
-            {
-                return;
-            }
-
-            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, systemSingleType, systemDoubleType, context.CancellationToken);
+            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
 
             if (resolution != null)
             {
@@ -58,19 +49,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
+        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
             bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, systemSingleType, systemDoubleType, cancellationToken);
+            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, cancellationToken);
             if (systemTypeLeft != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeLeft, rightOperand, isEqualsOperator);
             }
 
-            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, systemSingleType, systemDoubleType, cancellationToken);
+            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, cancellationToken);
             if (systemTypeRight != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeRight, leftOperand, isEqualsOperator);
@@ -79,17 +70,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
+        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
-            if (model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol is IFieldSymbol fieldSymbol)
+            var symbol = model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol;
+            if (symbol is IFieldSymbol { HasConstantValue: true, Name: "NaN", Type: { SpecialType: SpecialType.System_Single or SpecialType.System_Double } type })
             {
-                if (fieldSymbol.Type.Equals(systemSingleType) || fieldSymbol.Type.Equals(systemDoubleType))
-                {
-                    if (fieldSymbol.HasConstantValue && fieldSymbol.Name == "NaN")
-                    {
-                        return fieldSymbol.Type;
-                    }
-                }
+                return type;
             }
 
             return null;

@@ -38,8 +38,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterCompilationStartAction(context =>
             {
-                if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemString, out INamedTypeSymbol? stringType) ||
-                    !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemChar, out INamedTypeSymbol? charType) ||
+                if (context.Compilation.GetSpecialType(SpecialType.System_String) is not INamedTypeSymbol stringType ||
+                    context.Compilation.GetSpecialType(SpecialType.System_Char) is not INamedTypeSymbol charType ||
                     !context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemStringComparison, out INamedTypeSymbol? stringComparisonType))
                 {
                     return;
