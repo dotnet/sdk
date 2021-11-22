@@ -107,7 +107,7 @@ namespace EndToEnd.Tests
 
             if (TargetFramework != "current")
             {
-                TargetFrameworkParameter = $"-f {TargetFramework}"
+                TargetFrameworkParameter = $"-f {TargetFramework}";
             }
             string newArgs = $"winforms {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
@@ -140,7 +140,7 @@ namespace EndToEnd.Tests
 
             if (TargetFramework != "current")
             {
-                TargetFrameworkParameter = $"-f {TargetFramework}"
+                TargetFrameworkParameter = $"-f {TargetFramework}";
             }
 
             string newArgs = $"wpf {TargetFrameworkParameter} --no-restore";
