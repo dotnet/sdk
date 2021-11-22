@@ -79,13 +79,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return CreateAndUpdateAnalysisValue(parameterOrLocalOperation, allEntities, defaultValue);
             }
 
+            /// <summary>
+            /// Collect all the possible deferred type entities referenced by <param name="parameterOrLocalOperation"/>.
+            /// </summary>
             private ImmutableArray<IDeferredTypeEntity> CollectEntitiesForOperation(
                 PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
             {
+                // With the initial operation as the root, collect the leaf node
+                // The leaf node can be:
+                // 1. A parameter or local that has symbol, but no creationOperation. (e.g. parameter)
+                // 2. Invocation operation that returns a deferred type. (e.g. var i = Enumerable.Range(1, 10);)
+                // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
+                // because there are multiple locations and we don't know how to proceed.
+
                 var queue = new Queue<IOperation>();
                 queue.Enqueue(parameterOrLocalOperation);
                 var resultBuilder = ArrayBuilder<IDeferredTypeEntity>.GetInstance();
-
                 while (queue.Count > 0)
                 {
                     var currentOperation = queue.Dequeue();
@@ -101,6 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         {
                             var location = result.Locations.Single();
                             var creationOperation = location.Creation;
+                            // Leaf node 1: A parameter or local that has symbol.
                             if (creationOperation == null && location.Symbol != null)
                             {
                                 resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
@@ -120,6 +130,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 }
                                 else
                                 {
+                                    // Leaf node 2: Invocation operation that returns a deferred type.
                                     resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
                                 }
                             }
@@ -132,6 +143,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         }
                         else
                         {
+                            // Leaf node 3: A parameter or local reference operation with multiple AbstractLocations
                             resultBuilder.Add(DeferredTypeEntitySet.Create(result.Locations));
                         }
                     }
@@ -145,6 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     if (currentOperation is IInvocationOperation invocationOperation1
                         && !invocationOperation1.Arguments.Any(arg => IsDeferredExecutingInvocation(invocationOperation1, arg, _wellKnownSymbolsInfo)))
                     {
+                        // Leaf node 2: Invocation operation that returns a deferred type
                         resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation1));
                     }
                 }

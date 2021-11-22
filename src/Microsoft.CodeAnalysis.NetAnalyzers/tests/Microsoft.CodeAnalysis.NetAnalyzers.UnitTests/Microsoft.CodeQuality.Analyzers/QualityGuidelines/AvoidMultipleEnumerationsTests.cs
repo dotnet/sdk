@@ -1430,7 +1430,7 @@ End Namespace";
         }
 
         [Fact]
-        public async Task Test()
+        public async Task TestDelayEnumerableVariable()
         {
             var code = @"
 using System;
@@ -1443,7 +1443,50 @@ public class Bar
     public void Sub(IEnumerable<int> i, IEnumerable<int> j)
     {
         var z = i.Concat(j);
-        [|i|].First();
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestDelayEnumerableFromMupltipleLocation()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = a.Except(i);
+
+        [|b|].ToArray();
+        [|b|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestDelayEnumerableFromArray()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, int[] j)
+    {
+        var z = i.Concat(j);
         [|j|].ElementAt(10);
         [|z|].ToArray();
     }
