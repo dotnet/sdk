@@ -636,7 +636,7 @@ Namespace Testopolis
 End Namespace";
 
         /// <summary>
-        /// Source code that defines an IDictionary(string, int) implementation of type 'TestDictionary' that exposes Keys and Values
+        /// Source code that defines an IDictionary(string, int) implementation of type 'TestDictionary' that exposes Keys and Values 
         /// properties of type 'KeyCollection' and 'ValueCollection', respectively.
         /// The corrasponding properties on IDictionary`2 are implemented explicitly.
         /// </summary>
