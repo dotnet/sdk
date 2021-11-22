@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     /// <summary>
-    /// The entity that present a local or paramter and its creation operation (if possible)
+    /// The entity that presents either a symbol or an creation operation.
     /// </summary>
     internal class DeferredTypeEntity : CacheBasedEquatable<DeferredTypeEntity>, IDeferredTypeEntity
     {

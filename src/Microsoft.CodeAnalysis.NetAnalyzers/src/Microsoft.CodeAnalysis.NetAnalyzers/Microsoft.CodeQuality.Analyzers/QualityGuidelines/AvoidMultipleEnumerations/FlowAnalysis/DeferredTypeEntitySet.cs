@@ -7,6 +7,9 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
+    /// <summary>
+    /// A set represents a defer entity that the value might come from many sources.
+    /// </summary>
     internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {
         public ImmutableHashSet<DeferredTypeEntity> DeferredTypeEntities { get; }

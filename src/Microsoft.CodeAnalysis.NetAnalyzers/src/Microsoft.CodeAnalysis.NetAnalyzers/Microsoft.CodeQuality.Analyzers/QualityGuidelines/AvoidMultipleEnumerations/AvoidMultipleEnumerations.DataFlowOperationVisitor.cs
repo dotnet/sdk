@@ -85,13 +85,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private ImmutableArray<IDeferredTypeEntity> CollectEntitiesForOperation(
                 PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
             {
-                // With the initial operation as the root, collect the leaf node
+                // With the initial operation as the root, collect the leaf nodes
                 // The leaf node can be:
                 // 1. A parameter or local that has symbol, but no creationOperation. (e.g. parameter)
                 // 2. Invocation operation that returns a deferred type. (e.g. var i = Enumerable.Range(1, 10);)
                 // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
                 // because there are multiple locations and we don't know how to proceed.
-
                 var queue = new Queue<IOperation>();
                 queue.Enqueue(parameterOrLocalOperation);
                 var resultBuilder = ArrayBuilder<IDeferredTypeEntity>.GetInstance();
@@ -100,52 +99,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     var currentOperation = queue.Dequeue();
                     if (currentOperation is IParameterReferenceOperation or ILocalReferenceOperation)
                     {
-                        var result = pointsToAnalysisResult[currentOperation];
-                        if (result.Kind != PointsToAbstractValueKind.KnownLocations || result.Locations.IsEmpty)
-                        {
-                            continue;
-                        }
-
-                        if (result.Locations.Count == 1)
-                        {
-                            var location = result.Locations.Single();
-                            var creationOperation = location.Creation;
-                            // Leaf node 1: A parameter or local that has symbol.
-                            if (creationOperation == null && location.Symbol != null)
-                            {
-                                resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
-                            }
-
-                            if (creationOperation is IInvocationOperation invocationOperation)
-                            {
-                                if (invocationOperation.Arguments.Any(argument => IsDeferredExecutingInvocation(invocationOperation, argument, _wellKnownSymbolsInfo)))
-                                {
-                                    foreach (var argument in invocationOperation.Arguments)
-                                    {
-                                        if (IsDeferredExecutingInvocation(invocationOperation, argument, _wellKnownSymbolsInfo))
-                                        {
-                                            queue.Enqueue(argument.Value);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    // Leaf node 2: Invocation operation that returns a deferred type.
-                                    resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
-                                }
-                            }
-
-                            if (creationOperation is IParameterReferenceOperation or ILocalReferenceOperation
-                                && IsDeferredType(creationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                            {
-                                queue.Enqueue(creationOperation);
-                            }
-                        }
-                        else
-                        {
-                            // Leaf node 3: A parameter or local reference operation with multiple AbstractLocations
-                            resultBuilder.Add(DeferredTypeEntitySet.Create(result.Locations));
-                        }
+                        ExpandParameterOrLocalReferenceOperation(
+                            pointsToAnalysisResult, currentOperation, _wellKnownSymbolsInfo, queue, resultBuilder);
                     }
 
                     if (currentOperation is IConversionOperation conversionOperation
@@ -154,15 +109,83 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         queue.Enqueue(conversionOperation.Operand);
                     }
 
-                    if (currentOperation is IInvocationOperation invocationOperation1
-                        && !invocationOperation1.Arguments.Any(arg => IsDeferredExecutingInvocation(invocationOperation1, arg, _wellKnownSymbolsInfo)))
+                    if (currentOperation is IInvocationOperation invocationOperation
+                        && IsDeferredType(invocationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                        && !invocationOperation.Arguments.Any(arg => IsDeferredExecutingInvocation(invocationOperation, arg, _wellKnownSymbolsInfo)))
                     {
                         // Leaf node 2: Invocation operation that returns a deferred type
-                        resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation1));
+                        resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
                     }
                 }
 
                 return resultBuilder.ToImmutableAndFree();
+
+                static void ExpandParameterOrLocalReferenceOperation(
+                    PointsToAnalysisResult pointsToAnalysisResult,
+                    IOperation parameterOrLocalOperation,
+                    WellKnownSymbolsInfo wellKnownSymbolsInfo,
+                    Queue<IOperation> queue,
+                    ArrayBuilder<IDeferredTypeEntity> resultBuilder)
+                {
+                    var result = pointsToAnalysisResult[parameterOrLocalOperation];
+                    if (result.Kind != PointsToAbstractValueKind.KnownLocations || result.Locations.IsEmpty)
+                    {
+                        return;
+                    }
+
+                    if (result.Locations.Count == 1)
+                    {
+                        var location = result.Locations.Single();
+                        var creationOperation = location.Creation;
+                        // Leaf node 1: A parameter or local that has symbol, but no creation operation.
+                        if (creationOperation == null && location.Symbol != null)
+                        {
+                            resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
+                            return;
+                        }
+
+                        if (creationOperation is IInvocationOperation invocationOperation)
+                        {
+                            var isDeferredInvocation = false;
+                            // Check the argument of this invocation to see if this is a deferred executing method.
+                            // e.g.
+                            // var a = b.Concat(c);
+                            // [|a|].ElementAt(100);
+                            // When we looking at the creation of 'a', we want to find both 'b' and 'c'
+                            foreach (var argument in invocationOperation.Arguments)
+                            {
+                                if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
+                                {
+                                    isDeferredInvocation = true;
+                                    queue.Enqueue(argument.Value);
+                                }
+                            }
+
+                            // This creation operation is not a deferred invocation.
+                            // So this is leaf node 2: Invocation operation that returns a deferred type.
+                            // e.g.
+                            // var a = SomeOtherMethod();
+                            // [|a|].ElementAt(100);
+                            if (!isDeferredInvocation && IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                            {
+                                resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
+                            }
+
+                            return;
+                        }
+
+                        if (creationOperation is IParameterReferenceOperation or ILocalReferenceOperation
+                            && IsDeferredType(creationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                        {
+                            queue.Enqueue(creationOperation);
+                        }
+                    }
+                    else
+                    {
+                        // Leaf node 3: A parameter or local reference operation with multiple AbstractLocations.
+                        resultBuilder.Add(DeferredTypeEntitySet.Create(result.Locations));
+                    }
+                }
             }
 
             private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(

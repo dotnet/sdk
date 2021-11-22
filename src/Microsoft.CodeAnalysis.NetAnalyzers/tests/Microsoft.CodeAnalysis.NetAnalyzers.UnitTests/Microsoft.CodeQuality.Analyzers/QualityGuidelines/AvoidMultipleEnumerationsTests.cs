@@ -1487,8 +1487,8 @@ public class Bar
     public void Sub(IEnumerable<int> i, int[] j)
     {
         var z = i.Concat(j);
-        [|j|].ElementAt(10);
-        [|z|].ToArray();
+        j.ElementAt(10);
+        z.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
