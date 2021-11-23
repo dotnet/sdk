@@ -167,7 +167,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             if (!isDeferredInvocation
                                 && IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
                             {
-                                resultBuilder.Add(new DeferredTypeEntity(localOrParameterSymbol, invocationOperation));
+                                resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
                             }
                         }
                     }

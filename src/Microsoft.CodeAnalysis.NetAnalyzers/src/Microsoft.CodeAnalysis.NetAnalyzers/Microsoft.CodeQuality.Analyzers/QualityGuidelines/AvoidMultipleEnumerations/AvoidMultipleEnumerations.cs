@@ -27,18 +27,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             isPortedFxCopRule: false,
             isDataflowRule: true);
 
-        private static readonly SymbolDisplayFormat s_entityDisplayFormat = new(
-                SymbolDisplayGlobalNamespaceStyle.Omitted,
-                SymbolDisplayTypeQualificationStyle.NameOnly,
-                SymbolDisplayGenericsOptions.None,
-                SymbolDisplayMemberOptions.None,
-                SymbolDisplayDelegateStyle.NameOnly,
-                SymbolDisplayExtensionMethodStyle.InstanceMethod,
-                SymbolDisplayParameterOptions.IncludeName,
-                SymbolDisplayPropertyStyle.NameOnly,
-                SymbolDisplayLocalOptions.None,
-                SymbolDisplayKindOptions.None);
-
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(MultipleEnumerableDescriptor);
 
         /// <summary>
@@ -238,7 +226,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            using var diagnosticEntityNameAndOperations = PooledHashSet<(string enumeratedEntityName, IOperation enumeratedOperation)>.GetInstance();
+            using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
             foreach (var operation in potentialDiagnosticOperations)
             {
                 var result = analysisResult[operation.Kind, operation.Syntax];
@@ -247,26 +235,25 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     continue;
                 }
 
-                foreach (var (enumeratedEntity, trackedInvocationSet) in result.TrackedEntities)
+                foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
                 {
                     // Report if
                     // 1. EnumerationCount is two or more times.
                     // 2. There are two or more operations that might be involved.
-                    // (Note: 2. is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
+                    // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
                     if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                     {
                         foreach (var trackedOperation in trackedInvocationSet.Operations)
                         {
-                            diagnosticEntityNameAndOperations.Add(
-                                (enumeratedEntity.Symbol.ToDisplayString(s_entityDisplayFormat), trackedOperation));
+                            diagnosticOperations.Add(trackedOperation);
                         }
                     }
                 }
             }
 
-            foreach (var (name, operation) in diagnosticEntityNameAndOperations)
+            foreach (var operation in diagnosticOperations)
             {
-                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor, args: name));
+                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
             }
 
             potentialDiagnosticOperations.Free(CancellationToken.None);

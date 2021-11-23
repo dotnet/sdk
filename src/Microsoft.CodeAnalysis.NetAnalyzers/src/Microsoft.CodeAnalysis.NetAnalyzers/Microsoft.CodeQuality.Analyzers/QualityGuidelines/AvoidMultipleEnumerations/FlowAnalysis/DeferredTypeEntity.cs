@@ -11,11 +11,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// </summary>
     internal class DeferredTypeEntity : CacheBasedEquatable<DeferredTypeEntity>, IDeferredTypeEntity
     {
-        public ISymbol Symbol { get; }
+        public ISymbol? Symbol { get; }
 
         public IOperation? CreationOperation { get; }
 
-        public DeferredTypeEntity(ISymbol symbol, IOperation? creationOperation)
+        public DeferredTypeEntity(ISymbol? symbol, IOperation? creationOperation)
         {
             Symbol = symbol;
             CreationOperation = creationOperation;
@@ -23,14 +23,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
         {
-            hashCode.Add(Symbol.GetHashCode());
+            hashCode.Add(Symbol.GetHashCodeOrDefault());
             hashCode.Add(CreationOperation.GetHashCodeOrDefault());
         }
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeEntity> obj)
         {
             var other = (DeferredTypeEntity)obj;
-            return other.Symbol.GetHashCode() == Symbol.GetHashCode()
+            return other.Symbol.GetHashCodeOrDefault() == Symbol.GetHashCodeOrDefault()
                    && other.CreationOperation.GetHashCodeOrDefault() == CreationOperation.GetHashCodeOrDefault();
         }
     }
