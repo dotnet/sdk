@@ -8,7 +8,7 @@
 | [Add a reference to a project file](#add-a-reference-to-a-project-file) | `B17581D1-C5C9-4489-8F0A-004BE667B814` |
 | [Add projects to a solution file](#add-projects-to-a-solution-file) | `D396686C-DE0E-4DE6-906D-291CD29FC5DE` |
 | [Change file permissions (Unix/OS X)](#change-file-permissions) | `CB9A6CF3-4F5C-4860-B9D2-03A574959774` |
-| [Display manual instructions](#display-manual-instructions) | `AC1156F7-BB77-4DB8-B28F-24EEBCCA1E54` |
+| [Display manual instructions](#display-manual-instructions) | `AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C` |
 
 # Base configuration
 Each post action has set of standard properties as well as custom properties defined by certain post action.
