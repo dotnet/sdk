@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         protected string GetConfigureAwaitVisualBasic(bool isEmpty) => isEmpty ? "" : @".ConfigureAwait(False)";
 
-        public static IEnumerable<object[]> CSharpUnnamedArgumentsFullBufferTestData()
+        public static IEnumerable<object[]> UnnamedArgumentsFullBufferTestData()
         {
             yield return new object[] { "buffer, 0, buffer.Length",
                                         "buffer" };
@@ -312,14 +312,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                                         "buffer.AsMemory(1, buffer.Length)" };
             yield return new object[] { "buffer, 1, buffer.Length, New CancellationToken()",
                                         "buffer.AsMemory(1, buffer.Length), New CancellationToken()" };
-        }
-
-        public static IEnumerable<object[]> VisualBasicUnnamedArgumentsFullBufferTestData()
-        {
-            yield return new object[] { "buffer, 0, buffer.Length",
-                                        "buffer" };
-            yield return new object[] { "buffer, 0, buffer.Length, CancellationToken.None",
-                                        "buffer, CancellationToken.None" };
         }
 
         public static IEnumerable<object[]> VisualBasicNamedArgumentsPartialBufferTestData()

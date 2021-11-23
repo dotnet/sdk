@@ -907,7 +907,7 @@ Rule ID | Missing Help Link | Title |
                 startRulesSection,
                 endRulesSection,
                 addRuleEntry,
-                getSeverityString,
+                GetSeverityString,
                 commentStart: "# ",
                 commentEnd: string.Empty,
                 category,
@@ -951,23 +951,6 @@ Rule ID | Missing Help Link | Title |
                 result.AppendLine();
                 result.AppendLine($"# {rule.Id}: {rule.Title}");
                 result.AppendLine($@"dotnet_diagnostic.{rule.Id}.severity = {severity}");
-            }
-
-            static string getSeverityString(DiagnosticSeverity? severity)
-            {
-                if (!severity.HasValue)
-                {
-                    return "none";
-                }
-
-                return severity.Value switch
-                {
-                    DiagnosticSeverity.Error => "error",
-                    DiagnosticSeverity.Warning => "warning",
-                    DiagnosticSeverity.Info => "suggestion",
-                    DiagnosticSeverity.Hidden => "silent",
-                    _ => throw new NotImplementedException(severity.Value.ToString()),
-                };
             }
         }
 
@@ -1315,26 +1298,26 @@ Rule ID | Missing Help Link | Title |
                         {
                             return GetSeverityString(null);
                         }
-
-                        static string GetSeverityString(DiagnosticSeverity? severity)
-                        {
-                            if (!severity.HasValue)
-                            {
-                                return "none";
-                            }
-
-                            return severity.Value switch
-                            {
-                                DiagnosticSeverity.Error => "error",
-                                DiagnosticSeverity.Warning => "warning",
-                                DiagnosticSeverity.Info => "suggestion",
-                                DiagnosticSeverity.Hidden => "silent",
-                                _ => throw new NotImplementedException(severity.Value.ToString()),
-                            };
-                        }
                     }
                 }
             }
+        }
+
+        private static string GetSeverityString(DiagnosticSeverity? severity)
+        {
+            if (!severity.HasValue)
+            {
+                return "none";
+            }
+
+            return severity.Value switch
+            {
+                DiagnosticSeverity.Error => "error",
+                DiagnosticSeverity.Warning => "warning",
+                DiagnosticSeverity.Info => "suggestion",
+                DiagnosticSeverity.Hidden => "silent",
+                _ => throw new NotImplementedException(severity.Value.ToString()),
+            };
         }
 
         private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName, IOrderedEnumerable<string> categories)
