@@ -64,6 +64,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var ienumerableType))
                 return;
 
+            var linqExpressionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
             compilationContext.RegisterOperationAction(OnOperationAction, OperationKind.Invocation);
 
             return;
@@ -98,6 +100,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
+
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the comparison option so we want to bail-out.
+                if (invocation.IsWithinExpressionTree(linqExpressionType))
+                {
+                    return;
+                }
 
                 if (containsMethod.Name != ContainsMethodName
                     || containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean
