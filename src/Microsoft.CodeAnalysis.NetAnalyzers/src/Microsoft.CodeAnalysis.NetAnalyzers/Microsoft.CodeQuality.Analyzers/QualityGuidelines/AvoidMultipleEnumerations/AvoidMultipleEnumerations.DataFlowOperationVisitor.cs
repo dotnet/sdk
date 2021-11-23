@@ -229,9 +229,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 foreach (var analysisEntity in entities)
                 {
-                    trackingEntitiesBuilder.Add(analysisEntity,
-                        new TrackingInvocationSet(ImmutableHashSet.Create(parameterOrLocalReferenceOperation),
-                        InvocationCount.One));
+                    var newInvocationSet = new TrackingInvocationSet(
+                        ImmutableHashSet.Create(parameterOrLocalReferenceOperation),
+                        InvocationCount.One);
+                    if (trackingEntitiesBuilder.TryGetValue(analysisEntity, out var existingInvocationSet))
+                    {
+                        trackingEntitiesBuilder[analysisEntity] = InvocationSetHelpers.Merge(existingInvocationSet, newInvocationSet);
+                    }
+                    else
+                    {
+                        trackingEntitiesBuilder.Add(analysisEntity, newInvocationSet);
+                    }
                 }
 
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(

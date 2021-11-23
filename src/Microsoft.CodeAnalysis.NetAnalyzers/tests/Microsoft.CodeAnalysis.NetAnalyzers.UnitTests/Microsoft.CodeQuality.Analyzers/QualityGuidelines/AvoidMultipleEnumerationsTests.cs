@@ -1477,6 +1477,27 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestConcatOneParameterMultipleTimes()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var z = i.Except(k).Concat(k);
+        [|z|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+
+        [Fact]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations()
         {
             var code = @"
