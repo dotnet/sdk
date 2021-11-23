@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     {
         private const string RuleId = "CA1851";
 
-        private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
             CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsTitle)),
             CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsMessage)),
@@ -26,6 +26,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: true);
+
+        private static readonly SymbolDisplayFormat s_entityDisplayFormat = new(
+                SymbolDisplayGlobalNamespaceStyle.Omitted,
+                SymbolDisplayTypeQualificationStyle.NameOnly,
+                SymbolDisplayGenericsOptions.None,
+                SymbolDisplayMemberOptions.None,
+                SymbolDisplayDelegateStyle.NameOnly,
+                SymbolDisplayExtensionMethodStyle.InstanceMethod,
+                SymbolDisplayParameterOptions.IncludeName,
+                SymbolDisplayPropertyStyle.NameOnly,
+                SymbolDisplayLocalOptions.None,
+                SymbolDisplayKindOptions.None);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(MultipleEnumerableDescriptor);
 
@@ -226,7 +238,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return;
             }
 
-            using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
+            using var diagnosticEntityNameAndOperations = PooledHashSet<(string enumeratedEntityName, IOperation enumeratedOperation)>.GetInstance();
             foreach (var operation in potentialDiagnosticOperations)
             {
                 var result = analysisResult[operation.Kind, operation.Syntax];
@@ -235,9 +247,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     continue;
                 }
 
-                foreach (var kvp in result.TrackedEntities)
+                foreach (var (enumeratedEntity, trackedInvocationSet) in result.TrackedEntities)
                 {
-                    var trackedInvocationSet = kvp.Value;
                     // Report if
                     // 1. EnumerationCount is two or more times.
                     // 2. There are two or more operations that might be involved.
@@ -246,15 +257,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         foreach (var trackedOperation in trackedInvocationSet.Operations)
                         {
-                            diagnosticOperations.Add(trackedOperation);
+                            diagnosticEntityNameAndOperations.Add(
+                                (enumeratedEntity.Symbol.ToDisplayString(s_entityDisplayFormat), trackedOperation));
                         }
                     }
                 }
             }
 
-            foreach (var operation in diagnosticOperations)
+            foreach (var (name, operation) in diagnosticEntityNameAndOperations)
             {
-                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor, args: name));
             }
 
             potentialDiagnosticOperations.Free(CancellationToken.None);

@@ -7,15 +7,15 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     /// <summary>
-    /// The entity that presents either a symbol or an creation operation.
+    /// The entity that presents either a symbol and its an creation operation (if possible).
     /// </summary>
     internal class DeferredTypeEntity : CacheBasedEquatable<DeferredTypeEntity>, IDeferredTypeEntity
     {
-        public ISymbol? Symbol { get; }
+        public ISymbol Symbol { get; }
 
         public IOperation? CreationOperation { get; }
 
-        public DeferredTypeEntity(ISymbol? symbol, IOperation? creationOperation)
+        public DeferredTypeEntity(ISymbol symbol, IOperation? creationOperation)
         {
             Symbol = symbol;
             CreationOperation = creationOperation;
@@ -23,14 +23,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
         {
-            hashCode.Add(Symbol.GetHashCodeOrDefault());
+            hashCode.Add(Symbol.GetHashCode());
             hashCode.Add(CreationOperation.GetHashCodeOrDefault());
         }
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeEntity> obj)
         {
             var other = (DeferredTypeEntity)obj;
-            return other.Symbol.GetHashCodeOrDefault() == Symbol.GetHashCodeOrDefault()
+            return other.Symbol.GetHashCode() == Symbol.GetHashCode()
                    && other.CreationOperation.GetHashCodeOrDefault() == CreationOperation.GetHashCodeOrDefault();
         }
     }

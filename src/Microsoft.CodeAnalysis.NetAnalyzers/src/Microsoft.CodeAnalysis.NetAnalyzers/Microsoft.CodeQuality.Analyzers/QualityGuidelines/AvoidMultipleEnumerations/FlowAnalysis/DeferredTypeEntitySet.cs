@@ -2,43 +2,37 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
-using Analyzer.Utilities.PooledObjects;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     /// <summary>
-    /// A set represents a defer entity that the value might come from many sources.
+    ///  represents a symbol with the deferred type that might come from many sources.
     /// </summary>
     internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {
-        public ImmutableHashSet<DeferredTypeEntity> DeferredTypeEntities { get; }
+        public ISymbol Symbol { get; }
 
-        private DeferredTypeEntitySet(ImmutableHashSet<DeferredTypeEntity> deferredTypeEntities)
+        public ImmutableHashSet<AbstractLocation> DeferredTypeLocations { get; }
+
+        public DeferredTypeEntitySet(ISymbol symbol, ImmutableHashSet<AbstractLocation> deferredTypeEntities)
         {
-            DeferredTypeEntities = deferredTypeEntities;
-        }
-
-        public static DeferredTypeEntitySet Create(ImmutableHashSet<AbstractLocation> locations)
-        {
-            using var builder = PooledHashSet<DeferredTypeEntity>.GetInstance();
-            foreach (var location in locations)
-            {
-                builder.Add(new DeferredTypeEntity(location.Symbol, location.Creation));
-            }
-
-            return new DeferredTypeEntitySet(builder.ToImmutable());
+            Symbol = symbol;
+            DeferredTypeLocations = deferredTypeEntities;
         }
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
         {
-            hashCode.Add(HashUtilities.Combine(DeferredTypeEntities));
+            hashCode.Add(Symbol.GetHashCode());
+            hashCode.Add(HashUtilities.Combine(DeferredTypeLocations));
         }
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeEntitySet> obj)
         {
             var other = (DeferredTypeEntitySet)obj;
-            return HashUtilities.Combine(other.DeferredTypeEntities) == HashUtilities.Combine(DeferredTypeEntities);
+            return other.Symbol.GetHashCode() == Symbol.GetHashCode()
+                && HashUtilities.Combine(other.DeferredTypeLocations) == HashUtilities.Combine(DeferredTypeLocations);
         }
     }
 }
