@@ -97,13 +97,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Skip optional parameters, UNLESS one of them is a CancellationToken
                     // AND it's not the last one.
                     if (last >= 0 && methodSymbol.Parameters[last].IsOptional
-                        && !methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                        && !SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                     {
                         last--;
 
                         while (last >= 0 && methodSymbol.Parameters[last].IsOptional)
                         {
-                            if (methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                            if (SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                             {
                                 symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.ToDisplayString()));
                             }
@@ -113,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Ignore multiple cancellation token parameters at the end of the parameter list.
-                    while (last >= 0 && methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                    while (last >= 0 && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                     {
                         last--;
                     }
@@ -127,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Ignore IProgress<T> when last
                     if (last >= 0
                         && iprogressType != null
-                        && methodSymbol.Parameters[last].Type.OriginalDefinition.Equals(iprogressType))
+                        && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type.OriginalDefinition, iprogressType))
                     {
                         last--;
                     }
@@ -135,7 +135,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     for (int i = last - 1; i >= 0; i--)
                     {
                         ITypeSymbol parameterType = methodSymbol.Parameters[i].Type;
-                        if (!parameterType.Equals(cancellationTokenType))
+                        if (!SymbolEqualityComparer.Default.Equals(parameterType, cancellationTokenType))
                         {
                             continue;
                         }
