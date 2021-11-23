@@ -75,7 +75,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1727Rule, CA1848Rule, CA2253Rule, CA2254Rule, CA2017Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1727Rule, CA1848Rule, CA2253Rule, CA2254Rule, CA2017Rule);
 
         public override void Initialize(AnalysisContext context)
         {

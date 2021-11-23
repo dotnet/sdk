@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string KeysPropertyName = "Keys";
         internal const string ValuesPropertyName = "Values";
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
 
         public sealed override void Initialize(AnalysisContext context)
         {
