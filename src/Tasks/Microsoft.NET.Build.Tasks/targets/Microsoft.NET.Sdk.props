@@ -74,7 +74,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Default settings for all projects built with this Sdk package -->
 
   <PropertyGroup Condition=" '$(AssemblySearchPaths)' == '' ">
-    <!-- Exclude GAC, registry, output directory from search paths. -->
+    <!-- By default exclude GAC, registry, output directory from search paths. -->
     <AssemblySearchPaths Condition="$(AssemblySearchPathUseCandidateAssemblyFiles) != 'false'">{CandidateAssemblyFiles}</AssemblySearchPaths>
     <AssemblySearchPaths Condition="$(AssemblySearchPathUseHintPathFromItem) != 'false'">$(AssemblySearchPaths);{HintPathFromItem}</AssemblySearchPaths>
     <AssemblySearchPaths Condition="$(AssemblySearchPathUseTargetFrameworkDirectory) != 'false'">$(AssemblySearchPaths);{TargetFrameworkDirectory}</AssemblySearchPaths>
