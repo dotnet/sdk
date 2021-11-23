@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string CA2254RuleId = "CA2254";
         internal const string CA2017RuleId = "CA2017";
 
-        internal static DiagnosticDescriptor CA1727Rule = DiagnosticDescriptorHelper.Create(CA1727RuleId,
+        internal static readonly DiagnosticDescriptor CA1727Rule = DiagnosticDescriptorHelper.Create(CA1727RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticUsePascalCasedLogMessageTokensTitle)),
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticUsePascalCasedLogMessageTokensMessage)),
                                                                          DiagnosticCategory.Naming,
@@ -35,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        internal static DiagnosticDescriptor CA1848Rule = DiagnosticDescriptorHelper.Create(CA1848RuleId,
+        internal static readonly DiagnosticDescriptor CA1848Rule = DiagnosticDescriptorHelper.Create(CA1848RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticUseCompiledLogMessagesTitle)),
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticUseCompiledLogMessagesMessage)),
                                                                          DiagnosticCategory.Performance,
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        internal static DiagnosticDescriptor CA2253Rule = DiagnosticDescriptorHelper.Create(CA2253RuleId,
+        internal static readonly DiagnosticDescriptor CA2253Rule = DiagnosticDescriptorHelper.Create(CA2253RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticNumericsInFormatStringTitle)),
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticNumericsInFormatStringMessage)),
                                                                          DiagnosticCategory.Usage,
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        internal static DiagnosticDescriptor CA2254Rule = DiagnosticDescriptorHelper.Create(CA2254RuleId,
+        internal static readonly DiagnosticDescriptor CA2254Rule = DiagnosticDescriptorHelper.Create(CA2254RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticConcatenationInFormatStringTitle)),
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticConcatenationInFormatStringMessage)),
                                                                          DiagnosticCategory.Usage,
@@ -65,7 +65,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                          isDataflowRule: false,
                                                                          isReportedAtCompilationEnd: false);
 
-        internal static DiagnosticDescriptor CA2017Rule = DiagnosticDescriptorHelper.Create(CA2017RuleId,
+        internal static readonly DiagnosticDescriptor CA2017Rule = DiagnosticDescriptorHelper.Create(CA2017RuleId,
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticFormatParameterCountMismatchTitle)),
                                                                          CreateLocalizableResourceString(nameof(LoggerMessageDiagnosticFormatParameterCountMismatchMessage)),
                                                                          DiagnosticCategory.Reliability,

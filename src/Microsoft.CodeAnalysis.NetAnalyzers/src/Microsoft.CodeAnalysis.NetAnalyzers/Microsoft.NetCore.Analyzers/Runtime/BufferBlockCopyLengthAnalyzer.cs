@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2018";
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       CreateLocalizableResourceString(nameof(BufferBlockCopyLengthTitle)),
                                                                                       CreateLocalizableResourceString(nameof(BufferBlockCopyLengthMessage)),
                                                                                       DiagnosticCategory.Reliability,

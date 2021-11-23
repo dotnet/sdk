@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         internal const string DiagnosticId = "CA5404";
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksTitle)),
                 CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksMessage)),
