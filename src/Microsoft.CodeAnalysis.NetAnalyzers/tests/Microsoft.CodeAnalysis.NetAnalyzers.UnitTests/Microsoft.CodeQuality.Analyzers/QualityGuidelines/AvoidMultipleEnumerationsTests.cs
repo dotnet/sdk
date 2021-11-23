@@ -1432,7 +1432,7 @@ End Namespace";
         }
 
         [Fact]
-        public async Task TestDelayEnumerableVariable()
+        public async Task TestEnumeratedParameterAfterLinqCallChain()
         {
             var code = @"
 using System;
@@ -1442,18 +1442,42 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> i, IEnumerable<int> j)
+    public void Sub(IEnumerable<int> i, IEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = i.Concat(j);
+        var z = i.Concat(j).Concat(k);
         [|j|].ElementAt(10);
         [|z|].ToArray();
+        [|k|].ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
-        public async Task TestDelayEnumerableFromMupltipleLocation()
+        public async Task TestEnumeratedLocalAfterLinqCallChain()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var j = Enumerable.Range(1, 10);
+        var z = i.Concat(j).Concat(k);
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
+        [|k|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations()
         {
             var code = @"
 using System;
@@ -1488,6 +1512,49 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, int[] j)
     {
+        var z = i.Concat(j);
+        j.ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestDelayIOrderedEnumerable()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j)
+    {
+        var z = i.Concat(j);
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestImplictExplictedFromArrayToIEnumerable()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        IEnumerable<int> j = Enumerable.Range(1, 10).ToArray();
         var z = i.Concat(j);
         j.ElementAt(10);
         z.ToArray();

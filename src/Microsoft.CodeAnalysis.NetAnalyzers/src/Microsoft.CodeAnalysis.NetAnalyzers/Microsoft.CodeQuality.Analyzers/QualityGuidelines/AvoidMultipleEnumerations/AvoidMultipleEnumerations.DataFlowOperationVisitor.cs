@@ -86,6 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private ImmutableArray<IDeferredTypeEntity> CollectEntitiesForOperation(
                 PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
             {
+                RoslynDebug.Assert(parameterOrLocalOperation is IParameterReferenceOperation or ILocalReferenceOperation);
                 // With the initial operation as the root, collect the leaf nodes
                 // The leaf node can be:
                 // 1. A parameter or local that has symbol, but no creationOperation. (e.g. parameter)
@@ -104,10 +105,30 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             pointsToAnalysisResult, currentOperation, _wellKnownSymbolsInfo, queue, resultBuilder);
                     }
 
+                    // Expand the implict conversion operation if it is converting a deferred type to another deferred type.
+                    // This might happen in such case:
+                    // var c = a.OrderBy(i => i).Concat(b)
+                    // The tree would be: 
+                    //                             a.OrderBy(i => i).Concat(b) (root)
+                    //                              /                        \
+                    //                          ArgumentOperation          ArgumentOperation
+                    //                             /                             \
+                    //                          Conversion *(expand this node)    b
+                    //                            /
+                    //                         a.OrderBy(i => i)
+                    //                           /
+                    //                         ArgumentOperation
+                    //                          /
+                    //                         a
                     if (currentOperation is IConversionOperation conversionOperation
                         && IsValidImplicitConversion(currentOperation, _wellKnownSymbolsInfo))
                     {
                         queue.Enqueue(conversionOperation.Operand);
+                    }
+
+                    if (currentOperation is IInvocationOperation invocationOperation)
+                    {
+                        ExpandInvocationOperation(invocationOperation, _wellKnownSymbolsInfo, queue, resultBuilder);
                     }
                 }
 
@@ -126,13 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         return;
                     }
 
-                    ISymbol localOrParameterSymbol = parameterOrLocalOperation switch
-                    {
-                        IParameterReferenceOperation parameterOperation => parameterOperation.Parameter,
-                        ILocalReferenceOperation localReferenceOperation => localReferenceOperation.Local,
-                        _ => throw new ArgumentException($"Unexpected operation {parameterOrLocalOperation.Kind}."),
-                    };
-
+                    // Expand if there is only one AbstractLocation for this operation.
                     if (result.Locations.Count == 1)
                     {
                         var location = result.Locations.Single();
@@ -146,35 +161,51 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                         if (creationOperation is IInvocationOperation invocationOperation)
                         {
-                            var isDeferredInvocation = false;
-                            // Check the arguments of this invocation to see if this is a deferred executing method.
-                            // e.g.
-                            // var a = b.Concat(c);
-                            // When we looking at the creation of 'a', we want to find both 'b' and 'c'
-                            foreach (var argument in invocationOperation.Arguments)
-                            {
-                                if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
-                                {
-                                    isDeferredInvocation = true;
-                                    queue.Enqueue(argument.Value);
-                                }
-                            }
-
-                            // This creation operation is not a deferred invocation.
-                            // So this is leaf node 2: Invocation operation that returns a deferred type.
-                            // e.g.
-                            // var a = SomeOtherMethod();
-                            if (!isDeferredInvocation
-                                && IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                            {
-                                resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
-                            }
+                            ExpandInvocationOperation(invocationOperation, wellKnownSymbolsInfo, queue, resultBuilder);
                         }
                     }
                     else
                     {
+                        ISymbol localOrParameterSymbol = parameterOrLocalOperation switch
+                        {
+                            IParameterReferenceOperation parameterOperation => parameterOperation.Parameter,
+                            ILocalReferenceOperation localReferenceOperation => localReferenceOperation.Local,
+                            _ => throw new ArgumentException($"Unexpected operation {parameterOrLocalOperation.Kind}."),
+                        };
+
                         // Leaf node 3: A parameter or local reference operation with multiple AbstractLocations.
                         resultBuilder.Add(new DeferredTypeEntitySet(localOrParameterSymbol, result.Locations));
+                    }
+                }
+
+                static void ExpandInvocationOperation(
+                    IInvocationOperation invocationOperation,
+                    WellKnownSymbolsInfo wellKnownSymbolsInfo,
+                    Queue<IOperation> queue,
+                    ArrayBuilder<IDeferredTypeEntity> resultBuilder)
+                {
+                    var isDeferredInvocation = false;
+                    // Check the arguments of this invocation to see if this is a deferred executing method.
+                    // e.g.
+                    // var a = b.Concat(c);
+                    // When we looking at the creation of 'a', we want to find both 'b' and 'c'
+                    foreach (var argument in invocationOperation.Arguments)
+                    {
+                        if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
+                        {
+                            isDeferredInvocation = true;
+                            queue.Enqueue(argument.Value);
+                        }
+                    }
+
+                    // This creation operation is not a deferred invocation.
+                    // So this is leaf node 2: Invocation operation that returns a deferred type.
+                    // e.g.
+                    // var a = SomeOtherMethod();
+                    if (!isDeferredInvocation
+                        && IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                    {
+                        resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
                     }
                 }
             }
