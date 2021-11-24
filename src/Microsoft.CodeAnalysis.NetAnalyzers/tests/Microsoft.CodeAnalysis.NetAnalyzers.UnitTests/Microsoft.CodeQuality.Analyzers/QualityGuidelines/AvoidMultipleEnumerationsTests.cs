@@ -1496,6 +1496,30 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestEnumeratedLocalAfterLinqCallChain3()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        var j = Enumerable.Range(1, 10);
+        var p = j;
+        var z = i.Concat(j).Concat(p);
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+
+        [Fact]
         public async Task TestConcatOneParameterMultipleTimes()
         {
             var code = @"
