@@ -1451,7 +1451,7 @@ public class Bar
         }
 
         [Fact]
-        public async Task TestEnumeratedLocalAfterLinqCallChain()
+        public async Task TestEnumeratedLocalAfterLinqCallChain1()
         {
             var code = @"
 using System;
@@ -1468,6 +1468,28 @@ public class Bar
         [|j|].ElementAt(10);
         [|z|].ToArray();
         [|k|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalAfterLinqCallChain2()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var j = Enumerable.Range(1, 10).Except(i).Except(k);
+        var z = i.Concat(k);
+        [|j|].ElementAt(10);
+        [|z|].ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
