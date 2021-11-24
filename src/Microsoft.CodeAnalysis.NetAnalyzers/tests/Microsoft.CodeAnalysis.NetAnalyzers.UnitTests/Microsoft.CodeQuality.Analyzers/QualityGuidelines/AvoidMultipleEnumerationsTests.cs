@@ -1542,6 +1542,29 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations3()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(int[] i, int[] j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = a.Except(j);
+
+        [|b|].ToArray();
+        [|b|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
         public async Task TestDelayEnumerableFromArray()
         {
             var code = @"

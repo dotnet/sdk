@@ -153,7 +153,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         var location = result.Locations.Single();
                         var creationOperation = location.Creation;
                         // Leaf node 1: A parameter or local that has symbol, but no creation operation.
-                        if (creationOperation == null && location.Symbol != null)
+                        if (creationOperation == null
+                            && location.Symbol != null
+                            && IsDeferredType(location.LocationType?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
                         {
                             resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
                             return;
@@ -190,7 +192,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     Queue<IOperation> queue,
                     ArrayBuilder<IDeferredTypeEntity> resultBuilder)
                 {
-                    var isDeferredInvocation = false;
                     // Check the arguments of this invocation to see if this is a deferred executing method.
                     // e.g.
                     // var a = b.Concat(c);
@@ -199,17 +200,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
                         {
-                            isDeferredInvocation = true;
                             queue.Enqueue(argument.Value);
                         }
                     }
 
-                    // This creation operation is not a deferred invocation.
-                    // So this is leaf node 2: Invocation operation that returns a deferred type.
+                    // Leaf node 2: Invocation operation that returns a deferred type.
                     // e.g.
                     // var a = SomeOtherMethod();
-                    if (!isDeferredInvocation
-                        && IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                    if (IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
                     {
                         resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
                     }
