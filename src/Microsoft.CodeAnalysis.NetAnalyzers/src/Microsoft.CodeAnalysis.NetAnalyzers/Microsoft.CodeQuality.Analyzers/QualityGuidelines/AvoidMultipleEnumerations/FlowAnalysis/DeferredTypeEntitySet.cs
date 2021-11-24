@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
     /// <summary>
-    ///  represents a symbol with the deferred type that might come from many sources.
+    /// Represents a symbol with the deferred type that might come from many sources.
     /// </summary>
     internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {

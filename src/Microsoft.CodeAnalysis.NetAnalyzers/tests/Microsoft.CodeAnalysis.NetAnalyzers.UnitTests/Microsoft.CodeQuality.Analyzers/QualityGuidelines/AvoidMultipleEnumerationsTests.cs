@@ -1596,9 +1596,9 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j)
+    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = i.Concat(j);
+        var z = i.Concat(j).Concat(k);
         [|j|].ElementAt(10);
         [|z|].ToArray();
     }

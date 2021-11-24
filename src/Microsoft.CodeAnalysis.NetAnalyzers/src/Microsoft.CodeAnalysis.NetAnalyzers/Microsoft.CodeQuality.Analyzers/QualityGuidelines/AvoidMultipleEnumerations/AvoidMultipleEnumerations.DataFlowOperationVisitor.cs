@@ -89,8 +89,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 RoslynDebug.Assert(parameterOrLocalOperation is IParameterReferenceOperation or ILocalReferenceOperation);
                 // With the initial operation as the root, collect the leaf nodes
                 // The leaf node can be:
-                // 1. A parameter or local that has symbol, but no creationOperation. (e.g. parameter)
-                // 2. A parameter or local created by invocation operation that returns a deferred type. (e.g. var i = Enumerable.Range(1, 10))
+                // 1. A parameter or local that has symbol, but no creationOperation.
+                // 2. Invocation operation that returns a deferred type.
                 // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
                 // because we don't know how to proceed. (e.g. var i = flag ? a : b)
                 var queue = new Queue<IOperation>();
@@ -157,13 +157,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             && location.Symbol != null
                             && IsDeferredType(location.LocationType?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
                         {
-                            resultBuilder.Add(new DeferredTypeEntity(location.Symbol, null));
+                            resultBuilder.Add(new DeferredTypeSymbolEntity(location.Symbol));
                             return;
                         }
 
                         if (creationOperation is IInvocationOperation invocationOperation)
                         {
                             ExpandInvocationOperation(invocationOperation, wellKnownSymbolsInfo, queue, resultBuilder);
+                            return;
                         }
                     }
                     else
@@ -204,12 +205,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         }
                     }
 
-                    // Leaf node 2: Invocation operation that returns a deferred type.
-                    // e.g.
-                    // var a = SomeOtherMethod();
+                    // If this invocation itself returns deferred type. Then it is leaf node 2: Invocation operation that returns a deferred type.
+                    // This will cover cases like:
+                    // int[] a = new int[0];
+                    // int[] b = new int[0];
+                    // var c = a.Concat(b);
                     if (IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
                     {
-                        resultBuilder.Add(new DeferredTypeEntity(null, invocationOperation));
+                        resultBuilder.Add(new DeferredTypeCreationEntity(invocationOperation));
                     }
                 }
             }
