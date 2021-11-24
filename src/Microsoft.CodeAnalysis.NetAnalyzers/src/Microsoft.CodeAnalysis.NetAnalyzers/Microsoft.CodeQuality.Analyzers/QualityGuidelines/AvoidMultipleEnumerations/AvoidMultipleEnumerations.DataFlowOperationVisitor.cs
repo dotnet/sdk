@@ -166,6 +166,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                     else
                     {
+                        if (result.Locations.Any(
+                            l => !IsDeferredType(l.LocationType?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+                        {
+                            return;
+                        }
+
                         ISymbol localOrParameterSymbol = parameterOrLocalOperation switch
                         {
                             IParameterReferenceOperation parameterOperation => parameterOperation.Parameter,

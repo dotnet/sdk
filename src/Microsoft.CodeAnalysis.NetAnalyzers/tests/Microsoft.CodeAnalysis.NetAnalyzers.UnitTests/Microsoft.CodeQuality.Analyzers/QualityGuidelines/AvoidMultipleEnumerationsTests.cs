@@ -1,13 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -1444,7 +1441,7 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = i.Concat(j).Concat(k);
+        var z = k.Concat(j).Concat(i);
         [|j|].ElementAt(10);
         [|z|].ToArray();
         [|k|].ToArray();
@@ -1496,9 +1493,8 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-
         [Fact]
-        public async Task TestEnumeratedLocalWithMultipleAbstractLocations()
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations1()
         {
             var code = @"
 using System;
@@ -1513,8 +1509,33 @@ public class Bar
         var a = flag ? i : j;
         var b = a.Except(i);
 
+        [|a|].ElementAt(10);
+        [|i|].ElementAt(10);
         [|b|].ToArray();
-        [|b|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations2()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, int[] j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = a.Except(j);
+
+        a.ElementAt(10);
+        i.ElementAt(10);
+        b.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1533,7 +1554,7 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, int[] j)
     {
-        var z = i.Concat(j);
+        var z = j.Concat(i);
         j.ElementAt(10);
         z.ToArray();
     }
