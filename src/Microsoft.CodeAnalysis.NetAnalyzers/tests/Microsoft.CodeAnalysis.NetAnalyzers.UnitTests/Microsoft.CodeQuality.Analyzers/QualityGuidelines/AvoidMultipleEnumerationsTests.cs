@@ -1653,6 +1653,27 @@ public class Bar
         }
 
         [Fact]
+        public async Task TestNestedDelayIEnumerable()
+        {
+            var code = @"
+using System;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
+    {
+        var z = i.Concat(k.Concat([|j|]));
+        [|j|].ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
         public async Task TestImplictExplictedFromArrayToIEnumerable()
         {
             var code = @"

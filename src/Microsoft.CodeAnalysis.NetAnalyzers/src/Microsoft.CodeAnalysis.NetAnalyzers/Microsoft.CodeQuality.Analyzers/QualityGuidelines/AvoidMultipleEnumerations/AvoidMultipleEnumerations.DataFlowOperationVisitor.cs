@@ -169,7 +169,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         }
                         else
                         {
-                            // Make sure all the locations have deferred type.
+                            // Make sure all the locations are pointing to a deferred type.
                             if (result.Locations.Any(
                                 l => !IsDeferredType(l.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)))
                             {
