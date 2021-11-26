@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -41,15 +40,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return VisitLocalOrParameter(operation.Local.Type?.OriginalDefinition, operation, value);
             }
 
-            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation parameterOrLocalOperation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
+            private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation parameterOrLocalReferenceOperation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
                 if (!IsDeferredType(typeSymbol, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
                     return defaultValue;
                 }
 
-                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalOperation, _wellKnownSymbolsInfo)
-                    && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalOperation))
+                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
+                    && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
                 {
                     return defaultValue;
                 }
@@ -59,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                var pointToResult = DataFlowAnalysisContext.PointsToAnalysisResult[parameterOrLocalOperation.Kind, parameterOrLocalOperation.Syntax];
+                var pointToResult = DataFlowAnalysisContext.PointsToAnalysisResult[parameterOrLocalReferenceOperation.Kind, parameterOrLocalReferenceOperation.Syntax];
                 if (pointToResult.Kind != PointsToAbstractValueKind.KnownLocations)
                 {
                     return defaultValue;
@@ -71,38 +70,129 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                var allEntities = CollectEntitiesForOperation(DataFlowAnalysisContext.PointsToAnalysisResult, parameterOrLocalOperation);
-                if (allEntities.IsEmpty)
-                {
-                    return defaultValue;
-                }
-
-                return CreateAndUpdateAnalysisValue(parameterOrLocalOperation, allEntities, defaultValue);
+                return VisitDeferTypeEntitis(
+                    DataFlowAnalysisContext.PointsToAnalysisResult,
+                    parameterOrLocalReferenceOperation,
+                    defaultValue);
             }
 
             /// <summary>
-            /// Collect all the possible deferred type entities referenced by <param name="parameterOrLocalOperation"/>.
+            /// Visit all the possible deferred type entities referenced by <param name="parameterOrLocalOperation"/>.
             /// </summary>
-            private ImmutableArray<IDeferredTypeEntity> CollectEntitiesForOperation(
-                PointsToAnalysisResult pointsToAnalysisResult, IOperation parameterOrLocalOperation)
+            private GlobalFlowStateDictionaryAnalysisValue VisitDeferTypeEntitis(
+                PointsToAnalysisResult pointsToAnalysisResult,
+                IOperation parameterOrLocalOperation,
+                GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
                 RoslynDebug.Assert(parameterOrLocalOperation is IParameterReferenceOperation or ILocalReferenceOperation);
-                // With the initial operation as the root, collect the leaf nodes
-                // The leaf node can be:
+                // With the initial operation as the root, expand it if
+                // the operation is parameter or local reference. It has only one pointToAnalysisResult, and it is a deferred execution invocation.
+                // Visit its argument.
+                // e.g.
+                // var a = b.Concat(c);
+                // a.ElementAt(10);
+                // When we visit 'a.Element(10)' and look back to 'b.Concat(c)', also try to visit 'b' and 'c'.
+                //
+                // Update the analysis value when reach the following nodes.
                 // 1. A parameter or local that has symbol, but no creationOperation.
+                // e.g.
+                // void Bar(IEnumerable<int> b, IEnumerable<int> c)
+                // {
+                //      var a = b.Concat(c);
+                //      a.ElementAt(10);
+                // }
+                // When 'a.ElementAt(10)' is callled, 'b' and 'c' are enumerated once.
+                // 
                 // 2. Invocation operation that returns a deferred type.
+                // e.g.
+                // void Bar()
+                // {
+                //       var a = Enumerable.Range(1, 1);
+                //       var b = Enumerable.Range(2, 2);
+                //       var c = a.Concat(b);
+                //       c.ElementAt(10);
+                // }
+                // When 'd.ElmentAt(10)' is called, think 'Enumerable.Range(1, 1)', 'Enumerable.Range(2, 2)', 'a.Concat(b)' are enumerated.
                 // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
-                // because we don't know how to proceed. (e.g. var i = flag ? a : b)
+                // because we don't know how to proceed.
+                // e.g.
+                // void Bar(bool flag)
+                // {
+                //       var a = flag ? Enumerable.Range(1, 1) : Enumerable.Range(2, 2);
+                //       a.ElementAt(10);
+                // }
                 var queue = new Queue<IOperation>();
                 queue.Enqueue(parameterOrLocalOperation);
-                var resultBuilder = ArrayBuilder<IDeferredTypeEntity>.GetInstance();
+                var resultAnalysisValue = defaultValue;
                 while (queue.Count > 0)
                 {
                     var currentOperation = queue.Dequeue();
                     if (currentOperation is IParameterReferenceOperation or ILocalReferenceOperation)
                     {
-                        ExpandParameterOrLocalReferenceOperation(
-                            pointsToAnalysisResult, currentOperation, _wellKnownSymbolsInfo, queue, resultBuilder);
+                        var result = pointsToAnalysisResult[currentOperation];
+                        if (result.Kind != PointsToAbstractValueKind.KnownLocations || result.Locations.IsEmpty)
+                        {
+                            continue;
+                        }
+
+                        // Expand if there is only one AbstractLocation for this operation.
+                        if (result.Locations.Count == 1)
+                        {
+                            var location = result.Locations.Single();
+                            var creationOperation = location.Creation;
+                            // Node 1: A parameter or local that has symbol, but no creation operation.
+                            if (creationOperation == null
+                                && location.Symbol != null
+                                && IsDeferredType(location.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                            {
+                                var analysisValue = CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeSymbolEntity(location.Symbol), defaultValue);
+                                resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                                continue;
+                            }
+
+                            if (creationOperation is IInvocationOperation invocationCreationOperation)
+                            {
+                                // Try to expand the argument of this invocation operation.
+                                ExpandInvocationOperation(invocationCreationOperation, _wellKnownSymbolsInfo, queue);
+
+                                // Node 2: Invocation operation that returns a deferred type.
+                                if (IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                                {
+                                    var analysisValue =
+                                        CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
+
+                                    resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                                }
+
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            // Make sure all the locations have deferred type.
+                            if (result.Locations.Any(
+                                l => !IsDeferredType(l.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+                            {
+                                continue;
+                            }
+
+                            // Node 3: A parameter or local reference operation with multiple AbstractLocations.
+                            var analysisValue = CreateAndUpdateAnalysisValue(
+                                currentOperation,
+                                new DeferredTypeEntitySet(result.Locations),
+                                defaultValue);
+
+                            resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                        }
+                    }
+
+                    // Make sure we iterate into the nested operations.
+                    // e.g.
+                    // var a = b.Concat(c).Concat(d.Concat(e));
+                    // Make sure 'd.Concat(e)' is expanded so that 'd' and 'e' could be found.
+                    if (currentOperation is IInvocationOperation invocationOperation)
+                    {
+                        ExpandInvocationOperation(invocationOperation, _wellKnownSymbolsInfo, queue);
                     }
 
                     // Expand the implict conversion operation if it is converting a deferred type to another deferred type.
@@ -120,137 +210,71 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     //                         ArgumentOperation
                     //                          /
                     //                         a
-                    if (currentOperation is IConversionOperation conversionOperation
-                        && IsValidImplicitConversion(currentOperation, _wellKnownSymbolsInfo))
+                    if (currentOperation is IConversionOperation conversionOperation)
                     {
-                        queue.Enqueue(conversionOperation.Operand);
-                    }
-
-                    if (currentOperation is IInvocationOperation invocationOperation)
-                    {
-                        ExpandInvocationOperation(invocationOperation, _wellKnownSymbolsInfo, queue, resultBuilder);
+                        ExpandConversionOperation(conversionOperation, _wellKnownSymbolsInfo, queue);
                     }
                 }
 
-                return resultBuilder.ToImmutableAndFree();
+                return resultAnalysisValue;
+            }
 
-                static void ExpandParameterOrLocalReferenceOperation(
-                    PointsToAnalysisResult pointsToAnalysisResult,
-                    IOperation parameterOrLocalOperation,
-                    WellKnownSymbolsInfo wellKnownSymbolsInfo,
-                    Queue<IOperation> queue,
-                    ArrayBuilder<IDeferredTypeEntity> resultBuilder)
+            private static void ExpandInvocationOperation(
+                IInvocationOperation invocationOperation,
+                WellKnownSymbolsInfo wellKnownSymbolsInfo,
+                Queue<IOperation> queue)
+            {
+                // Check the arguments of this invocation to see if this is a deferred executing method.
+                // e.g.
+                // var a = b.Concat(c);
+                // When we looking at the creation of 'a', we want to find both 'b' and 'c'
+                foreach (var argument in invocationOperation.Arguments)
                 {
-                    var result = pointsToAnalysisResult[parameterOrLocalOperation];
-                    if (result.Kind != PointsToAbstractValueKind.KnownLocations || result.Locations.IsEmpty)
+                    if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
                     {
-                        return;
-                    }
-
-                    // Expand if there is only one AbstractLocation for this operation.
-                    if (result.Locations.Count == 1)
-                    {
-                        var location = result.Locations.Single();
-                        var creationOperation = location.Creation;
-                        // Leaf node 1: A parameter or local that has symbol, but no creation operation.
-                        if (creationOperation == null
-                            && location.Symbol != null
-                            && IsDeferredType(location.LocationType?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                        {
-                            resultBuilder.Add(new DeferredTypeSymbolEntity(location.Symbol));
-                            return;
-                        }
-
-                        if (creationOperation is IInvocationOperation invocationOperation)
-                        {
-                            ExpandInvocationOperation(invocationOperation, wellKnownSymbolsInfo, queue, resultBuilder);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        if (result.Locations.Any(
-                            l => !IsDeferredType(l.LocationType?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
-                        {
-                            return;
-                        }
-
-                        ISymbol localOrParameterSymbol = parameterOrLocalOperation switch
-                        {
-                            IParameterReferenceOperation parameterOperation => parameterOperation.Parameter,
-                            ILocalReferenceOperation localReferenceOperation => localReferenceOperation.Local,
-                            _ => throw new ArgumentException($"Unexpected operation {parameterOrLocalOperation.Kind}."),
-                        };
-
-                        // Leaf node 3: A parameter or local reference operation with multiple AbstractLocations.
-                        resultBuilder.Add(new DeferredTypeEntitySet(localOrParameterSymbol, result.Locations));
-                    }
-                }
-
-                static void ExpandInvocationOperation(
-                    IInvocationOperation invocationOperation,
-                    WellKnownSymbolsInfo wellKnownSymbolsInfo,
-                    Queue<IOperation> queue,
-                    ArrayBuilder<IDeferredTypeEntity> resultBuilder)
-                {
-                    // Check the arguments of this invocation to see if this is a deferred executing method.
-                    // e.g.
-                    // var a = b.Concat(c);
-                    // When we looking at the creation of 'a', we want to find both 'b' and 'c'
-                    foreach (var argument in invocationOperation.Arguments)
-                    {
-                        if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
-                        {
-                            queue.Enqueue(argument.Value);
-                        }
-                    }
-
-                    // If this invocation itself returns deferred type. Then it is leaf node 2: Invocation operation that returns a deferred type.
-                    // This will cover cases like:
-                    // int[] a = new int[0];
-                    // int[] b = new int[0];
-                    // var c = a.Concat(b);
-                    if (IsDeferredType(invocationOperation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
-                    {
-                        resultBuilder.Add(new DeferredTypeCreationEntity(invocationOperation));
+                        queue.Enqueue(argument.Value);
                     }
                 }
             }
 
+            private static void ExpandConversionOperation(
+                IConversionOperation conversionOperation,
+                WellKnownSymbolsInfo wellKnownSymbolsInfo,
+                Queue<IOperation> queue)
+            {
+                if (IsValidImplicitConversion(conversionOperation, wellKnownSymbolsInfo))
+                {
+                    queue.Enqueue(conversionOperation.Operand);
+                }
+            }
+
+
             private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
                 IOperation parameterOrLocalOperation,
-                ImmutableArray<IDeferredTypeEntity> entities,
+                IDeferredTypeEntity entity,
                 GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
-                var analysisValueForNewEntity = CreateAnalysisValue(entities, parameterOrLocalOperation, defaultValue);
+                var analysisValueForNewEntity = CreateAnalysisValue(entity, parameterOrLocalOperation, defaultValue);
                 UpdateGlobalValue(analysisValueForNewEntity);
                 return analysisValueForNewEntity;
             }
 
             private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
-                ImmutableArray<IDeferredTypeEntity> entities,
+                IDeferredTypeEntity entity,
                 IOperation parameterOrLocalReferenceOperation,
                 GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
-                var trackingEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
+                var operationsSetBuilder = PooledHashSet<IOperation>.GetInstance();
+                operationsSetBuilder.Add(parameterOrLocalReferenceOperation);
+                var newInvocationSet = new TrackingInvocationSet(
+                    operationsSetBuilder.ToImmutableAndFree(),
+                    InvocationCount.One);
 
-                foreach (var analysisEntity in entities)
-                {
-                    var newInvocationSet = new TrackingInvocationSet(
-                        ImmutableHashSet.Create(parameterOrLocalReferenceOperation),
-                        InvocationCount.One);
-                    if (trackingEntitiesBuilder.TryGetValue(analysisEntity, out var existingInvocationSet))
-                    {
-                        trackingEntitiesBuilder[analysisEntity] = InvocationSetHelpers.Merge(existingInvocationSet, newInvocationSet);
-                    }
-                    else
-                    {
-                        trackingEntitiesBuilder.Add(analysisEntity, newInvocationSet);
-                    }
-                }
+                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
+                trackedEntitiesBuilder.Add(entity, newInvocationSet);
 
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
-                    trackingEntitiesBuilder.ToImmutableDictionaryAndFree(),
+                    trackedEntitiesBuilder.ToImmutableDictionaryAndFree(),
                     GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
                 return defaultValue.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known

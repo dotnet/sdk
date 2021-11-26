@@ -2,7 +2,6 @@
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
@@ -12,27 +11,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     /// </summary>
     internal class DeferredTypeEntitySet : CacheBasedEquatable<DeferredTypeEntitySet>, IDeferredTypeEntity
     {
-        public ISymbol Symbol { get; }
-
         public ImmutableHashSet<AbstractLocation> DeferredTypeLocations { get; }
 
-        public DeferredTypeEntitySet(ISymbol symbol, ImmutableHashSet<AbstractLocation> deferredTypeEntities)
-        {
-            Symbol = symbol;
-            DeferredTypeLocations = deferredTypeEntities;
-        }
+        public DeferredTypeEntitySet(ImmutableHashSet<AbstractLocation> deferredTypeEntities)
+            => DeferredTypeLocations = deferredTypeEntities;
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
-        {
-            hashCode.Add(Symbol.GetHashCode());
-            hashCode.Add(HashUtilities.Combine(DeferredTypeLocations));
-        }
+            => hashCode.Add(HashUtilities.Combine(DeferredTypeLocations));
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeEntitySet> obj)
         {
             var other = (DeferredTypeEntitySet)obj;
-            return other.Symbol.GetHashCode() == Symbol.GetHashCode()
-                && HashUtilities.Combine(other.DeferredTypeLocations) == HashUtilities.Combine(DeferredTypeLocations);
+            return HashUtilities.Combine(other.DeferredTypeLocations) == HashUtilities.Combine(DeferredTypeLocations);
         }
     }
 }

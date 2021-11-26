@@ -1299,9 +1299,9 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         [|h|].ToArray();
-        var c = h.Select(i => i + 1);
+        var c = [|h|].Select(i => i + 1);
 
-        [|c|].First();
+        c.First();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1441,9 +1441,9 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = k.Concat(j).Concat(i);
+        var z = [|k|].Concat([|j|]).Concat(i);
         [|j|].ElementAt(10);
-        [|z|].ToArray();
+        z.ToArray();
         [|k|].ToArray();
     }
 }";
@@ -1464,9 +1464,9 @@ public class Bar
     public void Sub(IEnumerable<int> i, IEnumerable<int> k)
     {
         var j = Enumerable.Range(1, 10);
-        var z = i.Concat(j).Concat(k);
+        var z = i.Concat([|j|]).Concat([|k|]);
         [|j|].ElementAt(10);
-        [|z|].ToArray();
+        z.ToArray();
         [|k|].ToArray();
     }
 }";
@@ -1486,10 +1486,10 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IEnumerable<int> k)
     {
-        var j = Enumerable.Range(1, 10).Except(i).Except(k);
-        var z = i.Concat(k);
-        [|j|].ElementAt(10);
-        [|z|].ToArray();
+        var j = Enumerable.Range(1, 10).Except([|i|]).Except([|k|]);
+        var z = [|i|].Concat([|k|]);
+        j.ElementAt(10);
+        z.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1510,9 +1510,9 @@ public class Bar
     {
         var j = Enumerable.Range(1, 10);
         var p = j;
-        var z = i.Concat(j).Concat(p);
+        var z = i.Concat([|j|]).Concat([|p|]);
         [|j|].ElementAt(10);
-        [|z|].ToArray();
+        z.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1532,8 +1532,8 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IEnumerable<int> k)
     {
-        var z = i.Except(k).Concat(k);
-        [|z|].ToArray();
+        var z = i.Except([|k|]).Concat([|k|]);
+        z.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1553,11 +1553,11 @@ public class Bar
     public void Sub(IEnumerable<int> i, IEnumerable<int> j, bool flag)
     {
         var a = flag ? i : j;
-        var b = a.Except(i);
+        var b = [|a|].Except([|i|]);
 
         [|a|].ElementAt(10);
         [|i|].ElementAt(10);
-        [|b|].ToArray();
+        b.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
@@ -1644,9 +1644,9 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = i.Concat(j).Concat(k);
+        var z = i.Concat([|j|]).Concat(k);
         [|j|].ElementAt(10);
-        [|z|].ToArray();
+        z.ToArray();
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
