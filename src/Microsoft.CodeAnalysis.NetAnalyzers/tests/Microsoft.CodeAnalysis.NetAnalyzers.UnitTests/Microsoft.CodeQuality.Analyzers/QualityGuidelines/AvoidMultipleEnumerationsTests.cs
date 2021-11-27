@@ -1665,7 +1665,7 @@ public class Bar
 {
     public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
     {
-        var z = i.Concat(k.Concat([|j|]));
+        var z = i.Concat(k.Concat([|j|]).Select(p => p).Where(p => p != 100)).Distinct().Reverse();
         [|j|].ElementAt(10);
         z.ToArray();
     }
