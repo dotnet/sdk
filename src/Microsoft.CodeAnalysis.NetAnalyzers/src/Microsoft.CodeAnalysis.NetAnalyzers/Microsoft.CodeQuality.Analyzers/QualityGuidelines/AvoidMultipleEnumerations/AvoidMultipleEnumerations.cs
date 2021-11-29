@@ -66,7 +66,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "LastOrDefault",
             "LongCount",
             "Max",
+            "MaxBy",
             "Min",
+            "MinBy",
             "Single",
             "SingleOrDefault",
             "Sum",
@@ -88,7 +90,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
             "Append",
             "Cast",
+            "Chunk",
             "Distinct",
+            "DistinctBy",
             "GroupBy",
             "OfType",
             "OrderBy",
@@ -105,7 +109,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "TakeWhile",
             "ThenBy",
             "ThenByDescending",
-            "Where");
+            "Where",
+            "TryGetNonEnumeratedCount");
 
         /// <summary>
         /// Linq methods deferring its first two parameters to be enumerated.
@@ -113,10 +118,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static readonly ImmutableArray<string> s_linqTwoParametersDeferredMethods = ImmutableArray.Create(
             "Concat",
             "Except",
+            "ExceptBy",
             "GroupJoin",
             "Intersect",
+            "IntersectBy",
             "Join",
-            "Union");
+            "Union",
+            "UnionBy",
+            "Zip");
+
+        private static readonly ImmutableArray<string> s_linqThreeParametersDeferredMethods = ImmutableArray.Create(
+            "Zip");
+
+        private static readonly ImmutableArray<string> s_linqNoEffectMethods = ImmutableArray.Create(
+            "AsEnumerable");
 
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
