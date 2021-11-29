@@ -210,21 +210,21 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d9660d157627af710b71c636fa8cb139616cadba</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="7.0.0-alpha.1.21575.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>d9660d157627af710b71c636fa8cb139616cadba</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="6.0.0-preview.5.21579.1">
+      <Uri>https://github.com/dotnet/razor-compiler</Uri>
+      <Sha>26dd6b906817211a05b3dcb91da0faf031bfaee6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="7.0.0-alpha.1.21575.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>d9660d157627af710b71c636fa8cb139616cadba</Sha>
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="6.0.0-preview.5.21579.1">
+      <Uri>https://github.com/dotnet/razor-compiler</Uri>
+      <Sha>26dd6b906817211a05b3dcb91da0faf031bfaee6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="7.0.0-alpha.1.21575.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>d9660d157627af710b71c636fa8cb139616cadba</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="6.0.0-preview.5.21579.1">
+      <Uri>https://github.com/dotnet/razor-compiler</Uri>
+      <Sha>26dd6b906817211a05b3dcb91da0faf031bfaee6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.SourceGenerator.Transport" Version="7.0.0-alpha.1.21575.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>d9660d157627af710b71c636fa8cb139616cadba</Sha>
+    <Dependency Name="Microsoft.AspNetCore.Razor.Internal.SourceGenerator.Transport" Version="6.0.0-preview.5.21579.1">
+      <Uri>https://github.com/dotnet/razor-compiler</Uri>
+      <Sha>26dd6b906817211a05b3dcb91da0faf031bfaee6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0-alpha.1.21575.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
