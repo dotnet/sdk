@@ -42,6 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             private GlobalFlowStateDictionaryAnalysisValue VisitLocalOrParameter(ITypeSymbol? typeSymbol, IOperation parameterOrLocalReferenceOperation, GlobalFlowStateDictionaryAnalysisValue defaultValue)
             {
+                RoslynDebug.Assert(parameterOrLocalReferenceOperation is IParameterReferenceOperation or ILocalReferenceOperation);
                 if (!IsDeferredType(typeSymbol, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
                     return defaultValue;
@@ -112,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //       var c = a.Concat(b);
                 //       c.ElementAt(10);
                 // }
-                // When 'd.ElementAt(10)' is called, then 'Enumerable.Range(1, 1)', 'Enumerable.Range(2, 2)' and 'a.Concat(b)' are enumerated.
+                // When 'c.ElementAt(10)' is called, then 'Enumerable.Range(1, 1)', 'Enumerable.Range(2, 2)' and 'a.Concat(b)' are enumerated.
                 // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
                 // because we don't know how to proceed.
                 // e.g.
