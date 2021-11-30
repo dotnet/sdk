@@ -163,10 +163,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
-                && IsDeferredExecutingInvocation(
-                    invocationParentOperation,
-                    argumentParentOperation,
-                    wellKnownSymbolsInfo);
+                && IsDeferredExecutingInvocation(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
         }
 
         /// <summary>

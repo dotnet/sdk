@@ -1289,10 +1289,9 @@ public class Bar
         public async Task TestInvocationLocalAssignmentWithDeferredMethodCall()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1432,10 +1431,9 @@ End Namespace";
         public async Task TestEnumeratedParameterAfterLinqCallChain()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1454,10 +1452,9 @@ public class Bar
         public async Task TestEnumeratedLocalAfterLinqCallChain1()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1477,10 +1474,9 @@ public class Bar
         public async Task TestEnumeratedLocalAfterLinqCallChain2()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1499,10 +1495,9 @@ public class Bar
         public async Task TestEnumeratedLocalAfterLinqCallChain3()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1523,10 +1518,9 @@ public class Bar
         public async Task TestConcatOneParameterMultipleTimes()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1543,10 +1537,9 @@ public class Bar
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations1()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1567,10 +1560,9 @@ public class Bar
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations2()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1591,10 +1583,9 @@ public class Bar
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations3()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1614,10 +1605,9 @@ public class Bar
         public async Task TestDelayEnumerableFromArray()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1635,10 +1625,9 @@ public class Bar
         public async Task TestDelayIOrderedEnumerable()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1656,10 +1645,9 @@ public class Bar
         public async Task TestNestedDelayIEnumerable()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1677,10 +1665,9 @@ public class Bar
         public async Task TestImplictExplictedFromArrayToIEnumerable()
         {
             var code = @"
-using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {

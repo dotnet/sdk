@@ -70,7 +70,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                return VisitDeferTypeEntitis(
+                return VisitDeferTypeEntities(
                     DataFlowAnalysisContext.PointsToAnalysisResult,
                     parameterOrLocalReferenceOperation,
                     defaultValue);
@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             /// <summary>
             /// Visit all the possible deferred type entities referenced by <param name="parameterOrLocalOperation"/>.
             /// </summary>
-            private GlobalFlowStateDictionaryAnalysisValue VisitDeferTypeEntitis(
+            private GlobalFlowStateDictionaryAnalysisValue VisitDeferTypeEntities(
                 PointsToAnalysisResult pointsToAnalysisResult,
                 IOperation parameterOrLocalOperation,
                 GlobalFlowStateDictionaryAnalysisValue defaultValue)
@@ -93,7 +93,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // a.ElementAt(10);
                 // When we visit 'a.Element(10)' and look back to 'b.Concat(c)', also try to visit 'b' and 'c'.
                 //
-                // Update the analysis value when reach the following nodes.
+                // Update the analysis value when reach one of the following nodes.
                 // 1. A parameter or local that has symbol, but no creationOperation.
                 // e.g.
                 // void Bar(IEnumerable<int> b, IEnumerable<int> c)
@@ -101,8 +101,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //      var a = b.Concat(c);
                 //      a.ElementAt(10);
                 // }
-                // When 'a.ElementAt(10)' is callled, 'b' and 'c' are enumerated once.
-                // 
+                // When 'a.ElementAt(10)' is called, 'b' and 'c' are enumerated once.
+                //
                 // 2. Invocation operation that returns a deferred type.
                 // e.g.
                 // void Bar()
@@ -112,7 +112,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //       var c = a.Concat(b);
                 //       c.ElementAt(10);
                 // }
-                // When 'd.ElmentAt(10)' is called, think 'Enumerable.Range(1, 1)', 'Enumerable.Range(2, 2)', 'a.Concat(b)' are enumerated.
+                // When 'd.ElementAt(10)' is called, then 'Enumerable.Range(1, 1)', 'Enumerable.Range(2, 2)' and 'a.Concat(b)' are enumerated.
                 // 3. A parameter or local reference operation with multiple AbstractLocations. Stop expanding the tree at this node
                 // because we don't know how to proceed.
                 // e.g.
@@ -198,7 +198,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     // Expand the implict conversion operation if it is converting a deferred type to another deferred type.
                     // This might happen in such case:
                     // var c = a.OrderBy(i => i).Concat(b)
-                    // The tree would be: 
+                    // The tree would be:
                     //                             a.OrderBy(i => i).Concat(b) (root)
                     //                              /                        \
                     //                          ArgumentOperation          ArgumentOperation
@@ -247,7 +247,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     queue.Enqueue(conversionOperation.Operand);
                 }
             }
-
 
             private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
                 IOperation parameterOrLocalOperation,

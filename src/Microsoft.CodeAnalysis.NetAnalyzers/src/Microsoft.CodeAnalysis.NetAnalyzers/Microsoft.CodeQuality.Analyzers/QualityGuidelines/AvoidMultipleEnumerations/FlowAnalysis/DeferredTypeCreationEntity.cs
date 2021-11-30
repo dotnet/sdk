@@ -14,9 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public IOperation CreationOperation { get; }
 
         public DeferredTypeCreationEntity(IOperation creationOperation)
-        {
-            CreationOperation = creationOperation;
-        }
+            => CreationOperation = creationOperation;
 
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<DeferredTypeCreationEntity> obj)
         {
@@ -25,8 +23,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         protected override void ComputeHashCodeParts(ref RoslynHashCode hashCode)
-        {
-            hashCode.Add(CreationOperation.GetHashCode());
-        }
+            => hashCode.Add(CreationOperation.GetHashCode());
     }
 }
