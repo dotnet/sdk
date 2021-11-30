@@ -223,7 +223,7 @@ Details: {1}.</value>
   </data>
   <data name="TemplateCreator_TemplateCreationResult_Error_CreationFailed" xml:space="preserve">
     <value>Failed to create template.
-Details: {0}.</value>
+Details: {0}</value>
   </data>
   <data name="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges" xml:space="preserve">
     <value>Destructive changes detected.</value>

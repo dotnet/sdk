@@ -175,8 +175,8 @@ Dettagli: {1}.</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
-Details: {0}.</source>
-        <target state="translated">Non è stato possibile creare il modello.
+Details: {0}</source>
+        <target state="needs-review-translation">Non è stato possibile creare il modello.
 Dettagli: {0}.</target>
         <note />
       </trans-unit>

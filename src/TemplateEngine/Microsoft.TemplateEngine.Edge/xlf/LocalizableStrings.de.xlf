@@ -175,8 +175,8 @@ Details: {1}.</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
-Details: {0}.</source>
-        <target state="translated">Fehler beim Erstellen der Vorlage.
+Details: {0}</source>
+        <target state="needs-review-translation">Fehler beim Erstellen der Vorlage.
 Details: {0}.</target>
         <note />
       </trans-unit>

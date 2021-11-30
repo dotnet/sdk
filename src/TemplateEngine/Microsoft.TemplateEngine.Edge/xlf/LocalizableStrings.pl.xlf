@@ -175,8 +175,8 @@ Szczegóły: {1}.</target>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
-Details: {0}.</source>
-        <target state="translated">Nie można utworzyć szablonu.
+Details: {0}</source>
+        <target state="needs-review-translation">Nie można utworzyć szablonu.
 Szczegóły: {0}.</target>
         <note />
       </trans-unit>

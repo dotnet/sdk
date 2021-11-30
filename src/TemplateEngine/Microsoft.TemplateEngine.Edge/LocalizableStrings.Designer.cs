@@ -365,7 +365,7 @@ namespace Microsoft.TemplateEngine.Edge {
         
         /// <summary>
         ///   Looks up a localized string similar to Failed to create template.
-        ///Details: {0}..
+        ///Details: {0}.
         /// </summary>
         internal static string TemplateCreator_TemplateCreationResult_Error_CreationFailed {
             get {

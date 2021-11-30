@@ -175,8 +175,8 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
-Details: {0}.</source>
-        <target state="translated">템플릿을 만들지 못했습니다.
+Details: {0}</source>
+        <target state="needs-review-translation">템플릿을 만들지 못했습니다.
 세부 정보: {0}.</target>
         <note />
       </trans-unit>
