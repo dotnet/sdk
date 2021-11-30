@@ -5,7 +5,6 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
-
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines.BasicAvoidMultipleEnumerationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -397,7 +396,7 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact(Skip = "This test case would be resolved in following PR. The skip flag should not exist when merge into main.")]
+        [Fact]
         public async Task TestExplicitDeclaration()
         {
             var code = @"
@@ -1284,7 +1283,27 @@ public class Bar
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
+        }
 
+        [Fact]
+        public async Task TestInvocationLocalAssignmentWithDeferredMethodCall()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        [|h|].ToArray();
+        var c = [|h|].Select(i => i + 1);
+
+        c.First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [Fact]
@@ -1406,6 +1425,261 @@ Namespace NS
     End Class
 End Namespace";
             await VerifyVB.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedParameterAfterLinqCallChain()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> j, IEnumerable<int> k)
+    {
+        var z = [|k|].Concat([|j|]).Concat(i);
+        [|j|].ElementAt(10);
+        z.ToArray();
+        [|k|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalAfterLinqCallChain1()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var j = Enumerable.Range(1, 10);
+        var z = i.Concat([|j|]).Concat([|k|]);
+        [|j|].ElementAt(10);
+        z.ToArray();
+        [|k|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalAfterLinqCallChain2()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var j = Enumerable.Range(1, 10).Except([|i|]).Except([|k|]);
+        var z = [|i|].Concat([|k|]);
+        j.ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalAfterLinqCallChain3()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        var j = Enumerable.Range(1, 10);
+        var p = j;
+        var z = i.Concat([|j|]).Concat([|p|]);
+        [|j|].ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+
+        [Fact]
+        public async Task TestConcatOneParameterMultipleTimes()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> k)
+    {
+        var z = i.Except([|k|]).Concat([|k|]);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations1()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IEnumerable<int> j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = [|a|].Except([|i|]);
+
+        [|a|].ElementAt(10);
+        [|i|].ElementAt(10);
+        b.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations2()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, int[] j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = a.Except(j);
+
+        a.ElementAt(10);
+        i.ElementAt(10);
+        b.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestEnumeratedLocalWithMultipleAbstractLocations3()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(int[] i, int[] j, bool flag)
+    {
+        var a = flag ? i : j;
+        var b = a.Except(j);
+
+        [|b|].ToArray();
+        [|b|].ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestDelayEnumerableFromArray()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, int[] j)
+    {
+        var z = j.Concat(i);
+        j.ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestDelayIOrderedEnumerable()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
+    {
+        var z = i.Concat([|j|]).Concat(k);
+        [|j|].ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestNestedDelayIEnumerable()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i, IOrderedEnumerable<int> j, IEnumerable<int> k)
+    {
+        var z = i.Concat(k.Concat([|j|]).Select(p => p).Where(p => p != 100)).Distinct().Reverse();
+        [|j|].ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public async Task TestImplictExplictedFromArrayToIEnumerable()
+        {
+            var code = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        IEnumerable<int> j = Enumerable.Range(1, 10).ToArray();
+        var z = i.Concat(j);
+        j.ElementAt(10);
+        z.ToArray();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
     }
 }

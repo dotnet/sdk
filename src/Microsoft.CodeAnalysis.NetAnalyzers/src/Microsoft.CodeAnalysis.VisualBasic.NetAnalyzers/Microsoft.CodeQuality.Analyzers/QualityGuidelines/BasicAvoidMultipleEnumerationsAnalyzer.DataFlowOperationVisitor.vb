@@ -1,6 +1,7 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
@@ -9,7 +10,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Inherits AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
-                           wellKnownSymbolsInfo as WellKnownSymbolsInfo)
+                           wellKnownSymbolsInfo As WellKnownSymbolsInfo)
                 MyBase.New(analysisContext, wellKnownSymbolsInfo)
             End Sub
 

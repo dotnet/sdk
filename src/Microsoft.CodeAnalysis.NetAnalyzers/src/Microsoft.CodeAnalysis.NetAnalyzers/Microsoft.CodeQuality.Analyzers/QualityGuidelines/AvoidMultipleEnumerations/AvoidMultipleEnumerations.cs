@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
 using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
+using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -136,11 +137,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
 
-            var oneParameterDeferredMethods = GetOneParameterDeferredMethods(wellKnownTypeProvider);
-            var twoParametersDeferredMethods = GetTwoParametersDeferredMethods(wellKnownTypeProvider);
+            var oneParameterDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqOneParameterDeferredMethods);
+            var twoParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersDeferredMethods);
 
-            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider);
-            var twoParametersEnumeratedMethods = GetTwoParametersEnumeratedMethods(wellKnownTypeProvider);
+            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_linqOneParameterEnumeratedMethods);
+            var twoParametersEnumeratedMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersEnumeratedMethods);
 
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
@@ -234,13 +235,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     continue;
                 }
 
-                foreach (var kvp in result.TrackedEntities)
+                foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
                 {
-                    var trackedInvocationSet = kvp.Value;
                     // Report if
                     // 1. EnumerationCount is two or more times.
                     // 2. There are two or more operations that might be involved.
-                    // (Note: 2. is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
+                    // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
                     if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                     {
                         foreach (var trackedOperation in trackedInvocationSet.Operations)
