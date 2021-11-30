@@ -16,10 +16,9 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
         [Fact]
         public async Task TestMultipleInvocations()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode1 = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -34,16 +33,35 @@ public class Bar
         var h = [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As Integer())
+            Dim i = Enumerable.Range(1, 10)
+            Dim c = [|i|].All(Function(x) x = 100)
+            Dim d = [|i|].Any()
+            Dim e = j.Average()
+            Dim f = j.Count()
+            Dim g = [|i|].Average()
+            Dim h = [|i|].Count()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestForLoop()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -58,16 +76,34 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As Integer())
+            Dim i = Enumerable.Range(1, 10)
+            For index = 1 To 10
+                [|i|].Aggregate(Function(m, n) m + n)
+                j.Contains(100)
+                [|i|].Contains(100)
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationsInForEachLoop()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -81,16 +117,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As Integer())
+            Dim i = Enumerable.Range(1, 10)
+            For Each index in Enumerable.Range(1, 10)
+                [|i|].Aggregate(Function(m, n) m + n)
+                j.Contains(100)
+                [|i|].Contains(100)
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationsAfterForEachLoop()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -103,16 +158,33 @@ public class Bar
         [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i = Enumerable.Range(1, 10)
+
+            For Each index in [|i|]
+            Next
+            [|i|].Count()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationsAfterForEachLoopForArray()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -125,16 +197,33 @@ public class Bar
         i.Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i = Enumerable.Range(1, 10).ToArray()
+
+            For Each index in i
+            Next
+            i.Count()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestWhileLoop()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -148,16 +237,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(of Integer))
+            Dim i = Enumerable.Range(1, 10)
+
+            while (true)
+            {
+                [|i|].ElementAt(100)
+                [|j|].ElementAtOrDefault(100)
+            }
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAfterIfBranchWithElse()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -185,16 +293,42 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(b As Integer, j As IEnumerable(Of Integer))
+            Dim i = Enumerable.Range(1, 10).ToArray()
+            If b = 1 Then
+                i.First()
+                [|j|].FirstOrDefault()
+            ElseIf b = 3 Then
+                i.Last()
+                [|j|].LastOrDefault()
+            Else
+                i.LongCount()
+                [|j|].Max()
+            End If
+
+            i.Min()
+            [|j|].Single()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAfterIfbranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -210,16 +344,35 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer), x As Integer)
+            Dim i = Enumerable.Range(1, 10)
+            If x = 1 Then
+                [|i|].Except([|h|]).ToList()
+                [|i|].Intersect([|h|]).ToList()
+            End If
+
+            [|i|].Max()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationBeforeIfbranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -236,16 +389,36 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer), x As Integer)
+            Dim i = Enumerable.Range(1, 10)
+            [|i|].Max()
+            If x = 1 Then
+                [|i|].Except([|h|]).ToList()
+                [|i|].Intersect([|h|]).ToList()
+            End If
+
+            [|i|].Max()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAfterIfbranchForArray()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -261,16 +434,35 @@ public class Bar
         i.Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer), x As Integer)
+            Dim i = Enumerable.Range(1, 10).ToArray()
+            If x = 1 Then
+                i.Except([|h|]).ToList()
+                i.Intersect([|h|]).ToList()
+            End If
+
+            i.Max()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestNoInvocationAfterIfbranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -284,16 +476,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer), x As Integer)
+            Dim i = Enumerable.Range(1, 10)
+            If x = 1 Then
+                [|i|].Union([|h|]).ToList()
+                [|i|].Join([|h|], Function(n) n, Function(n) n, Function(m, n) m + n).ToList()
+            End If
+
+            i.Max()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestOneInvocationAfterIfBranch1()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -321,16 +532,42 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(b As Integer, c As Integer())
+            Dim i = Enumerable.Range(1, 10)
+            If b = 1 Then
+                [|i|].SingleOrDefault()
+                c.Max()
+            Else If b == 3
+                [|i|].ToList()
+                c.Min()
+            Else
+                [|i|].Min()
+                c.Average()
+            End If
+
+            [|i|].Sum()
+            c.First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestOneInvocationAfterIfBranch2()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -357,16 +594,42 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(b As Integer, j As IEnumerable(Of Integer))
+            Dim i = Enumerable.Range(1, 10).ToArray()
+            i.First()
+            [|j|].SingleOrDefault()
+
+            If b = 1 Then
+                i.First()
+                [|j|].First()
+            Else If b == 3
+                i.First()
+                [|j|].First()
+            Else
+                i.First()
+                [|j|].First()
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestTwoInvocationsAfterIfElseBranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -392,17 +655,44 @@ public class Bar
         k.LastOrDefault();
     }
 }";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool flag, j As IEnumerable(Of Integer))
+            Dim i = Enumerable.Range(1, 10)
+            Dim k = Enumerable.Range(1, 10).ToArray()
+
+            If flag Then
+                [|i|].Single()
+                [|j|].SingleOrDefault()
+                k.Single()
+            Else
+                [|i|].Sum()
+                [|j|].ToArray()
+                k.Last()
+            End If
+
+            [|i|].ToDictionary(Function(x) x)
+            [|j|].First()
+            k.LastOrDefault()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestExplicitDeclaration()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -422,16 +712,37 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool flag)
+            Dim k As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
+
+            If flag Then
+                k.Single()
+            Else
+                k.Last()
+            End If
+
+            k.LastOrDefault()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestTwoInvocationsAfterIfBranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -457,16 +768,45 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool flag, j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim k = Enumerable.Range(1, 10).ToArray()
+
+            If flag Then
+                [|i|].Single()
+                [|j|].SingleOrDefault()
+                k.Sum()
+            End If
+        
+            [|i|].ToDictionary(Function(x) x)
+            [|i|].Max()
+
+            [|j|].First()
+            [|j|].Min()
+
+            k.Sum()
+            k.Sum()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDifferntInvocationsInIfBranch()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -496,16 +836,47 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim k = Enumerable.Range(1, 10).ToArray()
+
+            If b = 0 Then
+                [|i|].Single()
+                k.ElementAt(10)
+            Else if b = 1 Then
+                [|j|].SingleOrDefault()
+                k.ElementAtOrDefault(10)
+            End If
+        
+            [|i|].ToDictionary(Function(x) x)
+            [|i|].Max()
+
+            [|j|].Min()
+            [|j|].First()
+
+            k.ToHashSet()
+            k.LongCount()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDifferntInvocationsInIfBranch2()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -526,16 +897,37 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If b = 0 Then
+                [|i|].Single()
+            Else if b = 1 Then
+                [|j|].SingleOrDefault()
+            End If
+        
+            [|i|].ToDictionary(Function(x) x)
+            [|j|].First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDifferntInvocationsInIfBranch3()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -559,16 +951,39 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If b = 0 Then
+                [|i|].Single()
+            Else if b = 1 Then
+                [|j|].SingleOrDefault()
+            End If
+        
+            [|i|].ToDictionary(Function(x) x)
+            [|i|].ToDictionary(Function(x) x)
+            [|j|].First()
+            [|j|].First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch1()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -586,16 +1001,34 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any() Then
+                [|i|].Single()
+            Else
+                [|i|].SingleOrDefault()
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch2()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -618,17 +1051,37 @@ public class Bar
         }
     }
 }";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any() Then
+            Else if [|i|].Max() = 10 Then
+            End If
+            
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            If j.Any() Then
+            Else if j.Max() = 10 Then
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch3()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -654,16 +1107,39 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any() Then
+                [|i|].ToArray()
+            Else if [|i|].Max() = 10 Then
+            End If
+            
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            If j.Any() Then
+                j.ToDictionary(Function(l) l)
+            Else if j.Max() = 10 Then
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch4()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -680,16 +1156,41 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any() AndAlso [|i|].Max() = 10 Then
+            End If
+
+            If [|i|].Any() And [|i|].Max() = 10 Then
+            End If
+            
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            If j.Any() AndAlso j.Max() = 10 Then
+            End If
+
+            If j.Any() And j.Max() = 10 Then
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch5()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -707,16 +1208,41 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any() OrElse [|i|].Max() = 10 Then
+            End If
+
+            If [|i|].Any() Or [|i|].Max() = 10 Then
+            End If
+            
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            If j.Any() OrElse j.Max() = 10 Then
+            End If
+
+            If j.Any() Or j.Max() = 10 Then
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch6()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -734,16 +1260,35 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            While [|i|].Min() = 10
+            End While
+
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            While j.Min() = 10
+            End While
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationOnBranch7()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -765,13 +1310,35 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            If [|i|].Any()
+            End If
+
+            [|i|].Min()
+
+            Dim j = Enumerable.Range(1, 10).ToArray()
+            If j.Any()
+            End If
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationWithForEachLoop1()
         {
-            var code = @"
+            var csharpCode = @"
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -795,17 +1362,38 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            
+            ForEach c In [|i|]
+            Next
+            [|i|].ToHashSet()
+            
+            ForEach c2 In [|j|]
+            Next
+            [|j|].ToHashSet()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationWithForEachLoop2()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 public class Bar
 {
@@ -832,17 +1420,45 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Collections.Immutable
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            
+            ForEach c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            Next
+            [|i|].ToLookUp(Function(x) x)
+            
+            ForEach c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            Next
+            [|j|].ToHashSet()
+
+            Dim k = Enumerable.Range(1, 10).ToArray
+
+            ForEach c3 In k.Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            Next
+            k.ToImmutableArray()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationWithForEachLoop3()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 public class Bar
 {
@@ -873,16 +1489,46 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Collections.Immutable
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            
+            ForEach c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+                [|i|].Where(Function(x) x <> 100).ToImmutableList()
+            Next
+            [|i|].Select(Function(k) k + 1).Skip(100).First();
+            
+            ForEach c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+                [|j|].Where(Function(x) x <> 100).ToImmutableSortedDictionary(Function(m) m, Function(n) n)
+            Next
+            [|j|].Select(Function(k) k + 1).Skip(100).First()
+
+            Dim o = Enumerable.Range(1, 10).ToArray
+            ForEach c3 In o.Select(Function(m) m + 1).Where(Function(m) m <> 100)
+                o.Where(Function(x) x <> 100).ToImmutableSortedDictionary(Function(m) m, Function(n) n)
+            Next
+            o.Select(Function(k) k + 1).Skip(100).First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAcceptObject()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -901,16 +1547,38 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            TestMethod(i)
+            i.First()
+            
+            TestMethod(h)
+            h.First()
+        End Sub
+
+  
+        Public Sub TestMethod(object o)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAcceptGenerics()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -929,13 +1597,36 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            TestMethod(i)
+            i.First()
+            
+            TestMethod(h)
+            h.First()
+        End Sub
+
+  
+        Public Sub TestMethod(Of T)(T o)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationAcceptGenericsConstraintToIEnumerable()
         {
-            var code = @"
+            var csharpCode = @"
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -952,22 +1643,44 @@ public class Bar
         [|h|].First();
     }
 
-    public void TestMethod<T>(T o) where T : IEnumerable<int>
+    public void TestMethod<T>(o As T) where T : IEnumerable<int>
     {
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            TestMethod(i)
+            i.First()
+            
+            TestMethod(h)
+            h.First()
+        End Sub
+
+  
+        Public Sub TestMethod(Of T As IEnumerable<int>)(o As T)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestExplicteInvocations()
         {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
+            var csharpCode = @"
 using System.Collections.Immutable;
+using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -982,16 +1695,35 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Collections.Immutable
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Enumerable.First(predicate:= Function(x) x <> 100, source:= [|i|])
+            [|i|].ToImmutableSortedSet()
+            
+            Enumerable.First(predicate:= Function(x) x <> 100, source:= [|h|])
+            [|h|].First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestTakesTwoIEnumerables1()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1002,16 +1734,31 @@ public class Bar
         [|h|].Concat([|i|]).ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            [|i|].Concat([|h|]).ToArray()
+            [|h|].Concat([|i|]).ToList()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestTakesTwoIEnumerables2()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1022,16 +1769,31 @@ public class Bar
         [|h|].SequenceEqual([|i|]);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            [|i|].SequenceEqual([|h|])
+            [|h|].SequenceEqual([|i|])
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestTakesTwoIEnumerables3()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1042,7 +1804,23 @@ public class Bar
         [|x|].GroupJoin([|h|], i => i, i => i, (i, ints) => i).Last();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            [|x|].GroupJoin([|h|]), Function(i) i, Function(i) i, Function(i, ints) i).First()
+            [|x|].GroupJoin([|h|]), Function(i) i, Function(i) i, Function(i, ints) i).Last()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
@@ -1050,10 +1828,9 @@ public class Bar
         {
             // SkipLast and TakeLast are unavailable for NET472
 #if NETCOREAPP2_0_OR_GREATER
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1075,11 +1852,38 @@ public class Bar
             .Where(i => i != 10).First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
+                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
+                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
+                SkipWhile(Function(i) i = 99).SkipLast(100).Take(1).TakeWhile(Function(i) i = 100).TakeLast(100).
+                Where(Function(i) i <> 10).ToArray()
+
+            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
+                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
+                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
+                SkipWhile(Function(i) i = 99).SkipLast(100).Take(1).TakeWhile(Function(i) i = 100).TakeLast(100).
+                Where(Function(i) i <> 10).First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
 #endif
 
 #if NET472
-            var code = @"
+            var csharpCode = @"
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -1104,14 +1908,41 @@ public class Bar
             .Where(i => i != 10).First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
+                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
+                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
+                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
+                Where(Function(i) i <> 10).ToArray()
+
+            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
+                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
+                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
+                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
+                Where(Function(i) i <> 10).First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
 #endif
         }
 
         [Fact]
         public async Task TestGroupBy()
         {
-            var code = @"
+            var csharpCode = @"
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -1125,16 +1956,31 @@ public class Bar
         var z2 = [|x|].GroupBy(i => i.GetHashCode()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim z = [|x|].GroupBy(Function(i) i.GetHashCode()).ToArray()
+            Dim z2= [|x|].Groupby(Function(i) i.GetHashCode()).ToArray()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestSelectMany()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1144,17 +1990,31 @@ public class Bar
         var b = [|y|].SelectMany(x => x.ToArray()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(y As IEnumerable(Of IEnumerable(Of Integer)))
+            Dim a = [|y|].SelectMany(Function(x) x).ToArray()
+            Dim a = [|y|].SelectMany(Function(x) x.ToArray()).ToArray()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestIEnumerable()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1164,16 +2024,30 @@ public class Bar
         [|h|].Cast<int>().ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections;
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable)
+            [|h|].OfType(Of Integer).ToArray()
+            [|h|].Cast(Of Integer).ToList()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestIOrderedEnumerable()
         {
-            var code = @"
-using System;
+            var csharpCode = @"
 using System.Linq;
-using System.Collections;
 
 public class Bar
 {
@@ -1183,17 +2057,29 @@ public class Bar
         [|h|].ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IOrderedEnumerable(Of Integer))
+            [|h|].Where(Function(i) i <> 10).ToArray()
+            [|h|].ToList()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestExecutionInTheMiddle()
         {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1203,17 +2089,30 @@ public class Bar
         [|h|].ToArray().Select(j => j + 1).Where(x => x != 100);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            [|h|].ToArray().Select(Function(j) j + 1).Where(Function(x) x <> 100)
+            [|h|].ToArray().Select(Function(j) j + 1).Where(Function(x) x <> 100)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestAssignmentAfterEnumeration()
         {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1231,14 +2130,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim d = [|h|].ToArray()
+            Dim d2 = [|h|].ToArray()
+            
+            h = Enumerable.Range(1, 10)
+            h.First()
+
+            h. = Enumerable.Range(1, 100)
+            For Each i In h
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestForEachLoopForLocalAssignment()
         {
-            var code = @"
+            var csharpCode = @"
 using System;
 using System.Linq;
 using System.Collections;
@@ -1259,18 +2179,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim d = Enumerable.Range(1, 100)
+            For Each i In [|d|]
+            Next
+
+            var e = d;
+            For Each i In [|e|]
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationLocalAssignment()
         {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1282,38 +2219,31 @@ public class Bar
         [|c|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
-        [Fact]
-        public async Task TestInvocationLocalAssignmentWithDeferredMethodCall()
-        {
-            var code = @"
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
 
-public class Bar
-{
-    public void Sub(IEnumerable<int> h)
-    {
-        [|h|].ToArray();
-        var c = [|h|].Select(i => i + 1);
-
-        c.First();
-    }
-}";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            [|h|].ToArray()
+            Dim c = h
+            [|c|].First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestInvocationWithAssignment()
         {
-            var code = @"
-using System;
-using System.Linq;
-using System.Collections;
+            var csharpCode = @"
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1351,17 +2281,52 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(flag As Boolean, h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim j = i
+            Dim k = j
+            
+            Dim n = h
+            Dim m = n
+
+            If Flag Then
+                For Each x in [|k|]
+                Next
+
+                For Each x in [|m|]
+                Next
+            Else
+                Dim d = [|i|].First()
+                Dim d2 = [|h|].First()
+            End If
+
+            For Each z in [|j|]
+            Next
+
+            For Each z in [|n|]
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestForEachForIEnumerable()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1376,17 +2341,35 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable)
+            For Each i in [|h|]
+            Next
+
+            For Each i in [|h|]
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestForEachForIOrderedEnumerable()
         {
-            var code = @"
-using System;
-using System.Linq;
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Bar
 {
@@ -1401,17 +2384,53 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IOrderedEnumerable(Of Integer))
+            For Each i in [|h|]
+            Next
+
+            For Each i in [|h|]
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
-        public async Task TestVBForEachLoop()
+        public async Task TestForEachLoop()
         {
-            var code = @"
-Imports System
-Imports System.Linq
-Imports System.Collections
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        foreach (var i in [|h|])
+        {
+        }
+
+        foreach (var i in [|h|])
+        {
+        }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
 Imports System.Collections.Generic
+Imports System.Linq
 
 Namespace NS
     Public Class Bar
@@ -1424,7 +2443,7 @@ Namespace NS
         End Sub
     End Class
 End Namespace";
-            await VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
