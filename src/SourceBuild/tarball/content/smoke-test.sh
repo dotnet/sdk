@@ -6,7 +6,7 @@ TARBALL_PREFIX=dotnet-sdk-
 VERSION_PREFIX=6.0
 # See https://github.com/dotnet/source-build/issues/579, this version
 # needs to be compatible with the runtime produced from source-build
-DEV_CERTS_VERSION_DEFAULT=6.0.0-preview.6.21355.2
+DEV_CERTS_VERSION_DEFAULT=6.0.0-rtm.21573.1
 __ROOT_REPO=$(sed 's/\r$//' "$SCRIPT_ROOT/artifacts/obj/rootrepo.txt") # remove CR if mounted repo on Windows drive
 executingUserHome=${HOME:-}
 
@@ -48,7 +48,8 @@ configuration="Release"
 excludeNonWebTests=false
 excludeWebTests=false
 excludeWebNoHttpsTests=false
-excludeWebHttpsTests=false
+# Re-enable once https://github.com/dotnet/sdk/issues/22734 is fixed.
+excludeWebHttpsTests=true
 excludeLocalTests=false
 excludeOnlineTests=false
 devCertsVersion="$DEV_CERTS_VERSION_DEFAULT"
