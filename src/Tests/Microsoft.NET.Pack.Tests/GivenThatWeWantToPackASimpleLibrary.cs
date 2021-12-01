@@ -38,7 +38,6 @@ namespace Microsoft.NET.Pack.Tests
                 $"{ToolsetInfo.CurrentTargetFramework}/HelloWorld.deps.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/HelloWorld.runtimeconfig.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/HelloWorld{EnvironmentInfo.ExecutableExtension}",
-                $"{ToolsetInfo.CurrentTargetFramework}/ref/HelloWorld.dll"
             });
         }
     }

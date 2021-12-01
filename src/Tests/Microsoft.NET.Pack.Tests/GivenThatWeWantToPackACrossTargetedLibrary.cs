@@ -39,7 +39,6 @@ namespace Microsoft.NET.Pack.Tests
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp.deps.json",
                 $"{ToolsetInfo.CurrentTargetFramework}/Newtonsoft.Json.dll",
                 $"{ToolsetInfo.CurrentTargetFramework}/NetStandardAndNetCoreApp{EnvironmentInfo.ExecutableExtension}",
-                $"{ToolsetInfo.CurrentTargetFramework}/ref/NetStandardAndNetCoreApp.dll",
                 "netstandard1.5/NetStandardAndNetCoreApp.dll",
                 "netstandard1.5/NetStandardAndNetCoreApp.pdb",
                 "netstandard1.5/NetStandardAndNetCoreApp.deps.json"
