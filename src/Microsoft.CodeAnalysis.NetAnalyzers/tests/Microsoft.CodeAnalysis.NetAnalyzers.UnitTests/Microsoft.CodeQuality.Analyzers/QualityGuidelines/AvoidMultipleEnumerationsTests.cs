@@ -2449,7 +2449,7 @@ End Namespace";
         [Fact]
         public async Task TestEnumeratedParameterAfterLinqCallChain()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2464,13 +2464,30 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As IEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim z = [|k|].Concat([|j|]).Concat(i)
+            [|j|].ElementAt(10)
+            z.ToArray()
+            [|k|].ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalAfterLinqCallChain1()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2486,13 +2503,31 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim j = Enumerable.Range(1, 10)
+            Dim z = i.Concat([|j|]).Concat([|k|])
+            [|j|].ElementAt(10)
+            z.ToArray()
+            [|k|].ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalAfterLinqCallChain2()
         {
-            var code = @"
+            var csharp = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2507,13 +2542,30 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharp);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim j = Enumerable.Range(1, 10).Except([|i|]).Except([|k|])
+            Dim z = [|i|].Concat([|k|])
+            j.ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalAfterLinqCallChain3()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2529,14 +2581,31 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
-        }
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer))
+            Dim j = Enumerable.Range(1, 10)
+            Dim p = j
+            Dim z = i.Concat([|j|]).Concat([|p|])
+            [|j|].ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
 
         [Fact]
         public async Task TestConcatOneParameterMultipleTimes()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2549,13 +2618,28 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim z = i.Except([|k|]).Concat([|k|])
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations1()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2572,13 +2656,32 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As IEnumerable(Of Integer), flag As Boolean)
+            Dim a = flag ? i : j
+            Dim b = [|a|].Except([|j|])
+
+            [|a|].Element(10)
+            [|i|].Element(10)
+            b.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations2()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2595,13 +2698,32 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As Integer(), flag As Boolean)
+            Dim a = flag ? i : j
+            Dim b = a.Except(j)
+
+            a.Element(10)
+            i.Element(10)
+            b.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestEnumeratedLocalWithMultipleAbstractLocations3()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2617,13 +2739,31 @@ public class Bar
         [|b|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As Integer(), j As Integer(), flag As Boolean)
+            Dim a = flag ? i : j
+            Dim b = a.Except(j)
+
+            [|b|].ToArray()
+            [|b|].ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDelayEnumerableFromArray()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2637,13 +2777,30 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As Integer())
+            Dim z = j.Concat(i)
+
+            j.ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDelayIOrderedEnumerable()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2657,13 +2814,29 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As IOrderedEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim z = i.Concat([|j|]).Concat(k)
+            [|j|].ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
         public async Task TestNestedDelayIEnumerable()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2677,7 +2850,23 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer), j As IOrderedEnumerable(Of Integer), k As IEnumerable(Of Integer))
+            Dim z = i.Concat(k.Concat([|j|])).Select(Function(p) p).Where(Function(p) p <> 100).Distinct().Reverse()
+            [|j|].ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
 
         [Fact]
@@ -2699,6 +2888,23 @@ public class Bar
     }
 }";
             await VerifyCS.VerifyAnalyzerAsync(code);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer))
+            Dim z As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
+            Dim z = i.Concat(j)
+            j.ElementAt(10)
+            z.ToArray()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
     }
 }
