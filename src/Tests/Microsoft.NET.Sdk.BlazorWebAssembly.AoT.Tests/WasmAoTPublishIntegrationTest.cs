@@ -5,22 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
+using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
-using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
-using System.Runtime.CompilerServices;
-using Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
 {
     public class WasmAoTPublishIntegrationTest : WasmPublishIntegrationTestBase
     {
-
         public WasmAoTPublishIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [RequiresMSBuildVersionFact("17.0.0")]
@@ -172,19 +171,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests
         private TestAsset CreateAspNetSdkTestAssetWithAot(
             string testAsset,
             string[] projectsToAoT,
-            [CallerMemberName] string callerName = "") =>
-            CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AoT")
-            .WithProjectChanges((project, document) =>
-            {
-                if (projectsToAoT.Contains(Path.GetFileNameWithoutExtension(project)))
-                {
-                    document.Descendants("PropertyGroup").First().Add(new XElement("RunAoTCompilation", "true"));
-
-                    foreach (var item in document.Descendants("PackageReference"))
+            [CallerMemberName] string callerName = "")
+        {
+            return CreateAspNetSdkTestAsset(testAsset, callerName: callerName, identifier: "AoT")
+                    .WithProjectChanges((project, document) =>
                     {
-                        item.SetAttributeValue("Version", "6.0.0");
-                    }
-                }
-            });
+                        if (projectsToAoT.Contains(Path.GetFileNameWithoutExtension(project)))
+                        {
+                            document.Descendants("PropertyGroup").First().Add(new XElement("RunAoTCompilation", "true"));
+
+                            foreach (var item in document.Descendants("PackageReference"))
+                            {
+                                item.SetAttributeValue("Version", "6.0.0");
+                            }
+                        }
+                    });
+        }
     }
 }
