@@ -1,0 +1,75 @@
+# Steps used to build a source-build tarball
+
+parameters:
+  # Additional custom build args
+  additionalBuildArgs: ""
+
+  # Architecture to build
+  buildArch: null
+
+  # Container image to build within
+  container: null
+
+  # Script logic to prep the tarball for building
+  prepScript: null
+
+  # Whether or not to build online
+  runOnline: null
+
+  # Directory to build the tarball in
+  tarballDir:
+
+  # Resource id of the tarball to download and build
+  tarballResourceId: null
+
+steps:
+  - download: ${{ parameters.tarballResourceId }}
+    artifact: BlobArtifacts
+    patterns: '**/dotnet-sdk-source*.tar.gz'
+    displayName: Download Tarball
+
+  - script: |
+      set -x
+
+      resourceIdPathSegment=
+      if [ '${{ parameters.tarballResourceId }}' != 'current' ]; then
+        resourceIdPathSegment='${{ parameters.tarballResourceId }}/'
+      fi
+
+      mkdir -p "${{ parameters.tarballDir }}"
+      tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
+      eval tar -ozxf "$tarballFilePath" -C "${{ parameters.tarballDir }}"
+      eval rm -f "$tarballFilePath"
+    displayName: Extract Tarball
+
+  - script: ${{ parameters.prepScript }}
+    displayName: Prep Tarball
+
+  - script: |
+      set -x
+      df -h
+
+      networkArgs=
+      customBuildArgs=
+      if [ '${{ parameters.runOnline}}' = 'true' ]; then
+        customBuildArgs='--online'
+      else
+        networkArgs='--network none'
+      fi
+
+      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball ${networkArgs} ${{ parameters.container }} ./build.sh ${customBuildArgs} ${{ parameters.additionalBuildArgs }} -- /p:CleanWhileBuilding=true
+    displayName: Build Tarball
+
+  - script: |
+      set -x
+
+      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
+    displayName: Run Tests
+
+  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
+    parameters:
+      sourceFolder: ${{ parameters.tarballDir }}
+
+  - publish: '${{ parameters.tarballDir }}/artifacts/${{ parameters.buildArch}}/Release/'
+    artifact: $(Agent.JobName)_Artifacts
+    displayName: Publish Artifacts
