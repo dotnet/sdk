@@ -3,14 +3,12 @@
 using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    internal static class AvoidMultipleEnumerationsHelpers
+    internal abstract class AvoidMultipleEnumerationsHelpers
     {
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
@@ -112,7 +110,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if <param name="invocationOperation"/> is targeting a method that will cause the enumeration of <param name="argumentOperationToCheck"/>.
         /// </summary>
-
         private static bool IsInvocationCausingEnumerationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
@@ -163,13 +160,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
-                && IsDeferredExecutingInvocation(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
+                && IsDeferredExecutingInvocationOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
         }
 
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.
         /// </summary>
-        public static bool IsDeferredExecutingInvocation(
+        public static bool IsDeferredExecutingInvocationOverArgument(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -201,67 +198,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        public static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
-            ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
-            ImmutableArray<string> linqMethodNames)
-        {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
-            return builder.ToImmutable();
-        }
-
-        private static void GetImmutableCollectionConversionMethods(
-            WellKnownTypeProvider wellKnownTypeProvider,
-            ImmutableArray<(string, string)> typeAndMethodNames,
-            ArrayBuilder<IMethodSymbol> builder)
-        {
-            // Get immutable collection conversion method, like ToImmutableArray()
-            foreach (var (typeName, methodName) in typeAndMethodNames)
-            {
-                if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
-                {
-                    var methods = type.GetMembers(methodName);
-                    foreach (var method in methods)
-                    {
-                        // Usually there are two overloads for these methods, like ToImmutableArray,
-                        // it has two overloads, one convert from ImmutableArray.Builder and one covert from IEnumerable<T>
-                        // and we only want the last one
-                        if (method is IMethodSymbol { Parameters: { Length: > 0 } parameters, IsExtensionMethod: true } methodSymbol
-                            && parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
-                        {
-                            builder.AddRange(methodSymbol);
-                        }
-                    }
-                }
-            }
-        }
-
-        public static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
-        {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-
-            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable, out var nonGenericIEnumerable))
-            {
-                var method = nonGenericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
-                if (method is IMethodSymbol methodSymbol)
-                {
-                    builder.Add(methodSymbol);
-                }
-            }
-
-            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var genericIEnumerable))
-            {
-                var method = genericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
-                if (method is IMethodSymbol methodSymbol)
-                {
-                    builder.Add(methodSymbol);
-                }
-            }
-
-            return builder.ToImmutable();
-        }
-
         public static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
         {
             if (type == null)
@@ -271,42 +207,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             return type.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
                 || additionalTypesToCheck.Contains(type);
-        }
-
-        public static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
-        {
-            using var builder = ArrayBuilder<ITypeSymbol>.GetInstance();
-            foreach (var name in typeNames)
-            {
-                if (compilation.TryGetOrCreateTypeByMetadataName(name, out var typeSymbol))
-                {
-                    builder.Add(typeSymbol);
-                }
-            }
-
-            return builder.ToImmutable();
-        }
-
-        public static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
-        {
-            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, builder);
-            return builder.ToImmutable();
-        }
-
-        private static void GetWellKnownMethods(
-            WellKnownTypeProvider wellKnownTypeProvider,
-            string typeName,
-            ImmutableArray<string> methodNames,
-            ArrayBuilder<IMethodSymbol> builder)
-        {
-            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
-            {
-                foreach (var methodName in methodNames)
-                {
-                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
-                }
-            }
         }
     }
 }

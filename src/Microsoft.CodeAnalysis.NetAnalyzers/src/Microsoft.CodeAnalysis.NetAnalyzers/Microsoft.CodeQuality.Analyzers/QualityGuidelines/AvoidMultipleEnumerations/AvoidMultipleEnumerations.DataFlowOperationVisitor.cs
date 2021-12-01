@@ -13,7 +13,7 @@ using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnum
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    public partial class AvoidMultipleEnumerations
+    internal partial class AvoidMultipleEnumerations
     {
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
@@ -231,7 +231,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // When we looking at the creation of 'a', we want to find both 'b' and 'c'
                 foreach (var argument in invocationOperation.Arguments)
                 {
-                    if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
+                    if (IsDeferredExecutingInvocationOverArgument(invocationOperation, argument, wellKnownSymbolsInfo))
                     {
                         queue.Enqueue(argument.Value);
                     }

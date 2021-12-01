@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -13,7 +14,7 @@ using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnum
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    public abstract partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
+    internal abstract partial class AvoidMultipleEnumerations : DiagnosticAnalyzer
     {
         private const string RuleId = "CA1851";
 
@@ -120,6 +121,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo);
+
+        internal abstract AvoidMultipleEnumerationsHelpers AvoidMultipleEnumerationsHelpers { get; }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -257,6 +260,103 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             potentialDiagnosticOperations.Free(CancellationToken.None);
+        }
+
+        private static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
+            ImmutableArray<string> linqMethodNames)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
+            return builder.ToImmutable();
+        }
+
+        private static void GetImmutableCollectionConversionMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<(string, string)> typeAndMethodNames,
+            ArrayBuilder<IMethodSymbol> builder)
+        {
+            // Get immutable collection conversion method, like ToImmutableArray()
+            foreach (var (typeName, methodName) in typeAndMethodNames)
+            {
+                if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+                {
+                    var methods = type.GetMembers(methodName);
+                    foreach (var method in methods)
+                    {
+                        // Usually there are two overloads for these methods, like ToImmutableArray,
+                        // it has two overloads, one convert from ImmutableArray.Builder and one covert from IEnumerable<T>
+                        // and we only want the last one
+                        if (method is IMethodSymbol { Parameters: { Length: > 0 } parameters, IsExtensionMethod: true } methodSymbol
+                            && parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
+                        {
+                            builder.AddRange(methodSymbol);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable, out var nonGenericIEnumerable))
+            {
+                var method = nonGenericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
+                if (method is IMethodSymbol methodSymbol)
+                {
+                    builder.Add(methodSymbol);
+                }
+            }
+
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var genericIEnumerable))
+            {
+                var method = genericIEnumerable.GetMembers(WellKnownMemberNames.GetEnumeratorMethodName).FirstOrDefault();
+                if (method is IMethodSymbol methodSymbol)
+                {
+                    builder.Add(methodSymbol);
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        public static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
+        {
+            using var builder = ArrayBuilder<ITypeSymbol>.GetInstance();
+            foreach (var name in typeNames)
+            {
+                if (compilation.TryGetOrCreateTypeByMetadataName(name, out var typeSymbol))
+                {
+                    builder.Add(typeSymbol);
+                }
+            }
+
+            return builder.ToImmutable();
+        }
+
+        public static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
+        {
+            using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, builder);
+            return builder.ToImmutable();
+        }
+
+        private static void GetWellKnownMethods(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            string typeName,
+            ImmutableArray<string> methodNames,
+            ArrayBuilder<IMethodSymbol> builder)
+        {
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+            {
+                foreach (var methodName in methodNames)
+                {
+                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
+                }
+            }
         }
     }
 }

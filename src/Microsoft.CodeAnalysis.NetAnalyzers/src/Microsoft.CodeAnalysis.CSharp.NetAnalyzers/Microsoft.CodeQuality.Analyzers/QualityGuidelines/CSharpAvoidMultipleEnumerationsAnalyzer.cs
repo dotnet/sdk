@@ -7,7 +7,7 @@ using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumeration
 namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public sealed partial class CSharpAvoidMultipleEnumerationsAnalyzer : AvoidMultipleEnumerations
+    internal sealed partial class CSharpAvoidMultipleEnumerationsAnalyzer : AvoidMultipleEnumerations
     {
         internal override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
@@ -15,5 +15,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
                 wellKnownSymbolsInfo);
+
+        internal override AvoidMultipleEnumerationsHelpers AvoidMultipleEnumerationsHelpers { get; } = CSharpAvoidMultipleEnumerationsHelpers.Instance;
     }
 }

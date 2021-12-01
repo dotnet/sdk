@@ -6,7 +6,7 @@ using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumeration
 
 namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
-    public partial class CSharpAvoidMultipleEnumerationsAnalyzer
+    internal partial class CSharpAvoidMultipleEnumerationsAnalyzer
     {
         private sealed class CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor : AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor
         {
