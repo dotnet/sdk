@@ -13,7 +13,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
         /// </summary>
-        public static bool IsOperationEnumeratedByMethodInvocation(
+        public bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -32,7 +32,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Skip the deferred method call and conversion operation in linq methods call chain
         /// </summary>
-        public static IOperation SkipDeferredAndConversionMethodIfNeeded(
+        public IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -55,8 +55,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, wellKnownSymbolsInfo);
             }
 
+            if (IsOperationTheInstanceOfDeferredInvocation(operation, wellKnownSymbolsInfo))
+            {
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
+            }
+
             return operation;
         }
+
+        protected abstract bool IsOperationTheInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         public static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -78,7 +85,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by for each loop
         /// </summary>
-        public static bool IsOperationEnumeratedByForEachLoop(
+        public bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -92,20 +99,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operationToCheck.Parent is IForEachLoopOperation forEachLoopOperation && forEachLoopOperation.Collection == operationToCheck;
         }
 
-        private static bool IsOperationEnumeratedByInvocation(
+        private bool IsOperationEnumeratedByInvocation(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
-            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
+            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation grandParentInvocationOperation } parentArgumentOperation)
             {
                 return IsInvocationCausingEnumerationOverArgument(
-                    invocationOperation,
-                    argumentOperation,
+                    grandParentInvocationOperation,
+                    parentArgumentOperation,
                     wellKnownSymbolsInfo);
+            }
+
+            if (operation.Parent is IInvocationOperation parentInvocationOperation && operation.Equals(parentInvocationOperation.Instance))
+            {
+                return IsInvocationCausingEnumerationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo);
             }
 
             return false;
         }
+
+        protected abstract bool IsInvocationCausingEnumerationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         /// <summary>
         /// Check if <param name="invocationOperation"/> is targeting a method that will cause the enumeration of <param name="argumentOperationToCheck"/>.
@@ -144,13 +158,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // e.g.
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
-            if (parameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
+            if (HasDeferredTypeConstraint(parameter, wellKnownSymbolsInfo))
             {
                 return true;
             }
 
             // TODO: we might want to have an attribute support here to mark a argument as 'enumerated'
+            return false;
+        }
+
+        protected static bool HasDeferredTypeConstraint(IParameterSymbol parameterSymbol, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            if (parameterSymbol.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol)
+            {
+                return typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes));
+            }
+
             return false;
         }
 
@@ -162,6 +185,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
                 && IsDeferredExecutingInvocationOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
         }
+
+        public abstract bool IsDeferredExecutinngInvocationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.

@@ -14,6 +14,7 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 GlobalFlowStateDictionaryAnalysisContext context,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(
                     context,
+                    CSharpAvoidMultipleEnumerationsHelpers.Instance,
                     wellKnownSymbolsInfo)
             {
             }

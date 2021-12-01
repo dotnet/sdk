@@ -178,7 +178,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     potentialDiagnosticOperationsBuilder));
         }
 
-        private static void CollectPotentialDiagnosticOperations(
+        private void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
             PooledHashSet<IOperation> builder)
@@ -186,7 +186,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var operation = context.Operation;
             if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo) || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
+                var isEnumerated = AvoidMultipleEnumerationsHelpers.IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
+                    || AvoidMultipleEnumerationsHelpers.IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
                 if (isEnumerated)
                     builder.Add(operation);
             }
