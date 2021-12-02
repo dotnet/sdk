@@ -249,11 +249,10 @@ function doCommand() {
             echo "    terminated with exit code $?" | tee -a "$logFile"
         elif [ "$1" == "multi-rid-publish" ]; then
             if [ "$lang" == "F#" ]; then
-              # F# tries to use a truncated version number unless we pass it this flag.  see https://github.com/dotnet/source-build/issues/2554
               runPublishScenarios() {
-                  "${dotnetCmd}" publish --self-contained false /bl:"${binlogPrefix}publish-fx-dep.binlog" /p:_NETCoreSdkIsPreview=true
-                  "${dotnetCmd}" publish --self-contained true -r "$targetRid" /bl:"${binlogPrefix}publish-self-contained-${targetRid}.binlog" /p:_NETCoreSdkIsPreview=true
-                  "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-portable.binlog" /p:_NETCoreSdkIsPreview=true
+                  "${dotnetCmd}" publish --self-contained false /bl:"${binlogPrefix}publish-fx-dep.binlog"
+                  "${dotnetCmd}" publish --self-contained true -r "$targetRid" /bl:"${binlogPrefix}publish-self-contained-${targetRid}.binlog"
+                  "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-portable.binlog"
               }
             else
               runPublishScenarios() {
@@ -271,9 +270,9 @@ function doCommand() {
             if [ "$lang" == "F#" ]; then
               # F# tries to use a truncated version number unless we pass it this flag.  see https://github.com/dotnet/source-build/issues/2554
               if [ "$projectOutput" == "true" ]; then
-                  "${dotnetCmd}" $1 /bl:"$binlog" /p:_NETCoreSdkIsPreview=true | tee -a "$logFile"
+                  "${dotnetCmd}" $1 /bl:"$binlog" | tee -a "$logFile"
               else
-                  "${dotnetCmd}" $1 /bl:"$binlog" /p:_NETCoreSdkIsPreview=true >> "$logFile" 2>&1
+                  "${dotnetCmd}" $1 /bl:"$binlog" >> "$logFile" 2>&1
               fi
             else
               if [ "$projectOutput" == "true" ]; then
@@ -324,8 +323,7 @@ function runAllTests() {
         doCommand VB xunit new restore test
         doCommand VB mstest new restore test
 
-        # "run" was removed from the list below.  see https://github.com/dotnet/source-build/issues/2554
-        doCommand F# console new restore build multi-rid-publish
+        doCommand F# console new restore build run multi-rid-publish
         doCommand F# classlib new restore build multi-rid-publish
         doCommand F# xunit new restore test
         doCommand F# mstest new restore test
@@ -350,16 +348,12 @@ function runWebTests() {
     doCommand C# mvc "$@" new restore build run multi-rid-publish
     doCommand C# webapi "$@" new restore build multi-rid-publish
     doCommand C# razor "$@" new restore build run multi-rid-publish
-    # Requires prereqs (non-source-built packages) - re-enable with https://github.com/dotnet/source-build/issues/2550
-    # doCommand C# blazorwasm "$@" new restore build run publish
+    doCommand C# blazorwasm "$@" new restore build run publish
     doCommand C# blazorserver "$@" new restore build run publish
 
-    # "run" was removed from the list below.  see https://github.com/dotnet/source-build/issues/2554
-    doCommand F# web "$@" new restore build multi-rid-publish
-    # Requires prereqs (non-source-built packages) - re-enable with https://github.com/dotnet/source-build/issues/2550
-    # doCommand F# mvc "$@" new restore build run multi-rid-publish
-    # "run" was also removed from this set, same issue: https://github.com/dotnet/source-build/issues/2554
-    doCommand F# webapi "$@" new restore build multi-rid-publish
+    doCommand F# web "$@" new restore build run multi-rid-publish
+    doCommand F# mvc "$@" new restore build run multi-rid-publish
+    doCommand F# webapi "$@" new restore build run multi-rid-publish
 }
 
 function runXmlDocTests() {

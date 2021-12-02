@@ -191,8 +191,8 @@
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
-      <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids)" />
-      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids);win-arm64" />
+      <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
+      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
     </ItemGroup>
 
     <!--

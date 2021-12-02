@@ -61,7 +61,7 @@ Ten produkt gromadzi dane dotyczące użycia
 Zasoby
     • Dokumentacja platformy .NET: https://aka.ms/dotnet-docs
     • Dokumentacja zestawu SDK: https://aka.ms/dotnet-sdk-docs
-    • Informacje o wersji: https://aka.ms/dotnet5-release-notes
+    • Informacje o wersji: https://aka.ms/dotnet6-release-notes
     • Samouczki: https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">

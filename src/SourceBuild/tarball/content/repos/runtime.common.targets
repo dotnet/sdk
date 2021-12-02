@@ -23,7 +23,7 @@
   </Target>
 
   <Target Name="CopyBinariesToBinFolder"
-          AfterTargets="Build"
+          AfterTargets="ExtractIntermediatePackages"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)CopyBinariesToBinFolder.complete">
     <ItemGroup>
