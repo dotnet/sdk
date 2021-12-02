@@ -240,7 +240,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
 
-                if (_avoidMultipleEnumerationsHelpers.IsDeferredExecutinngInvocationOverInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (_avoidMultipleEnumerationsHelpers.IsDeferredExecutingInvocationOverInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }

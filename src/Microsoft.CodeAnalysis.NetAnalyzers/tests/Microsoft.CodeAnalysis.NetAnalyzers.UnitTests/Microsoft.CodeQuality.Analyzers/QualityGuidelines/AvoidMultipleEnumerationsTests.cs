@@ -246,13 +246,12 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(j As IEnumerable(of Integer))
-            Dim i = Enumerable.Range(1, 10)
+            Dim i As IEnumerable(Of Integer)= Enumerable.Range(1, 10)
 
-            while (true)
-            {
+            While (true)
                 [|i|].ElementAt(100)
                 [|j|].ElementAtOrDefault(100)
-            }
+            End While
         End Sub
     End Class
 End Namespace
@@ -490,8 +489,6 @@ Namespace Ns
                 [|i|].Union([|h|]).ToList()
                 [|i|].Join([|h|], Function(n) n, Function(n) n, Function(m, n) m + n).ToList()
             End If
-
-            i.Max()
         End Sub
     End Class
 End Namespace
@@ -545,7 +542,7 @@ Namespace Ns
             If b = 1 Then
                 [|i|].SingleOrDefault()
                 c.Max()
-            Else If b == 3
+            Else If b = 3
                 [|i|].ToList()
                 c.Min()
             Else
@@ -610,7 +607,7 @@ Namespace Ns
             If b = 1 Then
                 i.First()
                 [|j|].First()
-            Else If b == 3
+            Else If b = 3
                 i.First()
                 [|j|].First()
             Else
@@ -663,7 +660,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool flag, j As IEnumerable(Of Integer))
+        Public Sub Goo(flag As Boolean, j As IEnumerable(Of Integer))
             Dim i = Enumerable.Range(1, 10)
             Dim k = Enumerable.Range(1, 10).ToArray()
 
@@ -720,7 +717,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool flag)
+        Public Sub Goo(flag As Boolean)
             Dim k As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
 
             If flag Then
@@ -776,7 +773,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool flag, j As IEnumerable(Of Integer))
+        Public Sub Goo(flag As Boolean, j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             Dim k = Enumerable.Range(1, 10).ToArray()
 
@@ -844,7 +841,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+        Public Sub Goo(b As Boolean, j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             Dim k = Enumerable.Range(1, 10).ToArray()
 
@@ -905,7 +902,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+        Public Sub Goo(b As Boolean, j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             If b = 0 Then
                 [|i|].Single()
@@ -959,7 +956,7 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(bool b, j As IEnumerable(Of Integer))
+        Public Sub Goo(b As Integer, j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             If b = 0 Then
                 [|i|].Single()
@@ -1373,11 +1370,11 @@ Namespace Ns
         Public Sub Goo(j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             
-            ForEach c In [|i|]
+            For Each c In [|i|]
             Next
             [|i|].ToHashSet()
             
-            ForEach c2 In [|j|]
+            For Each c2 In [|j|]
             Next
             [|j|].ToHashSet()
         End Sub
@@ -1432,17 +1429,17 @@ Namespace Ns
         Public Sub Goo(j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             
-            ForEach c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
             Next
             [|i|].ToLookUp(Function(x) x)
             
-            ForEach c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
             Next
             [|j|].ToHashSet()
 
             Dim k = Enumerable.Range(1, 10).ToArray
 
-            ForEach c3 In k.Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c3 In k.Select(Function(m) m + 1).Where(Function(m) m <> 100)
             Next
             k.ToImmutableArray()
         End Sub
@@ -1501,18 +1498,18 @@ Namespace Ns
         Public Sub Goo(j As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             
-            ForEach c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c In [|i|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
                 [|i|].Where(Function(x) x <> 100).ToImmutableList()
             Next
-            [|i|].Select(Function(k) k + 1).Skip(100).First();
+            [|i|].Select(Function(k) k + 1).Skip(100).First()
             
-            ForEach c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c2 In [|j|].Select(Function(m) m + 1).Where(Function(m) m <> 100)
                 [|j|].Where(Function(x) x <> 100).ToImmutableSortedDictionary(Function(m) m, Function(n) n)
             Next
             [|j|].Select(Function(k) k + 1).Skip(100).First()
 
             Dim o = Enumerable.Range(1, 10).ToArray
-            ForEach c3 In o.Select(Function(m) m + 1).Where(Function(m) m <> 100)
+            For Each c3 In o.Select(Function(m) m + 1).Where(Function(m) m <> 100)
                 o.Where(Function(x) x <> 100).ToImmutableSortedDictionary(Function(m) m, Function(n) n)
             Next
             o.Select(Function(k) k + 1).Skip(100).First()
@@ -1565,7 +1562,7 @@ Namespace Ns
         End Sub
 
   
-        Public Sub TestMethod(object o)
+        Public Sub TestMethod(o As Object)
         End Sub
     End Class
 End Namespace
@@ -1613,9 +1610,8 @@ Namespace Ns
             TestMethod(h)
             h.First()
         End Sub
-
   
-        Public Sub TestMethod(Of T)(T o)
+        Public Sub TestMethod(Of T)(o As T)
         End Sub
     End Class
 End Namespace
@@ -1643,7 +1639,7 @@ public class Bar
         [|h|].First();
     }
 
-    public void TestMethod<T>(o As T) where T : IEnumerable<int>
+    public void TestMethod<T>(T o) where T : IEnumerable<int>
     {
     }
 }";
@@ -1658,15 +1654,15 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            TestMethod(i)
-            i.First()
+            TestMethod([|i|])
+            [|i|].First()
             
-            TestMethod(h)
-            h.First()
+            TestMethod([|h|])
+            [|h|].First()
         End Sub
 
   
-        Public Sub TestMethod(Of T As IEnumerable<int>)(o As T)
+        Public Sub TestMethod(Of T As IEnumerable(Of Integer))(o As T)
         End Sub
     End Class
 End Namespace
@@ -1814,8 +1810,8 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            [|x|].GroupJoin([|h|]), Function(i) i, Function(i) i, Function(i, ints) i).First()
-            [|x|].GroupJoin([|h|]), Function(i) i, Function(i) i, Function(i, ints) i).Last()
+            [|x|].GroupJoin([|h|], Function(i) i, Function(i) i, Function(i, ints) i).First()
+            [|x|].GroupJoin([|h|], Function(i) i, Function(i) i, Function(i, ints) i).Last()
         End Sub
     End Class
 End Namespace
@@ -1829,6 +1825,7 @@ End Namespace
             // SkipLast and TakeLast are unavailable for NET472
 #if NETCOREAPP2_0_OR_GREATER
             var csharpCode = @"
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -1855,6 +1852,7 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
             var vbCode = @"
+Imports System
 Imports System.Collections.Generic
 Imports System.Linq
 
@@ -1862,14 +1860,14 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo()
             Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+            Dim c1 = [|x|].Append(1).Cast(Of Object)().Distinct().
                 OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
                 ThenBy(Function(i) i).ThenByDescending(Function(i) i).
                 Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
                 SkipWhile(Function(i) i = 99).SkipLast(100).Take(1).TakeWhile(Function(i) i = 100).TakeLast(100).
                 Where(Function(i) i <> 10).ToArray()
 
-            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+            Dim c2 = [|x|].Append(1).Cast(Of Object)().Distinct().
                 OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
                 ThenBy(Function(i) i).ThenByDescending(Function(i) i).
                 Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
@@ -1918,14 +1916,14 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo()
             Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+            Dim c1 = [|x|].Append(1).Cast(Of Object)().Distinct().
                 OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
                 ThenBy(Function(i) i).ThenByDescending(Function(i) i).
                 Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
                 SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
                 Where(Function(i) i <> 10).ToArray()
 
-            Dim c1 = [|x|].Append(1).Cast<Object>().Distinct().
+            Dim c2 = [|x|].Append(1).Cast(Of Object)().Distinct().
                 OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
                 ThenBy(Function(i) i).ThenByDescending(Function(i) i).
                 Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
@@ -2000,7 +1998,7 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(y As IEnumerable(Of IEnumerable(Of Integer)))
             Dim a = [|y|].SelectMany(Function(x) x).ToArray()
-            Dim a = [|y|].SelectMany(Function(x) x.ToArray()).ToArray()
+            Dim b = [|y|].SelectMany(Function(x) x.ToArray()).ToArray()
         End Sub
     End Class
 End Namespace
@@ -2027,7 +2025,7 @@ public class Bar
             await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
             var vbCode = @"
-Imports System.Collections;
+Imports System.Collections
 Imports System.Collections.Generic
 Imports System.Linq
 
@@ -2145,7 +2143,7 @@ Namespace Ns
             h = Enumerable.Range(1, 10)
             h.First()
 
-            h. = Enumerable.Range(1, 100)
+            h = Enumerable.Range(1, 100)
             For Each i In h
             Next
         End Sub
@@ -2192,7 +2190,7 @@ Namespace Ns
             For Each i In [|d|]
             Next
 
-            var e = d;
+            Dim e = d
             For Each i In [|e|]
             Next
         End Sub
@@ -2665,11 +2663,11 @@ Imports System.Linq
 Namespace NS
     Public Class Bar
         Public Sub Goo(i As IEnumerable(Of Integer), j As IEnumerable(Of Integer), flag As Boolean)
-            Dim a = flag ? i : j
-            Dim b = [|a|].Except([|j|])
+            Dim a = If(flag, i, j)
+            Dim b = [|a|].Except([|i|])
 
-            [|a|].Element(10)
-            [|i|].Element(10)
+            [|a|].ElementAt(10)
+            [|i|].ElementAt(10)
             b.ToArray()
         End Sub
     End Class
@@ -2707,11 +2705,11 @@ Imports System.Linq
 Namespace NS
     Public Class Bar
         Public Sub Goo(i As IEnumerable(Of Integer), j As Integer(), flag As Boolean)
-            Dim a = flag ? i : j
+            Dim a = If(flag, i, j)
             Dim b = a.Except(j)
 
-            a.Element(10)
-            i.Element(10)
+            a.ElementAt(10)
+            i.ElementAt(10)
             b.ToArray()
         End Sub
     End Class
@@ -2748,7 +2746,7 @@ Imports System.Linq
 Namespace NS
     Public Class Bar
         Public Sub Goo(i As Integer(), j As Integer(), flag As Boolean)
-            Dim a = flag ? i : j
+            Dim a = If(flag, i, j)
             Dim b = a.Except(j)
 
             [|b|].ToArray()
@@ -2896,7 +2894,7 @@ Imports System.Linq
 Namespace NS
     Public Class Bar
         Public Sub Goo(i As IEnumerable(Of Integer))
-            Dim z As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
+            Dim j As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
             Dim z = i.Concat(j)
             j.ElementAt(10)
             z.ToArray()

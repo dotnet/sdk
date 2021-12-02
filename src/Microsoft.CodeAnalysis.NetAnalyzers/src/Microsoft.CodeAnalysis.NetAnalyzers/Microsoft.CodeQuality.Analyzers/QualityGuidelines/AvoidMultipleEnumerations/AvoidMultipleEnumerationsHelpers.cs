@@ -10,6 +10,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal abstract class AvoidMultipleEnumerationsHelpers
     {
+        protected abstract bool IsInvocationCausingEnumerationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
+
+        protected abstract bool IsOperationTheInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
+
+        public abstract bool IsDeferredExecutingInvocationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
+
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
         /// </summary>
@@ -62,8 +68,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             return operation;
         }
-
-        protected abstract bool IsOperationTheInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         public static bool IsValidImplicitConversion(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -119,7 +123,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return false;
         }
 
-        protected abstract bool IsInvocationCausingEnumerationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
+        private static IParameterSymbol GetReducedFromParameter(IMethodSymbol methodSymbol, IParameterSymbol parameterSymbol)
+        {
+            RoslynDebug.Assert(methodSymbol.Parameters.Contains(parameterSymbol));
+            RoslynDebug.Assert(methodSymbol.ReducedFrom != null);
+
+            var reducedFromMethodSymbol = methodSymbol.ReducedFrom;
+            var index = methodSymbol.Parameters.IndexOf(parameterSymbol);
+            return reducedFromMethodSymbol.Parameters[index + 1];
+        }
 
         /// <summary>
         /// Check if <param name="invocationOperation"/> is targeting a method that will cause the enumeration of <param name="argumentOperationToCheck"/>.
@@ -132,23 +144,26 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
 
             var targetMethod = invocationOperation.TargetMethod;
-            var parameter = argumentOperationToCheck.Parameter;
+            var reduceFromMethod = targetMethod.ReducedFrom ?? targetMethod;
+            var parameter = targetMethod.MethodKind == MethodKind.ReducedExtension
+                ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
+                : argumentOperationToCheck.Parameter;
 
             // Common linq method case, like ToArray
-            if (wellKnownSymbolsInfo.OneParameterEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
-                && targetMethod.IsExtensionMethod
-                && !targetMethod.Parameters.IsEmpty
-                && parameter.Equals(targetMethod.Parameters[0])
+            if (wellKnownSymbolsInfo.OneParameterEnumeratedMethods.Contains(reduceFromMethod.OriginalDefinition)
+                && reduceFromMethod.IsExtensionMethod
+                && !reduceFromMethod.Parameters.IsEmpty
+                && parameter.Equals(reduceFromMethod.Parameters[0])
                 && IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
 
             // Example: SequentialEqual would enumerate two parameters
-            if (wellKnownSymbolsInfo.TwoParametersEnumeratedMethods.Contains(targetMethod.OriginalDefinition)
-                && targetMethod.IsExtensionMethod
-                && targetMethod.Parameters.Length > 1
-                && (parameter.Equals(targetMethod.Parameters[0]) || parameter.Equals(targetMethod.Parameters[1]))
+            if (wellKnownSymbolsInfo.TwoParametersEnumeratedMethods.Contains(reduceFromMethod.OriginalDefinition)
+                && reduceFromMethod.IsExtensionMethod
+                && reduceFromMethod.Parameters.Length > 1
+                && (parameter.Equals(reduceFromMethod.Parameters[0]) || parameter.Equals(reduceFromMethod.Parameters[1]))
                 && IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
@@ -186,8 +201,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && IsDeferredExecutingInvocationOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
         }
 
-        public abstract bool IsDeferredExecutinngInvocationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
-
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.
         /// </summary>
@@ -198,24 +211,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
             var targetMethod = invocationOperation.TargetMethod;
+            var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
             if (!IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
 
-            var argumentMatchingParameter = argumentOperationToCheck.Parameter;
+            var parameter = targetMethod.MethodKind == MethodKind.ReducedExtension
+                ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
+                : argumentOperationToCheck.Parameter;
             // Method like Select, Where, etc.. only take one IEnumerable, and it is the first parameter.
-            if (wellKnownSymbolsInfo.OneParameterDeferredMethods.Contains(targetMethod.OriginalDefinition)
-                && !targetMethod.Parameters.IsEmpty
-                && targetMethod.Parameters[0].Equals(argumentMatchingParameter))
+            if (wellKnownSymbolsInfo.OneParameterDeferredMethods.Contains(reducedFromMethod.OriginalDefinition)
+                && !reducedFromMethod.Parameters.IsEmpty
+                && reducedFromMethod.Parameters[0].Equals(parameter))
             {
                 return true;
             }
 
             // Method like Concat, Except, etc.. take two IEnumerable, and it is the first parameter or second parameter.
-            if (wellKnownSymbolsInfo.TwoParametersDeferredMethods.Contains(targetMethod.OriginalDefinition)
-                && targetMethod.Parameters.Length > 1
-                && (targetMethod.Parameters[0].Equals(argumentMatchingParameter) || targetMethod.Parameters[1].Equals(argumentMatchingParameter)))
+            if (wellKnownSymbolsInfo.TwoParametersDeferredMethods.Contains(reducedFromMethod.OriginalDefinition)
+                && reducedFromMethod.Parameters.Length > 1
+                && (reducedFromMethod.Parameters[0].Equals(parameter) || reducedFromMethod.Parameters[1].Equals(parameter)))
             {
                 return true;
             }

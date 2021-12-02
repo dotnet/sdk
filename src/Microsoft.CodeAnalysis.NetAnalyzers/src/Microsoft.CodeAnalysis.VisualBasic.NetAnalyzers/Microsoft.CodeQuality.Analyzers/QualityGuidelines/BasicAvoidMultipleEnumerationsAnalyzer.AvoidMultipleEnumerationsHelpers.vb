@@ -11,7 +11,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
             Public Shared ReadOnly Instance As New BasicAvoidMultipleEnumerationsHelpers()
 
-            Public Overrides Function IsDeferredExecutinngInvocationOverInvocationInstance(invocationOperation As IInvocationOperation, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As Boolean
+            Public Overrides Function IsDeferredExecutingInvocationOverInvocationInstance(invocationOperation As IInvocationOperation, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As Boolean
                 If invocationOperation.Instance Is Nothing OrElse invocationOperation.TargetMethod.MethodKind <> MethodKind.ReducedExtension Then
                     Return False
                 End If
@@ -42,7 +42,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
             Protected Overrides Function IsOperationTheInstanceOfDeferredInvocation(operation As IOperation, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As Boolean
                 Dim parentInvocationOperation = TryCast(operation.Parent, IInvocationOperation)
-                Return parentInvocationOperation IsNot Nothing AndAlso IsDeferredExecutinngInvocationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo)
+                Return parentInvocationOperation IsNot Nothing AndAlso IsDeferredExecutingInvocationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo)
             End Function
         End Class
     End Class
