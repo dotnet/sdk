@@ -23,16 +23,26 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> TwoParametersDeferredMethods { get; }
 
         /// <summary>
+        /// Enumeration methods that take three deferred type parameters.
+        /// </summary>
+        public ImmutableArray<IMethodSymbol> ThreeParametersDeferredMethods { get; }
+
+        /// <summary>
         /// Enumeration methods that take one deferred type parameter.
         /// e.g. ToArray, Count
         /// </summary>
         public ImmutableArray<IMethodSymbol> OneParameterEnumeratedMethods { get; }
 
         /// <summary>
-        /// Enumeration methods that take two deferred type parameter.
+        /// Enumeration methods that take two deferred type parameters.
         /// e.g. SequentialEqual
         /// </summary>
         public ImmutableArray<IMethodSymbol> TwoParametersEnumeratedMethods { get; }
+
+        /// <summary>
+        /// Method that has no effect on deferred type parameter.
+        /// </summary>
+        public ImmutableArray<IMethodSymbol> NoEffectMethods { get; }
 
         /// <summary>
         /// Other deferred types except IEnumerable and IEnumerable`1.
@@ -49,15 +59,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
             ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
+            ImmutableArray<IMethodSymbol> threeParametersDeferredMethods,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
             ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> noEffectMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods)
         {
             OneParameterDeferredMethods = oneParameterDeferredMethods;
             TwoParametersDeferredMethods = twoParametersDeferredMethods;
+            ThreeParametersDeferredMethods = threeParametersDeferredMethods;
             OneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
             TwoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
+            NoEffectMethods = noEffectMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
         }

@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -40,98 +41,103 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// All the immutable collections that have a conversion method from IEnumerable.
         /// </summary>
         private static readonly ImmutableArray<(string typeName, string methodName)> s_immutableCollectionsTypeNamesAndConvensionMethods = ImmutableArray.Create(
-            ("System.Collections.Immutable.ImmutableArray", "ToImmutableArray"),
-            ("System.Collections.Immutable.ImmutableDictionary", "ToImmutableDictionary"),
-            ("System.Collections.Immutable.ImmutableHashSet", "ToImmutableHashSet"),
-            ("System.Collections.Immutable.ImmutableList", "ToImmutableList"),
-            ("System.Collections.Immutable.ImmutableSortedDictionary", "ToImmutableSortedDictionary"),
-            ("System.Collections.Immutable.ImmutableSortedSet", "ToImmutableSortedSet"));
+            ("System.Collections.Immutable.ImmutableArray", nameof(ImmutableArray.ToImmutableArray)),
+            ("System.Collections.Immutable.ImmutableDictionary", nameof(ImmutableDictionary.ToImmutableDictionary)),
+            ("System.Collections.Immutable.ImmutableHashSet", nameof(ImmutableHashSet.ToImmutableHashSet)),
+            ("System.Collections.Immutable.ImmutableList", nameof(ImmutableList.ToImmutableList)),
+            ("System.Collections.Immutable.ImmutableSortedDictionary", nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
+            ("System.Collections.Immutable.ImmutableSortedSet", nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
         /// <summary>
         /// Linq methods causing its first parameter to be enumerated.
         /// </summary>
         private static readonly ImmutableArray<string> s_linqOneParameterEnumeratedMethods = ImmutableArray.Create(
-            "Aggregate",
-            "All",
-            "Any",
-            "Average",
-            "Contains",
-            "Count",
-            "DefaultIfEmpty",
-            "ElementAt",
-            "ElementAtOrDefault",
-            "First",
-            "FirstOrDefault",
-            "Last",
-            "LastOrDefault",
-            "LongCount",
-            "Max",
+            nameof(Enumerable.Aggregate),
+            nameof(Enumerable.All),
+            nameof(Enumerable.Any),
+            nameof(Enumerable.Average),
+            nameof(Enumerable.Contains),
+            nameof(Enumerable.Count),
+            nameof(Enumerable.DefaultIfEmpty),
+            nameof(Enumerable.ElementAt),
+            nameof(Enumerable.ElementAtOrDefault),
+            nameof(Enumerable.First),
+            nameof(Enumerable.FirstOrDefault),
+            nameof(Enumerable.Last),
+            nameof(Enumerable.LastOrDefault),
+            nameof(Enumerable.LongCount),
+            nameof(Enumerable.Max),
+            nameof(Enumerable.Min),
+            nameof(Enumerable.Single),
+            nameof(Enumerable.SingleOrDefault),
+            nameof(Enumerable.Sum),
+            nameof(Enumerable.ToArray),
+            nameof(Enumerable.ToDictionary),
+            nameof(Enumerable.ToList),
+            nameof(Enumerable.ToLookup),
+            // Only available on .net6 or later
             "MaxBy",
-            "Min",
             "MinBy",
-            "Single",
-            "SingleOrDefault",
-            "Sum",
-            "ToArray",
-            "ToDictionary",
-            "ToHashSet",
-            "ToList",
-            "ToLookup");
+            // Only available on .netstandard 2.1 or later
+            "ToHashSet");
 
         /// <summary>
         /// Linq methods causing its first two parameters to be enumerated.
         /// </summary>
         private static readonly ImmutableArray<string> s_linqTwoParametersEnumeratedMethods = ImmutableArray.Create(
-            "SequenceEqual");
+            nameof(Enumerable.SequenceEqual));
 
         /// <summary>
         /// Linq methods deferring its first parameter to be enumerated.
         /// </summary>
         private static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
-            "Append",
-            "Cast",
+            nameof(Enumerable.Append),
+            nameof(Enumerable.Cast),
+            nameof(Enumerable.Distinct),
+            nameof(Enumerable.GroupBy),
+            nameof(Enumerable.OfType),
+            nameof(Enumerable.OrderBy),
+            nameof(Enumerable.OrderByDescending),
+            nameof(Enumerable.Prepend),
+            nameof(Enumerable.Reverse),
+            nameof(Enumerable.Select),
+            nameof(Enumerable.SelectMany),
+            nameof(Enumerable.Skip),
+            nameof(Enumerable.SkipWhile),
+            nameof(Enumerable.Take),
+            nameof(Enumerable.TakeWhile),
+            nameof(Enumerable.ThenBy),
+            nameof(Enumerable.ThenByDescending),
+            nameof(Enumerable.Where),
+            // Only available on .net6 or later
             "Chunk",
-            "Distinct",
             "DistinctBy",
-            "GroupBy",
-            "OfType",
-            "OrderBy",
-            "OrderByDescending",
-            "Prepend",
-            "Reverse",
-            "Select",
-            "SelectMany",
-            "Skip",
-            "SkipLast",
-            "SkipWhile",
-            "Take",
+            "TryGetNonEnumeratedCount",
+            // Only available on .netstandard 2.1 or later
             "TakeLast",
-            "TakeWhile",
-            "ThenBy",
-            "ThenByDescending",
-            "Where",
-            "TryGetNonEnumeratedCount");
+            "SkipLast");
 
         /// <summary>
         /// Linq methods deferring its first two parameters to be enumerated.
         /// </summary>
         private static readonly ImmutableArray<string> s_linqTwoParametersDeferredMethods = ImmutableArray.Create(
-            "Concat",
-            "Except",
+            nameof(Enumerable.Concat),
+            nameof(Enumerable.Except),
+            nameof(Enumerable.GroupJoin),
+            nameof(Enumerable.Intersect),
+            nameof(Enumerable.Join),
+            nameof(Enumerable.Union),
+            nameof(Enumerable.Zip),
+            // Only available on .net6 or later
             "ExceptBy",
-            "GroupJoin",
-            "Intersect",
             "IntersectBy",
-            "Join",
-            "Union",
-            "UnionBy",
-            "Zip");
+            "UnionBy");
 
         private static readonly ImmutableArray<string> s_linqThreeParametersDeferredMethods = ImmutableArray.Create(
-            "Zip");
+            nameof(Enumerable.Zip));
 
         private static readonly ImmutableArray<string> s_linqNoEffectMethods = ImmutableArray.Create(
-            "AsEnumerable");
+            nameof(Enumerable.AsEnumerable));
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
@@ -155,9 +161,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var oneParameterDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqOneParameterDeferredMethods);
             var twoParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersDeferredMethods);
+            var threeParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqThreeParametersDeferredMethods);
 
             var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_linqOneParameterEnumeratedMethods);
             var twoParametersEnumeratedMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersEnumeratedMethods);
+
+            var noEffectMethods = GetLinqMethods(wellKnownTypeProvider, s_linqNoEffectMethods);
 
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
@@ -169,8 +178,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
                 oneParameterDeferredMethods,
                 twoParametersDeferredMethods,
+                threeParametersDeferredMethods,
                 oneParameterEnumeratedMethods,
                 twoParametersEnumeratedMethods,
+                noEffectMethods,
                 additionalDeferTypes,
                 getEnumeratorSymbols);
 
