@@ -9,13 +9,13 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     internal sealed partial class CSharpAvoidMultipleEnumerationsAnalyzer : AvoidMultipleEnumerations
     {
-        internal override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
+        protected override GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
                 wellKnownSymbolsInfo);
 
-        internal override AvoidMultipleEnumerationsHelpers AvoidMultipleEnumerationsHelpers { get; } = CSharpAvoidMultipleEnumerationsHelpers.Instance;
+        protected override AvoidMultipleEnumerationsHelper AvoidMultipleEnumerationsHelper { get; } = CSharpAvoidMultipleEnumerationsHelper.Instance;
     }
 }

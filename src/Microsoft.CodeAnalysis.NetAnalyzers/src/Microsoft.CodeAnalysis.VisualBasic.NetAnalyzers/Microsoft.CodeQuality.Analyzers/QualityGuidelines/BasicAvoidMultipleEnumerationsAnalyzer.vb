@@ -11,11 +11,11 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Partial Friend NotInheritable Class BasicAvoidMultipleEnumerationsAnalyzer
         Inherits AvoidMultipleEnumerations
 
-        Friend Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As GlobalFlowStateDictionaryFlowOperationVisitor
+        Protected Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As GlobalFlowStateDictionaryFlowOperationVisitor
             Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownSymbolsInfo)
         End Function
 
-        Friend Overrides ReadOnly Property AvoidMultipleEnumerationsHelpers As AvoidMultipleEnumerationsHelpers
+        Protected Overrides ReadOnly Property AvoidMultipleEnumerationsHelper As AvoidMultipleEnumerationsHelper
             Get
                 Return BasicAvoidMultipleEnumerationsHelpers.Instance
             End Get

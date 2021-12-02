@@ -7,7 +7,7 @@ Imports Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerati
 Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
     Friend Class BasicAvoidMultipleEnumerationsAnalyzer
         Private Class BasicAvoidMultipleEnumerationsHelpers
-            Inherits AvoidMultipleEnumerationsHelpers
+            Inherits AvoidMultipleEnumerationsHelper
 
             Public Shared ReadOnly Instance As New BasicAvoidMultipleEnumerationsHelpers()
 

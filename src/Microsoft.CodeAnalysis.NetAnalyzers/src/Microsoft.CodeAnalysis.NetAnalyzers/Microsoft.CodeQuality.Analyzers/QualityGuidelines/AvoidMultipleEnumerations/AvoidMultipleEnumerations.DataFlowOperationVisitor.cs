@@ -9,7 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
-using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
+using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelper;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -18,14 +18,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
-            private readonly AvoidMultipleEnumerationsHelpers _avoidMultipleEnumerationsHelpers;
+            private readonly AvoidMultipleEnumerationsHelper _avoidMultipleEnumerationsHelper;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                AvoidMultipleEnumerationsHelpers avoidMultipleEnumerationsHelpers,
+                AvoidMultipleEnumerationsHelper avoidMultipleEnumerationsHelper,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
-                _avoidMultipleEnumerationsHelpers = avoidMultipleEnumerationsHelpers;
+                _avoidMultipleEnumerationsHelper = avoidMultipleEnumerationsHelper;
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
             }
 
@@ -51,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!_avoidMultipleEnumerationsHelpers.IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
+                if (!_avoidMultipleEnumerationsHelper.IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
                     && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
                 {
                     return defaultValue;
@@ -240,7 +240,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
 
-                if (_avoidMultipleEnumerationsHelpers.IsDeferredExecutingInvocationOverInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (_avoidMultipleEnumerationsHelper.IsDeferredExecutingInvocationOverInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }
@@ -302,7 +302,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = _avoidMultipleEnumerationsHelpers.SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
+                var operationToCheck = _avoidMultipleEnumerationsHelper.SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (!IsDeferredType(operationToCheck.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))

@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
 using static Microsoft.CodeQuality.Analyzers.MicrosoftCodeQualityAnalyzersResources;
-using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
+using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelper;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -133,11 +133,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static readonly ImmutableArray<string> s_linqNoEffectMethods = ImmutableArray.Create(
             "AsEnumerable");
 
-        internal abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
+        protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
-        internal abstract AvoidMultipleEnumerationsHelpers AvoidMultipleEnumerationsHelpers { get; }
+        protected abstract AvoidMultipleEnumerationsHelper AvoidMultipleEnumerationsHelper { get; }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -147,9 +147,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         private void CompilationStartAction(CompilationStartAnalysisContext context)
-        {
-            context.RegisterOperationBlockStartAction(OnOperationBlockStart);
-        }
+            => context.RegisterOperationBlockStartAction(OnOperationBlockStart);
 
         private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
@@ -201,8 +199,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var operation = context.Operation;
             if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
-                var isEnumerated = AvoidMultipleEnumerationsHelpers.IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
-                    || AvoidMultipleEnumerationsHelpers.IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
+                var isEnumerated = AvoidMultipleEnumerationsHelper.IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
+                    || AvoidMultipleEnumerationsHelper.IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
                 if (isEnumerated)
                     builder.Add(operation);
             }
@@ -314,7 +312,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
         }
 
-        public static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
+        private static ImmutableArray<IMethodSymbol> GetGetEnumeratorMethods(WellKnownTypeProvider wellKnownTypeProvider)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
 
@@ -339,7 +337,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        public static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
+        private static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
         {
             using var builder = ArrayBuilder<ITypeSymbol>.GetInstance();
             foreach (var name in typeNames)
@@ -353,7 +351,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        public static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
+        private static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
             GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, builder);
