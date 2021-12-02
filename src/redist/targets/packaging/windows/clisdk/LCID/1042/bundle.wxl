@@ -61,7 +61,7 @@
 리소스
     • .NET 설명서 https://aka.ms/dotnet-docs
     • SDK 설명서 https://aka.ms/dotnet-sdk-docs
-    • 릴리스 정보 https://aka.ms/dotnet5-release-notes
+    • 릴리스 정보 https://aka.ms/dotnet6-release-notes
     • 자습서 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
