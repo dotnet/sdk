@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Buffers;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -51,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods causing its first parameter to be enumerated.
         /// </summary>
-        private static readonly ImmutableArray<string> s_linqOneParameterEnumeratedMethods = ImmutableArray.Create(
+        public static readonly ImmutableArray<string> s_linqOneParameterEnumeratedMethods = ImmutableArray.Create(
             nameof(Enumerable.Aggregate),
             nameof(Enumerable.All),
             nameof(Enumerable.Any),
@@ -90,8 +89,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods deferring its first parameter to be enumerated.
         /// </summary>
-        private static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
+        public static readonly ImmutableArray<string> s_linqOneParameterDeferredMethods = ImmutableArray.Create(
             nameof(Enumerable.Append),
+            nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),
             nameof(Enumerable.Distinct),
             nameof(Enumerable.GroupBy),
@@ -112,7 +112,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // Only available on .net6 or later
             "Chunk",
             "DistinctBy",
-            "TryGetNonEnumeratedCount",
             // Only available on .netstandard 2.1 or later
             "TakeLast",
             "SkipLast");
@@ -120,7 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods deferring its first two parameters to be enumerated.
         /// </summary>
-        private static readonly ImmutableArray<string> s_linqTwoParametersDeferredMethods = ImmutableArray.Create(
+        public static readonly ImmutableArray<string> s_linqTwoParametersDeferredMethods = ImmutableArray.Create(
             nameof(Enumerable.Concat),
             nameof(Enumerable.Except),
             nameof(Enumerable.GroupJoin),
@@ -133,11 +132,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "IntersectBy",
             "UnionBy");
 
-        private static readonly ImmutableArray<string> s_linqThreeParametersDeferredMethods = ImmutableArray.Create(
+        /// <summary>
+        /// Linq methods deferring its first three parameters to be enumerated.
+        /// </summary>
+        public static readonly ImmutableArray<string> s_linqThreeParametersDeferredMethods = ImmutableArray.Create(
             nameof(Enumerable.Zip));
-
-        private static readonly ImmutableArray<string> s_linqNoEffectMethods = ImmutableArray.Create(
-            nameof(Enumerable.AsEnumerable));
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
@@ -159,17 +158,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
 
-            var oneParameterDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqOneParameterDeferredMethods);
-            var twoParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersDeferredMethods);
-            var threeParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqThreeParametersDeferredMethods);
-
-            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_linqOneParameterEnumeratedMethods);
-            var twoParametersEnumeratedMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersEnumeratedMethods);
-
-            var noEffectMethods = GetLinqMethods(wellKnownTypeProvider, s_linqNoEffectMethods);
-
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
+
+            var oneParameterDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqOneParameterDeferredMethods, deferredTypeParametersNumber: 1, additionalDeferTypes);
+            var twoParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersDeferredMethods, deferredTypeParametersNumber: 2, additionalDeferTypes);
+            var threeParametersDeferredMethods = GetLinqMethods(wellKnownTypeProvider, s_linqThreeParametersDeferredMethods, deferredTypeParametersNumber: 3, additionalDeferTypes);
+
+            var oneParameterEnumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_linqOneParameterEnumeratedMethods, additionalDeferTypes);
+            var twoParametersEnumeratedMethods = GetLinqMethods(wellKnownTypeProvider, s_linqTwoParametersEnumeratedMethods, deferredTypeParametersNumber: 2, additionalDeferTypes);
 
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
@@ -181,7 +178,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 threeParametersDeferredMethods,
                 oneParameterEnumeratedMethods,
                 twoParametersEnumeratedMethods,
-                noEffectMethods,
                 additionalDeferTypes,
                 getEnumeratorSymbols);
 
@@ -289,11 +285,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static ImmutableArray<IMethodSymbol> GetOneParameterEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
-            ImmutableArray<string> linqMethodNames)
+            ImmutableArray<string> linqMethodNames,
+            ImmutableArray<ITypeSymbol> additionalDeferredTypes)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
             GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, deferredTypeParametersNumber: 1, additionalDeferredTypes, builder);
             return builder.ToImmutable();
         }
 
@@ -362,10 +359,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static ImmutableArray<IMethodSymbol> GetLinqMethods(WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames)
+        private static ImmutableArray<IMethodSymbol> GetLinqMethods(
+            WellKnownTypeProvider wellKnownTypeProvider, ImmutableArray<string> methodNames, int deferredTypeParametersNumber, ImmutableArray<ITypeSymbol> additionalDeferredTypes)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
-            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, builder);
+            GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, methodNames, deferredTypeParametersNumber, additionalDeferredTypes, builder);
             return builder.ToImmutable();
         }
 
@@ -373,13 +371,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownTypeProvider wellKnownTypeProvider,
             string typeName,
             ImmutableArray<string> methodNames,
+            int deferredTypeParametersNumber,
+            ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ArrayBuilder<IMethodSymbol> builder)
         {
             if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
             {
                 foreach (var methodName in methodNames)
                 {
-                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
+                    foreach (var member in type.GetMembers(methodName))
+                    {
+                        if (member is IMethodSymbol methodSymbol
+                            && methodSymbol.Parameters.Count(parameter => IsDeferredType(parameter.Type?.OriginalDefinition, additionalDeferredTypes)) == deferredTypeParametersNumber)
+                        {
+                            builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
+                        }
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
@@ -2870,7 +2871,7 @@ End Namespace";
         [Fact]
         public async Task TestImplictExplictedFromArrayToIEnumerable()
         {
-            var code = @"
+            var csharpCode = @"
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -2885,7 +2886,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2903,6 +2904,84 @@ Namespace NS
 End Namespace";
 
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestAssignFromTranslatedQuery()
+        {
+            var csharpCode = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        var k = from a in [|i|]
+                select a + 1;
+
+        k.ElementAt(10);
+        [|i|].ElementAt(100);
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer))
+            Dim k = From a In [|i|]
+                    Select a + 1
+            [|i|].ElementAt(10)
+            k.ElementAt(100)
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestVBAggregateQuery()
+        {
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer))
+            Dim z = From q in [|i|]
+                    Select q + 1
+
+            Dim j = Aggregate k in [|z|]
+                    Into Average(k)
+
+            Dim j2 = Aggregate k in [|z|]
+                    Into Sum(k)
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public void TestNet6AddedMethod()
+        {
+            // newly added method in .Net 6, currently can't found by unit tests
+            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_linqOneParameterEnumeratedMethods);
+            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_linqOneParameterEnumeratedMethods);
+            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_linqOneParameterDeferredMethods);
+            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_linqOneParameterDeferredMethods);
+            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
+            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
+            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
+            Assert.Contains("Zip", AvoidMultipleEnumerations.s_linqThreeParametersDeferredMethods);
         }
     }
 }

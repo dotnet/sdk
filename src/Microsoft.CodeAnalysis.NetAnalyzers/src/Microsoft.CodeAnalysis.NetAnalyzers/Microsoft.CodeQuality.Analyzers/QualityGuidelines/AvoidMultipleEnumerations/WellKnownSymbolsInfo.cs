@@ -40,11 +40,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> TwoParametersEnumeratedMethods { get; }
 
         /// <summary>
-        /// Method that has no effect on deferred type parameter.
-        /// </summary>
-        public ImmutableArray<IMethodSymbol> NoEffectMethods { get; }
-
-        /// <summary>
         /// Other deferred types except IEnumerable and IEnumerable`1.
         /// e.g.
         /// IOrderedEnumerable
@@ -62,7 +57,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> threeParametersDeferredMethods,
             ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
             ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> noEffectMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods)
         {
@@ -71,7 +65,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ThreeParametersDeferredMethods = threeParametersDeferredMethods;
             OneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
             TwoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
-            NoEffectMethods = noEffectMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
         }

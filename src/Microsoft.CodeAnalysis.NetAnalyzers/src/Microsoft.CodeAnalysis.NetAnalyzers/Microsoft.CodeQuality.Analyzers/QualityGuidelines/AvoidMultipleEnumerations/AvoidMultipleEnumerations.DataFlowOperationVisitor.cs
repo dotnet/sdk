@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
@@ -240,7 +239,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
 
-                if (_avoidMultipleEnumerationsHelper.IsDeferredExecutingInvocationOverInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (_avoidMultipleEnumerationsHelper.IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }

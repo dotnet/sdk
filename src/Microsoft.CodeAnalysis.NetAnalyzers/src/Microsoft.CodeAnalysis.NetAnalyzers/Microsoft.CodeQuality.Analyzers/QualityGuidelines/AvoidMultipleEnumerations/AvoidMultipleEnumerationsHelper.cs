@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         protected abstract bool IsOperationTheInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
-        public abstract bool IsDeferredExecutingInvocationOverInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
+        public abstract bool IsInvocationDeferredExecutingInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
         /// <summary>
         /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by a method invocation.
@@ -232,6 +232,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             if (wellKnownSymbolsInfo.TwoParametersDeferredMethods.Contains(reducedFromMethod.OriginalDefinition)
                 && reducedFromMethod.Parameters.Length > 1
                 && (reducedFromMethod.Parameters[0].Equals(parameter) || reducedFromMethod.Parameters[1].Equals(parameter)))
+            {
+                return true;
+            }
+
+            // Zip has a overload zipping 3 IEnumerable instance.
+            if (wellKnownSymbolsInfo.ThreeParametersDeferredMethods.Contains(reducedFromMethod.OriginalDefinition)
+                && !reducedFromMethod.Parameters.IsEmpty
+                && (reducedFromMethod.Parameters[0].Equals(parameter) || reducedFromMethod.Parameters[1].Equals(parameter) || reducedFromMethod.Parameters[2].Equals(parameter)))
             {
                 return true;
             }
