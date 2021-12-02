@@ -81,7 +81,6 @@ namespace Microsoft.NET.Build.Tests
                 else
                 {
                     outputFiles.Add($"AllResourcesInSatellite{EnvironmentInfo.ExecutableExtension}");
-                    outputFiles.Add("ref/AllResourcesInSatellite.dll");
                     outputFiles.Add("AllResourcesInSatellite.dll");
                     outputFiles.Add("AllResourcesInSatellite.deps.json");
                     outputFiles.Add("AllResourcesInSatellite.runtimeconfig.json");
