@@ -19,6 +19,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             _reporter = reporter;
             _console = console;
+
+            var alwaysRestart = Environment.GetEnvironmentVariable("DOTNET_WATCH_ALWAYS_RESTART");
+
+            if (alwaysRestart == "1" || alwaysRestart?.ToLower() == "true")
+            {
+                _reporter.Verbose($"DOTNET_WATCH_ALWAYS_RESTART = '{alwaysRestart}'. Restarting without prompt.");
+                _restartImmediatelySessionPreference = true;
+            }
         }
 
         public async Task EvaluateAsync(CancellationToken cancellationToken)
