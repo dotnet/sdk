@@ -2907,6 +2907,44 @@ End Namespace";
         }
 
         [Fact]
+        public async Task TestCallExtensionMethodAsOrdinaryMethod()
+        {
+            var csharpCode = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> i)
+    {
+        IEnumerable<int> j = Enumerable.Range(1, 10);
+        var z = Enumerable.Concat(i, [|j|]);
+        Enumerable.ElementAt([|j|], 10);
+        Enumerable.ToArray(z);
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As IEnumerable(Of Integer))
+            Dim j As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            Dim z = Enumerable.Concat(i, [|j|])
+            Enumerable.ElementAt([|j|], 10)
+            Enumerable.ToArray(z)
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
         public async Task TestAssignFromTranslatedQuery()
         {
             var csharpCode = @"
@@ -2974,14 +3012,14 @@ End Namespace";
         public void TestNet6AddedMethod()
         {
             // newly added method in .Net 6, currently can't found by unit tests
-            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_linqOneParameterEnumeratedMethods);
-            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_linqOneParameterEnumeratedMethods);
-            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_linqOneParameterDeferredMethods);
-            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_linqOneParameterDeferredMethods);
-            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
-            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
-            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_linqTwoParametersDeferredMethods);
-            Assert.Contains("Zip", AvoidMultipleEnumerations.s_linqThreeParametersDeferredMethods);
+            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
+            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
+            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("Zip", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
         }
     }
 }

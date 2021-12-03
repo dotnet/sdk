@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
-using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelper;
+using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.AvoidMultipleEnumerationsHelpers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
@@ -17,18 +17,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
-            private readonly AvoidMultipleEnumerationsHelper _avoidMultipleEnumerationsHelper;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                AvoidMultipleEnumerationsHelper avoidMultipleEnumerationsHelper,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
-                _avoidMultipleEnumerationsHelper = avoidMultipleEnumerationsHelper;
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
             }
 
             protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
+
+            protected abstract bool ExtensionMethodCanBeReduced { get; }
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
@@ -50,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!_avoidMultipleEnumerationsHelper.IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
+                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, ExtensionMethodCanBeReduced, _wellKnownSymbolsInfo)
                     && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
                 {
                     return defaultValue;
@@ -198,7 +197,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         ExpandInvocationOperation(invocationOperation, _wellKnownSymbolsInfo, queue);
                     }
 
-                    // Expand the implict conversion operation if it is converting a deferred type to another deferred type.
+                    // Expand the implicit conversion operation if it is converting a deferred type to another deferred type.
                     // This might happen in such case:
                     // var c = a.OrderBy(i => i).Concat(b)
                     // The tree would be:
@@ -239,7 +238,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     }
                 }
 
-                if (_avoidMultipleEnumerationsHelper.IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (ExtensionMethodCanBeReduced && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }
@@ -301,7 +300,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = _avoidMultipleEnumerationsHelper.SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
+                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, ExtensionMethodCanBeReduced, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (!IsDeferredType(operationToCheck.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))

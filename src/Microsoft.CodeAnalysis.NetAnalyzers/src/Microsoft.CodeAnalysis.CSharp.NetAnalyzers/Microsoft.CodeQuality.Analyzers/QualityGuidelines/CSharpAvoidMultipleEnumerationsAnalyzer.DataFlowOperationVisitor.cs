@@ -14,13 +14,14 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 GlobalFlowStateDictionaryAnalysisContext context,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(
                     context,
-                    CSharpAvoidMultipleEnumerationsHelper.Instance,
                     wellKnownSymbolsInfo)
             {
             }
 
             protected override bool IsExpressionOfForEachStatement(SyntaxNode node)
                 => node.Parent is ForEachStatementSyntax forEachStatementSyntax && forEachStatementSyntax.Expression.Equals(node);
+
+            protected override bool ExtensionMethodCanBeReduced => false;
         }
     }
 }

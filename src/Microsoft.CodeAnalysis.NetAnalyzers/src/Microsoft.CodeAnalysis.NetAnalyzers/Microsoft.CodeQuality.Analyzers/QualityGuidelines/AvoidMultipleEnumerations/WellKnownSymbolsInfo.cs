@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -11,33 +12,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
     internal readonly struct WellKnownSymbolsInfo
     {
         /// <summary>
-        /// Deferred methods that take one deferred type parameter.
+        /// Methods defer enumerating IEnumerable types.
         /// e.g. Select, Where
         /// </summary>
-        public ImmutableArray<IMethodSymbol> OneParameterDeferredMethods { get; }
+        public ImmutableArray<IMethodSymbol> DeferredMethods { get; }
 
         /// <summary>
-        /// Deferred methods that take two deferred type parameters.
-        /// e.g. Concat, Except
-        /// </summary>
-        public ImmutableArray<IMethodSymbol> TwoParametersDeferredMethods { get; }
-
-        /// <summary>
-        /// Enumeration methods that take three deferred type parameters.
-        /// </summary>
-        public ImmutableArray<IMethodSymbol> ThreeParametersDeferredMethods { get; }
-
-        /// <summary>
-        /// Enumeration methods that take one deferred type parameter.
+        /// Methods enumerate IEnumerable types.
         /// e.g. ToArray, Count
         /// </summary>
-        public ImmutableArray<IMethodSymbol> OneParameterEnumeratedMethods { get; }
+        public ImmutableArray<IMethodSymbol> EnumeratedMethods { get; }
 
         /// <summary>
-        /// Enumeration methods that take two deferred type parameters.
-        /// e.g. SequentialEqual
+        /// Methods that don't create new IEnumerable types, but can be used in linq chain.
+        /// e.g. <see cref="Enumerable.AsEnumerable"/>
         /// </summary>
-        public ImmutableArray<IMethodSymbol> TwoParametersEnumeratedMethods { get; }
+        public ImmutableArray<IMethodSymbol> NoEffectLinqChainMethods { get; }
 
         /// <summary>
         /// Other deferred types except IEnumerable and IEnumerable`1.
@@ -52,19 +42,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
         public WellKnownSymbolsInfo(
-            ImmutableArray<IMethodSymbol> oneParameterDeferredMethods,
-            ImmutableArray<IMethodSymbol> twoParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> threeParametersDeferredMethods,
-            ImmutableArray<IMethodSymbol> oneParameterEnumeratedMethods,
-            ImmutableArray<IMethodSymbol> twoParametersEnumeratedMethods,
+            ImmutableArray<IMethodSymbol> deferredMethods,
+            ImmutableArray<IMethodSymbol> enumeratedMethods,
+            ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods)
         {
-            OneParameterDeferredMethods = oneParameterDeferredMethods;
-            TwoParametersDeferredMethods = twoParametersDeferredMethods;
-            ThreeParametersDeferredMethods = threeParametersDeferredMethods;
-            OneParameterEnumeratedMethods = oneParameterEnumeratedMethods;
-            TwoParametersEnumeratedMethods = twoParametersEnumeratedMethods;
+            DeferredMethods = deferredMethods;
+            EnumeratedMethods = enumeratedMethods;
+            NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
         }

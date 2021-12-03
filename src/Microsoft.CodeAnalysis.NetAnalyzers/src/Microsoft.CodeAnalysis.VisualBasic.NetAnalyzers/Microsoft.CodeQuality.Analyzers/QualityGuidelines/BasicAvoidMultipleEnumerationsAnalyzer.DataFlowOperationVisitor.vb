@@ -12,13 +12,19 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
                            wellKnownSymbolsInfo As WellKnownSymbolsInfo)
-                MyBase.New(analysisContext, BasicAvoidMultipleEnumerationsHelpers.Instance, wellKnownSymbolsInfo)
+                MyBase.New(analysisContext, wellKnownSymbolsInfo)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean
                 Dim parent = TryCast(node.Parent, ForEachStatementSyntax)
                 Return parent IsNot Nothing AndAlso parent.Expression.Equals(node)
             End Function
+
+            Protected Overrides ReadOnly Property ExtensionMethodCanBeReduced As Boolean
+                Get
+                    Return True
+                End Get
+            End Property
         End Class
     End Class
 End Namespace

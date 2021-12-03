@@ -15,9 +15,9 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
             Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownSymbolsInfo)
         End Function
 
-        Protected Overrides ReadOnly Property AvoidMultipleEnumerationsHelper As AvoidMultipleEnumerationsHelper
+        Protected Overrides ReadOnly Property ExtensionMethodCanBeReduced As Boolean
             Get
-                Return BasicAvoidMultipleEnumerationsHelpers.Instance
+                Return True
             End Get
         End Property
     End Class

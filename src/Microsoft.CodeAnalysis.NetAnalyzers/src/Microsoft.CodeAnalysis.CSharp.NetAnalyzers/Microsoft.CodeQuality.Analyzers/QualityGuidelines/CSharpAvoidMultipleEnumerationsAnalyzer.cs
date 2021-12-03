@@ -16,6 +16,6 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 context,
                 wellKnownSymbolsInfo);
 
-        protected override AvoidMultipleEnumerationsHelper AvoidMultipleEnumerationsHelper { get; } = CSharpAvoidMultipleEnumerationsHelper.Instance;
+        protected override bool ExtensionMethodCanBeReduced => false;
     }
 }
