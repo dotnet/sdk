@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Davis Goodin <dagood@microsoft.com>
+Date: Tue, 26 Oct 2021 13:24:57 -0500
+Subject: [PATCH] Disable package validation in source-build for reliability
+
+See comment in diff.
+
+Upstream PR: https://github.com/dotnet/runtime/pull/60881
+---
+ eng/packaging.targets | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/eng/packaging.targets b/eng/packaging.targets
+index ecf74672ac8..0a04191182d 100644
+--- a/eng/packaging.targets
++++ b/eng/packaging.targets
+@@ -1,7 +1,13 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <EnablePackageValidation>true</EnablePackageValidation>
++    <!--
++      Package validation causes flaky errors during the build. Validation isn't useful during
++      source-build (it is only a guardrail for devs), so disable it during source-build to avoid the
++      impact on build reliability. https://github.com/dotnet/runtime/issues/60883 tracks fixing the
++      flakiness and removing this condition.
++    -->
++    <EnablePackageValidation Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnablePackageValidation>
+     <!-- Don't restore prebuilt packages during sourcebuild. -->
+     <DisablePackageBaselineValidation Condition="'$(DotNetBuildFromSource)' == 'true'">true</DisablePackageBaselineValidation>
+     <PackageValidationBaselineVersion Condition="'$(PackageValidationBaselineVersion)' == ''">$(NetCoreAppLatestStablePackageBaselineVersion)</PackageValidationBaselineVersion>
