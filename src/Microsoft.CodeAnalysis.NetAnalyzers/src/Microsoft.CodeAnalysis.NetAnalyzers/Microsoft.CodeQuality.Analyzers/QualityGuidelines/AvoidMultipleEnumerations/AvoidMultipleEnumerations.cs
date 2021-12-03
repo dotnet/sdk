@@ -84,8 +84,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods deferring its parameters to be enumerated.
         /// </summary>
-        public static readonly ImmutableArray<string> s_deferrParametersEnumeratedLinqMethods = ImmutableArray.Create(
+        public static readonly ImmutableArray<string> s_deferParametersEnumeratedLinqMethods = ImmutableArray.Create(
             nameof(Enumerable.Append),
+            nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),
             nameof(Enumerable.Distinct),
             nameof(Enumerable.GroupBy),
@@ -120,13 +121,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "TakeLast",
             "SkipLast");
 
-        private readonly static ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
+        /// <summary>
+        /// Special Linq methods that no effect on its parameter, and not return new IEnumerable instance.
+        /// </summary>
+        private static readonly ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.AsEnumerable));
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
+        /// <summary>
+        /// Whether an extension method could be passed as reduced method.
+        /// Only true for VB.
+        /// e.g.
+        /// 'b.Select()' if reduced, then 'b' would be considered as the invocation instance of 'Select' instead of the first argument.
+        /// </summary>
         protected abstract bool ExtensionMethodCanBeReduced { get; }
 
         public override void Initialize(AnalysisContext context)
@@ -142,17 +152,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
-            var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferrParametersEnumeratedLinqMethods);
-            var enumeratedMethods = GetOneParameterEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
+            var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferParametersEnumeratedLinqMethods);
+            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
+            var compilation = operationBlockStartAnalysisContext.Compilation;
+            var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
-
-            var compilation = operationBlockStartAnalysisContext.Compilation;
-            var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
-
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
                 deferredMethods,
                 enumeratedMethods,

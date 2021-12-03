@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -25,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         /// <summary>
         /// Methods that don't create new IEnumerable types, but can be used in linq chain.
-        /// e.g. <see cref="Enumerable.AsEnumerable"/>
+        /// e.g. AsEnumerable
         /// </summary>
         public ImmutableArray<IMethodSymbol> NoEffectLinqChainMethods { get; }
 
@@ -37,7 +36,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<ITypeSymbol> AdditionalDeferredTypes { get; }
 
         /// <summary>
-        /// IEnumerable.GetEnumerator() and IEnumerable'1.GetEnumerator()
+        /// IEnumerable.GetEnumerator() and IEnumerable'1.GetEnumerator().
         /// </summary>
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 

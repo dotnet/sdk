@@ -4,8 +4,6 @@ Rule ID | Missing Help Link | Title |
 --------|-------------------|-------|
 CA1419 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1419> | Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle' |
 CA1727 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1727> | Use PascalCase for named placeholders |
-CA1839 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1839> | Use 'Environment.ProcessPath' |
-CA1840 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1840> | Use 'Environment.CurrentManagedThreadId' |
 CA1842 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1842> | Do not use 'WhenAll' with a single task |
 CA1843 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1843> | Do not use 'WaitAll' with a single task |
 CA1848 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1848> | Use the LoggerMessage delegates |

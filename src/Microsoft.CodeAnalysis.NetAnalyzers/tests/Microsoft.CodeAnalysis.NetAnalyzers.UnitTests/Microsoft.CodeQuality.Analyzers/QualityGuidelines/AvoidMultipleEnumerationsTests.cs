@@ -132,7 +132,6 @@ Namespace Ns
             For Each index in Enumerable.Range(1, 10)
                 [|i|].Aggregate(Function(m, n) m + n)
                 j.Contains(100)
-                [|i|].Contains(100)
             Next
         End Sub
     End Class
@@ -1966,7 +1965,7 @@ Namespace Ns
         Public Sub Goo()
             Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             Dim z = [|x|].GroupBy(Function(i) i.GetHashCode()).ToArray()
-            Dim z2= [|x|].Groupby(Function(i) i.GetHashCode()).ToArray()
+            Dim z2= [|x|].GroupBy(Function(i) i.GetHashCode()).ToArray()
         End Sub
     End Class
 End Namespace
@@ -2881,7 +2880,7 @@ public class Bar
     public void Sub(IEnumerable<int> i)
     {
         IEnumerable<int> j = Enumerable.Range(1, 10).ToArray();
-        var z = i.Concat(j);
+        var z = i.Zip(j, (a, b) => (a, b));
         j.ElementAt(10);
         z.ToArray();
     }
@@ -2896,7 +2895,7 @@ Namespace NS
     Public Class Bar
         Public Sub Goo(i As IEnumerable(Of Integer))
             Dim j As IEnumerable(Of Integer) = Enumerable.Range(1, 10).ToArray()
-            Dim z = i.Concat(j)
+            Dim z = i.Zip(j, Function(a, b) (a, b))
             j.ElementAt(10)
             z.ToArray()
         End Sub
@@ -3009,7 +3008,7 @@ End Namespace";
         }
 
         [Fact]
-        public async Task TestAsEnumerable()
+        public async Task TestAsEnumerable1()
         {
             var csharpCode = @"
 using System.Collections;
@@ -3055,17 +3054,91 @@ End Namespace";
         }
 
         [Fact]
+        public async Task TestAsEnumerable2()
+        {
+            var csharpCode = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var j = Enumerable.Range(1, 10);
+        var z = [|j|].AsEnumerable();
+        z.First();
+        z.First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo()
+            Dim j = Enumerable.Range(1, 10)
+            Dim z = [|j|].AsEnumerable()
+            z.First()
+            z.First()
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestZip()
+        {
+            var csharpCode1 = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        var k = [|i|].Zip(j, (a, b) => (a, b));
+        k.First();
+        [|i|].First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim i = Enumerable.Range(1, 10)
+            Dim k = [|i|].Zip(j, Function(a, b) (a, b))
+            k.First()
+            [|i|].First()
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
         public void TestNet6AddedMethod()
         {
             // newly added method in .Net 6, currently can't found by unit tests
             Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
             Assert.Contains("MinBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
-            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
-            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
-            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
-            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
-            Assert.Contains("Zip", AvoidMultipleEnumerations.s_deferrParametersEnumeratedLinqMethods);
+            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
         }
     }
 }

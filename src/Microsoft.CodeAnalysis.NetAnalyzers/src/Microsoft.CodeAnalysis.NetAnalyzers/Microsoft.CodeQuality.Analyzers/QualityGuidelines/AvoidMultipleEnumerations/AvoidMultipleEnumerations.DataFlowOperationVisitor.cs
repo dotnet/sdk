@@ -17,17 +17,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
+            private readonly bool _extensionMethodCanBeReduced;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
+                bool extensionMethodCanBeReduced,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
+                _extensionMethodCanBeReduced = extensionMethodCanBeReduced;
             }
 
             protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
-
-            protected abstract bool ExtensionMethodCanBeReduced { get; }
 
             public override GlobalFlowStateDictionaryAnalysisValue VisitParameterReference(IParameterReferenceOperation operation, object? argument)
             {
@@ -49,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, ExtensionMethodCanBeReduced, _wellKnownSymbolsInfo)
+                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _extensionMethodCanBeReduced, _wellKnownSymbolsInfo)
                     && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
                 {
                     return defaultValue;
@@ -158,10 +159,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 ExpandInvocationOperation(invocationCreationOperation, _wellKnownSymbolsInfo, queue);
 
                                 var creationMethod = invocationCreationOperation.TargetMethod.ReducedFrom ?? invocationCreationOperation.TargetMethod;
-                                // Node 2: Invocation operation that returns a deferred type.
+                                // Make sure this creation operation is not 'AsEnumerable', which only do a cast, and do not create new IEnumerable type.
                                 if (!_wellKnownSymbolsInfo.NoEffectLinqChainMethods.Contains(creationMethod.OriginalDefinition)
                                     && IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                                 {
+                                    // Node 2: Invocation operation that returns a deferred type.
                                     var analysisValue =
                                         CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
 
@@ -234,16 +236,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // When we looking at the creation of 'a', we want to find both 'b' and 'c'
                 foreach (var argument in invocationOperation.Arguments)
                 {
-                    if (IsDeferredExecutingInvocationOverArgument(invocationOperation, argument, wellKnownSymbolsInfo)
-                        || IsInvocationNoEffectOverArgument(invocationOperation, argument, wellKnownSymbolsInfo))
+                    if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
                     {
                         queue.Enqueue(argument.Value);
                     }
                 }
 
-                if (ExtensionMethodCanBeReduced &&
-                    (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo)
-                    || IsInvocationNoEffectOverInstance(invocationOperation, wellKnownSymbolsInfo)))
+                // Also check it's invocation instance if the extension method could be used in reduced form.
+                // e.g.
+                // Dim a = b.Concat(c)
+                // We need enqueue the invocation instance (which is 'b') if the target method is a reduced extension method
+                if (_extensionMethodCanBeReduced && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }
@@ -305,7 +308,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, ExtensionMethodCanBeReduced, _wellKnownSymbolsInfo);
+                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, _extensionMethodCanBeReduced, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (!IsDeferredType(operationToCheck.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
