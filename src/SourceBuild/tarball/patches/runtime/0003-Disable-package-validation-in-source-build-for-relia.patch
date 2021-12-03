@@ -28,4 +28,4 @@ index ecf74672ac8..0a04191182d 100644
 +    <EnablePackageValidation Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnablePackageValidation>
      <!-- Don't restore prebuilt packages during sourcebuild. -->
      <DisablePackageBaselineValidation Condition="'$(DotNetBuildFromSource)' == 'true'">true</DisablePackageBaselineValidation>
-     <PackageValidationBaselineVersion Condition="'$(PackageValidationBaselineVersion)' == ''">$([MSBuild]::Subtract($(MajorVersion), 1)).0.0</PackageValidationBaselineVersion>
+     <PackageValidationBaselineVersion Condition="'$(PackageValidationBaselineVersion)' == ''">$(NetCoreAppLatestStablePackageBaselineVersion)</PackageValidationBaselineVersion>
