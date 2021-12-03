@@ -3009,6 +3009,52 @@ End Namespace";
         }
 
         [Fact]
+        public async Task TestAsEnumerable()
+        {
+            var csharpCode = @"
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(int[] i)
+    {
+        var j = Enumerable.Range(1, 10);
+        var z = [|j|].AsEnumerable();
+        z.AsEnumerable().First();
+        z.First();
+
+        var x = i.AsEnumerable();
+        i.AsEnumerable().First();
+        i.First();
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace NS
+    Public Class Bar
+        Public Sub Goo(i As Integer())
+            Dim j = Enumerable.Range(1, 10)
+            Dim z = [|j|].AsEnumerable()
+            z.AsEnumerable().ElementAt(10)
+            z.ElementAt(10)
+            
+            Dim x = i.AsEnumerable()
+            x.AsEnumerable().ElementAt(10)
+            x.ElementAt(10)
+        End Sub
+    End Class
+End Namespace";
+
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
         public void TestNet6AddedMethod()
         {
             // newly added method in .Net 6, currently can't found by unit tests

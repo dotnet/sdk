@@ -157,8 +157,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 // Try to expand the argument of this invocation operation.
                                 ExpandInvocationOperation(invocationCreationOperation, _wellKnownSymbolsInfo, queue);
 
+                                var creationMethod = invocationCreationOperation.TargetMethod.ReducedFrom ?? invocationCreationOperation.TargetMethod;
                                 // Node 2: Invocation operation that returns a deferred type.
-                                if (IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                                if (!_wellKnownSymbolsInfo.NoEffectLinqChainMethods.Contains(creationMethod.OriginalDefinition)
+                                    && IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                                 {
                                     var analysisValue =
                                         CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
@@ -232,13 +234,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // When we looking at the creation of 'a', we want to find both 'b' and 'c'
                 foreach (var argument in invocationOperation.Arguments)
                 {
-                    if (IsDeferredExecutingInvocationOverArgument(invocationOperation, argument, wellKnownSymbolsInfo))
+                    if (IsDeferredExecutingInvocationOverArgument(invocationOperation, argument, wellKnownSymbolsInfo)
+                        || IsInvocationNoEffectOverArgument(invocationOperation, argument, wellKnownSymbolsInfo))
                     {
                         queue.Enqueue(argument.Value);
                     }
                 }
 
-                if (ExtensionMethodCanBeReduced && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (ExtensionMethodCanBeReduced &&
+                    (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo)
+                    || IsInvocationNoEffectOverInstance(invocationOperation, wellKnownSymbolsInfo)))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }

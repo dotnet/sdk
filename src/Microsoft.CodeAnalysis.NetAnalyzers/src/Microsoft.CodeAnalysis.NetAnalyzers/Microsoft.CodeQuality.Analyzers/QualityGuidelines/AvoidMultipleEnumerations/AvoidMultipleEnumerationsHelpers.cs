@@ -53,14 +53,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
             }
 
-            if (IsOperationTheArgumentOfDeferredInvocation(operation.Parent, wellKnownSymbolsInfo))
+            if (IsArgumentOfDeferredInvocationOrNoEffectOperation(operation.Parent, wellKnownSymbolsInfo))
             {
                 // This operation is used as an argument of a deferred execution method.
                 // Check if the invocation of the deferred execution method is used in another deferred execution method.
                 return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
             }
 
-            if (extensionMethodCanBeReduced && IsOperationTheInstanceOfDeferredInvocation(operation, wellKnownSymbolsInfo))
+            if (extensionMethodCanBeReduced && IsInstanceOfDeferredInvocationOrNoEffectOperation(operation, wellKnownSymbolsInfo))
             {
                 return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
             }
@@ -103,10 +103,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return operationToCheck.Parent is IForEachLoopOperation forEachLoopOperation && forEachLoopOperation.Collection == operationToCheck;
         }
 
-        private static bool IsOperationTheInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsInstanceOfDeferredInvocationOrNoEffectOperation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
             => operation.Parent is IInvocationOperation invocationOperation
                && invocationOperation.Instance == operation
-               && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo);
+               && (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo)
+                    || IsInvocationNoEffectOverInstance(invocationOperation, wellKnownSymbolsInfo));
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
@@ -200,11 +201,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if <param name="operation"/> is an argument that passed into a deferred invocation. (like Select, Where etc.)
         /// </summary>
-        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
-        {
-            return operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
-                && IsDeferredExecutingInvocationOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo);
-        }
+        private static bool IsArgumentOfDeferredInvocationOrNoEffectOperation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            => operation is IArgumentOperation { Parent: IInvocationOperation invocationParentOperation } argumentParentOperation
+            && (IsDeferredExecutingInvocationOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo)
+                || IsInvocationNoEffectOverArgument(invocationParentOperation, argumentParentOperation, wellKnownSymbolsInfo));
 
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.
@@ -234,6 +234,36 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             return false;
+        }
+
+        public static bool IsInvocationNoEffectOverInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            if (invocationOperation.Instance == null || invocationOperation.TargetMethod.MethodKind != MethodKind.ReducedExtension)
+            {
+                return false;
+            }
+
+            var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+            return !originalTargetMethod.Parameters.IsEmpty
+                   && IsDeferredType(originalTargetMethod.Parameters[0].Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                   && wellKnownSymbolsInfo.NoEffectLinqChainMethods.Contains(originalTargetMethod);
+        }
+
+        public static bool IsInvocationNoEffectOverArgument(
+            IInvocationOperation invocationOperation,
+            IArgumentOperation argumentOperationToCheck,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
+
+            var targetMethod = invocationOperation.TargetMethod;
+            var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
+
+            var argumentMappingParameter = targetMethod.MethodKind == MethodKind.ReducedExtension
+                ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
+                : argumentOperationToCheck.Parameter;
+            return wellKnownSymbolsInfo.NoEffectLinqChainMethods.Contains(reducedFromMethod.OriginalDefinition)
+                   && IsDeferredType(argumentMappingParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         public static bool IsInvocationDeferredExecutingInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)

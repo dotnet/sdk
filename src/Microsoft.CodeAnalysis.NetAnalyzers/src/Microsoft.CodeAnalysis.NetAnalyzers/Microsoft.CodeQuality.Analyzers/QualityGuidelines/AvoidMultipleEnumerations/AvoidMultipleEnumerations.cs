@@ -120,7 +120,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "TakeLast",
             "SkipLast");
 
-        private static ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
+        private readonly static ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.AsEnumerable));
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
