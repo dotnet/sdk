@@ -7,28 +7,13 @@ Removes prebuilts.
 
 Background Issue: https://github.com/dotnet/source-build/issues/2542
 ---
- eng/Packages.props                             | 3 ---
  src/Build/Microsoft.Build.csproj               | 4 +++-
  src/Directory.BeforeCommon.targets             | 2 +-
  src/Samples/Directory.Build.props              | 1 +
  src/Tasks/Microsoft.Build.Tasks.csproj         | 4 +++-
  src/Utilities/Microsoft.Build.Utilities.csproj | 2 +-
- 6 files changed, 9 insertions(+), 7 deletions(-)
+ 5 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/eng/Packages.props b/eng/Packages.props
-index 494c9c0..7689042 100644
---- a/eng/Packages.props
-+++ b/eng/Packages.props
-@@ -46,9 +46,6 @@
- 
-   <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
--  </ItemGroup>
--
--  <ItemGroup>
-     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
-   </ItemGroup>
- 
 diff --git a/src/Build/Microsoft.Build.csproj b/src/Build/Microsoft.Build.csproj
 index d08e337c5..3b173aee5 100644
 --- a/src/Build/Microsoft.Build.csproj
