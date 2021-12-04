@@ -3362,6 +3362,23 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js"
     },
     {
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.d.ts",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.d.ts",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.d.ts"
+    },
+    {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.timezones.blat",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -3496,6 +3513,23 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\lib\\${Tfm}\\netstandard.dll"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\package.json",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/package.json",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\package.json"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/Microsoft.AspNetCore.Authorization.dll.gz]]",
@@ -6796,6 +6830,23 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js"
     },
     {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.d.ts.gz]]",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.d.ts.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.d.ts",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.d.ts"
+    },
+    {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.timezones.blat.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -6930,6 +6981,23 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\netstandard.dll"
+    },
+    {
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/package.json.gz]]",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/package.json.gz",
+      "AssetKind": "Build",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\package.json",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "PreserveNewest",
+      "CopyToPublishDirectory": "Never",
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\package.json"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\custom-service-worker-assets.js.build",
