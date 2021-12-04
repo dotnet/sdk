@@ -164,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (!allowedTypesForCA1836.IsEmpty)
             {
                 context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
-                    operationContext, allowedTypesForCA1836),
+                    operationContext, linqExpressionType, allowedTypesForCA1836),
                     OperationKind.PropertyReference);
             }
 
@@ -229,12 +229,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 originalDefinition.Name, operationKey, allowedTypesForCA1836);
         }
 
-        private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
+        private static void AnalyzePropertyReference(OperationAnalysisContext context, INamedTypeSymbol? linqExpressionType,
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
             string propertyName = propertyReferenceOperation.Member.Name;
-            if (propertyName is not Count and not Length)
+            if (propertyName is not Count and not Length ||
+                propertyReferenceOperation.IsWithinExpressionTree(linqExpressionType))
             {
                 return;
             }
