@@ -15,7 +15,5 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
             => new CSharpInvocationCountValueSetFlowStateDictionaryFlowOperationVisitor(
                 context,
                 wellKnownSymbolsInfo);
-
-        protected override bool ExtensionMethodCanBeReduced => false;
     }
 }

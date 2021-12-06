@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _extensionMethodCanBeReduced, _wellKnownSymbolsInfo)
+                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
                     && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
                 {
                     return defaultValue;
@@ -308,7 +308,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
                 RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, _extensionMethodCanBeReduced, _wellKnownSymbolsInfo);
+                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
 
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
                 if (!IsDeferredType(operationToCheck.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))

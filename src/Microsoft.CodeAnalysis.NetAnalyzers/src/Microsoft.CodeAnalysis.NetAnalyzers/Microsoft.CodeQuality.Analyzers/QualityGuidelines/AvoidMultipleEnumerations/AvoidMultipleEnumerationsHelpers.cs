@@ -17,7 +17,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static bool IsOperationEnumeratedByMethodInvocation(
             IOperation operation,
-            bool extensionMethodCanBeReduced,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
@@ -28,9 +27,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(
                 operation,
-                extensionMethodCanBeReduced,
                 wellKnownSymbolsInfo);
-            return IsOperationEnumeratedByInvocation(operationToCheck, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
+            return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
         }
 
         /// <summary>
@@ -38,7 +36,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static IOperation SkipDeferredAndConversionMethodIfNeeded(
             IOperation operation,
-            bool extensionMethodCanBeReduced,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (IsValidImplicitConversion(operation.Parent, wellKnownSymbolsInfo))
@@ -50,22 +47,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //      c.First();
                 // }
                 // here 'c' would be converted to IEnumerable<T>
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
             }
 
             if (IsOperationTheArgumentOfDeferredInvocation(operation.Parent, wellKnownSymbolsInfo))
             {
                 // This operation is used as an argument of a deferred execution method.
                 // Check if the invocation of the deferred execution method is used in another deferred execution method.
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, wellKnownSymbolsInfo);
             }
 
-            if (extensionMethodCanBeReduced && IsInstanceOfDeferredInvocation(operation, wellKnownSymbolsInfo))
+            if (IsInstanceOfDeferredInvocation(operation, wellKnownSymbolsInfo))
             {
                 // If the extension method could be used as reduced method, also check the its invocation instance.
                 // Like in VB,
                 // 'i.Select(Function(a) a)', 'i' is the invocation instance of 'Select'
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
+                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
             }
 
             return operation;
@@ -93,7 +90,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
-            bool extensionMethodCanBeReduced,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
@@ -102,7 +98,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, extensionMethodCanBeReduced, wellKnownSymbolsInfo);
+            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, wellKnownSymbolsInfo);
             return operationToCheck.Parent is IForEachLoopOperation forEachLoopOperation && forEachLoopOperation.Collection == operationToCheck;
         }
 
@@ -113,7 +109,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
-            bool checkReducedMethod,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             // Case 1:
@@ -131,7 +126,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // If the method is in reduced form.
             // Like in VB,
             // 'i.ElementAt(10)', 'i' is thought as the invocation instance.
-            if (checkReducedMethod && operation.Parent is IInvocationOperation parentInvocationOperation && operation == parentInvocationOperation.Instance)
+            if (operation.Parent is IInvocationOperation { TargetMethod: { MethodKind: MethodKind.ReducedExtension } } parentInvocationOperation
+                && operation == parentInvocationOperation.Instance)
             {
                 return IsInvocationCausingEnumerationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo);
             }
@@ -168,6 +164,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+            if (originalTargetMethod.Parameters.IsEmpty)
+            {
+                return false;
+            }
+
+            if (!IsDeferredType(originalTargetMethod.Parameters[0].Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            {
+                return false;
+            }
+
             return wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod);
         }
 
@@ -267,6 +273,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
+            if (originalTargetMethod.Parameters.IsEmpty)
+            {
+                return false;
+            }
+
+            if (!IsDeferredType(originalTargetMethod.Parameters[0].Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            {
+                return false;
+            }
+
             return wellKnownSymbolsInfo.DeferredMethods.Contains(originalTargetMethod);
         }
 

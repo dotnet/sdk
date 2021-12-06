@@ -14,11 +14,5 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
         Protected Overrides Function CreateOperationVisitor(context As GlobalFlowStateDictionaryAnalysisContext, wellKnownSymbolsInfo As WellKnownSymbolsInfo) As GlobalFlowStateDictionaryFlowOperationVisitor
             Return New BasicInvocationCountDataFlowOperationVisitor(context, wellKnownSymbolsInfo)
         End Function
-
-        Protected Overrides ReadOnly Property ExtensionMethodCanBeReduced As Boolean
-            Get
-                Return True
-            End Get
-        End Property
     End Class
 End Namespace

@@ -131,14 +131,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             GlobalFlowStateDictionaryAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo);
 
-        /// <summary>
-        /// Whether an extension method could be passed as reduced method.
-        /// Only true for VB.
-        /// e.g.
-        /// 'b.Select()' if reduced, then 'b' would be considered as the invocation instance of 'Select' instead of the first argument.
-        /// </summary>
-        protected abstract bool ExtensionMethodCanBeReduced { get; }
-
         public override void Initialize(AnalysisContext context)
         {
             context.EnableConcurrentExecution();
@@ -193,8 +185,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var operation = context.Operation;
             if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, ExtensionMethodCanBeReduced, wellKnownSymbolsInfo)
-                                   || IsOperationEnumeratedByForEachLoop(operation, ExtensionMethodCanBeReduced, wellKnownSymbolsInfo);
+                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
+                                   || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
                 if (isEnumerated)
                     builder.Add(operation);
             }
