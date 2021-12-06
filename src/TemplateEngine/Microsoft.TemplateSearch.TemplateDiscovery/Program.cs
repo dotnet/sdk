@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 using Microsoft.TemplateSearch.TemplateDiscovery.Results;
@@ -67,9 +68,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
                 if (test)
                 {
-                    CacheFileTestsBefore60.RunTests(legacyMetadataPath);
-                    CacheFileTestsForLatestSdk.RunTests(legacyMetadataPath, config.LatestSdkToTest);
-                    CacheFileTestsForLatestSdk.RunTests(metadataPath, config.LatestSdkToTest);
+                    CacheFileTests.RunTests(config, metadataPath, legacyMetadataPath);
                 }
                 return 0;
             }

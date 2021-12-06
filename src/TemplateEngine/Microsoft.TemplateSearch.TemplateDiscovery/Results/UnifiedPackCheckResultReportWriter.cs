@@ -27,8 +27,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                 Console.WriteLine($"Created directory:{reportPath}");
             }
 
-            string legacyMetadataFilePath = Path.Combine(reportPath, SearchMetadataFilename);
-            string metadataFilePath = Path.Combine(reportPath, SearchMetadataFilenameVer2);
+            string legacyMetadataFilePath = Path.GetFullPath(Path.Combine(reportPath, SearchMetadataFilename));
+            string metadataFilePath = Path.GetFullPath(Path.Combine(reportPath, SearchMetadataFilenameVer2));
 
             WriteNonTemplatePackList(reportPath, packSourceCheckResults.FilteredPackages);
             #pragma warning disable CS0612 // Type or member is obsolete

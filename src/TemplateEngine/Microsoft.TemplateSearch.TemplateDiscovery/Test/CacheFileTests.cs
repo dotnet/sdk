@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using FluentAssertions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -10,29 +8,55 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {
-    internal static class CacheFileTestsBefore60
+    internal static class CacheFileTests
     {
-        public static void RunTests(string cacheFilePath)
+        internal static void RunTests(CommandArgs config, string metadataPath, string legacyMetadataPath)
         {
-            cacheFilePath = Path.GetFullPath(cacheFilePath);
-            Console.WriteLine($"Running tests on .NET < 6.0 for: {cacheFilePath}.");
-            string workingDirectory = TestUtils.CreateTemporaryFolder();
-            UseSdkVersion(workingDirectory, requestedSdkVersion: "3.1.400", resolvedVersionPattern: "3.");
-            CanSearchWhileInstantiating(workingDirectory, cacheFilePath);
-            CanCheckUpdates(workingDirectory, cacheFilePath);
-            CanUpdate(workingDirectory, cacheFilePath);
+            //3.1
+            string sdkVersion = "3.1.400";
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            string workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "3.");
+            CanSearchWhileInstantiating(workingDirectory, legacyMetadataPath);
+            CanCheckUpdates(workingDirectory, legacyMetadataPath);
+            CanUpdate(workingDirectory, legacyMetadataPath);
 
-            workingDirectory = TestUtils.CreateTemporaryFolder();
-            UseSdkVersion(workingDirectory, requestedSdkVersion: "5.0.100", resolvedVersionPattern: "5.0.1", rollForward: "latestPatch");
-            CanSearchWhileInstantiating(workingDirectory, cacheFilePath);
-            CanCheckUpdates(workingDirectory, cacheFilePath);
-            CanUpdate(workingDirectory, cacheFilePath);
+            //5.0
+            sdkVersion = "5.0.100";
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.", rollForward: "latestFeature");
+            CanSearchWhileInstantiating(workingDirectory, legacyMetadataPath);
+            CanCheckUpdates(workingDirectory, legacyMetadataPath);
+            CanUpdate(workingDirectory, legacyMetadataPath);
 
-            workingDirectory = TestUtils.CreateTemporaryFolder();
-            UseSdkVersion(workingDirectory, requestedSdkVersion: "5.0.300", resolvedVersionPattern: "5.0.", rollForward: "latestFeature");
-            CanCheckUpdates(workingDirectory, cacheFilePath);
-            CanUpdate(workingDirectory, cacheFilePath);
-            CanSearch(workingDirectory, cacheFilePath);
+            //5.0.400
+            sdkVersion = "5.0.400";
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "5.0.", rollForward: "latestFeature");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            CanCheckUpdates(workingDirectory, legacyMetadataPath);
+            CanUpdate(workingDirectory, legacyMetadataPath);
+
+            //6.0.100
+            sdkVersion = "6.0.100";
+            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            UseSdkVersion(workingDirectory, requestedSdkVersion: "6.0.100", resolvedVersionPattern: "6.0.", rollForward: "latestFeature");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
+            //latest
+            sdkVersion = config.LatestSdkToTest;
+            workingDirectory = TestUtils.CreateTemporaryFolder("latest");
+            UseSdkVersion(workingDirectory, sdkVersion, resolvedVersionPattern: string.Join('.', sdkVersion.Split('.', 3).Take(2)) + '.', rollForward: "latestFeature");
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
+
             Console.WriteLine($"Tests succeeded.");
         }
 
