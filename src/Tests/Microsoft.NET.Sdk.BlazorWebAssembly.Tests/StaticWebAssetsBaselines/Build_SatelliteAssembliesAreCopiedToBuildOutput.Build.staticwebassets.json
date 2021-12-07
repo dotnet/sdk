@@ -7612,7 +7612,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\classlibrarywithsatelliteassemblies.pdb"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/cs\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/cs/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7629,7 +7629,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\cs\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/cs\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/cs/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7646,7 +7646,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\cs\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/de\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/de/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7663,7 +7663,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\de\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/de\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/de/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7901,7 +7901,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/it\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/it/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7918,7 +7918,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\it\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/it\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/it/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7935,7 +7935,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\it\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ja\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ja/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7952,7 +7952,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\ja\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ja\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ja/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -7986,7 +7986,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\ja\\blazorwasm.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ko\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ko/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -8003,7 +8003,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\ko\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ko\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ko/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -8088,7 +8088,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\pl\\Microsoft.CodeAnalysis.CSharp.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/pl\\Microsoft.CodeAnalysis.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/pl/Microsoft.CodeAnalysis.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -8139,7 +8139,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\pt-BR\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ru\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/ru/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
@@ -8173,7 +8173,7 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\ru\\Microsoft.CodeAnalysis.resources.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/tr\\Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/tr/Microsoft.CodeAnalysis.CSharp.resources.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\",
