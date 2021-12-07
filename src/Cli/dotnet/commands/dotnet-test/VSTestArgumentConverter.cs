@@ -20,14 +20,15 @@ namespace Microsoft.DotNet.Cli
             ["-h"] = "--help",
             ["-s"] = "--settings",
             ["-t"] = "--listtests",
-            ["-a"] = "--testadapterpath",
+            ["-a"] = "--platform",
             ["-l"] = "--logger",
             ["-f"] = "--framework",
             ["-d"] = "--diag",
             ["--filter"] = "--testcasefilter",
             ["--list-tests"] = "--listtests",
             ["--test-adapter-path"] = "--testadapterpath",
-            ["--results-directory"] = "--resultsdirectory"
+            ["--results-directory"] = "--resultsdirectory",
+            ["--arch"] = "--platform"
         };
 
         private readonly Dictionary<string, string> VerbosityMapping = new Dictionary<string, string>
