@@ -14,7 +14,6 @@ namespace Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analy
                 GlobalFlowStateDictionaryAnalysisContext context,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(
                     context,
-                    extensionMethodCanBeReduced: false,
                     wellKnownSymbolsInfo)
             {
             }

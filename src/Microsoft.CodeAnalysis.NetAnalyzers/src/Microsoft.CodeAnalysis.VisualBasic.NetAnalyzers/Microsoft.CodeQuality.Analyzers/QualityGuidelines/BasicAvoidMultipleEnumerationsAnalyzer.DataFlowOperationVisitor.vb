@@ -12,7 +12,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines
 
             Public Sub New(analysisContext As GlobalFlowStateDictionaryAnalysisContext,
                            wellKnownSymbolsInfo As WellKnownSymbolsInfo)
-                MyBase.New(analysisContext, extensionMethodCanBeReduced:=True, wellKnownSymbolsInfo)
+                MyBase.New(analysisContext, wellKnownSymbolsInfo)
             End Sub
 
             Protected Overrides Function IsExpressionOfForEachStatement(node As SyntaxNode) As Boolean

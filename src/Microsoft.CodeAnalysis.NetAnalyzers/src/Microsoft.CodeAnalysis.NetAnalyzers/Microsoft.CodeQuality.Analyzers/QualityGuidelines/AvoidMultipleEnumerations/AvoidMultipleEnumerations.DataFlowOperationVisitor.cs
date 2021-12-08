@@ -17,15 +17,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
             private readonly WellKnownSymbolsInfo _wellKnownSymbolsInfo;
-            private readonly bool _extensionMethodCanBeReduced;
 
             protected AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor(
                 GlobalFlowStateDictionaryAnalysisContext analysisContext,
-                bool extensionMethodCanBeReduced,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo) : base(analysisContext)
             {
                 _wellKnownSymbolsInfo = wellKnownSymbolsInfo;
-                _extensionMethodCanBeReduced = extensionMethodCanBeReduced;
             }
 
             protected abstract bool IsExpressionOfForEachStatement(SyntaxNode node);
@@ -246,7 +243,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // e.g.
                 // Dim a = b.Concat(c)
                 // We need enqueue the invocation instance (which is 'b') if the target method is a reduced extension method
-                if (_extensionMethodCanBeReduced && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }

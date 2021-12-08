@@ -177,7 +177,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     potentialDiagnosticOperationsBuilder));
         }
 
-        private void CollectPotentialDiagnosticOperations(
+        private static void CollectPotentialDiagnosticOperations(
             OperationAnalysisContext context,
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
             PooledHashSet<IOperation> builder)
