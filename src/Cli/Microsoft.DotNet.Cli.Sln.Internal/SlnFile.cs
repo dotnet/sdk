@@ -278,11 +278,6 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
             }
         }
 
-        public bool AreBuildConfigurationsApplicable()
-        {
-            return Path.GetExtension(_filePath) == ".shproj";
-        }
-
         public int Line { get; private set; }
         internal bool Processed { get; set; }
 
