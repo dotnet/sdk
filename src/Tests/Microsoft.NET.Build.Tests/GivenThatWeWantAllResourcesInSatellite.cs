@@ -58,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            foreach (var targetFramework in new[] { "net46", "netcoreapp1.1" })
+            foreach (var targetFramework in new[] { "net46", "netcoreapp3.1" })
             {
                 if (targetFramework == "net46" && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -73,10 +73,14 @@ namespace Microsoft.NET.Build.Tests
                     "en/AllResourcesInSatellite.resources.dll"
                 };
 
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    outputFiles.Add("AllResourcesInSatellite.exe");
+                }
+
                 TestCommand command;
                 if (targetFramework == "net46")
                 {
-                    outputFiles.Add("AllResourcesInSatellite.exe");
                     outputFiles.Add("AllResourcesInSatellite.exe.config");
                     command = new RunExeCommand(log, Path.Combine(outputDirectory.FullName, "AllResourcesInSatellite.exe"));
                 }
