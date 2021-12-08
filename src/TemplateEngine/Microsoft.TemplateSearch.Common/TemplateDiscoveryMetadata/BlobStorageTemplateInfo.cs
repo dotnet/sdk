@@ -394,7 +394,8 @@ namespace Microsoft.TemplateSearch.Common
             public TemplateParameterPriority Priority { get; internal set; }
 
             [JsonIgnore]
-            string ITemplateParameter.Type => throw new NotImplementedException();
+            //Parameters have only "parameter" symbols.
+            string ITemplateParameter.Type => "parameter";
 
             [JsonIgnore]
             bool ITemplateParameter.IsName => false;
