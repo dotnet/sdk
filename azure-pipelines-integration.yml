@@ -14,7 +14,7 @@ jobs:
 
 - job: Format
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-latest'
   strategy:
     maxParallel: 8
     matrix:

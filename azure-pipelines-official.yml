@@ -17,7 +17,7 @@ stages:
 - stage: build
   displayName: Build and Test
   pool:
-    name: VSEngSS-MicroBuild2019-1ES
+    name: VSEngSS-MicroBuild2022-1ES
     demands:
     - cmd
 
