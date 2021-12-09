@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
@@ -13,7 +12,7 @@ using static Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnum
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
 {
-    public partial class AvoidMultipleEnumerations
+    internal partial class AvoidMultipleEnumerations
     {
         internal abstract class AvoidMultipleEnumerationsFlowStateDictionaryFlowOperationVisitor : GlobalFlowStateDictionaryFlowOperationVisitor
         {
@@ -156,9 +155,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 // Try to expand the argument of this invocation operation.
                                 ExpandInvocationOperation(invocationCreationOperation, _wellKnownSymbolsInfo, queue);
 
-                                // Node 2: Invocation operation that returns a deferred type.
-                                if (IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                                var creationMethod = invocationCreationOperation.TargetMethod.ReducedFrom ?? invocationCreationOperation.TargetMethod;
+                                // Make sure this creation operation is not 'AsEnumerable', which only do a cast, and do not create new IEnumerable type.
+                                if (!_wellKnownSymbolsInfo.NoEffectLinqChainMethods.Contains(creationMethod.OriginalDefinition)
+                                    && IsDeferredType(invocationCreationOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                                 {
+                                    // Node 2: Invocation operation that returns a deferred type.
                                     var analysisValue =
                                         CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
 
@@ -196,7 +198,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         ExpandInvocationOperation(invocationOperation, _wellKnownSymbolsInfo, queue);
                     }
 
-                    // Expand the implict conversion operation if it is converting a deferred type to another deferred type.
+                    // Expand the implicit conversion operation if it is converting a deferred type to another deferred type.
                     // This might happen in such case:
                     // var c = a.OrderBy(i => i).Concat(b)
                     // The tree would be:
@@ -220,7 +222,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return resultAnalysisValue;
             }
 
-            private static void ExpandInvocationOperation(
+            private void ExpandInvocationOperation(
                 IInvocationOperation invocationOperation,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo,
                 Queue<IOperation> queue)
@@ -235,6 +237,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     {
                         queue.Enqueue(argument.Value);
                     }
+                }
+
+                // Also check it's invocation instance if the extension method could be used in reduced form.
+                // e.g.
+                // Dim a = b.Concat(c)
+                // We need enqueue the invocation instance (which is 'b') if the target method is a reduced extension method
+                if (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                {
+                    queue.Enqueue(invocationOperation.Instance);
                 }
             }
 
