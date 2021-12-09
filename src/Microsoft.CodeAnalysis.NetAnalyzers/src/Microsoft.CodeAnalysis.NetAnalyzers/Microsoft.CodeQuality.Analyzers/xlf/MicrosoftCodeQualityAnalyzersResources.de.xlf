@@ -67,6 +67,11 @@
         <target state="translated">out-Parameter vermeiden</target>
         <note />
       </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMultipleMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
         <target state="translated">Eine allgemeine Ausnahme wie "System.Exception" oder "System.SystemException" oder ein unzulässiger Ausnahmetyp wurde durch eine catch-Anweisung abgefangen, oder es wird eine Klausel verwendet, um Ausnahmen generell abzufangen. Allgemeine und unzulässige Ausnahmen sollten jedoch nicht abgefangen werden.</target>
