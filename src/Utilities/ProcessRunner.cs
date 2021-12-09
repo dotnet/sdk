@@ -115,7 +115,7 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                     });
                 };
 
-            var registration = cancellationToken.Register(() =>
+            _ = cancellationToken.Register(() =>
                 {
                     if (tcs.TrySetCanceled())
                     {
