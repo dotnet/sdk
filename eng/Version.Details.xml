@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NETCore.Compilers" Version="4.0.1-1.21568.1">
+    <Dependency Name="Microsoft.NETCore.Compilers" Version="4.0.1-1.21573.5">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>6ab6601178d9fba8c680b56934cd1742e0816bff</Sha>
+      <Sha>1fa6e45dd631b37e7b28a78907240aed8a300d50</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21568.1">
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21601.2">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>f6a482398de170fc888e6986c2d8b9208be642e3</Sha>
+      <Sha>8f280ecd202ab3ce64af177a6e2aa18644a26f6f</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21568.1">
+    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21601.2">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>f6a482398de170fc888e6986c2d8b9208be642e3</Sha>
+      <Sha>8f280ecd202ab3ce64af177a6e2aa18644a26f6f</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
