@@ -145,6 +145,11 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                     continue;
                 }
+
+                if (descriptor.DefaultSeverity > severity)
+                {
+                    severity = descriptor.DefaultSeverity;
+                }
             }
 
             return severity;
