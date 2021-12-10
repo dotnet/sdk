@@ -77,6 +77,10 @@ namespace Microsoft.NET.Build.Tests
                 {
                     outputFiles.Add("AllResourcesInSatellite.exe");
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    outputFiles.Add("AllResourcesInSatellite");
+                }
 
                 TestCommand command;
                 if (targetFramework == "net46")
