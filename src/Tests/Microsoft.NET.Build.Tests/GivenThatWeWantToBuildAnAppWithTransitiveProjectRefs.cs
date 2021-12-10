@@ -27,6 +27,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
             // NOTE the project dependencies in AppWithTransitiveProjectRefs:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
