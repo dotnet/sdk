@@ -27,6 +27,11 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void It_publishes_projects_with_simple_dependencies()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
             TestAsset simpleDependenciesAsset = _testAssetsManager
                 .CopyTestAsset("SimpleDependencies")
                 .WithSource();
