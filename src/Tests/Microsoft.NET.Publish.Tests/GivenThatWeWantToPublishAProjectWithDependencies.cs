@@ -43,6 +43,7 @@ namespace Microsoft.NET.Publish.Tests
                 "SimpleDependencies.dll",
                 "SimpleDependencies.pdb",
                 "SimpleDependencies.deps.json",
+                $"SimpleDependencies{EnvironmentInfo.ExecutableExtension}",
                 "SimpleDependencies.runtimeconfig.json",
                 "Newtonsoft.Json.dll",
                 "System.Runtime.Serialization.Primitives.dll",
