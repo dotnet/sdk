@@ -51,7 +51,7 @@ index b1990aa..f6ddbbd 100644
      <MicrosoftCodeAnalysisAnalyzersVersion>3.3.2</MicrosoftCodeAnalysisAnalyzersVersion>
 +    <MicrosoftExtensionsDependencyInjectionVersion>5.0.0</MicrosoftExtensionsDependencyInjectionVersion>
      <!-- Dependencies from https://github.com/dotnet/roslyn -->
-     <MicrosoftNETCoreCompilersPackageVersion>4.0.0-6.21515.3</MicrosoftNETCoreCompilersPackageVersion>
+     <MicrosoftNETCoreCompilersPackageVersion>4.0.0-6.21526.21</MicrosoftNETCoreCompilersPackageVersion>
      <!-- Dependencies from https://github.com/dotnet/command-line-api -->
 diff --git a/src/Logging/SimpleConsoleLogger.cs b/src/Logging/SimpleConsoleLogger.cs
 index c361f84..fd8015c 100644

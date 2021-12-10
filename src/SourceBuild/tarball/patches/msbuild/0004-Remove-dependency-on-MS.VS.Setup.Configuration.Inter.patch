@@ -23,11 +23,11 @@ index a1f21de26..ff74d6e7f 100644
 @@ -22,9 +22,6 @@
  
    <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
+     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3" />
 -  </ItemGroup>
 -
 -  <ItemGroup>
-     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
    </ItemGroup>
  
 diff --git a/src/Build/Microsoft.Build.csproj b/src/Build/Microsoft.Build.csproj
