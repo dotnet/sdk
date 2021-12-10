@@ -27,6 +27,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
@@ -37,6 +42,12 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_the_project_successfully_twice()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("AppWithLibrary")
                 .WithSource();
