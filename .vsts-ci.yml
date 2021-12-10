@@ -107,7 +107,7 @@ stages:
       parameters:
         agentOs: Darwin
         pool:
-          name: Hosted macOS
+          vmImage: 'macOS-latest'
         strategy:
           matrix:
             Build_Debug:
