@@ -37,7 +37,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory();
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory("netcoreapp3.1");
 
             publishDirectory.Should().OnlyHaveFiles(new[] {
                 "SimpleDependencies.dll",
