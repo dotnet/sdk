@@ -469,6 +469,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
             Action<XDocument> projectChanges = project =>
             {
                 var ns = project.Root.Name.Namespace;
