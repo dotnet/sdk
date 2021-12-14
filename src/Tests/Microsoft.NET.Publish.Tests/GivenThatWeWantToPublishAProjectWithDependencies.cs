@@ -48,7 +48,7 @@ namespace Microsoft.NET.Publish.Tests
                 "Newtonsoft.Json.dll"
             });
 
-            string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies");
+            string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies", "netcoreapp3.1");
 
             TestCommand runAppCommand = new DotnetCommand(Log,  appPath, "one", "two" );
 
