@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -40,6 +40,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
         private static readonly string s_analyzersSolutionPath = Path.Combine("for_code_formatter", "analyzers_solution");
         private static readonly string s_analyzersSolutionFilePath = Path.Combine(s_analyzersSolutionPath, "analyzers_solution.sln");
+
+        private static readonly string s_generatorSolutionPath = Path.Combine("for_code_formatter", "generator_solution");
+        private static readonly string s_generatorSolutionFileName = "generator_solution.sln";
 
         private static string[] EmptyFilesList => Array.Empty<string>();
 
@@ -529,6 +532,82 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 // Verify that changes were persisted to disk.
                 var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "library", "PublicAPI.Unshipped.txt"));
                 Assert.NotEqual(string.Empty, unshippedPublicApi);
+            }
+            finally
+            {
+                // Cleanup
+                Directory.Delete(solutionPath, true);
+            }
+        }
+
+        [MSBuildFact]
+        public async Task GeneratorSolution_NoDiagnosticsReported_WhenNotIncludingGenerated()
+        {
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_generatorSolutionPath);
+
+            try
+            {
+                var solutionFilePath = Path.Combine(solutionPath, s_generatorSolutionFileName);
+
+                var buildExitCode = await Utilities.DotNetHelper.PerformBuildAsync(solutionFilePath, _output);
+                Assert.Equal(0, buildExitCode);
+
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    solutionFilePath,
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: false,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 0,
+                    expectedFileCount: 7,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "console_app", "PublicAPI.Unshipped.txt"));
+                Assert.Equal(string.Empty, unshippedPublicApi);
+            }
+            finally
+            {
+                // Cleanup
+                Directory.Delete(solutionPath, true);
+            }
+        }
+
+        [MSBuildFact]
+        public async Task GeneratorSolution_AdditionalDocumentsUpdated_WhenIncludingGenerated()
+        {
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_generatorSolutionPath);
+
+            try
+            {
+                var solutionFilePath = Path.Combine(solutionPath, s_generatorSolutionFileName);
+
+                var buildExitCode = await Utilities.DotNetHelper.PerformBuildAsync(solutionFilePath, _output);
+                Assert.Equal(0, buildExitCode);
+
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    solutionFilePath,
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: true,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 1,
+                    expectedFileCount: 8,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "console_app", "PublicAPI.Unshipped.txt"));
+                Assert.Equal("Greeter\nGreeter.Greet() -> void\nGreeter.Greeter() -> void", unshippedPublicApi);
             }
             finally
             {
