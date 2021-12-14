@@ -38,7 +38,7 @@ In this sample, according to the value of the `IndividualB2CAuth` and `Organizat
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new method, and its use inside the main function.
 
-```
+```csharp
 namespace MyProject.Con
 {
     class Program
@@ -64,7 +64,7 @@ namespace MyProject.Con
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new class, and its use inside the main function.
 
-```
+```cpp
 #include "stdafx.h"
 #include <string>
 #include <iostream>
@@ -104,7 +104,7 @@ int main()
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new method, and its use inside the main function.
 
-```
+```fsharp
 open System
 
 #if( addMethod )
@@ -133,7 +133,7 @@ With these file types the expressions must be preceded by a `//` comment .
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new method, and its use inside the main function.
 
-```
+```vb
 Module Module1
 
     Sub Main()
@@ -155,7 +155,7 @@ End Module
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new method, and its use inside the main function.
 
-```
+```javascript
 (function () {
 	
 //#if( addMethod )		
@@ -176,7 +176,7 @@ In this sample, using the parameter symbol `addMethod` we include the definition
 
 In this sample, using the parameter symbol `addMethod` we include the definition of a new method, and its use inside the constructor.
 
-```
+```typescript
 class Student {
 
   constructor() {
@@ -203,7 +203,7 @@ There are two ways to do it:
 
 If the file should never be processed by template engine, it can be specified as `copyOnly` in the `sources` section of the `template.json`. For example:
 
-```
+```json
   "sources": [
     {
       "modifiers": [
@@ -262,25 +262,25 @@ In this sample, we see the difference between the two ways to define conditional
 If the initial `#if` condition is preceded by `//` so, if `param1 == true`, rows below are copied as is.  
 second condition `#elseif`, is preceded by `////`, so if `param1 == false` and `param2 == true`, rows below will be copied after the leading `//` has been removed, resulting in
 
-```
+```jsonc
 // comment related to the 'elseif' content
 content for when param2 is true and param1 is false
 ```
 
 the latest condition, `#else`, is preceded by `////`, so the comments will removed, resulting in 
 
-```
+```jsonc
 // comment related to the 'else' content
 content for when both param1 & param2 are false
 ```
 Changing from `////#else` to `//#else` the result will be
 
-```
+```jsonc
 // comment related to the 'else' content
 // content for when both param1 & param2 are false
 ```
 
-```
+```jsonc
 //#if (param1)
 	// comment related to the 'if' content
 	default content // also appropriate if param1 is true
@@ -311,7 +311,7 @@ the comment block starts with `<!--` and ends with `-->`. Inside this block you 
 
 description of first sample here
  
-```
+```xml
 <!--#if (IndividualLocalAuth && UseLocalDB) -->
   <SomeXmlHere>true</SomeXmlHere>
 <!--#endif -->
@@ -319,7 +319,7 @@ description of first sample here
  
 description of second sample here
 
-```
+```xml
 <!--#if (IndividualLocalAuth && UseLocalDB)
   <SomeXmlHere>true</SomeXmlHere>
 #endif -->
@@ -337,14 +337,14 @@ MSBuild files, in addition to the `#if`, `#else`, `#elseif`, `#endif` inside an 
 
 In this sample, one **<TargetFramework>** element will be added according to the value of the **TargetFrameworkOverride** symbol. This syntax is more clear and let you to use a single conditional expression to rule the inclusion of a whole block of content inside the template
 
-```
+```xml
 <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.0</TargetFramework>
 <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
 ```
 
 In this sample, we can see that if the **TargetFrameworkOverride** symbol is defined all the package references are added to the project file.
 
-```
+```xml
 <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
   <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-preview2-final" />
   <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0-preview2-final" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
@@ -353,7 +353,7 @@ In this sample, we can see that if the **TargetFrameworkOverride** symbol is def
 ```
 
 
-```
+```xml
 <!--#if (IndividualLocalAuth && UseLocalDB) -->
 
 <!--#endif -->
@@ -372,7 +372,7 @@ There are two ways to do it:
 
 If the file should never be processed by template engine, it can be specified as `copyOnly` in the `sources` section of the `template.json`. For example:
 
-```
+```json
   "sources": [
     {
       "modifiers": [
@@ -394,7 +394,7 @@ The part `<!--/` is the prefix to use for turning operations on and off in msbui
 
 For example, consider this modified version of `Directory.Build.props`:
 
-```
+```xml
 <Project>
     <PropertyGroup>
 <!--/-:msbuild-conditional:noEmit -->
@@ -438,7 +438,7 @@ The first `<Foo Condition...` is copied as-is because the `msbuild-conditional` 
 
 For solution files, the comment block starts with # to the end of the line. After this marker you can add the conditional expressions.
 
-```
+```.gitignore
 #if (symbol-name == "value")
 stuff
 #endif
@@ -507,7 +507,7 @@ the comment block starts with `/*` and ends with `*/`. Inside this block you can
 ### Samples
 In this sample, according to the value of the `IndividualLocalAuth` symbol, a few classes are added to the css file.
  
-```
+```css
 /*#if (IndividualLocalAuth)
 /* buttons and links extension to use brackets: [ click me ] */
 .btn-bracketed::before {
@@ -558,7 +558,7 @@ The comment block starts with `@*` and ends with `*@`. Inside this block you can
 
 In this sample, according to the value of the `IndividualLocalAuth` symbol, the using is added to an cshtml file.
 
-```
+```razor
 @*#if (IndividualLocalAuth)
 @using Microsoft.AspNetCore.Identity
 #endif*@
@@ -566,7 +566,7 @@ In this sample, according to the value of the `IndividualLocalAuth` symbol, the 
 
 In this sample, according to the value of the `IndividualB2CAuth` symbol, the inject statement is added to an cshtml file.
 
-```
+```razor
 @*#if (IndividualB2CAuth)
 @inject IOptions<AzureAdB2COptions> AzureAdB2COptions
 #endif *@
@@ -599,7 +599,7 @@ The comment block starts with `//` to the end of the line. After this marker you
 ### Samples
 
 In this sample, according to the value of the boolean `param1` symbol, `option1` is added to the file.
-```
+```jsx
 //#if (param1)
 option1
 //#endif
