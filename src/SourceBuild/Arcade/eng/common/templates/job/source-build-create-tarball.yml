@@ -58,7 +58,22 @@ jobs:
         /p:AzDoPat=$(dn-bot-all-orgs-build-rw-code-rw)
     displayName: Create Tarball
 
-  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
+  - task: CopyFiles@2
+    displayName: Prepare BuildLogs staging directory
+    inputs:
+      Contents: |
+        **/*.log
+        **/*.binlog
+      TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
+      CleanTargetFolder: true
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - publish: '$(Build.StagingDirectory)/BuildLogs'
+    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+    displayName: Publish BuildLogs
+    continueOnError: true
+    condition: succeededOrFailed()
 
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     # Check if the tarball should be built now so the result can be used in the build tarball job condition.

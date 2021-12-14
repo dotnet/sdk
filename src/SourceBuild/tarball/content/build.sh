@@ -156,11 +156,12 @@ export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export NUGET_PACKAGES=$restoredPackagesDir/
 
-if [ "$alternateTarget" == "true" ]; then
-  "$CLI_ROOT/dotnet" $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll "$SCRIPT_ROOT/build.proj" /bl:source-build-test.binlog /clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
-else
-  LogDateStamp=$(date +"%m%d%H%M%S")
-  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog $SCRIPT_ROOT/tools-local/init-build.proj /t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+LogDateStamp=$(date +"%m%d%H%M%S")
 
-  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog $SCRIPT_ROOT/build.proj ${MSBUILD_ARGUMENTS[@]} "$@"
+if [ "$alternateTarget" == "true" ]; then
+  "$CLI_ROOT/dotnet" $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll "$SCRIPT_ROOT/build.proj" /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log /clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
+else
+  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log $SCRIPT_ROOT/tools-local/init-build.proj /t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+
+  $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log $SCRIPT_ROOT/build.proj ${MSBUILD_ARGUMENTS[@]} "$@"
 fi
