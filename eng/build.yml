@@ -224,7 +224,7 @@ jobs:
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - ${{ if eq(parameters.agentOs, 'Windows_NT') }}:
-        - script: eng\CIBuld.cmd
+        - script: eng\CIBuild.cmd
                     -configuration $(_BuildConfig)
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
@@ -254,7 +254,7 @@ jobs:
               RunAoTTests: 'true'
 
       - ${{ if eq(parameters.agentOs, 'Darwin') }}:
-        - script: eng/common/buld.sh
+        - script: eng/common/build.sh
                     --configuration $(_BuildConfig)
                     --restore
                     --build
