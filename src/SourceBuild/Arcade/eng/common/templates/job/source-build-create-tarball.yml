@@ -12,7 +12,11 @@ jobs:
       name: NetCore1ESPool-Svc-Internal
       demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   variables:
-    _BuildConfig: Release
+  - name: _BuildConfig
+    value: Release
+
+  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+    - group: DotNet-Source-Build-All-Orgs-Source-Access
   workspace:
     clean: all
 
@@ -50,7 +54,8 @@ jobs:
         $officialBuildArgs \
         $internalRuntimeDownloadArgs \
         /p:DotNetPublishUsingPipelines=true \
-        /p:ArcadeBuildTarball=true
+        /p:ArcadeBuildTarball=true \
+        /p:AzDoPat=$(dn-bot-all-orgs-build-rw-code-rw)
     displayName: Create Tarball
 
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
