@@ -573,14 +573,24 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             }
             finally
             {
-                // Cleanup
-                Directory.Delete(solutionPath, true);
+                try
+                {
+                    Directory.Delete(solutionPath, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // The Windows the generator library may still be locked
+                }
             }
         }
 
         [MSBuildFact]
         public async Task GeneratorSolution_AdditionalDocumentsUpdated_WhenIncludingGenerated()
         {
+            const string ExpectedPublicApi = @"Greeter
+Greeter.Greet() -> void
+Greeter.Greeter() -> void";
+
             // Copy solution to temp folder so we can write changes to disk.
             var solutionPath = CopyToTempFolder(s_generatorSolutionPath);
 
@@ -607,12 +617,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
                 // Verify that changes were persisted to disk.
                 var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "console_app", "PublicAPI.Unshipped.txt"));
-                Assert.Equal("Greeter\nGreeter.Greet() -> void\nGreeter.Greeter() -> void", unshippedPublicApi);
+                Assert.Equal(ExpectedPublicApi, unshippedPublicApi);
             }
             finally
             {
-                // Cleanup
-                Directory.Delete(solutionPath, true);
+                try
+                {
+                    Directory.Delete(solutionPath, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // On Windows the generator library may still be locked
+                }
             }
         }
 
