@@ -180,7 +180,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
             var documentsNotCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
-            var sourceGeneratedDocuments = ImmutableArray.CreateBuilder<DocumentId>(16);
+            var sourceGeneratedDocuments = ImmutableArray.CreateBuilder<DocumentId>();
 
             var addedFilePaths = new HashSet<string>(totalFileCount);
 
