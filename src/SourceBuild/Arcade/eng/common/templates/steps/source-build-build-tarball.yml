@@ -66,9 +66,29 @@ steps:
       docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
     displayName: Run Tests
 
-  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
-    parameters:
-      sourceFolder: ${{ parameters.tarballDir }}
+  # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
+  - script: |
+      set -x
+
+      targetFolder=$(Build.StagingDirectory)/BuildLogs/
+      mkdir -p ${targetFolder}
+
+      cd "${{ parameters.tarballDir }}"
+      find artifacts/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/prebuilt-report/ -exec cp {} --parents -t ${targetFolder} \;
+      find src/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+      find src/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
+      find testing-smoke/logs -exec cp {} --parents -t ${targetFolder} \;
+    displayName: Prepare BuildLogs staging directory
+    continueOnError: true
+    condition: succeededOrFailed()
+
+  - publish: '$(Build.StagingDirectory)/BuildLogs'
+    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+    displayName: Publish BuildLogs
+    continueOnError: true
+    condition: succeededOrFailed()
 
   - publish: '${{ parameters.tarballDir }}/artifacts/${{ parameters.buildArch}}/Release/'
     artifact: $(Agent.JobName)_Artifacts
