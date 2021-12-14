@@ -41,6 +41,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private static readonly string s_analyzersSolutionPath = Path.Combine("for_code_formatter", "analyzers_solution");
         private static readonly string s_analyzersSolutionFilePath = Path.Combine(s_analyzersSolutionPath, "analyzers_solution.sln");
 
+        private static readonly string s_generatorSolutionPath = Path.Combine("for_code_formatter", "generator_solution");
+        private static readonly string s_generatorSolutionFileName = "generator_solution.sln";
+
         private static string[] EmptyFilesList => Array.Empty<string>();
 
         private Regex FindFormattingLogLine => new Regex(@"((.*)\(\d+,\d+\): (.*))\r|((.*)\(\d+,\d+\): (.*))");
@@ -460,7 +463,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         [MSBuildFact]
         public async Task FilesFormattedInCodeStyleSolutionFilter_WhenFixingCodeStyleWarnings()
         {
-            var restoreExitCode = await Utilities.DotNetHelper.PerformRestore(s_codeStyleSolutionFilterFilePath, _output);
+            var restoreExitCode = await Utilities.DotNetHelper.PerformRestoreAsync(s_codeStyleSolutionFilterFilePath, _output);
             Assert.Equal(0, restoreExitCode);
 
             await TestFormatWorkspaceAsync(
@@ -534,6 +537,98 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             {
                 // Cleanup
                 Directory.Delete(solutionPath, true);
+            }
+        }
+
+        [MSBuildFact]
+        public async Task GeneratorSolution_NoDiagnosticsReported_WhenNotIncludingGenerated()
+        {
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_generatorSolutionPath);
+
+            try
+            {
+                var solutionFilePath = Path.Combine(solutionPath, s_generatorSolutionFileName);
+
+                var buildExitCode = await Utilities.DotNetHelper.PerformBuildAsync(solutionFilePath, _output);
+                Assert.Equal(0, buildExitCode);
+
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    solutionFilePath,
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: false,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 0,
+                    expectedFileCount: 7,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "console_app", "PublicAPI.Unshipped.txt"));
+                Assert.Equal(string.Empty, unshippedPublicApi);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(solutionPath, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // The Windows the generator library may still be locked
+                }
+            }
+        }
+
+        [MSBuildFact]
+        public async Task GeneratorSolution_AdditionalDocumentsUpdated_WhenIncludingGenerated()
+        {
+            const string ExpectedPublicApi = @"Greeter
+Greeter.Greet() -> void
+Greeter.Greeter() -> void";
+
+            // Copy solution to temp folder so we can write changes to disk.
+            var solutionPath = CopyToTempFolder(s_generatorSolutionPath);
+
+            try
+            {
+                var solutionFilePath = Path.Combine(solutionPath, s_generatorSolutionFileName);
+
+                var buildExitCode = await Utilities.DotNetHelper.PerformBuildAsync(solutionFilePath, _output);
+                Assert.Equal(0, buildExitCode);
+
+                // Fix PublicAPI analyzer diagnostics.
+                await TestFormatWorkspaceAsync(
+                    solutionFilePath,
+                    include: EmptyFilesList,
+                    exclude: EmptyFilesList,
+                    includeGenerated: true,
+                    expectedExitCode: 0,
+                    expectedFilesFormatted: 1,
+                    expectedFileCount: 8,
+                    fixCategory: FixCategory.Analyzers,
+                    analyzerSeverity: DiagnosticSeverity.Warning,
+                    diagnostics: new[] { "RS0016" },
+                    saveFormattedFiles: true);
+
+                // Verify that changes were persisted to disk.
+                var unshippedPublicApi = File.ReadAllText(Path.Combine(solutionPath, "console_app", "PublicAPI.Unshipped.txt"));
+                Assert.Equal(ExpectedPublicApi, unshippedPublicApi);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(solutionPath, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    // On Windows the generator library may still be locked
+                }
             }
         }
 
