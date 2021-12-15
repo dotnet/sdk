@@ -80,9 +80,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             var analysisStopwatch = Stopwatch.StartNew();
             logger.LogTrace(Resources.Running_0_analysis, _name);
-
-            var formattablePaths = formattableDocuments.Select(id => solution.GetDocument(id)!.FilePath)
-                    .OfType<string>().ToImmutableHashSet();
+            var formattablePaths = await GetFormattablePathsAsync(solution, formattableDocuments, cancellationToken).ConfigureAwait(false);
 
             logger.LogTrace(Resources.Determining_diagnostics);
 
@@ -112,6 +110,29 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             logger.LogTrace(Resources.Analysis_complete_in_0ms_, analysisStopwatch.ElapsedMilliseconds);
 
             return solution;
+
+            async static Task<ImmutableHashSet<string>> GetFormattablePathsAsync(Solution solution, ImmutableArray<DocumentId> formattableDocuments, CancellationToken cancellationToken)
+            {
+                var formattablePaths = ImmutableHashSet.CreateBuilder<string>();
+
+                foreach (var documentId in formattableDocuments)
+                {
+                    var document = solution.GetDocument(documentId);
+                    if (document is null)
+                    {
+                        document = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken).ConfigureAwait(false);
+
+                        if (document is null)
+                        {
+                            continue;
+                        }
+                    }
+
+                    formattablePaths.Add(document.FilePath!);
+                }
+
+                return formattablePaths.ToImmutable();
+            }
         }
 
         private async Task<ImmutableDictionary<ProjectId, ImmutableHashSet<string>>> GetProjectDiagnosticsAsync(

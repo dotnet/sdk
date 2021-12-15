@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             try
             {
                 // Restore the Analyzer packages that have been added to `for_analyzer_formatter/analyzer_project/analyzer_project.csproj`
-                var exitCode = await DotNetHelper.PerformRestore(s_analyzerProjectFilePath, TestOutputHelper);
+                var exitCode = await DotNetHelper.PerformRestoreAsync(s_analyzerProjectFilePath, TestOutputHelper);
                 Assert.Equal(0, exitCode);
 
                 // Load the analyzer_project into a MSBuildWorkspace.

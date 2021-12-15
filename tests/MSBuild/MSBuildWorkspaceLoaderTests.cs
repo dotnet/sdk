@@ -108,7 +108,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
             var projectPath = GetProjectPath(templateName, languageName);
             var projectFilePath = GetProjectFilePath(projectPath, languageName);
 
-            var exitCode = await DotNetHelper.NewProject(templateName, projectPath, languageName, outputHelper);
+            var exitCode = await DotNetHelper.NewProjectAsync(templateName, projectPath, languageName, outputHelper);
             Assert.Equal(0, exitCode);
 
             return projectFilePath;
