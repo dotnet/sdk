@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
             command.AddOption(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
 
-            CommandHandler.Create<ParseResult>((parseResult) => new ToolRestoreCommand(parseResult).Execute());
+            command.SetHandler((parseResult) => new ToolRestoreCommand(parseResult).Execute());
 
             return command;
         }
