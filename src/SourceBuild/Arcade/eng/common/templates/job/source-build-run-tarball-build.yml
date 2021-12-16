@@ -39,7 +39,6 @@ jobs:
         _BuildArch: x64
         _Container: ${{ parameters.fedora33Container }}
         _RunOnline: true
-      # Offline builds have prebuilts: https://github.com/dotnet/fsharp/issues/12499
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         Fedora33-Offline:
           _BuildArch: x64
