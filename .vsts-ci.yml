@@ -114,7 +114,7 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Public
-            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Internal
             demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
