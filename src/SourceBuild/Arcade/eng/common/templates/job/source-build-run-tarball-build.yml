@@ -39,11 +39,10 @@ jobs:
         _BuildArch: x64
         _Container: ${{ parameters.fedora33Container }}
         _RunOnline: true
-      ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        Fedora33-Offline:
-          _BuildArch: x64
-          _Container: ${{ parameters.fedora33Container }}
-          _RunOnline: false
+      Fedora33-Offline:
+        _BuildArch: x64
+        _Container: ${{ parameters.fedora33Container }}
+        _RunOnline: false
   timeoutInMinutes: 240
   workspace:
     clean: all
