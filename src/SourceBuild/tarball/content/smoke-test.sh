@@ -52,6 +52,7 @@ excludeWebNoHttpsTests=false
 excludeWebHttpsTests=false
 excludeLocalTests=false
 excludeOnlineTests=false
+excludeOmniSharpTests=${excludeOmniSharpTests:-false}
 devCertsVersion="$DEV_CERTS_VERSION_DEFAULT"
 testingDir="$SCRIPT_ROOT/testing-smoke"
 cliDir="$testingDir/builtCli"
@@ -81,6 +82,7 @@ function usage() {
     echo "  --excludeWebHttpsTests         don't run web project tests with https using dotnet-dev-certs"
     echo "  --excludeLocalTests            exclude tests that use local sources for nuget packages"
     echo "  --excludeOnlineTests           exclude test that use online sources for nuget packages"
+    echo "  --excludeOmniSharpTests        don't run the OmniSharp tests"
     echo "  --devCertsVersion <version>    use dotnet-dev-certs <version> instead of default $DEV_CERTS_VERSION_DEFAULT"
     echo "  --prodConBlobFeedUrl <url>     override the prodcon blob feed specified in ProdConFeed.txt, removing it if empty"
     echo "  --archiveRestoredPackages      capture all restored packages to $archivedPackagesDir"
@@ -138,6 +140,9 @@ while :; do
             ;;
         --excludeonlinetests)
             excludeOnlineTests=true
+            ;;
+        --excludeomnisharptests)
+            excludeOmniSharpTests=true
             ;;
         --devcertsversion)
             shift
@@ -772,6 +777,8 @@ fi
 
 runXmlDocTests
 
-runOmniSharpTests
+if [ "$excludeOmniSharpTests" == "false" ]; then
+    runOmniSharpTests
+fi
 
 echo "ALL TESTS PASSED!"
