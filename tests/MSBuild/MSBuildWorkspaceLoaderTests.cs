@@ -33,8 +33,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         // Skip="https://github.com/dotnet/format/issues/1402"
         // [InlineData("wpf")]
         // [InlineData("wpfusercontrollib")]
-        [InlineData("wpflib")]
-        [InlineData("wpfcustomcontrollib")]
+        // [InlineData("wpflib")]
+        // [InlineData("wpfcustomcontrollib")]
         public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName)
         {
             await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp);

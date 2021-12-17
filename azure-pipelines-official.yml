@@ -49,7 +49,7 @@ stages:
       displayName: Publish XUnit Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.trx'
         mergeTestResults: true
         testRunTitle: 'Unit Tests'
       condition: always()
@@ -57,7 +57,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)'
         ArtifactName: 'Logs'
         publishLocation: Container
       continueOnError: true
@@ -66,7 +66,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)'
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)'
         ArtifactName: 'TestResults'
         publishLocation: Container
       condition: not(succeeded())
