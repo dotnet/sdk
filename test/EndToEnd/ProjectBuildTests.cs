@@ -361,7 +361,7 @@ namespace EndToEnd.Tests
         [InlineData("winformscontrollib", "VB")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: $"{framework}-windows");
         }
 
@@ -386,7 +386,7 @@ namespace EndToEnd.Tests
             }
         }
 
-        private static string DetectExpectedDefaultFramework()
+        private static string DetectExpectedDefaultFramework(string template = "")
         {
             string dotnetFolder = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
@@ -394,9 +394,16 @@ namespace EndToEnd.Tests
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
             if (latestMajorVersion == 7)
             {
-                // TODO: Update 
+                // TODO: This block need to be updated when every template updates their default tfm.
+                // Currently winforms updated their default templates target but not others.
+                if (template.StartsWith("winforms"))
+                {
+                    return $"net{latestMajorVersion}.0";
+                }
+
                 return "net6.0";
             }
+
             throw new Exception("Unsupported version of SDK");
         }
 
