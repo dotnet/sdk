@@ -57,7 +57,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(BuildConfiguration)'
         ArtifactName: 'Logs'
         publishLocation: Container
       continueOnError: true
@@ -66,7 +66,7 @@ stages:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)'
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)'
         ArtifactName: 'TestResults'
         publishLocation: Container
       condition: not(succeeded())
