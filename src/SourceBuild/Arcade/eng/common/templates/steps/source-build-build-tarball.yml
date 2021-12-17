@@ -10,6 +10,9 @@ parameters:
   # Container image to build within
   container: null
 
+  # Skip running the OmniSharp smoke-tests
+  excludeOmniSharpTests: false
+
   # Script logic to prep the tarball for building
   prepScript: null
 
@@ -63,7 +66,7 @@ steps:
   - script: |
       set -x
 
-      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
+      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball -e excludeOmniSharpTests=${{ parameters.excludeOmniSharpTests}} ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
