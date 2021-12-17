@@ -19,6 +19,7 @@
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
     <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
+    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' ">true</ConvertInternalRepos>
   </PropertyGroup>
 
   <Target Name="CreateSourceTarball"
@@ -203,7 +204,8 @@
     <Tarball_ReadSourceBuildIntermediateNupkgDependencies
       VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(TarballVersionDetailsFile)))"
       SourceBuildIntermediateNupkgPrefix="$(SourceBuildIntermediateNupkgPrefix)"
-      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)">
+      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)"
+      ConvertInternalRepos="$(ConvertInternalRepos)">
       <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
     </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
 
