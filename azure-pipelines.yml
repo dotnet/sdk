@@ -31,7 +31,7 @@ jobs:
     - task: PublishTestResults@2
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.trx'
         mergeTestResults: true
         testRunTitle: '$(_os) $(_configuration)'
       condition: always()
@@ -70,7 +70,7 @@ jobs:
       displayName: Publish xUnit Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.trx'
         mergeTestResults: true
         testRunTitle: '$(_os) $(_configuration)'
       condition: always()
@@ -110,7 +110,7 @@ jobs:
       displayName: Publish xUnit Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.trx'
         mergeTestResults: true
         testRunTitle: 'Spanish $(_os) $(_configuration)'
       condition: always()
