@@ -110,7 +110,7 @@ Development builds of `dotnet-format` are being hosted on Azure Packages. You ca
 You can install the latest build of the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version "6.0.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+dotnet tool install -g dotnet-format --version "6.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
 ```
 
 Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
