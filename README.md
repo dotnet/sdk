@@ -105,12 +105,12 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 
 #### How to install Development Builds
 
-Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet-tools&view=versions&package=dotnet-format&protocolType=NuGet).
+Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet7&view=versions&package=dotnet-format&protocolType=NuGet).
 
 You can install the latest build of the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version "7.0.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
+dotnet tool install -g dotnet-format --version "7.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json
 ```
 
 Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
