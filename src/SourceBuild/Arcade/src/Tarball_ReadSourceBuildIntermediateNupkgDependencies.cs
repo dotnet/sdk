@@ -3,6 +3,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
@@ -20,6 +21,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
 
         [Required]
         public string SourceBuildIntermediateNupkgPrefix { get; set; }
+
+        /// <summary>
+        /// Convert any internal repo references to the public GitHub repos.
+        /// </summary>
+        public bool ConvertInternalRepos { get; set; }
 
         /// <summary>
         /// The intermediate nupkg RID to use if any RID-specific intermediate nupkgs are required.
@@ -88,6 +94,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                     string dependencyVersion = d.Attribute("Version")?.Value;
 
                     string uri = d.Element(CreateQualifiedName("Uri"))?.Value;
+                    if (ConvertInternalRepos)
+                    {
+                        uri = ConvertInternalRepo(uri);
+                    }
+
                     string sha = d.Element(CreateQualifiedName("Sha"))?.Value;
                     string sourceBuildRepoName = sourceBuildElement.Attribute("RepoName")?.Value;
 
@@ -136,6 +147,34 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                 .ToArray();
 
             return !Log.HasLoggedErrors;
+        }
+
+        private string ConvertInternalRepo(string uri)
+        {
+            if (uri.StartsWith("https://dev.azure.com", StringComparison.OrdinalIgnoreCase))
+            {
+                string[] repoParts = uri.Substring(uri.LastIndexOf('/')).Split('-', 2);
+
+                if (repoParts.Length != 2)
+                {
+                    Log.LogError($"Repo '{uri}' does not end with the expected <GH organization>-<GH repo> format");
+                    return null;
+                }
+
+                string org = repoParts[0];
+                string repo = repoParts[1];
+
+                // The internal Nuget.Client repo has suffix which needs to be accounted for.
+                const string trustedSuffix = "-Trusted";
+                if (uri.EndsWith(trustedSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    repo = repo.Substring(0, repo.Length - trustedSuffix.Length);
+                }
+
+                uri = $"https://github.com/{org}/{repo}";
+            }
+
+            return uri;
         }
     }
 }
