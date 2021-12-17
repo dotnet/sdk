@@ -49,7 +49,7 @@ stages:
       displayName: Publish XUnit Test Results
       inputs:
         testRunner: XUnit
-        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.xml'
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(BuildConfiguration)\*.trx'
         mergeTestResults: true
         testRunTitle: 'Unit Tests'
       condition: always()
