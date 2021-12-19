@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Runtime.Serialization;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
@@ -59,6 +58,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 {
                     if (analyzerFileReference is not null)
                     {
+                        // If we have access to the analyzer file reference we can prepopulate our
+                        // cache with the assembly. We will still go through the AnalyzerLoadContext
+                        // so that dependency resolution will be handled.
                         var analyzerAssembly = analyzerFileReference.GetAssembly();
                         s_pathsToAssemblies.Add(path, analyzerAssembly);
                         s_namesToAssemblies.Add(analyzerAssembly.GetName().FullName, analyzerAssembly);
