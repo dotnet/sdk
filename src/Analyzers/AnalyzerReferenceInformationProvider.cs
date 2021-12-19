@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -62,8 +62,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                         // cache with the assembly. We will still go through the AnalyzerLoadContext
                         // so that dependency resolution will be handled.
                         var analyzerAssembly = analyzerFileReference.GetAssembly();
-                        s_pathsToAssemblies.Add(path, analyzerAssembly);
-                        s_namesToAssemblies.Add(analyzerAssembly.GetName().FullName, analyzerAssembly);
+                        s_namesToAssemblies.TryAdd(analyzerAssembly.GetName().FullName, analyzerAssembly);
                     }
 
                     var context = new AnalyzerLoadContext(path);
