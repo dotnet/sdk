@@ -75,10 +75,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition=" '$(AssemblySearchPaths)' == '' ">
     <!-- By default exclude GAC, registry, output directory from search paths. -->
-    <AssemblySearchPaths Condition="$(AssemblySearchPathUseCandidateAssemblyFiles) != 'false'">{CandidateAssemblyFiles}</AssemblySearchPaths>
-    <AssemblySearchPaths Condition="$(AssemblySearchPathUseHintPathFromItem) != 'false'">$(AssemblySearchPaths);{HintPathFromItem}</AssemblySearchPaths>
-    <AssemblySearchPaths Condition="$(AssemblySearchPathUseTargetFrameworkDirectory) != 'false'">$(AssemblySearchPaths);{TargetFrameworkDirectory}</AssemblySearchPaths>
-    <AssemblySearchPaths Condition="$(AssemblySearchPathUseRawFileName) != 'false'">$(AssemblySearchPaths);{RawFileName}</AssemblySearchPaths>
+    <AssemblySearchPaths Condition="'$(AssemblySearchPathUseCandidateAssemblyFiles)' != 'false'">{CandidateAssemblyFiles}</AssemblySearchPaths>
+    <AssemblySearchPaths Condition="'$(AssemblySearchPathUseHintPathFromItem)' != 'false'">$(AssemblySearchPaths);{HintPathFromItem}</AssemblySearchPaths>
+    <AssemblySearchPaths Condition="'$(AssemblySearchPathUseTargetFrameworkDirectory)' != 'false'">$(AssemblySearchPaths);{TargetFrameworkDirectory}</AssemblySearchPaths>
+    <AssemblySearchPaths Condition="'$(AssemblySearchPathUseRawFileName)' != 'false'">$(AssemblySearchPaths);{RawFileName}</AssemblySearchPaths>
   </PropertyGroup>
 
   <PropertyGroup>
