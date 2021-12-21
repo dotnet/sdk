@@ -25,6 +25,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             //new properties - not written to json
             Parameters = templateInfo.Parameters;
             TagsCollection = templateInfo.TagsCollection;
+            PostActions = templateInfo.PostActions;
 
             //compatibility for old way to manage parameters
             if (templateInfo.Tags.Any())
@@ -167,6 +168,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         [JsonProperty]
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; } = new Dictionary<string, ICacheParameter>();
+
+        [JsonIgnore]
+        public IReadOnlyList<Guid> PostActions { get; private set; }
 
         // ShortName should get deserialized when it exists, for backwards compat.
         // But moving forward, ShortNameList should be the definitive source.

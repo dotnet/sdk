@@ -116,12 +116,16 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public void CanReadSearchMetadata_V2_E2E()
         {
+            Guid postAction1 = Guid.NewGuid();
+            Guid postAction2 = Guid.NewGuid();
+
             ITemplateInfo mockTemplate = new MockTemplateInfo("shortName", "Full Name", "test.identity", "test.group.identity", 100, "test author")
                 .WithClassifications("test", "asset")
                 .WithDescription("my test description")
                 .WithTag("language", "CSharp")
                 .WithParameters("param1", "param2")
-                .WithChoiceParameter("choice", "var1", "var2", "var3");
+                .WithChoiceParameter("choice", "var1", "var2", "var3")
+                .WithPostActions(postAction1, postAction2);
 
             TemplateSearchData template = new TemplateSearchData(mockTemplate);
 
@@ -161,6 +165,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Single(templateToTest.Parameters.Where(p => p.DataType == "choice"));
             Assert.Equal(3, templateToTest.Parameters.Single(p => p.DataType == "choice").Choices?.Count);
             Assert.True(templateToTest.Parameters.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
+
+            Assert.Equal(2, ((ITemplateInfo)templateToTest).PostActions.Count);
+            Assert.Equal(new[] { postAction1, postAction2 }, ((ITemplateInfo)templateToTest).PostActions);
         }
     }
 }

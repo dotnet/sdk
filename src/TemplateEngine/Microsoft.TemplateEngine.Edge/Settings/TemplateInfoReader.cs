@@ -91,7 +91,19 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 info.HostData = entry.Get<JObject>(nameof(info.HostData));
-
+                JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
+                if (postActionsArray != null)
+                {
+                    List<Guid> postActions = new List<Guid>();
+                    foreach (JToken item in postActionsArray)
+                    {
+                        if (Guid.TryParse(item.ToString(), out Guid id))
+                        {
+                            postActions.Add(id);
+                        }
+                    }
+                    info.PostActions = postActions;
+                }
                 return info;
             }
         }

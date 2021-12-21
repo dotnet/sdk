@@ -183,6 +183,17 @@ namespace Microsoft.TemplateSearch.Common
                     serializer.Serialize(writer, value.TemplateInfo.BaselineInfo);
                 }
 
+                if (value.TemplateInfo.PostActions.Any())
+                {
+                    writer.WritePropertyName(nameof(ITemplateInfo.PostActions));
+                    writer.WriteStartArray();
+                    foreach (Guid guid in value.TemplateInfo.PostActions)
+                    {
+                        writer.WriteValue(guid.ToString());
+                    }
+                    writer.WriteEndArray();
+                }
+
                 if (value.AdditionalData.Any())
                 {
                     foreach (var item in value.AdditionalData)
@@ -195,7 +206,6 @@ namespace Microsoft.TemplateSearch.Common
                 writer.WriteEndObject();
             }
         }
-
         #endregion
     }
 }

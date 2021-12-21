@@ -93,6 +93,8 @@ namespace Microsoft.TemplateSearch.Common
 
         [Obsolete]
         bool ITemplateInfo.HasScriptRunningPostActions { get => TemplateInfo.HasScriptRunningPostActions; set => throw new NotImplementedException(); }
+
+        IReadOnlyList<Guid> ITemplateInfo.PostActions => TemplateInfo.PostActions;
         #endregion
 
         private ITemplateInfo TemplateInfo { get; }

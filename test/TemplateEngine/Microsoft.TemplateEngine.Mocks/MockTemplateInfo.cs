@@ -22,6 +22,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         private string[] _shortNameList = Array.Empty<string>();
 
+        private Guid[] _postActions = Array.Empty<Guid>();
+
         private Dictionary<string, string> _tags = new Dictionary<string, string>();
 
         private Dictionary<string, string[]> _choiceParameters = new Dictionary<string, string[]>();
@@ -152,6 +154,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyDictionary<string, string> TagsCollection => _tags;
 
+        public IReadOnlyList<Guid> PostActions => _postActions;
+
         public MockTemplateInfo WithParameters(params string[] parameters)
         {
             if (_parameters.Length == 0)
@@ -205,6 +209,19 @@ namespace Microsoft.TemplateEngine.Mocks
             else
             {
                 _classifications = _classifications.Concat(classifications).ToArray();
+            }
+            return this;
+        }
+
+        public MockTemplateInfo WithPostActions(params Guid[] postActions)
+        {
+            if (_postActions.Length == 0)
+            {
+                _postActions = postActions;
+            }
+            else
+            {
+                _postActions = _postActions.Concat(postActions).ToArray();
             }
             return this;
         }

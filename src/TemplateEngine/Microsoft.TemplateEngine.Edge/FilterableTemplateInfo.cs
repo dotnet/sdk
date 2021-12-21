@@ -56,7 +56,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public DateTime? ConfigTimestampUtc { get; set; }
 
-        public IReadOnlyDictionary<string, string> TagsCollection => throw new NotImplementedException();
+        public IReadOnlyDictionary<string, string> TagsCollection { get; private set; }
+
+        public IReadOnlyList<Guid> PostActions { get; private set; }
 
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {
@@ -82,7 +84,9 @@ namespace Microsoft.TemplateEngine.Edge
                 ThirdPartyNotices = source.ThirdPartyNotices,
                 BaselineInfo = source.BaselineInfo,
                 HasScriptRunningPostActions = source.HasScriptRunningPostActions,
-                ShortNameList = source.ShortNameList
+                ShortNameList = source.ShortNameList,
+                TagsCollection = source.TagsCollection,
+                PostActions = source.PostActions
             };
 
             return filterableTemplate;

@@ -92,6 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             ThirdPartyNotices = template.ThirdPartyNotices;
             BaselineInfo = template.BaselineInfo;
             ShortNameList = template.ShortNameList;
+            PostActions = template.PostActions;
 
             LocaleConfigPlace = localizationInfo?.ConfigPlace;
 
@@ -245,6 +246,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
         public JObject? HostData { get; private set; }
+
+        [JsonProperty]
+        public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
 
         public static TemplateInfo FromJObject(JObject entry)
         {

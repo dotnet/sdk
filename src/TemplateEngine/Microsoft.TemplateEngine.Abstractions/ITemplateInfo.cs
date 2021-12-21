@@ -120,5 +120,10 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets the list of short names defined for the template.
         /// </summary>
         IReadOnlyList<string> ShortNameList { get; }
+
+        /// <summary>
+        /// Gets the list of post actions IDs defined in the template.
+        /// </summary>
+        IReadOnlyList<Guid> PostActions { get;  }
     }
 }

@@ -1,1 +1,1 @@
-﻿
+﻿~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>

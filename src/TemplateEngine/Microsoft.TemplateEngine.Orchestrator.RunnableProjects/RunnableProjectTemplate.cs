@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +16,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly SimpleConfigModel _config;
         private readonly IGenerator _generator;
-        private readonly IFile _localeConfigFile;
-        private readonly IFile _hostConfigFile;
+        private readonly IFile? _localeConfigFile;
+        private readonly IFile? _hostConfigFile;
 
         internal RunnableProjectTemplate(
             IGenerator generator,
             SimpleConfigModel config,
-            IFile localeConfigFile,
-            IFile hostConfigFile)
+            IFile? localeConfigFile,
+            IFile? hostConfigFile)
         {
             _config = config;
             _generator = generator;
@@ -35,17 +37,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         Guid ITemplateInfo.GeneratorId => _generator.Id;
 
-        string ITemplateInfo.Author => _config.Author;
+        string? ITemplateInfo.Author => _config.Author;
 
-        string ITemplateInfo.Description => _config.Description;
+        string? ITemplateInfo.Description => _config.Description;
 
         IReadOnlyList<string> ITemplateInfo.Classifications => _config.Classifications;
 
-        string ITemplateInfo.DefaultName => _config.DefaultName;
+        string? ITemplateInfo.DefaultName => _config.DefaultName;
 
         IGenerator ITemplate.Generator => _generator;
 
-        string ITemplateInfo.GroupIdentity => _config.GroupIdentity;
+        string? ITemplateInfo.GroupIdentity => _config.GroupIdentity;
 
         int ITemplateInfo.Precedence => _config.Precedence;
 
@@ -79,7 +81,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 foreach (ITemplateParameter parameter in ((ITemplateInfo)this).Parameters.Where(p => p.DataType != null && p.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase)))
                 {
-                    tags[parameter.Name] = new CacheTag(parameter.DisplayName, parameter.Description, parameter.Choices, parameter.DefaultValue);
+                    IReadOnlyDictionary<string, ParameterChoice> choices = parameter.Choices ?? new Dictionary<string, ParameterChoice>();
+                    tags[parameter.Name] = new CacheTag(parameter.DisplayName, parameter.Description, choices, parameter.DefaultValue);
                 }
                 return tags;
             }
@@ -124,23 +127,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string ITemplateInfo.ConfigPlace => _config.SourceFile.FullPath;
 
-        IFileSystemInfo ITemplate.LocaleConfiguration => _localeConfigFile;
+        IFileSystemInfo? ITemplate.LocaleConfiguration => _localeConfigFile;
 
-        string ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
+        string? ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
 
         //read in simple template model instead
         bool ITemplate.IsNameAgreementWithFolderPreferred => _config.PreferNameDirectory;
 
-        string ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
+        string? ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
 
         //read in simple template model instead
-        string ITemplateInfo.ThirdPartyNotices => _config.ThirdPartyNotices;
+        string? ITemplateInfo.ThirdPartyNotices => _config.ThirdPartyNotices;
 
         IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => _config.BaselineInfo;
 
         IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => _config.Tags;
 
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
+
+        IReadOnlyList<Guid> ITemplateInfo.PostActions => _config.PostActionModels.Select(pam => pam.ActionId).ToArray();
 
         internal IRunnableProjectConfig Config => _config;
     }

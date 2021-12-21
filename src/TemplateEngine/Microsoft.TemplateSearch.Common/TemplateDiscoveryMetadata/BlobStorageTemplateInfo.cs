@@ -50,6 +50,7 @@ namespace Microsoft.TemplateSearch.Common
             ThirdPartyNotices = templateInfo.ThirdPartyNotices;
             TagsCollection = templateInfo.TagsCollection ?? new Dictionary<string, string>();
             BaselineInfo = templateInfo.BaselineInfo ?? new Dictionary<string, IBaselineInfo>();
+            PostActions = templateInfo.PostActions;
         }
 
         [JsonConstructor]
@@ -146,6 +147,9 @@ namespace Microsoft.TemplateSearch.Common
         [JsonProperty]
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; } = new Dictionary<string, string>();
 
+        [JsonProperty]
+        public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
+
         public static BlobStorageTemplateInfo FromJObject(JObject entry)
         {
             string identity = entry.ToString(nameof(Identity))
@@ -188,6 +192,20 @@ namespace Microsoft.TemplateSearch.Common
                     baselineInfo.Add(item.Name, baseline);
                 }
                 info.BaselineInfo = baselineInfo;
+            }
+
+            JArray? postActionsArray = entry.Get<JArray>(nameof(info.PostActions));
+            if (postActionsArray != null)
+            {
+                List<Guid> postActions = new List<Guid>();
+                foreach (JToken item in postActionsArray)
+                {
+                    if (Guid.TryParse(item.ToString(), out Guid id))
+                    {
+                        postActions.Add(id);
+                    }
+                }
+                info.PostActions = postActions;
             }
 
             //read parameters
