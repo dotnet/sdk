@@ -686,7 +686,7 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().BeFalse();
                 configProperties["System.Runtime.InteropServices.BuiltInComInterop.IsSupported"].Value<bool>()
                     .Should().BeFalse();
-                configProperties["System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting"].Value<bool>()
+                configProperties["System.Runtime.InteropServices.EnableNativeHostActivation"].Value<bool>()
                     .Should().BeFalse();
                 configProperties["System.Runtime.InteropServices.EnableCppCLIHostActivation"].Value<bool>()
                     .Should().BeFalse();
@@ -705,7 +705,7 @@ namespace Microsoft.NET.Publish.Tests
                 runtimeConfigContents.Should().NotContain("System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization");
                 runtimeConfigContents.Should().NotContain("System.Resources.ResourceManager.AllowCustomResourceTypes");
                 runtimeConfigContents.Should().NotContain("System.Runtime.InteropServices.BuiltInComInterop.IsSupported");
-                runtimeConfigContents.Should().NotContain("System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting");
+                runtimeConfigContents.Should().NotContain("System.Runtime.InteropServices.EnableNativeHostActivation");
                 runtimeConfigContents.Should().NotContain("System.Runtime.InteropServices.EnableCppCLIHostActivation");
                 runtimeConfigContents.Should().NotContain("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization");
                 runtimeConfigContents.Should().NotContain("System.StartupHookProvider.IsSupported");

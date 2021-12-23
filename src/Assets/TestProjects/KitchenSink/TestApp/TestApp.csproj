@@ -26,7 +26,7 @@
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
-    <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
+    <EnableNativeHostActivation>false</EnableNativeHostActivation>
     <EnableCppCLIHostActivation>false</EnableCppCLIHostActivation>
     <EnableUnsafeBinaryFormatterSerialization>false</EnableUnsafeBinaryFormatterSerialization>
     <TieredCompilation>true</TieredCompilation>

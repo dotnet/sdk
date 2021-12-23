@@ -456,9 +456,9 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(BuiltInComInteropSupport)"
                                     Trim="true" />
 
-    <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting"
-                                    Condition="'$(_EnableConsumingManagedCodeFromNativeHosting)' != ''"
-                                    Value="$(_EnableConsumingManagedCodeFromNativeHosting)"
+    <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.EnableNativeHostActivation"
+                                    Condition="'$(EnableNativeHostActivation)' != ''"
+                                    Value="$(EnableNativeHostActivation)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Runtime.InteropServices.EnableCppCLIHostActivation"

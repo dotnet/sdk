@@ -84,7 +84,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,
             ""System.Resources.UseSystemResourceKeys"": true,
             ""System.Runtime.InteropServices.BuiltInComInterop.IsSupported"": false,
-            ""System.Runtime.InteropServices.EnableConsumingManagedCodeFromNativeHosting"": false,
+            ""System.Runtime.InteropServices.EnableNativeHostActivation"": false,
             ""System.Runtime.InteropServices.EnableCppCLIHostActivation"": false,
             ""System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization"": false,
             ""System.Runtime.TieredCompilation"": true,
