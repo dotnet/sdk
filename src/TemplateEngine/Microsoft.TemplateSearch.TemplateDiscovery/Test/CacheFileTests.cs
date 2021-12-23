@@ -49,15 +49,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             CanSearch(workingDirectory, metadataPath);
 
             //latest
-            sdkVersion = config.LatestSdkToTest;
-            workingDirectory = TestUtils.CreateTemporaryFolder("latest");
-            UseSdkVersion(workingDirectory, sdkVersion, resolvedVersionPattern: string.Join('.', sdkVersion.Split('.', 3).Take(2)) + '.', rollForward: "latestFeature");
-            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
-            CanSearch(workingDirectory, legacyMetadataPath);
-            Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
-            CanSearch(workingDirectory, metadataPath);
-
-            Console.WriteLine($"Tests succeeded.");
+            if (!string.IsNullOrWhiteSpace(config.LatestSdkToTest))
+            {
+                sdkVersion = config.LatestSdkToTest;
+                workingDirectory = TestUtils.CreateTemporaryFolder("latest");
+                UseSdkVersion(workingDirectory, sdkVersion, resolvedVersionPattern: string.Join('.', sdkVersion.Split('.', 3).Take(2)) + '.', rollForward: "latestFeature");
+                Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
+                CanSearch(workingDirectory, legacyMetadataPath);
+                Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
+                CanSearch(workingDirectory, metadataPath);
+            }
         }
 
         private static void UseSdkVersion(string workingDirectory, string requestedSdkVersion, string resolvedVersionPattern, string rollForward = "latestMinor", bool allowPrerelease = false)

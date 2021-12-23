@@ -11,57 +11,38 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 
     internal class CommandArgs
     {
-        public CommandArgs(
-                DirectoryInfo basePath,
-                bool allowPreviewPacks,
-                int pageSize,
-                bool onePage,
-                bool savePacks,
-                bool noTemplateJsonFilter,
-                IEnumerable<SupportedQueries>? queries,
-                DirectoryInfo? packagesPath,
-                string latestSdkToTest,
-                bool diff,
-                FileInfo? diffOverrideCache,
-                FileInfo? diffOverrideNonPackages
-            )
+        internal CommandArgs(DirectoryInfo outputPath)
         {
-            OutputPath = basePath ?? throw new ArgumentNullException(nameof(basePath));
-            IncludePreviewPacks = allowPreviewPacks;
-            PageSize = pageSize;
-            RunOnlyOnePage = onePage;
-            SaveCandidatePacks = savePacks;
-            DontFilterOnTemplateJson = noTemplateJsonFilter;
-            Queries = queries?.ToArray() ?? Array.Empty<SupportedQueries>();
-            LocalPackagePath = packagesPath;
-            LatestSdkToTest = latestSdkToTest;
-            DiffMode = diff;
-            DiffOverrideSearchCacheLocation = diffOverrideCache;
-            DiffOverrideKnownPackagesLocation = diffOverrideNonPackages;
+            OutputPath = outputPath;
         }
 
-        internal DirectoryInfo? LocalPackagePath { get; }
+        internal DirectoryInfo? LocalPackagePath { get; init; }
 
-        internal DirectoryInfo OutputPath { get; }
+        internal DirectoryInfo OutputPath { get; init; }
 
-        internal int PageSize { get; }
+        internal int PageSize { get; init; }
 
-        internal bool SaveCandidatePacks { get; }
+        internal bool SaveCandidatePacks { get; init; }
 
-        internal bool RunOnlyOnePage { get; }
+        internal bool RunOnlyOnePage { get; init; }
 
-        internal bool IncludePreviewPacks { get; }
+        internal bool IncludePreviewPacks { get; init; }
 
-        internal bool DontFilterOnTemplateJson { get; }
+        internal bool DontFilterOnTemplateJson { get; init; }
 
-        internal IReadOnlyList<SupportedQueries> Queries { get; }
+        internal bool Verbose { get; init; }
 
-        internal string LatestSdkToTest { get; }
+        internal bool TestEnabled { get; init; }
 
-        internal bool DiffMode { get; }
+        internal IReadOnlyList<SupportedQueries> Queries { get; init; } = new List<SupportedQueries>();
 
-        internal FileInfo? DiffOverrideSearchCacheLocation { get; }
+        internal string? LatestSdkToTest { get; init; }
 
-        internal FileInfo? DiffOverrideKnownPackagesLocation { get; }
+        internal bool DiffMode { get; init; }
+
+        internal FileInfo? DiffOverrideSearchCacheLocation { get; init; }
+
+        internal FileInfo? DiffOverrideKnownPackagesLocation { get; init; }
+
     }
 }
