@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
+using System.CommandLine.Binding;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -11,10 +11,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands
     /// <summary>
     /// Represents a <see cref="System.CommandLine.Command"/> together with its handler.
     /// </summary>
-    internal abstract class ExecutableCommand : ICommandHandler
+    internal abstract class ExecutableCommand<TModel> : Command where TModel : class
     {
-        internal ExecutableCommand(ILoggerFactory? loggerFactory = null)
+        internal ExecutableCommand(string name, string? description = null, ILoggerFactory? loggerFactory = null)
+            : base(name, description)
         {
+            this.SetHandler((TModel model) => ExecuteAsync(model), GetModelBinder());
             LoggerFactory = loggerFactory;
             Logger = loggerFactory?.CreateLogger(GetType()) ?? NullLogger.Instance;
         }
@@ -30,18 +32,15 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands
         protected ILogger Logger { get; }
 
         /// <summary>
-        /// Creates a <see cref="System.CommandLine.Command"/> containing the details
-        /// of this command such as name, description, arguments and options.
+        /// Executes the command with the given input.
         /// </summary>
-        /// <returns>The created command.</returns>
-        public abstract Command CreateCommand();
+        /// <param name="args">Arguments for the command.</param>
+        protected abstract Task<int> ExecuteAsync(TModel args, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Executes the command with the given arguments specified in the invocation context.
+        /// Gets the model binder for the command.
         /// </summary>
-        /// <returns>A task that tracks the asynchronous operation.
-        /// 0 result from the completed task means that the command execution was successful.
-        /// where any other value indicates a failure.</returns>
-        public abstract Task<int> InvokeAsync(InvocationContext context);
+        /// <returns></returns>
+        protected abstract BinderBase<TModel> GetModelBinder();
     }
 }

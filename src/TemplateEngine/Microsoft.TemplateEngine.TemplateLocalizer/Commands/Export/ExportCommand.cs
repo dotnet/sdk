@@ -2,46 +2,49 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Binding;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.TemplateLocalizer.Core;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
 {
-    internal sealed class ExportCommand : ModelBoundExecutableCommand<ExportCommandArgs>
+    internal sealed class ExportCommand : ExecutableCommand<ExportCommandArgs>
     {
         private const string CommandName = "export";
 
-        public ExportCommand(ILoggerFactory loggerFactory) : base(loggerFactory) { }
-
-        public override Command CreateCommand()
+        private Argument<IEnumerable<string>> _templatePathArgument = new Argument<IEnumerable<string>>("template-path")
         {
-            Command exportCommand = new(CommandName, LocalizableStrings.command_export_help_description);
-            exportCommand.AddArgument(new Argument("template-path")
-            {
-                Arity = ArgumentArity.OneOrMore,
-                ArgumentType = typeof(string),
-                Description = LocalizableStrings.command_export_help_templatePath_description,
-            });
-            exportCommand.AddOption(new Option("-r")
-            {
-                Name = "--recursive",
-                Description = LocalizableStrings.command_export_help_recursive_description,
-            });
-            exportCommand.AddOption(new Option<string>("-l")
-            {
-                Name = "--language",
-                Description = LocalizableStrings.command_export_help_language_description,
-                Arity = ArgumentArity.OneOrMore,
-                AllowMultipleArgumentsPerToken = true,
-            });
-            exportCommand.AddOption(new Option("-d")
-            {
-                Name = "--dry-run",
-                Description = LocalizableStrings.command_export_help_dryrun_description,
-            });
-            exportCommand.Handler = this;
+            Arity = ArgumentArity.OneOrMore,
+            Description = LocalizableStrings.command_export_help_templatePath_description,
+        };
 
-            return exportCommand;
+        private Option<IEnumerable<string>> _languageOption = new Option<IEnumerable<string>>("-l")
+        {
+            Name = "--language",
+            Description = LocalizableStrings.command_export_help_language_description,
+            Arity = ArgumentArity.OneOrMore,
+            AllowMultipleArgumentsPerToken = true,
+        };
+
+        private Option<bool> _recursiveOption = new Option<bool>("-r")
+        {
+            Name = "--recursive",
+            Description = LocalizableStrings.command_export_help_recursive_description,
+        };
+
+        private Option<bool> _dryRunOption = new Option<bool>("-d")
+        {
+            Name = "--dry-run",
+            Description = LocalizableStrings.command_export_help_dryrun_description,
+        };
+
+        public ExportCommand(ILoggerFactory loggerFactory)
+            : base(CommandName, LocalizableStrings.command_export_help_description, loggerFactory)
+        {
+            AddArgument(_templatePathArgument);
+            AddOption(_recursiveOption);
+            AddOption(_languageOption);
+            AddOption(_dryRunOption);
         }
 
         protected override async Task<int> ExecuteAsync(ExportCommandArgs args, CancellationToken cancellationToken = default)
@@ -120,6 +123,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
             PrintResults(exportResults);
             return (failed || cancellationToken.IsCancellationRequested) ? 1 : 0;
         }
+
+        protected override BinderBase<ExportCommandArgs> GetModelBinder() => new ExportModelBinder(this);
 
         /// <summary>
         /// Given a <paramref name="path"/>, finds and returns all the template.json files. The search rules are executed in the following order:
@@ -205,6 +210,25 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
                         Logger.LogError(LocalizableStrings.command_export_log_templateExportFailedWithError, result.ErrorMessage, result.TemplateJsonPath);
                     }
                 }
+            }
+        }
+
+        private class ExportModelBinder : BinderBase<ExportCommandArgs>
+        {
+            private readonly ExportCommand _exportCommand;
+
+            internal ExportModelBinder(ExportCommand exportCommand)
+            {
+                _exportCommand = exportCommand;
+            }
+
+            protected override ExportCommandArgs GetBoundValue(BindingContext bindingContext)
+            {
+                return new ExportCommandArgs(
+                    templatePath: bindingContext.ParseResult.GetValueForArgument(_exportCommand._templatePathArgument),
+                    language: bindingContext.ParseResult.GetValueForOption(_exportCommand._languageOption),
+                    recursive: bindingContext.ParseResult.GetValueForOption(_exportCommand._recursiveOption),
+                    dryRun: bindingContext.ParseResult.GetValueForOption(_exportCommand._dryRunOption));
             }
         }
     }

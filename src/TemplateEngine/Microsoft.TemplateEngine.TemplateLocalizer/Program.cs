@@ -3,31 +3,19 @@
 
 using System.CommandLine;
 using Microsoft.Extensions.Logging;
-using Microsoft.TemplateEngine.TemplateLocalizer.Commands;
 using Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer
 {
     internal sealed class Program
     {
-        private static readonly Func<ILoggerFactory, ExecutableCommand>[] CommandCreators = new Func<ILoggerFactory, ExecutableCommand>[]
-        {
-            (factory) => new ExportCommand(factory),
-        };
-
         internal static async Task<int> Main(string[] args)
         {
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             ILogger logger = loggerFactory.CreateLogger<Program>();
 
-            RootCommand rootCommand = new();
-            rootCommand.Name = "dotnet-template-localizer";
-
-            foreach (Func<ILoggerFactory, ExecutableCommand> commandCreator in CommandCreators)
-            {
-                ExecutableCommand command = commandCreator(loggerFactory);
-                rootCommand.AddCommand(command.CreateCommand());
-            }
+            RootCommand rootCommand = new("dotnet-template-localizer");
+            rootCommand.AddCommand(new ExportCommand(loggerFactory));
 
             return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
         }
