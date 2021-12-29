@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: true, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
-            string expectedFilename = Path.Combine(_workingDirectory, "tr.templatestrings.json");
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
             Assert.False(File.Exists(expectedFilename));
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         public async Task ExistingTranslationsAndCommentsArePreserved()
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
-            string expectedFilename = Path.Combine(_workingDirectory, "tr.templatestrings.json");
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
 
             await File.WriteAllTextAsync(
                 expectedFilename,
@@ -146,6 +146,32 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             string fileContent = await File.ReadAllTextAsync(expectedFilename, cts.Token).ConfigureAwait(false);
 
             Assert.DoesNotContain("existing translations in authoring language should be removed.", fileContent);
+        }
+
+        [Fact]
+        public async Task ExistingCommentsOfAuthoringLanguageArePreserved()
+        {
+            CancellationTokenSource cts = new CancellationTokenSource(10000);
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.en.json");
+
+            await File.WriteAllTextAsync(
+                expectedFilename,
+                @"
+{
+    ""name"": ""existing translations should be discarded."",
+    ""_name.comment"": ""comments should be preserved.""
+}",
+                cts.Token).ConfigureAwait(false);
+
+            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+                .ConfigureAwait(false);
+
+            string fileContent = await File.ReadAllTextAsync(expectedFilename, cts.Token).ConfigureAwait(false);
+
+            Assert.DoesNotContain("existing translations should be discarded.", fileContent);
+            Assert.Contains("Class library", fileContent);
+            Assert.Contains("_name.comment", fileContent);
+            Assert.Contains("comments should be preserved.", fileContent);
         }
 
         private static async Task<Dictionary<string, string>> ReadTemplateStringsFromJsonFile(string path, CancellationToken cancellationToken)

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,18 +43,16 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             foreach (string language in languages)
             {
                 string locFilePath = Path.Combine(targetDirectory, "templatestrings." + language + ".json");
-                Dictionary<string, string>? existingStrings = null;
 
-                // Check existing strings only if this is not the original language the template was created in.
-                // Because we know that the text in template.json is always more up-to-date than the text in templatestrings.json.
-                if (templateJsonLanguage != language)
-                {
-                    existingStrings = await GetExistingStringsAsync(locFilePath, logger, cancellationToken).ConfigureAwait(false);
-                }
+                Dictionary<string, string>? existingStrings = await GetExistingStringsAsync(locFilePath, logger, cancellationToken)
+                    .ConfigureAwait(false);
 
                 if (!dryRun)
                 {
-                    await SaveTemplateStringsFileAsync(strings, existingStrings, locFilePath, logger, cancellationToken).ConfigureAwait(false);
+                    // Ignore existing translations for the original language, only keep the comments.
+                    bool forceUpdate = language == templateJsonLanguage;
+                    await SaveTemplateStringsFileAsync(strings, existingStrings, locFilePath, forceUpdate, logger, cancellationToken)
+                        .ConfigureAwait(false);
                 }
             }
         }
@@ -91,6 +90,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             IEnumerable<TemplateString> templateStrings,
             Dictionary<string, string>? existingStrings,
             string filePath,
+            bool forceUpdate,
             ILogger logger,
             CancellationToken cancellationToken)
         {
@@ -111,16 +111,18 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             foreach (TemplateString templateString in templateStrings)
             {
                 string? localizedText = null;
-                if (!existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? true)
-                {
-                    // Existing file did not contain a localized version of the string. Use the original value from template.json.
-                    localizedText = templateString.Value;
-                }
-                else
+                if (!forceUpdate && (existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? false))
                 {
                     logger.LogDebug(
                         "The file already contains a localized string for key \"{0}\". The old value will be preserved.",
                         templateString.LocalizationKey);
+                }
+                else
+                {
+                    // Existing file did not contain a localized version of the string.
+                    // Or we want 'forceUpdate': ignore the existing localizations.
+                    // Use the original value from template.json.
+                    localizedText = templateString.Value;
                 }
 
                 jsonWriter.WritePropertyName(templateString.LocalizationKey);
