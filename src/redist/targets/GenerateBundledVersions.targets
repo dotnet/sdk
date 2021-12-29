@@ -26,8 +26,8 @@
 
   <PropertyGroup>
       <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>21</VersionFeature31>
-      <VersionFeature50>12</VersionFeature50>
+      <VersionFeature31>22</VersionFeature31>
+      <VersionFeature50>13</VersionFeature50>
       <VersionFeature60>0</VersionFeature60>
   </PropertyGroup>
 
@@ -199,8 +199,8 @@
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
-      <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids)" />
-      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids);win-arm64" />
+      <WindowsDesktop50RuntimePackRids Include="@(WindowsDesktop31RuntimePackRids);win-arm64" />
+      <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
     </ItemGroup>
 
     <!--
@@ -378,6 +378,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackExcludedRuntimeIdentifiers="android"
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"

@@ -10,87 +10,105 @@ parameters:
   # The resource id of the tarball to download and build
   tarballResourceId: current
 
+  # The following parameters aren't expected to be passed in rather they are used for encapsulation
+  # -----------------------------------------------------------------------------------------------
+  fedora33Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+  poolInternal:
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+  poolPublic:
+    name: NetCore1ESPool-Svc-Public
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
+  tarballDir: $(Build.StagingDirectory)/tarball
+
 jobs:
-- job: Source_Build_Run_Tarball_Build
+- job: Build_Tarball
   condition: ${{ parameters.condition }}
-  displayName: Source-Build Build Tarball
+  displayName: Build Tarball
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: NetCore1ESPool-Public
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
       name: NetCore1ESPool-Internal
-      demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   strategy:
     matrix:
       Fedora33-Online:
-        _runOnline: true
-        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+        _BuildArch: x64
+        _Container: ${{ parameters.fedora33Container }}
+        _RunOnline: true
       Fedora33-Offline:
-        _runOnline: false
-        _Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-  timeoutInMinutes: 210
-  variables:
-    _TarballDir: $(Build.StagingDirectory)/tarball
-    _BuildConfig: Release
-    _BuildArch: x64
+        _BuildArch: x64
+        _Container: ${{ parameters.fedora33Container }}
+        _RunOnline: false
+  timeoutInMinutes: 240
   workspace:
     clean: all
 
   steps:
   - checkout: none
 
-  - download: ${{ parameters.tarballResourceId }}
-    artifact: BlobArtifacts
-    patterns: '**/dotnet-sdk-source*.tar.gz'
-    displayName: Download Tarball
-
-  - script: |
-      set -x
-
-      resourceIdPathSegment=
-      if [ '${{ parameters.tarballResourceId }}' != 'current' ]; then
-        resourceIdPathSegment='${{ parameters.tarballResourceId }}/'
-      fi
-
-      mkdir -p "$(_TarballDir)"
-      tarballFilePath="$(PIPELINE.WORKSPACE)/${resourceIdPathSegment}BlobArtifacts/dotnet-sdk-source*.tar.gz"
-      eval tar -ozxf "$tarballFilePath" -C "$(_TarballDir)"
-      eval rm -f "$tarballFilePath"
-    displayName: Extract Tarball
-
-  - script: |
-      set -x
-
-      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./prep.sh
-    displayName: Prep Tarball
-
-  - script: |
-      set -x
-      df -h
-
-      networkArgs=
-      customBuildArgs=
-      if [ '$(_runOnline)' = 'true' ]; then
-        customBuildArgs='--online'
-      else
-        networkArgs='--network none'
-      fi
-
-      docker run --rm -v $(_TarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh ${customBuildArgs} -- /p:CleanWhileBuilding=true
-    displayName: Build Tarball
-
-  - publish: '$(_TarballDir)/artifacts/$(_BuildArch)/$(_BuildConfig)/'
-    artifact: $(Agent.JobName)_Artifacts_Attempt$(System.JobAttempt)
-    displayName: Publish Source Build Artifacts
-
-  - script: |
-      set -x
-
-      docker run --rm -v $(_TarballDir):/tarball -w /tarball $(_Container) ./build.sh --run-smoke-test
-    displayName: Run Tests
-
-  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-publish-logs.yml
+  - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-build-tarball.yml
     parameters:
-      sourceFolder: $(_TarballDir)
+      buildArch: $(_BuildArch)
+      container: $(_Container)
+      prepScript: |
+        set -x
+
+        docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball $(_Container) ./prep.sh
+      runOnline: $(_RunOnline)
+      tarballDir: ${{ parameters.tarballDir }}
+      tarballResourceId: ${{ parameters.tarballResourceId }}
+
+- ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  - job: Rebuild_Tarball
+    displayName: Rebuild Tarball With Previous
+    dependsOn: Build_Tarball
+    pool:
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        ${{ parameters.poolPublic }}
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        ${{ parameters.poolInternal }}
+    strategy:
+      matrix:
+        Fedora33-Offline:
+          _PreviousSourceBuildArtifact: Build Tarball Fedora33-Offline_Artifacts
+          _BuildArch: x64
+          _Container: ${{ parameters.fedora33Container }}
+          _RunOnline: false
+    timeoutInMinutes: 180
+    workspace:
+      clean: all
+
+    steps:
+    - checkout: none
+
+    - download: current
+      artifact: $(_PreviousSourceBuildArtifact)
+      patterns: '*.tar.gz'
+      displayName: Download Previous Source Build Artifacts
+
+    - task: CopyFiles@2
+      displayName: Copy Previous Source Build Artifacts
+      inputs:
+        SourceFolder: $(PIPELINE.WORKSPACE)/$(_PreviousSourceBuildArtifact)
+        Contents: '*.tar.gz'
+        TargetFolder: ${{ parameters.tarballDir }}/packages/archive/
+
+    - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-build-tarball.yml
+      parameters:
+        additionalBuildArgs: --with-sdk /tarball/.dotnet
+        buildArch: $(_BuildArch)
+        container: $(_Container)
+        prepScript: |
+          set -x
+
+          mkdir ${{ parameters.tarballDir }}/.dotnet
+          tarballFilePath="${{ parameters.tarballDir }}/packages/archive/dotnet-sdk-*.tar.gz"
+          eval tar -ozxf "$tarballFilePath" -C "${{ parameters.tarballDir }}/.dotnet"
+          eval rm -f "$tarballFilePath"
+        runOnline: $(_RunOnline)
+        tarballDir: ${{ parameters.tarballDir }}
+        tarballResourceId: ${{ parameters.tarballResourceId }}

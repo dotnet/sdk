@@ -29,6 +29,8 @@
                                    '$(Rid)' == 'linux-musl-x64' ">$(Rid)</ProductMonikerRid>
       <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(OSName)-$(Architecture)</ProductMonikerRid>
 
+      <PortableProductMonikerRid Condition=" '$(PortableProductMonikerRid)' == '' ">$(HostOSName)-$(Architecture)</PortableProductMonikerRid>
+
       <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
       <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)</ArtifactNameCombinedHostHostFxrFrameworkSdk>
 

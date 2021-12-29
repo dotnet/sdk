@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 23 Nov 2021 16:13:36 +0000
+Subject: [PATCH] Update System.Threading.Tasks.DataFlow version
+
+Addresses:
+NuGet.Build.Tasks.csproj : error NU1605: Detected package downgrade: System.Threading.Tasks.Dataflow from 6.0.0 to 4.9.0. Reference the package directly from the project to select a different version.  [src/nuget-client.a998efecd431ec8a41536b5ac0152c16f1e2e646/build/restorehelper.targets]
+NuGet.Build.Tasks.csproj : error NU1605:  NuGet.Build.Tasks -> Microsoft.Build.Tasks.Core 17.1.0-preview-21572-15 -> System.Threading.Tasks.Dataflow (>= 6.0.0)  [src/nuget-client.a998efecd431ec8a41536b5ac0152c16f1e2e646/build/restorehelper.targets]
+NuGet.Build.Tasks.csproj : error NU1605:  NuGet.Build.Tasks -> System.Threading.Tasks.Dataflow (>= 4.9.0) [src/nuget-client.a998efecd431ec8a41536b5ac0152c16f1e2e646/build/restorehelper.targets]
+
+Backport issue: https://github.com/dotnet/source-build/issues/2311
+---
+ build/packages.targets | 2 +-
+ 1 file changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/build/packages.targets b/build/packages.targets
+index a0aa4cc..ef5a1cc 100644
+--- a/build/packages.targets
++++ b/build/packages.targets
+@@ -58,7 +59,7 @@
+         <PackageReference Update="System.Security.Cryptography.Cng" Version="$(CryptographyPackagesVersion)" />
+         <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(CryptographyPackagesVersion)" />
+         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
+-        <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
++        <PackageReference Update="System.Threading.Tasks.Dataflow" Version="6.0.0" />
+         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
+         <PackageReference Update="VsWebSite.Interop" Version="$(VSFrameworkVersion)" />
+         <PackageReference Update="Microsoft.Net.Compilers.Toolset" Version="3.9.0" />

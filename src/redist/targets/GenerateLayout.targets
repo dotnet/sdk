@@ -463,9 +463,13 @@
   </Target>
 
   <Target Name="CopyIncludedWorkloadManifestFile" >
+
     <ItemGroup>
-      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.WorkloadManifestId)', '').ToLower())" />
+      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLower())" />
     </ItemGroup>
+
+    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
+
     <WriteLinesToFile File="$(SdkOutputDirectory)IncludedWorkloadManifests.txt"
                       Lines="@(WorkloadManifestFilesContent)"
                       Overwrite="true" />
