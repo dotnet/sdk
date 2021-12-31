@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings()
         {
             var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             await app.Process.GetOutputLineAsync("Environment: Development", TimeSpan.FromSeconds(10));
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingProjectOption()
         {
             var testAsset = _testAssetsManager.CopyTestAsset("WatchAppWithLaunchSettings")
