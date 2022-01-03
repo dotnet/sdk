@@ -114,6 +114,7 @@ namespace Microsoft.NET.Build.Tests
                 "LibraryWithRid.pdb",
                 "LibraryWithRids.dll",
                 "LibraryWithRids.pdb",
+                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}"
             });
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "App.dll"))
