@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_builds_the_project_successfully()
         {
             var testAsset = _testAssetsManager
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyAppBuilds(testAsset);
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_builds_the_project_successfully_twice()
         {
             var testAsset = _testAssetsManager
