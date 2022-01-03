@@ -37,19 +37,21 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory();
+            DirectoryInfo publishDirectory = publishCommand.GetOutputDirectory("netcoreapp3.1");
 
             publishDirectory.Should().OnlyHaveFiles(new[] {
                 "SimpleDependencies.dll",
                 "SimpleDependencies.pdb",
                 "SimpleDependencies.deps.json",
+                $"SimpleDependencies{EnvironmentInfo.ExecutableExtension}",
                 "SimpleDependencies.runtimeconfig.json",
                 "Newtonsoft.Json.dll",
                 "System.Collections.NonGeneric.dll",
                 "System.Runtime.Serialization.Primitives.dll"
+                "Newtonsoft.Json.dll"
             });
 
-            string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies");
+            string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies", "netcoreapp3.1");
 
             TestCommand runAppCommand = new DotnetCommand(Log,  appPath, "one", "two" );
 
