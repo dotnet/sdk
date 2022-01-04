@@ -77,7 +77,7 @@ jobs:
           BuildConfig: $(_BuildConfig)
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools
+      - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
         displayName: Install wasm-tools Workload
       - powershell: eng\runHelixAndNonHelixInParallel.ps1
               -configuration $(_BuildConfig)
