@@ -88,7 +88,7 @@ stages:
 
     - template: /eng/build.yml
       parameters:
-        agentOs: Ubuntu_16_04
+        agentOs: Ubuntu_18_04
         pool:
           name: NetCore1ESPool-Svc-Public
           demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
