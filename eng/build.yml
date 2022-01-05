@@ -92,6 +92,7 @@ jobs:
               -buildSourcesDirectory $(Build.SourcesDirectory)
               -customHelixTargetQueue ${{ parameters.helixTargetQueue }}
               $(_Test)
+              -additionalMSBuildParameters "$(_InternalRuntimeDownloadArgs)"
         displayName: Run Tests in Helix and non Helix in parallel
         condition: succeededOrFailed()
         env:
@@ -119,6 +120,7 @@ jobs:
               -buildSourcesDirectory $(Build.SourcesDirectory)
               -customHelixTargetQueue ${{ parameters.helixTargetQueue }}
               $(_Test)
+              -additionalMSBuildParameters "$(_InternalRuntimeDownloadArgs)"
         displayName: Run Tests in Helix and non Helix in parallel
         condition: succeededOrFailed()
         env:
@@ -170,6 +172,7 @@ jobs:
               --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
               /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
               /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+              $(_InternalRuntimeDownloadArgs)
         displayName: Run Tests in Helix
         condition: succeededOrFailed()
         env:
