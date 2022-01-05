@@ -25,6 +25,11 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_retrieves_strings_successfully()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp1.1"))
+            {
+                return;
+            }
+
             TestSatelliteResources(Log, _testAssetsManager);
         }
 
