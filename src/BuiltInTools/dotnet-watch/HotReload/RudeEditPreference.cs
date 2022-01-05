@@ -20,11 +20,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             _reporter = reporter;
             _console = console;
 
-            var alwaysRestart = Environment.GetEnvironmentVariable("DOTNET_WATCH_ALWAYS_RESTART");
+            var alwaysRestart = Environment.GetEnvironmentVariable("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
 
-            if (alwaysRestart == "1" || alwaysRestart?.ToLower() == "true")
+            if (alwaysRestart == "1" || string.Equals(alwaysRestart, "true",  StringComparison.OrdinalIgnoreCase)
             {
-                _reporter.Verbose($"DOTNET_WATCH_ALWAYS_RESTART = '{alwaysRestart}'. Restarting without prompt.");
+                _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT= '{alwaysRestart}'. Restarting without prompt.");
                 _restartImmediatelySessionPreference = true;
             }
         }
