@@ -24,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [WindowsOnlyFact]
         public void It_publishes_projects_with_simple_dependencies()
         {
             TestAsset simpleDependenciesAsset = _testAssetsManager
