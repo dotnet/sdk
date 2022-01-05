@@ -50,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp2.1", runtimeIdentifier: runtimeIdentifier);
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.1", runtimeIdentifier: runtimeIdentifier);
             var selfContainedExecutable = $"App{Constants.ExeSuffix}";
 
             string selfContainedExecutableFullPath = Path.Combine(outputDirectory.FullName, selfContainedExecutable);
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
                 .Execute($"/p:RuntimeIdentifier={runtimeIdentifier}", $"/p:TestRuntimeIdentifier={runtimeIdentifier}", "/p:SelfContained=false")
                 .Should().Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp2.1", runtimeIdentifier: runtimeIdentifier);
+            var outputDirectory = buildCommand.GetOutputDirectory("netcoreapp3.1", runtimeIdentifier: runtimeIdentifier);
 
             outputDirectory.Should().NotHaveSubDirectories();
             outputDirectory.Should().OnlyHaveFiles(new[] {
@@ -114,6 +114,7 @@ namespace Microsoft.NET.Build.Tests
                 "LibraryWithRid.pdb",
                 "LibraryWithRids.dll",
                 "LibraryWithRids.pdb",
+                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}"
             });
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "App.dll"))
