@@ -301,9 +301,15 @@ namespace Microsoft.DotNet.Watcher
 
         private string GetRelativeFilePath(string path)
         {
-            return path.StartsWith(_workingDirectory) ?
-                $".{path.Substring(_workingDirectory.Length)}" :
-                path;
+            var relativePath = path;
+            if (path.StartsWith(_workingDirectory, StringComparison.Ordinal) && path.Length > _workingDirectory.Length)
+            {
+                relativePath = path.Substring(_workingDirectory.Length);
+
+                return $".{(relativePath.StartsWith(Path.DirectorySeparatorChar) ? string.Empty : Path.DirectorySeparatorChar)}{relativePath}";
+            }
+
+            return relativePath;
         }
 
         public async ValueTask DisposeAsync()
