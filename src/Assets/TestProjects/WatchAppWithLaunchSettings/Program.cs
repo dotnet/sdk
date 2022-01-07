@@ -4,5 +4,5 @@ Console.WriteLine($"Environment: {Environment.GetEnvironmentVariable("Environmen
 if (Environment.GetEnvironmentVariable("READ_INPUT") != null)
 {
     var read = Console.ReadLine();
-    Console.WriteLine("Echo:" + read);
+    Console.WriteLine("Echo: " + read);
 }

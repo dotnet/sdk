@@ -185,7 +185,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             };
 
             app.DotnetWatchArgs.Add("--verbose");
-            app.DotnetWatchArgs.Add("--project");
             app.DotnetWatchArgs.Add("--non-interactive");
 
             await app.StartWatcherAsync();
@@ -194,7 +193,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             var inputString = "This is a test input";
 
             await standardInput.WriteLineAsync(inputString).WaitAsync(TimeSpan.FromSeconds(10));
-            await standardInput.FlushAsync().WaitAsync(TimeSpan.FromSeconds(10));
             await app.Process.GetOutputLineAsync($"Echo: {inputString}", TimeSpan.FromSeconds(10));
         }
     }
