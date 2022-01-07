@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -12,6 +15,17 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     public class ConsoleReporter : IReporter
     {
+        private static readonly List<(string prefix, string emoji)> PrefixEmojiAssociations = new()
+        {
+            ("Hot reload", "🔥"),
+            ("HotReload", "🔥"),
+            ("Started", "🚀"),
+            ("Restart", "🔄"),
+            ("Shutdown", "🛑"),
+            ("Building...", "🔧"),
+            ("Error", "❌"),
+        };
+
         private readonly object _writeLock = new object();
 
         public ConsoleReporter(IConsole console)
@@ -31,10 +45,16 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsVerbose { get; set; }
         public bool IsQuiet { get; set; }
 
-        protected virtual void WriteLine(TextWriter writer, string message, ConsoleColor? color)
+        private void WriteLine(TextWriter writer, string message, ConsoleColor? color)
         {
+            var emojiPrefix = GetEmojiPrefix(message);
+
             lock (_writeLock)
             {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                writer.Write($"dotnet watch {emojiPrefix} ");
+                Console.ResetColor();
+
                 if (color.HasValue)
                 {
                     Console.ForegroundColor = color.Value;
@@ -49,10 +69,28 @@ namespace Microsoft.Extensions.Tools.Internal
             }
         }
 
+        private string GetEmojiPrefix(string message)
+        {
+            foreach (var (prefix, emoji) in PrefixEmojiAssociations)
+            {
+                if (message.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    return emoji;
+                }
+            }
+
+            return "⌚";
+        }
+
         public virtual void Error(string message)
-            => WriteLine(Console.Error, message, ConsoleColor.Red);
+        {
+            WriteLine(Console.Error, message, ConsoleColor.Red);
+        }
+
         public virtual void Warn(string message)
-            => WriteLine(Console.Out, message, ConsoleColor.Yellow);
+        {
+            WriteLine(Console.Out, message, ConsoleColor.Yellow);
+        }
 
         public virtual void Output(string message)
         {
@@ -60,6 +98,7 @@ namespace Microsoft.Extensions.Tools.Internal
             {
                 return;
             }
+
             WriteLine(Console.Out, message, color: null);
         }
 
