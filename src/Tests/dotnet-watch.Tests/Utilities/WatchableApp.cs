@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private const string WatchStartedMessage = "dotnet watch 🚀 Started";
         private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
         private const string WaitingForFileChangeMessage = "dotnet watch ⌚ Waiting for a file to change";
+        private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
         private readonly ITestOutputHelper _logger;
         private bool _prepared;
@@ -56,6 +57,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         public Task IsWaitingForFileChange()
         {
             return Process.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
+        }
+
+        public Task HasFileChanged()
+        {
+            return Process.GetOutputLineStartsWithAsync(WatchFileChanged, DefaultMessageTimeOut);
         }
 
         public bool UsePollingWatcher { get; set; }
