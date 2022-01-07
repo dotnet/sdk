@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     public class ConsoleReporter : IReporter
     {
-        private static readonly List<(string prefix, string emoji)> PrefixEmojiAssociations = new()
+        internal static readonly List<(string prefix, string emoji)> PrefixEmojiAssociations = new()
         {
             ("Hot reload", "🔥"),
             ("HotReload", "🔥"),
