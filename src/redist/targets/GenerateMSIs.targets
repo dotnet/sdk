@@ -167,7 +167,7 @@
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(ToolsetBrandName)' ^
-                      '$(VersionPrefix)' ^
+                      '$(CliProductBandVersion)00' ^
                       '$(MsiVersion)' ^
                       '$(SDKBundleVersion)' ^
                       '$(Version)' ^
