@@ -139,18 +139,23 @@ Examples:
             var noHotReloadOption = new Option<bool>(
                 new[] { "--no-hot-reload" },
                 "Suppress hot reload for supported apps.");
+			var nonInteractive = new Option<bool>(
+                    new[] { "--non-interactive" },
+                    "Runs dotnet-watch in non-interative mode. This option is only supported when running with Hot Reload enabled. " +
+                    "Use this option to prevent console input from being captured."),
             var root = new RootCommand(Description)
             {
                  quiet,
                  verbose,
                  noHotReloadOption,
+                 nonInteractiveOption,
                  longProjectOption,
                  shortProjectOption,
                  listOption
             };
 
             root.TreatUnmatchedTokensAsErrors = false;
-            var binder = new CommandLineOptionsBinder(longProjectOption, shortProjectOption, quiet, listOption, noHotReloadOption, verbose, reporter);
+            var binder = new CommandLineOptionsBinder(longProjectOption, shortProjectOption, quiet, listOption, noHotReloadOption, nonInteractiveOption, verbose, reporter);
             root.SetHandler((CommandLineOptions options) => handler(options), binder);
             return root;
         }
@@ -233,6 +238,7 @@ Examples:
             }
 
             var watchOptions = DotNetWatchOptions.Default;
+            watchOptions.NonInteractive = options.NonInteractive;
 
             var fileSetFactory = new MsBuildFileSetFactory(reporter,
                 watchOptions,
