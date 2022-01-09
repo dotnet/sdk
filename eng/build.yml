@@ -15,13 +15,13 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0.1xx')) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0.2xx')) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/6.0.1xx
+      MirrorBranch: release/6.0.2xx
       MirrorRepo: sdk
 - template: /eng/common/templates/job/job.yml
   parameters:
@@ -248,15 +248,18 @@ jobs:
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
           displayName: Run AoT Tests in Helix
-          condition: succeededOrFailed()
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: ''
               RunAoTTests: 'true'
 
       - ${{ if eq(parameters.agentOs, 'Darwin') }}:
-        - script: eng/common/cibuild.sh
+        - script: eng/common/build.sh
                     --configuration $(_BuildConfig)
+                    --restore
+                    --build
+                    --pack
+                    --ci
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
@@ -277,7 +280,6 @@ jobs:
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
           displayName: Run AoT Tests in Helix
-          condition: succeededOrFailed()
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
