@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="CollectionsShouldImplementGenericInterfaceMultipleMessage">
         <source>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
-        <target state="new">Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</target>
+        <target state="translated">類型 '{0}' 未實作任何 '{2}' 便直接或間接繼承 '{1}'。公開顯示的類型應實作一般版本以擴大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
