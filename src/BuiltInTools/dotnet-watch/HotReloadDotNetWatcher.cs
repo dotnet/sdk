@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,7 +25,7 @@ namespace Microsoft.DotNet.Watcher
         private readonly ProcessRunner _processRunner;
         private readonly DotNetWatchOptions _dotNetWatchOptions;
         private readonly IWatchFilter[] _filters;
-        private readonly RudeEditDialog _rudeEditDialog;
+        private readonly RudeEditDialog? _rudeEditDialog;
         private readonly string _workingDirectory;
 
         public HotReloadDotNetWatcher(IReporter reporter, IRequester requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory)
@@ -44,28 +46,36 @@ namespace Microsoft.DotNet.Watcher
                 new LaunchBrowserFilter(dotNetWatchOptions),
                 new BrowserRefreshFilter(dotNetWatchOptions, _reporter),
             };
-            _rudeEditDialog = new(reporter, requester, _console);
+
+            if (!dotNetWatchOptions.NonInteractive)
+            {
+                _rudeEditDialog = new(reporter, requester, _console);
+            }
         }
 
         public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
             var processSpec = context.ProcessSpec;
 
+            var forceReload = new CancellationTokenSource();
+            
             _reporter.Output("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload. " +
                 Environment.NewLine +
                 "  💡 Press \"Ctrl + R\" to restart.");
 
-            var forceReload = new CancellationTokenSource();
-
-            _console.KeyPressed += (key) =>
+            if (!_dotNetWatchOptions.NonInteractive)
             {
-                var modifiers = ConsoleModifiers.Control;
-                if ((key.Modifiers & modifiers) == modifiers && key.Key == ConsoleKey.R)
+                _reporter.Output("Press \"Ctrl + R\" to restart.");
+                _console.KeyPressed += (key) =>
                 {
-                    var cancellationTokenSource = Interlocked.Exchange(ref forceReload, new CancellationTokenSource());
-                    cancellationTokenSource.Cancel();
-                }
-            };
+                    var modifiers = ConsoleModifiers.Control;
+                    if ((key.Modifiers & modifiers) == modifiers && key.Key == ConsoleKey.R)
+                    {
+                        var cancellationTokenSource = Interlocked.Exchange(ref forceReload, new CancellationTokenSource());
+                        cancellationTokenSource.Cancel();
+                    }
+                };
+            }
 
             while (true)
             {
@@ -119,7 +129,7 @@ namespace Microsoft.DotNet.Watcher
 
                     _reporter.Output("Started");
 
-                    Task<FileItem[]> fileSetTask;
+                    Task<FileItem[]?> fileSetTask;
                     Task finishedTask;
 
                     while (true)
@@ -168,8 +178,14 @@ namespace Microsoft.DotNet.Watcher
                             }
                             else
                             {
-                                await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token);
-
+                                if (_rudeEditDialog is not null)
+                                {
+                                    await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token);
+                                }
+                                else
+                                {
+                                    _reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+                                }
                                 break;
                             }
                         }
@@ -245,7 +261,7 @@ namespace Microsoft.DotNet.Watcher
                 }
 
                 if (filePath.EndsWith(".cshtml", StringComparison.Ordinal) &&
-                    context.ProjectGraph.GraphRoots.FirstOrDefault() is { } project &&
+                    context.ProjectGraph!.GraphRoots.FirstOrDefault() is { } project &&
                     project.ProjectInstance.GetPropertyValue("AddCshtmlFilesToDotNetWatchList") is not "false")
                 {
                     // For cshtml files, runtime compilation can opt out of watching cshtml files.
