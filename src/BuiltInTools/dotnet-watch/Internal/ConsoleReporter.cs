@@ -15,17 +15,6 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     public class ConsoleReporter : IReporter
     {
-        internal static readonly List<(string prefix, string emoji)> PrefixEmojiAssociations = new()
-        {
-            ("Hot reload", "🔥"),
-            ("HotReload", "🔥"),
-            ("Started", "🚀"),
-            ("Restart", "🔄"),
-            ("Shutdown", "🛑"),
-            ("Building...", "🔧"),
-            ("Error", "❌"),
-        };
-
         private readonly object _writeLock = new object();
 
         public ConsoleReporter(IConsole console)
@@ -45,14 +34,12 @@ namespace Microsoft.Extensions.Tools.Internal
         public bool IsVerbose { get; set; }
         public bool IsQuiet { get; set; }
 
-        private void WriteLine(TextWriter writer, string message, ConsoleColor? color)
+        private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
         {
-            var emojiPrefix = GetEmojiPrefix(message);
-
             lock (_writeLock)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                writer.Write($"dotnet watch {emojiPrefix} ");
+                writer.Write($"dotnet watch {emoji} ");
                 Console.ResetColor();
 
                 if (color.HasValue)
@@ -69,47 +56,34 @@ namespace Microsoft.Extensions.Tools.Internal
             }
         }
 
-        private string GetEmojiPrefix(string message)
+        public virtual void Error(string message, string emoji = "❌")
         {
-            foreach (var (prefix, emoji) in PrefixEmojiAssociations)
-            {
-                if (message.StartsWith(prefix, StringComparison.Ordinal))
-                {
-                    return emoji;
-                }
-            }
-
-            return "⌚";
+            WriteLine(Console.Error, message, ConsoleColor.Red, emoji);
         }
 
-        public virtual void Error(string message)
+        public virtual void Warn(string message, string emoji = "⌚")
         {
-            WriteLine(Console.Error, message, ConsoleColor.Red);
+            WriteLine(Console.Out, message, ConsoleColor.Yellow, emoji);
         }
 
-        public virtual void Warn(string message)
-        {
-            WriteLine(Console.Out, message, ConsoleColor.Yellow);
-        }
-
-        public virtual void Output(string message)
+        public virtual void Output(string message, string emoji = "⌚")
         {
             if (IsQuiet)
             {
                 return;
             }
 
-            WriteLine(Console.Out, message, color: null);
+            WriteLine(Console.Out, message, color: null, emoji);
         }
 
-        public virtual void Verbose(string message)
+        public virtual void Verbose(string message, string emoji = "⌚")
         {
             if (!IsVerbose)
             {
                 return;
             }
 
-            WriteLine(Console.Out, message, ConsoleColor.DarkGray);
+            WriteLine(Console.Out, message, ConsoleColor.DarkGray, emoji);
         }
     }
 }

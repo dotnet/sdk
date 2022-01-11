@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Watcher
             
             _reporter.Output("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload. " +
                 Environment.NewLine +
-                "  💡 Press \"Ctrl + R\" to restart.");
+                "  💡 Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
             if (!_dotNetWatchOptions.NonInteractive)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Watcher
                     var args = string.Join(" ", processSpec.Arguments);
                     _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
 
-                    _reporter.Output("Started");
+                    _reporter.Output("Started", emoji: "🚀");
 
                     Task<FileItem[]?> fileSetTask;
                     Task finishedTask;
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Watcher
                             if (await hotReload.TryHandleFileChange(context, fileItems, combinedCancellationSource.Token))
                             {
                                 var totalTime = TimeSpan.FromTicks(Stopwatch.GetTimestamp() - start);
-                                _reporter.Verbose($"Hot reload change handled in {totalTime.TotalMilliseconds}ms.");
+                                _reporter.Verbose($"Hot reload change handled in {totalTime.TotalMilliseconds}ms.", emoji: "🔥");
                             }
                             else
                             {
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Watcher
                     if (finishedTask == processTask)
                     {
                         // Now wait for a file to change before restarting process
-                        _reporter.Warn("Waiting for a file to change before restarting dotnet...");
+                        _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳");
                         await fileSetWatcher.GetChangedFileAsync(cancellationToken, forceWaitForNewUpdate: true);
                     }
                     else
@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.Watcher
                     if (forceReload.IsCancellationRequested)
                     {
                         _console.Clear();
-                        _reporter.Output("Restart requested.");
+                        _reporter.Output("Restart requested.", emoji: "🔄");
                     }
                 }
             }

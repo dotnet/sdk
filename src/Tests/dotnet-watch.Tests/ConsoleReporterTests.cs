@@ -34,23 +34,34 @@ namespace Microsoft.Extensions.Tools.Internal
 
             // stderr
             reporter.Error("error");
-            Assert.Equal($"{dotnetWatchDefaultPrefix}error" + EOL, testConsole.GetError());
+            Assert.Equal($"dotnet watch ❌ error" + EOL, testConsole.GetError());
             testConsole.Clear();
         }
 
         [Fact]
-        public void WritesEmojis()
+        public void WritesToStandardStreamsWithCustomEmojis()
         {
             var testConsole = new TestConsole();
             var reporter = new ConsoleReporter(testConsole, verbose: true, quiet: false);
+            var dotnetWatchDefaultPrefix = "dotnet watch";
 
             // stdout
-            foreach (var (prefix, emoji) in ConsoleReporter.PrefixEmojiAssociations)
-            {
-                reporter.Output(prefix);
-                Assert.Equal($"dotnet watch {emoji} {prefix}" + EOL, testConsole.GetOutput());
-                testConsole.Clear();
-            }
+            reporter.Verbose("verbose", emoji: "😄");
+            Assert.Equal($"{dotnetWatchDefaultPrefix} 😄 verbose" + EOL, testConsole.GetOutput());
+            testConsole.Clear();
+
+            reporter.Output("out", emoji: "😄");
+            Assert.Equal($"{dotnetWatchDefaultPrefix} 😄 out" + EOL, testConsole.GetOutput());
+            testConsole.Clear();
+
+            reporter.Warn("warn", emoji: "😄");
+            Assert.Equal($"{dotnetWatchDefaultPrefix} 😄 warn" + EOL, testConsole.GetOutput());
+            testConsole.Clear();
+
+            // stderr
+            reporter.Error("error", emoji: "😄");
+            Assert.Equal($"{dotnetWatchDefaultPrefix} 😄 error" + EOL, testConsole.GetError());
+            testConsole.Clear();
         }
 
         private class TestConsole : IConsole
