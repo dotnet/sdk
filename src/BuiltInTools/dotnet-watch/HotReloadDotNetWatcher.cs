@@ -58,14 +58,12 @@ namespace Microsoft.DotNet.Watcher
             var processSpec = context.ProcessSpec;
 
             var forceReload = new CancellationTokenSource();
-            
-            _reporter.Output("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload. " +
-                Environment.NewLine +
-                "  💡 Press \"Ctrl + R\" to restart.", emoji: "🔥");
+            var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
             if (!_dotNetWatchOptions.NonInteractive)
             {
-                _reporter.Output("Press \"Ctrl + R\" to restart.");
+                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  💡 Press \"Ctrl + R\" to restart.", emoji: "🔥");
+
                 _console.KeyPressed += (key) =>
                 {
                     var modifiers = ConsoleModifiers.Control;
@@ -75,6 +73,10 @@ namespace Microsoft.DotNet.Watcher
                         cancellationTokenSource.Cancel();
                     }
                 };
+            }
+            else
+            {
+                _reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
             while (true)
