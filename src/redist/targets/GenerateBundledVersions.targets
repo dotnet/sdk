@@ -28,7 +28,7 @@
       <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>22</VersionFeature31>
       <VersionFeature50>13</VersionFeature50>
-      <VersionFeature60>0</VersionFeature60>
+      <VersionFeature60>1</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
