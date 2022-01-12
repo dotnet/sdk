@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return Task.CompletedTask;
             }
 
-            _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
+            _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "\u1F525");
 
             return Task.Delay(-1, cancellationToken);
         }

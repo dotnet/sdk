@@ -14,22 +14,22 @@ namespace Microsoft.Extensions.Tools.Internal
             _output = output;
         }
 
-        public void Verbose(string message, string emoji = "⌚")
+        public void Verbose(string message, string emoji = "\u231a")
         {
             _output.WriteLine($"verbose {emoji} " + message);
         }
 
-        public void Output(string message, string emoji = "⌚")
+        public void Output(string message, string emoji = "\u231a")
         {
             _output.WriteLine($"output {emoji} " + message);
         }
 
-        public void Warn(string message, string emoji = "⌚")
+        public void Warn(string message, string emoji = "\u231a")
         {
             _output.WriteLine($"warn {emoji} " + message);
         }
 
-        public void Error(string message, string emoji = "❌")
+        public void Error(string message, string emoji = "\u274C")
         {
             _output.WriteLine($"error {emoji} " + message);
         }

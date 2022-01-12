@@ -225,7 +225,7 @@ Examples:
 
             if (args.Cancel)
             {
-                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "🛑");
+                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "\u1F6D1");
             }
 
             _cts.Cancel();

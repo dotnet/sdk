@@ -37,12 +37,12 @@ namespace Microsoft.Extensions.Tools.Internal
 
             while (true)
             {
-                WriteLine($"  ❔ {prompt}");
+                WriteLine($"  \u2754 {prompt}");
 
                 lock (_writeLock)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Out.Write("  ❔ ");
+                    Console.Out.Write("  \u2754 ");
                     Console.ResetColor();
                 }
                 

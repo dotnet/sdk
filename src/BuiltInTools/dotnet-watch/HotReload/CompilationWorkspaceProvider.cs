@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             try
             {
                 var capabilities = await hotReloadCapabilitiesTask;
-                reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "🔥");
+                reporter.Verbose($"Hot reload capabilities: {string.Join(" ", capabilities)}.", emoji: "\u1F525");
 
                 return capabilities;
             }

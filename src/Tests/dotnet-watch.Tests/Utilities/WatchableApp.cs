@@ -18,10 +18,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
-        private const string WatchStartedMessage = "dotnet watch 🚀 Started";
-        private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
-        private const string WaitingForFileChangeMessage = "dotnet watch ⏳ Waiting for a file to change";
-        private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
+        private const string WatchStartedMessage = "dotnet watch \u1F680 Started";
+        private const string WatchExitedMessage = "dotnet watch \u231a Exited";
+        private const string WaitingForFileChangeMessage = "dotnet watch \u23F3 Waiting for a file to change";
+        private const string WatchFileChanged = "dotnet watch \u231a File changed:";
 
         private readonly ITestOutputHelper _logger;
         private bool _prepared;

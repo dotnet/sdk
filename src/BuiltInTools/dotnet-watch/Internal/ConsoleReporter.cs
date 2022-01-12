@@ -56,17 +56,17 @@ namespace Microsoft.Extensions.Tools.Internal
             }
         }
 
-        public virtual void Error(string message, string emoji = "❌")
+        public virtual void Error(string message, string emoji = "\u274C")
         {
             WriteLine(Console.Error, message, ConsoleColor.Red, emoji);
         }
 
-        public virtual void Warn(string message, string emoji = "⌚")
+        public virtual void Warn(string message, string emoji = "\u231a")
         {
             WriteLine(Console.Out, message, ConsoleColor.Yellow, emoji);
         }
 
-        public virtual void Output(string message, string emoji = "⌚")
+        public virtual void Output(string message, string emoji = "\u231a")
         {
             if (IsQuiet)
             {
@@ -76,7 +76,7 @@ namespace Microsoft.Extensions.Tools.Internal
             WriteLine(Console.Out, message, color: null, emoji);
         }
 
-        public virtual void Verbose(string message, string emoji = "⌚")
+        public virtual void Verbose(string message, string emoji = "\u231a")
         {
             if (!IsVerbose)
             {

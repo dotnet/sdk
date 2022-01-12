@@ -14,16 +14,16 @@ namespace Microsoft.Extensions.Tools.Internal
 
         public static IReporter Singleton { get; } = new NullReporter();
 
-        public void Verbose(string message, string emoji = "⌚")
+        public void Verbose(string message, string emoji = "\u231a")
         { }
 
-        public void Output(string message, string emoji = "⌚")
+        public void Output(string message, string emoji = "\u231a")
         { }
 
-        public void Warn(string message, string emoji = "⌚")
+        public void Warn(string message, string emoji = "\u231a")
         { }
 
-        public void Error(string message, string emoji = "❌")
+        public void Error(string message, string emoji = "\u274C")
         { }
     }
 }

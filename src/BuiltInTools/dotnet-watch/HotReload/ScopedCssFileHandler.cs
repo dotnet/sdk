@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
             await HandleBrowserRefresh(context.BrowserRefreshServer, file, cancellationToken);
-            _reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
+            _reporter.Output("Hot reload of scoped css succeeded.", emoji: "\u1F525");
             HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
             return true;
         }
