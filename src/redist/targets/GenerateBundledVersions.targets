@@ -28,6 +28,7 @@
       <VersionFeature21>30</VersionFeature21>
       <VersionFeature31>22</VersionFeature31>
       <VersionFeature50>13</VersionFeature50>
+      <VersionFeature60>1</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
@@ -40,13 +41,12 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
-      <!-- TODO: Once .NET 6.0 has released, update these version numbers to 6.0.0 -->
-      <_NET60RuntimePackVersion>6.0.0-rc.2.21452.2</_NET60RuntimePackVersion>
-      <_NET60TargetingPackVersion>6.0.0-rc.2.21452.2</_NET60TargetingPackVersion>
-      <_WindowsDesktop60RuntimePackVersion>6.0.0-rc.2.21431.3</_WindowsDesktop60RuntimePackVersion>
-      <_WindowsDesktop60TargetingPackVersion>6.0.0-rc.2.21431.3</_WindowsDesktop60TargetingPackVersion>
-      <_AspNet60RuntimePackVersion>6.0.0-rc.2.21452.1</_AspNet60RuntimePackVersion>
-      <_AspNet60TargetingPackVersion>6.0.0-rc.2.21452.1</_AspNet60TargetingPackVersion>
+      <_NET60RuntimePackVersion>6.0.$(VersionFeature60)</_NET60RuntimePackVersion>
+      <_NET60TargetingPackVersion>6.0.0</_NET60TargetingPackVersion>
+      <_WindowsDesktop60RuntimePackVersion>6.0.$(VersionFeature60)</_WindowsDesktop60RuntimePackVersion>
+      <_WindowsDesktop60TargetingPackVersion>6.0.0</_WindowsDesktop60TargetingPackVersion>
+      <_AspNet60RuntimePackVersion>6.0.$(VersionFeature60)</_AspNet60RuntimePackVersion>
+      <_AspNet60TargetingPackVersion>6.0.0</_AspNet60TargetingPackVersion>
 
       <_NET50RuntimePackVersion>5.0.$(VersionFeature50)</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
@@ -424,7 +424,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_NET60RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="6.0.0"
                               LatestRuntimeFrameworkVersion="$(_NET60RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET60TargetingPackVersion)"
@@ -458,7 +458,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="6.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop60TargetingPackVersion)"
@@ -470,7 +470,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="6.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop60TargetingPackVersion)"
@@ -483,7 +483,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="6.0.0"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop60RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop60TargetingPackVersion)"
@@ -496,7 +496,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="net6.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="$(_AspNet60RuntimePackVersion)"
+                              DefaultRuntimeFrameworkVersion="6.0.0"
                               LatestRuntimeFrameworkVersion="$(_AspNet60RuntimePackVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet60TargetingPackVersion)"
