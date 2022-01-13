@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Bundled70Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates70PackageVersion)" />
-    
+    <Bundled70Templates Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates70PackageVersion)" />
     <Bundled70Templates Include="Microsoft.DotNet.Web.ItemTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" />
     <Bundled70Templates Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled70Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" />
@@ -30,9 +30,6 @@
     <Bundled70Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled70Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     
-    <!-- These templates need to be updated to 7.0 packages when they are available -->
-    <Bundled70Templates Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)" />
-
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <Bundled70Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
   </ItemGroup>

@@ -398,8 +398,6 @@ namespace EndToEnd.Tests
                 // Currently winforms updated their default templates target but not others.
                 if (template.StartsWith("mstest") 
                     || template.StartsWith("mstest") 
-                    || template.StartsWith("classlib") 
-                    || template.StartsWith("console") 
                     || template.StartsWith("nunit")
                     || template.StartsWith("xunit")
                     || template.StartsWith("wpf"))
