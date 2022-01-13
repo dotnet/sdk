@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Binding;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.Restore;
+using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Edge;
 
 namespace Microsoft.DotNet.Cli
@@ -23,20 +23,12 @@ namespace Microsoft.DotNet.Cli
         public const string CommandName = "new";
         private const string HostIdentifier = "dotnetcli";
 
-        private static readonly LoggerBinder _loggerBinder = new LoggerBinder();
-        private static readonly TemplateEngineHostBinder _templateEngineHostBinder = new TemplateEngineHostBinder();
-        private static readonly CallbacksBinder _callbacksBinder = new CallbacksBinder();
-
         private static readonly Option<bool> _disableSdkTemplates = new Option<bool>("--debug:disable-sdk-templates", () => false, "If present, prevents templates bundled in the SDK from being presented").Hide();
 
-        public static readonly Option UpdateApplyOption = new Option<bool>("--update-apply");
-
-        public static readonly Option ColumnsOption = new Option<bool>("--columns");
         
-        private class LoggerBinder : BinderBase<ITelemetryLogger>
+        public static System.CommandLine.Command GetCommand()
         {
-            protected override ITelemetryLogger GetBoundValue(BindingContext bindingContext)
-            {
+            var getLogger = (ParseResult parseResult) => {
                 var sessionId = Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
                 // senderCount: 0 to disable sender.
@@ -44,8 +36,8 @@ namespace Microsoft.DotNet.Cli
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
                 var telemetry = new Microsoft.DotNet.Cli.Telemetry.Telemetry(new FirstTimeUseNoticeSentinel(),
-                                              sessionId,
-                                              senderCount: 0);
+                                            sessionId,
+                                            senderCount: 0);
                 var logger = new TelemetryLogger(null);
 
                 if (telemetry.Enabled)
@@ -59,59 +51,19 @@ namespace Microsoft.DotNet.Cli
                     });
                 }
                 return logger;
-            }
-        }
+            };
 
-
-        private class TemplateEngineHostBinder : BinderBase<ITemplateEngineHost>
-        {
-            protected override ITemplateEngineHost GetBoundValue(BindingContext bindingContext)
-            {
-                var disableSdkTemplates = bindingContext.ParseResult.GetValueForOption(_disableSdkTemplates);
-                return CreateHost(disableSdkTemplates);
-            }
-        }
-        private class CallbacksBinder : BinderBase<NewCommandCallbacks>
-        {
-            protected override NewCommandCallbacks GetBoundValue(BindingContext bindingContext) => new NewCommandCallbacks { RestoreProject = RestoreProject };
-        }
-
-        public static System.CommandLine.Command GetCommand()
-        {
-            // TODO(CH) - replace with LoggerBinder
-            var sessionId = Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
-
-            // senderCount: 0 to disable sender.
-            // When senders in different process running at the same
-            // time they will read from the same global queue and cause
-            // sending duplicated events. Disable sender to reduce it.
-            var telemetry = new Microsoft.DotNet.Cli.Telemetry.Telemetry(new FirstTimeUseNoticeSentinel(),
-                                          sessionId,
-                                          senderCount: 0);
-            var logger = new TelemetryLogger(null);
-
-            if (telemetry.Enabled)
-            {
-                logger = new TelemetryLogger((name, props, measures) =>
-                {
-                    if (telemetry.Enabled)
-                    {
-                        telemetry.TrackEvent($"template/{name}", props, measures);
-                    }
-                });
-            }
-
-            // TODO(CH) - Replace with CallbacksBinder
             var callbacks = new Microsoft.TemplateEngine.Cli.NewCommandCallbacks()
             {
                 RestoreProject = RestoreProject
             };
 
-            // TODO(CH) - Replace with TemplateEngineHostBinder
-            var host = CreateHost(false);
+            var getEngineHost = (ParseResult parseResult) => {
+                var disableSdkTemplates = parseResult.GetValueForOption(_disableSdkTemplates);
+                return CreateHost(disableSdkTemplates);
+            };
 
-            // TODO(CH) - No way to configure/inject the ITemplateEngineHost, can we accept a binder for these dependencies instead?
-            var command = Microsoft.TemplateEngine.Cli.NewCommandFactory.Create(CommandName, host, logger, callbacks);
+            var command = Microsoft.TemplateEngine.Cli.NewCommandFactory.Create(CommandName, getEngineHost, getLogger, callbacks);
 
             // adding this option lets us look for its bound value during binding in a typed way
             command.AddOption(_disableSdkTemplates);
