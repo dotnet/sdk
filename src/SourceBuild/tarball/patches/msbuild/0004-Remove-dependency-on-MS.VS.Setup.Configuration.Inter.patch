@@ -7,26 +7,27 @@ Removes prebuilts.
 
 Background Issue: https://github.com/dotnet/source-build/issues/2542
 ---
- eng/Packages.props                             | 3 ---
+ eng/dependabot/Packages.props                  | 3 ---
  src/Build/Microsoft.Build.csproj               | 4 +++-
  src/Directory.BeforeCommon.targets             | 2 +-
+ src/Framework/Microsoft.Build.Framework.csproj | 2 +-
  src/Samples/Directory.Build.props              | 1 +
  src/Tasks/Microsoft.Build.Tasks.csproj         | 4 +++-
  src/Utilities/Microsoft.Build.Utilities.csproj | 2 +-
- 6 files changed, 9 insertions(+), 7 deletions(-)
+ 7 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/eng/Packages.props b/eng/Packages.props
-index 2de607c5d..1668addc9 100644
---- a/eng/Packages.props
-+++ b/eng/Packages.props
-@@ -46,9 +46,6 @@
+diff --git a/eng/dependabot/Packages.props b/eng/dependabot/Packages.props
+index a1f21de26..ff74d6e7f 100644
+--- a/eng/dependabot/Packages.props
++++ b/eng/dependabot/Packages.props
+@@ -22,9 +22,6 @@
+ 
    <ItemGroup Condition="'$(DotNetBuildFromSource)' != 'true'">
-     <GlobalPackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All"/>
-     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" />
+     <GlobalPackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.3" />
 -  </ItemGroup>
 -
 -  <ItemGroup>
-     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.15" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+     <GlobalPackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.36" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
    </ItemGroup>
  
 diff --git a/src/Build/Microsoft.Build.csproj b/src/Build/Microsoft.Build.csproj
@@ -34,7 +35,7 @@ index d08e337c5..3b173aee5 100644
 --- a/src/Build/Microsoft.Build.csproj
 +++ b/src/Build/Microsoft.Build.csproj
 @@ -38,8 +38,10 @@
-     <PackageReference Include="System.Reflection.Metadata" Condition="'$(MonoBuild)' == 'true'" />
+     <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
    </ItemGroup>
  
 -  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
@@ -57,6 +58,19 @@ index 913c97b12..320bffa56 100644
 +    <DefineConstants Condition="'$(MonoBuild)' != 'true' and '$(MachineIndependentBuild)' != 'true' and '$(TargetFrameworkVersion)' != 'v3.5' and '$(DotNetBuildFromSource)' != 'true'">$(DefineConstants);FEATURE_VISUALSTUDIOSETUP</DefineConstants>
      <DefineConstants>$(DefineConstants);FEATURE_MSCOREE</DefineConstants>
    </PropertyGroup>
+ 
+diff --git a/src/Framework/Microsoft.Build.Framework.csproj b/src/Framework/Microsoft.Build.Framework.csproj
+index df7556447..c7edff611 100644
+--- a/src/Framework/Microsoft.Build.Framework.csproj
++++ b/src/Framework/Microsoft.Build.Framework.csproj
+@@ -31,7 +31,7 @@
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+     <!-- Promote CompilerServices.Unsafe from the old version we get from System.Memory on net472. -->
+     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" />
++    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+     <Reference Include="System.Xaml" />
+   </ItemGroup>
  
 diff --git a/src/Samples/Directory.Build.props b/src/Samples/Directory.Build.props
 index 6b9d6cd9f..317ef14a6 100644

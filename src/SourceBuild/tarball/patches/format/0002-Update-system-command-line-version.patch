@@ -1,0 +1,164 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Michael Simons <msimons@microsoft.com>
+Date: Fri, 19 Nov 2021 13:50:52 -0600
+Subject: [PATCH] Update system-command-line version
+
+Backported with https://github.com/dotnet/format/pull/1436
+---
+ eng/Version.Details.xml                |  8 ++++----
+ eng/Versions.props                     |  4 ++--
+ src/Commands/FormatAnalyzersCommand.cs |  4 ++--
+ src/Commands/FormatCommandCommon.cs    | 12 ++++++------
+ src/Commands/FormatStyleCommand.cs     |  4 ++--
+ src/Commands/RootFormatCommand.cs      |  4 ++--
+ 6 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index 48b181b..68c0b43 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -5,13 +5,13 @@
+       <Uri>https://github.com/dotnet/roslyn</Uri>
+       <Sha>c7d6f9fab845ffd943216da465022744e7d35f22</Sha>
+     </Dependency>
+-    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21473.1">
++    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21525.1">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
++      <Sha>09a24a79ef01a0c70655919ee3c59bb54a8574df</Sha>
+     </Dependency>
+-    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21473.1">
++    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21525.1">
+       <Uri>https://github.com/dotnet/command-line-api</Uri>
+-      <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
++      <Sha>09a24a79ef01a0c70655919ee3c59bb54a8574df</Sha>
+     </Dependency>
+   </ProductDependencies>
+   <ToolsetDependencies>
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 2758207..6a02917 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -18,8 +18,8 @@
+     <!-- Dependencies from https://github.com/dotnet/roslyn -->
+     <MicrosoftNETCoreCompilersPackageVersion>4.0.0-6.21526.21</MicrosoftNETCoreCompilersPackageVersion>
+     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
+-    <SystemCommandLineVersion>2.0.0-beta1.21473.1</SystemCommandLineVersion>
+-    <SystemCommandLineRenderingVersion>0.3.0-alpha.21473.1</SystemCommandLineRenderingVersion>
++    <SystemCommandLineVersion>2.0.0-beta1.21525.1</SystemCommandLineVersion>
++    <SystemCommandLineRenderingVersion>0.3.0-alpha.21525.1</SystemCommandLineRenderingVersion>
+   </PropertyGroup>
+   <!--
+     Other Dependency versions
+diff --git a/src/Commands/FormatAnalyzersCommand.cs b/src/Commands/FormatAnalyzersCommand.cs
+index 322397e..0be3daf 100644
+--- a/src/Commands/FormatAnalyzersCommand.cs
++++ b/src/Commands/FormatAnalyzersCommand.cs
+@@ -37,13 +37,13 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
+                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
+ 
+                 if (parseResult.HasOption(SeverityOption) &&
+-                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } analyzerSeverity)
++                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } analyzerSeverity)
+                 {
+                     formatOptions = formatOptions with { AnalyzerSeverity = GetSeverity(analyzerSeverity) };
+                 }
+ 
+                 if (parseResult.HasOption(DiagnosticsOption) &&
+-                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
++                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                 {
+                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                 }
+diff --git a/src/Commands/FormatCommandCommon.cs b/src/Commands/FormatCommandCommon.cs
+index fb69853..565c2d1 100644
+--- a/src/Commands/FormatCommandCommon.cs
++++ b/src/Commands/FormatCommandCommon.cs
+@@ -137,7 +137,7 @@ namespace Microsoft.CodeAnalysis.Tools
+         public static FormatOptions ParseVerbosityOption(this ParseResult parseResult, FormatOptions formatOptions)
+         {
+             if (parseResult.HasOption(VerbosityOption) &&
+-                parseResult.ValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
++                parseResult.GetValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
+             {
+                 formatOptions = formatOptions with { LogLevel = GetLogLevel(verbosity) };
+             }
+@@ -169,8 +169,8 @@ namespace Microsoft.CodeAnalysis.Tools
+ 
+             if (parseResult.HasOption(IncludeOption) || parseResult.HasOption(ExcludeOption))
+             {
+-                var fileToInclude = parseResult.ValueForOption(IncludeOption) ?? Array.Empty<string>();
+-                var fileToExclude = parseResult.ValueForOption(ExcludeOption) ?? Array.Empty<string>();
++                var fileToInclude = parseResult.GetValueForOption(IncludeOption) ?? Array.Empty<string>();
++                var fileToExclude = parseResult.GetValueForOption(ExcludeOption) ?? Array.Empty<string>();
+                 HandleStandardInput(logger, ref fileToInclude, ref fileToExclude);
+                 formatOptions = formatOptions with { FileMatcher = SourceFileMatcher.CreateMatcher(fileToInclude, fileToExclude) };
+             }
+@@ -179,7 +179,7 @@ namespace Microsoft.CodeAnalysis.Tools
+             {
+                 formatOptions = formatOptions with { ReportPath = string.Empty };
+ 
+-                if (parseResult.ValueForOption(ReportOption) is string { Length: > 0 } reportPath)
++                if (parseResult.GetValueForOption(ReportOption) is string { Length: > 0 } reportPath)
+                 {
+                     formatOptions = formatOptions with { ReportPath = reportPath };
+                 }
+@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools
+             {
+                 formatOptions = formatOptions with { BinaryLogPath = "format.binlog" };
+ 
+-                if (parseResult.ValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
++                if (parseResult.GetValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
+                 {
+                     formatOptions = Path.GetExtension(binaryLogPath)?.Equals(".binlog") == false
+                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })
+@@ -285,7 +285,7 @@ namespace Microsoft.CodeAnalysis.Tools
+         {
+             var currentDirectory = Environment.CurrentDirectory;
+ 
+-            if (parseResult.ValueForArgument<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
++            if (parseResult.GetValueForArgument<string>(SlnOrProjectArgument) is string { Length: > 0 } slnOrProject)
+             {
+                 if (parseResult.HasOption(FolderOption))
+                 {
+diff --git a/src/Commands/FormatStyleCommand.cs b/src/Commands/FormatStyleCommand.cs
+index b44398c..7839855 100644
+--- a/src/Commands/FormatStyleCommand.cs
++++ b/src/Commands/FormatStyleCommand.cs
+@@ -37,13 +37,13 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
+                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
+ 
+                 if (parseResult.HasOption(SeverityOption) &&
+-                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
++                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
+                 {
+                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(styleSeverity) };
+                 }
+ 
+                 if (parseResult.HasOption(DiagnosticsOption) &&
+-                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
++                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                 {
+                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                 }
+diff --git a/src/Commands/RootFormatCommand.cs b/src/Commands/RootFormatCommand.cs
+index 741effb..40f8cc8 100644
+--- a/src/Commands/RootFormatCommand.cs
++++ b/src/Commands/RootFormatCommand.cs
+@@ -40,14 +40,14 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
+                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
+ 
+                 if (parseResult.HasOption(SeverityOption) &&
+-                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } defaultSeverity)
++                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } defaultSeverity)
+                 {
+                     formatOptions = formatOptions with { AnalyzerSeverity = GetSeverity(defaultSeverity) };
+                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(defaultSeverity) };
+                 }
+ 
+                 if (parseResult.HasOption(DiagnosticsOption) &&
+-                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
++                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                 {
+                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                 }
