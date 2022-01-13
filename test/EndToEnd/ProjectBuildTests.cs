@@ -314,7 +314,7 @@ namespace EndToEnd.Tests
         [InlineData("razorclasslib")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: framework);
         }
 
@@ -396,12 +396,15 @@ namespace EndToEnd.Tests
             {
                 // TODO: This block need to be updated when every template updates their default tfm.
                 // Currently winforms updated their default templates target but not others.
-                if (template.StartsWith("winforms"))
+                if (template.StartsWith("mstest") 
+                    || template.StartsWith("mstest") 
+                    || template.StartsWith("nunit")
+                    || template.StartsWith("xunit")
+                    || template.StartsWith("wpf"))
                 {
-                    return $"net{latestMajorVersion}.0";
+                    return "net6.0";                    
                 }
-
-                return "net6.0";
+                return $"net{latestMajorVersion}.0";
             }
 
             throw new Exception("Unsupported version of SDK");
