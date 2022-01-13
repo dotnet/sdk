@@ -314,7 +314,7 @@ namespace EndToEnd.Tests
         [InlineData("razorclasslib")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: framework);
         }
 
@@ -401,7 +401,8 @@ namespace EndToEnd.Tests
                     || template.StartsWith("classlib") 
                     || template.StartsWith("console") 
                     || template.StartsWith("nunit")
-                    || template.StartsWith("xunit"))
+                    || template.StartsWith("xunit")
+                    || template.StartsWith("wpf"))
                 {
                     return "net6.0";                    
                 }
