@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -76,7 +78,15 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}'] | Encoding: {System.Text.Encoding.Default.EncodingName}", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
+        }
+
+        public async Task<string> GetOutputLineAsync(byte[] message, TimeSpan timeout)
+        {
+            WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(timeout);
+            return await GetOutputLineAsync($"[msg == '{message}']", m => Encoding.UTF8.GetBytes(m).SequenceEqual(message), cts.Token);
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)

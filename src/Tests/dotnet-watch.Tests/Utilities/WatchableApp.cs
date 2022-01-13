@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -124,7 +125,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             // Make this timeout long because it depends much on the MSBuild compilation speed.
             // Slow machines may take a bit to compile and boot test apps
-            await Process.GetOutputLineAsync(WatchStartedMessage, TimeSpan.FromMinutes(2));
+            await Process.GetOutputLineAsync(Encoding.UTF8.GetBytes(WatchStartedMessage), TimeSpan.FromMinutes(2));
         }
 
         public void Dispose()
