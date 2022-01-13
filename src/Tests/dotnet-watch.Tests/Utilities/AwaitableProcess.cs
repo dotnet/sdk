@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}']", m => Encoding.UTF8.GetBytes(m).SequenceEqual(message), cts.Token);
+            return await GetOutputLineAsync($"[msg == '{message}'] | messageBytes [ {string.Join(',', message)} ]", m => Encoding.UTF8.GetBytes(m).SequenceEqual(message), cts.Token);
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
@@ -107,6 +107,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _lines.Add(next);
                     var match = predicate(next);
                     WriteTestOutput($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
+                    WriteTestOutput($"{DateTime.Now}: nextBytes: [ {string.Join(',', bytes)} ].");
                     if (match)
                     {
                         return next;
