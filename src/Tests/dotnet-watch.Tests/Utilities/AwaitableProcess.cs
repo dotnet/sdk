@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _lines.Add(next);
                     var match = predicate(next);
                     WriteTestOutput($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
-                    WriteTestOutput($"{DateTime.Now}: nextBytes: [ {string.Join(',', bytes)} ].");
+                    WriteTestOutput($"{DateTime.Now}: nextBytes: [ {string.Join(',', next)} ].");
                     if (match)
                     {
                         return next;
