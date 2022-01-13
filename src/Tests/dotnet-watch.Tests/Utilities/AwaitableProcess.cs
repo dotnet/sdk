@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
             var cts = new CancellationTokenSource();
             cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
+            return await GetOutputLineAsync($"[msg == '{message}'] | Encoding: {System.Text.Encoding.Default.EncodingName}", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
         }
 
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
