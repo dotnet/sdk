@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -81,14 +79,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             return await GetOutputLineAsync($"[msg == '{message}']", m => string.Equals(m, message, StringComparison.Ordinal), cts.Token);
         }
 
-        public async Task<string> GetOutputLineAsync(byte[] message, TimeSpan timeout)
-        {
-            WriteTestOutput($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(timeout);
-            return await GetOutputLineAsync($"[msg == '{message}'] | messageBytes [ {string.Join(',', message)} ]", m => Encoding.UTF8.GetBytes(m).SequenceEqual(message), cts.Token);
-        }
-
         public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
         {
             WriteTestOutput($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
@@ -107,7 +97,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _lines.Add(next);
                     var match = predicate(next);
                     WriteTestOutput($"{DateTime.Now}: recv: '{next}'. {(match ? "Matches" : "Does not match")} condition '{predicateName}'.");
-                    WriteTestOutput($"{DateTime.Now}: nextBytes: [ {string.Join(',', Encoding.UTF8.GetBytes(next))} ].");
                     if (match)
                     {
                         return next;

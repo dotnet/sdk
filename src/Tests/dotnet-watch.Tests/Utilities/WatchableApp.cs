@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
@@ -20,9 +19,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
         private const string WatchStartedMessage = "dotnet watch 🚀 Started";
-        private const string WatchExitedMessage = "dotnet watch \u231A Exited";
-        private const string WaitingForFileChangeMessage = "dotnet watch \u23F3 Waiting for a file to change";
-        private const string WatchFileChanged = "dotnet watch \u231A File changed:";
+        private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
+        private const string WaitingForFileChangeMessage = "dotnet watch ⏳ Waiting for a file to change";
+        private const string WatchFileChanged = "dotnet watch ⌚ File changed:";
 
         private readonly ITestOutputHelper _logger;
         private bool _prepared;
