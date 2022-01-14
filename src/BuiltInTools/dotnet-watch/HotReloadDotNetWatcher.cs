@@ -52,7 +52,8 @@ namespace Microsoft.DotNet.Watcher
             var processSpec = context.ProcessSpec;
 
             _reporter.Output("Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload. " +
-                "  💡 Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                Environment.NewLine +
+                $"  {(_dotNetWatchOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
             var forceReload = new CancellationTokenSource();
 
