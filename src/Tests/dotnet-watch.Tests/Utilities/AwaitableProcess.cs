@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -51,6 +52,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             var processStartInfo = _spec.GetProcessStartInfo();
             processStartInfo.RedirectStandardOutput = true;
             processStartInfo.RedirectStandardError = true;
+            processStartInfo.StandardOutputEncoding = Encoding.UTF8;
+            processStartInfo.StandardErrorEncoding = Encoding.UTF8;
             processStartInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "true";
 
             _process = new Process
