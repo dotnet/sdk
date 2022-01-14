@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Watcher
                     var args = string.Join(" ", processSpec.Arguments);
                     _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: {args}");
 
-                    _reporter.Output("Started", emoji: "\uD83D\uDE80");
+                    _reporter.Output("Started", emoji: "🚀");
 
                     Task<FileItem[]> fileSetTask;
                     Task finishedTask;
