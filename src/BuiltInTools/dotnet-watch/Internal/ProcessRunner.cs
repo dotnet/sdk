@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 stopwatch.Start();
                 process.Start();
 
-                _reporter.Verbose($"Started '{processSpec.Executable}' '{process.StartInfo.Arguments}' with process id {process.Id}", emoji: "🚀");
+                _reporter.Verbose($"Started '{processSpec.Executable}' '{process.StartInfo.Arguments}' with process id {process.Id}", emoji: "\uD83D\uDE80");
 
                 if (readOutput)
                 {
