@@ -43,14 +43,13 @@ jobs:
         _Container: ${{ parameters.centOS7Container }}
         _ExcludeOmniSharpTests: true
         _RunOnline: true
-      CentOS7-Offline:
-        _BootstrapPrep: true
-        _BuildArch: x64
-        _Container: ${{ parameters.centOS7Container }}
-        _ExcludeOmniSharpTests: true
-        _RunOnline: false
-      # Offline builds have prebuilts: https://github.com/dotnet/fsharp/issues/12499
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        CentOS7-Offline:
+          _BootstrapPrep: true
+          _BuildArch: x64
+          _Container: ${{ parameters.centOS7Container }}
+          _ExcludeOmniSharpTests: true
+          _RunOnline: false
         CentOS8-Offline:
           _BootstrapPrep: true
           _BuildArch: x64
