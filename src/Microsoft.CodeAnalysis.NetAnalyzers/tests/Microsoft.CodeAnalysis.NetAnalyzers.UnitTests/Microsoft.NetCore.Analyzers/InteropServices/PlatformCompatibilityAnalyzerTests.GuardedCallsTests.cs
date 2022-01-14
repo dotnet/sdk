@@ -3523,6 +3523,76 @@ End Class";
         }
 
         [Fact]
+        public async Task GuardedWith_DebugAssertWithMessage()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), ""Only supported on windows"", ""Detailed message"");
+        M3();
+        [|M2()|];
+        [|M4()|];
+
+        Debug.Assert(OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2), ""Only supported on windows"");
+        M2();
+        M3();
+
+        Debug.Assert(OperatingSystem.IsLinux(), ""{0}  is only supported on windows"", ""Detailed message"", nameof(M4));
+        M4();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    void M2() { }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M3() { }
+
+    [SupportedOSPlatform(""linux"")]
+    void M4() { }
+}";
+            await VerifyAnalyzerCSAsync(source);
+
+            var vbSource = @"
+Imports System
+Imports System.Diagnostics
+Imports System.Runtime.Versioning
+
+Class Test
+    Private Sub M1()
+        Debug.Assert(OperatingSystem.IsWindows(), ""Only supported on windows"", ""Detailed message"")
+        M3()
+        [|M2()|]
+        [|M4()|]
+
+        Debug.Assert(OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2), ""Only supported on windows"")
+        M2()
+        M3()
+
+        Debug.Assert(OperatingSystem.IsLinux(), ""{0}  is only supported on windows"", ""Detailed message"", nameof(M4))
+        M4()
+    End Sub
+
+    <SupportedOSPlatform(""Windows10.1.2.3"")>
+    Private Sub M2()
+    End Sub
+    <SupportedOSPlatform(""Windows"")>
+    Private Sub M3()
+    End Sub
+    <SupportedOSPlatform(""Linux"")>
+    Private Sub M4()
+    End Sub
+End Class";
+            await VerifyAnalyzerVBAsync(vbSource);
+        }
+
+        [Fact]
         public async Task GuardedWith_ResultSavedInLocalAsync()
         {
             var source = @"
