@@ -109,6 +109,7 @@ namespace Microsoft.DotNet.Cli
 
         public static System.CommandLine.Parsing.Parser Instance { get; } = new CommandLineBuilder(ConfigureCommandLine(RootCommand))
             .UseExceptionHandler(ExceptionHandler)
+            .UseParseErrorReporting(127) // TODO:CH - what exit code for bad parsing?
             .UseHelp()
             .UseHelpBuilder(context => DotnetHelpBuilder.Instance.Value)
             .UseLocalizationResources(new CommandLineValidationMessages())
