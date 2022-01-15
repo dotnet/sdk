@@ -56,7 +56,6 @@ namespace Microsoft.DotNet.Watcher.Tools
             processStartInfo.RedirectStandardInput = true;
             processStartInfo.StandardOutputEncoding = Encoding.UTF8;
             processStartInfo.StandardErrorEncoding = Encoding.UTF8;
-            processStartInfo.StandardInputEncoding = Encoding.UTF8;
 
             _process = new Process
             {
