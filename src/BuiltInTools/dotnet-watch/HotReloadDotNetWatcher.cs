@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watcher
 
             if (!_dotNetWatchOptions.NonInteractive)
             {
-                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  💡 Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_dotNetWatchOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
                 _console.KeyPressed += (key) =>
                 {
