@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DeclareTypesInNamespacesAnalyzer,
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DeclareTypesInNamespacesTests
     {
         [Fact]
-        public async Task OuterTypeInGlobalNamespace_WarnsAsync()
+        public async Task OuterTypeInGlobalNamespace_Warns()
         {
             var csCode = @"
 public class [|Class|]
@@ -31,7 +31,7 @@ End Class";
         }
 
         [Fact]
-        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnceAsync()
+        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
         {
             var csCode = @"
 public class [|Class|]
@@ -51,7 +51,7 @@ End Class
         }
 
         [Fact]
-        public async Task InternalClassInGlobalNamespace_DoesNotWarnAsync()
+        public async Task InternalClassInGlobalNamespace_DoesNotWarn()
         {
             var csCode = @"
 internal class Class
@@ -69,7 +69,7 @@ End Class";
         }
 
         [Fact]
-        public async Task PublicClassInNonGlobalNamespace_DoesNotWarnAsync()
+        public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
         {
             var csCode = @"
 namespace NS
@@ -89,6 +89,28 @@ Namespace NS
     End Class
 End Namespace";
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
+        }
+
+        [Fact]
+        public async Task TopLevelProgramClass_DoesNotWarn()
+        {
+            var csCode = @"
+System.Console.WriteLine();
+
+public partial class Program
+{
+}
+";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources = { csCode, },
+                },
+                FixedCode = csCode,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
         }
     }
 }
