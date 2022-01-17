@@ -1172,6 +1172,8 @@ public class Test
     }
 }
 ";
+            // The fixed code has extra unnecessary parentheses.
+            // This is fixed on Roslyn side in https://github.com/dotnet/roslyn/pull/58903
             await new VerifyCS.Test
             {
                 TestCode = source,
