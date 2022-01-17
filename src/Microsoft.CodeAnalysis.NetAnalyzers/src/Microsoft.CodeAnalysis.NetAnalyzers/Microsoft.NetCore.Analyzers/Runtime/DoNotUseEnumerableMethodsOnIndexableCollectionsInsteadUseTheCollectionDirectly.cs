@@ -20,10 +20,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer : DiagnosticAnalyzer
     {
-        private const string IReadOnlyListMetadataName = "System.Collections.Generic.IReadOnlyList`1";
-        private const string IListMetadataName = "System.Collections.Generic.IList`1";
-        private const string EnumerableMetadataName = "System.Linq.Enumerable";
-
         internal const string RuleId = "CA1826";
 
         internal const string MethodPropertyKey = "method";
@@ -50,9 +46,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            var listType = context.Compilation.GetOrCreateTypeByMetadataName(IListMetadataName);
-            var readonlyListType = context.Compilation.GetOrCreateTypeByMetadataName(IReadOnlyListMetadataName);
-            var enumerableType = context.Compilation.GetOrCreateTypeByMetadataName(EnumerableMetadataName);
+            var listType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1);
+            var readonlyListType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIReadOnlyList1);
+            var enumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
             if (readonlyListType == null || enumerableType == null || listType == null)
             {
                 return;
