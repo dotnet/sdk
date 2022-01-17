@@ -113,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 {
                     IAnonymousFunctionOperation anonymousOperation => anonymousOperation.Symbol,
                     ILocalFunctionOperation localFunctionOperation => localFunctionOperation.Symbol,
-                    _ => null;
+                    _ => null
                 };
 
                 if (methodSymbol is not null)
