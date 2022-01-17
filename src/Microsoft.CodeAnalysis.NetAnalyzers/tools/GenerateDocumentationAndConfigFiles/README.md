@@ -13,12 +13,14 @@ We have following important MSBuild properties that determine whether or not CAx
 
 Following are the precedence rules as per the values of these properties:
 
-#### For non-CAxxxx rules
+1. For non-CAxxxx rules
+
    1. `CodeAnalysisTreatWarningsAsErrors` has no relevance and is ignored.
    2. `TreatWarningsAsErrors`, if not set, defaults to false. If true, this property translates to `/warnaserror` command line switch.
    3. Compiler bumps all warnings to errors iff `TreatWarningsAsErrors` is true. Users can prevent escalation or force escalation of individual warnings to errors by appending the IDs to `WarningsNotAsErrors` or `WarningsAsErrors`, which just translate to `/warnaserror[+|-]:<%rule ids%>` on the command line.
 
-#### For CAxxxx rules:
+2. For CAxxxx rules:
+
    1. If `CodeAnalysisTreatWarningsAsErrors` and `TreatWarningsAsErrors` both are not set, no bulk settings to escalate or de-escalate warnings to errors is done.
    2. If `CodeAnalysisTreatWarningsAsErrors` is set, it overrides `TreatWarningsAsErrors` to determine if CA warnings are bulk escalated to errors or not.
    3. If `CodeAnalysisTreatWarningsAsErrors` is not set, it defaults to `TreatWarningsAsErrors`.
