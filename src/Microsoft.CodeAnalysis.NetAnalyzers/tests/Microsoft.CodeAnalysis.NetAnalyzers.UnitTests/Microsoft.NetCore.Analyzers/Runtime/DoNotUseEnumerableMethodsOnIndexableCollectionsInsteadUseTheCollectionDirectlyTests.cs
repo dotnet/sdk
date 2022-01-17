@@ -6,10 +6,10 @@ using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer,
-    Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer>;
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer,
-    Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer>;
+    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicDoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
@@ -1135,6 +1135,49 @@ class C
     }
 }
 ");
+        }
+
+        [Fact, WorkItem(5795, "https://github.com/dotnet/roslyn-analyzers/issues/5795")]
+        public async Task CA1826_CSharp_NullForgivingOperator()
+        {
+            var source = @"
+#nullable enable
+
+using System.Collections.Generic;
+using System.Linq;
+
+public class Test
+{
+    public static IReadOnlyList<string>? Strings { get; }
+
+    public static string Method()
+    {
+        return [|Strings!.Last()|];
+    }
+}
+";
+            var fixedSource = @"
+#nullable enable
+
+using System.Collections.Generic;
+using System.Linq;
+
+public class Test
+{
+    public static IReadOnlyList<string>? Strings { get; }
+
+    public static string Method()
+    {
+        return (Strings!)[Strings.Count - 1];
+    }
+}
+";
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = fixedSource,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
         }
     }
 }

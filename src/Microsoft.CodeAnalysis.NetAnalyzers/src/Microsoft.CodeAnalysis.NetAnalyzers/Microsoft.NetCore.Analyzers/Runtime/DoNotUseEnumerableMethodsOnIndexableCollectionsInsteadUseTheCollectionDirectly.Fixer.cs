@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Composition;
 using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -17,10 +16,9 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
     /// <summary>
-    /// RS0014: Do not use Enumerable methods on indexable collections. Instead use the collection directly
+    /// CA1826: Use property instead of Linq Enumerable method
     /// </summary>
-    [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer : CodeFixProvider
+    public abstract class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer : CodeFixProvider
     {
         private const string FirstPropertyName = "First";
         private const string LastPropertyName = "Last";
@@ -36,11 +34,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var diagnostic = context.Diagnostics.FirstOrDefault();
-            if (diagnostic == null)
-            {
-                return;
-            }
+            var diagnostic = context.Diagnostics[0];
 
             var methodPropertyKey = DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.MethodPropertyKey;
             // The fixer is only implemented for "Enumerable.First", "Enumerable.Last" and "Enumerable.Count"
@@ -87,7 +81,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     diagnostic);
         }
 
-        private static Task<Document> UseCollectionDirectlyAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
+        private Task<Document> UseCollectionDirectlyAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, SyntaxNode collectionSyntax, string methodName)
         {
             var generator = SyntaxGenerator.GetGenerator(document);
 
@@ -101,14 +95,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return Task.FromResult(document.WithSyntaxRoot(newRoot));
         }
 
-        private static SyntaxNode? GetReplacementNode(string methodName, SyntaxGenerator generator, SyntaxNode collectionSyntax)
+        private SyntaxNode? GetReplacementNode(string methodName, SyntaxGenerator generator, SyntaxNode collectionSyntax)
         {
-            var collectionSyntaxNoTrailingTrivia = collectionSyntax.WithoutTrailingTrivia();
+            var adjustedCollectionSyntax = AdjustSyntaxNode(collectionSyntax);
+            var adjustedCollectionSyntaxNoTrailingTrivia = adjustedCollectionSyntax.WithoutTrailingTrivia();
 
             if (methodName == FirstPropertyName)
             {
                 var zeroLiteral = generator.LiteralExpression(0);
-                return generator.ElementAccessExpression(collectionSyntaxNoTrailingTrivia, zeroLiteral);
+                return generator.ElementAccessExpression(adjustedCollectionSyntaxNoTrailingTrivia, zeroLiteral);
             }
 
             if (methodName == LastPropertyName)
@@ -116,22 +111,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // TODO: Handle C# 8 index expression (and vb.net equivalent if any)
 
                 // TODO: Handle cases were `collectionSyntax` is an invocation. We would need to create some intermediate variable.
-                var countMemberAccess = generator.MemberAccessExpression(collectionSyntaxNoTrailingTrivia, CountPropertyName);
+                var countMemberAccess = generator.MemberAccessExpression(collectionSyntax.WithoutTrailingTrivia(), CountPropertyName);
                 var oneLiteral = generator.LiteralExpression(1);
 
                 // The SubstractExpression method will wrap left and right in parenthesis but those will be automatically removed later on
                 var substraction = generator.SubtractExpression(countMemberAccess, oneLiteral);
-                return generator.ElementAccessExpression(collectionSyntaxNoTrailingTrivia, substraction);
+                return generator.ElementAccessExpression(adjustedCollectionSyntaxNoTrailingTrivia, substraction);
             }
 
             if (methodName == CountPropertyName)
             {
-                return generator.MemberAccessExpression(collectionSyntaxNoTrailingTrivia, CountPropertyName);
+                return generator.MemberAccessExpression(adjustedCollectionSyntaxNoTrailingTrivia, CountPropertyName);
             }
 
             Debug.Fail($"Unexpected method name '{methodName}' for {DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer.RuleId} code fix.");
             return null;
         }
+
+        [return: NotNullIfNotNull("syntaxNode")]
+        private protected abstract SyntaxNode? AdjustSyntaxNode(SyntaxNode? syntaxNode);
 
         // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
         private class MyCodeAction : DocumentChangeAction
