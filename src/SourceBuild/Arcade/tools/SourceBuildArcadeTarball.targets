@@ -124,6 +124,7 @@
       <TarballRepoSourceEngDir>$(TarballSourceDir)$(SourceDir)eng/</TarballRepoSourceEngDir>
       <TarballVersionDetailsFile>$(TarballRepoSourceEngDir)Version.Details.xml</TarballVersionDetailsFile>
       <CloneParam Condition=" '$(CloneVerbosity)' == 'quiet' ">-q</CloneParam>
+      <RepoUri Condition=" '$(AzDoPat)' != '' ">$(RepoUri.Replace('https://dev.azure.com', 'https://dn-bot:$(AzDoPat)@dev.azure.com'))</RepoUri>
     </PropertyGroup>
 
     <!-- Perform a local clone of the root repo, it's faster and doesn't require the RepoSha to be a tree. -->

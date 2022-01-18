@@ -51,7 +51,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifests->'%(RestoredMsiPathInNupkg)')" />
+      <BundledManifestsToValidateSigning Include="@(BundledManifests)"
+                                         Exclude="Microsoft.NET.Workload.Mono.ToolChain;
+                                                  Microsoft.NET.Workload.Emscripten" />
+      
+      <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
     </ItemGroup>
 
     <Exec Command="$(SignCheckExe) ^

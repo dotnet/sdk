@@ -53,24 +53,5 @@
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceRegexInFiles" />
 
-  <Target Name="FixAspNetCoreVersion"
-          BeforeTargets="RepoBuild">
-
-    <ItemGroup>
-      <MinifiedJavascriptFile Include="$(ProjectDirectory)**\blazor.server.js" />
-    </ItemGroup>
-
-    <!--
-        Patch the version embedded in minified js files. Because they are
-        minified files, git patch doesn't work too well and produces unreadable
-        binary patches.
-    -->
-    <ReplaceRegexInFiles
-      InputFiles="@(MinifiedJavascriptFile)"
-      OldTextRegex=",l=&quot;5\.0\.\d+&quot;}]\);"
-      NewText=",l=&quot;$(AspNetCoreProductVersion)&quot;}]);" />
-
-  </Target>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -12,7 +12,11 @@ parameters:
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
+  centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build-20210714125450-5d87b80
+  centOS8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-source-build-20211118190102-9355e7b
+  debian9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-stretch-20211001171226-047508b
   fedora33Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+  ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-20210924170306-047508b
   poolInternal:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
@@ -33,17 +37,38 @@ jobs:
       ${{ parameters.poolInternal }}
   strategy:
     matrix:
-      Fedora33-Online:
+      CentOS7-Online:
+        _BootstrapPrep: true
         _BuildArch: x64
-        _Container: ${{ parameters.fedora33Container }}
+        _Container: ${{ parameters.centOS7Container }}
+        _ExcludeOmniSharpTests: true
         _RunOnline: true
-      # Offline builds have prebuilts: https://github.com/dotnet/fsharp/issues/12499
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        CentOS7-Offline:
+          _BootstrapPrep: true
+          _BuildArch: x64
+          _Container: ${{ parameters.centOS7Container }}
+          _ExcludeOmniSharpTests: true
+          _RunOnline: false
+        CentOS8-Offline:
+          _BootstrapPrep: true
+          _BuildArch: x64
+          _Container: ${{ parameters.centOS8Container }}
+          _ExcludeOmniSharpTests: false
+          _RunOnline: false
         Fedora33-Offline:
+          _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.fedora33Container }}
+          _ExcludeOmniSharpTests: false
           _RunOnline: false
-  timeoutInMinutes: 240
+        Ubuntu1804-Offline:
+          _BootstrapPrep: true
+          _BuildArch: x64
+          _Container: ${{ parameters.ubuntu1804Container }}
+          _ExcludeOmniSharpTests: false
+          _RunOnline: false
+  timeoutInMinutes: 300
   workspace:
     clean: all
 
@@ -54,10 +79,16 @@ jobs:
     parameters:
       buildArch: $(_BuildArch)
       container: $(_Container)
+      excludeOmniSharpTests: $(_ExcludeOmniSharpTests)
       prepScript: |
         set -x
 
-        docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball $(_Container) ./prep.sh
+        customPrepArgs=
+        if [ '$(_BootstrapPrep)' = 'true' ]; then
+          customPrepArgs='--bootstrap'
+        fi
+
+        docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball $(_Container) ./prep.sh  ${customPrepArgs}
       runOnline: $(_RunOnline)
       tarballDir: ${{ parameters.tarballDir }}
       tarballResourceId: ${{ parameters.tarballResourceId }}
