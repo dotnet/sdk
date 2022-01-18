@@ -69,7 +69,7 @@ index c11557248..0e7dd7861 100644
  
      <!-- Test and package versions -->
 @@ -33,7 +34,7 @@
-         <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
+         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
          <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
          <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
 -        <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />

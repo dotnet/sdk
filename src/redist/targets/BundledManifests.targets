@@ -6,8 +6,8 @@
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="6.0.100" Version="$(MauiWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="6.0.100" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="6.0.100" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="7.0.100" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="7.0.100" Version="$(EmscriptenWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
@@ -51,6 +51,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- Don't try to validate signing for workload manifests that will be signed as part of post-build signing -->
       <BundledManifestsToValidateSigning Include="@(BundledManifests)"
                                          Exclude="Microsoft.NET.Workload.Mono.ToolChain;
                                                   Microsoft.NET.Workload.Emscripten" />

@@ -22,7 +22,7 @@ index 3970bb4e9ea..e96beb550d2 100644
 @@ -6,6 +6,7 @@
      <OutputType>Exe</OutputType>
      <RootNamespace>CSharpInteractive</RootNamespace>
-     <TargetFrameworks>net6.0;net472</TargetFrameworks>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
 +    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
    </PropertyGroup>
    <ItemGroup Label="Project References">
@@ -34,7 +34,7 @@ index 5bbdf7f03a7..5f732d71534 100644
 @@ -6,6 +6,7 @@
      <OutputType>Exe</OutputType>
      <StartupObject>Sub Main</StartupObject>
-     <TargetFrameworks>net6.0;net472</TargetFrameworks>
+     <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
 +    <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
      <RootNamespace></RootNamespace>
    </PropertyGroup>

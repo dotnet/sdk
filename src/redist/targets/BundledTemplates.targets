@@ -21,23 +21,31 @@
   </Target>
 
   <ItemGroup>
+    <Bundled70Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates70PackageVersion)" />
+    <Bundled70Templates Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates70PackageVersion)" />
+    <Bundled70Templates Include="Microsoft.DotNet.Web.ItemTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" />
+    <Bundled70Templates Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" UseVersionForTemplateInstallPath="true" />
+    <Bundled70Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" />
+    
+    <Bundled70Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <Bundled70Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    
+    <!-- NUnit templates are shipped in Test.ProjectTemplates -->
+    <Bundled70Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Bundled60Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates60PackageVersion)" />
     <Bundled60Templates Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
     
-    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
 
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
-    <!-- Once we do have 6.0 versions of these templates, we should remove them from the previous list, and add the commented versions below. -->
-
-    <!--
-    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates60PackageVersion)" />
-    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)" />
-    -->
   </ItemGroup>
   
   <ItemGroup>
@@ -85,6 +93,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <BundledTemplates Include="@(Bundled70Templates)" TemplateFrameworkVersion="7.0"/>
     <BundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0"/>
     <BundledTemplates Include="@(Bundled50Templates)" TemplateFrameworkVersion="5.0"/>
     <BundledTemplates Include="@(Bundled31Templates)" TemplateFrameworkVersion="3.1"/>
@@ -146,7 +155,7 @@
     </ItemGroup>
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(RedistLayoutPath)templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
-          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '6.0'"/>
+          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '7.0'"/>
   </Target>
 
   <Target Name="LayoutTemplatesForMSI"

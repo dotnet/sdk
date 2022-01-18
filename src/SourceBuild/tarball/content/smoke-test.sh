@@ -11,7 +11,6 @@ __ROOT_REPO=$(sed 's/\r$//' "$SCRIPT_ROOT/artifacts/obj/rootrepo.txt") # remove 
 executingUserHome=${HOME:-}
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Use uname to determine what the CPU is.
 cpuName=$(uname -p)

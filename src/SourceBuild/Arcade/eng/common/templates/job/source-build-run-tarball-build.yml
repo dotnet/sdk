@@ -32,9 +32,11 @@ jobs:
   dependsOn: ${{ parameters.dependsOn }}
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
-      ${{ parameters.poolPublic }}
+      name: NetCore1ESPool-Public
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-      ${{ parameters.poolInternal }}
+      name: NetCore1ESPool-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   strategy:
     matrix:
       CentOS7-Online:
