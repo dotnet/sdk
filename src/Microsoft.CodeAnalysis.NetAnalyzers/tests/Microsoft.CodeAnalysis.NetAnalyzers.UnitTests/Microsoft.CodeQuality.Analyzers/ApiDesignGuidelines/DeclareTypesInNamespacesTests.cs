@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
+using Microsoft.CodeAnalysis;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DeclareTypesInNamespacesAnalyzer,
@@ -15,85 +15,102 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class DeclareTypesInNamespacesTests
     {
         [Fact]
-        public async Task OuterTypeInGlobalNamespace_WarnsAsync()
+        public async Task OuterTypeInGlobalNamespace_Warns()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                public class Class
-                {
-                }",
-                GetCSharpExpectedResult(2, 30));
+            var csCode = @"
+public class [|Class|]
+{
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Public Class [MyClass]
-                End Class",
-                GetBasicExpectedResult(2, 30));
+            var vbCode = @"
+Public Class [|[MyClass]|]
+End Class";
+            await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [Fact]
-        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnceAsync()
+        public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                public class Class
-                {
-                    public class Nested {}
-                }",
-                GetCSharpExpectedResult(2, 30));
+            var csCode = @"
+public class [|Class|]
+{
+    public class Nested {}
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Public Class [MyClass]
-                    Public Class Nested
-                    End Class
-                End Class",
-                GetBasicExpectedResult(2, 30));
+            var vbCode = @"
+Public Class [|[MyClass]|]
+    Public Class Nested
+    End Class
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [Fact]
-        public async Task InternalClassInGlobalNamespace_DoesNotWarnAsync()
+        public async Task InternalClassInGlobalNamespace_DoesNotWarn()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                internal class Class
-                {
-                    public class Nested {}
-                }");
+            var csCode = @"
+internal class Class
+{
+    public class Nested {}
+}";
+            await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Friend Class [MyClass]
-                    Public Class Nested
-                    End Class
-                End Class");
+            var vbCode = @"
+Friend Class [MyClass]
+    Public Class Nested
+    End Class
+End Class";
+            await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [Fact]
-        public async Task PublicClassInNonGlobalNamespace_DoesNotWarnAsync()
+        public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                namespace NS
-                {
-                    public class Class
-                    {
-                        public class Nested {}
-                    }
-                }");
+            var csCode = @"
+namespace NS
+{
+    public class Class
+    {
+        public class Nested {}
+    }
+}";
+            await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Namespace NS
-                    Public Class [MyClass]
-                        Public Class Nested
-                        End Class
-                    End Class
-                End Namespace");
+            var vbCode = @"
+Namespace NS
+    Public Class [MyClass]
+        Public Class Nested
+        End Class
+    End Class
+End Namespace";
+            await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
-        private static DiagnosticResult GetCSharpExpectedResult(int line, int column)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column);
-#pragma warning restore RS0030 // Do not used banned APIs
+        [Fact]
+        public async Task TopLevelProgramClass_DoesNotWarn()
+        {
+            var csCode = @"
+System.Console.WriteLine();
 
-        private static DiagnosticResult GetBasicExpectedResult(int line, int column)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column);
-#pragma warning restore RS0030 // Do not used banned APIs
+public partial class Program
+{
+}
+";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication,
+                    Sources = { csCode, },
+                },
+                FixedCode = csCode,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
+        }
     }
 }
