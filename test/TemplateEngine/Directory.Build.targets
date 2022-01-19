@@ -11,4 +11,10 @@
     <PackageReference Update="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Update="ApprovalTests" Version="5.4.7" />
   </ItemGroup>
+
+  <!-- forces the version in sub dependencies -->
+  <!-- xunit.assert has this dependency, so applying to all test projects-->
+  <ItemGroup>
+    <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
 </Project>
