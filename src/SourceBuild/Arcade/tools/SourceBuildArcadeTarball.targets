@@ -19,6 +19,7 @@
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
     <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
+    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' ">true</ConvertInternalRepos>
   </PropertyGroup>
 
   <Target Name="CreateSourceTarball"
@@ -123,6 +124,7 @@
       <TarballRepoSourceEngDir>$(TarballSourceDir)$(SourceDir)eng/</TarballRepoSourceEngDir>
       <TarballVersionDetailsFile>$(TarballRepoSourceEngDir)Version.Details.xml</TarballVersionDetailsFile>
       <CloneParam Condition=" '$(CloneVerbosity)' == 'quiet' ">-q</CloneParam>
+      <RepoUri Condition=" '$(AzDoPat)' != '' ">$(RepoUri.Replace('https://dev.azure.com', 'https://dn-bot:$(AzDoPat)@dev.azure.com'))</RepoUri>
     </PropertyGroup>
 
     <!-- Perform a local clone of the root repo, it's faster and doesn't require the RepoSha to be a tree. -->
@@ -202,7 +204,8 @@
     <Tarball_ReadSourceBuildIntermediateNupkgDependencies
       VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(TarballVersionDetailsFile)))"
       SourceBuildIntermediateNupkgPrefix="$(SourceBuildIntermediateNupkgPrefix)"
-      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)">
+      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)"
+      ConvertInternalRepos="$(ConvertInternalRepos)">
       <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
     </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
 
