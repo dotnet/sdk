@@ -72,13 +72,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             switch (matchingParameter.Name)
             {
                 case ParamName:
-                    if (HasAParameterMatchInScope(context, stringText))
+                    if (HasAnyParameterMatchInScope(context, stringText))
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
                     return;
                 case PropertyName:
-                    if (HasAPropertyMatchInScope(context, stringText))
+                    if (HasAnyPropertyMatchInScope(context, stringText))
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
@@ -88,13 +88,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
         }
 
-        private static bool HasAPropertyMatchInScope(OperationAnalysisContext context, string stringText)
+        private static bool HasAnyPropertyMatchInScope(OperationAnalysisContext context, string stringText)
         {
             var containingType = context.ContainingSymbol.ContainingType;
             return containingType?.GetMembers(stringText).Any(m => m.Kind == SymbolKind.Property) == true;
         }
 
-        private static bool HasAParameterMatchInScope(OperationAnalysisContext context, string stringText)
+        private static bool HasAnyParameterMatchInScope(OperationAnalysisContext context, string stringText)
         {
             // get the parameters for the containing method
             foreach (var parameter in context.ContainingSymbol.GetParameters())
