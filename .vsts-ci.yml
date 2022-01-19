@@ -20,6 +20,9 @@ variables:
     value: .NETCore
   - name: PostBuildSign
     value: true
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: _InternalRuntimeDownloadArgs
+      value: ''
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
     - name: _DotNetPublishToBlobFeed
       value: true
@@ -113,40 +116,42 @@ stages:
 
     - template: /eng/build.yml
       parameters:
-        agentOs: Ubuntu_16_04
+        agentOs: Ubuntu_18_04
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Public
-            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64
+            demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: Ubuntu.1604.Amd64.Open
+          helixTargetQueue: Ubuntu.1804.Amd64.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: Ubuntu.1604.Amd64
+          helixTargetQueue: Ubuntu.1804.Amd64
         strategy:
           matrix:
             Build_Release:
               _BuildConfig: Release
               _PublishArgs: ''
               _SignType: test
+              _Test: -test
 
     - template: /eng/build.yml
       parameters:
         agentOs: Darwin
         pool:
-          name: Hosted macOS
+          vmImage: 'macOS-latest'
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1014.Amd64.Open
+          helixTargetQueue: OSX.1015.Amd64.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: OSX.1014.Amd64
+          helixTargetQueue: OSX.1015.Amd64
         strategy:
           matrix:
             Build_Release:
               _BuildConfig: Release
               _PublishArgs: ''
               _SignType: test
+              _Test: -test
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/templates/job/publish-build-assets.yml
