@@ -399,8 +399,7 @@ namespace EndToEnd.Tests
                 if (template.StartsWith("mstest") 
                     || template.StartsWith("mstest") 
                     || template.StartsWith("nunit")
-                    || template.StartsWith("xunit")
-                    || template.StartsWith("wpf"))
+                    || template.StartsWith("xunit"))
                 {
                     return "net6.0";                    
                 }
