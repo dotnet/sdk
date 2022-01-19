@@ -19,7 +19,7 @@
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
     <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
-    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' ">true</ConvertInternalRepos>
+    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' and '$(AzDoPat)' == ''">true</ConvertInternalRepos>
   </PropertyGroup>
 
   <Target Name="CreateSourceTarball"
