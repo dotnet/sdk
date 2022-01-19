@@ -1,0 +1,32 @@
+From c5211f8557f2fb019416cf1f6c01142965270479 Mon Sep 17 00:00:00 2001
+From: Doug Bunting <6431421+dougbu@users.noreply.github.com>
+Date: Sun, 16 Jan 2022 22:55:10 -0800
+Subject: [PATCH] Always build App.Ref and the targeting packs - set
+ `$(IsTargetingPackBuilding)` to `true` unconditionally - leave all _use_ of
+ `$(IsTargetingPackBuilding)`
+
+See https://github.com/dotnet/aspnetcore/issues/39471 for details and backporting.
+---
+ Directory.Build.props | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index e100d883e9..d71b308905 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -138,11 +138,7 @@
+     <TargetingPackName>Microsoft.AspNetCore.App.Ref</TargetingPackName>
+     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
+     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
+-
+-    <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
+-    <IsTargetingPackBuilding
+-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+-    <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
++    <IsTargetingPackBuilding>true</IsTargetingPackBuilding>
+ 
+     <!--
+       Archives and installers using this prefix are intended for internal use only.
+-- 
+2.28.0.windows.1
+
