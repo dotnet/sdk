@@ -32,7 +32,7 @@
       <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)\</SdkOutputDirectory>
 
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
-      <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetclimsrc.blob.core.windows.net/dotnet/</InternalBaseURL>
+      <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
 
       <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</PublicBaseURL>
 
