@@ -67,6 +67,11 @@ namespace Microsoft.DotNet.Restore.Test
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
 
+            if (extension.Equals(".fsproj", StringComparison.OrdinalIgnoreCase))
+            {
+                testProject.PackageReferences.Add(new TestPackageReference("FSharp.Core", "6.0.1"));
+            }
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: useStaticGraphEvaluation.ToString() + extension, targetExtension: extension);
 
             var rootPath = Path.Combine(testAsset.TestRoot, testProject.Name);
