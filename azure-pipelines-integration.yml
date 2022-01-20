@@ -24,12 +24,12 @@ jobs:
         _targetSolution: "format.sln"
         _branchName: "main"
         _sha: "c4dcd04da63379e0c4e7c0bd2fa3ef0fcf44a6c1"
-      roslyn:
-        _repo: "https://github.com/dotnet/roslyn"
-        _repoName: "dotnet/roslyn"
-        _targetSolution: "Compilers.sln"
-        _branchName: "main"
-        _sha: "e9ed046c159bfc5caf33b875ab6928a73c5601f3"
+#      roslyn:
+#        _repo: "https://github.com/dotnet/roslyn"
+#        _repoName: "dotnet/roslyn"
+#        _targetSolution: "Compilers.sln"
+#        _branchName: "main"
+#        _sha: "e9ed046c159bfc5caf33b875ab6928a73c5601f3"
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"
