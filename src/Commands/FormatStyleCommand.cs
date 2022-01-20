@@ -37,13 +37,13 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
                 if (parseResult.HasOption(SeverityOption) &&
-                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
+                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
                 {
                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(styleSeverity) };
                 }
 
                 if (parseResult.HasOption(DiagnosticsOption) &&
-                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
                 }
