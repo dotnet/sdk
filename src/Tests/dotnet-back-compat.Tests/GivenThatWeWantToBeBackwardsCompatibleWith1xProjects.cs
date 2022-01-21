@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
+        [RequiresSpecificFrameworkTheory("netcoreapp1.1", Skip = "https://github.com/dotnet/sdk/issues/23531")]
         [InlineData("netcoreapp1.1")]
         public void ItRestoresBuildsAndRuns(string target)
         {
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .Should().Pass();
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.0")] // https://github.com/dotnet/cli/issues/6087
+        [RequiresSpecificFrameworkFact("netcoreapp1.0", Skip ="https://github.com/dotnet/sdk/issues/23531")] // https://github.com/dotnet/cli/issues/6087
         public void ItRunsABackwardsVersionedTool()
         {
             var testInstance = _testAssetsManager

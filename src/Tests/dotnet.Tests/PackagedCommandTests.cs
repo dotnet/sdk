@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
+        [RequiresSpecificFrameworkTheory("netcoreapp1.1", Skip = "https://github.com/dotnet/sdk/issues/23531")]
         [InlineData(true)]
         [InlineData(false)]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests
 
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [RequiresSpecificFrameworkFact("netcoreapp1.1", Skip = "https://github.com/dotnet/sdk/issues/23531")]
         public void IfAToolHasNotBeenRestoredForNetCoreApp2_0ItFallsBackToNetCoreApp1_x()
         {
             string toolName = "dotnet-portable-v1";

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [RequiresSpecificFrameworkFact("netcoreapp1.1", Skip = "https://github.com/dotnet/sdk/issues/23531")]
         public void ItShowsStackTraceWhenRun()
         {
             var root = _testAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                          .And.HaveStdErrContaining(msg2);
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [RequiresSpecificFrameworkFact("netcoreapp1.1", Skip = "https://github.com/dotnet/sdk/issues/23531")]
         public void ItShowsStackTraceWhenRunAsTool()
         {
             var root = _testAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
