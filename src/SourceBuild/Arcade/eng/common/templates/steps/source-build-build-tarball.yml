@@ -82,7 +82,7 @@ steps:
       find artifacts/prebuilt-report/ -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find testing-smoke/logs -exec cp {} --parents -t ${targetFolder} \;
+      find test/*/*/*/*/*/testing-smoke/logs -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
     continueOnError: true
     condition: succeededOrFailed()
@@ -92,6 +92,18 @@ steps:
     displayName: Publish BuildLogs
     continueOnError: true
     condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      testRunner: vSTest
+      testResultsFiles: 'test/**/*.trx'
+      searchFolder: ${{ parameters.tarballDir }}
+      mergeTestResults: true
+      publishRunAttachments: true
+      testRunTitle: SourceBuild_SmokeTests_$(Agent.JobName)
 
   - publish: '${{ parameters.tarballDir }}/artifacts/${{ parameters.buildArch}}/Release/'
     artifact: $(Agent.JobName)_Artifacts
