@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <Target Name="GetRuntimesToInstall">
-    <PropertyGroup>
-      <Supports1xRuntimes>true</Supports1xRuntimes>
-    </PropertyGroup>
-
     <ReadLinesFromFile File="/etc/os-release"
                        Condition="'$(OS)' != 'Windows_NT'">
       <Output TaskParameter="Lines" PropertyName="OsReleaseContents"/>
@@ -60,35 +56,6 @@
       <OsReleaseContents>Windows</OsReleaseContents>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Ubuntu%22'))">
-      <Supports1xRuntimes Condition="$(OsReleaseContents.Contains('VERSION_ID=%2218.04%22'))">false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=Fedora'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Debian'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE%20Leap%22'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Alpine%20Linux%22'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <!-- RHEL 6 does not appear to have the os-release file -->
-    <PropertyGroup Condition="'$(OsReleaseContents)' == ''">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(Supports1xRuntimes)' == 'true'">
-      <RuntimeVersionToInstall Include="1.0.5" />
-      <RuntimeVersionToInstall Include="1.1.2" />      
-    </ItemGroup>
     <ItemGroup>
       <RuntimeVersionToInstall Include="2.1.0" />
       <RuntimeVersionToInstall Include="2.2.5" />
