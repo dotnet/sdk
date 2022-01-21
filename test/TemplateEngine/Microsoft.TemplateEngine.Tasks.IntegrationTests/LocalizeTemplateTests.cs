@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining("Build FAILED.")
-                .And.HaveStdOutContaining("error : Each child of \"//postActions\" should have a unique id");
+                .And.HaveStdOutContaining("error : Each child of '//postActions' should have a unique id");
 
             string locFolder = Path.Combine(tmpDir, "content/TemplateWithSourceName/.template.config/localize");
 

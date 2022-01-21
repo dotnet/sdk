@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Each child of &quot;{0}&quot; should have a unique id. Currently, the id &quot;{1}&quot; is shared by multiple children..
+        ///   Looks up a localized string similar to Each child of &apos;{0}&apos; should have a unique id. Currently, the id &apos;{1}&apos; is shared by multiple children..
         /// </summary>
         internal static string stringExtractor_log_jsonKeyIsNotUnique {
             get {
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Json element &quot;{0}&quot; must have a member &quot;{1}&quot;..
+        ///   Looks up a localized string similar to Json element &apos;{0}&apos; must have a member &apos;{1}&apos;..
         /// </summary>
         internal static string stringExtractor_log_jsonMemberIsMissing {
             get {
@@ -106,7 +106,16 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Failed to read the existing strings from &quot;{0}&quot;.
+        ///   Looks up a localized string similar to The contents of the following file seems to be the same as before. The file will not be overwritten. File: &apos;{0}&apos;.
+        /// </summary>
+        internal static string stringUpdater_log_dataIsUnchanged {
+            get {
+                return ResourceManager.GetString("stringUpdater_log_dataIsUnchanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to read the existing strings from &apos;{0}&apos;.
         /// </summary>
         internal static string stringUpdater_log_failedToReadLocFile {
             get {
@@ -115,7 +124,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Loading existing localizations from file &quot;{0}&quot;.
+        ///   Looks up a localized string similar to Loading existing localizations from file &apos;{0}&apos;.
         /// </summary>
         internal static string stringUpdater_log_loadingLocFile {
             get {
@@ -124,7 +133,16 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &quot;Opening the following templatestrings.json file for writing: &quot;{0}&quot;.
+        ///   Looks up a localized string similar to The file already contains a localized string for key &apos;{0}&apos;. The old value will be preserved..
+        /// </summary>
+        internal static string stringUpdater_log_localizedStringAlreadyExists {
+            get {
+                return ResourceManager.GetString("stringUpdater_log_localizedStringAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Opening the following templatestrings.json file for writing: &apos;{0}&apos;.
         /// </summary>
         internal static string stringUpdater_log_openingTemplatesJson {
             get {

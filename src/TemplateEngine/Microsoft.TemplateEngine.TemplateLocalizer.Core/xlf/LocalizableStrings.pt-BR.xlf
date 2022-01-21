@@ -13,14 +13,14 @@
         <note>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
-        <source>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</source>
-        <target state="translated">Cada elemento filho de "{0}" deve ter um id único. Atualmente, o id "{1}" é compartilhado por vários filhos.</target>
+        <source>Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</source>
+        <target state="needs-review-translation">Cada elemento filho de "{0}" deve ter um id único. Atualmente, o id "{1}" é compartilhado por vários filhos.</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
-        <source>Json element "{0}" must have a member "{1}".</source>
-        <target state="translated">O elemento Json "{0}" deve ter um membro "{1}".</target>
+        <source>Json element '{0}' must have a member '{1}'.</source>
+        <target state="needs-review-translation">O elemento Json "{0}" deve ter um membro "{1}".</target>
         <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
@@ -28,19 +28,29 @@
         <target state="translated">O seguinte elemento no template.json será ignorado, pois já foi adicionado à lista de cadeia de caracteres localizáveis: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
+      <trans-unit id="stringUpdater_log_dataIsUnchanged">
+        <source>The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</source>
+        <target state="new">The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
       <trans-unit id="stringUpdater_log_failedToReadLocFile">
-        <source>"Failed to read the existing strings from "{0}"</source>
-        <target state="translated">"Falha na leitura das cadeias de caracteres existentes a partir do "{0}".</target>
+        <source>Failed to read the existing strings from '{0}'</source>
+        <target state="needs-review-translation">"Falha na leitura das cadeias de caracteres existentes a partir do "{0}".</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_loadingLocFile">
-        <source>Loading existing localizations from file "{0}"</source>
-        <target state="translated">Carregando as localizações existentes a partir do arquivo "{0}".</target>
+        <source>Loading existing localizations from file '{0}'</source>
+        <target state="needs-review-translation">Carregando as localizações existentes a partir do arquivo "{0}".</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_localizedStringAlreadyExists">
+        <source>The file already contains a localized string for key '{0}'. The old value will be preserved.</source>
+        <target state="new">The file already contains a localized string for key '{0}'. The old value will be preserved.</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_openingTemplatesJson">
-        <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
-        <target state="translated">"Abrindo o arquivo templatestrings.json a seguir para escrita: "{0}"</target>
+        <source>Opening the following templatestrings.json file for writing: '{0}'</source>
+        <target state="needs-review-translation">"Abrindo o arquivo templatestrings.json a seguir para escrita: "{0}"</target>
         <note>{0} is a file path.</note>
       </trans-unit>
     </body>

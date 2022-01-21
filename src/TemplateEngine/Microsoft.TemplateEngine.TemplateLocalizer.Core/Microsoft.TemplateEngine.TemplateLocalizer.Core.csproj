@@ -5,6 +5,7 @@
     <Description>The core API for Template Localizer tool.</Description>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>

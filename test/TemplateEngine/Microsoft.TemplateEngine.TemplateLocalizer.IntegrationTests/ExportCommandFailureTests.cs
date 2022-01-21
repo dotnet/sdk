@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
-                .And.HaveStdOutContaining("Json element \"postActions/0\" must have a member \"id\".");
+                .And.HaveStdOutContaining("Json element 'postActions/0' must have a member 'id'.");
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
-                .And.HaveStdOutContaining(@"Each child of ""//postActions"" should have a unique id. Currently, the id ""postActions/postAction1"" is shared by multiple children.");
+                .And.HaveStdOutContaining(@"Each child of '//postActions' should have a unique id. Currently, the id 'postActions/postAction1' is shared by multiple children.");
         }
 
         [Fact]
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
-                .And.HaveStdOutContaining(@"Json element ""manualInstructions/0"" must have a member ""id"".");
+                .And.HaveStdOutContaining("Json element 'manualInstructions/0' must have a member 'id'.");
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
                 .Should()
                 .ExitWith(1)
                 .And.HaveStdOutContaining("Generating localization files for a template.json has failed.")
-                .And.HaveStdOutContaining("Each child of \"//postActions/0/manualInstructions\" should have a unique id. Currently, the id \"manualInstructions/mi\" is shared by multiple children.");
+                .And.HaveStdOutContaining("Each child of '//postActions/0/manualInstructions' should have a unique id. Currently, the id 'manualInstructions/mi' is shared by multiple children.");
         }
 
         private async Task<BasicCommand> CreateTemplateAndExport(string templateJsonContent)

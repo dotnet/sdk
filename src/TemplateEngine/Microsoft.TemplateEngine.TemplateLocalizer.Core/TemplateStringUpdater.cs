@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -99,23 +101,19 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 // Allow unescaped characters in the strings. This allows writing "aren't" instead of "aren\u0027t".
                 // This is only considered unsafe in a context where symbols may be interpreted as special characters.
                 // For instance, '<' character should be escaped in html documents where this json will be embedded.
-                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Encoder = new ExtendedJavascriptEncoder(),
                 Indented = true,
             };
-            logger.LogDebug(LocalizableStrings.stringUpdater_log_openingTemplatesJson, filePath);
-            using FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
-            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(fileStream, writerOptions);
 
-            jsonWriter.WriteStartObject();
+            // Determine what strings to write. If they are identical to the existing ones, no need to make disk IO.
+            List<(string Key, string Value)> valuesToWrite = new();
 
             foreach (TemplateString templateString in templateStrings)
             {
                 string? localizedText = null;
                 if (!forceUpdate && (existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? false))
                 {
-                    logger.LogDebug(
-                        "The file already contains a localized string for key \"{0}\". The old value will be preserved.",
-                        templateString.LocalizationKey);
+                    logger.LogDebug( LocalizableStrings.stringUpdater_log_localizedStringAlreadyExists, templateString.LocalizationKey);
                 }
                 else
                 {
@@ -125,20 +123,60 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                     localizedText = templateString.Value;
                 }
 
-                jsonWriter.WritePropertyName(templateString.LocalizationKey);
-                jsonWriter.WriteStringValue(localizedText);
+                valuesToWrite.Add((templateString.LocalizationKey, localizedText!));
 
                 // A translation and the related comment should be next to each other. Write the comment now before any other text.
                 string commentKey = "_" + templateString.LocalizationKey + ".comment";
                 if (existingStrings != null && existingStrings.TryGetValue(commentKey, out string? comment))
                 {
-                    jsonWriter.WritePropertyName(commentKey);
-                    jsonWriter.WriteStringValue(comment);
+                    valuesToWrite.Add((commentKey, comment));
                 }
+            }
+
+            if (SequenceEqual(valuesToWrite, existingStrings))
+            {
+                // Data appears to be same as before. Don't rewrite it.
+                // Rewriting the same data causes differences in encoding/BOM etc, which marks files as 'changed' in git.
+                logger.LogDebug(LocalizableStrings.stringUpdater_log_dataIsUnchanged, filePath);
+                return;
+            }
+
+            logger.LogDebug(LocalizableStrings.stringUpdater_log_openingTemplatesJson, filePath);
+            using FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(fileStream, writerOptions);
+
+            jsonWriter.WriteStartObject();
+
+            foreach ((string key, string value) in valuesToWrite)
+            {
+                jsonWriter.WritePropertyName(key);
+                jsonWriter.WriteStringValue(value);
             }
 
             jsonWriter.WriteEndObject();
             await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        private static bool SequenceEqual(List<(string, string)> lhs, Dictionary<string, string>? rhs)
+        {
+            if (lhs.Count != (rhs?.Count ?? 0))
+            {
+                return false;
+            }
+
+            if (rhs != null)
+            {
+                foreach ((string key, string value) in lhs)
+                {
+                    if (!rhs.TryGetValue(key, out string existingValue)
+                        || value != existingValue)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

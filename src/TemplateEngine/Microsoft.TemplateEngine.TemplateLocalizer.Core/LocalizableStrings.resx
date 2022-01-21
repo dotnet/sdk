@@ -126,28 +126,36 @@
     <comment>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</comment>
   </data>
   <data name="stringExtractor_log_jsonKeyIsNotUnique" xml:space="preserve">
-    <value>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</value>
+    <value>Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</value>
     <comment>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</comment>
   </data>
   <data name="stringExtractor_log_jsonMemberIsMissing" xml:space="preserve">
-    <value>Json element "{0}" must have a member "{1}".</value>
+    <value>Json element '{0}' must have a member '{1}'.</value>
     <comment>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</comment>
   </data>
   <data name="stringExtractor_log_skippingAlreadyAddedElement" xml:space="preserve">
     <value>The following element in the template.json will be skipped since it was already added to the list of localizable strings: {0}</value>
     <comment>{0} is a string similar to "postActions/0/manualInstructions/2/text"</comment>
   </data>
+  <data name="stringUpdater_log_dataIsUnchanged" xml:space="preserve">
+    <value>The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</value>
+    <comment>{0} is a file path.</comment>
+  </data>
   <data name="stringUpdater_log_failedToReadLocFile" xml:space="preserve">
-    <value>"Failed to read the existing strings from "{0}"</value>
+    <value>Failed to read the existing strings from '{0}'</value>
     <comment>{0} is a file path.</comment>
   </data>
   <data name="stringUpdater_log_loadingLocFile" xml:space="preserve">
-    <value>Loading existing localizations from file "{0}"</value>
+    <value>Loading existing localizations from file '{0}'</value>
+    <comment>{0} is a file path.</comment>
+  </data>
+  <data name="stringUpdater_log_localizedStringAlreadyExists" xml:space="preserve">
+    <value>The file already contains a localized string for key '{0}'. The old value will be preserved.</value>
     <comment>{0} is a file path.</comment>
   </data>
   <data name="stringUpdater_log_openingTemplatesJson" xml:space="preserve">
-    <value>"Opening the following templatestrings.json file for writing: "{0}"</value>
+    <value>Opening the following templatestrings.json file for writing: '{0}'</value>
     <comment>{0} is a file path.</comment>
   </data>
 </root>

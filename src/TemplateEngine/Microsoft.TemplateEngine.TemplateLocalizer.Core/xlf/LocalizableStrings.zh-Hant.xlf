@@ -13,14 +13,14 @@
         <note>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
-        <source>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</source>
-        <target state="translated">"{0}" 的每個子項都應該有唯一識別碼。目前有多個子項共用識別碼 "{1}"。</target>
+        <source>Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</source>
+        <target state="needs-review-translation">"{0}" 的每個子項都應該有唯一識別碼。目前有多個子項共用識別碼 "{1}"。</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
-        <source>Json element "{0}" must have a member "{1}".</source>
-        <target state="translated">Json 元素 "{0}" 必須有成員 "{1}"。</target>
+        <source>Json element '{0}' must have a member '{1}'.</source>
+        <target state="needs-review-translation">Json 元素 "{0}" 必須有成員 "{1}"。</target>
         <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
@@ -28,19 +28,29 @@
         <target state="translated">因為已將下列元素新增至可當地語系化的字串清單，將略過 template.json 中的下列元素: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
+      <trans-unit id="stringUpdater_log_dataIsUnchanged">
+        <source>The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</source>
+        <target state="new">The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
       <trans-unit id="stringUpdater_log_failedToReadLocFile">
-        <source>"Failed to read the existing strings from "{0}"</source>
-        <target state="translated">「無法從 "{0}" 讀取現有字串</target>
+        <source>Failed to read the existing strings from '{0}'</source>
+        <target state="needs-review-translation">「無法從 "{0}" 讀取現有字串</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_loadingLocFile">
-        <source>Loading existing localizations from file "{0}"</source>
-        <target state="translated">正在從檔案 "{0}" 載入現有的當地語系化</target>
+        <source>Loading existing localizations from file '{0}'</source>
+        <target state="needs-review-translation">正在從檔案 "{0}" 載入現有的當地語系化</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_localizedStringAlreadyExists">
+        <source>The file already contains a localized string for key '{0}'. The old value will be preserved.</source>
+        <target state="new">The file already contains a localized string for key '{0}'. The old value will be preserved.</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_openingTemplatesJson">
-        <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
-        <target state="translated">「正在開啟下列 templatestrings.json 檔案以進行寫入: "{0}"</target>
+        <source>Opening the following templatestrings.json file for writing: '{0}'</source>
+        <target state="needs-review-translation">「正在開啟下列 templatestrings.json 檔案以進行寫入: "{0}"</target>
         <note>{0} is a file path.</note>
       </trans-unit>
     </body>

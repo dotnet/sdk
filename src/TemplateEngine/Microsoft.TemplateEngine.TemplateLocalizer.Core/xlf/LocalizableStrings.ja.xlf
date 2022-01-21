@@ -13,14 +13,14 @@
         <note>{0} is any string from a json file. Such as "postActions", "myParameter", "author" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonKeyIsNotUnique">
-        <source>Each child of "{0}" should have a unique id. Currently, the id "{1}" is shared by multiple children.</source>
-        <target state="translated">"{0}" の各子には一意の ID を指定する必要があります。現在、ID "{1}" は複数の子によって共有されています。</target>
+        <source>Each child of '{0}' should have a unique id. Currently, the id '{1}' is shared by multiple children.</source>
+        <target state="needs-review-translation">"{0}" の各子には一意の ID を指定する必要があります。現在、ID "{1}" は複数の子によって共有されています。</target>
         <note>{0} is an identifier string similar to "postActions/0/manualInstructions/2/text"
 {1} is a user-defined string such as "myPostAction", "pa0", "postActionFirst" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_jsonMemberIsMissing">
-        <source>Json element "{0}" must have a member "{1}".</source>
-        <target state="translated">Json 要素 "{0}" には、メンバー "{1}" が必要です。</target>
+        <source>Json element '{0}' must have a member '{1}'.</source>
+        <target state="needs-review-translation">Json 要素 "{0}" には、メンバー "{1}" が必要です。</target>
         <note>{0} and {1} are strings such as "postActions", "manualInstructions", "id" etc.</note>
       </trans-unit>
       <trans-unit id="stringExtractor_log_skippingAlreadyAddedElement">
@@ -28,19 +28,29 @@
         <target state="translated">template.json の次の要素は、ローカライズ可能な文字列の一覧に既に追加されているため、スキップされます: {0}</target>
         <note>{0} is a string similar to "postActions/0/manualInstructions/2/text"</note>
       </trans-unit>
+      <trans-unit id="stringUpdater_log_dataIsUnchanged">
+        <source>The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</source>
+        <target state="new">The contents of the following file seems to be the same as before. The file will not be overwritten. File: '{0}'</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
       <trans-unit id="stringUpdater_log_failedToReadLocFile">
-        <source>"Failed to read the existing strings from "{0}"</source>
-        <target state="translated">""{0}" から既存の文字列を読み取れませんでした</target>
+        <source>Failed to read the existing strings from '{0}'</source>
+        <target state="needs-review-translation">""{0}" から既存の文字列を読み取れませんでした</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_loadingLocFile">
-        <source>Loading existing localizations from file "{0}"</source>
-        <target state="translated">ファイル "{0}" から既存のローカライズを読み込んでいます</target>
+        <source>Loading existing localizations from file '{0}'</source>
+        <target state="needs-review-translation">ファイル "{0}" から既存のローカライズを読み込んでいます</target>
+        <note>{0} is a file path.</note>
+      </trans-unit>
+      <trans-unit id="stringUpdater_log_localizedStringAlreadyExists">
+        <source>The file already contains a localized string for key '{0}'. The old value will be preserved.</source>
+        <target state="new">The file already contains a localized string for key '{0}'. The old value will be preserved.</target>
         <note>{0} is a file path.</note>
       </trans-unit>
       <trans-unit id="stringUpdater_log_openingTemplatesJson">
-        <source>"Opening the following templatestrings.json file for writing: "{0}"</source>
-        <target state="translated">"次の templatestrings.json ファイルを書き込むために開いています: "{0}"</target>
+        <source>Opening the following templatestrings.json file for writing: '{0}'</source>
+        <target state="needs-review-translation">"次の templatestrings.json ファイルを書き込むために開いています: "{0}"</target>
         <note>{0} is a file path.</note>
       </trans-unit>
     </body>
