@@ -14,7 +14,7 @@
     <MSBuild Projects="repos\$(RootRepo).proj" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <Target Name="RunTests" DependsOnTargets="PrepareOutput;InitBuild">
+  <Target Name="RunRepoTests" DependsOnTargets="PrepareOutput;InitBuild">
     <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
 
     <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="PrepForTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
@@ -91,20 +91,19 @@
   </Target>
 
   <Target Name="RunSmokeTest">
-    <PropertyGroup>
-      <SmokeTestCommand>./smoke-test.sh</SmokeTestCommand>
-      <SmokeTestCommand>$(SmokeTestCommand) --minimal</SmokeTestCommand>
-      <SmokeTestCommand>$(SmokeTestCommand) --projectOutput</SmokeTestCommand>
-      <SmokeTestCommand>$(SmokeTestCommand) --configuration $(Configuration)</SmokeTestCommand>
-      <SmokeTestCommand>$(SmokeTestCommand) --archiveRestoredPackages</SmokeTestCommand>
+    <ItemGroup>
+      <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)" />
+    </ItemGroup>
 
-      <!-- Dev certs don't work on this platform. -->
-      <SmokeTestCommand Condition="'$(TargetOS)' == 'OSX'">$(SmokeTestCommand) --excludeWebHttpsTests</SmokeTestCommand>
+    <PropertyGroup>
+      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
     </PropertyGroup>
 
-    <Exec Command="$(SmokeTestCommand)"
+    <Exec Command="$(DotnetToolCommand) test ./test/Microsoft.DotNet.SourceBuild.SmokeTests --logger:trx"
           EnvironmentVariables="
-            targetRid=$(TargetRid)" />
+            DOTNET_TARBALL_PATH=$(SdkTarballPath);
+            TARGET_RID=$(TargetRid);
+            " />
   </Target>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />
