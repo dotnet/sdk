@@ -28,10 +28,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private const string QueueSuffix = "Queue";
         private const string StackSuffix = "Stack";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageDefault = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageDefault), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageSpecialCollection = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixMessageMultiple), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldHaveCorrectSuffixDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixTitle));
+        private static readonly LocalizableString s_localizableMessageDefault = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixMessageDefault));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixDescription));
 
         internal static readonly DiagnosticDescriptor OneSuffixRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
@@ -43,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isDataflowRule: false);
         internal static readonly DiagnosticDescriptor MultipleSuffixesRule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                              s_localizableTitle,
-                                                                             s_localizableMessageSpecialCollection,
+                                                                             CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixMessageMultiple)),
                                                                              DiagnosticCategory.Naming,
                                                                              RuleLevel.IdeHidden_BulkConfigurable,
                                                                              description: s_localizableDescription,
@@ -58,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                              isPortedFxCopRule: true,
                                                                              isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(OneSuffixRule, MultipleSuffixesRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(OneSuffixRule, MultipleSuffixesRule, UserSuffixRule);
 
         // Define for each interface/type the collection of allowed suffixes (first item is the preferred suffix),
         // note that the order matters as the algorithm works on a first match basis.
@@ -199,15 +198,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var type in typeSymbols)
             {
                 // User specific mapping has higher priority than hardcoded one
-                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix) &&
-                    !RoslynString.IsNullOrWhiteSpace(suffix))
+                if (userMap.TryGetValue(type.OriginalDefinition, out var suffix))
                 {
-                    suffixes = ImmutableArray.Create(suffix);
-                    rule = UserSuffixRule;
-                    return true;
+                    if (!RoslynString.IsNullOrWhiteSpace(suffix))
+                    {
+                        suffixes = ImmutableArray.Create(suffix);
+                        rule = UserSuffixRule;
+                        return true;
+                    }
                 }
-
-                if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixes))
+                else if (hardcodedMap.TryGetValue(type.OriginalDefinition, out suffixes))
                 {
                     rule = suffixes.Length == 1 ? OneSuffixRule : MultipleSuffixesRule;
                     return true;

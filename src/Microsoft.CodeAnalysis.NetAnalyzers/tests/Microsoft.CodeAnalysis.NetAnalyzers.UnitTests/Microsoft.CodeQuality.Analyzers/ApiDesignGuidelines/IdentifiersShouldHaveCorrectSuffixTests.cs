@@ -1860,7 +1860,7 @@ public class C : IReadOnlyDictionary<string, object>, ICollection<KeyValuePair<s
 [*]
 dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
 ")  },
-                    ExpectedDiagnostics = { GetCA1710CSharpResultAt(5, 14, "C", "Collection") }
+                    ExpectedDiagnostics = { GetCA1710CSharpResultAt(5, 14, "C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue") }
                 }
             }.RunAsync();
         }
