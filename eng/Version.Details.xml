@@ -268,30 +268,30 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.22068.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9ffc76ac9f5799de9b28ee59f9bfbe0f8844d0d7</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.22068.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9ffc76ac9f5799de9b28ee59f9bfbe0f8844d0d7</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.22068.3">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9ffc76ac9f5799de9b28ee59f9bfbe0f8844d0d7</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.22068.3">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="7.0.0-beta.22071.6">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>9ffc76ac9f5799de9b28ee59f9bfbe0f8844d0d7</Sha>
+      <Sha>e1ea8873d2e0175c1d1e49b3884cd2e9c6ef5007</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="7.0.0-alpha.1.22069.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>6f8d8b20a0c78dcfc09ea7a43db48a9a4e055e13</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="1.0.0-beta.22065.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="1.0.0-beta.22069.1" CoherentParentDependency="Microsoft.DotNet.Arcade.Sdk">
       <Uri>https://github.com/dotnet/xliff-tasks</Uri>
-      <Sha>59c4d4a3a4e9a375387686727d6f96df6f7ef471</Sha>
+      <Sha>0cf953c6a90f08259a65133e73c93af1d129640d</Sha>
       <SourceBuild RepoName="xliff-tasks" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
