@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
@@ -14,10 +15,46 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
+        private static Task VerifyCSharpAsync(string code)
+        {
+            var test = new VerifyCS.Test()
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                LanguageVersion = CSharp.LanguageVersion.Latest,
+                TestState =
+                {
+                    Sources =
+                    {
+                        code
+                    },
+                },
+            };
+
+            return test.RunAsync();
+        }
+
+        private static Task VerifyVisualBasicAsync(string code)
+        {
+            var test = new VerifyVB.Test()
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                LanguageVersion = VisualBasic.LanguageVersion.Latest,
+                TestState =
+                {
+                    Sources =
+                    {
+                        code
+                    },
+                },
+            };
+
+            return test.RunAsync();
+        }
+
         [Fact]
         public async Task TestMultipleInvocations()
         {
-            var csharpCode1 = @"
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,7 +71,7 @@ public class Bar
         var h = [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -54,7 +91,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -77,7 +114,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -96,7 +133,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -119,7 +156,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -137,7 +174,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -158,7 +195,7 @@ public class Bar
         [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -176,7 +213,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -197,7 +234,7 @@ public class Bar
         i.Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -215,7 +252,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -237,7 +274,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -256,7 +293,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -292,7 +329,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -319,7 +356,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -343,7 +380,7 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -363,7 +400,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -388,7 +425,7 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -409,7 +446,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -433,7 +470,7 @@ public class Bar
         i.Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -453,7 +490,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -475,7 +512,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -493,7 +530,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -529,7 +566,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -556,7 +593,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -591,7 +628,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -618,7 +655,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -652,7 +689,7 @@ public class Bar
         k.LastOrDefault();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -681,7 +718,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -709,7 +746,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -731,7 +768,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -765,7 +802,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -795,7 +832,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -833,7 +870,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -865,7 +902,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -894,7 +931,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -916,7 +953,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -948,7 +985,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -972,7 +1009,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -998,7 +1035,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1017,7 +1054,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1048,7 +1085,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1070,7 +1107,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1104,7 +1141,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1128,7 +1165,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1153,7 +1190,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1179,7 +1216,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1205,7 +1242,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1231,7 +1268,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1257,7 +1294,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1277,7 +1314,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1307,7 +1344,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1329,7 +1366,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1359,7 +1396,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1381,7 +1418,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1417,7 +1454,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1446,7 +1483,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1486,7 +1523,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1517,7 +1554,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1544,7 +1581,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1567,7 +1604,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1594,7 +1631,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1616,7 +1653,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1644,7 +1681,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1667,7 +1704,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1691,7 +1728,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1711,7 +1748,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1730,7 +1767,7 @@ public class Bar
         [|h|].Concat([|i|]).ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1746,7 +1783,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1765,7 +1802,7 @@ public class Bar
         [|h|].SequenceEqual([|i|]);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1781,7 +1818,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1800,7 +1837,7 @@ public class Bar
         [|x|].GroupJoin([|h|], i => i, i => i, (i, ints) => i).Last();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1816,7 +1853,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1849,7 +1886,7 @@ public class Bar
             .Where(i => i != 10).First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System
@@ -1877,7 +1914,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
 #endif
 
 #if NET472
@@ -1906,7 +1943,7 @@ public class Bar
             .Where(i => i != 10).First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1933,7 +1970,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
 #endif
         }
 
@@ -1954,7 +1991,7 @@ public class Bar
         var z2 = [|x|].GroupBy(i => i.GetHashCode()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1970,7 +2007,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1988,7 +2025,7 @@ public class Bar
         var b = [|y|].SelectMany(x => x.ToArray()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2003,7 +2040,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2022,7 +2059,7 @@ public class Bar
         [|h|].Cast<int>().ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2038,7 +2075,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2055,7 +2092,7 @@ public class Bar
         [|h|].ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Linq
@@ -2069,7 +2106,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2087,7 +2124,7 @@ public class Bar
         [|h|].ToArray().Select(j => j + 1).Where(x => x != 100);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2102,7 +2139,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2128,7 +2165,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2150,7 +2187,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2177,7 +2214,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2197,7 +2234,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2217,7 +2254,7 @@ public class Bar
         [|c|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2233,7 +2270,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2279,7 +2316,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2315,7 +2352,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2339,7 +2376,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2358,7 +2395,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2382,7 +2419,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2401,7 +2438,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2424,7 +2461,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2441,7 +2478,7 @@ Namespace NS
         End Sub
     End Class
 End Namespace";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2462,7 +2499,7 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2479,7 +2516,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2501,7 +2538,7 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2519,7 +2556,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2540,7 +2577,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharp);
+            await VerifyCSharpAsync(csharp);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2557,7 +2594,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2579,7 +2616,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2597,7 +2634,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2616,7 +2653,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2631,7 +2668,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2654,7 +2691,7 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2673,7 +2710,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2696,7 +2733,7 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2715,7 +2752,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2737,7 +2774,7 @@ public class Bar
         [|b|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2755,7 +2792,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2775,7 +2812,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2792,7 +2829,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2812,7 +2849,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2828,7 +2865,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2848,7 +2885,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2864,7 +2901,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2885,7 +2922,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2902,7 +2939,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2923,7 +2960,7 @@ public class Bar
         Enumerable.ToArray(z);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2940,7 +2977,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2962,7 +2999,7 @@ public class Bar
         [|i|].ElementAt(100);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2979,7 +3016,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3004,7 +3041,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3029,7 +3066,7 @@ public class Bar
         i.First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3050,7 +3087,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3071,7 +3108,7 @@ public class Bar
         z.First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3088,7 +3125,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3108,7 +3145,7 @@ public class Bar
         [|i|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+            await VerifyCSharpAsync(csharpCode1);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3125,7 +3162,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]

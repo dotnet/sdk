@@ -126,7 +126,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // If the method is in reduced form.
             // Like in VB,
             // 'i.ElementAt(10)', 'i' is thought as the invocation instance.
-            if (operation.Parent is IInvocationOperation { TargetMethod: { MethodKind: MethodKind.ReducedExtension } } parentInvocationOperation
+            if (operation.Parent is IInvocationOperation { TargetMethod.MethodKind: MethodKind.ReducedExtension } parentInvocationOperation
                 && operation == parentInvocationOperation.Instance)
             {
                 return IsInvocationCausingEnumerationOverInvocationInstance(parentInvocationOperation, wellKnownSymbolsInfo);
