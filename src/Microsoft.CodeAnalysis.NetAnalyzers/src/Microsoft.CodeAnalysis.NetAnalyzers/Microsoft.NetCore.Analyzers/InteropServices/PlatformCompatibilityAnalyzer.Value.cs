@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -107,38 +107,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return false;
             }
 
-            public static bool TryDecode(ImmutableArray<AttributeData> attributes, ArrayBuilder<PlatformMethodValue> infosBuilder)
-            {
-                foreach (var attribute in attributes)
-                {
-                    if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute &&
-                        TryParsePlatformNameAndVersion(attribute, out var platformName, out var version))
-                    {
-                        var info = new PlatformMethodValue(platformName, version, negated: attribute.AttributeClass.Name == UnsupportedOSPlatformGuardAttribute);
-                        infosBuilder.Add(info);
-                    }
-                }
-                return infosBuilder.Any();
-            }
-
-            private static bool TryExtractPlatformName(string methodName, [NotNullWhen(true)] out string? platformName)
-            {
-                if (!methodName.StartsWith(IsPrefix, StringComparison.Ordinal))
-                {
-                    platformName = null;
-                    return false;
-                }
-
-                if (methodName.EndsWith(OptionalSuffix, StringComparison.Ordinal))
-                {
-                    platformName = methodName.Substring(2, methodName.Length - 2 - OptionalSuffix.Length);
-                    return true;
-                }
-
-                platformName = methodName[2..];
-                return true;
-            }
-
             private static bool TryDecodeRuntimeInformationIsOSPlatform(
                 IOperation argumentValue,
                 INamedTypeSymbol? osPlatformType,
@@ -153,7 +121,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if ((argumentValue is IPropertyReferenceOperation propertyReference) &&
                     propertyReference.Property.ContainingType.Equals(osPlatformType))
                 {
-                    decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    if (propertyReference.Property.Name.Equals(OSX, StringComparison.OrdinalIgnoreCase))
+                    {
+                        decodedOsPlatformNamesBuilder.Add(macOS);
+                    }
+                    else
+                    {
+                        decodedOsPlatformNamesBuilder.Add(propertyReference.Property.Name);
+                    }
                     return true;
                 }
 

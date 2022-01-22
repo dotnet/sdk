@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotUseDSATests
     {
         [Fact]
-        public async Task TestCreateObjectOfDSADerivedClassWithoutParameterDiagnostic()
+        public async Task TestCreateObjectOfDSADerivedClassWithoutParameterDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -41,7 +41,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfDSADerivedClassWithCngKeyParameterDiagnostic()
+        public async Task TestCreateObjectOfDSADerivedClassWithCngKeyParameterDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -70,7 +70,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterAssignedKeySizeDiagnostic()
+        public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterAssignedKeySizeDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -99,7 +99,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterUnassignedKeySizeDiagnostic()
+        public async Task TestCreateObjectOfDSADerivedClassWithInt32ParameterUnassignedKeySizeDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -128,7 +128,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnObjectOfDSADerivedClassDiagnostic()
+        public async Task TestReturnObjectOfDSADerivedClassDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -144,7 +144,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnObjectOfDSADerivedClassLocalFunctionDiagnostic()
+        public async Task TestReturnObjectOfDSADerivedClassLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -160,7 +160,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithDSAArgDiagnostic()
+        public async Task TestCreateWithDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -176,7 +176,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCaseSensitiveDiagnostic()
+        public async Task TestCaseSensitiveDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -192,7 +192,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithSystemSecurityCryptographyDSAArgDiagnostic()
+        public async Task TestCreateWithSystemSecurityCryptographyDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -208,7 +208,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithDSAArgDiagnostic()
+        public async Task TestCreateFromNameWithDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -224,7 +224,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyDSAArgDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyDSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -240,7 +240,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithECDsaArgNoDiagnostic()
+        public async Task TestCreateWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -255,7 +255,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithECDsaArgNoDiagnostic()
+        public async Task TestCreateFromNameWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -270,7 +270,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithECDsaAndKeySize1024ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithECDsaAndKeySize1024ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -285,7 +285,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnVoidNoDiagnostic()
+        public async Task TestReturnVoidNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;

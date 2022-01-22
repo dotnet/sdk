@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,11 +7,14 @@ using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
+using Analyzer.Utilities.PooledObjects.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1010: Collections should implement generic interface
     /// </summary>
@@ -21,35 +24,34 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal const string RuleId = "CA1010";
 
         private static readonly LocalizableString s_localizableTitle =
-            new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceTitle),
-                MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-                typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableStandardMessage =
-            new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceMessage),
-                MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-                typeof(MicrosoftCodeQualityAnalyzersResources));
+            CreateLocalizableResourceString(nameof(CollectionsShouldImplementGenericInterfaceTitle));
 
         private static readonly LocalizableString s_localizableDescription =
-            new LocalizableResourceString(
-                nameof(MicrosoftCodeQualityAnalyzersResources.CollectionsShouldImplementGenericInterfaceDescription),
-                MicrosoftCodeQualityAnalyzersResources.ResourceManager,
-                typeof(MicrosoftCodeQualityAnalyzersResources));
+            CreateLocalizableResourceString(nameof(CollectionsShouldImplementGenericInterfaceDescription));
 
-        internal static DiagnosticDescriptor Rule =
+        internal static readonly DiagnosticDescriptor Rule =
             DiagnosticDescriptorHelper.Create(
                 RuleId,
                 s_localizableTitle,
-                s_localizableStandardMessage,
+                CreateLocalizableResourceString(nameof(CollectionsShouldImplementGenericInterfaceMessage)),
                 DiagnosticCategory.Design,
                 RuleLevel.IdeHidden_BulkConfigurable,
                 description: s_localizableDescription,
                 isPortedFxCopRule: true,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        internal static readonly DiagnosticDescriptor RuleMultiple =
+            DiagnosticDescriptorHelper.Create(
+                RuleId,
+                s_localizableTitle,
+                CreateLocalizableResourceString(nameof(CollectionsShouldImplementGenericInterfaceMultipleMessage)),
+                DiagnosticCategory.Design,
+                RuleLevel.IdeHidden_BulkConfigurable,
+                description: s_localizableDescription,
+                isPortedFxCopRule: true,
+                isDataflowRule: false);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -62,39 +64,43 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                    var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
 
                    // Orders inside the array matters as we report only on the first missing implemented tuple.
-                   var interfaceToGenericInterfaceMapBuilder = ImmutableArray.CreateBuilder<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>>();
+                   var interfaceToGenericInterfaceMapBuilder = ImmutableArray.CreateBuilder<KeyValuePair<INamedTypeSymbol, ImmutableArray<INamedTypeSymbol>>>();
 
-                   INamedTypeSymbol? iListType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIList);
-                   INamedTypeSymbol? genericIListType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1);
-
-                   if (iListType != null && genericIListType != null)
+                   if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIList, out var iListType))
                    {
-                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iListType, genericIListType));
+                       var builder = ArrayBuilder<INamedTypeSymbol>.GetInstance();
+                       builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1));
+                       builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIReadOnlyList1));
+                       if (builder.Count > 0)
+                       {
+                           interfaceToGenericInterfaceMapBuilder.Add(new(iListType, builder.ToImmutable()));
+                       }
                    }
 
-                   INamedTypeSymbol? iCollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection);
-                   INamedTypeSymbol? genericICollectionType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1);
-
-                   if (iCollectionType != null && genericICollectionType != null)
+                   if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsICollection, out var iCollectionType))
                    {
-                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iCollectionType, genericICollectionType));
+                       var builder = ArrayBuilder<INamedTypeSymbol>.GetInstance();
+                       builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericICollection1));
+                       builder.AddIfNotNull(wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIReadOnlyCollection1));
+                       if (builder.Count > 0)
+                       {
+                           interfaceToGenericInterfaceMapBuilder.Add(new(iCollectionType, builder.ToImmutable()));
+                       }
                    }
 
-                   INamedTypeSymbol? iEnumerableType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable);
-                   INamedTypeSymbol? genericIEnumerableType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
-
-                   if (iEnumerableType != null && genericIEnumerableType != null)
+                   if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable, out var iEnumerableType) &&
+                       wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var genericIEnumerableType))
                    {
-                       interfaceToGenericInterfaceMapBuilder.Add(new KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>(iEnumerableType, genericIEnumerableType));
+                       interfaceToGenericInterfaceMapBuilder.Add(new(iEnumerableType, ImmutableArray.Create(genericIEnumerableType)));
                    }
 
                    context.RegisterSymbolAction(c => AnalyzeSymbol(c, interfaceToGenericInterfaceMapBuilder.ToImmutable()), SymbolKind.NamedType);
                });
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, INamedTypeSymbol>> interfacePairs)
+        private static void AnalyzeSymbol(SymbolAnalysisContext context, ImmutableArray<KeyValuePair<INamedTypeSymbol, ImmutableArray<INamedTypeSymbol>>> interfacePairs)
         {
-            Debug.Assert(interfacePairs.All(kvp => kvp.Key.TypeKind == TypeKind.Interface && kvp.Value.TypeKind == TypeKind.Interface));
+            Debug.Assert(interfacePairs.All(kvp => kvp.Key.TypeKind == TypeKind.Interface && kvp.Value.All(x => x.TypeKind == TypeKind.Interface)));
 
             var namedTypeSymbol = (INamedTypeSymbol)context.Symbol;
 
@@ -131,9 +137,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 var kvp = interfacePairs[i];
 
-                if (allInterfaces.Contains(kvp.Key) && !allInterfaces.Contains(kvp.Value))
+                if (allInterfaces.Contains(kvp.Key) && !allInterfaces.Intersect(kvp.Value, SymbolEqualityComparer.Default).Any())
                 {
-                    ReportDiagnostic(kvp.Key, kvp.Value);
+                    if (kvp.Value.Length > 1)
+                    {
+                        ReportDiagnosticAlt(kvp.Key, kvp.Value);
+                    }
+                    else
+                    {
+                        ReportDiagnostic(kvp.Key, kvp.Value[0]);
+                    }
                     return;
                 }
             }
@@ -145,6 +158,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(Rule, namedTypeSymbol.Name,
                     @interface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                     genericInterface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)));
+            }
+
+            void ReportDiagnosticAlt(INamedTypeSymbol @interface, IEnumerable<INamedTypeSymbol> genericInterfaces)
+            {
+                context.ReportDiagnostic(namedTypeSymbol.CreateDiagnostic(RuleMultiple, namedTypeSymbol.Name,
+                    @interface.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
+                    string.Join("', '", genericInterfaces.Select(x => x.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)))));
             }
         }
     }

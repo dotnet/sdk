@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.CodeAnalysis.CodeFixes;
 using System.Collections.Immutable;
@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class TestForNaNCorrectlyFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForNaNCorrectlyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -37,40 +37,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             SemanticModel model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-
-            INamedTypeSymbol? systemSingleType = model.Compilation.GetSpecialType(SpecialType.System_Single);
-            INamedTypeSymbol? systemDoubleType = model.Compilation.GetSpecialType(SpecialType.System_Double);
-
-            if (systemSingleType == null || systemDoubleType == null)
-            {
-                return;
-            }
-
-            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, systemSingleType, systemDoubleType, context.CancellationToken);
+            FixResolution? resolution = TryGetFixResolution(binaryExpressionSyntax, model, context.CancellationToken);
 
             if (resolution != null)
             {
                 var action = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage,
-                    async ct => await ConvertToMethodInvocation(context, resolution).ConfigureAwait(false),
+                    async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
                     equivalenceKey: MicrosoftNetCoreAnalyzersResources.TestForNaNCorrectlyMessage);
 
                 context.RegisterCodeFix(action, context.Diagnostics);
             }
         }
 
-        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
+        private FixResolution? TryGetFixResolution(SyntaxNode binaryExpressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
             bool isEqualsOperator = IsEqualsOperator(binaryExpressionSyntax);
             SyntaxNode leftOperand = GetLeftOperand(binaryExpressionSyntax);
             SyntaxNode rightOperand = GetRightOperand(binaryExpressionSyntax);
 
-            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, systemSingleType, systemDoubleType, cancellationToken);
+            ITypeSymbol? systemTypeLeft = TryGetSystemTypeForNanConstantExpression(leftOperand, model, cancellationToken);
             if (systemTypeLeft != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeLeft, rightOperand, isEqualsOperator);
             }
 
-            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, systemSingleType, systemDoubleType, cancellationToken);
+            ITypeSymbol? systemTypeRight = TryGetSystemTypeForNanConstantExpression(rightOperand, model, cancellationToken);
             if (systemTypeRight != null)
             {
                 return new FixResolution(binaryExpressionSyntax, systemTypeRight, leftOperand, isEqualsOperator);
@@ -79,23 +70,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return null;
         }
 
-        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, INamedTypeSymbol systemSingleType, INamedTypeSymbol systemDoubleType, CancellationToken cancellationToken)
+        private static ITypeSymbol? TryGetSystemTypeForNanConstantExpression(SyntaxNode expressionSyntax, SemanticModel model, CancellationToken cancellationToken)
         {
-            if (model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol is IFieldSymbol fieldSymbol)
+            var symbol = model.GetSymbolInfo(expressionSyntax, cancellationToken).Symbol;
+            if (symbol is IFieldSymbol { HasConstantValue: true, Name: "NaN", Type: { SpecialType: SpecialType.System_Single or SpecialType.System_Double } type })
             {
-                if (fieldSymbol.Type.Equals(systemSingleType) || fieldSymbol.Type.Equals(systemDoubleType))
-                {
-                    if (fieldSymbol.HasConstantValue && fieldSymbol.Name == "NaN")
-                    {
-                        return fieldSymbol.Type;
-                    }
-                }
+                return type;
             }
 
             return null;
         }
 
-        private static async Task<Document> ConvertToMethodInvocation(CodeFixContext context, FixResolution fixResolution)
+        private static async Task<Document> ConvertToMethodInvocationAsync(CodeFixContext context, FixResolution fixResolution)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
 

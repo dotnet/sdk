@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AddPublicParameterlessConstructor">
         <source>Add a public constructor that takes zero parameters</source>
-        <target state="new">Add a public constructor that takes zero parameters</target>
+        <target state="translated">新增接受零個參數的公用建構函式</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
@@ -125,6 +125,21 @@
       <trans-unit id="BinaryFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer BinaryFormatter</source>
         <target state="translated">請勿使用不安全的還原序列化程式 BinaryFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyDescription">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="translated">'Buffer.BlockCopy' 應該有要針對 'count' 引數複製的位元組數。使用 'Array.Length' 可能不符合需要複製的位元組數。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthMessage">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="translated">'Buffer.BlockCopy' 應該有要針對 'count' 引數複製的位元組數。使用 'Array.Length' 可能不符合需要複製的位元組數。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthTitle">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
+        <target state="translated">'Buffer.BlockCopy' 應該有要針對 'count' 引數複製的位元組數</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -322,19 +337,34 @@
         <target state="translated">不要使用已淘汰的 SslProtocols 值</target>
         <note />
       </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessage">
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 衍生自預覽類別 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 衍生自預覽類別 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
         <source>An assembly has to opt into preview features before using them.</source>
-        <target state="new">An assembly has to opt into preview features before using them.</target>
+        <target state="translated">組合在使用前必須先加入預覽功能。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
-        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="translated">使用 '{0}' 必須加入預覽功能。如需詳細資訊，請參閱 {1}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
+        <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="translated">{2} 使用 '{0}' 必須加入預覽功能。如需詳細資訊，請參閱 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
         <source>This API requires opting into preview features</source>
-        <target state="new">This API requires opting into preview features</target>
+        <target state="translated">此 API 需要加入預覽功能</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
@@ -440,6 +470,21 @@
       <trans-unit id="DoNotAddSchemaByURLMessage">
         <source>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</source>
         <target state="translated">因為 Add 方法的此項多載可能解析了危險的外部參考，而有可能不安全</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
+        <source>By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</source>
+        <target state="translated">將重大的 TokenValidationParameter 驗證委派設定為 True 時，會停用重要的驗證保護，這可能會導致來自任何發行者或過期權杖的權杖遭到錯誤驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesMessage">
+        <source>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</source>
+        <target state="translated">{0} 設定為永遠傳回 True 的函式。設定驗證委派之後，即會覆寫預設驗證，並因為永遠會傳回 True，表示已完全停用此驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesTitle">
+        <source>Do not always skip token validation in delegates</source>
+        <target state="translated">永遠不要在委派中略過權杖驗證</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
@@ -610,6 +655,21 @@
       <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
         <source>{0} disables TLS 1.2 and enables SSLv3</source>
         <target state="translated">{0} 停用 TLS 1.2 並啟用 SSLv3</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksDescription">
+        <source>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</source>
+        <target state="translated">權杖驗證檢查可確保在驗證權杖時，分析並驗證所有方面。關閉驗證可能會造成安全性漏洞，因為可能會允許未受信任的權杖通過驗證。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksMessage">
+        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation</source>
+        <target state="translated">TokenValidationParameters.{0} 不應設定為 False，因為它會停用重要驗證</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksTitle">
+        <source>Do not disable token validation checks</source>
+        <target state="translated">請勿停用權杖驗證檢查</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
@@ -964,17 +1024,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
         <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">對單一工作使用 'WaitAll' 可能會造成效能降低，請改為等待或返回工作。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
         <source>Replace 'WaitAll' with single 'Wait'</source>
-        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
+        <target state="translated">以單一 'Wait' 取代 'WaitAll'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
         <source>Do not use 'WaitAll' with a single task</source>
-        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <target state="translated">不要對單一工作使用 'WaitAll'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
@@ -1014,17 +1074,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
         <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">對單一工作使用 'WhenAll' 可能會造成效能降低，請改為等待或返回工作。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
         <source>Replace 'WhenAll' call with argument</source>
-        <target state="new">Replace 'WhenAll' call with argument</target>
+        <target state="translated">請以引數取代 'WhenAll' 呼叫</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
         <source>Do not use 'WhenAll' with a single task</source>
-        <target state="new">Do not use 'WhenAll' with a single task</target>
+        <target state="translated">不要對單一工作使用 'WhenAll'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
@@ -1035,6 +1095,31 @@
       <trans-unit id="DoNotUseXslTransformMessage">
         <source>Do not use XslTransform. It does not restrict potentially dangerous external references.</source>
         <target state="translated">請勿使用 XslTransform。它不會限制可能引發危險的外部參考。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
+        <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
+        <target state="translated">提供功能性 'DynamicInterfaceCastableImplementationAttribute' 屬性介面需要預設的介面成員功能，但 Visual Basic 不支援此功能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="translated">不支援在 Visual Basic 中提供 'DynamicInterfaceCastableImplementation' 介面</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="translated">不支援在 Visual Basic 中提供 'DynamicInterfaceCastableImplementation' 介面</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessage">
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 的類型包含預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1117,6 +1202,11 @@
         <target state="translated">必須正確實作 ISerializable</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
+        <source>Implement inherited interfaces</source>
+        <target state="translated">實作繼承的介面</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
         <source>Implement Serialization constructor</source>
         <target state="translated">實作序列化建構函式</target>
@@ -1182,9 +1272,24 @@
         <target state="translated">必須正確實作序列化方法</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
-        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+      <trans-unit id="ImplementsPreviewInterfaceMessage">
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 會實作預覽介面 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 會實作預覽介面 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessage">
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 會實作預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 會實作預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1245,6 +1350,21 @@
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
         <source>Instantiate argument exceptions correctly</source>
         <target state="translated">正確地將引數例外狀況具現化</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="translated">以 'DynamicInterfaceCastableImplementationAttribute' 作為屬性的類型，會當作實作 'IDynamicInterfaceCastable' 類型之類型的介面實作。因此，它必須提供繼承介面中定義之所有成員的實作，因為實作 'IDynamicInterfaceCastable' 的類型不會以其他方式提供它們。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
+        <target state="translated">類型 '{0}' 已套用 'DynamicInterfaceCastableImplementationAttribute'，但未提供繼承介面中定義之所有介面成員的實作</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationTitle">
+        <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="translated">在父介面中宣告的所有成員，在 DynamicInterfaceCastableImplementation 屬性介面中都必須有一個實作</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1332,9 +1452,19 @@
         <target state="translated">請勿使用不安全的還原序列化程式 LosFormatter</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
+        <source>Convert to static method</source>
+        <target state="translated">轉換成靜態方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
+        <source>Converting an instance method to a static method may produce invalid code</source>
+        <target state="translated">將執行個體方法轉換為靜態方法可能會產生不正確的程式碼</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
         <source>Make the constructor that takes zero parameters 'public'</source>
-        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <target state="translated">將接受零個參數的建構函式設為 'public'</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1452,6 +1582,41 @@
         <target state="translated">當從密碼衍生密碼編譯金鑰時，請確保反覆項目計數至少為 {0}。根據預設，Rfc2898DeriveByte 的 IterationCount 只有 1000</target>
         <note />
       </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
+        <target state="translated">因為實作 'IDynamicInterfaceCastable' 的類型不會在中繼資料中實作動態介面，所以呼叫在此類型不是明確實作的執行個體介面成員，在執行階段可能會失敗。請標示新的介面成員 'static' 以避免執行階段錯誤。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="translated">'{1}' 類型的 '{0}' 成員應該標記為 'static'，因為 '{1}' 已套用 'DynamicInterfaceImplementationAttribute'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
+        <target state="translated">在有 'DynamicInterfaceCastableImplementationAttribute' 介面上定義的成員應為 'static'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessage">
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 會傳回預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 會傳回預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 接受類型 '{1}' 的預覽參數，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 接受類型 '{1}' 的預覽參數，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
         <source>Miss HttpVerb attribute for action methods</source>
         <target state="translated">缺少動作方法的 HttpVerb 屬性</target>
@@ -1465,6 +1630,21 @@
       <trans-unit id="MissHttpVerbAttributeMessage">
         <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
         <target state="translated">Action 方法 {0} 必須明確地指定 HTTP 要求種類</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">模組初始設定式供應用程式程式碼使用，以確保應用程式程式碼開始執行前先初始化應用程式的元件。如果程式庫程式碼宣告 'ModuleInitializer' 方法，它可能會干擾應用程式初始化，而且也會導致該應用程式的截斷功能遭到限制。程式庫程式碼不應使用 'ModuleInitializer' 屬性，而應該公開可用於初始化程式庫內任何元件的方法，並允許應用程式在應用程式初始化期間叫用方法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
+        <source>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</source>
+        <target state="translated">'ModuleInitializer' 屬性只適用於應用程式程式碼或進階原始檔產生器案例中</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle">
+        <source>The 'ModuleInitializer' attribute should not be used in libraries</source>
+        <target state="translated">程式庫中不應使用 'ModuleInitializer' 屬性</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1525,6 +1705,16 @@
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
         <target state="translated">請勿使用不安全的還原序列化程式 ObjectStateFormatter</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessage">
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 會覆寫預覽方法 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1649,57 +1839,77 @@
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringCodefixTitle">
         <source>Replace 'Substring' with 'AsSpan'</source>
-        <target state="new">Replace 'Substring' with 'AsSpan'</target>
+        <target state="translated">請以 'AsSpan' 取代 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan' 比 'Substring' 更有效率。'Substring' 會執行 O(n) 字串複製，而 'AsSpan' 不會且有固定成本。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
         <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available</target>
+        <target state="translated">當範圍型的多載可用時，建議使用 'AsSpan' 而不是 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringTitle">
         <source>Prefer 'AsSpan' over 'Substring'</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <target state="translated">建議使用 'AsSpan' 而不是 'Substring'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
-        <target state="new">Use 'ContainsKey'</target>
+        <target state="translated">請使用 'ContainsKey'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
         <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
-        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <target state="translated">'ContainsKey' 通常為 O(1)，但在某些情況下，'Keys.Contains' 可能為 O(n)。此外，許多字典實作會延遲初始化 Keys 集合以縮減配置。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
         <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
+        <target state="translated">字典類型 '{0}' 建議使用 'ContainsKey' 而不是 'Keys.Contains'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
         <source>Prefer Dictionary.Contains methods</source>
-        <target state="new">Prefer Dictionary.Contains methods</target>
+        <target state="translated">建議使用 Dictionary.Contains 方法</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
         <source>Use 'ContainsValue'</source>
-        <target state="new">Use 'ContainsValue'</target>
+        <target state="translated">請使用 'ContainsValue'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
         <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
-        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
+        <target state="translated">許多字典實作會延遲初始化 Values 集合。為避免不必要的配置，建議使用 'ContainsValue' 而不是 'Values.Contains'。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">
         <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
+        <target state="translated">字典類型 '{0}' 建議使用 'ContainsValue' 而不是 'Values.Contains'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="translated">以 'HashData' 方法取代</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="translated">使用靜態 'HashData' 方法比建立和管理 HashAlgorithm 執行個體來呼叫 'ComputeHash' 更有效率。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="translated">偏好靜態 '{0}.HashData' 方法而非 'ComputeHash'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="translated">偏好靜態 'HashData' 方法而非 'ComputeHash'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -1838,33 +2048,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
-        <source>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
-        <target state="new">Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
+        <target state="translated">提供一種無參數的建構函式，與衍生自 'System.Runtime.InteropServices.SafeHandle' 之類型的包含類型一樣可見，使用原始檔產生的 interop 解決方案可提高效能及使用量。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
-        <source>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="translated">提供一種無參數的建構函式，與衍生自 'System.Runtime.InteropServices.SafeHandle' 之 '{0}' 類型的包含類型一樣可見</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
-        <source>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="translated">提供一種無參數的建構函式，與衍生自 'System.Runtime.InteropServices.SafeHandle' 之具體類型的包含類型一樣可見</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
         <source>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</source>
-        <target state="new">To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</target>
+        <target state="translated">若要提升效能，請在加入子類別 'Stream' 時，覆寫記憶體型的非同步方法，然後以記憶體型方法的方式實作陣列型的方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
         <source>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</source>
-        <target state="new">'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</target>
+        <target state="translated">'{0}' 會覆寫陣列型的 '{1}'，但不會覆寫記憶體型的 '{2}'。請考慮覆寫記憶體型的 '{2}' 以提升效能。</target>
         <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">
         <source>Provide memory-based overrides of async methods when subclassing 'Stream'</source>
-        <target state="new">Provide memory-based overrides of async methods when subclassing 'Stream'</target>
+        <target state="translated">加入子類別 'Stream' 時，提供非同步方法的記憶體型覆寫</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -1874,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
-        <target state="new">Replace string literal with char literal</target>
+        <target state="translated">以字元常值取代字串常值</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
@@ -2164,7 +2374,7 @@
       </trans-unit>
       <trans-unit id="StaticAndAbstractRequiresPreviewFeatures">
         <source>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <target state="translated">同時使用 'static' 和 'abstract' 修飾元必須加入預覽功能。如需詳細資訊，請參閱 https://aka.ms/dotnet-warnings/preview-features。</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -2237,6 +2447,26 @@
         <target state="translated">陣列值中以 Range 為基礎的索引子會產生陣列中要求部分的複本。隱含使用此複本作為 ReadOnlySpan 或 ReadOnlyMemory 值時，通常不需此複本。請使用 AsSpan 方法來避免使用不必要的複本。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="translated">在　Task-returning　方法內時，請使用方法的非同步版本 (如果存在)。</target>
+        <note>{Locked="Task"}</note>
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="translated">'{0}' 會同步封鎖。請改用 Await '{1}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="translated">'{0}' 會同步封鎖。請改用 await。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="translated">在使用非同步方法時呼叫非同步方法</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">使用 ASP.NET Core MVC 控制器中的 antiforgery 權杖</target>
@@ -2254,22 +2484,22 @@
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
         <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
-        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <target state="translated">請以 'CancellationToken.ThrowIfCancellationRequested' 取代</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
         <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
-        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <target state="translated">'ThrowIfCancellationRequested' 會自動檢查是否已取消權杖，如果是，則會擲回 'OperationCanceledException'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
         <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <target state="translated">請使用 'ThrowIfCancellationRequested'，而不是檢查 'IsCancellationRequested' 並擲回 'OperationCanceledException'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <target state="translated">請使用 'ThrowIfCancellationRequested'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2304,22 +2534,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
         <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
-        <target state="new">'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' 比 'Thread.CurrentThread.ManagedThreadId' 更簡單快速。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdFix">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">請使用 'Environment.CurrentManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdMessage">
         <source>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</target>
+        <target state="translated">請使用 'Environment.CurrentManagedThreadId' 而非 'Thread.CurrentThread.ManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdTitle">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">請使用 'Environment.CurrentManagedThreadId'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
@@ -2344,22 +2574,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathDescription">
         <source>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</source>
-        <target state="new">'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</target>
+        <target state="translated">'Environment.ProcessPath' 比 'Process.GetCurrentProcess().MainModule.FileName' 更簡單快速。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathFix">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">請使用 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathMessage">
         <source>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</source>
-        <target state="new">Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</target>
+        <target state="translated">請使用 'Environment.ProcessPath' 而非 'Process.GetCurrentProcess().MainModule.FileName'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathTitle">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">請使用 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2452,84 +2682,84 @@
         <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
-        <source>Use 'AsSpan' with 'string.Concat'</source>
-        <target state="new">Use 'AsSpan' with 'string.Concat'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatDescription">
-        <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
-        <target state="new">It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatMessage">
-        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
-        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatTitle">
-        <source>Use span-based 'string.Concat'</source>
-        <target state="new">Use span-based 'string.Concat'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
-        <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
-        <target state="new">'string.Contains(char)' is available as a better performing overload for single char lookup.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
-        <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
-        <target state="new">Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
-        <source>Use char literal for a single character lookup</source>
-        <target state="new">Use char literal for a single character lookup</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">請使用 'string.Equals'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareDescription">
         <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
-        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <target state="translated">使用 'string.Equals' 更清楚也更快，而不是將 'string.Compare' 的結果與 0 比較。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareMessage">
         <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
-        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <target state="translated">請使用 'string.Equals' 而不是將 'string.Compare' 的結果與 0 比較</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">請使用 'string.Equals'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
+        <source>Use 'AsSpan' with 'string.Concat'</source>
+        <target state="translated">請將 'AsSpan' 與 'string.Concat' 一起使用</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
+        <target state="translated">使用 'AsSpan' 和 'string.Concat' 比 'Substring' 和串連運算子更有效率。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
+        <target state="translated">請使用範圍型的 'string.Concat' 和 'AsSpan'，而非 'Substring'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>Use span-based 'string.Concat'</source>
+        <target state="translated">請使用範圍型的 'string.Concat'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
+        <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
+        <target state="translated">'string.Contains(char)' 對單一字元查閱而言可做為更佳的執行多載。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
+        <target state="translated">請在搜尋單一字元時使用 'string.Contains(char)' 而非 'string.Contains(string)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
+        <source>Use char literal for a single character lookup</source>
+        <target state="translated">請為單一字元查閱使用字元常值</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
-        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <target state="translated">平台相容性分析器需要有效的平台名稱和版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringInvalidVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <target state="translated">版本 '{0}' 對平台 '{1}' 而言無效。請為此平台使用 2{2} 部分的版本。</target>
         <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
       </trans-unit>
       <trans-unit id="UseValidPlatformStringNoVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <target state="translated">版本 '{0}' 對平台 '{1}' 而言無效。請不要為此平台使用版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringTitle">
         <source>Use valid platform string</source>
-        <target state="new">Use valid platform string</target>
+        <target state="translated">請使用有效的平台字串</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringUnknownPlatform">
         <source>The platform '{0}' is not a known platform name</source>
-        <target state="new">The platform '{0}' is not a known platform name</target>
+        <target state="translated">平台 '{0}' 不是已知的平台名稱</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
@@ -2595,6 +2825,16 @@
       <trans-unit id="UseXmlReaderMessage">
         <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="translated">'{0}.{1}' 方法的此多載可能不安全。其會啟用文件類型定義 (DTD) ，而如此可能會容易受到阻斷服務攻擊，或可能會使用 XmlResolver，而造成資訊洩漏。請改用採用 XmlReader 執行個體的多載，並停用 DTD 處理以及禁用 XmlResolver。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessage">
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' 使用預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' 使用預覽類型 '{1}'，因此必須加入預覽功能。如需詳細資訊，請參閱 {2}。</target>
         <note />
       </trans-unit>
     </body>

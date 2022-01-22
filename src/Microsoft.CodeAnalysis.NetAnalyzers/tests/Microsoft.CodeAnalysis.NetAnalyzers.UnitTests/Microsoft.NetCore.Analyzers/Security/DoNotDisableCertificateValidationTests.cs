@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class DoNotDisableCertificateValidationTests
     {
         [Fact]
-        public async Task TestLambdaDiagnostic()
+        public async Task TestLambdaDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -31,7 +31,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestLambdaWithLiteralValueDiagnostic()
+        public async Task TestLambdaWithLiteralValueDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -47,7 +47,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAnonymousMethodDiagnostic()
+        public async Task TestAnonymousMethodDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -63,7 +63,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationLocalFunctionDiagnostic()
+        public async Task TestDelegateCreationLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -90,7 +90,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationDiagnostic()
+        public async Task TestDelegateCreationDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -135,7 +135,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task TestDelegateCreationNormalMethodWithLambdaDiagnostic()
+        public async Task TestDelegateCreationNormalMethodWithLambdaDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -159,7 +159,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnostic()
+        public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnosticAsync()
         {
             string source1 = @"
 
@@ -212,7 +212,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnostic()
+        public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnosticAsync()
         {
             string source1 = @"
 
@@ -276,7 +276,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestLambdaNoDiagnostic()
+        public async Task TestLambdaNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -291,7 +291,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestLambdaWithLiteralValueNoDiagnostic()
+        public async Task TestLambdaWithLiteralValueNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -306,7 +306,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestAnonymousMethodNoDiagnostic()
+        public async Task TestAnonymousMethodNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -321,7 +321,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationLocalFunctionNoDiagnostic()
+        public async Task TestDelegateCreationLocalFunctionNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -352,7 +352,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationNoDiagnostic()
+        public async Task TestDelegateCreationNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -401,7 +401,7 @@ End Module");
         }
 
         [Fact]
-        public async Task TestDelegateCreationNoDiagnostic2()
+        public async Task TestDelegateCreationNoDiagnostic2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -426,7 +426,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnostic()
+        public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -449,7 +449,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestDelegateCreationFromLocalFromLocalNoDiagnostic()
+        public async Task TestDelegateCreationFromLocalFromLocalNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;
@@ -507,7 +507,7 @@ End Module");
         }
 
         [Fact]
-        public async Task TestDelegateCreationFromLocalFromLocal2NoDiagnostic()
+        public async Task TestDelegateCreationFromLocalFromLocal2NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Net;

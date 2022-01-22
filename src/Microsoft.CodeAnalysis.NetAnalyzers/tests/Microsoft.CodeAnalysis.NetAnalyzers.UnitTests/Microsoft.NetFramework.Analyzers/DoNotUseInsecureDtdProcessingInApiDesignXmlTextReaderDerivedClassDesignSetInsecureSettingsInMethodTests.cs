@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Globalization;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 #pragma warning restore RS0030 // Do not used banned APIs
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeNoCtorSetUrlResolverToXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -61,7 +61,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetUrlResolverToXmlResolverMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetUrlResolverToXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -107,7 +107,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToParseMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToParseMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -153,7 +153,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetUrlResolverToThisXmlResolverMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetUrlResolverToThisXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -199,7 +199,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetUrlResolverToBaseXmlResolverMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetUrlResolverToBaseXmlResolverMethodShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -245,7 +245,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetXmlResolverToNullMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetXmlResolverToNullMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -288,7 +288,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToProhibitMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToProhibitMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -331,7 +331,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToTypoMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetDtdProcessingToTypoMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -344,16 +344,15 @@ namespace TestNamespace
         public TestClass()
         {
             this.XmlResolver = null;
-            this.DtdProcessing = DtdProcessing.Prohibit;
+            this.DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
         }
 
         public void method()
         {
-            DtdProcessing = DtdProcessing.Prohibit;
+            DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
         }
     }
-}"
-            );
+}");
 
             await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
@@ -363,18 +362,18 @@ Namespace TestNamespace
         Inherits XmlTextReader
         Public Sub New()
             Me.XmlResolver = Nothing
-            Me.DtdProcessing = DtdProcessing.Prohibit
+            Me.DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
         End Sub
 
         Public Sub method()
-            DtdProcessing = DtdProcessing.Prohibit
+            DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
         End Sub
     End Class
 End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeParseAndNullResolverMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeParseAndNullResolverMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -419,7 +418,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeIgnoreAndUrlResolverMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeIgnoreAndUrlResolverMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -464,7 +463,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeParseAndUrlResolverMethodShouldGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeParseAndUrlResolverMethodShouldGenerateDiagnosticAsync()
         {
 #pragma warning disable RS0030 // Do not used banned APIs
             DiagnosticResult diagWith2Locations = GetCA3077XmlTextReaderDerivedClassSetInsecureSettingsInMethodCSharpResultAt(17, 13, "method")
@@ -522,7 +521,7 @@ End Namespace",
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSecureResolverInOnePathMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSecureResolverInOnePathMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;
@@ -579,7 +578,7 @@ End Namespace");
         }
 
         [Fact]
-        public async Task XmlTextReaderDerivedTypeSetInsecureSettingsInSeperatePathsMethodShouldNotGenerateDiagnostic()
+        public async Task XmlTextReaderDerivedTypeSetInsecureSettingsInSeperatePathsMethodShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
 using System;

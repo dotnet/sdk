@@ -1,6 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpDoNotInitializeUnnecessarilyAnalyzer,
@@ -14,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class DoNotInitializeUnnecessarilyTests
     {
         [Fact]
-        public async Task NoDiagnostics()
+        public async Task NoDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -71,7 +72,7 @@ public class C
         }
 
         [Fact]
-        public async Task NoDiagnostics_VB()
+        public async Task NoDiagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -117,7 +118,7 @@ End Class
         }
 
         [Fact]
-        public async Task NoDiagnostics_Nullable()
+        public async Task NoDiagnostics_NullableAsync()
         {
             await new VerifyCS.Test
             {
@@ -149,7 +150,7 @@ namespace System.Diagnostics.CodeAnalysis
         }
 
         [Fact]
-        public async Task Diagnostics_InitializerRemoved()
+        public async Task Diagnostics_InitializerRemovedAsync()
         {
             await new VerifyCS.Test()
             {
@@ -246,7 +247,7 @@ public class C
         }
 
         [Fact]
-        public async Task Diagnostics_VB()
+        public async Task Diagnostics_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -254,6 +255,73 @@ Public Class C
     Private SomeInt As System.Int32 [|= 0|]
 End Class
 ");
+        }
+
+        [Fact]
+        public async Task LeadingTriviaTest()
+        {
+            string csInput = @"
+#define MY_DEFINE
+using System;
+
+public class Test
+{
+    public static bool MyProperty { get; set; }
+#if MY_DEFINE
+	{|#0:= false|}; // comment
+#else
+	= true;
+#endif
+    public int SomeIntProp { get; } /* test */ {|#1:= 0|};
+    public int SomeIntProp2 { get; } /* test */ {|#2:= 0|}; // after
+    public int SomeIntProp3 { get; } {|#3:= 0|} /* test */ ; // after
+}
+";
+            string csFix = @"
+#define MY_DEFINE
+using System;
+
+public class Test
+{
+    public static bool MyProperty { get; set; }
+#if MY_DEFINE
+    // comment
+#else
+	= true;
+#endif
+    public int SomeIntProp { get; } /* test */
+    public int SomeIntProp2 { get; } /* test */  // after
+    public int SomeIntProp3 { get; }  /* test */  // after
+}
+";
+            await TestCSAsync(
+                csInput,
+                csFix,
+                VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
+                    .WithArguments("MyProperty")
+                    .WithLocation(0),
+                VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
+                    .WithArguments("SomeIntProp")
+                    .WithLocation(1),
+                VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
+                    .WithArguments("SomeIntProp2")
+                    .WithLocation(2),
+                VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
+                    .WithArguments("SomeIntProp3")
+                    .WithLocation(3));
+        }
+
+        private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = source,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                FixedCode = corrected,
+            };
+
+            test.ExpectedDiagnostics.AddRange(diagnosticResults);
+            await test.RunAsync();
         }
     }
 }

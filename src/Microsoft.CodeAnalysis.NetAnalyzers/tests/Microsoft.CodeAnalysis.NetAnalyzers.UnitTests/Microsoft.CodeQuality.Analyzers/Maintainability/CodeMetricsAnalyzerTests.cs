@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
         #region CA1501: Avoid excessive inheritance
 
         [Fact]
-        public async Task CA1501_CSharp_VerifyDiagnostic()
+        public async Task CA1501_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class BaseClass { }
@@ -38,7 +38,7 @@ class SixthDerivedClass : FifthDerivedClass { }
         }
 
         [Fact]
-        public async Task CA1501_Basic_VerifyDiagnostic()
+        public async Task CA1501_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class BaseClass
@@ -74,7 +74,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1501_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1501_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class BaseClass { }
@@ -92,7 +92,7 @@ CA1501: 0
         }
 
         [Fact]
-        public async Task CA1501_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1501_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class BaseClass
@@ -119,7 +119,7 @@ CA1501: 0
         // The following entries are invalid but won't remove the default filter
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = *Contro*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = User*ontrol")]
-        public async Task CA1501_AlwaysExcludesTypesInSystemNamespace(string editorConfigText)
+        public async Task CA1501_AlwaysExcludesTypesInSystemNamespaceAsync(string editorConfigText)
         {
             // This test assumes that WinForms UserControl is over the default threshold.
             await new VerifyCS.Test
@@ -158,7 +158,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1501_AlwaysExcludesErrorTypes()
+        public async Task CA1501_AlwaysExcludesErrorTypesAsync()
         {
             await new VerifyCS.Test
             {
@@ -196,7 +196,7 @@ End Class",
         [Theory, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:SomeClass*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
-        public async Task CA1501_WildcardTypePrefixNoNamespace(string editorConfigText)
+        public async Task CA1501_WildcardTypePrefixNoNamespaceAsync(string editorConfigText)
         {
             var codeMetricsConfigText = @"
 # FORMAT:
@@ -354,7 +354,7 @@ End Class"
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany.MyProd*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyCompany*")]
         [InlineData("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyComp*")]
-        public async Task CA1501_WildcardNamespacePrefix(string editorConfigText)
+        public async Task CA1501_WildcardNamespacePrefixAsync(string editorConfigText)
         {
             var codeMetricsConfigText = @"
 # FORMAT:
@@ -474,7 +474,7 @@ End Class"
         }
 
         [Fact, WorkItem(1839, "https://github.com/dotnet/roslyn-analyzers/issues/1839")]
-        public async Task CA1501_WildcardNoPrefix()
+        public async Task CA1501_WildcardNoPrefixAsync()
         {
             var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = Some*";
 
@@ -597,7 +597,7 @@ End Class"
         #region CA1502: Avoid excessive complexity
 
         [Fact]
-        public async Task CA1502_CSharp_VerifyDiagnostic()
+        public async Task CA1502_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -619,7 +619,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1502_Basic_VerifyDiagnostic()
+        public async Task CA1502_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -638,7 +638,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1502_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1502_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -668,7 +668,7 @@ CA1502: 2
         }
 
         [Fact]
-        public async Task CA1502_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1502_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -694,7 +694,7 @@ CA1502: 2
         }
 
         [Fact]
-        public async Task CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -727,7 +727,7 @@ CA1502(Method): 2
         }
 
         [Fact]
-        public async Task CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -760,7 +760,7 @@ CA1502(Method): 2
         #region CA1505: Avoid unmaintainable code
 
         [Fact]
-        public async Task CA1505_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1505_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -787,7 +787,7 @@ CA1505: 95
         }
 
         [Fact]
-        public async Task CA1505_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1505_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -812,7 +812,7 @@ CA1505: 95
         }
 
         [Fact]
-        public async Task CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -837,7 +837,7 @@ CA1505(Type): 95
         }
 
         [Fact]
-        public async Task CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -864,7 +864,7 @@ CA1505(Type): 95
         #region CA1506: Avoid excessive class coupling
 
         [Fact]
-        public async Task CA1506_Configuration_CSharp_VerifyDiagnostic()
+        public async Task CA1506_Configuration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -894,7 +894,7 @@ CA1506: 2
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public async Task CA1506_Configuration_CSharp_Linq()
+        public async Task CA1506_Configuration_CSharp_LinqAsync()
         {
             var source = @"
 using System.Linq;
@@ -939,7 +939,7 @@ CA1506: 2
         }
 
         [Fact]
-        public async Task CA1506_Configuration_Basic_VerifyDiagnostic()
+        public async Task CA1506_Configuration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -976,7 +976,7 @@ CA1506: 2
         }
 
         [Fact]
-        public async Task CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnostic()
+        public async Task CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
             var source = @"
 class C
@@ -1005,7 +1005,7 @@ CA1506(Type): 10
         }
 
         [Fact]
-        public async Task CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnostic()
+        public async Task CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
             var source = @"
 Class C
@@ -1041,7 +1041,7 @@ CA1506(Type): 10
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public async Task CA1506_CountCorrectlyGenericTypes()
+        public async Task CA1506_CountCorrectlyGenericTypesAsync()
         {
             await VerifyCSharpAsync(@"
 using System.Collections.Generic;
@@ -1085,7 +1085,7 @@ CA1506: 2
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public async Task CA1506_LinqAnonymousType()
+        public async Task CA1506_LinqAnonymousTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections.Generic;
@@ -1118,7 +1118,7 @@ public static class Ca1506Tester
         }
 
         [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
-        public async Task CA1506_ExcludeCompilerGeneratedTypes()
+        public async Task CA1506_ExcludeCompilerGeneratedTypesAsync()
         {
             await VerifyCSharpAsync(@"
 [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
@@ -1167,7 +1167,7 @@ CA1506: 1
         #region CA1509: Invalid entry in code metrics rule specification file
 
         [Fact]
-        public async Task CA1509_VerifyDiagnostics()
+        public async Task CA1509_VerifyDiagnosticsAsync()
         {
             var source = @"";
 
@@ -1225,7 +1225,7 @@ CA1501
         }
 
         [Fact]
-        public async Task CA1509_NoDiagnostics()
+        public async Task CA1509_NoDiagnosticsAsync()
         {
             var source = @"";
 
@@ -1260,7 +1260,7 @@ CA1501    :    1
         }
 
         [Fact]
-        public async Task CA1509_VerifyNoMetricDiagnostics()
+        public async Task CA1509_VerifyNoMetricDiagnosticsAsync()
         {
             // Ensure we don't report any code metric diagnostics when we have invalid entries in code metrics configuration file.
             var source = @"

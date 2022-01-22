@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>CA1837, CA1839, CA1840: Use Environment.ProcessId / ProcessPath / CurrentManagedThreadId</summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseEnvironmentMembers : DiagnosticAnalyzer
@@ -20,35 +22,35 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         // Process.GetCurrentProcess().Id => Environment.ProcessId
         internal static readonly DiagnosticDescriptor UseEnvironmentProcessIdRule = DiagnosticDescriptorHelper.Create(EnvironmentProcessIdRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdTitle)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessIdDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessIdDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         // Process.GetCurrentProcess().MainModule.FileName => Environment.ProcessPath
         internal static readonly DiagnosticDescriptor UseEnvironmentProcessPathRule = DiagnosticDescriptorHelper.Create(EnvironmentProcessPathRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessPathTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessPathMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessPathTitle)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessPathMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentProcessPathDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentProcessPathDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         // Thread.CurrentThread.ManagedThreadId => Environment.CurrentManagedThreadId
         internal static readonly DiagnosticDescriptor UseEnvironmentCurrentManagedThreadIdRule = DiagnosticDescriptorHelper.Create(EnvironmentCurrentManagedThreadIdRuleId,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentCurrentManagedThreadIdTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentCurrentManagedThreadIdMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentCurrentManagedThreadIdTitle)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentCurrentManagedThreadIdMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseEnvironmentCurrentManagedThreadIdDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(UseEnvironmentCurrentManagedThreadIdDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UseEnvironmentProcessIdRule, UseEnvironmentProcessPathRule, UseEnvironmentCurrentManagedThreadIdRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(UseEnvironmentProcessIdRule, UseEnvironmentProcessPathRule, UseEnvironmentCurrentManagedThreadIdRule);
 
         public override void Initialize(AnalysisContext context)
         {

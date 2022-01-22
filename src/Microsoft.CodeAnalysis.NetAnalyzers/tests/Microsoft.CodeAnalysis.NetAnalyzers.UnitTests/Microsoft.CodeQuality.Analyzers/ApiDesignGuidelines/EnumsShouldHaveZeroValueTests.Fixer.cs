@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class EnumsShouldHaveZeroValueFixerTests
     {
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueFlagsRename()
+        public async Task CSharp_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
 public class Outer
@@ -107,7 +107,7 @@ public enum NoZeroValuedField
         }
 
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZero()
+        public async Task CSharp_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"// Some comment
 public class Outer
@@ -152,7 +152,7 @@ public enum E2
         }
 
         [Fact]
-        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValue()
+        public async Task CSharp_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
 public class Outer
@@ -221,7 +221,7 @@ public enum E4
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsRenameAsync()
         {
             var code = @"
 Public Class Outer
@@ -291,7 +291,7 @@ End Enum
 
         [WorkItem(836193, "DevDiv")]
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTrivia()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsRename_AttributeListHasTriviaAsync()
         {
             var code = @"
 Public Class Outer
@@ -360,7 +360,7 @@ End Enum
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZero()
+        public async Task VisualBasic_EnumsShouldZeroValueFlagsMultipleZeroAsync()
         {
             var code = @"
 Public Class Outer
@@ -413,7 +413,7 @@ End Enum";
         }
 
         [Fact]
-        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValue()
+        public async Task VisualBasic_EnumsShouldZeroValueNotFlagsNoZeroValueAsync()
         {
             var code = @"
 Public Class C

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_NotSet_DefaultWrong_DefinitelyDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_NotSet_DefaultWrong_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -48,7 +48,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -66,7 +66,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_HttpClientHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnostic()
+        public async Task Test_HttpClientHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -84,7 +84,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_HttpClientWithHttpMessageHandlerAndBooleanParameters_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnostic()
+        public async Task Test_HttpClientWithHttpMessageHandlerAndBooleanParameters_WinHttpHandler_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -102,7 +102,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_PropertyInitializer_CheckCertificateRevocationList_Wrong_DefinitelyDiagnostic()
+        public async Task Test_WinHttpHandler_PropertyInitializer_CheckCertificateRevocationList_Wrong_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -119,7 +119,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrRight_MaybeDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrRight_MaybeDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -145,7 +145,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_Null_DefinitelyDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_Null_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -164,7 +164,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_MaybeNull_MaybeDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_MaybeNull_MaybeDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -190,7 +190,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_NotNull_DefinitelyDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Wrong_ServerCertificateValidationCallback_NotNull_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -209,7 +209,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrWrong_MaybeDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_UnknownOrWrong_MaybeDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -235,7 +235,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_WrongOrRight_MaybeDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_WrongOrRight_MaybeDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -261,7 +261,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_DerivedClassOfHttpClient_DefinitelyDiagnostic()
+        public async Task Test_DerivedClassOfHttpClient_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -286,7 +286,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_HttpClientConstructorWithoutParameter_handlerSetByDefault_NoDiagnostic()
+        public async Task Test_HttpClientConstructorWithoutParameter_handlerSetByDefault_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -303,7 +303,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Right_NoDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Right_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;
@@ -320,7 +320,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Unknown_NoDiagnostic()
+        public async Task Test_WinHttpHandler_CheckCertificateRevocationList_Unknown_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.Net.Http;

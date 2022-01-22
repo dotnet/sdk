@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Globalization;
 using System.Threading.Tasks;
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"{0}
 public enum SimpleFlagsEnumClass
@@ -61,7 +61,7 @@ public enum HexFlagsEnumClass
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase_Internal()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCase_InternalAsync()
         {
             var code = @"{0}
 internal enum SimpleFlagsEnumClass
@@ -94,7 +94,7 @@ internal class OuterClass
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseWithScope()
+        public async Task CSharp_EnumWithFlagsAttributes_SimpleCaseWithScopeAsync()
         {
             var code = @"{0}
 public enum {{|CA1027:SimpleFlagsEnumClass|}}
@@ -121,7 +121,7 @@ public enum HexFlagsEnumClass
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseAsync()
         {
             var code = @"{0}
 Public Enum SimpleFlagsEnumClass
@@ -151,7 +151,7 @@ End Enum";
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase_Internal()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCase_InternalAsync()
         {
             var code = @"{0}
 Friend Enum SimpleFlagsEnumClass
@@ -181,7 +181,7 @@ End Class";
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseWithScope()
+        public async Task VisualBasic_EnumWithFlagsAttributes_SimpleCaseWithScopeAsync()
         {
             var code = @"{0}
 Public Enum {{|CA1027:SimpleFlagsEnumClass|}}
@@ -206,7 +206,7 @@ End Enum";
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task CSharp_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"{0}
 public enum DuplicateValuesEnumClass
@@ -231,7 +231,7 @@ public enum DuplicateValuesEnumClass
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValues()
+        public async Task VisualBasic_EnumWithFlagsAttributes_DuplicateValuesAsync()
         {
             string code = @"{0}
 Public Enum DuplicateValuesEnumClass
@@ -255,7 +255,7 @@ End Enum
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task CSharp_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
 {0}
@@ -290,7 +290,7 @@ public enum MultipleMissingPowerOfTwoEnumClass
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbers()
+        public async Task CSharp_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
 {0}
@@ -313,7 +313,7 @@ public enum AnotherTestValue
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwo()
+        public async Task VisualBasic_EnumWithFlagsAttributes_MissingPowerOfTwoAsync()
         {
             string code = @"
 {0}
@@ -347,7 +347,7 @@ End Enum
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumbers()
+        public async Task VisualBasic_EnumWithFlagsAttributes_IncorrectNumbersAsync()
         {
             string code = @"
 {0}
@@ -370,7 +370,7 @@ End Enum
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_ContiguousValues()
+        public async Task CSharp_EnumWithFlagsAttributes_ContiguousValuesAsync()
         {
             var code = @"
 {0}
@@ -424,7 +424,7 @@ public enum ShortUnderlyingType: short
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_ContiguousValues()
+        public async Task VisualBasic_EnumWithFlagsAttributes_ContiguousValuesAsync()
         {
             var code = @"
 {0}
@@ -475,7 +475,7 @@ End Enum
         }
 
         [Fact]
-        public async Task CSharp_EnumWithFlagsAttributes_NonSimpleFlags()
+        public async Task CSharp_EnumWithFlagsAttributes_NonSimpleFlagsAsync()
         {
             var code = @"
 {0}
@@ -522,7 +522,7 @@ public enum LabelsClass
         }
 
         [Fact]
-        public async Task VisualBasic_EnumWithFlagsAttributes_NonSimpleFlags()
+        public async Task VisualBasic_EnumWithFlagsAttributes_NonSimpleFlagsAsync()
         {
             var code = @"
 {0}

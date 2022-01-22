@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -8,7 +8,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -16,29 +16,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1841";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsMethodsTitle), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsKeyMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsKeyDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsKeyDescription), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsValueMessage = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableContainsValueDescription = new LocalizableResourceString(nameof(Resx.PreferDictionaryContainsValueDescription), Resx.ResourceManager, typeof(Resx));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PreferDictionaryContainsMethodsTitle));
 
         internal static readonly DiagnosticDescriptor ContainsKeyRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_localizableContainsKeyMessage,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsKeyMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            s_localizableContainsKeyDescription,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsKeyDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor ContainsValueRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
-            s_localizableContainsValueMessage,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsValueMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            s_localizableContainsValueDescription,
+            CreateLocalizableResourceString(nameof(PreferDictionaryContainsValueDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -48,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string KeysPropertyName = "Keys";
         internal const string ValuesPropertyName = "Values";
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -67,6 +63,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var ienumerableType))
                 return;
+
+            var linqExpressionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
             compilationContext.RegisterOperationAction(OnOperationAction, OperationKind.Invocation);
 
@@ -102,6 +100,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
+
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the comparison option so we want to bail-out.
+                if (invocation.IsWithinExpressionTree(linqExpressionType))
+                {
+                    return;
+                }
 
                 if (containsMethod.Name != ContainsMethodName
                     || containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean

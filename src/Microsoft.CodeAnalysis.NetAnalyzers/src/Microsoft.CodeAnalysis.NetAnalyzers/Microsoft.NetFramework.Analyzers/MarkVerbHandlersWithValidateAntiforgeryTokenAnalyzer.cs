@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -8,45 +8,19 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetFramework.Analyzers
 {
+    using static MicrosoftNetFrameworkAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public partial class MarkVerbHandlersWithValidateAntiforgeryTokenAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3147";
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenTitle),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString NoVerbsMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString NoVerbsNoTokenMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString GetAndTokenMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString GetAndOtherAndTokenMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
-
-        private static readonly LocalizableString VerbsAndNoTokenMessage = new LocalizableResourceString(
-            nameof(MicrosoftNetFrameworkAnalyzersResources.MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage),
-            MicrosoftNetFrameworkAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetFrameworkAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenTitle));
 
         internal static readonly DiagnosticDescriptor NoVerbsRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            Title,
-            NoVerbsMessage,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
@@ -55,8 +29,8 @@ namespace Microsoft.NetFramework.Analyzers
 
         internal static readonly DiagnosticDescriptor NoVerbsNoTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            Title,
-            NoVerbsNoTokenMessage,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenNoVerbsNoTokenMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
@@ -65,8 +39,8 @@ namespace Microsoft.NetFramework.Analyzers
 
         internal static readonly DiagnosticDescriptor GetAndTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            Title,
-            GetAndTokenMessage,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenGetAndTokenMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
@@ -75,8 +49,8 @@ namespace Microsoft.NetFramework.Analyzers
 
         internal static readonly DiagnosticDescriptor GetAndOtherAndTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            Title,
-            GetAndOtherAndTokenMessage,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenGetAndOtherAndTokenMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
@@ -85,15 +59,15 @@ namespace Microsoft.NetFramework.Analyzers
 
         internal static readonly DiagnosticDescriptor VerbsAndNoTokenRule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            Title,
-            VerbsAndNoTokenMessage,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(MarkVerbHandlersWithValidateAntiforgeryTokenVerbsAndNoTokenMessage)),
             DiagnosticCategory.Security,
             RuleLevel.IdeHidden_BulkConfigurable,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(NoVerbsRule, NoVerbsNoTokenRule, GetAndTokenRule, GetAndOtherAndTokenRule, VerbsAndNoTokenRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(NoVerbsRule, NoVerbsNoTokenRule, GetAndTokenRule, GetAndOtherAndTokenRule, VerbsAndNoTokenRule);
 
         public override void Initialize(AnalysisContext context)
         {

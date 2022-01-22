@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -8,40 +8,37 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class MarkAssembliesWithAttributesDiagnosticAnalyzer : DiagnosticAnalyzer
     {
         internal const string CA1016RuleId = "CA1016";
         internal const string CA1014RuleId = "CA1014";
 
-        private static readonly LocalizableString s_localizableTitleCA1016 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithAssemblyVersionTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1016 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithAssemblyVersionMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1016 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithAssemblyVersionDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor CA1016Rule = DiagnosticDescriptorHelper.Create(
+            CA1016RuleId,
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithAssemblyVersionTitle)),
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithAssemblyVersionMessage)),
+            DiagnosticCategory.Design,
+            RuleLevel.IdeSuggestion,
+            description: CreateLocalizableResourceString(nameof(MarkAssembliesWithAssemblyVersionDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: true);
 
-        internal static DiagnosticDescriptor CA1016Rule = DiagnosticDescriptorHelper.Create(CA1016RuleId,
-                                                                         s_localizableTitleCA1016,
-                                                                         s_localizableMessageCA1016,
-                                                                         DiagnosticCategory.Design,
-                                                                         RuleLevel.IdeSuggestion,
-                                                                         description: s_localizableDescriptionCA1016,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false,
-                                                                         isReportedAtCompilationEnd: true);
+        internal static readonly DiagnosticDescriptor CA1014Rule = DiagnosticDescriptorHelper.Create(
+            CA1014RuleId,
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantTitle)),
+            CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantMessage)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,  // We can make this an IdeSuggestion once we update templates to add CLSCompliant(false)
+            description: CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            isReportedAtCompilationEnd: true);
 
-        private static readonly LocalizableString s_localizabletitleCA1014 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithClsCompliantTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessageCA1014 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithClsCompliantMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescriptionCA1014 = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.MarkAssembliesWithClsCompliantDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor CA1014Rule = DiagnosticDescriptorHelper.Create(CA1014RuleId,
-                                                                         s_localizabletitleCA1014,
-                                                                         s_localizableMessageCA1014,
-                                                                         DiagnosticCategory.Design,
-                                                                         RuleLevel.Disabled,  // We can make this an IdeSuggestion once we update templates to add CLSCompliant(false)
-                                                                         description: s_localizableDescriptionCA1014,
-                                                                         isPortedFxCopRule: true,
-                                                                         isDataflowRule: false,
-                                                                         isReportedAtCompilationEnd: true);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(CA1016Rule, CA1014Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1016Rule, CA1014Rule);
 
         public override void Initialize(AnalysisContext context)
         {

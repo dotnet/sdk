@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -15,7 +15,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseXmlReaderForDataSetReadXmlTests
     {
         [Fact]
-        public async Task TestReadXmlWithStreamParameterDiagnostic()
+        public async Task TestReadXmlWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -46,7 +46,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestReadXmlWithStreamAndXmlReadModeParametersDiagnostic()
+        public async Task TestReadXmlWithStreamAndXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -64,7 +64,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithStringParameterDiagnostic()
+        public async Task TestReadXmlWithStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -81,7 +81,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithStringXmlReadModeParametersDiagnostic()
+        public async Task TestReadXmlWithStringXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -98,7 +98,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithTextReaderParameterDiagnostic()
+        public async Task TestReadXmlWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -116,7 +116,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithTextReaderAndXmlReadModeParametersDiagnostic()
+        public async Task TestReadXmlWithTextReaderAndXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -134,7 +134,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlSchemaWithStreamParameterDiagnostic()
+        public async Task TestReadXmlSchemaWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -152,7 +152,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlSchemaWithStringParameterDiagnostic()
+        public async Task TestReadXmlSchemaWithStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -169,7 +169,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlSchemaWithTextReaderParameterDiagnostic()
+        public async Task TestReadXmlSchemaWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -187,7 +187,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithXmlReaderParameterNoDiagnostic()
+        public async Task TestReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -205,7 +205,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlWithXmlReaderAndXmlReadModeParametersNoDiagnostic()
+        public async Task TestReadXmlWithXmlReaderAndXmlReadModeParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -223,7 +223,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlSchemaWithXmlReaderParameterNoDiagnostic()
+        public async Task TestReadXmlSchemaWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -241,7 +241,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReadXmlSerializableWithXmlReaderParameterNoDiagnostic()
+        public async Task TestReadXmlSerializableWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -279,7 +279,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestDerivedFromANormalClassNoDiagnostic()
+        public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -308,7 +308,7 @@ class SubTestClass : TestClass
         }
 
         [Fact]
-        public async Task TestTwoLevelsOfInheritanceAndOverridesNoDiagnostic()
+        public async Task TestTwoLevelsOfInheritanceAndOverridesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -337,7 +337,7 @@ class SubTestClass : TestClass
         }
 
         [Fact]
-        public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnostic()
+        public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;

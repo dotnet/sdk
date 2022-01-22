@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class IdentifiersShouldHaveCorrectSuffixTests
     {
         [Fact]
-        public async Task CA1710_AllScenarioDiagnostics_CSharp()
+        public async Task CA1710_AllScenarioDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
             {
@@ -254,7 +254,7 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
         }
 
         [Fact]
-        public async Task CA1710_NoDiagnostics_CSharp()
+        public async Task CA1710_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -432,7 +432,7 @@ public class MyCollectionDataTable : DataTable, IEnumerable
         }
 
         [Fact]
-        public async Task CA1710_AllScenarioDiagnostics_VisualBasic()
+        public async Task CA1710_AllScenarioDiagnostics_VisualBasicAsync()
         {
             await new VerifyVB.Test
             {
@@ -799,7 +799,7 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
         }
 
         [Fact]
-        public async Task CA1710_NoDiagnostics_VisualBasic()
+        public async Task CA1710_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1108,7 +1108,7 @@ End Class");
         }
 
         [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
-        public async Task CA1710_SystemAction_CSharp()
+        public async Task CA1710_SystemAction_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1120,7 +1120,7 @@ public class C
         }
 
         [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
-        public async Task CA1710_CustomDelegate_CSharp()
+        public async Task CA1710_CustomDelegate_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1133,7 +1133,7 @@ public class C
         }
 
         [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
-        public async Task CA1710_IReadOnlyDictionary()
+        public async Task CA1710_IReadOnlyDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -1204,7 +1204,7 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
         // In case of duplicated entries, only the first is kept
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
-        public async Task CA1710_AdditionalSuffixes(string editorConfigText)
+        public async Task CA1710_AdditionalSuffixesAsync(string editorConfigText)
         {
             editorConfigText = $@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
 {editorConfigText}";
@@ -1351,7 +1351,7 @@ End Class"
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
         // no suffix
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
-        public async Task CA1710_InvalidSyntaxNoSuffix(string editorConfigText)
+        public async Task CA1710_InvalidSyntaxNoSuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -1400,7 +1400,7 @@ End Namespace"
         }
 
         [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        public async Task CA1710_UserMappingWinsOverHardcoded()
+        public async Task CA1710_UserMappingWinsOverHardcodedAsync()
         {
             var editorConfigText = @"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
 dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IDictionary`2->MySuffix";
@@ -1458,7 +1458,7 @@ End Class"
         }
 
         [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
-        public async Task CA1710_DefaultValueForExclusion()
+        public async Task CA1710_DefaultValueForExclusionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Collections;
@@ -1496,7 +1496,7 @@ End Class");
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
         [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
-        public async Task CA1710_AllowEmptySuffix(string editorConfigText)
+        public async Task CA1710_AllowEmptySuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -1757,7 +1757,7 @@ End Class"
         }
 
         [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
-        public async Task CA1710_AllowEmptySuffix2()
+        public async Task CA1710_AllowEmptySuffix2Async()
         {
             await new VerifyCS.Test
             {
@@ -1811,7 +1811,7 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
         }
 
         [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
-        public async Task CA1710_AllowEmptySuffix3()
+        public async Task CA1710_AllowEmptySuffix3Async()
         {
             await new VerifyCS.Test
             {
@@ -1874,7 +1874,7 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
                       dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
         [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
                       dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
-        public async Task CA1710_ExcludeIndirectTypes(string editorConfigText)
+        public async Task CA1710_ExcludeIndirectTypesAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {
@@ -2015,7 +2015,7 @@ End Class"
         }
 
         [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
-        public async Task CA1710_Interfaces()
+        public async Task CA1710_InterfacesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface I
@@ -2024,7 +2024,7 @@ public interface I
         }
 
         [Fact]
-        public async Task EventArgsNotInheritingFromSystemEventArgs_Diagnostic()
+        public async Task EventArgsNotInheritingFromSystemEventArgs_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 // Reproduce UWP specific EventArgs

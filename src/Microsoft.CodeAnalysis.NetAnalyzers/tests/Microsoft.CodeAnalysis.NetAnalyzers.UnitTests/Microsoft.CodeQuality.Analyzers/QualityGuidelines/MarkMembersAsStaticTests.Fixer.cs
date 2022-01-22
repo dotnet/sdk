@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class MarkMembersAsStaticFixerTests
     {
         [Fact]
-        public async Task TestCSharp_SimpleMembers_NoReferences()
+        public async Task TestCSharp_SimpleMembers_NoReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class MembersTests
@@ -102,7 +102,7 @@ public class MembersTests
         }
 
         [Fact]
-        public async Task TestBasic_SimpleMembers_NoReferences()
+        public async Task TestBasic_SimpleMembers_NoReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -185,7 +185,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInSameType_MemberReferences()
+        public async Task TestCSharp_ReferencesInSameType_MemberReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -240,7 +240,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_ReferencesInSameType_MemberReferences()
+        public async Task TestBasic_ReferencesInSameType_MemberReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -289,7 +289,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInSameType_Invocations()
+        public async Task TestCSharp_ReferencesInSameType_InvocationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -334,7 +334,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_ReferencesInSameType_Invocations()
+        public async Task TestBasic_ReferencesInSameType_InvocationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -369,7 +369,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInSameFile_MemberReferences()
+        public async Task TestCSharp_ReferencesInSameFile_MemberReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -430,7 +430,7 @@ class C2
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInSameFile_Invocations()
+        public async Task TestCSharp_ReferencesInSameFile_InvocationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -485,7 +485,7 @@ class C2
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInMultipleFiles_MemberReferences()
+        public async Task TestCSharp_ReferencesInMultipleFiles_MemberReferencesAsync()
         {
             await new VerifyCS.Test
             {
@@ -597,7 +597,7 @@ class C3
         }
 
         [Fact]
-        public async Task TestCSharp_ReferencesInMultipleFiles_Invocations()
+        public async Task TestCSharp_ReferencesInMultipleFiles_InvocationsAsync()
         {
             await new VerifyCS.Test
             {
@@ -697,7 +697,7 @@ class C3
         }
 
         [Fact]
-        public async Task TestCSharp_ReferenceInArgument()
+        public async Task TestCSharp_ReferenceInArgumentAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -732,7 +732,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_ReferenceInArgument()
+        public async Task TestBasic_ReferenceInArgumentAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -763,7 +763,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_GenericMethod()
+        public async Task TestCSharp_GenericMethodAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -822,7 +822,7 @@ public class C2<T2>
         }
 
         [Fact]
-        public async Task TestCSharp_GenericMethod_02()
+        public async Task TestCSharp_GenericMethod_02Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -875,7 +875,7 @@ public class C2<T2>
         }
 
         [Fact]
-        public async Task TestBasic_GenericMethod()
+        public async Task TestBasic_GenericMethodAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -928,7 +928,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_InvocationInInstance()
+        public async Task TestCSharp_InvocationInInstanceAsync()
         {
             // We don't make the replacement if instance has an invocation.
             await new VerifyCS.Test
@@ -979,7 +979,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_InvocationInInstance()
+        public async Task TestBasic_InvocationInInstanceAsync()
         {
             // We don't make the replacement if instance has an invocation.
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1011,7 +1011,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_ConversionInInstance()
+        public async Task TestCSharp_ConversionInInstanceAsync()
         {
             // We don't make the replacement if instance has a conversion.
             await new VerifyCS.Test
@@ -1062,7 +1062,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_ConversionInInstance()
+        public async Task TestBasic_ConversionInInstanceAsync()
         {
             // We don't make the replacement if instance has a conversion.
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1094,7 +1094,7 @@ End Class");
         }
 
         [Fact]
-        public async Task TestCSharp_FixAll()
+        public async Task TestCSharp_FixAllAsync()
         {
             await new VerifyCS.Test
             {
@@ -1204,7 +1204,7 @@ class C3
         }
 
         [Fact]
-        public async Task TestBasic_FixAll()
+        public async Task TestBasic_FixAllAsync()
         {
             await new VerifyVB.Test
             {
@@ -1300,7 +1300,7 @@ End Class",
         }
 
         [Fact]
-        public async Task TestCSharp_PropertyWithReferences()
+        public async Task TestCSharp_PropertyWithReferencesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 public class C
@@ -1331,7 +1331,7 @@ public class C
         }
 
         [Fact]
-        public async Task TestBasic_PropertyWithReferences()
+        public async Task TestBasic_PropertyWithReferencesAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Public Class C
@@ -1372,7 +1372,7 @@ End Class");
         }
 
         [Fact, WorkItem(2888, "https://github.com/dotnet/roslyn-analyzers/issues/2888")]
-        public async Task CA1822_CSharp_AsyncModifier()
+        public async Task CA1822_CSharp_AsyncModifierAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System.Threading.Tasks;
@@ -1419,7 +1419,7 @@ End Class");
         [Fact]
         [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
         [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
-        public async Task CA1822_PartialMethod_CannotBeStatic()
+        public async Task CA1822_PartialMethod_CannotBeStaticAsync()
         {
             string source = @"
 using System.Threading;
@@ -1456,7 +1456,7 @@ partial class Class1
         [Fact]
         [WorkItem(4733, "https://github.com/dotnet/roslyn-analyzers/issues/4733")]
         [WorkItem(5168, "https://github.com/dotnet/roslyn-analyzers/issues/5168")]
-        public async Task CA1822_PartialMethod_CanBeStatic()
+        public async Task CA1822_PartialMethod_CanBeStaticAsync()
         {
             string source = @"
 using System.Threading;

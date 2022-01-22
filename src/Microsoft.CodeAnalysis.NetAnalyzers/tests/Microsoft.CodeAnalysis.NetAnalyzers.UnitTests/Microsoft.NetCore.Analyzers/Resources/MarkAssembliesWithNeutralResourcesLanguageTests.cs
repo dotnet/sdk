@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -28,33 +28,33 @@ Namespace My.Resources
 End Namespace";
 
         [Fact]
-        public async Task TestCSharpNoResourceFile()
+        public async Task TestCSharpNoResourceFileAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"class C {}");
         }
 
         [Fact]
-        public async Task TestBasicNoResourceFile()
+        public async Task TestBasicNoResourceFileAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Class C
 End Class");
         }
 
         [Fact]
-        public async Task TestCSharpResourceFile()
+        public async Task TestCSharpResourceFileAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"class C {}", VerifyCS.Diagnostic());
         }
 
         [Fact]
-        public async Task TestBasicResourceFile()
+        public async Task TestBasicResourceFileAsync()
         {
             await VerifyBasicWithDependenciesAsync(@"Class C
 End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public async Task TestCSharpInvalidAttribute1()
+        public async Task TestCSharpInvalidAttribute1Async()
         {
 #pragma warning disable RS0030 // Do not used banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage("""")]", VerifyCS.Diagnostic().WithLocation(1, 12));
@@ -62,7 +62,7 @@ End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public async Task TestCSharpInvalidAttribute2()
+        public async Task TestCSharpInvalidAttribute2Async()
         {
 #pragma warning disable RS0030 // Do not used banned APIs
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(null)]", VerifyCS.Diagnostic().WithLocation(1, 12));
@@ -70,7 +70,7 @@ End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public async Task TestBasicInvalidAttribute1()
+        public async Task TestBasicInvalidAttribute1Async()
         {
 #pragma warning disable RS0030 // Do not used banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage("""")>", VerifyVB.Diagnostic().WithLocation(1, 2));
@@ -78,7 +78,7 @@ End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public async Task TestBasicInvalidAttribute2()
+        public async Task TestBasicInvalidAttribute2Async()
         {
 #pragma warning disable RS0030 // Do not used banned APIs
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(Nothing)>", VerifyVB.Diagnostic().WithLocation(1, 2));
@@ -86,13 +86,13 @@ End Class", VerifyVB.Diagnostic());
         }
 
         [Fact]
-        public async Task TestCSharpvalidAttribute()
+        public async Task TestCSharpvalidAttributeAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"[assembly: System.Resources.NeutralResourcesLanguage(""en"")]");
         }
 
         [Fact]
-        public async Task TestBasicvalidAttribute()
+        public async Task TestBasicvalidAttributeAsync()
         {
             await VerifyBasicWithDependenciesAsync(@"<Assembly: System.Resources.NeutralResourcesLanguage(""en"")>");
         }

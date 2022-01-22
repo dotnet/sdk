@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information. 
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -21,16 +21,23 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA2253:""{0}""|}", "1")]
         [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, 1)|};")]
         [InlineData(@"{|CA1848:logger.LogTrace({|CA2253:""{0}""|}, ""1"")|};")]
-        public async Task CA2253IsProducedForNumericFormatArgument(string format)
+        public async Task CA2253IsProducedForNumericFormatArgumentAsync(string format)
         {
             // Make sure CA1727 is enabled for this test so we can verify it does not trigger on numeric arguments.
             await TriggerCodeAsync(format);
         }
 
+        [Fact]
+        public async Task CA2254ShouldNotApplyForConstantValues()
+        {
+            await TriggerCodeAsync("{|CA1848:logger.LogDebug($\"{nameof(System.Collections.Generic.IList<object>)}<{{Arg1}}> could not be resovled from DI container, using default JSON binder.\", typeof(string).Assembly)|};");
+        }
+
         [Theory]
+        [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{new System.Exception().Message}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:$""{string.Empty}""|}", "11", false)]
         [MemberData(nameof(GenerateTemplateUsages), @"{|CA2254:""string"" + 2|}", "11", false)]
-        public async Task CA2254IsProducedForDynamicFormatArgument(string format)
+        public async Task CA2254IsProducedForDynamicFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -44,14 +51,14 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{str"" + ""ing}""|}|}", 2)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:""{"" + nameof(ILogger) + ""}""|}", 0)]
         [MemberData(nameof(GenerateDefineUsagesWithExplicitNumberOfArgs), @"{|CA2017:{|CA1727:""{"" + Const + ""}""|}|}", 0)]
-        public async Task CA2017IsProducedForFormatArgumentCountMismatch(string format)
+        public async Task CA2017IsProducedForFormatArgumentCountMismatchAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
 
         [Theory]
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
-        public async Task CA1727IsProducedForCamelCasedFormatArgument(string format)
+        public async Task CA1727IsProducedForCamelCasedFormatArgumentAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -69,7 +76,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
 
         // CA2253 is not enabled by default.
         [MemberData(nameof(GenerateTemplateAndDefineUsages), @"{|CA1727:""{camelCase}""|}", "1")]
-        public async Task TemplateDiagnosticsAreNotProduced(string format)
+        public async Task TemplateDiagnosticsAreNotProducedAsync(string format)
         {
             await TriggerCodeAsync(format);
         }
@@ -77,13 +84,14 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [Theory]
         [InlineData(@"LoggerMessage.Define(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
+        [InlineData(@"LoggerMessage.Define<int>(LogLevel.Information, 42, {|CA2017:""{One} {}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two}""|});")]
         [InlineData(@"LoggerMessage.Define<int, int, int, int>(LogLevel.Information, 42, {|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.DefineScope<int>({|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.DefineScope<int, int>({|CA2017:""{One} {Two} {Three}""|});")]
         [InlineData(@"LoggerMessage.DefineScope<int, int, int>({|CA2017:""{One} {Two}""|});")]
-        public async Task CA2017IsProducedForDefineMessageTypeParameterMismatch(string expression)
+        public async Task CA2017IsProducedForDefineMessageTypeParameterMismatchAsync(string expression)
         {
             await TriggerCodeAsync(expression);
         }
@@ -96,7 +104,7 @@ namespace Microsoft.Extensions.Logging.Analyzer
         [InlineData("LogError", @"""This is a test {Message}""")]
         [InlineData("LogCritical", @"""This is a test {Message}""")]
         [InlineData("BeginScope", @"""This is a test {Message}""")]
-        public async Task CA1848IsProducedForInvocationsOfAllLoggerExtensions(string method, string template)
+        public async Task CA1848IsProducedForInvocationsOfAllLoggerExtensionsAsync(string method, string template)
         {
             var expression = @$"{{|CA1848:logger.{method}({template},""Foo"")|}};";
             await TriggerCodeAsync(expression);

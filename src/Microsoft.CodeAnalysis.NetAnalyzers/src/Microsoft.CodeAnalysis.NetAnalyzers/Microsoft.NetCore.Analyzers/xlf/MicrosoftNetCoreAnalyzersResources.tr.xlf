@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="AddPublicParameterlessConstructor">
         <source>Add a public constructor that takes zero parameters</source>
-        <target state="new">Add a public constructor that takes zero parameters</target>
+        <target state="translated">Sıfır parametrelerini alan ortak bir oluşturucu ekleyin</target>
         <note />
       </trans-unit>
       <trans-unit id="AddSerializableAttributeCodeActionTitle">
@@ -125,6 +125,21 @@
       <trans-unit id="BinaryFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer BinaryFormatter</source>
         <target state="translated">Güvenli olmayan seri kaldırıcı BinaryFormatter kullanmayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyDescription">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="translated">'Buffer.BlockCopy', 'count' bağımsız değişkeni için kopyalanacak bayt sayısını bekler. 'Array.Length' kullanmak, kopyalanması gereken bayt sayısıyla eşleşmeyebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthMessage">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</source>
+        <target state="translated">'Buffer.BlockCopy', 'count' bağımsız değişkeni için kopyalanacak bayt sayısını bekler. 'Array.Length' kullanmak, kopyalanması gereken bayt sayısıyla eşleşmeyebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BufferBlockCopyLengthTitle">
+        <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
+        <target state="translated">'Buffer.BlockCopy', 'count' bağımsız değişkeni için kopyalanacak bayt sayısını bekliyor</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -322,19 +337,34 @@
         <target state="translated">Kullanımdan kaldırılmış SslProtocols değerlerini kullanma</target>
         <note />
       </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessage">
+        <source>'{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme sınıfından türetildiğinden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DerivesFromPreviewClassMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' derives from preview class '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme sınıfından türetildiğinden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DetectPreviewFeaturesDescription">
         <source>An assembly has to opt into preview features before using them.</source>
-        <target state="new">An assembly has to opt into preview features before using them.</target>
+        <target state="translated">Bir derlemenin kullanmadan önce önizleme özelliklerini kabul etmesi gerekiyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesMessage">
-        <source>Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using '{0}' requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <source>Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="translated">'{0}' kullanabilmeniz için önizleme özelliklerinin kabul edilmesi gerekir. Daha fazla bilgi için bkz. {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetectPreviewFeaturesMessageWithCustomMessagePlaceholder">
+        <source>{2} Using '{0}' requires opting into preview features. See {1} for more information.</source>
+        <target state="translated">{2} '{0}' kullanabilmeniz için önizleme özelliklerinin kabul edilmesi gerekir. Daha fazla bilgi için bkz. {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DetectPreviewFeaturesTitle">
         <source>This API requires opting into preview features</source>
-        <target state="new">This API requires opting into preview features</target>
+        <target state="translated">Bu API, önizleme özelliklerini kabul etmeyi gerektirir</target>
         <note />
       </trans-unit>
       <trans-unit id="DisposableFieldsShouldBeDisposedDescription">
@@ -440,6 +470,21 @@
       <trans-unit id="DoNotAddSchemaByURLMessage">
         <source>This overload of the Add method is potentially unsafe because it may resolve dangerous external references</source>
         <target state="translated">Tehlikeli dış başvuruları çözümleyebileceğinden Add metodunun bu aşırı yüklemesi güvenli olmayabilir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesDescription">
+        <source>By setting critical TokenValidationParameter validation delegates to true, important authentication safeguards are disabled which can lead to tokens from any issuer or expired tokens being wrongly validated.</source>
+        <target state="translated">Kritik TokenValidationParameter doğrulama temsilcileri true olarak ayarlandığında, herhangi bir yayımcıdan veya süresi dolmuş belirteçlerden yanlış doğrulanmış belirteçlere neden olabilecek önemli kimlik doğrulama korumaları devre dışı bırakılır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesMessage">
+        <source>The {0} is set to a function that is always returning true. By setting the validation delegate, you are overriding default validation and by always returning true, this validation is completely disabled.</source>
+        <target state="translated">{0} her zaman true döndüren bir işleve ayarlanır. Doğrulama temsilcisini ayarlayarak, varsayılan doğrulamayı geçersiz kılarsınız ve her zaman doğru döndürerek bu doğrulama tamamen devre dışı bırakılır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotAlwaysSkipTokenValidationInDelegatesTitle">
+        <source>Do not always skip token validation in delegates</source>
+        <target state="translated">Temsilcilerde belirteç doğrulamasını her zaman atlamayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallDangerousMethodsInDeserialization">
@@ -610,6 +655,21 @@
       <trans-unit id="DoNotDisableSchUseStrongCryptoMessage">
         <source>{0} disables TLS 1.2 and enables SSLv3</source>
         <target state="translated">{0}, TLS 1.2'yi devre dışı bırakır ve SSLv3'ü etkinleştirir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksDescription">
+        <source>Token validation checks ensure that while validating tokens, all aspects are analyzed and verified. Turning off validation can lead to security holes by allowing untrusted tokens to make it through validation.</source>
+        <target state="translated">Belirteç doğrulama kontrolleri, belirteçleri doğrularken tüm yönlerin analiz edilmesini ve doğrulanmasını sağlar. Doğrulamayı kapatmak, güvenilmeyen belirteçlerin doğrulamadan geçmesine izin vererek güvenlik açıklarına yol açabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksMessage">
+        <source>TokenValidationParameters.{0} should not be set to false as it disables important validation</source>
+        <target state="translated">TokenValidationParameters. {0} önemli doğrulamayı devre dışı bıraktığından false olarak ayarlanmamalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotDisableTokenValidationChecksTitle">
+        <source>Do not disable token validation checks</source>
+        <target state="translated">Belirteç doğrulama denetimlerini devre dışı bırakma</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotDisableUsingServicePointManagerSecurityProtocolsMessage">
@@ -964,17 +1024,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskDescription">
         <source>Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WaitAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">Tek bir görevle 'WaitAll' kullanılması performans kaybına neden olabilir. Bunun yerine bekleyin veya göreve geri dönün.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskFix">
         <source>Replace 'WaitAll' with single 'Wait'</source>
-        <target state="new">Replace 'WaitAll' with single 'Wait'</target>
+        <target state="translated">'WaitAll'ı tek 'Wait' ile değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWaitAllWithSingleTaskTitle">
         <source>Do not use 'WaitAll' with a single task</source>
-        <target state="new">Do not use 'WaitAll' with a single task</target>
+        <target state="translated">Tek bir görevle 'WaitAll' kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWeakCryptographicAlgorithms">
@@ -1014,17 +1074,17 @@
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskDescription">
         <source>Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</source>
-        <target state="new">Using 'WhenAll' with a single task may result in performance loss, await or return the task instead.</target>
+        <target state="translated">Tek bir görevle 'WhenAll' kullanılması performans kaybına neden olabilir. Bunun yerine bekleyin veya göreve geri dönün.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskFix">
         <source>Replace 'WhenAll' call with argument</source>
-        <target state="new">Replace 'WhenAll' call with argument</target>
+        <target state="translated">'WhenAll' çağrısını bağımsız değişkenle değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseWhenAllWithSingleTaskTitle">
         <source>Do not use 'WhenAll' with a single task</source>
-        <target state="new">Do not use 'WhenAll' with a single task</target>
+        <target state="translated">Tek bir görevle 'WhenAll' kullanmayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseXslTransform">
@@ -1035,6 +1095,31 @@
       <trans-unit id="DoNotUseXslTransformMessage">
         <source>Do not use XslTransform. It does not restrict potentially dangerous external references.</source>
         <target state="translated">XslTransform kullanmayın. Tehlikeli olabilecek dış başvuruları kısıtlamaz.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedDescription">
+        <source>Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.</source>
+        <target state="translated">İşlevsel bir 'DynamicInterfaceCastableImplementationAttribute'-öznitelikli arabirim sağlamak için Visual Basic’te desteklenmeyen Varsayılan Arabirim Üyeleri özelliği gereklidir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedMessage">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="translated">Visual Basic içinde 'DynamicInterfaceCastableImplementation' arabirimi sağlama desteklenmiyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DynamicInterfaceCastableImplementationUnsupportedTitle">
+        <source>Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported</source>
+        <target state="translated">Visual Basic içinde 'DynamicInterfaceCastableImplementation' arabirimi sağlama desteklenmiyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessage">
+        <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}' türü '{1}' önizleme türünü içerdiğinden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FieldIsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}' türü, '{1}' önizleme türünü içerdiğinden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FinalizersShouldCallBaseClassFinalizerDescription">
@@ -1117,6 +1202,11 @@
         <target state="translated">ISerializable'ı doğru uygulayın</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
+        <source>Implement inherited interfaces</source>
+        <target state="translated">Devralınan arabirimleri uygulayın</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
         <source>Implement Serialization constructor</source>
         <target state="translated">Serileştirme oluşturucusunu uygulayın</target>
@@ -1182,9 +1272,24 @@
         <target state="translated">Serileştirme yöntemlerini doğru uygulayın</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementsEmptyPreviewInterfaceMessage">
-        <source>'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">'{0}' implements a preview interface. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+      <trans-unit id="ImplementsPreviewInterfaceMessage">
+        <source>'{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme arabirimini uyguladığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewInterfaceMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview interface '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme arabirimini uyguladığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessage">
+        <source>'{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme yöntemini uyguladığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementsPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' implements the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme yöntemini uyguladığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="InitializeReferenceTypeStaticFieldsInlineDescription">
@@ -1245,6 +1350,21 @@
       <trans-unit id="InstantiateArgumentExceptionsCorrectlyTitle">
         <source>Instantiate argument exceptions correctly</source>
         <target state="translated">Bağımsız değişken özel durumlarını doğru bir şekilde başlatın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationDescription">
+        <source>Types attributed with 'DynamicInterfaceCastableImplementationAttribute' act as an interface implementation for a type that implements the 'IDynamicInterfaceCastable' type. As a result, it must provide an implementation of all of the members defined in the inherited interfaces, because the type that implements 'IDynamicInterfaceCastable' will not provide them otherwise.</source>
+        <target state="translated">'DynamicInterfaceCastableImplementationAttribute' özniteliğine sahip olan türler, 'IDynamicInterfaceCastable' türünü uygulayan bir tür için arabirim uygulaması olarak davranır. Sonuç olarak, devralınan arabirimlerde tanımlanan tüm üyelerin uygulanmasını sağlamalıdır çünkü diğer durumlarda 'IDynamicInterfaceCastable' uygulayan tür bu değeri sağlamaz.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationMessage">
+        <source>Type '{0}' has the 'DynamicInterfaceCastableImplementationAttribute' applied to it but does not provide an implementation of all interface members defined in inherited interfaces</source>
+        <target state="translated">'{0}' türüne 'DynamicInterfaceCastableImplementationAttribute' uygulanmış ama devralınan arabirimlerde tanımlanan tüm arabirim üyelerinin uygulanmasını sağlamıyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InterfaceMembersMissingImplementationTitle">
+        <source>All members declared in parent interfaces must have an implementation in a DynamicInterfaceCastableImplementation-attributed interface</source>
+        <target state="translated">Üst arabirimlerde bildirilen tüm üyelerin DynamicInterfaceCastableImplementation-öznitelikli bir arabirimde uygulanması gerekir</target>
         <note />
       </trans-unit>
       <trans-unit id="JavaScriptSerializerMaybeWithSimpleTypeResolverMessage">
@@ -1332,9 +1452,19 @@
         <target state="translated">Güvenli olmayan seri kaldırıcı LosFormatter kullanmayın</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStatic">
+        <source>Convert to static method</source>
+        <target state="translated">Statik yönteme dönüştür</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeMethodDeclaredOnImplementationTypeStaticMayProduceInvalidCode">
+        <source>Converting an instance method to a static method may produce invalid code</source>
+        <target state="translated">Örnek metodunu statik bir metoda dönüştürmek geçersiz kod üretebilir</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MakeParameterlessConstructorPublic">
         <source>Make the constructor that takes zero parameters 'public'</source>
-        <target state="new">Make the constructor that takes zero parameters 'public'</target>
+        <target state="translated">Sıfır parametrelerini 'public' olarak alan bir oluşturucu oluşturun</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
@@ -1452,6 +1582,41 @@
         <target state="translated">Bir paroladan şifreleme anahtarı türetirken yineleme sayısının en az {0} olduğundan emin olun. Varsayılan olarak, Rfc2898DeriveByte'ın IterationCount değeri yalnızca 1000'dir</target>
         <note />
       </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticDescription">
+        <source>Since a type that implements 'IDynamicInterfaceCastable' may not implement a dynamic interface in metadata, calls to an instance interface member that is not an explicit implementation defined on this type are likely to fail at runtime. Mark new interface members 'static' to avoid runtime errors.</source>
+        <target state="translated">'IDynamicInterfaceCastable' uygulayan bir tür meta verilerde dinamik arabirim uygulamayabileceği için, bu tür üzerinde tanımlı açık bir uygulama olmayan bir örnek arabirim üyesine yapılan çağrılar, çalışma zamanında başarısız olabilir. Çalışma zamanı hatalarını önlemek için yeni arabirim üyelerini 'static' olarak işaretleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticMessage">
+        <source>The '{0}' member on the '{1}' type should be marked 'static' as '{1}' has the 'DynamicInterfaceImplementationAttribute' applied</source>
+        <target state="translated">'{1}' türü üzerindeki '{0}' 'static' olarak işaretlenmeli çünkü '{1}' için 'DynamicInterfaceImplementationAttribute' uygulanmış</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MembersDeclaredOnImplementationTypeMustBeStaticTitle">
+        <source>Members defined on an interface with the 'DynamicInterfaceCastableImplementationAttribute' should be 'static'</source>
+        <target state="translated">Bir arabirimde 'DynamicInterfaceCastableImplementationAttribute' ile tanımlanan üyeler 'static' olmalıdır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessage">
+        <source>'{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme türünü döndürdüğünden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodReturnsPreviewTypeMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' returns the preview type '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme türünü döndürdüğünden önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessage">
+        <source>'{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' türünün önizleme parametresinde olduğundan önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' türünün önizleme parametresinde olduğundan önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
         <source>Miss HttpVerb attribute for action methods</source>
         <target state="translated">Eylem metotları için HttpVerb özniteliği eksik</target>
@@ -1465,6 +1630,21 @@
       <trans-unit id="MissHttpVerbAttributeMessage">
         <source>Action method {0} needs to specify the HTTP request kind explicitly</source>
         <target state="translated">{0} eylem metodunun HTTP istek tipini açık olarak belirtmesi gerekir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">Modül başlatıcılar, uygulama kodu yürütülmeye başlamadan önce uygulamanın bileşenlerinin başlatılmasını sağlamak için uygulama kodu tarafından kullanılmak içindir. Kitaplık kodu bir 'ModuleInitializer' yöntemi bildirirse, uygulamanın başlatılmasına engel olabilir ve ayrıca bu uygulamanın kırpma becerileriyle ilgili sınırlamalara neden olabilir. Bu nedenle kitaplık kodu 'ModuleInitializer' özniteliğini kullanmamalı, bunun yerine kitaplık içindeki bileşenleri başlatmak ve uygulamayı başlatma sırasında uygulamanın yöntemi çağırmasına izin vermek için kullanılabilecek yöntemler kullanmalıdır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
+        <source>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</source>
+        <target state="translated">'ModuleInitializer' özniteliğinin yalnızca uygulama kodunda veya gelişmiş kaynak oluşturucu senaryolarında kullanılması amaçlanmıştır</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesTitle">
+        <source>The 'ModuleInitializer' attribute should not be used in libraries</source>
+        <target state="translated">'ModuleInitializer' özniteliği kitaplıklarda kullanılmamalıdır</target>
         <note />
       </trans-unit>
       <trans-unit id="NetDataContractSerializerDeserializeMaybeWithoutBinderSetMessage">
@@ -1525,6 +1705,16 @@
       <trans-unit id="ObjectStateFormatterMethodUsedTitle">
         <source>Do not use insecure deserializer ObjectStateFormatter</source>
         <target state="translated">Güvenli olmayan seri kaldırıcı ObjectStateFormatter kullanmayın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessage">
+        <source>'{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme yöntemini geçersiz kıldığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OverridesPreviewMethodMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' overrides the preview method '{1}' and therefore needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme yöntemini geçersiz kıldığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PInvokeDeclarationsShouldBePortableDescription">
@@ -1649,57 +1839,77 @@
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringCodefixTitle">
         <source>Replace 'Substring' with 'AsSpan'</source>
-        <target state="new">Replace 'Substring' with 'AsSpan'</target>
+        <target state="translated">'Substring'i 'AsSpan' ile değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan', 'Substring'den daha verimlidir. 'Substring' bir O(n) dizesi kopyası oluşturur ama 'AsSpan' bunu yapmaz ve sabit bir maliyeti vardır.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
         <source>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring' when span-based overloads are available</target>
+        <target state="translated">Yayılma tabanlı aşırı yüklemeler kullanılabilir olduğunda 'Substring' yerine 'AsSpan' tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringTitle">
         <source>Prefer 'AsSpan' over 'Substring'</source>
-        <target state="new">Prefer 'AsSpan' over 'Substring'</target>
+        <target state="translated">'Substring' yerine 'AsSpan' tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyCodeFixTitle">
         <source>Use 'ContainsKey'</source>
-        <target state="new">Use 'ContainsKey'</target>
+        <target state="translated">'ContainsKey' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyDescription">
         <source>'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</source>
-        <target state="new">'ContainsKey' is usually O(1), while 'Keys.Contains' may be O(n) in some cases. Additionally, many dictionary implementations lazily initialize the Keys collection to cut back on allocations.</target>
+        <target state="translated">'ContainsKey' genellikle O(1) iken 'Keys.Contains' bazı durumlarda O(n) olabilir. Ayrıca birçok sözlük uygulaması ayırmaları sınırlandırmak için Keys koleksiyonunu geç başlatır.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsKeyMessage">
         <source>Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsKey' over 'Keys.Contains' for dictionary type '{0}'</target>
+        <target state="translated">Sözlük türü '{0}' için 'Keys.Contains' yerine 'ContainsKey' tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsMethodsTitle">
         <source>Prefer Dictionary.Contains methods</source>
-        <target state="new">Prefer Dictionary.Contains methods</target>
+        <target state="translated">Dictionary.Contains yöntemleri tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueCodeFixTitle">
         <source>Use 'ContainsValue'</source>
-        <target state="new">Use 'ContainsValue'</target>
+        <target state="translated">'ContainsValue' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueDescription">
         <source>Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</source>
-        <target state="new">Many dictionary implementations lazily initialize the Values collection. To avoid unnecessary allocations, prefer 'ContainsValue' over 'Values.Contains'.</target>
+        <target state="translated">Birçok sözlük uygulaması Values derlemesini geç başlatır. Gereksiz ayırmaları önlemek için 'Values.Contains' yerine 'ContainsValue' tercih edin.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryContainsValueMessage">
         <source>Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</source>
-        <target state="new">Prefer 'ContainsValue' over 'Values.Contains' for dictionary type '{0}'</target>
+        <target state="translated">Sözlük türü '{0}' için 'Values.Contains' yerine 'ContainsValue' tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataCodefixTitle">
+        <source>Replace with 'HashData' method</source>
+        <target state="translated">'HashData' yöntemiyle değiştir</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerDescription">
+        <source>It is more efficient to use the static 'HashData' method over creating and managing a HashAlgorithm instance to call 'ComputeHash'.</source>
+        <target state="translated">'ComputeHash' çağırmak için HashAlgorithm örneği oluşturup yönetmek yerine statik 'HashData' yöntemini kullanmak daha verimlidir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerMessage">
+        <source>Prefer static '{0}.HashData' method over 'ComputeHash'</source>
+        <target state="translated">'ComputeHash' yerine statik '{0}.HashData' yöntemini tercih edin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferHashDataOverComputeHashAnalyzerTitle">
+        <source>Prefer static 'HashData' method over 'ComputeHash'</source>
+        <target state="translated">'ComputeHash' yerine statik 'HashData' yöntemini tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
@@ -1838,33 +2048,33 @@
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
-        <source>Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
-        <target state="new">Providing a public parameterless constructor for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</target>
+        <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'dan türetilmiş bir tür için kapsayan tür kadar görülebilen parametresiz bir oluşturucu sağlamak, kaynak tarafından oluşturulan birlikte çalışma çözümleriyle daha iyi performans ve kullanım olanağı sağlar.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorMessage">
-        <source>Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for the '{0}' type that is derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'dan türetilen '{0}' türü için kapsayan tür kadar görülebilen parametresiz bir oluşturucu belirtin</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorTitle">
-        <source>Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
-        <target state="new">Provide a public parameterless constructor for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</target>
+        <source>Provide a parameterless constructor that is as visible as the containing type for concrete types derived from 'System.Runtime.InteropServices.SafeHandle'</source>
+        <target state="translated">'System.Runtime.InteropServices.SafeHandle'dan türetilen somut türler için kapsayan tür kadar görülebilen parametresiz bir oluşturucu belirtin</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesDescription">
         <source>To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</source>
-        <target state="new">To improve performance, override the memory-based async methods when subclassing 'Stream'. Then implement the array-based methods in terms of the memory-based methods.</target>
+        <target state="translated">Performansı artırmak için, 'Stream'i alt sınıflandırması yaparken bellek tabanlı zaman uyumsuz yöntemleri geçersiz kılın. Daha sonra, dizi tabanlı yöntemleri bellek tabanlı metotlara göre uygulayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesMessage">
         <source>'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</source>
-        <target state="new">'{0}' overrides array-based '{1}' but does not override memory-based '{2}'. Consider overriding memory-based '{2}' to improve performance.</target>
+        <target state="translated">'{0}', dizi tabanlı '{1}' öğesini geçersiz kılıyor ancak bellek tabanlı '{2}' öğesini geçersiz kılmıyor. Performansı artırmak için bellek tabanlı '{2}' öğesini geçersiz kılmayı düşünün.</target>
         <note>0 = type that subclasses Stream directly, 1 = array-based method, 2 = memory-based method</note>
       </trans-unit>
       <trans-unit id="ProvideStreamMemoryBasedAsyncOverridesTitle">
         <source>Provide memory-based overrides of async methods when subclassing 'Stream'</source>
-        <target state="new">Provide memory-based overrides of async methods when subclassing 'Stream'</target>
+        <target state="translated">'Stream' alt sınıflandırması yapılırken olduğunda zaman uyumsuz yöntemlerin bellek tabanlı geçersiz kılmalarını sağlayın</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -1874,7 +2084,7 @@
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
-        <target state="new">Replace string literal with char literal</target>
+        <target state="translated">Sabit değerli dizeyi sabit değerli karakter ile değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="RethrowToPreserveStackDetailsDescription">
@@ -2164,7 +2374,7 @@
       </trans-unit>
       <trans-unit id="StaticAndAbstractRequiresPreviewFeatures">
         <source>Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</source>
-        <target state="new">Using both 'static' and 'abstract' modifiers requires opting into preview features. See https://aka.ms/dotnet-warnings/preview-features for more information.</target>
+        <target state="translated">Hem 'static' hem de 'abstract' değiştiriciler kullanmak önizleme özelliklerini kabul etmeyi gerektirir. Daha fazla bilgi için bkz. https://aka.ms/dotnet-warnings/preview-features</target>
         <note />
       </trans-unit>
       <trans-unit id="TestForEmptyStringsUsingStringLengthDescription">
@@ -2237,6 +2447,26 @@
         <target state="translated">Dizi değerleri üzerindeki Aralık tabanlı dizin oluşturucu, dizinin istenen kısmının bir kopyasını üretir. Bu kopya, örtük olarak bir ReadOnlySpan veya ReadOnlyMemory değeri olarak kullanıldığında genellikle gerekli değildir. Kopya oluşturmamak için AsSpan metodunu kullanın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextDescription">
+        <source>When inside a Task-returning method, use the async version of methods, if they exist.</source>
+        <target state="translated">Task döndüren bir yöntemin içindeyken, varsa yöntemlerin zaman uyumsuz sürümünü kullanın.</target>
+        <note>{Locked="Task"}</note>
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage">
+        <source>'{0}' synchronously blocks. Await '{1}' instead.</source>
+        <target state="translated">'{0}' zaman uyumlu olarak engeller. Bunun yerine '{1}' bekleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextMessage_NoAlternative">
+        <source>'{0}' synchronously blocks. Use await instead.</source>
+        <target state="translated">'{0}' zaman uyumlu olarak engeller. Bunun yerine await kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseAsyncMethodInAsyncContextTitle">
+        <source>Call async methods when in an async method</source>
+        <target state="translated">Zaman uyumsuz metottayken zaman uyumsuz metotlar çağırın</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseAutoValidateAntiforgeryToken">
         <source>Use antiforgery tokens in ASP.NET Core MVC controllers</source>
         <target state="translated">ASP.NET Core MVC denetleyicilerinde sahtecilik önleme belirteçleri kullanın</target>
@@ -2254,22 +2484,22 @@
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedCodeFixTitle">
         <source>Replace with 'CancellationToken.ThrowIfCancellationRequested'</source>
-        <target state="new">Replace with 'CancellationToken.ThrowIfCancellationRequested'</target>
+        <target state="translated">'CancellationToken.ThrowIfCancellationRequested' ile değiştirin</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedDescription">
         <source>'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</source>
-        <target state="new">'ThrowIfCancellationRequested' automatically checks whether the token has been canceled, and throws an 'OperationCanceledException' if it has.</target>
+        <target state="translated">'ThrowIfCancellationRequested', belirtecin iptal edilip edilmediğini otomatik olarak denetler ve iptal edilmişse 'OperationCanceledException' oluşturur.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedMessage">
         <source>Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested' instead of checking 'IsCancellationRequested' and throwing 'OperationCanceledException'</target>
+        <target state="translated">'IsCancellationRequested'i kontrol etmek ve 'OperationCanceledException' oluşturmak yerine 'ThrowIfCancellationRequested' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseCancellationTokenThrowIfCancellationRequestedTitle">
         <source>Use 'ThrowIfCancellationRequested'</source>
-        <target state="new">Use 'ThrowIfCancellationRequested'</target>
+        <target state="translated">'ThrowIfCancellationRequested' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseContainerLevelAccessPolicy">
@@ -2304,22 +2534,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
         <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
-        <target state="new">'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</target>
+        <target state="translated">'Environment.CurrentManagedThreadId', 'Thread.CurrentThread.ManagedThreadId'den daha basit ve daha hızlıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdFix">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdMessage">
         <source>Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId' instead of 'Thread.CurrentThread.ManagedThreadId'</target>
+        <target state="translated">'Thread.CurrentThread.ManagedThreadId' yerine 'Environment.CurrentManagedThreadId' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdTitle">
         <source>Use 'Environment.CurrentManagedThreadId'</source>
-        <target state="new">Use 'Environment.CurrentManagedThreadId'</target>
+        <target state="translated">'Environment.CurrentManagedThreadId' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessIdDescription">
@@ -2344,22 +2574,22 @@
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathDescription">
         <source>'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</source>
-        <target state="new">'Environment.ProcessPath' is simpler and faster than 'Process.GetCurrentProcess().MainModule.FileName'.</target>
+        <target state="translated">'Environment.ProcessPath', 'Process.GetCurrentProcess().MainModule.FileName'dan daha basit ve hızlıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathFix">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">Use 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathMessage">
         <source>Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</source>
-        <target state="new">Use 'Environment.ProcessPath' instead of 'Process.GetCurrentProcess().MainModule.FileName'</target>
+        <target state="translated">'Process.GetCurrentProcess().MainModule.FileName' yerine 'Environment.ProcessPath' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentProcessPathTitle">
         <source>Use 'Environment.ProcessPath'</source>
-        <target state="new">Use 'Environment.ProcessPath'</target>
+        <target state="translated">Use 'Environment.ProcessPath'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseIndexer">
@@ -2452,84 +2682,84 @@
         <target state="translated">Mümkünse Paylaşılan Erişim İmzası (SAS) yerine Azure'un rol tabanlı erişim denetimini kullanmayı düşünün. Yine de SAS kullanmanız gerekiyorsa, SharedAccessProtocol.HttpsOnly belirtin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
-        <source>Use 'AsSpan' with 'string.Concat'</source>
-        <target state="new">Use 'AsSpan' with 'string.Concat'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatDescription">
-        <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
-        <target state="new">It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatMessage">
-        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
-        <target state="new">Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanBasedStringConcatTitle">
-        <source>Use span-based 'string.Concat'</source>
-        <target state="new">Use span-based 'string.Concat'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
-        <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
-        <target state="new">'string.Contains(char)' is available as a better performing overload for single char lookup.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
-        <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
-        <target state="new">Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
-        <source>Use char literal for a single character lookup</source>
-        <target state="new">Use char literal for a single character lookup</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">'string.Equals' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareDescription">
         <source>It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</source>
-        <target state="new">It is both clearer and likely faster to use 'string.Equals' instead of comparing the result of 'string.Compare' to zero.</target>
+        <target state="translated">'string.Compare' sonucunu sıfırla karşılaştırmak yerine 'string.Equals' kullanmak hem daha net hem de çoğu zaman daha hızlıdır.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareMessage">
         <source>Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</source>
-        <target state="new">Use 'string.Equals' instead of comparing the result of 'string.Compare' to 0</target>
+        <target state="translated">'string.Compare' sonucunu 0 ile karşılaştırmak yerine 'string.Equals' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareTitle">
         <source>Use 'string.Equals'</source>
-        <target state="new">Use 'string.Equals'</target>
+        <target state="translated">'string.Equals' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatCodeFixTitle">
+        <source>Use 'AsSpan' with 'string.Concat'</source>
+        <target state="translated">'string.Concat' ile 'AsSpan' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatDescription">
+        <source>It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring' and a concatenation operator.</source>
+        <target state="translated">'Substring' ve birleştirme işleci yerine 'AsSpan' ve 'string.Concat' kullanmak daha verimlidir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatMessage">
+        <source>Use span-based 'string.Concat' and 'AsSpan' instead of 'Substring'</source>
+        <target state="translated">'Substring' yerine yayılma tabanlı 'string.Concat' ve 'AsSpan' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanBasedStringConcatTitle">
+        <source>Use span-based 'string.Concat'</source>
+        <target state="translated">Yayılma tabanlı 'string.Concat' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
+        <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
+        <target state="translated">'string.Contains(char)' tek karakter araması için daha iyi performanslı bir aşırı yükleme olarak kullanılabilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersMessage">
+        <source>Use 'string.Contains(char)' instead of 'string.Contains(string)' when searching for a single character</source>
+        <target state="translated">Tek bir karakter ararken 'string.Contains(string)' yerine 'string.Contains(char)' kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersTitle">
+        <source>Use char literal for a single character lookup</source>
+        <target state="translated">Tek bir karakter araması için sabit değerli karakter kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringDescription">
         <source>Platform compatibility analyzer requires a valid platform name and version.</source>
-        <target state="new">Platform compatibility analyzer requires a valid platform name and version.</target>
+        <target state="translated">Platform uyumluluğu çözümleyicisi geçerli bir platform adı ve sürümü gerektiriyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringInvalidVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Use a version with 2{2} parts for this platform.</target>
+        <target state="translated">'{0}' sürümü '{1}' platformu için geçerli değil. Bu platform için 2{2} bölümden oluşan bir sürüm kullanın.</target>
         <note>Version '7' is not valid for platform 'windows'. Use a version with 2-4 parts for this platform.</note>
       </trans-unit>
       <trans-unit id="UseValidPlatformStringNoVersion">
         <source>Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</source>
-        <target state="new">Version '{0}' is not valid for platform '{1}'. Do not use versions for this platform.</target>
+        <target state="translated">'{0}' sürümü '{1}' platformu için geçerli değil. Bu platform için olan sürümleri kullanmayın.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringTitle">
         <source>Use valid platform string</source>
-        <target state="new">Use valid platform string</target>
+        <target state="translated">Geçerli platform dizesi kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValidPlatformStringUnknownPlatform">
         <source>The platform '{0}' is not a known platform name</source>
-        <target state="new">The platform '{0}' is not a known platform name</target>
+        <target state="translated">'{0}' platformu bilinen bir platform adı değil</target>
         <note />
       </trans-unit>
       <trans-unit id="UseValueTasksCorrectlyDescription">
@@ -2595,6 +2825,16 @@
       <trans-unit id="UseXmlReaderMessage">
         <source>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</source>
         <target state="translated">'{0}.{1}' metodunun bu aşırı yüklemesi güvenli olmayabilir. Hizmet reddi saldırılarına açık olabilecek Belge Türü Tanımı'nı (DTD) etkinleştirebilir veya bilginin açığa çıkmasına karşı savunmasız olabilecek XmlResolver kullanabilir. Bunun yerine DTD işlemesinin devre dışı olduğu ve XmlResolver'ın olmadığı XmlReader örneğini alan bir aşırı yükleme kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessage">
+        <source>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">'{0}', '{1}' önizleme türünü kullandığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
+        <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
+        <target state="translated">{3} '{0}', '{1}' önizleme türünü kullandığından önizleme özelliklerini kabul etmesi gerekir. Daha fazla bilgi için bkz. {2}.</target>
         <note />
       </trans-unit>
     </body>

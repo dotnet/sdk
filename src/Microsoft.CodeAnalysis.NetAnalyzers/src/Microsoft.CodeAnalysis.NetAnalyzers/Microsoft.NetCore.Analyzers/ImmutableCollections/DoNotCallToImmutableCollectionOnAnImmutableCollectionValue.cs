@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA2009: Do not call ToImmutableCollection on an ImmutableCollection value
     /// </summary>
@@ -21,17 +23,15 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
         private const string ImmutableArrayMetadataName = "System.Collections.Immutable.ImmutableArray`1";
         internal const string RuleId = "CA2009";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Reliability,
-                                                                             RuleLevel.IdeSuggestion,
-                                                                             description: null,
-                                                                             isPortedFxCopRule: false,
-                                                                             isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueTitle)),
+            CreateLocalizableResourceString(nameof(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueMessage)),
+            DiagnosticCategory.Reliability,
+            RuleLevel.IdeSuggestion,
+            description: null,
+            isPortedFxCopRule: false,
+            isDataflowRule: false);
 
         private static readonly ImmutableDictionary<string, string> ImmutableCollectionMetadataNames = new Dictionary<string, string>
         {
@@ -43,9 +43,9 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             ["ToImmutableSortedSet"] = "System.Collections.Immutable.ImmutableSortedSet`1",
         }.ToImmutableDictionary();
 
-        public static ImmutableArray<string> ToImmutableMethodNames => ImmutableCollectionMetadataNames.Keys.ToImmutableArray();
+        public static ImmutableArray<string> ToImmutableMethodNames { get; } = ImmutableCollectionMetadataNames.Keys.ToImmutableArray();
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA2234: Pass system uri objects instead of strings
     /// </summary>
@@ -19,21 +21,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA2234";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PassSystemUriObjectsInsteadOfStringsTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(PassSystemUriObjectsInsteadOfStringsTitle)),
+            CreateLocalizableResourceString(nameof(PassSystemUriObjectsInsteadOfStringsMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.Disabled,        // Heuristics based rules are prone to false positives
+            description: CreateLocalizableResourceString(nameof(PassSystemUriObjectsInsteadOfStringsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PassSystemUriObjectsInsteadOfStringsMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.PassSystemUriObjectsInsteadOfStringsDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                             s_localizableTitle,
-                                                                             s_localizableMessage,
-                                                                             DiagnosticCategory.Usage,
-                                                                             RuleLevel.Disabled,        // Heuristics based rules are prone to false positives
-                                                                             description: s_localizableDescription,
-                                                                             isPortedFxCopRule: true,
-                                                                             isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -45,15 +43,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             context.RegisterCompilationStartAction(c =>
             {
-                INamedTypeSymbol? @string = c.Compilation.GetSpecialType(SpecialType.System_String);
                 INamedTypeSymbol? uri = c.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemUri);
-                if (@string == null || uri == null)
+                if (uri == null)
                 {
                     // we don't have required types
                     return;
                 }
 
-                var analyzer = new PerCompilationAnalyzer(c.Compilation, @string, uri, GetInvocationExpression);
+                var analyzer = new PerCompilationAnalyzer(c.Compilation, uri, GetInvocationExpression);
                 c.RegisterOperationAction(analyzer.Analyze, OperationKind.Invocation);
             });
         }
@@ -64,18 +61,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             // this type will be created per compilation
             private readonly Compilation _compilation;
-            private readonly INamedTypeSymbol _string;
             private readonly INamedTypeSymbol _uri;
             private readonly Func<SyntaxNode, SyntaxNode?> _expressionGetter;
 
             public PerCompilationAnalyzer(
                 Compilation compilation,
-                INamedTypeSymbol @string,
                 INamedTypeSymbol uri,
                 Func<SyntaxNode, SyntaxNode?> expressionGetter)
             {
                 _compilation = compilation;
-                _string = @string;
                 _uri = uri;
                 _expressionGetter = expressionGetter;
             }
@@ -107,7 +101,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                var stringParameters = method.Parameters.GetParametersOfType(_string);
+                var stringParameters = method.Parameters.GetParametersOfType(SpecialType.System_String);
                 if (!stringParameters.Any())
                 {
                     // no string parameter. not interested.

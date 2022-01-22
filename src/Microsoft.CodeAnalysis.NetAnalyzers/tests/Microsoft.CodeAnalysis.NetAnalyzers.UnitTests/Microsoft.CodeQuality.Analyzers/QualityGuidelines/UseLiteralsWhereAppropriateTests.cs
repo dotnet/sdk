@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -17,7 +17,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     public class UseLiteralsWhereAppropriateTests
     {
         [Fact]
-        public async Task CA1802_Diagnostics_CSharp()
+        public async Task CA1802_Diagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -39,7 +39,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1802_NoDiagnostics_CSharp()
+        public async Task CA1802_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Class1
@@ -60,7 +60,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1802_Diagnostics_VisualBasic()
+        public async Task CA1802_Diagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -81,7 +81,7 @@ End Class",
         }
 
         [Fact]
-        public async Task CA1802_NoDiagnostics_VisualBasic()
+        public async Task CA1802_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class Class1
@@ -111,7 +111,7 @@ End Class");
         [InlineData("dotnet_code_quality.required_modifiers = static", false)]
         [InlineData("dotnet_code_quality.required_modifiers = none", true)]
         [InlineData("dotnet_code_quality." + UseLiteralsWhereAppropriateAnalyzer.RuleId + ".required_modifiers = none", true)]
-        public async Task EditorConfigConfiguration_RequiredModifiersOption(string editorConfigText, bool reportDiagnostic)
+        public async Task EditorConfigConfiguration_RequiredModifiersOptionAsync(string editorConfigText, bool reportDiagnostic)
         {
             var expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
@@ -178,7 +178,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1802_CSharp_IntPtr_UIntPtr_NoDiagnostic()
+        public async Task CA1802_CSharp_IntPtr_UIntPtr_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -196,7 +196,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1802_CSharp_nint_Diagnostic()
+        public async Task CA1802_CSharp_nint_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -224,7 +224,7 @@ public class Class1
         }
 
         [Fact]
-        public async Task CA1802_CSharp_nuint_Diagnostic()
+        public async Task CA1802_CSharp_nuint_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {

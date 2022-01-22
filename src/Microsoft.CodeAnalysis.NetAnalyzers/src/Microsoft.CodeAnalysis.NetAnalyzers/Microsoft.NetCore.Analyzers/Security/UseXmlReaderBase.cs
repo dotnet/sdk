@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Security
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     public abstract class UseXmlReaderBase : DiagnosticAnalyzer
     {
         /// <summary>
@@ -26,15 +28,9 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
 
-        protected static LocalizableString Description { get; } = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseXmlReaderDescription),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
+        protected static LocalizableString Description { get; } = CreateLocalizableResourceString(nameof(UseXmlReaderDescription));
 
-        protected static LocalizableString Message { get; } = new LocalizableResourceString(
-            nameof(MicrosoftNetCoreAnalyzersResources.UseXmlReaderMessage),
-            MicrosoftNetCoreAnalyzersResources.ResourceManager,
-            typeof(MicrosoftNetCoreAnalyzersResources));
+        protected static LocalizableString Message { get; } = CreateLocalizableResourceString(nameof(UseXmlReaderMessage));
 
         public override void Initialize(AnalysisContext context)
         {

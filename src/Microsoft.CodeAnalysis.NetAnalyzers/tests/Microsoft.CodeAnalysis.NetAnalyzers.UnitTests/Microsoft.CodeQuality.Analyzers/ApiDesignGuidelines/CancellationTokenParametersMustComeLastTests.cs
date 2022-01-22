@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CancellationTokenParametersMustComeLast
     {
         [Fact]
-        public async Task NoDiagnosticInEmptyFile()
+        public async Task NoDiagnosticInEmptyFileAsync()
         {
             var test = @"";
 
@@ -24,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task DiagnosticForMethod()
+        public async Task DiagnosticForMethodAsync()
         {
             var source = @"
 using System.Threading;
@@ -41,7 +41,7 @@ class T
         }
 
         [Fact]
-        public async Task DiagnosticWhenFirstAndLastByOtherInBetween()
+        public async Task DiagnosticWhenFirstAndLastByOtherInBetweenAsync()
         {
             var source = @"
 using System.Threading;
@@ -58,7 +58,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenLastParam()
+        public async Task NoDiagnosticWhenLastParamAsync()
         {
             var test = @"
 using System.Threading;
@@ -72,7 +72,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenOnlyParam()
+        public async Task NoDiagnosticWhenOnlyParamAsync()
         {
             var test = @"
 using System.Threading;
@@ -86,7 +86,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenParamsComesAfter()
+        public async Task NoDiagnosticWhenParamsComesAfterAsync()
         {
             var test = @"
 using System.Threading;
@@ -100,7 +100,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenOutComesAfter()
+        public async Task NoDiagnosticWhenOutComesAfterAsync()
         {
             var test = @"
 using System.Threading;
@@ -115,7 +115,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenRefComesAfter()
+        public async Task NoDiagnosticWhenRefComesAfterAsync()
         {
             var test = @"
 using System.Threading;
@@ -129,7 +129,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationToken()
+        public async Task NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationTokenAsync()
         {
             var test = @"
 using System.Threading;
@@ -143,7 +143,7 @@ class T
         }
 
         [Fact]
-        public async Task NoDiagnosticOnOverride()
+        public async Task NoDiagnosticOnOverrideAsync()
         {
             var test = @"
 using System.Threading;
@@ -165,7 +165,7 @@ class T : B
         }
 
         [Fact]
-        public async Task NoDiagnosticOnImplicitInterfaceImplementation()
+        public async Task NoDiagnosticOnImplicitInterfaceImplementationAsync()
         {
             var test = @"
 using System.Threading;
@@ -187,7 +187,7 @@ class T : I
         }
 
         [Fact]
-        public async Task NoDiagnosticOnExplicitInterfaceImplementation()
+        public async Task NoDiagnosticOnExplicitInterfaceImplementationAsync()
         {
             var test = @"
 using System.Threading;
@@ -209,7 +209,7 @@ class T : I
         }
 
         [Fact, WorkItem(1491, "https://github.com/dotnet/roslyn-analyzers/issues/1491")]
-        public async Task NoDiagnosticOnCancellationTokenExtensionMethod()
+        public async Task NoDiagnosticOnCancellationTokenExtensionMethodAsync()
         {
             var test = @"
 using System.Threading;
@@ -223,7 +223,7 @@ static class C1
         }
 
         [Fact, WorkItem(1816, "https://github.com/dotnet/roslyn-analyzers/issues/1816")]
-        public async Task NoDiagnosticWhenMultipleAtEndOfParameterList()
+        public async Task NoDiagnosticWhenMultipleAtEndOfParameterListAsync()
         {
             var test = @"
 using System.Threading;
@@ -239,7 +239,7 @@ static class C1
         }
 
         [Fact]
-        public async Task DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameter()
+        public async Task DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameterAsync()
         {
             var test = @"
 using System.Threading;
@@ -257,7 +257,7 @@ static class C1
         }
 
         [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
-        public async Task CA1068_DoNotReportOnIProgressLastAndCancellationTokenBeforeLast()
+        public async Task CA1068_DoNotReportOnIProgressLastAndCancellationTokenBeforeLastAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -285,7 +285,7 @@ End Class");
         }
 
         [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
-        public async Task CA1068_ReportOnIProgressLastAndCancellationTokenNotBeforeLast()
+        public async Task CA1068_ReportOnIProgressLastAndCancellationTokenNotBeforeLastAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -321,7 +321,7 @@ End Class",
         }
 
         [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
-        public async Task CA1068_OnlyExcludeOneIProgressAtTheEnd()
+        public async Task CA1068_OnlyExcludeOneIProgressAtTheEndAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -357,7 +357,7 @@ End Class",
         }
 
         [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
-        public async Task CA1068_CallerAttributesWithNonOptionalCancellationToken()
+        public async Task CA1068_CallerAttributesWithNonOptionalCancellationTokenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -378,7 +378,7 @@ public class C
         }
 
         [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
-        public async Task CA1068_CallerAttributesWithOptionalCancellationToken()
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -399,7 +399,7 @@ public class C
         }
 
         [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
-        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameter()
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -420,7 +420,7 @@ public class C
         }
 
         [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
-        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameter()
+        public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -470,7 +470,7 @@ public class C
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1068.api_surface_2 = private")]
-        public async Task CA1068_CSharp_ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        public async Task CA1068_CSharp_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -525,7 +525,7 @@ public class C
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1068.api_surface_2 = Private")]
-        public async Task CA1068_VisualBasic_ApiSurface_Diagnostic(string accessibility, string editorConfigText)
+        public async Task CA1068_VisualBasic_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {
@@ -558,7 +558,7 @@ End Class"
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = C*")]
         // Exclude classes C1 and C2
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
-        public async Task CA1068_ExcludedSymbolNames_Diagnostic(string editorConfigText)
+        public async Task CA1068_ExcludedSymbolNames_DiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
             var suffix = editorConfigText.Length == 0 ? "|]" : "";
@@ -628,7 +628,7 @@ End Class"
         [InlineData(@"")]
         // Exclude all ctors
         [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
-        public async Task CA1068_ExcludedSymbolNames_Record_NoDiagnostic(string editorConfigText)
+        public async Task CA1068_ExcludedSymbolNames_Record_NoDiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
             var suffix = editorConfigText.Length == 0 ? "|]" : "";

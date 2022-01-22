@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -9,6 +9,8 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1068: CancellationToken parameters must come last.
     /// </summary>
@@ -17,20 +19,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         internal const string RuleId = "CA1068";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.CancellationTokenParametersMustComeLastTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.CancellationTokenParametersMustComeLastMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(CancellationTokenParametersMustComeLastTitle)),
+            CreateLocalizableResourceString(nameof(CancellationTokenParametersMustComeLastMessage)),
             DiagnosticCategory.Design,
             RuleLevel.IdeSuggestion,
             description: null,
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -57,6 +56,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 compilationContext.RegisterSymbolAction(symbolContext =>
                 {
                     var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
+
+                    if (!methodSymbol.Parameters.Any(static (parameter, tokenType) => parameter.Type.Equals(tokenType), cancellationTokenType))
+                    {
+                        return;
+                    }
+
                     if (methodSymbol.IsOverride ||
                         methodSymbol.IsImplementationOfAnyInterfaceMember())
                     {
@@ -92,13 +97,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Skip optional parameters, UNLESS one of them is a CancellationToken
                     // AND it's not the last one.
                     if (last >= 0 && methodSymbol.Parameters[last].IsOptional
-                        && !methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                        && !SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                     {
                         last--;
 
                         while (last >= 0 && methodSymbol.Parameters[last].IsOptional)
                         {
-                            if (methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                            if (SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                             {
                                 symbolContext.ReportDiagnostic(methodSymbol.CreateDiagnostic(Rule, methodSymbol.ToDisplayString()));
                             }
@@ -108,7 +113,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Ignore multiple cancellation token parameters at the end of the parameter list.
-                    while (last >= 0 && methodSymbol.Parameters[last].Type.Equals(cancellationTokenType))
+                    while (last >= 0 && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type, cancellationTokenType))
                     {
                         last--;
                     }
@@ -122,7 +127,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // Ignore IProgress<T> when last
                     if (last >= 0
                         && iprogressType != null
-                        && methodSymbol.Parameters[last].Type.OriginalDefinition.Equals(iprogressType))
+                        && SymbolEqualityComparer.Default.Equals(methodSymbol.Parameters[last].Type.OriginalDefinition, iprogressType))
                     {
                         last--;
                     }
@@ -130,7 +135,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     for (int i = last - 1; i >= 0; i--)
                     {
                         ITypeSymbol parameterType = methodSymbol.Parameters[i].Type;
-                        if (!parameterType.Equals(cancellationTokenType))
+                        if (!SymbolEqualityComparer.Default.Equals(parameterType, cancellationTokenType))
                         {
                             continue;
                         }

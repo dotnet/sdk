@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     /// <summary>
     /// CA1827: Do not use Count()/LongCount() when Any() can be used.
     /// CA1828: Do not use CountAsync()/LongCountAsync() when AnyAsync() can be used.
@@ -46,68 +48,48 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         internal const string PropertyNameKey = nameof(PropertyNameKey);
 
-        // CA1827
-        private static readonly LocalizableString s_localizableTitle_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1827 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountWhenAnyCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1828
-        private static readonly LocalizableString s_localizableTitle_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1828 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1829
-        private static readonly LocalizableString s_localizableTitle_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1829 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UsePropertyInsteadOfCountMethodWhenAvailableDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        // CA1836
-        private static readonly LocalizableString s_localizableTitle_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1836 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.PreferIsEmptyOverCountDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
         internal static readonly DiagnosticDescriptor s_rule_CA1827 = DiagnosticDescriptorHelper.Create(
             CA1827,
-            s_localizableTitle_CA1827,
-            s_localizableMessage_CA1827,
+            CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1827,
+            description: CreateLocalizableResourceString(nameof(DoNotUseCountWhenAnyCanBeUsedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor s_rule_CA1828 = DiagnosticDescriptorHelper.Create(
             CA1828,
-            s_localizableTitle_CA1828,
-            s_localizableMessage_CA1828,
+            CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedTitle)),
+            CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1828,
+            description: CreateLocalizableResourceString(nameof(DoNotUseCountAsyncWhenAnyAsyncCanBeUsedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
         internal static readonly DiagnosticDescriptor s_rule_CA1829 = DiagnosticDescriptorHelper.Create(
             CA1829,
-            s_localizableTitle_CA1829,
-            s_localizableMessage_CA1829,
+            CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableTitle)),
+            CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1829,
+            description: CreateLocalizableResourceString(nameof(UsePropertyInsteadOfCountMethodWhenAvailableDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        internal static DiagnosticDescriptor s_rule_CA1836 = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor s_rule_CA1836 = DiagnosticDescriptorHelper.Create(
             CA1836,
-            s_localizableTitle_CA1836,
-            s_localizableMessage_CA1836,
+            CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountTitle)),
+            CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1836,
+            description: CreateLocalizableResourceString(nameof(PreferIsEmptyOverCountDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+            = ImmutableArray.Create(
                 s_rule_CA1827,
                 s_rule_CA1828,
                 s_rule_CA1829,
@@ -170,17 +152,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836 = allowedTypesBuilder.ToImmutable();
 
+            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
                 context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
-                    operationContext, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
+                    operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
                     OperationKind.Invocation);
             }
 
             if (!allowedTypesForCA1836.IsEmpty)
             {
                 context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
-                    operationContext, allowedTypesForCA1836),
+                    operationContext, linqExpressionType, allowedTypesForCA1836),
                     OperationKind.PropertyReference);
             }
 
@@ -195,6 +179,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void AnalyzeInvocationOperation(
             OperationAnalysisContext context,
+            INamedTypeSymbol? linqExpressionType,
             ImmutableHashSet<IMethodSymbol> syncMethods,
             ImmutableHashSet<IMethodSymbol> asyncMethods,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
@@ -235,16 +220,23 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             bool shouldReplaceParent = ShouldReplaceParent(ref parentOperation, out string? operationKey, out bool shouldNegateIsEmpty);
 
+            // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+            // that the underlying call doesn't have the Count/Length property so we want to bail-out.
+            var isWithinExpressionTree = invocationOperation.IsWithinExpressionTree(linqExpressionType);
+
             DetermineReportForInvocationAnalysis(context, invocationOperation, parentOperation,
-                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, originalDefinition.Name, operationKey, allowedTypesForCA1836);
+                shouldReplaceParent, isAsync, shouldNegateIsEmpty, hasPredicate, isWithinExpressionTree,
+                originalDefinition.Name, operationKey, allowedTypesForCA1836);
         }
 
-        private static void AnalyzePropertyReference(OperationAnalysisContext context, ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
+        private static void AnalyzePropertyReference(OperationAnalysisContext context, INamedTypeSymbol? linqExpressionType,
+            ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
 
             string propertyName = propertyReferenceOperation.Member.Name;
-            if (propertyName is not Count and not Length)
+            if (propertyName is not Count and not Length ||
+                propertyReferenceOperation.IsWithinExpressionTree(linqExpressionType))
             {
                 return;
             }
@@ -405,13 +397,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static void DetermineReportForInvocationAnalysis(
             OperationAnalysisContext context,
             IInvocationOperation invocationOperation, IOperation parent,
-            bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, string methodName, string? operationKey,
+            bool shouldReplaceParent, bool isAsync, bool shouldNegateIsEmpty, bool hasPredicate, bool isWithinExpressionTree,
+            string methodName, string? operationKey,
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836)
         {
             if (!shouldReplaceParent)
             {
                 // Parent expression doesn't met the criteria to be replaced; fallback on analysis for standalone call to Count().
-                if (!isAsync && !hasPredicate)
+                if (!isAsync && !hasPredicate && !isWithinExpressionTree)
                 {
                     AnalyzeCountInvocationOperation(context, invocationOperation);
                 }
@@ -421,40 +414,39 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 bool shouldNegateAny = !shouldNegateIsEmpty;
                 ReportCA1828(context, shouldNegateAny, operationKey!, methodName, parent);
             }
-            else
+            else if (!isWithinExpressionTree)
             {
                 ITypeSymbol? type = invocationOperation.GetInstanceType();
-                if (type != null)
+                if (type == null)
                 {
-                    // If the invocation has a predicate we can only suggest CA1827;
-                    // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
-                    if (hasPredicate)
-                    {
-                        bool shouldNegateAny = !shouldNegateIsEmpty;
-                        ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
-                    }
-                    else
-                    {
-                        if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
-                            TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
-                            !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
-                        {
-                            ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
-                        }
-                        else if (TypeContainsVisibleProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
-                        {
-                            ReportCA1829(context, Length, invocationOperation);
-                        }
-                        else if (TypeContainsVisibleProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
-                        {
-                            ReportCA1829(context, Count, invocationOperation);
-                        }
-                        else
-                        {
-                            bool shouldNegateAny = !shouldNegateIsEmpty;
-                            ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
-                        }
-                    }
+                    return;
+                }
+
+                // If the invocation has a predicate we can only suggest CA1827;
+                // otherwise, we would loose the lambda if we suggest CA1829 or CA1836.
+                if (hasPredicate)
+                {
+                    bool shouldNegateAny = !shouldNegateIsEmpty;
+                    ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
+                }
+                else if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
+                   TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                   !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
+                {
+                    ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
+                }
+                else if (TypeContainsVisibleProperty(context, type, Length, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
+                {
+                    ReportCA1829(context, Length, invocationOperation);
+                }
+                else if (TypeContainsVisibleProperty(context, type, Count, SpecialType.System_Int32, SpecialType.System_UInt64, out _))
+                {
+                    ReportCA1829(context, Count, invocationOperation);
+                }
+                else
+                {
+                    bool shouldNegateAny = !shouldNegateIsEmpty;
+                    ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
                 }
             }
         }

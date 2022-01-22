@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,25 +10,24 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseStringContainsCharOverloadWithSingleCharactersAnalyzer : DiagnosticAnalyzer
     {
         internal const string CA1847 = nameof(CA1847);
-        private static readonly LocalizableString s_localizableTitle_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableMessage_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersMessage), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription_CA1847 = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseStringContainsCharOverloadWithSingleCharactersDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
 
         internal static readonly DiagnosticDescriptor s_rule_CA1847 = DiagnosticDescriptorHelper.Create(
             CA1847,
-            s_localizableTitle_CA1847,
-            s_localizableMessage_CA1847,
+            CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersTitle)),
+            CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            description: s_localizableDescription_CA1847,
+            description: CreateLocalizableResourceString(nameof(UseStringContainsCharOverloadWithSingleCharactersDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(s_rule_CA1847);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(s_rule_CA1847);
 
         public override void Initialize(AnalysisContext context)
         {

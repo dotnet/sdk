@@ -8,6 +8,15 @@
 6. Add a message, title and description for your analyzer into `MicrosoftNetCoreAnalyzersResources.resx` and build the repo before using them, the language specific resources will be generated.
 7. Make sure you have done everything from the [Definition of done list](#definition-of-done) below.
 
+## Branch Definitions
+
+|Branch| SDK | Description|
+|--------|--------|--------|
+|[2.9.x](https://github.com/dotnet/roslyn-analyzers/tree/2.9.x)| Does not ship in the .NET SDK | A special branch compatible with Visual Studio 2017 where security analyzers are shipped from.
+|[main](https://github.com/dotnet/roslyn-analyzers/tree/main)| .NET SDK 7.0.0xx  | Currently active branch. All work should target this branch unless it is a bugfix for a previous release
+|[release/5.0.3xx](https://github.com/dotnet/roslyn-analyzers/tree/release/5.0.3xx)| .NET SDK 5.0.3xx | Servicing branch for the .NET 5 SDK.
+|[release/6.0.1xx](https://github.com/dotnet/roslyn-analyzers/tree/release/6.0.1xx)| .NET SDK 6.0.0xx | Servicing branch for the .NET 6 SDK. Currently accepting targeting fixes until the .NET 6 SDK ships
+
 ## Definition of done
 
 - Analyzer implemented to work for C# and VB.
@@ -35,6 +44,9 @@
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
 - Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
 - PR merged into `dotnet/roslyn-analyzers`.
+- Validate the analyzer's behavior with end-to-end testing using the command-line and Visual Studio:
+  - Use `dotnet new console` and `dotnet build` from the command-line, updating the code to introduce diagnostics and ensuring warnings/errors are reported at the command-line
+  - Use Visual Studio to create a new project, introduce diagnostics, and observe the warnings/errors/info messages without invoking a build
 
 ## Testing against the Runtime and Roslyn-analyzers repo
 

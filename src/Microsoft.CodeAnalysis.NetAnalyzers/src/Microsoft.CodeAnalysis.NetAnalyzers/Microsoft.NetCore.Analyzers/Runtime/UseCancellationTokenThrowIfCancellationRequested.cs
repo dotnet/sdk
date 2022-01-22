@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -9,7 +9,7 @@ using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -18,21 +18,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2250";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedTitle), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.UseCancellationTokenThrowIfCancellationRequestedDescription), Resx.ResourceManager, typeof(Resx));
-
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedTitle)),
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedMessage)),
             DiagnosticCategory.Usage,
             RuleLevel.IdeSuggestion,
-            s_localizableDescription,
+            CreateLocalizableResourceString(nameof(UseCancellationTokenThrowIfCancellationRequestedDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

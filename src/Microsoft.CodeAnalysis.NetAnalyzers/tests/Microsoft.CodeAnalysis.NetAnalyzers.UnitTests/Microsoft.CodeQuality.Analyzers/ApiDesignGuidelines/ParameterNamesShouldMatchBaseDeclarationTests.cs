@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -16,7 +16,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ParameterNamesShouldMatchBaseDeclarationTests
     {
         [Fact]
-        public async Task VerifyNoFalsePositivesAreReported()
+        public async Task VerifyNoFalsePositivesAreReportedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyOverrideWithWrongParameterNames()
+        public async Task VerifyOverrideWithWrongParameterNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
@@ -123,7 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VerifyInternalOverrideWithWrongParameterNames_NoDiagnostic()
+        public async Task VerifyInternalOverrideWithWrongParameterNames_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
@@ -195,7 +195,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyInterfaceImplementationWithWrongParameterNames()
+        public async Task VerifyInterfaceImplementationWithWrongParameterNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
@@ -263,7 +263,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnostic()
+        public async Task VerifyExplicitInterfaceImplementationWithWrongParameterNames_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface IBase
                            {
@@ -297,7 +297,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyInterfaceImplementationWithDifferentMethodName()
+        public async Task VerifyInterfaceImplementationWithDifferentMethodNameAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"Public Interface IBase
                               Sub TestMethod(baseArg1 As String, baseArg2 As String)
@@ -328,7 +328,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyThatInvalidOverrideIsNotReported()
+        public async Task VerifyThatInvalidOverrideIsNotReportedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public class TestClass
                            {
@@ -342,7 +342,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyOverrideWithInheritanceChain()
+        public async Task VerifyOverrideWithInheritanceChainAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
@@ -379,7 +379,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyNewOverrideWithInheritance()
+        public async Task VerifyNewOverrideWithInheritanceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public class BaseClass
                            {
@@ -405,7 +405,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyBaseClassNameHasPriority()
+        public async Task VerifyBaseClassNameHasPriorityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public abstract class BaseClass
                            {
@@ -475,7 +475,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyMultipleClashingInterfacesWithFullMatch()
+        public async Task VerifyMultipleClashingInterfacesWithFullMatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
@@ -509,7 +509,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyMultipleClashingInterfacesWithPartialMatch()
+        public async Task VerifyMultipleClashingInterfacesWithPartialMatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
@@ -545,7 +545,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyIgnoresPropertiesWithTheSameName()
+        public async Task VerifyIgnoresPropertiesWithTheSameNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest1
                            {
@@ -582,7 +582,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         }
 
         [Fact]
-        public async Task VerifyHandlesMultipleBaseMethodsWithTheSameName()
+        public async Task VerifyHandlesMultipleBaseMethodsWithTheSameNameAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"public interface ITest
                            {

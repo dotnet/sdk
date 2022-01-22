@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -57,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         #region C# tests
 
         [Fact]
-        public async Task HasAlternateMethod_CSharp()
+        public async Task HasAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -69,7 +69,7 @@ public class C
         }
 
         [Fact]
-        public async Task HasMultipleAlternatePrimary_CSharp()
+        public async Task HasMultipleAlternatePrimary_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -81,7 +81,7 @@ public class C
         }
 
         [Fact]
-        public async Task HasMultipleAlternateSecondary_CSharp()
+        public async Task HasMultipleAlternateSecondary_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -93,7 +93,7 @@ public class C
         }
 
         [Fact]
-        public async Task HasAppropriateConversionAlternate_CSharp()
+        public async Task HasAppropriateConversionAlternate_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -105,7 +105,7 @@ public class C
         }
 
         [Fact, WorkItem(1717, "https://github.com/dotnet/roslyn-analyzers/issues/1717")]
-        public async Task HasAppropriateConversionAlternate02_CSharp()
+        public async Task HasAppropriateConversionAlternate02_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class Other
@@ -129,7 +129,7 @@ public class SomeClass
         }
 
         [Fact]
-        public async Task MissingAlternateMethod_CSharp()
+        public async Task MissingAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -141,7 +141,7 @@ public class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task MissingAlternateMethod_CSharp_Internal()
+        public async Task MissingAlternateMethod_CSharp_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 class C
@@ -160,7 +160,7 @@ public class C2
         }
 
         [Fact]
-        public async Task MissingAlternateProperty_CSharp()
+        public async Task MissingAlternateProperty_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -173,7 +173,7 @@ public class C
         }
 
         [Fact]
-        public async Task MissingMultipleAlternates_CSharp()
+        public async Task MissingMultipleAlternates_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -185,7 +185,7 @@ public class C
         }
 
         [Fact]
-        public async Task ImproperAlternateMethodVisibility_CSharp()
+        public async Task ImproperAlternateMethodVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -198,7 +198,7 @@ public class C
         }
 
         [Fact]
-        public async Task ImproperAlternatePropertyVisibility_CSharp()
+        public async Task ImproperAlternatePropertyVisibility_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C
@@ -212,7 +212,7 @@ public class C
         }
 
         [Fact]
-        public async Task StructHasAlternateMethod_CSharp()
+        public async Task StructHasAlternateMethod_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 struct C
@@ -224,7 +224,7 @@ struct C
         }
 
         [Fact]
-        public async Task ImplicitCastToArray()
+        public async Task ImplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -239,7 +239,7 @@ public struct MyStruct
         }
 
         [Fact]
-        public async Task ExplicitCastToArray()
+        public async Task ExplicitCastToArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -254,7 +254,7 @@ public struct MyStruct
         }
 
         [Fact]
-        public async Task ImplicitCastToMultidimensionalArray()
+        public async Task ImplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -269,7 +269,7 @@ public struct MyStruct
         }
 
         [Fact]
-        public async Task ExplicitCastToMultidimensionalArray()
+        public async Task ExplicitCastToMultidimensionalArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -284,7 +284,7 @@ public struct MyStruct
         }
 
         [Fact]
-        public async Task ImplicitCastToJaggedArray()
+        public async Task ImplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -299,7 +299,7 @@ public struct MyStruct
         }
 
         [Fact]
-        public async Task ExplicitCastToJaggedArray()
+        public async Task ExplicitCastToJaggedArrayAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
 @"
@@ -322,7 +322,7 @@ public struct MyStruct
         #region VB tests
 
         [Fact]
-        public async Task HasAlternateMethod_VisualBasic()
+        public async Task HasAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -337,7 +337,7 @@ End Class
         }
 
         [Fact]
-        public async Task MissingAlternateMethod_VisualBasic()
+        public async Task MissingAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Class C
@@ -350,7 +350,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task MissingAlternateMethod_VisualBasic_Internal()
+        public async Task MissingAlternateMethod_VisualBasic_InternalAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
@@ -370,7 +370,7 @@ End Class
         }
 
         [Fact]
-        public async Task StructHasAlternateMethod_VisualBasic()
+        public async Task StructHasAlternateMethod_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
 Public Structure C

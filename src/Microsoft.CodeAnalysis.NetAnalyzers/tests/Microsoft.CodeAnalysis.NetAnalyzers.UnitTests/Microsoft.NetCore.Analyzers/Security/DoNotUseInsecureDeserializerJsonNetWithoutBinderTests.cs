@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_CSharp_Violation(NewtonsoftJsonVersion version)
+        public async Task DocSample1_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -68,7 +68,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_VB_Violation(NewtonsoftJsonVersion version)
+        public async Task DocSample1_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports Newtonsoft.Json
@@ -109,7 +109,7 @@ End Class
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_CSharp_Solution(NewtonsoftJsonVersion version)
+        public async Task DocSample1_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -176,7 +176,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample1_VB_Solution(NewtonsoftJsonVersion version)
+        public async Task DocSample1_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports System
@@ -239,7 +239,7 @@ End Class
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample2_CSharp_Violation(NewtonsoftJsonVersion version)
+        public async Task DocSample2_CSharp_ViolationAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -312,7 +312,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample2_VB_Violation(NewtonsoftJsonVersion version)
+        public async Task DocSample2_VB_ViolationAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports System
@@ -380,7 +380,7 @@ End Class
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample2_CSharp_Solution(NewtonsoftJsonVersion version)
+        public async Task DocSample2_CSharp_SolutionAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -455,7 +455,7 @@ public class ExampleClass
 
         [Theory]
         [CombinatorialData]
-        public async Task DocSample2_VB_Solution(NewtonsoftJsonVersion version)
+        public async Task DocSample2_VB_SolutionAsync(NewtonsoftJsonVersion version)
         {
             await VerifyBasicWithJsonNetAsync(version, @"
 Imports System
@@ -525,7 +525,7 @@ End Class
 
         [Theory]
         [CombinatorialData]
-        public async Task Insecure_JsonSerializer_Deserialize_DefinitelyDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Insecure_JsonSerializer_Deserialize_DefinitelyDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -544,7 +544,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task ExplicitlyNone_JsonSerializer_Deserialize_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task ExplicitlyNone_JsonSerializer_Deserialize_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -562,7 +562,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task AllAndBinder_JsonSerializer_Deserialize_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task AllAndBinder_JsonSerializer_Deserialize_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -593,7 +593,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task InitializeField_JsonSerializer_Diagnostic(NewtonsoftJsonVersion version)
+        public async Task InitializeField_JsonSerializer_DiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using Newtonsoft.Json;
@@ -613,7 +613,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Insecure_JsonSerializer_Populate_MaybeDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Insecure_JsonSerializer_Populate_MaybeDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -639,7 +639,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task Insecure_JsonSerializer_DeserializeGeneric_MaybeDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Insecure_JsonSerializer_DeserializeGeneric_MaybeDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -664,7 +664,7 @@ class Blah
         // Ideally, we'd transfer the JsonSerializerSettings' TypeNameHandling's state to the JsonSerializer's TypeNameHandling's state.
         [Theory]
         [CombinatorialData]
-        public async Task Insecure_JsonSerializer_FromInsecureSettings_DeserializeGeneric_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task Insecure_JsonSerializer_FromInsecureSettings_DeserializeGeneric_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             await VerifyCSharpWithJsonNetAsync(version, @"
 using System;
@@ -689,7 +689,7 @@ class Blah
 
         [Theory]
         [CombinatorialData]
-        public async Task TypeNameHandlingNoneBinderNonNull_JsonSerializer_Populate_NoDiagnostic(NewtonsoftJsonVersion version)
+        public async Task TypeNameHandlingNoneBinderNonNull_JsonSerializer_Populate_NoDiagnosticAsync(NewtonsoftJsonVersion version)
         {
             string serializationNamespace = "using System.Runtime.Serialization;";
 #if NETCOREAPP
@@ -735,7 +735,7 @@ class Blah
         [InlineData(@"dotnet_code_quality.CA2329.excluded_symbol_names = Met*
                       dotnet_code_quality.CA2330.excluded_symbol_names = Met*")]
         [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Method")]
-        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOption(string editorConfigText)
+        public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
             {

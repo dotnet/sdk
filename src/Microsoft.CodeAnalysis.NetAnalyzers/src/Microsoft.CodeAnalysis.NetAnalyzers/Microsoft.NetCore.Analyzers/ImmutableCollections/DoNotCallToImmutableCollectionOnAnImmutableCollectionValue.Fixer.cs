@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -20,7 +20,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class DoNotCallToImmutableCollectionOnAnImmutableCollectionValueFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotCallToImmutableCollectionOnAnImmutableCollectionValueAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -55,12 +55,12 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             var title = MicrosoftNetCoreAnalyzersResources.RemoveRedundantCall;
 
             context.RegisterCodeFix(new MyCodeAction(title,
-                                        async cancellationToken => await RemoveRedundantCall(document, root, invocationNode, invocationOperation).ConfigureAwait(false),
+                                        async cancellationToken => await RemoveRedundantCallAsync(document, root, invocationNode, invocationOperation).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     diagnostic);
         }
 
-        private static Task<Document> RemoveRedundantCall(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
+        private static Task<Document> RemoveRedundantCallAsync(Document document, SyntaxNode root, SyntaxNode invocationNode, IInvocationOperation invocationOperation)
         {
             var instance = invocationOperation.GetInstanceSyntax().WithTriviaFrom(invocationNode);
             var newRoot = root.ReplaceNode(invocationNode, instance);

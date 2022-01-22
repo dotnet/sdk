@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
     public class AvoidUnusedPrivateFieldsFixerTests
     {
         [Fact]
-        public async Task CA1823CSharp()
+        public async Task CA1823CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
                 @"  
@@ -53,7 +53,7 @@ class C
         }
 
         [Fact]
-        public async Task CA1823VisualBasic()
+        public async Task CA1823VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
                 @"

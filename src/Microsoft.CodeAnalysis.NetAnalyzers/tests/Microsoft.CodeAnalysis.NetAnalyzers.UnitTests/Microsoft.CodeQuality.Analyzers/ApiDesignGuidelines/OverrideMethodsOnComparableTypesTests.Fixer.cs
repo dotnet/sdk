@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public partial class OverrideMethodsOnComparableTypesTests
     {
         [Fact]
-        public async Task CA1036ClassGenerateAllCSharp()
+        public async Task CA1036ClassGenerateAllCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -98,7 +98,7 @@ public class A : IComparable
         }
 
         [Fact]
-        public async Task CA1036StructGenerateAllCSharp()
+        public async Task CA1036StructGenerateAllCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -166,7 +166,7 @@ public struct A : IComparable
         }
 
         [Fact]
-        public async Task CA1036ClassGenerateSomeCSharp()
+        public async Task CA1036ClassGenerateSomeCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -259,7 +259,7 @@ public class A : IComparable
         }
 
         [Fact]
-        public async Task CA1036StructGenerateSomeCSharp()
+        public async Task CA1036StructGenerateSomeCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -337,7 +337,7 @@ public struct A : IComparable
         }
 
         [Fact]
-        public async Task CA1036ClassGenerateAllVisualBasic()
+        public async Task CA1036ClassGenerateAllVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -408,7 +408,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1036StructGenerateAllVisualBasic()
+        public async Task CA1036StructGenerateAllVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -467,7 +467,7 @@ End Structure
         }
 
         [Fact]
-        public async Task CA1036ClassGenerateSomeVisualBasic()
+        public async Task CA1036ClassGenerateSomeVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -546,7 +546,7 @@ End Class
         }
 
         [Fact]
-        public async Task CA1036StructGenerateSomeVisualBasic()
+        public async Task CA1036StructGenerateSomeVisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System
@@ -613,7 +613,7 @@ End Structure
         }
 
         [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
-        public async Task CA1036_CSharp_MultipleViolations()
+        public async Task CA1036_CSharp_MultipleViolationsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
 using System;
@@ -754,7 +754,7 @@ public struct SomeOtherClass : IComparable
         }
 
         [Fact, WorkItem(1395, "https://github.com/dotnet/roslyn-analyzers/issues/1395")]
-        public async Task CA1036_Basic_MultipleViolations()
+        public async Task CA1036_Basic_MultipleViolationsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
 Imports System

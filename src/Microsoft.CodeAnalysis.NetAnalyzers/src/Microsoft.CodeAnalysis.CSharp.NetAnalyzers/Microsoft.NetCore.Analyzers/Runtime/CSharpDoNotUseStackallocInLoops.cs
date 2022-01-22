@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
@@ -34,10 +35,19 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                         case SyntaxKind.AnonymousMethodExpression:
                             return;
 
+                        // foreach loops are special, in that as with other loops we don't want stackallocs
+                        // in the body of the loop, but in the expression of a foreach is ok.
+                        case SyntaxKind.ForEachStatement:
+                            ForEachStatementSyntax foreachStatement = (ForEachStatementSyntax)node;
+                            if (foreachStatement.Expression.Contains(ctx.Node))
+                            {
+                                continue;
+                            }
+                            goto case SyntaxKind.WhileStatement; // fall through
+
                         // Look for loops.  We don't bother with ad-hoc loops via gotos as we're
                         // too likely to incur false positives.
                         case SyntaxKind.ForStatement:
-                        case SyntaxKind.ForEachStatement:
                         case SyntaxKind.WhileStatement:
                         case SyntaxKind.DoStatement:
 

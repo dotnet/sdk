@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -10,21 +10,23 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>CA1805: Do not initialize unnecessarily.</summary>
     public abstract class DoNotInitializeUnnecessarilyAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1805";
 
-        internal static DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(RuleId,
-            new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
-            new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyMessage), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
+        internal static readonly DiagnosticDescriptor DefaultRule = DiagnosticDescriptorHelper.Create(RuleId,
+            CreateLocalizableResourceString(nameof(DoNotInitializeUnnecessarilyTitle)),
+            CreateLocalizableResourceString(nameof(DoNotInitializeUnnecessarilyMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeHidden_BulkConfigurable,
-            new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources)),
+            CreateLocalizableResourceString(nameof(DoNotInitializeUnnecessarilyDescription)),
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(DefaultRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(DefaultRule);
 
         /// <summary>
         /// Special-case `null!`/`default!` to not warn about it, as it's often used to suppress nullable warnings on fields.

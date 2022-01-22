@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using System.Linq;
@@ -9,97 +9,74 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class SerializationRulesDiagnosticAnalyzer : DiagnosticAnalyzer
     {
         // Implement serialization constructors
         internal const string RuleCA2229Id = "CA2229";
 
-        private static readonly LocalizableString s_localizableTitleCA2229 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsTitle),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitleCA2229 = CreateLocalizableResourceString(nameof(ImplementSerializationConstructorsTitle));
+        private static readonly LocalizableString s_localizableDescriptionCA2229 = CreateLocalizableResourceString(nameof(ImplementSerializationConstructorsDescription));
 
-        private static readonly LocalizableString s_localizableDescriptionCA2229 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsDescription),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(
+            RuleCA2229Id,
+            s_localizableTitleCA2229,
+            ImplementSerializationConstructorsMessageCreateMagicConstructor,
+            DiagnosticCategory.Usage,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescriptionCA2229,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor RuleCA2229Default = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
-                                                                        s_localizableTitleCA2229,
-                                                                        MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageCreateMagicConstructor,
-                                                                        DiagnosticCategory.Usage,
-                                                                        RuleLevel.IdeHidden_BulkConfigurable,
-                                                                        description: s_localizableDescriptionCA2229,
-                                                                        isPortedFxCopRule: true,
-                                                                        isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(
+            RuleCA2229Id,
+            s_localizableTitleCA2229,
+            ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
+            DiagnosticCategory.Usage,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescriptionCA2229,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        internal static DiagnosticDescriptor RuleCA2229Sealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
-                                                                            s_localizableTitleCA2229,
-                                                                            MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate,
-                                                                            DiagnosticCategory.Usage,
-                                                                            RuleLevel.IdeHidden_BulkConfigurable,
-                                                                            description: s_localizableDescriptionCA2229,
-                                                                            isPortedFxCopRule: true,
-                                                                        isDataflowRule: false);
-
-        internal static DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(RuleCA2229Id,
-                                                                                s_localizableTitleCA2229,
-                                                                                MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
-                                                                                DiagnosticCategory.Usage,
-                                                                                RuleLevel.IdeHidden_BulkConfigurable,
-                                                                                description: s_localizableDescriptionCA2229,
-                                                                                isPortedFxCopRule: true,
-                                                                        isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleCA2229Unsealed = DiagnosticDescriptorHelper.Create(
+            RuleCA2229Id,
+            s_localizableTitleCA2229,
+            ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily,
+            DiagnosticCategory.Usage,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescriptionCA2229,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         // Mark ISerializable types with SerializableAttribute
         internal const string RuleCA2237Id = "CA2237";
 
-        private static readonly LocalizableString s_localizableTitleCA2237 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableTitle),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableMessageCA2237 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableMessage),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableDescriptionCA2237 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkISerializableTypesWithSerializableDescription),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(RuleCA2237Id,
-                                                                        s_localizableTitleCA2237,
-                                                                        s_localizableMessageCA2237,
-                                                                        DiagnosticCategory.Usage,
-                                                                        RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
-                                                                        description: s_localizableDescriptionCA2237,
-                                                                        isPortedFxCopRule: true,
-                                                                        isDataflowRule: false);
+        internal static readonly DiagnosticDescriptor RuleCA2237 = DiagnosticDescriptorHelper.Create(
+            RuleCA2237Id,
+            CreateLocalizableResourceString(nameof(MarkISerializableTypesWithSerializableTitle)),
+            CreateLocalizableResourceString(nameof(MarkISerializableTypesWithSerializableMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
+            description: CreateLocalizableResourceString(nameof(MarkISerializableTypesWithSerializableDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
         // Mark all non-serializable fields
         internal const string RuleCA2235Id = "CA2235";
 
-        private static readonly LocalizableString s_localizableTitleCA2235 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsTitle),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        internal static readonly DiagnosticDescriptor RuleCA2235 = DiagnosticDescriptorHelper.Create(
+            RuleCA2235Id,
+            CreateLocalizableResourceString(nameof(MarkAllNonSerializableFieldsTitle)),
+            CreateLocalizableResourceString(nameof(MarkAllNonSerializableFieldsMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
+            description: CreateLocalizableResourceString(nameof(MarkAllNonSerializableFieldsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
 
-        private static readonly LocalizableString s_localizableMessageCA2235 =
-            new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsMessage),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        private static readonly LocalizableString s_localizableDescriptionCA2235 =
-            new LocalizableResourceString(
-                nameof(MicrosoftNetCoreAnalyzersResources.MarkAllNonSerializableFieldsDescription),
-                MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-
-        internal static DiagnosticDescriptor RuleCA2235 = DiagnosticDescriptorHelper.Create(RuleCA2235Id,
-                                                                        s_localizableTitleCA2235,
-                                                                        s_localizableMessageCA2235,
-                                                                        DiagnosticCategory.Usage,
-                                                                        RuleLevel.CandidateForRemoval,   // Cannot implement this for .NET Core: https://github.com/dotnet/roslyn-analyzers/issues/1775#issuecomment-518457308
-                                                                        description: s_localizableDescriptionCA2235,
-                                                                        isPortedFxCopRule: true,
-                                                                        isDataflowRule: false);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleCA2229Default, RuleCA2229Sealed, RuleCA2229Unsealed, RuleCA2235, RuleCA2237);
 
         public override void Initialize(AnalysisContext context)
         {

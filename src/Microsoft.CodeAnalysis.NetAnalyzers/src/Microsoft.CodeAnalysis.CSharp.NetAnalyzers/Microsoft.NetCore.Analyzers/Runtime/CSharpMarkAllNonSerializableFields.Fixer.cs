@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Composition;
 using Microsoft.CodeAnalysis;
@@ -14,12 +14,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override SyntaxNode? GetFieldDeclarationNode(SyntaxNode node)
         {
             SyntaxNode fieldNode = node;
-            while (fieldNode != null && fieldNode.Kind() != SyntaxKind.FieldDeclaration)
+            while (fieldNode != null && !fieldNode.IsKind(SyntaxKind.FieldDeclaration))
             {
                 fieldNode = fieldNode.Parent;
             }
 
-            return fieldNode?.Kind() == SyntaxKind.FieldDeclaration ? fieldNode : null;
+            return fieldNode.IsKind(SyntaxKind.FieldDeclaration) ? fieldNode : null;
         }
     }
 }

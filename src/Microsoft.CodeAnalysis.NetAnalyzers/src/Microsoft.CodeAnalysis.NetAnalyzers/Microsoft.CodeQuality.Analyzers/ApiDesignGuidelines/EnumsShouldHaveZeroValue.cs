@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -12,6 +12,8 @@ using System.Diagnostics;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
+    using static MicrosoftCodeQualityAnalyzersResources;
+
     /// <summary>
     /// CA1008: Enums should have zero value
     ///
@@ -41,43 +43,43 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public const string RuleMultipleZeroCustomTag = "RuleMultipleZero";
         public const string RuleNoZeroCustomTag = "RuleNoZero";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueTitle), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueDescription), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueDescription));
 
-        private static readonly LocalizableString s_localizableMessageRuleRename = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsRename), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleRename = DiagnosticDescriptorHelper.Create(RuleId,
-                                                                       s_localizableTitle,
-                                                                       s_localizableMessageRuleRename,
-                                                                       DiagnosticCategory.Design,
-                                                                       RuleLevel.Disabled,
-                                                                       description: s_localizableDescription,
-                                                                       isPortedFxCopRule: true,
-                                                                       isDataflowRule: false,
-                                                                       additionalCustomTags: RuleRenameCustomTag);
+        internal static readonly DiagnosticDescriptor RuleRename = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueMessageFlagsRename)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            additionalCustomTags: RuleRenameCustomTag);
 
-        private static readonly LocalizableString s_localizableMessageRuleMultipleZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageFlagsMultipleZeros), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleMultipleZero = DiagnosticDescriptorHelper.Create(RuleId,
-                                                               s_localizableTitle,
-                                                               s_localizableMessageRuleMultipleZero,
-                                                               DiagnosticCategory.Design,
-                                                               RuleLevel.Disabled,
-                                                               description: s_localizableDescription,
-                                                               isPortedFxCopRule: true,
-                                                               isDataflowRule: false,
-                                                               additionalCustomTags: RuleMultipleZeroCustomTag);
+        internal static readonly DiagnosticDescriptor RuleMultipleZero = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueMessageFlagsMultipleZeros)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            additionalCustomTags: RuleMultipleZeroCustomTag);
 
-        private static readonly LocalizableString s_localizableMessageRuleNoZero = new LocalizableResourceString(nameof(MicrosoftCodeQualityAnalyzersResources.EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue), MicrosoftCodeQualityAnalyzersResources.ResourceManager, typeof(MicrosoftCodeQualityAnalyzersResources));
-        internal static DiagnosticDescriptor RuleNoZero = DiagnosticDescriptorHelper.Create(RuleId,
-                                                               s_localizableTitle,
-                                                               s_localizableMessageRuleNoZero,
-                                                               DiagnosticCategory.Design,
-                                                               RuleLevel.Disabled,
-                                                               description: s_localizableDescription,
-                                                               isPortedFxCopRule: true,
-                                                               isDataflowRule: false,
-                                                               additionalCustomTags: RuleNoZeroCustomTag);
+        internal static readonly DiagnosticDescriptor RuleNoZero = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(EnumsShouldHaveZeroValueMessageNotFlagsNoZeroValue)),
+            DiagnosticCategory.Design,
+            RuleLevel.Disabled,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false,
+            additionalCustomTags: RuleNoZeroCustomTag);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(RuleRename, RuleMultipleZero, RuleNoZero);
 
         public override void Initialize(AnalysisContext context)
         {

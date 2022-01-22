@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -13,6 +13,8 @@ using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
+    using static MicrosoftNetCoreAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class UseValidPlatformString : DiagnosticAnalyzer
     {
@@ -23,40 +25,37 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         private const string VersionSuffix = "VersionAtLeast";
         private const string macOS = nameof(macOS);
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringTitle), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableUnknownPlatform = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringUnknownPlatform), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableInvalidVersion = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringInvalidVersion), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableNoVersion = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringNoVersion), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(MicrosoftNetCoreAnalyzersResources.UseValidPlatformStringDescription), MicrosoftNetCoreAnalyzersResources.ResourceManager, typeof(MicrosoftNetCoreAnalyzersResources));
+        private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(UseValidPlatformStringTitle));
+        private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(UseValidPlatformStringDescription));
 
-        internal static DiagnosticDescriptor UnknownPlatform = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor UnknownPlatform = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
-                                                                              s_localizableUnknownPlatform,
+                                                                              CreateLocalizableResourceString(nameof(UseValidPlatformStringUnknownPlatform)),
                                                                               DiagnosticCategory.Interoperability,
                                                                               RuleLevel.BuildWarning,
                                                                               description: s_localizableDescription,
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor InvalidVersion = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor InvalidVersion = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
-                                                                              s_localizableInvalidVersion,
+                                                                              CreateLocalizableResourceString(nameof(UseValidPlatformStringInvalidVersion)),
                                                                               DiagnosticCategory.Interoperability,
                                                                               RuleLevel.BuildWarning,
                                                                               description: s_localizableDescription,
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
 
-        internal static DiagnosticDescriptor NoVersion = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor NoVersion = DiagnosticDescriptorHelper.Create(RuleId,
                                                                               s_localizableTitle,
-                                                                              s_localizableNoVersion,
+                                                                              CreateLocalizableResourceString(nameof(UseValidPlatformStringNoVersion)),
                                                                               DiagnosticCategory.Interoperability,
                                                                               RuleLevel.BuildWarning,
                                                                               description: s_localizableDescription,
                                                                               isPortedFxCopRule: false,
                                                                               isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(UnknownPlatform, InvalidVersion, NoVersion);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(UnknownPlatform, InvalidVersion, NoVersion);
 
         public override void Initialize(AnalysisContext context)
         {

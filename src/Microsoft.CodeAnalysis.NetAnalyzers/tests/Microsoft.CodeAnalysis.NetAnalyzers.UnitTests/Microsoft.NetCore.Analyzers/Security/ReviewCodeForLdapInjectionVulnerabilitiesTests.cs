@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -18,7 +18,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => ReviewCodeForLdapInjectionVulnerabilities.Rule;
 
         [Fact]
-        public async Task DocSample1_CSharp_Violation_Diagnostic()
+        public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await new VerifyCS.Test
             {
@@ -62,7 +62,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DocSample1_VB_Violation_Diagnostic()
+        public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
             {
@@ -105,7 +105,7 @@ End Class",
         }
 
         [Fact]
-        public async Task DirectoryEntry_Path_Diagnostic()
+        public async Task DirectoryEntry_Path_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -125,7 +125,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DirectoryEntry_Username_NoDiagnostic()
+        public async Task DirectoryEntry_Username_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -144,7 +144,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DirectorySearcher_Filter_Diagnostic()
+        public async Task DirectorySearcher_Filter_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -165,7 +165,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task DirectoryEntry_Path_Sanitized_NoDiagnostic()
+        public async Task DirectoryEntry_Path_Sanitized_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System;
@@ -186,7 +186,7 @@ public partial class WebForm : System.Web.UI.Page
         }
 
         [Fact]
-        public async Task AspNetCoreHttpRequest_DirectoryEntry_Path_Diagnostic()
+        public async Task AspNetCoreHttpRequest_DirectoryEntry_Path_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
 using System.DirectoryServices;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -10,7 +10,7 @@ using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
-using Resx = Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
+using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -18,17 +18,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA1845";
 
-        private static readonly LocalizableString s_localizableTitle = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatTitle), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableMessage = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatMessage), Resx.ResourceManager, typeof(Resx));
-        private static readonly LocalizableString s_localizableDescription = new LocalizableResourceString(nameof(Resx.UseSpanBasedStringConcatDescription), Resx.ResourceManager, typeof(Resx));
-
         internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
             RuleId,
-            s_localizableTitle,
-            s_localizableMessage,
+            CreateLocalizableResourceString(nameof(UseSpanBasedStringConcatTitle)),
+            CreateLocalizableResourceString(nameof(UseSpanBasedStringConcatMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.IdeSuggestion,
-            s_localizableDescription,
+            CreateLocalizableResourceString(nameof(UseSpanBasedStringConcatDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
@@ -46,7 +42,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// </summary>
         private protected abstract IOperation WalkDownBuiltInImplicitConversionOnConcatOperand(IOperation operand);
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public sealed override void Initialize(AnalysisContext context)
         {

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class ExceptionsShouldBePublicFixerTests
     {
         [Fact]
-        public async Task TestCSharpNonPublicException()
+        public async Task TestCSharpNonPublicExceptionAsync()
         {
             var original = @"
 using System;
@@ -34,7 +34,7 @@ public class InternalException : Exception
         }
 
         [Fact]
-        public async Task TestCSharpNonPublicException2()
+        public async Task TestCSharpNonPublicException2Async()
         {
             var original = @"
 using System;
@@ -60,7 +60,7 @@ public class Outer
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException()
+        public async Task TestVBasicNonPublicExceptionAsync()
         {
             var original = @"
 Imports System
@@ -80,7 +80,7 @@ End Class";
         }
 
         [Fact]
-        public async Task TestVBasicNonPublicException2()
+        public async Task TestVBasicNonPublicException2Async()
         {
             var original = @"
 Imports System

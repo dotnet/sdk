@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class AvoidExcessiveParametersOnGenericTypesTests
     {
         [Fact]
-        public async Task ClassWithMoreThanTwoTypeParameters_Diagnostic()
+        public async Task ClassWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class C<T1, T2, T3> {}",
@@ -27,7 +27,7 @@ End Class",
         }
 
         [Fact]
-        public async Task InterfaceWithMoreThanTwoTypeParameters_Diagnostic()
+        public async Task InterfaceWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public interface [|I|]<T1, T2, T3> {}");
@@ -38,7 +38,7 @@ End Interface");
         }
 
         [Fact]
-        public async Task StructWithMoreThanTwoTypeParameters_Diagnostic()
+        public async Task StructWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public struct [|S|]<T1, T2, T3> {}");
@@ -49,7 +49,7 @@ End Structure");
         }
 
         [Fact]
-        public async Task ClassImplementsInterfaceWithMoreThanTwoTypeParameters_Diagnostic()
+        public async Task ClassImplementsInterfaceWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class [|I|]<T1, T2, T3> {}
@@ -72,7 +72,7 @@ End Class");
         }
 
         [Fact]
-        public async Task ClassInheritsClassWithMoreThanTwoTypeParameters_Diagnostic()
+        public async Task ClassInheritsClassWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 public class [|C|]<T1, T2, T3> {}
@@ -119,7 +119,7 @@ End Class");
         // Invalid analyzer option ignored
         [InlineData("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1005.api_surface_2 = private")]
-        public async Task CSharp_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
             {
@@ -167,7 +167,7 @@ public class OuterClass
         // Invalid analyzer option ignored
         [InlineData("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1005.api_surface_2 = Private")]
-        public async Task VisualBasic_ApiSurfaceOption(string accessibility, string editorConfigText)
+        public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
             {

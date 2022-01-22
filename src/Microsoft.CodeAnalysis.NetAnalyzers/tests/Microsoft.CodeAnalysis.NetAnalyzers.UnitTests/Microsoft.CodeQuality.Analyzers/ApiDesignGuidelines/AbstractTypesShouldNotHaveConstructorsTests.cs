@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Test.Utilities;
@@ -15,7 +15,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     public class CA1012Tests
     {
         [Fact]
-        public async Task TestCSPublicAbstractClass()
+        public async Task TestCSPublicAbstractClassAsync()
         {
             var code = @"
 public abstract class [|C|]
@@ -37,7 +37,7 @@ public abstract class C
         }
 
         [Fact]
-        public async Task TestVBPublicAbstractClass()
+        public async Task TestVBPublicAbstractClassAsync()
         {
             var code = @"
 Public MustInherit Class [|C|]
@@ -55,7 +55,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestCSInternalAbstractClass()
+        public async Task TestCSInternalAbstractClassAsync()
         {
             var code = @"
 abstract class C
@@ -69,7 +69,7 @@ abstract class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestVBInternalAbstractClass()
+        public async Task TestVBInternalAbstractClassAsync()
         {
             var code = @"
 MustInherit Class C
@@ -81,7 +81,7 @@ End Class
         }
 
         [Fact]
-        public async Task TestCSAbstractClassWithProtectedConstructor()
+        public async Task TestCSAbstractClassWithProtectedConstructorAsync()
         {
             var code = @"
 public abstract class C
@@ -95,7 +95,7 @@ public abstract class C
         }
 
         [Fact]
-        public async Task TestVBAbstractClassWithProtectedConstructor()
+        public async Task TestVBAbstractClassWithProtectedConstructorAsync()
         {
             var code = @"
 Public MustInherit Class C
@@ -107,7 +107,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestCSNestedAbstractClassWithPublicConstructor1()
+        public async Task TestCSNestedAbstractClassWithPublicConstructor1Async()
         {
             var code = @"
 public struct C
@@ -122,7 +122,7 @@ public struct C
         }
 
         [Fact]
-        public async Task TestVBNestedAbstractClassWithPublicConstructor1()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor1Async()
         {
             var code = @"
 Public Structure C
@@ -144,7 +144,7 @@ End Structure
         }
 
         [Fact]
-        public async Task TestNestedAbstractClassWithPublicConstructor2()
+        public async Task TestNestedAbstractClassWithPublicConstructor2Async()
         {
             var code = @"
 public abstract class C
@@ -168,7 +168,7 @@ public abstract class C
         }
 
         [Fact]
-        public async Task TestVBNestedAbstractClassWithPublicConstructor2()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor2Async()
         {
             var code = @"
 Public MustInherit Class C
@@ -190,7 +190,7 @@ End Class
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestNestedAbstractClassWithPublicConstructor3()
+        public async Task TestNestedAbstractClassWithPublicConstructor3Async()
         {
             var code = @"
 internal abstract class C
@@ -205,7 +205,7 @@ internal abstract class C
         }
 
         [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        public async Task TestVBNestedAbstractClassWithPublicConstructor3()
+        public async Task TestVBNestedAbstractClassWithPublicConstructor3Async()
         {
             var code = @"
 MustInherit Class C

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Immutable;
@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
@@ -17,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDoNotInitializeUnnecessarilyFixer : CodeFixProvider
     {
-        public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DoNotInitializeUnnecessarilyAnalyzer.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DoNotInitializeUnnecessarilyAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
@@ -43,7 +44,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         if (node.Parent is PropertyDeclarationSyntax prop)
                         {
                             // For a property, we also need to get rid of the semicolon that follows the initializer.
-                            editor.ReplaceNode(prop, prop.WithInitializer(default).WithSemicolonToken(default).WithTrailingTrivia(prop.SemicolonToken.TrailingTrivia));
+                            var newProp = prop.TrackNodes(node);
+                            var newTrailingTrivia = newProp.Initializer.GetTrailingTrivia()
+                                                    .AddRange(newProp.SemicolonToken.LeadingTrivia)
+                                                    .AddRange(newProp.SemicolonToken.TrailingTrivia);
+                            newProp = newProp.WithSemicolonToken(default)
+                                        .WithTrailingTrivia(newTrailingTrivia)
+                                        .WithAdditionalAnnotations(Formatter.Annotation);
+
+                            newProp = newProp.RemoveNode(newProp.GetCurrentNode(node), SyntaxRemoveOptions.KeepExteriorTrivia);
+                            editor.ReplaceNode(prop, newProp);
                         }
                         else
                         {

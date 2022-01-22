@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     public class UseRSAWithSufficientKeySizeTests
     {
         [Fact]
-        public async Task Issue2697()
+        public async Task Issue2697Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -29,7 +29,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterDiagnostic()
+        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -45,7 +45,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestConstantDiagnostic()
+        public async Task TestConstantDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -62,7 +62,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithoutParameterDiagnostic()
+        public async Task TestCreateWithoutParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -78,7 +78,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithRSAArgDiagnostic()
+        public async Task TestCreateWithRSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -94,7 +94,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithSystemSecurityCryptographyRSAArgDiagnostic()
+        public async Task TestCreateWithSystemSecurityCryptographyRSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -110,7 +110,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithSystemSecurityCryptographyAsymmetricAlgorithmArgDiagnostic()
+        public async Task TestCreateWithSystemSecurityCryptographyAsymmetricAlgorithmArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -126,7 +126,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAArgDiagnostic()
+        public async Task TestCreateFromNameWithRSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -142,7 +142,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAArgDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -158,7 +158,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmArgDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmArgDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -174,7 +174,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAAndKeySize1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithRSAAndKeySize1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -190,7 +190,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndKeySize1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndKeySize1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -206,7 +206,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndKeySize1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndKeySize1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -222,7 +222,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAAndObjectArray1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithRSAAndObjectArray1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -239,7 +239,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndObjectArray1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndObjectArray1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -256,7 +256,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndObjectArray1024ArgsDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndObjectArray1024ArgsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -273,7 +273,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCaseSensitiveDiagnostic()
+        public async Task TestCaseSensitiveDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -290,7 +290,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnObjectOfRSADerivedClassNoDiagnostic()
+        public async Task TestReturnObjectOfRSADerivedClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -305,7 +305,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterNoDiagnostic()
+        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -320,7 +320,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfRSADerivedClassWithoutParameterNoDiagnostic()
+        public async Task TestCreateObjectOfRSADerivedClassWithoutParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -335,7 +335,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfRSADerivedClassWithCngKeyParameterNoDiagnostic()
+        public async Task TestCreateObjectOfRSADerivedClassWithCngKeyParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -350,7 +350,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterUnassignedKeySizeDiagnostic()
+        public async Task TestCreateObjectOfRSADerivedClassWithInt32ParameterUnassignedKeySizeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -365,7 +365,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateWithECDsaArgNoDiagnostic()
+        public async Task TestCreateWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -380,7 +380,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithECDsaArgNoDiagnostic()
+        public async Task TestCreateFromNameWithECDsaArgNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -395,7 +395,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithECDsaAndKeySize1024ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithECDsaAndKeySize1024ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -410,7 +410,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAAndKeySize2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithRSAAndKeySize2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -425,7 +425,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAAndKeySizeArgsUnassignedKeySizeNoDiagnostic()
+        public async Task TestCreateFromNameWithRSAAndKeySizeArgsUnassignedKeySizeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -440,7 +440,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndKeySize2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndKeySize2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -455,7 +455,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndKeySize2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndKeySize2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;
@@ -470,7 +470,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithECDsaAndObjectArray1024ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithECDsaAndObjectArray1024ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -486,7 +486,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithRSAAndObjectArray2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithRSAAndObjectArray2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -502,7 +502,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndObjectArray2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyRSAAndObjectArray2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -518,7 +518,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndObjectArray2048ArgsNoDiagnostic()
+        public async Task TestCreateFromNameWithSystemSecurityCryptographyAsymmetricAlgorithmAndObjectArray2048ArgsNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
@@ -534,7 +534,7 @@ class TestClass
         }
 
         [Fact]
-        public async Task TestReturnVoidNoDiagnostic()
+        public async Task TestReturnVoidNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Security.Cryptography;

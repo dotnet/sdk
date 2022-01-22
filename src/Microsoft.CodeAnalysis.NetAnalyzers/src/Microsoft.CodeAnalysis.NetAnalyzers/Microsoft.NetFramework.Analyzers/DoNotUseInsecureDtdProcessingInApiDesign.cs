@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the Apache License, Version 2.0.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -14,24 +14,26 @@ using Microsoft.NetFramework.Analyzers.Helpers;
 
 namespace Microsoft.NetFramework.Analyzers
 {
+    using static MicrosoftNetFrameworkAnalyzersResources;
+
     [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
     public sealed class DoNotUseInsecureDtdProcessingInApiDesignAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA3077";
 
-        internal static DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessingInApiDesign =
+        internal static readonly DiagnosticDescriptor RuleDoNotUseInsecureDtdProcessingInApiDesign =
             DiagnosticDescriptorHelper.Create(
                 RuleId,
-                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.InsecureDtdProcessingInApiDesign)),
-                nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingGenericMessage),
+                CreateLocalizableResourceString(nameof(InsecureDtdProcessingInApiDesign)),
+                nameof(DoNotUseInsecureDtdProcessingGenericMessage),
                 DiagnosticCategory.Security,
                 RuleLevel.IdeHidden_BulkConfigurable,
-                SecurityDiagnosticHelpers.GetLocalizableResourceString(nameof(MicrosoftNetFrameworkAnalyzersResources.DoNotUseInsecureDtdProcessingInApiDesignDescription)),
+                CreateLocalizableResourceString(nameof(DoNotUseInsecureDtdProcessingInApiDesignDescription)),
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessingInApiDesign);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+            ImmutableArray.Create(RuleDoNotUseInsecureDtdProcessingInApiDesign);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -149,8 +151,8 @@ namespace Microsoft.NetFramework.Analyzers
                     context.ReportDiagnostic(
                         methodSymbol.CreateDiagnostic(
                             RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                            SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage),
+                            CreateLocalizableResourceString(
+                                nameof(XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage),
                                 SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
                             )
                         )
@@ -188,8 +190,8 @@ namespace Microsoft.NetFramework.Analyzers
                         context.ReportDiagnostic(
                             assignment.CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage),
+                                CreateLocalizableResourceString(
+                                    nameof(XmlDocumentDerivedClassSetInsecureXmlResolverInMethodMessage),
                                     methodSymbol.Name
                                 )
                             )
@@ -265,8 +267,8 @@ namespace Microsoft.NetFramework.Analyzers
                         context.ReportDiagnostic(
                             methodSymbol.CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage),
+                                CreateLocalizableResourceString(
+                                    nameof(XmlTextReaderDerivedClassConstructorNoSecureSettingsMessage),
                                     SecurityDiagnosticHelpers.GetNonEmptyParentName(methodSymbol)
                                 )
                             )
@@ -374,8 +376,8 @@ namespace Microsoft.NetFramework.Analyzers
                         context.ReportDiagnostic(
                             locations.OrderBy(l => l.SourceSpan.Start).CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage),
+                                CreateLocalizableResourceString(
+                                    nameof(XmlTextReaderDerivedClassSetInsecureSettingsInMethodMessage),
                                     methodSymbol.Name
                                 )
                             )
@@ -412,8 +414,8 @@ namespace Microsoft.NetFramework.Analyzers
                         context.ReportDiagnostic(
                             typeSymbol.CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassNoConstructorMessage),
+                                CreateLocalizableResourceString(
+                                    nameof(XmlDocumentDerivedClassNoConstructorMessage),
                                     typeSymbol.Name
                                 )
                             )
@@ -452,8 +454,8 @@ namespace Microsoft.NetFramework.Analyzers
                         context.ReportDiagnostic(
                             typeSymbol.CreateDiagnostic(
                                 RuleDoNotUseInsecureDtdProcessingInApiDesign,
-                                SecurityDiagnosticHelpers.GetLocalizableResourceString(
-                                    nameof(MicrosoftNetFrameworkAnalyzersResources.XmlTextReaderDerivedClassNoConstructorMessage),
+                                CreateLocalizableResourceString(
+                                    nameof(XmlTextReaderDerivedClassNoConstructorMessage),
                                     symbol.Name
                                 )
                             )
