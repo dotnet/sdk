@@ -18,9 +18,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
         public string DataFile { get; set; }
 
         [Required]
-        public string BaselineDataFile { get; set; }
-
-        [Required]
         public string OutputBaselineFile { get; set; }
 
         [Required]
@@ -28,14 +25,25 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
 
         public bool AllowTestProjectUsage { get; set; }
 
+        public string BaselineDataFile { get; set; }
+
         public override bool Execute()
         {
             var used = UsageData.Parse(XElement.Parse(File.ReadAllText(DataFile)));
-            var baseline = UsageData.Parse(XElement.Parse(File.ReadAllText(BaselineDataFile)));
+
+            IEnumerable<Usage> baselineUsages;
+            if (File.Exists(BaselineDataFile))
+            {
+                baselineUsages = UsageData.Parse(XElement.Parse(File.ReadAllText(BaselineDataFile))).Usages;
+            }
+            else
+            {
+                baselineUsages = Enumerable.Empty<Usage>();
+            }
 
             Comparison<PackageIdentity> diff = Compare(
                 used.Usages.Select(u => u.GetIdentityWithoutRid()).Distinct(),
-                baseline.Usages.Select(u => u.GetIdentityWithoutRid()).Distinct());
+                baselineUsages.Select(u => u.GetIdentityWithoutRid()).Distinct());
 
             var report = new XElement("BaselineComparison");
 

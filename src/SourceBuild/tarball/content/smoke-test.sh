@@ -51,10 +51,13 @@ excludeWebNoHttpsTests=false
 excludeWebHttpsTests=false
 excludeLocalTests=false
 excludeOnlineTests=false
+excludeOmniSharpTests=${excludeOmniSharpTests:-false}
 devCertsVersion="$DEV_CERTS_VERSION_DEFAULT"
 testingDir="$SCRIPT_ROOT/testing-smoke"
 cliDir="$testingDir/builtCli"
-logFile="$testingDir/smoke-test.log"
+logsDir="$testingDir/logs"
+logFile="$logsDir/smoke-test.log"
+omnisharpLogFile="$logsDir/omnisharp.log"
 restoredPackagesDir="$testingDir/packages"
 testingHome="$testingDir/home"
 archiveRestoredPackages=false
@@ -78,6 +81,7 @@ function usage() {
     echo "  --excludeWebHttpsTests         don't run web project tests with https using dotnet-dev-certs"
     echo "  --excludeLocalTests            exclude tests that use local sources for nuget packages"
     echo "  --excludeOnlineTests           exclude test that use online sources for nuget packages"
+    echo "  --excludeOmniSharpTests        don't run the OmniSharp tests"
     echo "  --devCertsVersion <version>    use dotnet-dev-certs <version> instead of default $DEV_CERTS_VERSION_DEFAULT"
     echo "  --prodConBlobFeedUrl <url>     override the prodcon blob feed specified in ProdConFeed.txt, removing it if empty"
     echo "  --archiveRestoredPackages      capture all restored packages to $archivedPackagesDir"
@@ -135,6 +139,9 @@ while :; do
             ;;
         --excludeonlinetests)
             excludeOnlineTests=true
+            ;;
+        --excludeomnisharptests)
+            excludeOmniSharpTests=true
             ;;
         --devcertsversion)
             shift
@@ -205,7 +212,7 @@ function doCommand() {
             binlogHttpsPart="https"
         fi
 
-        binlogPrefix="$testingDir/${projectDir}_${binlogOnlinePart}_${binlogHttpsPart}_"
+        binlogPrefix="$logsDir/${projectDir}_${binlogOnlinePart}_${binlogHttpsPart}_"
         binlog="${binlogPrefix}$1.binlog"
         echo "    running $1" | tee -a "$logFile"
 
@@ -618,7 +625,7 @@ function runOmniSharpTests() {
         "${dotnetCmd}" new $project
         popd
 
-        ./omnisharp/run -s "$(readlink -f hello-$project)" > omnisharp.log &
+        ./omnisharp/run -s "$(readlink -f hello-$project)" > "$omnisharpLogFile" &
 
         sleep 5
 
@@ -631,9 +638,9 @@ function runOmniSharpTests() {
 
         kill "$(pgrep -f "$(pwd)")"
 
-        cat omnisharp.log
+        cat "$omnisharpLogFile"
 
-        if grep ERROR omnisharp.log; then
+        if grep ERROR "$omnisharpLogFile"; then
             echo "test failed"
             exit 1
         else
@@ -701,6 +708,7 @@ if [ -e "$testingDir"  ]; then
 fi
 
 mkdir -p "$testingDir"
+mkdir -p "$logsDir"
 cd "$testingDir"
 
 # Create blank Directory.Build files to avoid traversing to source-build infra.
@@ -768,6 +776,8 @@ fi
 
 runXmlDocTests
 
-runOmniSharpTests
+if [ "$excludeOmniSharpTests" == "false" ]; then
+    runOmniSharpTests
+fi
 
 echo "ALL TESTS PASSED!"
