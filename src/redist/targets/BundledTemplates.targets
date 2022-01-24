@@ -31,7 +31,7 @@
     <Bundled70Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
-    <Bundled70Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
+    <Bundled70Templates Include="Microsoft.DotNet.Test.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates70PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
