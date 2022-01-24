@@ -21,7 +21,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
             "microsoft.dotnet.wpf.projecttemplates",
             //NUnit package is included to SDK, however not managed by Microsoft - keep it in to check for updates
             //"nunit3.dotnetnew.template",
-            "microsoft.aspnetcore.components.webassembly.template"
+            "microsoft.aspnetcore.components.webassembly.template",
+            "microsoft.maui.templates",
+            "microsoft.android.templates",
+            "microsoft.ios.templates",
+            "microsoft.maccatalyst.templates",
+            "microsoft.macos.templates",
+            "microsoft.tvos.templates"
+
         };
 
         internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
