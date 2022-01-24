@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     !field.IsConst &&
                     init.Value != null &&
                     field.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, field.Type))
+                    UsesKnownDefaultValue(init.Value, field.Type, field.ContainingType))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, field.Name));
                 }
@@ -59,14 +59,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (prop != null &&
                     init.Value != null &&
                     prop.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, prop.Type))
+                    UsesKnownDefaultValue(init.Value, prop.Type, prop.ContainingType))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, prop.Name));
                 }
             }, OperationKind.PropertyInitializer);
         }
 
-        private bool UsesKnownDefaultValue(IOperation value, ITypeSymbol type)
+        private bool UsesKnownDefaultValue(IOperation value, ITypeSymbol type, INamedTypeSymbol containingType)
         {
             // Skip through built-in conversions
             while (value is IConversionOperation conversion && !conversion.Conversion.IsUserDefined)
@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // If this is default(T) or new ValueType(), it's the default.
             if (value is IDefaultValueOperation ||
-                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null))
+                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && !SymbolEqualityComparer.Default.Equals(oco.Type, containingType)))
             {
                 return !IsNullSuppressed(value);
             }

@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpDoNotInitializeUnnecessarilyAnalyzer,
@@ -309,6 +310,25 @@ public class Test
                 VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
                     .WithArguments("SomeIntProp3")
                     .WithLocation(3));
+        }
+
+        [Fact, WorkItem(5750, "https://github.com/dotnet/roslyn-analyzers/issues/5750")]
+        public async Task CA1805_ParameterlessValueTypeCtorAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+struct S
+{
+    public static readonly S Value = new();
+    public static readonly TimeSpan Time [|= new()|];
+
+    public S() => throw null;
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+            }.RunAsync();
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
