@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="7.0.100-alpha.1.22069.1">
+    <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="7.0.100-preview.2.22074.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>450135b4211c5ff4356895d39694bed0b9bc0dea</Sha>
+      <Sha>75aea7efba1f83006587d04ac01bad627df74bc8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.0-alpha.1.22073.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -211,17 +211,17 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d367bf83fec664489dc2fde780d029cce2c064f2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-alpha.1.22062.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.1.22071.1">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>952c29ce2475895154856c39c3eb1d531de3a023</Sha>
+      <Sha>848e96cc4313501389f4580253ef8014387fd005</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-alpha.1.22062.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.1.22071.1">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>952c29ce2475895154856c39c3eb1d531de3a023</Sha>
+      <Sha>848e96cc4313501389f4580253ef8014387fd005</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-alpha.1.22062.1">
+    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.1.22071.1">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>952c29ce2475895154856c39c3eb1d531de3a023</Sha>
+      <Sha>848e96cc4313501389f4580253ef8014387fd005</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0-preview.2.22074.10">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
