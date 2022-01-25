@@ -9,9 +9,4 @@
   <PropertyGroup>
     <HumanizerCorePackageVersion>2.2.0</HumanizerCorePackageVersion>
   </PropertyGroup>
-  <!-- Production Dependencies -->
-  <PropertyGroup>
-    <PrivateSourceBuiltPrebuiltsPackageVersionPrefix>0.1.0-6.0.100-</PrivateSourceBuiltPrebuiltsPackageVersionPrefix>
-    <PrivateSourceBuiltPrebuiltsPackageVersionSuffix>36</PrivateSourceBuiltPrebuiltsPackageVersionSuffix>
-  </PropertyGroup>
 </Project>

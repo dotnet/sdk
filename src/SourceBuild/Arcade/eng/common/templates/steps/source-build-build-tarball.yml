@@ -108,3 +108,5 @@ steps:
   - publish: '${{ parameters.tarballDir }}/artifacts/${{ parameters.buildArch}}/Release/'
     artifact: $(Agent.JobName)_Artifacts
     displayName: Publish Artifacts
+    condition: succeededOrFailed()
+    continueOnError: true
