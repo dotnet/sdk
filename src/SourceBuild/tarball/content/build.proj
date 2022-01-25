@@ -149,8 +149,7 @@
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFileVersion>$(PrivateSourceBuiltPrebuiltsPackageVersionPrefix)$([MSBuild]::Add($(PrivateSourceBuiltPrebuiltsPackageVersionSuffix), 1))</TarballFileVersion>
-      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(TarballFileVersion).tar.gz</TarballFilePath>
+      <TarballFilePath>$(OutputPath)$(SourceBuiltPrebuiltsTarballName).$(installerOutputPackageVersion).tar.gz</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 
