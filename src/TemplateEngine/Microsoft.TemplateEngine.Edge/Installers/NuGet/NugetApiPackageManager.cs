@@ -333,6 +333,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 return (source, foundPackages);
             }
+            catch (TaskCanceledException)
+            {
+                //do nothing
+                //GetPackageMetadataAsync may cancel the task in case package is found in another feed.
+            }
             catch (Exception ex)
             {
                 _nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToReadPackage, source.Source));
