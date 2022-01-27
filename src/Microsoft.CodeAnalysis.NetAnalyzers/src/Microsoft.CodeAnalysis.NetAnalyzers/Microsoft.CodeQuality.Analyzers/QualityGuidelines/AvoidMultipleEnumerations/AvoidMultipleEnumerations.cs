@@ -57,7 +57,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             nameof(Enumerable.Average),
             nameof(Enumerable.Contains),
             nameof(Enumerable.Count),
-            nameof(Enumerable.DefaultIfEmpty),
             nameof(Enumerable.ElementAt),
             nameof(Enumerable.ElementAtOrDefault),
             nameof(Enumerable.First),
@@ -111,6 +110,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             nameof(Enumerable.Join),
             nameof(Enumerable.Union),
             nameof(Enumerable.Zip),
+            nameof(Enumerable.DefaultIfEmpty),
             // Only available on .net6 or later
             "Chunk",
             "DistinctBy",
