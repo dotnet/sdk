@@ -28,6 +28,7 @@
     <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="[$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)]" />
     <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.1" Version="[$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)]" />
     <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" Version="[$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" Version="[$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)]" />
 
     <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="[$(AspNetCorePackageVersionFor21Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="[$(AspNetCorePackageVersionFor30Templates)]" />
