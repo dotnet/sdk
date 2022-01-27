@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -40,18 +41,25 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
+        /// <summary>
+        /// User specified methods that enumerated its parameters. The value comes from editorConfig.
+        /// </summary>
+        public SymbolNamesWithValueOption<Unit>? CustomizedEnumeratedMethods { get; }
+
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> deferredMethods,
             ImmutableArray<IMethodSymbol> enumeratedMethods,
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
-            ImmutableArray<IMethodSymbol> getEnumeratorMethods)
+            ImmutableArray<IMethodSymbol> getEnumeratorMethods,
+            SymbolNamesWithValueOption<Unit>? customizedEnumeratedMethods)
         {
             DeferredMethods = deferredMethods;
             EnumeratedMethods = enumeratedMethods;
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
+            CustomizedEnumeratedMethods = customizedEnumeratedMethods;
         }
     }
 }

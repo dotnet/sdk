@@ -174,7 +174,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            return wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod);
+            if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod))
+            {
+                return true;
+            }
+
+            return wellKnownSymbolsInfo.CustomizedEnumeratedMethods?.Contains(originalTargetMethod) ?? false;
         }
 
         /// <summary>
@@ -215,8 +220,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return true;
             }
 
-            // TODO: we might want to have an attribute support here to mark a argument as 'enumerated'
-            return false;
+            return wellKnownSymbolsInfo.CustomizedEnumeratedMethods?.Contains(reducedFromMethod) ?? false;
         }
 
         /// <summary>

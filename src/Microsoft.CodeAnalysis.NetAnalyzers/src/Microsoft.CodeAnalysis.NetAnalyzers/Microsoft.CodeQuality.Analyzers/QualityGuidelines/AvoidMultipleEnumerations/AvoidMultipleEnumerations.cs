@@ -150,6 +150,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
+            var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
+            var customizedEnumeratedMethods = operationBlocks.IsEmpty
+                ? null
+                : operationBlockStartAnalysisContext.Options.GetEnumeratedMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    operationBlocks[0].Syntax.SyntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
+
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
@@ -158,7 +166,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 enumeratedMethods,
                 noEffectLinqChainMethods,
                 additionalDeferTypes,
-                getEnumeratorSymbols);
+                getEnumeratorSymbols,
+                customizedEnumeratedMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(
