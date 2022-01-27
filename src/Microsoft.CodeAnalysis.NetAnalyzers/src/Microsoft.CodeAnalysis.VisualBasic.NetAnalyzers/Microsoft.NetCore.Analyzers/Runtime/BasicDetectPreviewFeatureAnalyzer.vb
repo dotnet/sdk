@@ -126,47 +126,15 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
             For Each syntaxReference In typeSymbolDeclaringReferences
                 Dim typeSymbolDefinition = syntaxReference.GetSyntax()
-                Dim classStatement = TryCast(typeSymbolDefinition, ClassStatementSyntax)
-                If classStatement IsNot Nothing Then
-                    Dim classBlock = TryCast(classStatement.Parent, ClassBlockSyntax)
-                    If classBlock IsNot Nothing Then
+                Dim typeStatement = TryCast(typeSymbolDefinition, TypeStatementSyntax)
+                If typeStatement IsNot Nothing Then
+                    Dim typeBlock = TryCast(typeStatement.Parent, TypeBlockSyntax)
+                    If typeBlock IsNot Nothing Then
                         Dim syntaxNode As SyntaxNode = Nothing
-                        If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(classBlock.Inherits, previewInterfaceSymbol, syntaxNode) Then
+                        If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(typeBlock.Inherits, previewInterfaceSymbol, syntaxNode) Then
                             Return syntaxNode
-                        Else
-                            If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(classBlock.Implements, previewInterfaceSymbol, syntaxNode) Then
-                                Return syntaxNode
-                            End If
-                        End If
-                    End If
-                End If
-
-                Dim structStatement = TryCast(typeSymbolDefinition, StructureStatementSyntax)
-                If structStatement IsNot Nothing Then
-                    Dim structBlock = TryCast(structStatement.Parent, StructureBlockSyntax)
-                    If structBlock IsNot Nothing Then
-                        Dim syntaxNode As SyntaxNode = Nothing
-                        If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(structBlock.Inherits, previewInterfaceSymbol, syntaxNode) Then
+                        ElseIf TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(typeBlock.Implements, previewInterfaceSymbol, syntaxNode) Then
                             Return syntaxNode
-                        Else
-                            If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(structBlock.Implements, previewInterfaceSymbol, syntaxNode) Then
-                                Return syntaxNode
-                            End If
-                        End If
-                    End If
-                End If
-
-                Dim interfaceStatement = TryCast(typeSymbolDefinition, InterfaceStatementSyntax)
-                If interfaceStatement IsNot Nothing Then
-                    Dim interfaceBlock = TryCast(interfaceStatement.Parent, InterfaceBlockSyntax)
-                    If interfaceBlock IsNot Nothing Then
-                        Dim syntaxNode As SyntaxNode = Nothing
-                        If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(interfaceBlock.Implements, previewInterfaceSymbol, syntaxNode) Then
-                            Return syntaxNode
-                        Else
-                            If TryGetPreviewInterfaceNodeForClassOrStructImplementingPreviewInterface(interfaceBlock.Inherits, previewInterfaceSymbol, syntaxNode) Then
-                                Return syntaxNode
-                            End If
                         End If
                     End If
                 End If
