@@ -33,21 +33,21 @@ namespace Microsoft.DotNet.Cli.Build
         {
             try
             {
-                using Stream file = new HttpClient().GetStreamAsync(
-                        $"https://raw.githubusercontent.com/dotnet/installer/{DotnetInstallerCommit}/eng/Version.Details.xml")
-                    .Result;
-
-                XDocument document = XDocument.Load(file);
-                XElement dependency = document
-                    .Element("Dependencies")?
-                    .Element("ProductDependencies")?
-                    .Elements("Dependency")
-                    .FirstOrDefault(d => DependencyName.Equals(d.Attribute("Name")?.Value));
-
-                if (dependency != null)
+                string versionsXmlUrl = $"https://raw.githubusercontent.com/dotnet/installer/{DotnetInstallerCommit}/eng/Version.Details.xml";
+                using (Stream file = new HttpClient().GetStreamAsync(versionsXmlUrl).Result)
                 {
-                    DependencyVersion = dependency.Attribute("Version")?.Value;
-                    DependencyCommit = dependency.Element("Sha")?.Value;
+                    XDocument document = XDocument.Load(file);
+                    XElement dependency = document
+                        .Element("Dependencies")?
+                        .Element("ProductDependencies")?
+                        .Elements("Dependency")
+                        .FirstOrDefault(d => DependencyName.Equals(d.Attribute("Name")?.Value));
+
+                    if (dependency != null)
+                    {
+                        DependencyVersion = dependency.Attribute("Version")?.Value;
+                        DependencyCommit = dependency.Element("Sha")?.Value;
+                    }
                 }
             }
             catch (Exception ex)
