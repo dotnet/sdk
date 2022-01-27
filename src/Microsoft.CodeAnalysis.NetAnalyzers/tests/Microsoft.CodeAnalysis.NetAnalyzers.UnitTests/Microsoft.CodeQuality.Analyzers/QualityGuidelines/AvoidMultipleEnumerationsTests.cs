@@ -151,7 +151,7 @@ public class Bar
         foreach (var c in Enumerable.Range(1, 10))
         {
             i.Count();
-            [|j|].DefaultIfEmpty();
+            [|j|].DefaultIfEmpty().MaxBy(k => k);
         }
     }
 }";
