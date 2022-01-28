@@ -48,9 +48,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
         /// <summary>
-        /// User specified methods that enumerated its parameters. The value comes from editorConfig.
+        /// User specified methods that would not enumerated its parameters. The value comes from editorConfig.
         /// </summary>
-        public SymbolNamesWithValueOption<Unit>? CustomizedEnumeratedMethods { get; }
+        public SymbolNamesWithValueOption<Unit>? CustomizedNoEnumerationMethods { get; }
+
+        /// <summary>
+        /// User specified methods that would not enumerated its parameters and the return type is deferred type. The value comes from editorConfig.
+        /// </summary>
+        public SymbolNamesWithValueOption<Unit>? CustomizedLinqChainMethods { get; }
 
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> linqChainMethods,
@@ -59,7 +64,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods,
-            SymbolNamesWithValueOption<Unit>? customizedEnumeratedMethods)
+            SymbolNamesWithValueOption<Unit>? customizedNoEnumerationMethods,
+            SymbolNamesWithValueOption<Unit>? customizedLinqChainMethods)
         {
             LinqChainMethods = linqChainMethods;
             NoEnumerationMethods = noEnumerationMethods;
@@ -67,7 +73,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
-            CustomizedEnumeratedMethods = customizedEnumeratedMethods;
+            CustomizedNoEnumerationMethods = customizedNoEnumerationMethods;
+            CustomizedLinqChainMethods = customizedLinqChainMethods;
         }
     }
 }

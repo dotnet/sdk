@@ -127,6 +127,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private static readonly ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.AsEnumerable));
 
+        /// <summary>
+        /// Linq methods don't enumerated deferred type, and is not a linq chain.
+        /// </summary>
         private static readonly ImmutableArray<string> s_noEnumerationLinqMethods = ImmutableArray.Create(
             // Only available on .net6 or later
             "TryGetNonEnumeratedCount");
@@ -156,9 +159,17 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
             var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
-            var customizedEnumeratedMethods = operationBlocks.IsEmpty
+            var syntaxTree = operationBlocks.IsEmpty ? null : operationBlocks[0].Syntax.SyntaxTree;
+            var customizedNoEnumerationMethods = syntaxTree == null
                 ? null
-                : operationBlockStartAnalysisContext.Options.GetEnumeratedMethodsOption(
+                : operationBlockStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    syntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
+
+            var customizedLinqChainMethods = syntaxTree == null
+                ? null
+                : operationBlockStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
                     MultipleEnumerableDescriptor,
                     operationBlocks[0].Syntax.SyntaxTree,
                     operationBlockStartAnalysisContext.Compilation);
@@ -173,7 +184,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 noEffectLinqChainMethods,
                 additionalDeferTypes,
                 getEnumeratorSymbols,
-                customizedEnumeratedMethods);
+                customizedNoEnumerationMethods,
+                customizedLinqChainMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(

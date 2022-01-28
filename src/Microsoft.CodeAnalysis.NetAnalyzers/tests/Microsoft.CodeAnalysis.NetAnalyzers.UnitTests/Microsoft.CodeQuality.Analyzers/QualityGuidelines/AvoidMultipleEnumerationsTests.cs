@@ -14,11 +14,14 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
-        private static Task VerifyCSharpAsync(string code, string customizedEnumeratedMethods = null)
+        private static Task VerifyCSharpAsync(string code, string customizedEnumeratedMethods = null, string customizedLinqChainMethods = null)
         {
-            var editorConfig = customizedEnumeratedMethods == null
+            var noEnumrationMethods = customizedEnumeratedMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.enumerated_methods = {customizedEnumeratedMethods}";
+                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedEnumeratedMethods}";
+            var linqChainMethods = customizedLinqChainMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
             var test = new VerifyCS.Test()
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
@@ -31,7 +34,8 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                     },
                     AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
 [*]
-{editorConfig}
+{noEnumrationMethods}
+{linqChainMethods}
 ") },
                 },
             };
@@ -39,11 +43,14 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             return test.RunAsync();
         }
 
-        private static Task VerifyVisualBasicAsync(string code, string customizedEnumeratedMethods = null)
+        private static Task VerifyVisualBasicAsync(string code, string customizedEnumeratedMethods = null, string customizedLinqChainMethods = null)
         {
-            var editorConfig = customizedEnumeratedMethods == null
+            var noEnumrationMethods = customizedEnumeratedMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.enumerated_methods = {customizedEnumeratedMethods}";
+                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedEnumeratedMethods}";
+            var linqChainMethods = customizedLinqChainMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
             var test = new VerifyVB.Test()
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
@@ -56,7 +63,8 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                     },
                     AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
 [*]
-{editorConfig}
+{noEnumrationMethods}
+{linqChainMethods}
 ") },
                 },
             };
@@ -1691,6 +1699,7 @@ public class Bar
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
     {
+        var x = o;
     }
 }";
 
@@ -3296,7 +3305,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task TestMethodFromEditorConfig()
+        public async Task TestByDefaultSupposeMethodEnuemrationArgument()
         {
             var csharpCode = @"
 using System.Collections.Generic;
@@ -3306,13 +3315,55 @@ public class Bar
 {
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
     {
-        Method1([|j|]);
         [|j|].UnionBy(i, p => p).ElementAt(10);
+        Method([|j|]);
+    }
+
+    private void Method(IEnumerable<int> k)
+    {
+        foreach (var p in k) { }
+    }
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
+            Method([|j|])
+        End Sub
+
+        Private Sub Method(j As IEnumerable(Of Integer))
+            For Each kk in j
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestNoEnumerationMethodFromEditorConfig()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {
+        Method1(j);
+        j.UnionBy(i, p => p).ElementAt(10);
     }
 
     private void Method1(IEnumerable<int> k)
     {
-        foreach (var i in k) { }
     }
 }";
             await VerifyCSharpAsync(csharpCode, "M:Bar.Method1*");
@@ -3324,18 +3375,58 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            Method1([|j|])
-            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
+            Method1(j)
+            j.UnionBy(i, Function(p) p).ElementAt(10)
         End Sub
 
         Private Sub Method1(j As IEnumerable(Of Integer))
-            For Each k In j
-            Next
         End Sub
     End Class
 End Namespace
 ";
             await VerifyVisualBasicAsync(vbCode, "M:Ns.Hoo.Method1*");
+        }
+
+        [Fact]
+        public async Task TestLinqMethodFromEditorConfig()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {
+        [|j|].UnionBy(i, p => p).ElementAt(10);
+        Chain([|j|]).ElementAt(100);
+    }
+
+    private IEnumerable<int> Chain(IEnumerable<int> k)
+    {
+        return k;
+    }
+}";
+            await VerifyCSharpAsync(csharpCode, "M:Bar.Chain*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
+            Chain([|j|]).ElementAt(10)
+        End Sub
+
+        Private Function Chain(j As IEnumerable(Of Integer)) As IEnumerable(Of Integer)
+            Return j
+        End Function
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode, "M:Ns.Hoo.Chain*");
         }
     }
 }

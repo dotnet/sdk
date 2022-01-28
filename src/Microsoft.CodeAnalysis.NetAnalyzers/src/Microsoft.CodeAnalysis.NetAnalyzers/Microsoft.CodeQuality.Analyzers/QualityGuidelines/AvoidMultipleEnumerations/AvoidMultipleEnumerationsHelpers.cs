@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.PooledObjects;
@@ -176,14 +177,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             // Well known linq methods, like 'ElementAt', or user specified methods
             if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod)
-                || (wellKnownSymbolsInfo.CustomizedEnumeratedMethods != null && wellKnownSymbolsInfo.CustomizedEnumeratedMethods.Contains(originalTargetMethod)))
+                || (wellKnownSymbolsInfo.CustomizedNoEnumerationMethods != null && wellKnownSymbolsInfo.CustomizedNoEnumerationMethods.Contains(originalTargetMethod)))
             {
                 return true;
             }
 
             var invocationInstanceParameter = originalTargetMethod.Parameters[0];
-            return IsDeferredType(invocationInstanceParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
-                   || (invocationInstanceParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol && IsConstraintTypesHasDeferredType(typeParameterSymbol, wellKnownSymbolsInfo.AdditionalDeferredTypes));
+            return IsDeferredType(invocationInstanceParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>
@@ -211,6 +211,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
+            // User specified methods
+            if (wellKnownSymbolsInfo.CustomizedNoEnumerationMethods != null && wellKnownSymbolsInfo.CustomizedNoEnumerationMethods.Contains(reducedFromMethod))
+            {
+                return false;
+            }
+
             // Common linq method case, like ElementAt
             if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(reducedFromMethod.OriginalDefinition)
                 && reducedFromMethod.Parameters.Any(
@@ -219,24 +225,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return true;
             }
 
-            // User specified methods
-            if (wellKnownSymbolsInfo.CustomizedEnumeratedMethods != null && wellKnownSymbolsInfo.CustomizedEnumeratedMethods.Contains(reducedFromMethod))
-            {
-                return true;
-            }
-
             // The type of mapping parameter is IEnumerable, by default think it is going to enumerate the argument.
-            if (IsDeferredType(argumentMappingParameter.OriginalDefinition.Type, wellKnownSymbolsInfo.AdditionalDeferredTypes))
-            {
-                return true;
-            }
+            return IsDeferredType(argumentMappingParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
 
-            // If the method is accepting a parameter that constrained to IEnumerable<>
-            // e.g.
-            // void Bar<T>(T t) where T : IEnumerable<T> { }
-            // Assuming it is going to enumerate the argument
-            return argumentMappingParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                   && IsConstraintTypesHasDeferredType(typeParameterSymbol, wellKnownSymbolsInfo.AdditionalDeferredTypes);
+            // // If the method is accepting a parameter that constrained to IEnumerable<>
+            // // e.g.
+            // // void Bar<T>(T t) where T : IEnumerable<T> { }
+            // // Assuming it is going to enumerate the argument
+            // return argumentMappingParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
+            //        && IsConstraintTypesHasDeferredType(typeParameterSymbol, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>
@@ -262,6 +259,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var targetMethod = invocationOperation.TargetMethod;
             var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
+            var returnType = reducedFromMethod.ReturnType.OriginalDefinition;
+            if (!IsDeferredType(returnType, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            {
+                return false;
+            }
+
             var argumentMappingParameter = targetMethod.MethodKind == MethodKind.ReducedExtension
                 ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
                 : argumentOperationToCheck.Parameter;
@@ -273,8 +276,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return true;
             }
 
-            // TODO: we might want to have an attribute support here to mark a argument as 'not enumerated'
-            return false;
+            return wellKnownSymbolsInfo.CustomizedLinqChainMethods != null &&
+                   wellKnownSymbolsInfo.CustomizedLinqChainMethods.Contains(reducedFromMethod.OriginalDefinition);
         }
 
         /// <summary>
@@ -294,6 +297,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var originalTargetMethod = invocationOperation.TargetMethod.ReducedFrom.OriginalDefinition;
             if (originalTargetMethod.Parameters.IsEmpty)
+            {
+                return false;
+            }
+
+            var returnType = invocationOperation.TargetMethod.ReturnType;
+            if (!IsDeferredType(returnType, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
@@ -367,18 +376,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return builder.ToImmutable();
         }
 
-        private static bool IsConstraintTypesHasDeferredType(ITypeParameterSymbol typeParameterSymbol, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
-            => typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, additionalTypesToCheck));
-
+        /// <summary>
+        ///
+        /// </summary>
         public static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
         {
-            if (type == null)
+            return type switch
             {
-                return false;
-            }
+                null => false,
+                ITypeParameterSymbol typeParameterSymbol => typeParameterSymbol.ConstraintTypes.Any(constraintType => IsDeferredType(constraintType?.OriginalDefinition, additionalTypesToCheck)),
+                _ => IsSpecialTypeOrAdditionalType(type, additionalTypesToCheck)
+            };
 
-            return type.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
-                || additionalTypesToCheck.Contains(type);
+            static bool IsSpecialTypeOrAdditionalType(ITypeSymbol typeSymbol, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
+                => typeSymbol.SpecialType is SpecialType.System_Collections_Generic_IEnumerable_T or SpecialType.System_Collections_IEnumerable
+                || additionalTypesToCheck.Contains(typeSymbol);
         }
 
         public static ImmutableArray<ITypeSymbol> GetTypes(Compilation compilation, ImmutableArray<string> typeNames)
