@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -18,7 +17,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
         private static Task VerifyCSharpAsync(string code, string customizedEnumeratedMethods = null)
         {
             var editorConfig = customizedEnumeratedMethods == null
-                ? ""
+                ? string.Empty
                 : $"dotnet_code_quality.CA1851.enumerated_methods = {customizedEnumeratedMethods}";
             var test = new VerifyCS.Test()
             {
@@ -43,7 +42,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
         private static Task VerifyVisualBasicAsync(string code, string customizedEnumeratedMethods = null)
         {
             var editorConfig = customizedEnumeratedMethods == null
-                ? ""
+                ? string.Empty
                 : $"dotnet_code_quality.CA1851.enumerated_methods = {customizedEnumeratedMethods}";
             var test = new VerifyVB.Test()
             {
@@ -3250,6 +3249,45 @@ Namespace Ns
         Public Sub Goo(j As IEnumerable(Of Integer))
             Dim a = [|j|].Chunk(100).Count()
             [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestTryGetNonEnumeratedCount()
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        if (j.TryGetNonEnumeratedCount(out var count))
+        {{
+        }}
+
+        j.ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim count = 0
+            If j.TryGetNonEnumeratedCount(count) then
+
+            End If
+            j.ElementAt(10)
         End Sub
     End Class
 End Namespace

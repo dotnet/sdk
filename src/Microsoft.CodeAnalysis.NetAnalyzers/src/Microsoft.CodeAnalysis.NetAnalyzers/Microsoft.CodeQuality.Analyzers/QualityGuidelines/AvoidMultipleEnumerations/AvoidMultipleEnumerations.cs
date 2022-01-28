@@ -117,6 +117,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ExceptBy",
             "IntersectBy",
             "UnionBy",
+            "TryGetNonEnumeratedCount",
             // Only available on .netstandard 2.1 or later
             "TakeLast",
             "SkipLast");
