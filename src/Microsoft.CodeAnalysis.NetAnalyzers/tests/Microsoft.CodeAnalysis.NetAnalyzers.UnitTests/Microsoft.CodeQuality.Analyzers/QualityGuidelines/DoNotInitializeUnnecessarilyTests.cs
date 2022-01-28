@@ -326,6 +326,46 @@ struct S
     public static readonly TimeSpan Time [|= new()|];
 
     public S() => throw null;
+}
+
+struct S2
+{
+    private readonly int _i;
+    public S2(int i) => _i = i;
+}
+
+class C
+{
+    private S s1 = new S();
+    private S s2 = new();
+
+    private S2 s3 [|= new S2()|];
+    private S2 s4 [|= new()|];
+}",
+                FixedCode = @"
+using System;
+
+struct S
+{
+    public static readonly S Value = new();
+    public static readonly TimeSpan Time;
+
+    public S() => throw null;
+}
+
+struct S2
+{
+    private readonly int _i;
+    public S2(int i) => _i = i;
+}
+
+class C
+{
+    private S s1 = new S();
+    private S s2 = new();
+
+    private S2 s3;
+    private S2 s4;
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             }.RunAsync();

@@ -46,7 +46,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     !field.IsConst &&
                     init.Value != null &&
                     field.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, field.Type, field.ContainingType))
+                    UsesKnownDefaultValue(init.Value, field.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, field.Name));
                 }
@@ -59,14 +59,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (prop != null &&
                     init.Value != null &&
                     prop.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, prop.Type, prop.ContainingType))
+                    UsesKnownDefaultValue(init.Value, prop.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, prop.Name));
                 }
             }, OperationKind.PropertyInitializer);
         }
 
-        private bool UsesKnownDefaultValue(IOperation value, ITypeSymbol type, INamedTypeSymbol containingType)
+        private bool UsesKnownDefaultValue(IOperation value, ITypeSymbol type)
         {
             // Skip through built-in conversions
             while (value is IConversionOperation conversion && !conversion.Conversion.IsUserDefined)
@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // If this is default(T) or new ValueType(), it's the default.
             if (value is IDefaultValueOperation ||
-                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && !SymbolEqualityComparer.Default.Equals(oco.Type, containingType)))
+                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && oco.Constructor.IsImplicitlyDeclared))
             {
                 return !IsNullSuppressed(value);
             }
