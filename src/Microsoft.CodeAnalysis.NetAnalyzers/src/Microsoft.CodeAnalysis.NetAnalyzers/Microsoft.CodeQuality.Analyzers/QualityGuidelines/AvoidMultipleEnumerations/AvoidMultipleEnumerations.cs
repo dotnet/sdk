@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods causing its parameters to be enumerated.
         /// </summary>
-        public static readonly ImmutableArray<string> s_enumeratedParametersLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_enumeratedParametersLinqMethods = ImmutableArray.Create(
             nameof(Enumerable.Aggregate),
             nameof(Enumerable.All),
             nameof(Enumerable.Any),
@@ -83,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Linq methods deferring its parameters to be enumerated.
         /// </summary>
-        public static readonly ImmutableArray<string> s_deferParametersEnumeratedLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_deferParametersEnumeratedLinqMethods = ImmutableArray.Create(
             nameof(Enumerable.Append),
             nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),

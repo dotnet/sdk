@@ -1873,8 +1873,6 @@ End Namespace
         [Fact]
         public async Task TestDelayExecutions()
         {
-            // SkipLast and TakeLast are unavailable for NET472
-#if NETCOREAPP2_0_OR_GREATER
             var csharpCode = @"
 using System;
 using System.Collections.Generic;
@@ -1929,63 +1927,6 @@ Namespace Ns
 End Namespace
 ";
             await VerifyVisualBasicAsync(vbCode);
-#endif
-
-#if NET472
-            var csharpCode = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
-public class Bar
-{
-    public void Sub()
-    {
-        IEnumerable<int> x = Enumerable.Range(1, 10);
-        var c1 = [|x|].Append(1).Cast<Object>().Distinct()
-            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
-            .ThenBy(i => i).ThenByDescending(i => i)
-            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
-            .Where(i => i != 10).ToArray();
-
-        var c2 = [|x|].Append(1).Cast<Object>().Distinct()
-            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
-            .ThenBy(i => i).ThenByDescending(i => i)
-            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
-            .Where(i => i != 10).First();
-    }
-}";
-            await VerifyCSharpAsync(csharpCode);
-
-            var vbCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
-
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo()
-            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            Dim c1 = [|x|].Append(1).Cast(Of Object)().Distinct().
-                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
-                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
-                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
-                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
-                Where(Function(i) i <> 10).ToArray()
-
-            Dim c2 = [|x|].Append(1).Cast(Of Object)().Distinct().
-                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
-                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
-                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
-                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
-                Where(Function(i) i <> 10).First()
-        End Sub
-    End Class
-End Namespace
-";
-            await VerifyVisualBasicAsync(vbCode);
-#endif
         }
 
         [Fact]
@@ -3179,32 +3120,156 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
-        public void TestNet6AddedMethod()
+        [Theory]
+        [InlineData("MaxBy")]
+        [InlineData("MinBy")]
+        public async Task TestNet6AddedEnumeratedMethods(string methodName)
         {
-            // newly added method in .Net 6, currently can't found by unit tests
-            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        var a = [|j|].{methodName}(p => p);
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].{methodName}(Function (p) p)
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("ExceptBy")]
+        [InlineData("IntersectBy")]
+        [InlineData("UnionBy")]
+        public async Task TestNet6AddedLinqChainMethods(string methodName)
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {{
+        var a = [|j|].{methodName}(i, p => p).Count();
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+            Dim a = [|j|].{methodName}(i, Function (p) p).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestDistinctBy()
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        var a = [|j|].DistinctBy(p => p).Count();
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].DistinctBy(Function (p) p).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestChunk()
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        var a = [|j|].Chunk(1000).Count();
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].Chunk(100).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
         public async Task TestMethodFromEditorConfig()
         {
-            var csharpCode1 = @"
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
 {
-    public void Sub(IEnumerable<int> j)
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
     {
         Method1([|j|]);
-        [|j|].ElementAt(10);
+        [|j|].UnionBy(i, p => p).ElementAt(10);
     }
 
     private void Method1(IEnumerable<int> k)
@@ -3212,7 +3277,7 @@ public class Bar
         foreach (var i in k) { }
     }
 }";
-            await VerifyCSharpAsync(csharpCode1, "M:Bar.Method1*");
+            await VerifyCSharpAsync(csharpCode, "M:Bar.Method1*");
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3220,9 +3285,9 @@ Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
-        Public Sub Goo(j As IEnumerable(Of Integer))
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
             Method1([|j|])
-            [|j|].ElementAt(10)
+            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
         End Sub
 
         Private Sub Method1(j As IEnumerable(Of Integer))
