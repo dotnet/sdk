@@ -52,6 +52,11 @@
         <target state="translated">Literály řetězců atributů by se měly správně parsovat</target>
         <note />
       </trans-unit>
+      <trans-unit id="AutoLayoutTypes">
+        <source>Types with '[StructLayout(LayoutKind.Auto)]'</source>
+        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Zařazením parametru StringBuilder se vždy vytvoří kopie nativní vyrovnávací paměti, která bude mít za následek vícenásobné přidělení pro jednu operaci zařazování.</target>
@@ -140,6 +145,11 @@
       <trans-unit id="BufferBlockCopyLengthTitle">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
         <target state="translated">Buffer.BlockCopy očekává počet bajtů, které se mají zkopírovat pro argument count.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ByRefParameters">
+        <source>By-ref parameters</source>
+        <target state="new">By-ref parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -1112,6 +1122,21 @@
         <target state="translated">Poskytování rozhraní DynamicInterfaceCastableImplementation se ve Visual Basic nepodporuje.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
+        <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
+        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage">
+        <source>{0} requires runtime marshalling to be enabled</source>
+        <target state="new">{0} requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
+        <source>Property, type, or attribute requires runtime marshalling</source>
+        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">Typ {0} obsahuje typ preview {1} a vyžaduje vyjádření výslovného souhlasu s funkcemi preview. Další informace najdete v {2}.</target>
@@ -1150,6 +1175,11 @@
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
         <target state="translated">Přeposlat parametr CancellationToken do metod</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HResultSwapping">
+        <source>HResult-swapping</source>
+        <target state="new">HResult-swapping</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1467,6 +1497,11 @@
         <target state="translated">Nastavte konstruktor, který přijímá nulové parametry public.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManagedParameterOrReturnTypes">
+        <source>Managed parameter or return types</source>
+        <target state="new">Managed parameter or return types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">Pole instance typu, který se nedá serializovat, je deklarované v typu, který se serializovat dá.</target>
@@ -1615,6 +1650,21 @@
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}{0} používá typ preview {1} a vyžaduje vyjádření výslovného souhlasu s funkcemi preview. Další informace najdete v {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
+        <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
+        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
+        <source>'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</source>
+        <target state="new">'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
+        <source>This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</source>
+        <target state="new">This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2252,6 +2302,11 @@
         <target state="translated">Při použití HttpCookie je HttpCookie.HttpOnly nastaveno na hodnotu false nebo není vůbec nastaveno. Zajistěte, aby soubory cookie, které jsou citlivé na zabezpečení, byly označeny jako HttpOnly. Zabráníte tak v krádeži těchto souborů cookie škodlivými skripty.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SetLastErrorTrue">
+        <source>Setting SetLastError to 'true'</source>
+        <target state="new">Setting SetLastError to 'true'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetViewStateUserKey">
         <source>Set ViewStateUserKey For Classes Derived From Page</source>
         <target state="translated">Pro třídy odvozené z Page nastavte ViewStateUserKey.</target>
@@ -2530,6 +2585,11 @@
       <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
         <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
         <target state="translated">Metoda {0} nepoužila při voláních nespravovaného kódu atribut DefaultDllImportSearchPaths.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDisabledMarshallingEquivalent">
+        <source>Use equivalent code that works when marshalling is disabled</source>
+        <target state="new">Use equivalent code that works when marshalling is disabled</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
@@ -2835,6 +2895,16 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}{0} používá typ preview {1} a vyžaduje vyjádření výslovného souhlasu s funkcemi preview. Další informace najdete v {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsingLCIDConversionAttribute">
+        <source>Using 'LCIDConversionAttribute'</source>
+        <target state="new">Using 'LCIDConversionAttribute'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VarargPInvokes">
+        <source>Varadic P/Invoke signatures</source>
+        <target state="new">Varadic P/Invoke signatures</target>
         <note />
       </trans-unit>
     </body>

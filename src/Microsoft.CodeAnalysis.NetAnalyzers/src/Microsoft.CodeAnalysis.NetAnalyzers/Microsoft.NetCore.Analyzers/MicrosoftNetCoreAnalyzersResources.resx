@@ -1834,4 +1834,46 @@
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
+  <data name="AutoLayoutTypes" xml:space="preserve">
+    <value>Types with '[StructLayout(LayoutKind.Auto)]'</value>
+  </data>
+  <data name="ByRefParameters" xml:space="preserve">
+    <value>By-ref parameters</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
+    <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage" xml:space="preserve">
+    <value>{0} requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle" xml:space="preserve">
+    <value>Property, type, or attribute requires runtime marshalling</value>
+  </data>
+  <data name="HResultSwapping" xml:space="preserve">
+    <value>HResult-swapping</value>
+  </data>
+  <data name="ManagedParameterOrReturnTypes" xml:space="preserve">
+    <value>Managed parameter or return types</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription" xml:space="preserve">
+    <value>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage" xml:space="preserve">
+    <value>'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle" xml:space="preserve">
+    <value>This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</value>
+  </data>
+  <data name="SetLastErrorTrue" xml:space="preserve">
+    <value>Setting SetLastError to 'true'</value>
+  </data>
+  <data name="UsingLCIDConversionAttribute" xml:space="preserve">
+    <value>Using 'LCIDConversionAttribute'</value>
+  </data>
+  <data name="VarargPInvokes" xml:space="preserve">
+    <value>Varadic P/Invoke signatures</value>
+  </data>
+  <data name="UseDisabledMarshallingEquivalent" xml:space="preserve">
+    <value>Use equivalent code that works when marshalling is disabled</value>
+  </data>
 </root>

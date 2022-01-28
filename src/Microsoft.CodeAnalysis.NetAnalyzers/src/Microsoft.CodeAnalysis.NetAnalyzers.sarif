@@ -1632,6 +1632,46 @@
             ]
           }
         },
+        "CA1420": {
+          "id": "CA1420",
+          "shortDescription": "Property, type, or attribute requires runtime marshalling",
+          "fullDescription": "Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1421": {
+          "id": "CA1421",
+          "shortDescription": "This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied",
+          "fullDescription": "This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1501": {
           "id": "CA1501",
           "shortDescription": "Avoid excessive inheritance",

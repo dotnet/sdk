@@ -732,6 +732,30 @@ Providing a parameterless constructor that is as visible as the containing type 
 |CodeFix|True|
 ---
 
+## [CA1420](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420): Property, type, or attribute requires runtime marshalling
+
+Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.
+
+|Item|Value|
+|-|-|
+|Category|Interoperability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA1421](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421): This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied
+
+This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.
+
+|Item|Value|
+|-|-|
+|Category|Interoperability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501): Avoid excessive inheritance
 
 Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.

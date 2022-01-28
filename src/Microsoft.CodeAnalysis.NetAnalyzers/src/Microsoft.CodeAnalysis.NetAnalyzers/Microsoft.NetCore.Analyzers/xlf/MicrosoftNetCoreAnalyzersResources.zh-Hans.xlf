@@ -52,6 +52,11 @@
         <target state="translated">特性字符串文本应正确分析</target>
         <note />
       </trans-unit>
+      <trans-unit id="AutoLayoutTypes">
+        <source>Types with '[StructLayout(LayoutKind.Auto)]'</source>
+        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">"StringBuilder" 的封送处理总是会创建一个本机缓冲区副本，这导致一个封送处理操作出现多次分配。</target>
@@ -140,6 +145,11 @@
       <trans-unit id="BufferBlockCopyLengthTitle">
         <source>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument</source>
         <target state="translated">“Buffer.BlockCopy” 需要为 “count” 参数复制字节数</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ByRefParameters">
+        <source>By-ref parameters</source>
+        <target state="new">By-ref parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
@@ -1112,6 +1122,21 @@
         <target state="translated">不支持在 Visual Basic 中提供 “DynamicInterfaceCastableImplementation” 接口</target>
         <note />
       </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
+        <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
+        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage">
+        <source>{0} requires runtime marshalling to be enabled</source>
+        <target state="new">{0} requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
+        <source>Property, type, or attribute requires runtime marshalling</source>
+        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">“{0}”类型包含预览类型“{1}”，因此需要选择加入预览功能。有关详细信息，请参阅 {2}。</target>
@@ -1150,6 +1175,11 @@
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
         <target state="translated">将 "CancellationToken" 参数转发给方法</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HResultSwapping">
+        <source>HResult-swapping</source>
+        <target state="new">HResult-swapping</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1467,6 +1497,11 @@
         <target state="translated">使采用零参数的构造函数成为 “public”</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManagedParameterOrReturnTypes">
+        <source>Managed parameter or return types</source>
+        <target state="new">Managed parameter or return types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">不可序列化类型的实例字段在可序列化类型中声明。</target>
@@ -1615,6 +1650,21 @@
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}.“{0}”接受类型“{1}”的预览参数，并且需要选择加入预览功能。有关详细信息，请参阅 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
+        <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
+        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
+        <source>'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</source>
+        <target state="new">'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
+        <source>This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</source>
+        <target state="new">This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2252,6 +2302,11 @@
         <target state="translated">使用 HttpCookie 时，HttpCookie.HttpOnly 被设置为 false 或根本不设置。请确保安全敏感的 cookie 标记为 HttpOnly，以防止恶意脚本窃取 cookie</target>
         <note />
       </trans-unit>
+      <trans-unit id="SetLastErrorTrue">
+        <source>Setting SetLastError to 'true'</source>
+        <target state="new">Setting SetLastError to 'true'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetViewStateUserKey">
         <source>Set ViewStateUserKey For Classes Derived From Page</source>
         <target state="translated">针对派生自 Page 的类设置 ViewStateUserKey</target>
@@ -2530,6 +2585,11 @@
       <trans-unit id="UseDefaultDllImportSearchPathsAttributeMessage">
         <source>The method {0} didn't use DefaultDllImportSearchPaths attribute for P/Invokes.</source>
         <target state="translated">方法 {0} 未对 P/Invoke 使用 DefaultDllImportSearchPaths 属性。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseDisabledMarshallingEquivalent">
+        <source>Use equivalent code that works when marshalling is disabled</source>
+        <target state="new">Use equivalent code that works when marshalling is disabled</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
@@ -2835,6 +2895,16 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}.“{0}”使用预览类型“{1}”，并且需要选择加入预览功能。有关详细信息，请参阅 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsingLCIDConversionAttribute">
+        <source>Using 'LCIDConversionAttribute'</source>
+        <target state="new">Using 'LCIDConversionAttribute'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VarargPInvokes">
+        <source>Varadic P/Invoke signatures</source>
+        <target state="new">Varadic P/Invoke signatures</target>
         <note />
       </trans-unit>
     </body>
