@@ -1013,12 +1013,11 @@ class Foo
         {|CA1421:Marshal.PtrToStructure(ptr, new ClassType())|};
         _ = {|CA1421:Marshal.PtrToStructure(ptr, typeof(ManagedValueType))|};
         _ = (object)(*(ValueType*)ptr);
-        _ = {|CA1421:Marshal.PtrToStructure(ptr, typeof(ValueType?))|};
-        _ = (object)((ValueType*)ptr is not null and var ptrPtr : *ptrPtr : (ValueType?)null;
-        _ = (ValueType*)(ptr + 1) is not null and var ptrPtr : (object)(*ptrPtr) : null;
+        _ = (object)((ValueType*)ptr is not null and var ptrPtr ? *ptrPtr : (ValueType?)null);
+        _ = (ValueType*)(ptr + 1) is not null and var ptrPtr1 ? (object)(*ptrPtr1) : null;
         _ = {|CA1421:Marshal.PtrToStructure(ptr, t)|};
         _ = (*(ValueType*)ptr);
-        _ = (ValueType*)(ptr.Add(1)) is not null and var ptrPtr : *ptrPtr : (ValueType?)null;
+        _ = (ValueType*)ptr is not null and var ptrPtr2 ? *ptrPtr2 : (ValueType?)null;
         {|CA1421:Marshal.PtrToStructure<ValueType>(ptr, default(ValueType))|};
         {|CA1421:Marshal.PtrToStructure<ClassType>(ptr, new ClassType())|};
     }
@@ -1061,6 +1060,7 @@ class ClassType
                 {
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId, (solution.GetProject(projectId).CompilationOptions as CSharpCompilationOptions)?.WithAllowUnsafe(allowUnsafeBlocks))
                 },
+                NumberOfFixAllIterations = -2
             };
 
             // Verify that there are some instances of the diagnostic that we can't fix.
