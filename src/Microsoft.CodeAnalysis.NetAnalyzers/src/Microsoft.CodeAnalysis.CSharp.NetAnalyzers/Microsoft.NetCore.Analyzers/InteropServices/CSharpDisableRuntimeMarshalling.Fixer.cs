@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
@@ -13,6 +16,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Simplification;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
@@ -34,18 +38,70 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
                 var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
                 SyntaxNode root = await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
+
+                Dictionary<IBlockOperation, IdentifierGenerator> scopeMap = new();
                 foreach (var diagnostic in diagnostics)
                 {
                     if (diagnostic.Properties[DisableRuntimeMarshallingAnalyzer.CanConvertToDisabledMarshallingEquivalentKey] is not null)
                     {
                         SyntaxNode node = root.FindNode(diagnostic.Location.SourceSpan);
-                        if (TryRewriteMethodCall(node, editor, fixAllContext.CancellationToken))
+                        IBlockOperation? block = editor.SemanticModel.GetOperation(node, fixAllContext.CancellationToken).GetFirstParentBlock();
+                        IdentifierGenerator identifierGenerator;
+                        if (block is null)
+                        {
+                            identifierGenerator = new IdentifierGenerator(editor.SemanticModel, node.SpanStart);
+                        }
+                        else if (!scopeMap.TryGetValue(block, out identifierGenerator))
+                        {
+                            identifierGenerator = scopeMap[block] = new IdentifierGenerator(editor.SemanticModel, block);
+                        }
+                        if (TryRewriteMethodCall(node, editor, identifierGenerator, fixAllContext.CancellationToken))
                         {
                             AddUnsafeModifierToEnclosingMethod(editor, node);
                         }
                     }
                 }
                 return editor.GetChangedRoot();
+            }
+        }
+        private class IdentifierGenerator
+        {
+            private int? _nextIdentifier;
+
+            public IdentifierGenerator(SemanticModel model, int offsetForSpeculativeSymbolResolution)
+            {
+                _nextIdentifier = FindFirstUnusedIdentifierIndex(model, offsetForSpeculativeSymbolResolution, "ptr");
+            }
+            public IdentifierGenerator(SemanticModel model, IBlockOperation block)
+            {
+                _nextIdentifier = FindFirstUnusedIdentifierIndex(model, block.Syntax.SpanStart, "ptr");
+                HashSet<string> localNames = new HashSet<string>(block.Locals.Select(x => x.Name));
+                string? identifier = NextIdentifier();
+                while (identifier is not null && localNames.Contains(identifier))
+                {
+                    identifier = NextIdentifier();
+                }
+                if (identifier is not null)
+                {
+                    // The last identifier was not in use, so go back one to use it the next call.
+                    _nextIdentifier--;
+                }
+            }
+
+            public string? NextIdentifier()
+            {
+                if (_nextIdentifier == null || _nextIdentifier == int.MaxValue)
+                {
+                    return null;
+                }
+
+                if (_nextIdentifier == 0)
+                {
+                    _nextIdentifier++;
+                    return "ptr";
+                }
+
+                return $"ptr{_nextIdentifier++}";
             }
         }
 
@@ -81,10 +137,28 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
         }
 
+        private static int? FindFirstUnusedIdentifierIndex(SemanticModel model, int docOffset, string baseName)
+        {
+            if (model.GetSpeculativeSymbolInfo(docOffset, SyntaxFactory.IdentifierName(baseName), SpeculativeBindingOption.BindAsExpression).Symbol is null)
+            {
+                return 0;
+            }
+
+            for (int i = 1; i < int.MaxValue; i++)
+            {
+                if (model.GetSpeculativeSymbolInfo(docOffset, SyntaxFactory.IdentifierName($"{baseName}{i}"), SpeculativeBindingOption.BindAsExpression).Symbol is null)
+                {
+                    return i;
+                }
+            }
+            return 0;
+        }
+
         private static async Task<Document> UseDisabledMarshallingEquivalentAsync(SyntaxNode node, Document document, CancellationToken ct)
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-            var addUnsafeToEnclosingMethod = TryRewriteMethodCall(node, editor, ct);
+            var identifierGenerator = new IdentifierGenerator(editor.SemanticModel, node.SpanStart);
+            var addUnsafeToEnclosingMethod = TryRewriteMethodCall(node, editor, identifierGenerator, ct);
 
             if (addUnsafeToEnclosingMethod)
             {
@@ -94,7 +168,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return editor.GetChangedDocument();
         }
 
-        private static bool TryRewriteMethodCall(SyntaxNode node, DocumentEditor editor, CancellationToken ct)
+        private static bool TryRewriteMethodCall(SyntaxNode node, DocumentEditor editor, IdentifierGenerator pointerIdentifierGenerator, CancellationToken ct)
         {
             var operation = (IInvocationOperation)editor.SemanticModel.GetOperation(node, ct);
             InvocationExpressionSyntax syntax = (InvocationExpressionSyntax)operation.Syntax;
@@ -149,21 +223,38 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     IOperation pointer = operation.Arguments[0].Value;
                     if (type.IsNullableValueType() && type.GetNullableValueTypeUnderlyingType() is ITypeSymbol { IsUnmanagedType: true } underlyingType)
                     {
-                        return false;
+                        var nonNullPtrIdentifier = pointerIdentifierGenerator.NextIdentifier();
+                        if (nonNullPtrIdentifier is null)
+                        {
+                            // We couldn't generate an identifier to use, so don't update the call
+                            return false;
+                        }
+                        var pointerCast = editor.Generator.CastExpression(
+                                editor.SemanticModel.Compilation.CreatePointerTypeSymbol(underlyingType),
+                                pointer.Syntax);
+
+                        // Parse from a string since we're limited in SyntaxFactory methods due to the Roslyn version we build against.
+                        // Use a dummy identifier for the expression since we want to replace it with `pointerCast` from above anyway
+                        // to preserve the annotations that SyntaxGenerator provides.
+                        var nullCheckAndDecl = (IsPatternExpressionSyntax)SyntaxFactory.ParseExpression($"x is not null and var {nonNullPtrIdentifier}");
+                        nullCheckAndDecl = nullCheckAndDecl.WithExpression((ExpressionSyntax)pointerCast);
+                        replacementNode = editor.Generator.ConditionalExpression(
+                            nullCheckAndDecl,
+                            SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression, SyntaxFactory.IdentifierName(nonNullPtrIdentifier)),
+                            editor.Generator.CastExpression(operation.TargetMethod.ReturnType, editor.Generator.NullLiteralExpression()));
                     }
                     else if (type is { IsUnmanagedType: true })
                     {
-                        replacementNode = SyntaxFactory.ParenthesizedExpression(SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
-                            (ExpressionSyntax)editor.Generator.CastExpression(
-                                editor.SemanticModel.Compilation.CreatePointerTypeSymbol(type),
-                                pointer.Syntax)));
+                        replacementNode = editor.Generator.CastExpression(operation.TargetMethod.ReturnType,
+                                SyntaxFactory.ParenthesizedExpression(SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
+                                (ExpressionSyntax)editor.Generator.CastExpression(
+                                    editor.SemanticModel.Compilation.CreatePointerTypeSymbol(type),
+                                    pointer.Syntax))));
                     }
                     else
                     {
                         return false;
                     }
-
-                    replacementNode = editor.Generator.CastExpression(operation.TargetMethod.ReturnType, replacementNode);
                     editor.ReplaceNode(syntax, replacementNode);
                     return true;
                 }

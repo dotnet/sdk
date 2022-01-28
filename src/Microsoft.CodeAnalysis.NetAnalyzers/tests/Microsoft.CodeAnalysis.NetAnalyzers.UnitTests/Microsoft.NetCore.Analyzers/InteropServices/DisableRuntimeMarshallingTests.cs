@@ -958,7 +958,7 @@ struct ManagedValueType
         }
 
         [Fact]
-        public async Task MarshalPtrStructure_Emits_Diagnostic()
+        public async Task MarshalPtrToStructure_Emits_Diagnostic()
         {
             string source = @"
 using System;
@@ -1013,11 +1013,11 @@ class Foo
         {|CA1421:Marshal.PtrToStructure(ptr, new ClassType())|};
         _ = {|CA1421:Marshal.PtrToStructure(ptr, typeof(ManagedValueType))|};
         _ = (object)(*(ValueType*)ptr);
-        _ = (object)((ValueType*)ptr is not null and var ptrPtr ? *ptrPtr : (ValueType?)null);
-        _ = (ValueType*)(ptr + 1) is not null and var ptrPtr1 ? (object)(*ptrPtr1) : null;
+        _ = (ValueType*)ptr is not null and var ptr1 ? *ptr1 : (object)null;
+        _ = (ValueType*)(ptr + 1) is not null and var ptr2 ? *ptr2 : (object)null;
         _ = {|CA1421:Marshal.PtrToStructure(ptr, t)|};
         _ = (*(ValueType*)ptr);
-        _ = (ValueType*)ptr is not null and var ptrPtr2 ? *ptrPtr2 : (ValueType?)null;
+        _ = (ValueType*)ptr is not null and var ptr3 ? *ptr3 : (ValueType?)null;
         {|CA1421:Marshal.PtrToStructure<ValueType>(ptr, default(ValueType))|};
         {|CA1421:Marshal.PtrToStructure<ClassType>(ptr, new ClassType())|};
     }
