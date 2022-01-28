@@ -1844,7 +1844,7 @@
     <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage" xml:space="preserve">
-    <value>{0} requires runtime marshalling to be enabled</value>
+    <value>'{0}' requires runtime marshalling to be enabled</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle" xml:space="preserve">
     <value>Property, type, or attribute requires runtime marshalling</value>
