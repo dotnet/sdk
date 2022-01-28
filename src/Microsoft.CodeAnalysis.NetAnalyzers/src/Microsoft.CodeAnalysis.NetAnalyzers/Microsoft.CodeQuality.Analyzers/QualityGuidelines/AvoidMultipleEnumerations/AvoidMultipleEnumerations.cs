@@ -81,9 +81,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ToHashSet");
 
         /// <summary>
-        /// Linq methods deferring its parameters to be enumerated.
+        /// Linq chain methods deferring its parameters to be enumerated, and return a deferred type.
         /// </summary>
-        private static readonly ImmutableArray<string> s_deferParametersEnumeratedLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_linqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.Append),
             nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),
@@ -117,7 +117,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ExceptBy",
             "IntersectBy",
             "UnionBy",
-            "TryGetNonEnumeratedCount",
             // Only available on .netstandard 2.1 or later
             "TakeLast",
             "SkipLast");
@@ -127,6 +126,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         private static readonly ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.AsEnumerable));
+
+        private static readonly ImmutableArray<string> s_noEnumerationLinqMethods = ImmutableArray.Create(
+            // Only available on .net6 or later
+            "TryGetNonEnumeratedCount");
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
@@ -145,7 +148,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
-            var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferParametersEnumeratedLinqMethods);
+            var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
+            var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
             var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var compilation = operationBlockStartAnalysisContext.Compilation;
@@ -163,7 +167,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
-                deferredMethods,
+                linqChainMethods,
+                noEnumerationMethods,
                 enumeratedMethods,
                 noEffectLinqChainMethods,
                 additionalDeferTypes,

@@ -25,7 +25,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(
+            var operationToCheck = SkipLinqChainAndConversionMethodIfNeeded(
                 operation,
                 wellKnownSymbolsInfo);
             return IsOperationEnumeratedByInvocation(operationToCheck, wellKnownSymbolsInfo);
@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Skip the deferred method call and conversion operation in linq methods call chain
         /// </summary>
-        public static IOperation SkipDeferredAndConversionMethodIfNeeded(
+        public static IOperation SkipLinqChainAndConversionMethodIfNeeded(
             IOperation operation,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
@@ -47,22 +47,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 //      c.First();
                 // }
                 // here 'c' would be converted to IEnumerable<T>
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
+                return SkipLinqChainAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
             }
 
-            if (IsOperationTheArgumentOfDeferredInvocation(operation.Parent, wellKnownSymbolsInfo))
+            if (IsOperationTheArgumentOfLinqChainInvocation(operation.Parent, wellKnownSymbolsInfo))
             {
                 // This operation is used as an argument of a deferred execution method.
                 // Check if the invocation of the deferred execution method is used in another deferred execution method.
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent.Parent, wellKnownSymbolsInfo);
+                return SkipLinqChainAndConversionMethodIfNeeded(operation.Parent.Parent, wellKnownSymbolsInfo);
             }
 
-            if (IsInstanceOfDeferredInvocation(operation, wellKnownSymbolsInfo))
+            if (IsInstanceOfLinqChainInvocation(operation, wellKnownSymbolsInfo))
             {
                 // If the extension method could be used as reduced method, also check the its invocation instance.
                 // Like in VB,
                 // 'i.Select(Function(a) a)', 'i' is the invocation instance of 'Select'
-                return SkipDeferredAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
+                return SkipLinqChainAndConversionMethodIfNeeded(operation.Parent, wellKnownSymbolsInfo);
             }
 
             return operation;
@@ -98,14 +98,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, wellKnownSymbolsInfo);
+            var operationToCheck = SkipLinqChainAndConversionMethodIfNeeded(operation, wellKnownSymbolsInfo);
             return operationToCheck.Parent is IForEachLoopOperation forEachLoopOperation && forEachLoopOperation.Collection == operationToCheck;
         }
 
-        private static bool IsInstanceOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsInstanceOfLinqChainInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
             => operation.Parent is IInvocationOperation invocationOperation
                && invocationOperation.Instance == operation
-               && IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo);
+               && IsLinqChainInvocation(invocationOperation, wellKnownSymbolsInfo);
 
         private static bool IsOperationEnumeratedByInvocation(
             IOperation operation,
@@ -169,17 +169,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            if (!IsDeferredType(originalTargetMethod.Parameters[0].Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (wellKnownSymbolsInfo.NoEnumerationMethods.Contains(originalTargetMethod))
             {
                 return false;
             }
 
-            if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod))
+            // Well known linq methods, like 'ElementAt', or user specified methods
+            if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod)
+                || (wellKnownSymbolsInfo.CustomizedEnumeratedMethods != null && wellKnownSymbolsInfo.CustomizedEnumeratedMethods.Contains(originalTargetMethod)))
             {
                 return true;
             }
 
-            return wellKnownSymbolsInfo.CustomizedEnumeratedMethods?.Contains(originalTargetMethod) ?? false;
+            var invocationInstanceParameter = originalTargetMethod.Parameters[0];
+            return IsDeferredType(invocationInstanceParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                   || (invocationInstanceParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol && IsConstraintTypesHasDeferredType(typeParameterSymbol, wellKnownSymbolsInfo.AdditionalDeferredTypes));
         }
 
         /// <summary>
@@ -202,10 +206,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
                 : argumentOperationToCheck.Parameter;
 
-            // Common linq method case, like ToArray
+            if (wellKnownSymbolsInfo.NoEnumerationMethods.Contains(reducedFromMethod.OriginalDefinition))
+            {
+                return false;
+            }
+
+            // Common linq method case, like ElementAt
             if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(reducedFromMethod.OriginalDefinition)
                 && reducedFromMethod.Parameters.Any(
                     methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter)))
+            {
+                return true;
+            }
+
+            // User specified methods
+            if (wellKnownSymbolsInfo.CustomizedEnumeratedMethods != null && wellKnownSymbolsInfo.CustomizedEnumeratedMethods.Contains(reducedFromMethod))
+            {
+                return true;
+            }
+
+            // The type of mapping parameter is IEnumerable, by default think it is going to enumerate the argument.
+            if (IsDeferredType(argumentMappingParameter.OriginalDefinition.Type, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return true;
             }
@@ -214,26 +235,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // e.g.
             // void Bar<T>(T t) where T : IEnumerable<T> { }
             // Assuming it is going to enumerate the argument
-            if (argumentMappingParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
-                && typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)))
-            {
-                return true;
-            }
-
-            return wellKnownSymbolsInfo.CustomizedEnumeratedMethods?.Contains(reducedFromMethod) ?? false;
+            return argumentMappingParameter.OriginalDefinition.Type is ITypeParameterSymbol typeParameterSymbol
+                   && IsConstraintTypesHasDeferredType(typeParameterSymbol, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>
-        /// Check if <param name="operation"/> is an argument that passed into a deferred invocation. (like Select, Where etc.)
+        /// Check if <param name="operation"/> is an argument that passed into a linq chain. (like Select, Where etc.)
         /// </summary>
-        private static bool IsOperationTheArgumentOfDeferredInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        private static bool IsOperationTheArgumentOfLinqChainInvocation(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
             => operation is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation
-                && IsDeferredExecutingInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo);
+                && IsLinqChainInvocation(invocationOperation, argumentOperation, wellKnownSymbolsInfo);
 
         /// <summary>
         /// Check if <param name="argumentOperationToCheck"/> is passed as a deferred executing argument into <param name="invocationOperation"/>.
         /// </summary>
-        public static bool IsDeferredExecutingInvocation(
+        public static bool IsLinqChainInvocation(
             IInvocationOperation invocationOperation,
             IArgumentOperation argumentOperationToCheck,
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -250,7 +266,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
                 : argumentOperationToCheck.Parameter;
 
-            if (wellKnownSymbolsInfo.DeferredMethods.Contains(reducedFromMethod.OriginalDefinition)
+            if (wellKnownSymbolsInfo.LinqChainMethods.Contains(reducedFromMethod.OriginalDefinition)
                 && reducedFromMethod.Parameters.Any(
                     methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter)))
             {
@@ -262,9 +278,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Return true if the TargetMethod of <param name="invocationOperation"/> is a reduced extension method, and defers enumerating its invocation Instance.
+        /// Return true if the TargetMethod of <param name="invocationOperation"/> is a reduced extension method, and is a Linq chain methods
         /// </summary>
-        public static bool IsInvocationDeferredExecutingInvocationInstance(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        public static bool IsLinqChainInvocation(IInvocationOperation invocationOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             if (invocationOperation.Instance == null || invocationOperation.TargetMethod.MethodKind != MethodKind.ReducedExtension)
             {
@@ -287,7 +303,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            return wellKnownSymbolsInfo.DeferredMethods.Contains(originalTargetMethod);
+            return wellKnownSymbolsInfo.LinqChainMethods.Contains(originalTargetMethod);
         }
 
         public static ImmutableArray<IMethodSymbol> GetEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
@@ -350,6 +366,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             return builder.ToImmutable();
         }
+
+        private static bool IsConstraintTypesHasDeferredType(ITypeParameterSymbol typeParameterSymbol, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
+            => typeParameterSymbol.ConstraintTypes.Any(type => IsDeferredType(type?.OriginalDefinition, additionalTypesToCheck));
 
         public static bool IsDeferredType(ITypeSymbol? type, ImmutableArray<ITypeSymbol> additionalTypesToCheck)
         {

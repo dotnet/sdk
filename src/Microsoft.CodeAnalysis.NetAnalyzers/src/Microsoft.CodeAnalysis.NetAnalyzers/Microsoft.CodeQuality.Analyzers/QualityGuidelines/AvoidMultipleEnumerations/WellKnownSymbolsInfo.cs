@@ -15,7 +15,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// Methods defer enumerating IEnumerable types.
         /// e.g. Select, Where
         /// </summary>
-        public ImmutableArray<IMethodSymbol> DeferredMethods { get; }
+        public ImmutableArray<IMethodSymbol> LinqChainMethods { get; }
+
+        /// <summary>
+        /// Methods don't enumerated the IEnumerable types.
+        /// e.g. TryGetNonEnumeratedCount
+        /// </summary>
+        public ImmutableArray<IMethodSymbol> NoEnumerationMethods { get; }
 
         /// <summary>
         /// Methods enumerate IEnumerable types.
@@ -47,14 +53,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public SymbolNamesWithValueOption<Unit>? CustomizedEnumeratedMethods { get; }
 
         public WellKnownSymbolsInfo(
-            ImmutableArray<IMethodSymbol> deferredMethods,
+            ImmutableArray<IMethodSymbol> linqChainMethods,
+            ImmutableArray<IMethodSymbol> noEnumerationMethods,
             ImmutableArray<IMethodSymbol> enumeratedMethods,
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods,
             SymbolNamesWithValueOption<Unit>? customizedEnumeratedMethods)
         {
-            DeferredMethods = deferredMethods;
+            LinqChainMethods = linqChainMethods;
+            NoEnumerationMethods = noEnumerationMethods;
             EnumeratedMethods = enumeratedMethods;
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
