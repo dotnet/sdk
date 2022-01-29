@@ -14,11 +14,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
-        private static Task VerifyCSharpAsync(string code, string customizedEnumeratedMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyCSharpAsync(string code, string customizedNoEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedEnumeratedMethods == null
+            var noEnumrationMethods = customizedNoEnumerationMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedEnumeratedMethods}";
+                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedNoEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
@@ -43,11 +43,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             return test.RunAsync();
         }
 
-        private static Task VerifyVisualBasicAsync(string code, string customizedEnumeratedMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyVisualBasicAsync(string code, string customizedNoEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedEnumeratedMethods == null
+            var noEnumrationMethods = customizedNoEnumerationMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedEnumeratedMethods}";
+                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedNoEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
@@ -3427,6 +3427,250 @@ Namespace Ns
 End Namespace
 ";
             await VerifyVisualBasicAsync(vbCode, "M:Ns.Hoo.Chain*");
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints1()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub<T>(T t) where T : IEnumerable<int>
+    {
+        var x = [|t|].Select(p => p).ElementAt(10000);
+        var y = [|t|].Where(p => p != 100).ElementAt(10000);
+    }
+
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(Of T As R, R As V, V As IEnumerable(Of Integer))(q As T)
+            Dim x = [|q|].Select(Function(p) p).ElementAt(100)
+            Dim y = [|q|].Where(Function(p) p <> 100).ElementAt(100)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints2()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub<T, R, V>(T t) where T : R where R : V where V: IEnumerable<int>
+    {
+        var x = [|t|].Select(p => p).ElementAt(10000);
+        var y = [|t|].Where(p => p != 100).ElementAt(10000);
+    }
+
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(Of T As R, R As V, V As IEnumerable(Of Integer))(q As T)
+            Dim x = [|q|].Select(Function(p) p).ElementAt(100)
+            Dim y = [|q|].Where(Function(p) p <> 10).ElementAt(100)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints3()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1<IEnumerable<int>, IOrderedEnumerable<int>>([|t|]).ElementAt(10000);
+        var y = [|t|].LinqChain2<IEnumerable<int>, IOrderedEnumerable<int>>().ElementAt(10000);
+    }
+
+    public T LinqChain1<T, U>(U u) where U : T where T : IEnumerable<int>
+    {
+        return u;
+    }
+}
+
+public static class Ex
+{
+    public T LinqChain2<T, U>(this U u) where U : T where T : IEnumerable<int>
+    {
+        return u;
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+            Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))(t)..ElementAt(100)
+            Dim y = t.LinqChain2(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer)).ElementAt(100)
+        End Sub
+
+        Public Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+            Return q
+        End Function
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, "M:Bar.LinqChain1*|Ex.LinqChain2*");
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints4()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1([|t|]).ElementAt(10000);
+        var y = [|t|].LinqChain2().ElementAt(10000);
+    }
+
+    public T LinqChain1<T>(T u)
+    {
+        return u;
+    }
+}
+
+public static class Ex
+{
+    public T LinqChain2<T>(this T u)
+    {
+        return u;
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+            Dim x = LinqChain1(t).ElementAt(100)
+            Dim y = t.LinqChain2().ElementAt(100)
+        End Sub
+
+        Public Function LinqChain1(Of T)(q As T) As T
+            Return q
+        End Function
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, "M:Bar.LinqChain1*|Ex.LinqChain2*");
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints5()
+        {
+            var csharpCode = @"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        TestMethod(i);
+        i.First();
+
+        TestMethod(h);
+        h.First();
+    }
+
+    public void TestMethod<T>(T o) where T : IEnumerable<int>
+    {
+        var x = o;
+    }
+}";
+
+            await VerifyCSharpAsync(csharpCode, customizedNoEnumerationMethods: "M:Bar.TestMethod*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            TestMethod(i)
+            i.First()
+            
+            TestMethod(h)
+            h.First()
+        End Sub
+
+  
+        Public Sub TestMethod(Of T As IEnumerable(Of Integer))(o As T)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode, customizedNoEnumerationMethods: "M:Ns.Hoo.TestMethod*");
         }
     }
 }
