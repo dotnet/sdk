@@ -1128,8 +1128,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage">
-        <source>{0} requires runtime marshalling to be enabled</source>
-        <target state="new">{0} requires runtime marshalling to be enabled</target>
+        <source>'{0}' requires runtime marshalling to be enabled</source>
+        <target state="new">'{0}' requires runtime marshalling to be enabled</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
