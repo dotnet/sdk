@@ -12616,5 +12616,41 @@ class Program
         }
     }");
         }
+
+        [WorkItem(4981, "https://github.com/dotnet/roslyn-analyzers/issues/4981")]
+        [Theory]
+        [InlineData("ms != null")]
+        [InlineData("ms is not null")]
+        [InlineData("!(ms is null)")]
+        public async Task TryFinallyIsNotNull_NoDiagnostic(string condition)
+        {
+            var code = @$"
+using System.IO;
+
+class Test
+{{
+    void M1()
+    {{
+        MemoryStream ms = null;
+        try
+        {{
+            ms = new MemoryStream();
+        }}
+        finally
+        {{
+            if ({condition}) {{
+                ms.Dispose();
+            }}
+        }}
+    }}
+}}
+";
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                LanguageVersion = CSharpLanguageVersion.CSharp9,
+            }.RunAsync();
+        }
     }
 }
