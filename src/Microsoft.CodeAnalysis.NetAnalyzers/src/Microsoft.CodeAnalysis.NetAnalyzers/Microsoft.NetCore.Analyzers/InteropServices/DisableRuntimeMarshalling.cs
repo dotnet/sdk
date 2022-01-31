@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Analyzer.Utilities.Lightup;
@@ -54,8 +55,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         public override void Initialize(AnalysisContext context)
         {
-            context.EnableConcurrentExecution(); // TODO: Make the auto-layout cache multithreading friendly.
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            context.EnableConcurrentExecution();
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.RegisterCompilationStartAction(context =>
             {
                 if (context.Compilation.TryGetOrCreateTypeByMetadataName(
@@ -64,13 +65,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     && context.Compilation.Assembly.HasAttribute(disableRuntimeMarshallingAttribute))
                 {
                     var perCompilationAnalyzer = new PerCompilationAnalyzer(context.Compilation);
-                    context.RegisterSymbolAction(perCompilationAnalyzer.AnalyzeMethod, SymbolKind.Method);
-
-                    context.RegisterOperationAction(perCompilationAnalyzer.AnalyzeMethodCall, OperationKind.Invocation);
-
-                    context.RegisterOperationAction(perCompilationAnalyzer.AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
-
-                    context.RegisterSymbolAction(perCompilationAnalyzer.AnalyzeType, SymbolKind.NamedType);
+                    perCompilationAnalyzer.RegisterActions(context);
                 }
             });
         }
@@ -81,6 +76,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             private readonly INamedTypeSymbol? _structLayoutAttribute;
             private readonly INamedTypeSymbol? _lcidConversionAttribute;
             private readonly ImmutableArray<ISymbol> _marshalMethods;
+            private readonly ReaderWriterLockSlim _layoutCacheLock = new();
             private readonly Dictionary<ITypeSymbol, bool> _isAutoLayoutOrContainsAutoLayoutCache = new();
 
             public PerCompilationAnalyzer(Compilation compilation)
@@ -99,11 +95,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
             }
 
+            public void RegisterActions(CompilationStartAnalysisContext context)
+            {
+                context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
+
+                context.RegisterOperationAction(AnalyzeMethodCall, OperationKind.Invocation);
+
+                context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
+
+                if (_unmanagedFunctionPointerAttribute is not null)
+                {
+                    context.RegisterSymbolAction(AnalyzeType, SymbolKind.NamedType);
+                }
+            }
+
             public void AnalyzeMethodCall(OperationAnalysisContext context)
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
 
-                if (invocation.TargetMethod.IsGenericMethod ? _marshalMethods.Contains(invocation.TargetMethod.ConstructedFrom) : _marshalMethods.Contains(invocation.TargetMethod))
+                if (_marshalMethods.Contains(invocation.TargetMethod.ConstructedFrom))
                 {
                     bool canTransformToDisabledMarshallingEquivalent = CanTransformToDisabledMarshallingEquivalent(invocation);
                     context.ReportDiagnostic(invocation.CreateDiagnostic(
@@ -139,8 +149,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public void AnalyzeType(SymbolAnalysisContext context)
             {
+                Debug.Assert(_unmanagedFunctionPointerAttribute is not null);
                 INamedTypeSymbol type = (INamedTypeSymbol)context.Symbol;
-                if (type.TypeKind != TypeKind.Delegate || (_unmanagedFunctionPointerAttribute is not null && !type.HasAttribute(_unmanagedFunctionPointerAttribute)))
+                if (type.TypeKind != TypeKind.Delegate || !type.HasAttribute(_unmanagedFunctionPointerAttribute))
                 {
                     return;
                 }
@@ -212,9 +223,17 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 Debug.Assert(type.IsValueType);
 
-                if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
+                try
                 {
-                    return isAutoLayoutOrContainsAutoLayout;
+                    _layoutCacheLock.EnterReadLock();
+                    if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
+                    {
+                        return isAutoLayoutOrContainsAutoLayout;
+                    }
+                }
+                finally
+                {
+                    _layoutCacheLock.ExitReadLock();
                 }
 
                 if (_structLayoutAttribute is not null)
@@ -233,8 +252,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                 if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
                                     convertedLayoutKindValue == (ulong)LayoutKind.Auto)
                                 {
-                                    _isAutoLayoutOrContainsAutoLayoutCache.Add(type, true);
-                                    return true;
+                                    try
+                                    {
+                                        _layoutCacheLock.EnterWriteLock();
+                                        _isAutoLayoutOrContainsAutoLayoutCache.Add(type, true);
+                                        return true;
+                                    }
+                                    finally
+                                    {
+                                        _layoutCacheLock.ExitWriteLock();
+                                    }
                                 }
                             }
                         }
