@@ -216,10 +216,6 @@ namespace Microsoft.DotNet.Cli
                 {
                     new MSBuildForwardingApp(helpArgs).Execute();
                 }
-                else if (command.Name.Equals(NewCommandParser.GetCommand().Name))
-                {
-                    NewCommandShim.Run(context.ParseResult.GetArguments());
-                }
                 else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
                 {
                     new VSTestForwardingApp(helpArgs).Execute();

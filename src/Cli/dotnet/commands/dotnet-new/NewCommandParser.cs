@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge;
+using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -25,7 +26,9 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly Option<bool> _disableSdkTemplates = new Option<bool>("--debug:disable-sdk-templates", () => false, "If present, prevents templates bundled in the SDK from being presented").Hide();
 
-        
+        internal static readonly System.CommandLine.Command Command = GetCommand();
+
+        internal static readonly Option LanguageOption = Command.Options.Single(o => o.Name == "--language");
         public static System.CommandLine.Command GetCommand()
         {
             var getLogger = (ParseResult parseResult) => {
