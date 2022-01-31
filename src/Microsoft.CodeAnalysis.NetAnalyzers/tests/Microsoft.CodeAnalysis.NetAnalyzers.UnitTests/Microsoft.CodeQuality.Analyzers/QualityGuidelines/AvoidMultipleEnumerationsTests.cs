@@ -1642,12 +1642,21 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         TestMethod(i);
         i.First();
+        i.TestMethod2();
 
         TestMethod(h);
         h.First();
+        h.TestMethod2();
     }
 
     public void TestMethod<T>(T o)
+    {
+    }
+}
+
+public static class Ex 
+{
+    public static void TestMethod2<T>(this T o)
     {
     }
 }";
@@ -1657,6 +1666,7 @@ public class Bar
             var vbCode = @"
 Imports System.Collections.Generic
 Imports System.Linq
+Imports System.Runtime.CompilerServices
 
 Namespace Ns
     Public Class Hoo
@@ -1664,15 +1674,24 @@ Namespace Ns
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             TestMethod(i)
             i.First()
-            
+            i.TestMethod2()
+
             TestMethod(h)
             h.First()
+            h.TestMethod2()
         End Sub
-  
+
         Public Sub TestMethod(Of T)(o As T)
         End Sub
     End Class
 End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod2(Of T)(q As T)
+    End Sub
+End Module
 ";
             await VerifyVisualBasicAsync(vbCode);
         }
@@ -1730,7 +1749,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task TestExplicteInvocations()
+        public async Task TestExplictInvocations()
         {
             var csharpCode = @"
 using System.Collections.Immutable;
@@ -3407,7 +3426,7 @@ public class Bar
         return k;
     }
 }";
-            await VerifyCSharpAsync(csharpCode, "M:Bar.Chain*");
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.Chain*");
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3426,7 +3445,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVisualBasicAsync(vbCode, "M:Ns.Hoo.Chain*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.Chain*");
         }
 
         [Fact]
@@ -3521,7 +3540,7 @@ public class Bar
 
 public static class Ex
 {
-    public T LinqChain2<T, U>(this U u) where U : T where T : IEnumerable<int>
+    public static T LinqChain2<T, U>(this U u) where U : T where T : IEnumerable<int>
     {
         return u;
     }
@@ -3538,11 +3557,11 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo()
             Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))(t)..ElementAt(100)
-            Dim y = t.LinqChain2(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer)).ElementAt(100)
+            Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))([|t|]).ElementAt(100)
+            Dim y = [|t|].LinqChain2().ElementAt(100)
         End Sub
 
-        Public Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+        Public Shared Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
             Return q
         End Function
     End Class
@@ -3551,12 +3570,12 @@ End Namespace
 Module Ex
 
     <Extension()>
-    Public Function LinqChain2(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+    Public Function LinqChain2(Of T As IEnumerable(Of Integer))(q As T) As T
         Return q
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
         }
 
         [Fact]
@@ -3583,7 +3602,7 @@ public class Bar
 
 public static class Ex
 {
-    public T LinqChain2<T>(this T u)
+    public static T LinqChain2<T>(this T u)
     {
         return u;
     }
@@ -3600,8 +3619,8 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo()
             Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1(t).ElementAt(100)
-            Dim y = t.LinqChain2().ElementAt(100)
+            Dim x = LinqChain1([|t|]).ElementAt(100)
+            Dim y = [|t|].LinqChain2().ElementAt(100)
         End Sub
 
         Public Function LinqChain1(Of T)(q As T) As T
@@ -3613,16 +3632,78 @@ End Namespace
 Module Ex
 
     <Extension()>
-    Public Function LinqChain2(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+    Public Function LinqChain2(Of T)(q As T) As T
         Return q
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
         }
 
         [Fact]
         public async Task TestGenericConstraints5()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> a)
+    {
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1([|t|], [|a|]).ElementAt(10000);
+        var y = [|t|].LinqChain2([|a|]).ElementAt(10000);
+    }
+
+    public T LinqChain1<T>(T u, T v)
+    {
+        return u;
+    }
+}
+
+public static class Ex
+{
+    public static T LinqChain2<T>(this T u, T v)
+    {
+        return u;
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(a As IEnumerable(Of Integer))
+            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+            Dim x = LinqChain1([|t|], [|a|]).ElementAt(100)
+            Dim y = [|t|].LinqChain2([|a|]).ElementAt(100)
+        End Sub
+
+        Public Function LinqChain1(Of T)(q As T, p As T) As T
+            Return q
+        End Function
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints6()
         {
             var csharpCode = @"
 using System;
@@ -3671,6 +3752,112 @@ Namespace Ns
 End Namespace
 ";
             await VerifyVisualBasicAsync(vbCode, customizedNoEnumerationMethods: "M:Ns.Hoo.TestMethod*");
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints7()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        i.TestMethod([|h|]);
+        i.Concat([|h|]).ElementAt(100);
+    }
+}
+
+public static class Ex
+{
+    public static void TestMethod<T, U>(this T u, U v) where U : IEnumerable<int>
+    {
+    }
+}
+";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            i.TestMethod([|h|])
+            i.Concat([|h|]).ElementAt(100)
+        End Sub
+
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod(Of T, U As IEnumerable(Of Integer))(o As T, o2 As U)
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints8()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        [|i|].TestMethod(h);
+        [|i|].Concat(h).ElementAt(100);
+    }
+}
+
+public static class Ex
+{
+    public static void TestMethod<T, U>(this T u, U v) where T : IEnumerable<int>
+    {
+    }
+}
+";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            [|i|].TestMethod(h)
+            [|i|].Concat(h).ElementAt(100)
+        End Sub
+
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod(Of U, T As IEnumerable(Of Integer))(o As T, o2 As U)
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
         }
     }
 }

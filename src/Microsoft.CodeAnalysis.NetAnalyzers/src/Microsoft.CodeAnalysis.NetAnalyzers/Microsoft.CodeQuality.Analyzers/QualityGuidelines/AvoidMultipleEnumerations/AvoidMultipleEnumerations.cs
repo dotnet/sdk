@@ -169,9 +169,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var customizedLinqChainMethods = syntaxTree == null
                 ? null
-                : operationBlockStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
+                : operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
                     MultipleEnumerableDescriptor,
-                    operationBlocks[0].Syntax.SyntaxTree,
+                    syntaxTree,
                     operationBlockStartAnalysisContext.Compilation);
 
             // In CFG blocks there is no foreach loop related Operation, so use the
