@@ -13,11 +13,6 @@ namespace Microsoft.DotNet.Cli
 {
     public static class ParseResultExtensions
     {
-        public static void ShowHelp(this ParseResult parseResult)
-        {
-            Parser.Instance.Parse(parseResult.Tokens.Select(t => t.Value).Append("-h").ToArray()).Invoke();
-        }
-
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())

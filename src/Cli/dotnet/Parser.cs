@@ -118,6 +118,19 @@ namespace Microsoft.DotNet.Cli
             .EnableLegacyDoubleDashBehavior()
             .Build();
 
+         class HelpResult : IInvocationResult
+        {
+            public void Apply(InvocationContext context)
+            {
+                TextWriter output = context.Console.Out.CreateTextWriter();
+                var helpBuilder = (HelpBuilder)context.BindingContext.GetService(typeof(HelpBuilder));
+                var console = context.Console as SystemConsole;
+                var width = (console?.IsOutputRedirected ?? false) ? int.MaxValue : Console.WindowWidth;
+                var helpContext = new HelpContext(helpBuilder, context.ParseResult.CommandResult.Command, output, context.ParseResult);
+                helpBuilder.Write(helpContext);
+            }
+        }
+
         private static void ExceptionHandler(Exception exception, InvocationContext context)
         {
             if (exception is TargetInvocationException)
@@ -138,7 +151,8 @@ namespace Microsoft.DotNet.Cli
                 context.Console.Error.Write("Unhandled exception: ");
                 context.Console.Error.WriteLine(exception.ToString());
             }
-            context.ParseResult.ShowHelp();
+
+            context.InvocationResult = new HelpResult();
             context.ExitCode = 1;
         }
 
