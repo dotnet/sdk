@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli
 
         internal static readonly System.CommandLine.Command Command = GetCommand();
 
-        internal static readonly Option LanguageOption = Command.Options.SingleOrDefault(o => o.Name == "-lang");
         public static System.CommandLine.Command GetCommand()
         {
             var getLogger = (ParseResult parseResult) => {
