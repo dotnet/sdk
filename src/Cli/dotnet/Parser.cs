@@ -109,7 +109,11 @@ namespace Microsoft.DotNet.Cli
 
         public static System.CommandLine.Parsing.Parser Instance { get; } = new CommandLineBuilder(ConfigureCommandLine(RootCommand))
             .UseExceptionHandler(ExceptionHandler)
-            .UseParseErrorReporting(127) // TODO:CH - what exit code for bad parsing?
+            // TODO:CH - we want this for dotnet-new argument reporting, but 
+            //           adding this makes forwarding commands (which can't know
+            //           all of the parameters of their wrapped command by design)
+            //           error. so `dotnet msbuild /t:thing` throws a parse error.
+            // .UseParseErrorReporting(127)
             .UseHelp()
             .UseHelpBuilder(context => DotnetHelpBuilder.Instance.Value)
             .UseLocalizationResources(new CommandLineValidationMessages())
