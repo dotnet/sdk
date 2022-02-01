@@ -26,8 +26,6 @@ namespace Microsoft.DotNet.Cli
 
             command.AddCommand(ServerShutdownCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
-
             return command;
         }
     }

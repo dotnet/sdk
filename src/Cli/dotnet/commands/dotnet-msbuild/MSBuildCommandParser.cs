@@ -23,7 +23,6 @@ namespace Microsoft.DotNet.Tools.MSBuild
         private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName);
-
             command.SetHandler(MSBuildCommand.Run);
 
             return command;

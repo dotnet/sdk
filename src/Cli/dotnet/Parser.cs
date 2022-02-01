@@ -111,6 +111,8 @@ namespace Microsoft.DotNet.Cli
             .UseExceptionHandler(ExceptionHandler)
             .UseHelp()
             .UseHelpBuilder(context => DotnetHelpBuilder.Instance.Value)
+            .UseMissingCommandErrorReporting()
+            .UseParseErrorReporting(1)
             .UseLocalizationResources(new CommandLineValidationMessages())
             .UseParseDirective()
             .UseSuggestDirective()
@@ -118,7 +120,7 @@ namespace Microsoft.DotNet.Cli
             .EnableLegacyDoubleDashBehavior()
             .Build();
 
-         class HelpResult : IInvocationResult
+        class HelpResult : IInvocationResult
         {
             public void Apply(InvocationContext context)
             {
@@ -130,6 +132,19 @@ namespace Microsoft.DotNet.Cli
                 helpBuilder.Write(helpContext);
             }
         }
+
+        private static CommandLineBuilder UseMissingCommandErrorReporting(this CommandLineBuilder builder) =>
+            builder.AddMiddleware(
+                (ctx, next) => {
+                    if (ctx.ParseResult.CommandResult.Command.Handler is {} handler) {
+                        return next.Invoke(ctx);
+                    }
+                    // error here and show help
+                    Reporter.Error.WriteLine(Tools.CommonLocalizableStrings.RequiredCommandNotPassed.Red());
+                    ctx.InvocationResult = new HelpResult();
+                    ctx.ExitCode = 1;
+                }
+            , MiddlewareOrder.ErrorReporting)
 
         private static void ExceptionHandler(Exception exception, InvocationContext context)
         {

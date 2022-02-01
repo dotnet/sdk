@@ -32,8 +32,6 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(ToolSearchCommandParser.GetCommand());
             command.AddCommand(ToolRestoreCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
-
             return command;
         }
     }

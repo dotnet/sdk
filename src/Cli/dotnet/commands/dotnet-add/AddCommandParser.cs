@@ -33,8 +33,6 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(AddPackageParser.GetCommand());
             command.AddCommand(AddProjectToProjectReferenceParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
-
             return command;
         }
     }

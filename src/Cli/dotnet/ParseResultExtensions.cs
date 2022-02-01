@@ -55,13 +55,6 @@ namespace Microsoft.DotNet.Cli
                 (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValueForArgument(Parser.DotnetSubCommand)));
         }
 
-        public static int HandleMissingCommand(this ParseResult parseResult)
-        {
-            Reporter.Error.WriteLine(Tools.CommonLocalizableStrings.RequiredCommandNotPassed.Red());
-            parseResult.ShowHelp();
-            return 1;
-        }
-
         public static string[] GetArguments(this ParseResult parseResult)
         {
             return parseResult.Tokens.Select(t => t.Value)

@@ -26,8 +26,6 @@ namespace Microsoft.DotNet.Cli
             var command = new DocumentedCommand("sdk", DocsLink, LocalizableStrings.AppFullName);
             command.AddCommand(SdkCheckCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
-
             return command;
         }
     }
