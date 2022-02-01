@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.TestPlatformOption);
             command.AddOption(CommonOptions.TestFrameworkOption);
             command.AddOption(CommonOptions.TestLoggerOption);
-
+            command.TreatUnmatchedTokensAsErrors = false;
             command.SetHandler(VSTestCommand.Run);
 
             return command;

@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(UpdateCheckOption);
             command.AddOption(UpdateApplyOption);
             command.AddOption(ColumnsOption);
-
+            command.TreatUnmatchedTokensAsErrors = false;
             command.SetHandler((ParseResult parseResult) => NewCommandShim.Run(parseResult.GetArguments()));
 
             return command;

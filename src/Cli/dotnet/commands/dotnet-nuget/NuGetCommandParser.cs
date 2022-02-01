@@ -36,7 +36,8 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(GetVerifyCommand());
             command.AddCommand(GetTrustCommand());
             command.AddCommand(GetSignCommand());
-
+            // make sure that commands that aren't explicitly listed here aren't flagged as errors
+            command.TreatUnmatchedTokensAsErrors = false;
             command.SetHandler(NuGetCommand.Run);
 
             return command;
@@ -52,7 +53,6 @@ namespace Microsoft.DotNet.Cli
             deleteCommand.AddOption(new Option<string>(new string[] { "-k", "--api-key" }));
             deleteCommand.AddOption(new Option<bool>("--no-service-endpoint"));
             deleteCommand.AddOption(new Option<bool>("--interactive"));
-
             deleteCommand.SetHandler(NuGetCommand.Run);
 
             return deleteCommand;
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli
             var localsCommand = new Command("locals");
 
             localsCommand.AddArgument(new Argument<string>()
-                .FromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" }));
+                .FromAmong(new string[] { "all", "http-cache", "global-packages", "temp" }));
 
             localsCommand.AddOption(new Option<bool>("--force-english-output"));
             localsCommand.AddOption(new Option<bool>(new string[] { "-c", "--clear" }));
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli
             trustCommand.AddArgument(new Argument<string>() { Arity = ArgumentArity.ZeroOrOne }
                          .FromAmong(new string[] { "list", "author", "repository", "source", "certificate", "remove", "sync" }));
 
-            trustCommand.AddOption(new Option<string>("--algorithm"));
+            trustCommand.AddOption(new Option<string>("--algorithm").FromAmong("SHA256", "SHA384", "SHA512"));
             trustCommand.AddOption(new Option<bool>("--allow-untrusted-root"));
             trustCommand.AddOption(new Option<string>("--owners"));
             trustCommand.AddOption(new Option<string>("--configfile"));

@@ -34,8 +34,6 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(RemovePackageParser.GetCommand());
             command.AddCommand(RemoveProjectToProjectReferenceParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
-
             return command;
         }
     }

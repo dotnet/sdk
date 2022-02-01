@@ -12,6 +12,7 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
@@ -23,14 +24,14 @@ namespace Microsoft.DotNet.Cli
 {
     public static class Parser
     {
-        public static readonly RootCommand RootCommand = new RootCommand();
+        public static readonly RootCommand RootCommand = new ();
 
-        internal static Dictionary<Option, Dictionary<Command, string>> HelpDescriptionCustomizations = new Dictionary<Option, Dictionary<Command, string>>();
+        internal static Dictionary<Option, Dictionary<System.CommandLine.Command, string>> HelpDescriptionCustomizations = new ();
 
-        public static readonly Command InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
+        public static readonly System.CommandLine.Command InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
         // Subcommands
-        public static readonly Command[] Subcommands = new Command[]
+        public static readonly System.CommandLine.Command[] Subcommands = new []
         {
             AddCommandParser.GetCommand(),
             BuildCommandParser.GetCommand(),
@@ -74,7 +75,7 @@ namespace Microsoft.DotNet.Cli
         // Argument
         public static readonly Argument<string> DotnetSubCommand = new Argument<string>() { Arity = ArgumentArity.ExactlyOne, IsHidden = true };
 
-        private static Command ConfigureCommandLine(Command rootCommand)
+        private static System.CommandLine.Command ConfigureCommandLine(System.CommandLine.Command rootCommand)
         {
             // Add subcommands
             foreach (var subcommand in Subcommands)
@@ -101,7 +102,7 @@ namespace Microsoft.DotNet.Cli
             return builder;
         }
 
-        public static Command GetBuiltInCommand(string commandName)
+        public static System.CommandLine.Command GetBuiltInCommand(string commandName)
         {
             return Subcommands
                 .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
@@ -139,12 +140,14 @@ namespace Microsoft.DotNet.Cli
                     if (ctx.ParseResult.CommandResult.Command.Handler is {} handler) {
                         return next.Invoke(ctx);
                     }
-                    // error here and show help
+                    // TODO:CH - use S.CL Console from the ctx here. This is blocked by wrapping the reporter in S.CL's 
+                    // IConsole, since we want to maintain the text styling present in AnsiConsole
                     Reporter.Error.WriteLine(Tools.CommonLocalizableStrings.RequiredCommandNotPassed.Red());
                     ctx.InvocationResult = new HelpResult();
                     ctx.ExitCode = 1;
+                    return System.Threading.Tasks.Task.CompletedTask;
                 }
-            , MiddlewareOrder.ErrorReporting)
+            , MiddlewareOrder.ErrorReporting);
 
         private static void ExceptionHandler(Exception exception, InvocationContext context)
         {
@@ -161,7 +164,24 @@ namespace Microsoft.DotNet.Cli
             {
                 context.Console.Error.WriteLine(exception.Message);
             }
-            else
+            else if (exception.ShouldBeDisplayedAsError())
+            {
+                Reporter.Error.WriteLine(CommandContext.IsVerbose()
+                        ? exception.ToString().Red().Bold()
+                        : exception.Message.Red().Bold());
+            }
+            else if (!exception.ShouldBeDisplayedAsError())
+            {
+                // If telemetry object has not been initialized yet. It cannot be collected
+                TelemetryEventEntry.SendFiltered(exception);
+                // TODO:CH - use S.CL Console from the ctx here. This is blocked by wrapping the reporter in S.CL's 
+                // IConsole, since we want to maintain the text styling present in AnsiConsole
+                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+                context.ExitCode = 1;
+                // explicitly do not fall through to show help for these errors
+                return;
+            }
+            else 
             {
                 context.Console.Error.Write("Unhandled exception: ");
                 context.Console.Error.WriteLine(exception.ToString());

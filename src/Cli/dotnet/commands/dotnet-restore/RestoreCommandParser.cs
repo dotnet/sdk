@@ -73,6 +73,8 @@ namespace Microsoft.DotNet.Cli
                 command.AddOption(option);
             }
 
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.SetHandler(RestoreCommand.Run);
 
             return command;

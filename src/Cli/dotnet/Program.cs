@@ -64,28 +64,6 @@ namespace Microsoft.DotNet.Cli
                 {
                     return ProcessArgs(args, startupTime);
                 }
-                catch (Exception e) when (e.ShouldBeDisplayedAsError())
-                {
-                    Reporter.Error.WriteLine(CommandContext.IsVerbose()
-                        ? e.ToString().Red().Bold()
-                        : e.Message.Red().Bold());
-
-                    var commandParsingException = e as CommandParsingException;
-                    if (commandParsingException != null && commandParsingException.ParseResult != null)
-                    {
-                        commandParsingException.ParseResult.ShowHelp();
-                    }
-
-                    return 1;
-                }
-                catch (Exception e) when (!e.ShouldBeDisplayedAsError())
-                {
-                    // If telemetry object has not been initialized yet. It cannot be collected
-                    TelemetryEventEntry.SendFiltered(e);
-                    Reporter.Error.WriteLine(e.ToString().Red().Bold());
-
-                    return 1;
-                }
                 finally
                 {
                     PerformanceLogEventSource.Log.CLIStop();

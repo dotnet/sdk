@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Tools.MSBuild
         private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName);
+            // this is set because unmatched tokens should be forwarded along to the underlying application
+            command.TreatUnmatchedTokensAsErrors  = false;
             command.SetHandler(MSBuildCommand.Run);
 
             return command;

@@ -70,6 +70,8 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(ConfigurationOption);
             RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
 
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.SetHandler(PackCommand.Run);
 
             return command;

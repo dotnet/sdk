@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.VerbosityOption);
             command.AddOption(CommonOptions.LongFormArchitectureOption);
             command.AddOption(CommonOptions.OperatingSystemOption);
-
+            command.TreatUnmatchedTokensAsErrors = false;
             command.SetHandler(TestCommand.Run);
 
             return command;

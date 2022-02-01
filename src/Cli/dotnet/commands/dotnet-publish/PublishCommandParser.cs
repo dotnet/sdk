@@ -80,6 +80,8 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.ArchitectureOption);
             command.AddOption(CommonOptions.OperatingSystemOption);
 
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.SetHandler(PublishCommand.Run);
 
             return command;

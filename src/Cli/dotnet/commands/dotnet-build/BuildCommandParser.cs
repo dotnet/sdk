@@ -76,6 +76,8 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.ArchitectureOption);
             command.AddOption(CommonOptions.OperatingSystemOption);
 
+            command.TreatUnmatchedTokensAsErrors = false;
+
             command.SetHandler(BuildCommand.Run);
 
             return command;
