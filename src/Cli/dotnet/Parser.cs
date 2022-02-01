@@ -128,7 +128,6 @@ namespace Microsoft.DotNet.Cli
                 TextWriter output = context.Console.Out.CreateTextWriter();
                 var helpBuilder = (HelpBuilder)context.BindingContext.GetService(typeof(HelpBuilder));
                 var console = context.Console as SystemConsole;
-                var width = (console?.IsOutputRedirected ?? false) ? int.MaxValue : Console.WindowWidth;
                 var helpContext = new HelpContext(helpBuilder, context.ParseResult.CommandResult.Command, output, context.ParseResult);
                 helpBuilder.Write(helpContext);
             }
