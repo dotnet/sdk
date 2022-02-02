@@ -705,7 +705,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("--results-directory")]
         public void EnsureOutputPathEscaped(string flag)
         {
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("17");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(flag);
 
             var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
 
