@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -66,15 +66,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             switch (argument.Parameter.Name)
             {
                 case ParamName:
-                    var parametersInScope = GetParametersInScope(context);
-                    if (HasAMatchInScope(stringText, parametersInScope))
+                    if (HasAnyParameterMatchInScope(context, stringText))
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
                     return;
                 case PropertyName:
-                    var propertiesInScope = GetPropertiesInScope(context);
-                    if (HasAMatchInScope(stringText, propertiesInScope))
+                    if (HasAnyPropertyMatchInScope(context, stringText))
                     {
                         context.ReportDiagnostic(argument.Value.CreateDiagnostic(RuleWithSuggestion, stringText));
                     }
@@ -84,63 +82,46 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             }
         }
 
-        private static IEnumerable<string> GetPropertiesInScope(OperationAnalysisContext context)
+        private static bool HasAnyPropertyMatchInScope(OperationAnalysisContext context, string stringText)
         {
             var containingType = context.ContainingSymbol.ContainingType;
-            // look for all of the properties in the containing type and return the property names
-            if (containingType != null)
-            {
-                foreach (var property in containingType.GetMembers().OfType<IPropertySymbol>())
-                {
-                    yield return property.Name;
-                }
-            }
+            return containingType?.GetMembers(stringText).Any(m => m.Kind == SymbolKind.Property) == true;
         }
 
-        internal static IEnumerable<string> GetParametersInScope(OperationAnalysisContext context)
+        private static bool HasAnyParameterMatchInScope(OperationAnalysisContext context, string stringText)
         {
             // get the parameters for the containing method
             foreach (var parameter in context.ContainingSymbol.GetParameters())
             {
-                yield return parameter.Name;
+                if (parameter.Name == stringText)
+                {
+                    return true;
+                }
             }
 
             // and loop through the ancestors to find parameters of anonymous functions and local functions
             var parentOperation = context.Operation.Parent;
             while (parentOperation != null)
             {
-                if (parentOperation.Kind == OperationKind.AnonymousFunction)
+                IMethodSymbol? methodSymbol = parentOperation switch
                 {
-                    var lambdaSymbol = ((IAnonymousFunctionOperation)parentOperation).Symbol;
-                    if (lambdaSymbol != null)
+                    IAnonymousFunctionOperation anonymousOperation => anonymousOperation.Symbol,
+                    ILocalFunctionOperation localFunctionOperation => localFunctionOperation.Symbol,
+                    _ => null
+                };
+
+                if (methodSymbol is not null)
+                {
+                    foreach (var methodParameter in methodSymbol.Parameters)
                     {
-                        foreach (var lambdaParameter in lambdaSymbol.Parameters)
+                        if (methodParameter.Name == stringText)
                         {
-                            yield return lambdaParameter.Name;
+                            return true;
                         }
-                    }
-                }
-                else if (parentOperation.Kind == OperationKind.LocalFunction)
-                {
-                    var localFunction = ((ILocalFunctionOperation)parentOperation).Symbol;
-                    foreach (var localFunctionParameter in localFunction.Parameters)
-                    {
-                        yield return localFunctionParameter.Name;
                     }
                 }
 
                 parentOperation = parentOperation.Parent;
-            }
-        }
-
-        private static bool HasAMatchInScope(string stringText, IEnumerable<string> searchCollection)
-        {
-            foreach (var name in searchCollection)
-            {
-                if (stringText == name)
-                {
-                    return true;
-                }
             }
 
             return false;
