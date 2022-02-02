@@ -99,7 +99,14 @@ namespace Microsoft.TemplateEngine.Tasks
                     ExportResult result = pathTaskPair.Task.Result;
                     if (!result.Succeeded)
                     {
-                        Log.LogError("", "", "", result.TemplateJsonPath, 0, 0, 0, 0, result.ErrorMessage);
+                        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+                        {
+                            Log.LogError(LocalizableStrings.Command_Localize_Log_ExportTaskFailed, result.TemplateJsonPath, result.ErrorMessage);
+                        }
+                        else if (result.InnerException != null)
+                        {
+                            Log.LogErrorFromException(result.InnerException, showStackTrace: true, showDetail: true, result.TemplateJsonPath);
+                        }
                     }
                     failed |= !result.Succeeded;
                 }

@@ -117,6 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Command_Localize_Log_ExportTaskFailed" xml:space="preserve">
+    <value>Failed to export localization files for 'template.json' file under the path '{0}': {1}.</value>
+    <comment>Do not localize: 'template.json'</comment>
+  </data>
   <data name="Command_Localize_Log_FileProcessingCancelled" xml:space="preserve">
     <value>'LocalizeTemplates' stopped processing the following file, because the operation was cancelled: {0}</value>
     <comment>Do not localize: 'LocalizeTemplates'.

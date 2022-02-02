@@ -61,6 +61,15 @@ namespace Microsoft.TemplateEngine.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to export localization files for &apos;template.json&apos; file under the path &apos;{0}&apos;: {1}..
+        /// </summary>
+        internal static string Command_Localize_Log_ExportTaskFailed {
+            get {
+                return ResourceManager.GetString("Command_Localize_Log_ExportTaskFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;LocalizeTemplates&apos; stopped processing the following file, because the operation was cancelled: {0}.
         /// </summary>
         internal static string Command_Localize_Log_FileProcessingCancelled {
