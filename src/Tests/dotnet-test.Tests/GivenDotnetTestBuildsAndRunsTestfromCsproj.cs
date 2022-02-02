@@ -676,6 +676,53 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
+        [Fact] // See issue https://github.com/dotnet/sdk/issues/10423
+        public void FilterPropertyCorrectlyHandlesComma()
+        {
+            string testAppName = "TestCategoryWithComma";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithVersionVariables();
+
+            var testProjectDirectory = testInstance.Path;
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--filter", "TestCategory=CategoryA,CategoryB");
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     1");
+                result.StdOut.Should().Contain("Passed:     1");
+            }
+        }
+
+        [Theory]
+        [InlineData("--output")]
+        [InlineData("--diag")]
+        [InlineData("--results-directory")]
+        public void EnsureOutputPathEscaped(string flag)
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("17");
+
+            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute(flag, pathWithComma);
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     2");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().Contain("Failed:     1");
+            }
+        }
+
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")
         {
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
