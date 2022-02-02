@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -148,8 +149,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             Assert.DoesNotContain("existing translations in authoring language should be removed.", fileContent);
         }
 
-        [Fact]
-        public async Task UnchangedFileShouldntBeOverwritten()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task UnchangedFileShouldntBeOverwritten(bool fileStartsWithBom)
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
             string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.fr.json");
@@ -162,6 +165,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             };
             using (FileStream fileStream = new FileStream(expectedFilename, FileMode.Create, FileAccess.Write))
             {
+                if (fileStartsWithBom)
+                {
+                    byte[] bom = new UTF8Encoding(true).GetPreamble();
+                    fileStream.Write(bom, 0, bom.Length);
+                }
+
                 using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(fileStream, writerOptions);
 
                 jsonWriter.WriteStartObject();
@@ -247,6 +256,30 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
             Assert.Equal(locStrings.Count, resultStrings.Count);
             Assert.All(locStrings, x => Assert.Contains(x.Value, resultStrings.Values));
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task BomPreambleIsPreserved(bool fileStartsWithBom)
+        {
+            CancellationTokenSource cts = new CancellationTokenSource(10000);
+            string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.en.json");
+
+            await File.WriteAllTextAsync(
+                expectedFilename,
+                @"
+{
+    ""name"": ""translation""
+}",
+                new UTF8Encoding(fileStartsWithBom),
+                cts.Token).ConfigureAwait(false);
+
+            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+                .ConfigureAwait(false);
+
+            byte[] fileContent = await File.ReadAllBytesAsync(expectedFilename, cts.Token).ConfigureAwait(false);
+            Assert.Equal(fileStartsWithBom, fileContent.AsSpan().StartsWith(new UTF8Encoding(true).Preamble));
         }
 
         private static async Task<Dictionary<string, string>> ReadTemplateStringsFromJsonFile(string path, CancellationToken cancellationToken)

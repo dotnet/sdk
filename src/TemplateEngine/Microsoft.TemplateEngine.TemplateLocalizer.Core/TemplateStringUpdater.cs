@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -16,6 +17,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 {
     internal static class TemplateStringUpdater
     {
+        /// <summary>
+        /// The UTF8 BOM sequence 0xEF,0xBB,0xBF cached in a static field.
+        /// </summary>
+        private static readonly byte[] Utf8Bom = new UTF8Encoding(true).GetPreamble();
+
         /// <summary>
         /// Updates the templatestrings.json files for given languages with the provided strings.
         /// </summary>
@@ -136,13 +142,15 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             if (SequenceEqual(valuesToWrite, existingStrings))
             {
                 // Data appears to be same as before. Don't rewrite it.
-                // Rewriting the same data causes differences in encoding/BOM etc, which marks files as 'changed' in git.
+                // Rewriting the same data causes differences in encoding etc, which marks files as 'changed' in git.
                 logger.LogDebug(LocalizableStrings.stringUpdater_log_dataIsUnchanged, filePath);
                 return;
             }
 
             logger.LogDebug(LocalizableStrings.stringUpdater_log_openingTemplatesJson, filePath);
-            using FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            using FileStream fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite);
+            await TruncateFileWhilePreservingBom(fileStream, cancellationToken).ConfigureAwait(false);
+
             using Utf8JsonWriter jsonWriter = new Utf8JsonWriter(fileStream, writerOptions);
 
             jsonWriter.WriteStartObject();
@@ -155,6 +163,33 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
             jsonWriter.WriteEndObject();
             await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Truncates the file represented by the given <see cref="FileStream"/> to contain only the UTF8 BOM preamble
+        /// or to contain nothing (i.e. become empty) if the stream does not start with the UTF8 BOM sequence.
+        /// </summary>
+        /// <param name="fileStream">The <see cref="FileStream"/> representing the file to truncate.</param>
+        /// <param name="cancellationToken">The async cancellation token.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        private static async Task TruncateFileWhilePreservingBom(FileStream fileStream, CancellationToken cancellationToken)
+        {
+            byte[] preamble = new byte[Utf8Bom.Length];
+            int offset = 0, read = 0;
+            // Read bytes from the stream until we fill the preamble array or hit EOF.
+            do
+            {
+                read = await fileStream.ReadAsync(preamble, offset, preamble.Length - offset, cancellationToken).ConfigureAwait(false);
+                offset += read;
+                // Optimization to not call .ReadAsync twice
+                if (offset == preamble.Length)
+                {
+                    break;
+                }
+            }
+            while (read > 0);
+
+            fileStream.SetLength(offset == Utf8Bom.Length && preamble.SequenceEqual(Utf8Bom) ? offset : 0);
         }
 
         private static bool SequenceEqual(List<(string, string)> lhs, Dictionary<string, string>? rhs)
