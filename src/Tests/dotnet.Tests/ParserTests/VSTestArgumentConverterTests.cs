@@ -65,6 +65,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 .WithMessage("Inline settings should not be passed to Convert.");
         }
 
+        [Theory]
+        [InlineData("--blame", "--blame")]
+        [InlineData("--blame-crash", "--blame:CollectDump")]
+        [InlineData("--blame-crash-collect-always", "--blame:CollectDump;CollectAlways=true")]
+        [InlineData("--blame-hang", "--blame:CollectHangDump")]
+        public void ConvertArgsBlameSwitchDoNotIgnoreNextArg(string blameSwitch, string expectedArg)
+        {
+            var args = $"{blameSwitch} sometest.dll".Split(" ");
+            var expected = $"{expectedArg} sometest.dll".Split(" ");
+
+            // Act
+            var convertedArgs = new VSTestArgumentConverter().Convert(args, out var ignoredArgs);
+
+            ignoredArgs.Should().BeEmpty();
+            convertedArgs.Should().BeEquivalentTo(expected);
+        }
+
         public static class DataSource
         {
             public static IEnumerable<object[]> ArgTestCases { get; } = new List<object[]>

@@ -130,7 +130,6 @@ namespace Microsoft.DotNet.Cli
                         if (blame.IsBlameSwitch(arg))
                         {
                             blame.UpdateBlame(arg, null);
-                            activeArgument = arg;
                         }
                         else
                         {
