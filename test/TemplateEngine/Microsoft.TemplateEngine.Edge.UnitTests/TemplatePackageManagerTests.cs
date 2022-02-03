@@ -245,10 +245,29 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(allNupkgs, templatesOnly1.Select(t => t.MountPointUri).Distinct().OrderBy(m => m));
         }
 
+        [Fact]
+        public async Task CanSkipFaultedProvider()
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
+            FakeFactory.SetNuPkgsAndFolders(folders: new [] { GetTestTemplateFolder() });
+            engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
+            engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FaultFakeFactory());
+
+            TemplatePackageManager templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
+            var templates = await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false);
+            Assert.NotEmpty(templates);
+        }
+
         private static string GetNupkgsFolder()
         {
             var thisDir = Path.GetDirectoryName(typeof(TemplatePackageManagerTests).Assembly.Location);
             return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
+        }
+
+        private static string GetTestTemplateFolder()
+        {
+            var thisDir = Path.GetDirectoryName(typeof(TemplatePackageManagerTests).Assembly.Location);
+            return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates");
         }
 
         private void AssertMountPointsWereScanned(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
@@ -321,6 +340,36 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
                 allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
                 return defaultTemplatePackageProvider;
+            }
+        }
+
+        private class FaultFakeFactory : ITemplatePackageProviderFactory
+        {
+            public string DisplayName => nameof(FaultFakeFactory);
+
+            public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF53}");
+
+            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
+            {
+                return new FaultProvider(this);
+            }
+
+            private class FaultProvider : ITemplatePackageProvider
+            {
+                public FaultProvider(ITemplatePackageProviderFactory factory)
+                {
+                    Factory = factory;
+                }
+
+                public ITemplatePackageProviderFactory Factory { get; }
+
+                public event Action TemplatePackagesChanged
+                {
+                    add { }
+                    remove { }
+                }
+
+                public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
             }
         }
 

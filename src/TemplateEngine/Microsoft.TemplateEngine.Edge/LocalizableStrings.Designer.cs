@@ -392,6 +392,16 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to retrieve template packages from provider &apos;{0}&apos;.
+        ///Details: {1}.
+        /// </summary>
+        internal static string TemplatePackageManager_Error_FailedToGetTemplatePackages {
+            get {
+                return ResourceManager.GetString("TemplatePackageManager_Error_FailedToGetTemplatePackages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to scan {0}.
         ///Details: {1}.
         /// </summary>

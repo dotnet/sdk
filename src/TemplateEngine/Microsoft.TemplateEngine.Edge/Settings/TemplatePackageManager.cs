@@ -106,9 +106,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             var sources = new List<ITemplatePackage>();
-            foreach (var task in _cachedSources.OrderBy((p) => (p.Key.Factory as IPrioritizedComponent)?.Priority ?? 0))
+            foreach (KeyValuePair<ITemplatePackageProvider, Task<IReadOnlyList<ITemplatePackage>>> source in _cachedSources.OrderBy((p) => (p.Key.Factory as IPrioritizedComponent)?.Priority ?? 0))
             {
-                sources.AddRange(await task.Value.ConfigureAwait(false));
+                try
+                {
+                    sources.AddRange(await source.Value.ConfigureAwait(false));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(LocalizableStrings.TemplatePackageManager_Error_FailedToGetTemplatePackages, source.Key.Factory.DisplayName, ex.Message);
+                    _logger.LogDebug("Details: {0}", ex);
+                }
             }
 
             return sources;
