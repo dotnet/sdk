@@ -24,12 +24,12 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> OutputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.OutputOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.OutputOptionName
-        }.ForwardAsSingle(arg => $"-property:OutputPath={CommandDirectoryContext.GetFullPath(arg)}");
+        }.ForwardAsSingle(arg => CommonOptions.BuildProperty("OutputPath", CommandDirectoryContext.GetFullPath(arg)));
 
         public static readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental", LocalizableStrings.NoIncrementalOptionDescription);
 
         public static readonly Option<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies", LocalizableStrings.NoDependenciesOptionDescription)
-            .ForwardAs("-property:BuildProjectReferences=false");
+            .ForwardAs(CommonOptions.BuildProperty("BuildProjectReferences", false));
 
         public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
             .ForwardAs("-nologo");

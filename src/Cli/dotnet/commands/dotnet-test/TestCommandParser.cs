@@ -24,10 +24,10 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> SettingsOption = new ForwardedOption<string>(new string[] { "-s", "--settings" }, LocalizableStrings.CmdSettingsDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdSettingsFile
-        }.ForwardAsSingle(o => $"-property:VSTestSetting={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestSetting", CommandDirectoryContext.GetFullPath(o), true));
 
         public static readonly Option<bool> ListTestsOption = new ForwardedOption<bool>(new string[] { "-t", "--list-tests" }, LocalizableStrings.CmdListTestsDescription)
-              .ForwardAs("-property:VSTestListTests=true");
+              .ForwardAs(CommonOptions.BuildProperty("VSTestListTests", true));
 
         public static readonly Option<IEnumerable<string>> EnvOption = new Option<IEnumerable<string>>(new string[] { "-e", "--environment" }, LocalizableStrings.CmdEnvironmentVariableDescription)
         {
@@ -37,12 +37,12 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> FilterOption = new ForwardedOption<string>("--filter", LocalizableStrings.CmdTestCaseFilterDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdTestCaseFilterExpression
-        }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={SurroundWithDoubleQuotes(o)}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestTestCaseFilter", o, true));
 
         public static readonly Option<IEnumerable<string>> AdapterOption = new ForwardedOption<IEnumerable<string>>(new string[] { "--test-adapter-path" }, LocalizableStrings.CmdTestAdapterPathDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdTestAdapterPath
-        }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={SurroundWithDoubleQuotes(string.Join(";", o.Select(CommandDirectoryContext.GetFullPath)))}")
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestTestAdapterPath", string.Join(";", o.Select(CommandDirectoryContext.GetFullPath)), true))
         .AllowSingleArgPerToken();
 
         public static readonly Option<IEnumerable<string>> LoggerOption = new ForwardedOption<IEnumerable<string>>(new string[] { "-l", "--logger" }, LocalizableStrings.CmdLoggerDescription)
@@ -52,63 +52,63 @@ namespace Microsoft.DotNet.Cli
         {
             var loggersString = string.Join(";", GetSemiColonEscapedArgs(o));
 
-            return $"-property:VSTestLogger={SurroundWithDoubleQuotes(loggersString)}";
+            return CommonOptions.BuildProperty("VSTestLogger", loggersString, true);
         })
         .AllowSingleArgPerToken();
 
         public static readonly Option<string> OutputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.CmdOutputDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdOutputDir
-        }.ForwardAsSingle(o => $"-property:OutputPath={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("OutputPath", CommandDirectoryContext.GetFullPath(o), true));
 
         public static readonly Option<string> DiagOption = new ForwardedOption<string>(new string[] { "-d", "--diag" }, LocalizableStrings.CmdPathTologFileDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdPathToLogFile
-        }.ForwardAsSingle(o => $"-property:VSTestDiag={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestDiag", CommandDirectoryContext.GetFullPath(o), true));
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.CmdNoBuildDescription)
-            .ForwardAs("-property:VSTestNoBuild=true");
+            .ForwardAs(CommonOptions.BuildProperty("VSTestNoBuild", true));
 
         public static readonly Option<string> ResultsOption = new ForwardedOption<string>(new string[] { "--results-directory" }, LocalizableStrings.CmdResultsDirectoryDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdPathToResultsDirectory
-        }.ForwardAsSingle(o => $"-property:VSTestResultsDirectory={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestResultsDirectory", CommandDirectoryContext.GetFullPath(o), true));
 
         public static readonly Option<IEnumerable<string>> CollectOption = new ForwardedOption<IEnumerable<string>>("--collect", LocalizableStrings.cmdCollectDescription)
         {
             ArgumentHelpName = LocalizableStrings.cmdCollectFriendlyName
-        }.ForwardAsSingle(o => $"-property:VSTestCollect={SurroundWithDoubleQuotes(string.Join(";", GetSemiColonEscapedArgs(o)))}")
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestCollect", string.Join(";", GetSemiColonEscapedArgs(o)), true))
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> BlameOption = new ForwardedOption<bool>("--blame", LocalizableStrings.CmdBlameDescription)
-            .ForwardAs("-property:VSTestBlame=true");
+            .ForwardAs(CommonOptions.BuildProperty("VSTestBlame", true));
 
         public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash", LocalizableStrings.CmdBlameCrashDescription)
-            .ForwardAs("-property:VSTestBlameCrash=true");
+            .ForwardAs(CommonOptions.BuildProperty("VSTestBlameCrash", true));
 
         public static readonly Argument<string> BlameCrashDumpArgument = new Argument<string>(LocalizableStrings.CrashDumpTypeArgumentName).FromAmong(new string[] { "full", "mini" });
 
         public static readonly Option<string> BlameCrashDumpOption = new ForwardedOption<string>("--blame-crash-dump-type", LocalizableStrings.CmdBlameCrashDumpTypeDescription)
-            .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
+            .ForwardAsMany(o => new[] { CommonOptions.BuildProperty("VSTestBlameCrash", true), CommonOptions.BuildProperty("VSTestBlameCrashDumpType", o) });
 
         public static readonly Option<string> BlameCrashAlwaysOption = new ForwardedOption<string>("--blame-crash-collect-always", LocalizableStrings.CmdBlameCrashCollectAlwaysDescription)
-            .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
+            .ForwardAsMany(o => new[] { CommonOptions.BuildProperty("VSTestBlameCrash", true), CommonOptions.BuildProperty("VSTestBlameCrashCollectAlways", true) });
 
         public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang", LocalizableStrings.CmdBlameHangDescription)
-            .ForwardAs("-property:VSTestBlameHang=true");
+            .ForwardAs(CommonOptions.BuildProperty("VSTestBlameHang", true));
 
         public static readonly Argument<string> BlameHangDumpArgument = new Argument<string>(LocalizableStrings.HangDumpTypeArgumentName).FromAmong(new string[] { "full", "mini", "none" });
 
         public static readonly Option<string> BlameHangDumpOption = new ForwardedOption<string>("--blame-hang-dump-type", LocalizableStrings.CmdBlameHangDumpTypeDescription)
-            .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" });
+            .ForwardAsMany(o => new[] { CommonOptions.BuildProperty("VSTestBlameHang", true), CommonOptions.BuildProperty("VSTestBlameHangDumpType", o) });
 
         public static readonly Option<string> BlameHangTimeoutOption = new ForwardedOption<string>("--blame-hang-timeout", LocalizableStrings.CmdBlameHangTimeoutDescription)
         {
             ArgumentHelpName = LocalizableStrings.HangTimeoutArgumentName
-        }.ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}" });
+        }.ForwardAsMany(o => new[] { CommonOptions.BuildProperty("VSTestBlameHang", true), CommonOptions.BuildProperty("VSTestBlameHangTimeout", o) });
 
         public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
-            .ForwardAs("-property:VSTestNoLogo=nologo");
+            .ForwardAs(CommonOptions.BuildProperty("VSTestNoLogo", "nologo"));
 
         public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -183,20 +183,6 @@ namespace Microsoft.DotNet.Cli
             }
 
             return array;
-        }
-
-        /// <summary>
-        /// Adding double quotes around the property helps MSBuild arguments parser and avoid incorrect splits on ',' or ';'.
-        /// </summary>
-        private static string SurroundWithDoubleQuotes(string s)
-        {
-            if (s.StartsWith("\"", StringComparison.Ordinal)
-                && s.EndsWith("\"", StringComparison.Ordinal))
-            {
-                return s;
-            }
-
-            return string.Concat("\"", s, "\"");
         }
     }
 }

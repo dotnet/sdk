@@ -24,19 +24,19 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> OutputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.CmdOutputDirDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdOutputDir
-        }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("PackageOutputPath", CommandDirectoryContext.GetFullPath(o)));
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.CmdNoBuildOptionDescription)
-            .ForwardAs("-property:NoBuild=true");
+            .ForwardAs(CommonOptions.BuildProperty("NoBuild", true));
 
         public static readonly Option<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols", LocalizableStrings.CmdIncludeSymbolsDescription)
-            .ForwardAs("-property:IncludeSymbols=true");
+            .ForwardAs(CommonOptions.BuildProperty("IncludeSymbols", true));
 
         public static readonly Option<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source", LocalizableStrings.CmdIncludeSourceDescription)
-            .ForwardAs("-property:IncludeSource=true");
+            .ForwardAs(CommonOptions.BuildProperty("IncludeSource", true));
 
         public static readonly Option<bool> ServiceableOption = new ForwardedOption<bool>(new string[] { "-s", "--serviceable" }, LocalizableStrings.CmdServiceableDescription)
-            .ForwardAs("-property:Serviceable=true");
+            .ForwardAs(CommonOptions.BuildProperty("Serviceable", true));
 
         public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
             .ForwardAs("-nologo");

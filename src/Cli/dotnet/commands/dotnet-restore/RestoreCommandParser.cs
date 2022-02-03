@@ -27,10 +27,10 @@ namespace Microsoft.DotNet.Cli
             LocalizableStrings.CmdSourceOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdSourceOption
-        }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", string.Join("%3B", o)))
         .AllowSingleArgPerToken();
 
-        private static Option[] FullRestoreOptions() => 
+        private static Option[] FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
                 new Option[] {
                     CommonOptions.VerbosityOption,
@@ -38,21 +38,21 @@ namespace Microsoft.DotNet.Cli
                     new ForwardedOption<bool>(
                         "--use-lock-file",
                         LocalizableStrings.CmdUseLockFileOptionDescription)
-                            .ForwardAs("-property:RestorePackagesWithLockFile=true"),
+                            .ForwardAs(CommonOptions.BuildProperty("RestorePackagesWithLockFile", true)),
                     new ForwardedOption<bool>(
                         "--locked-mode",
                         LocalizableStrings.CmdLockedModeOptionDescription)
-                            .ForwardAs("-property:RestoreLockedMode=true"),
+                            .ForwardAs(CommonOptions.BuildProperty("RestoreLockedMode", true)),
                     new ForwardedOption<string>(
                         "--lock-file-path",
                         LocalizableStrings.CmdLockFilePathOptionDescription)
                     {
                         ArgumentHelpName = LocalizableStrings.CmdLockFilePathOption
-                    }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
+                    }.ForwardAsSingle(o => CommonOptions.BuildProperty("NuGetLockFilePath", o)),
                     new ForwardedOption<bool>(
                         "--force-evaluate",
                         LocalizableStrings.CmdReevaluateOptionDescription)
-                            .ForwardAs("-property:RestoreForceEvaluate=true") })
+                            .ForwardAs(CommonOptions.BuildProperty("RestoreForceEvaluate", true)) })
                 .ToArray();
 
         private static readonly Command Command = ConstructCommand();
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     ArgumentHelpName = LocalizableStrings.CmdSourceOption,
                     IsHidden = !showHelp
-                }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}") // '%3B' corresponds to ';'
+                }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", string.Join("%3B", o))) // '%3B' corresponds to ';'
                 .AllowSingleArgPerToken(),
                 new ForwardedOption<string>(
                     "--packages",
@@ -104,39 +104,39 @@ namespace Microsoft.DotNet.Cli
                 {
                     ArgumentHelpName = LocalizableStrings.CmdPackagesOption,
                     IsHidden = !showHelp
-                }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}"),
+                }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestorePackagesPath", CommandDirectoryContext.GetFullPath(o))),
 				CommonOptions.CurrentRuntimeOption(LocalizableStrings.CmdCurrentRuntimeOptionDescription),
                 new ForwardedOption<bool>(
                     "--disable-parallel",
                     showHelp ? LocalizableStrings.CmdDisableParallelOptionDescription : string.Empty)
                 {
                     IsHidden = !showHelp
-                }.ForwardAs("-property:RestoreDisableParallel=true"),
+                }.ForwardAs(CommonOptions.BuildProperty("RestoreDisableParallel", true)),
                 new ForwardedOption<string>(
                     "--configfile",
                     showHelp ? LocalizableStrings.CmdConfigFileOptionDescription : string.Empty)
                 {
                     ArgumentHelpName = LocalizableStrings.CmdConfigFileOption,
                     IsHidden = !showHelp
-                }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}"),
+                }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreConfigFile", CommandDirectoryContext.GetFullPath(o))),
                 new ForwardedOption<bool>(
                     "--no-cache",
                     showHelp ? LocalizableStrings.CmdNoCacheOptionDescription : string.Empty)
                 {
                     IsHidden = !showHelp
-                }.ForwardAs("-property:RestoreNoCache=true"),
+                }.ForwardAs(CommonOptions.BuildProperty("RestoreNoCache", true)),
                 new ForwardedOption<bool>(
                     "--ignore-failed-sources",
                     showHelp ? LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty)
                 {
                     IsHidden = !showHelp
-                }.ForwardAs("-property:RestoreIgnoreFailedSources=true"),
+                }.ForwardAs(CommonOptions.BuildProperty("RestoreIgnoreFailedSources", true)),
                 new ForwardedOption<bool>(
                     useShortOptions ? new string[] {"-f", "--force" } : new string[] {"--force" },
                     LocalizableStrings.CmdForceRestoreOptionDescription)
                 {
                     IsHidden = !showHelp
-                }.ForwardAs("-property:RestoreForce=true"),
+                }.ForwardAs(CommonOptions.BuildProperty("RestoreForce", true)),
                 CommonOptions.PropertiesOption
             };
 
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli
                     {
                         ArgumentHelpName = LocalizableStrings.CmdRuntimeOption,
                         IsHidden = !showHelp
-                    }.ForwardAsSingle(o => $"-property:RuntimeIdentifiers={string.Join("%3B", o)}")
+                    }.ForwardAsSingle(o => CommonOptions.BuildProperty("RuntimeIdentifiers", string.Join("%3B", o)))
                     .AllowSingleArgPerToken()
                     .AddCompletions(Complete.RunTimesFromProjectFile)
                 ).ToArray();
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Cli
                         LocalizableStrings.CmdNoDependenciesOptionDescription)
                     {
                         IsHidden = !showHelp
-                    }.ForwardAs("-property:RestoreRecursive=false")
+                    }.ForwardAs(CommonOptions.BuildProperty("RestoreRecursive", false))
                 ).ToArray();
             }
 

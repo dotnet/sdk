@@ -46,15 +46,15 @@ namespace Microsoft.DotNet.Cli
                 description)
             {
                 ArgumentHelpName = CommonLocalizableStrings.FrameworkArgumentName
-                    
-            }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
+
+            }.ForwardAsSingle(o => BuildProperty("TargetFramework", o))
             .AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
-        private static Func<string, IEnumerable<string>> RuntimeArgFunc = o => new string[] { $"-property:RuntimeIdentifier={o}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        private static Func<string, IEnumerable<string>> RuntimeArgFunc = o => new string[] { BuildProperty("RuntimeIdentifier", o), BuildProperty("_CommandLineDefinedRuntimeIdentifier", true) };
         private static CompletionDelegate RuntimeCompletions = Complete.RunTimesFromProjectFile;
-        
-        public static Option<string> RuntimeOption = 
+
+        public static Option<string> RuntimeOption =
             new ForwardedOption<string>(
                 new string[] { "-r", "--runtime" })
             {
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli
 
         public static Option<bool> CurrentRuntimeOption(string description) =>
             new ForwardedOption<bool>("--use-current-runtime", description)
-                .ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
+                .ForwardAs(BuildProperty("UseCurrentRuntimeIdentifier", "True"));
 
         public static Option<string> ConfigurationOption(string description) =>
             new ForwardedOption<string>(
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli
                 description)
             {
                 ArgumentHelpName = CommonLocalizableStrings.ConfigurationArgumentName
-            }.ForwardAsSingle(o => $"-property:Configuration={o}")
+            }.ForwardAsSingle(o => BuildProperty("Configuration", o))
             .AddCompletions(Complete.ConfigurationsFromProjectFileOrDefaults);
 
         public static Option<string> VersionSuffixOption =
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli
                 CommonLocalizableStrings.CmdVersionSuffixDescription)
             {
                 ArgumentHelpName = CommonLocalizableStrings.VersionSuffixArgumentName
-            }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
+            }.ForwardAsSingle(o => BuildProperty("VersionSuffix", o));
 
         public static Argument<T> DefaultToCurrentDirectory<T>(this Argument<T> arg)
         {
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli
             new ForwardedOption<bool>(
                 "--interactive",
                 CommonLocalizableStrings.CommandInteractiveOptionDescription)
-            .ForwardAs("-property:NuGetInteractive=true");
+            .ForwardAs(BuildProperty("NuGetInteractive", true));
 
         public static Option<bool> InteractiveOption =
             new Option<bool>(
@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Cli
                 "--no-self-contained",
                 CommonLocalizableStrings.FrameworkDependentOptionDescription)
             // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p)); 
+            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
         public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
 
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Cli
                 // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
                 return Array.Empty<string>();
             }
-            
+
             var selfContainedSpecified = parseResult.HasOption(SelfContainedOption) || parseResult.HasOption(NoSelfContainedOption);
             return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
         }
@@ -214,10 +214,10 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch, bool userSpecifiedSelfContainedOption)
         {
-            var properties = new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
+            var properties = new string[] { BuildProperty("RuntimeIdentifier", ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)) };
             if (!userSpecifiedSelfContainedOption)
             {
-                properties = properties.Append("-property:SelfContained=false").ToArray();
+                properties = properties.Append(BuildProperty("SelfContained", false)).ToArray();
             }
             return properties;
         }
@@ -255,14 +255,14 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
         {
-            IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
-            
+            IEnumerable<string> selfContainedProperties = new string[] { BuildProperty("SelfContained", isSelfContained), BuildProperty("_CommandLineDefinedSelfContained", true) };
+
             if (!UserSpecifiedRidOption(parseResult) && isSelfContained)
             {
                 var ridProperties = RuntimeArgFunc(GetCurrentRuntimeId());
                 selfContainedProperties = selfContainedProperties.Concat(ridProperties);
             }
-            
+
             return selfContainedProperties;
         }
 
@@ -272,6 +272,18 @@ namespace Microsoft.DotNet.Cli
             parseResult.HasOption(ArchitectureOption) ||
             parseResult.HasOption(LongFormArchitectureOption) ||
             parseResult.HasOption(OperatingSystemOption);
+
+        internal static string BuildProperty<TValue>(string name, TValue value, bool escapeValue = false)
+        {
+            if (escapeValue)
+            {
+                return $"-property:{name}={value}";
+            }
+            else
+            {
+                return $"-property:{name}=\"{value}\"";
+            }
+        }
     }
 
     public enum VerbosityOptions

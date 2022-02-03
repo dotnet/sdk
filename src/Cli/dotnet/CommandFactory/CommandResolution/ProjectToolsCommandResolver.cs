@@ -7,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.Extensions.DependencyModel;
@@ -73,7 +75,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                 return null;
             }
-            
+
             var tools = project.GetTools();
 
             return ResolveCommandSpecFromAllToolLibraries(
@@ -144,7 +146,7 @@ namespace Microsoft.DotNet.CommandFactory
                 toolFrameworksToCheck.Add(NuGetFramework.Parse("netcoreapp1.0"));
             }
 
-            
+
             LockFile toolLockFile = null;
             NuGetFramework toolTargetFramework = null; ;
 
@@ -249,7 +251,7 @@ namespace Microsoft.DotNet.CommandFactory
         private static async Task<bool> FileExistsWithLock(string path)
         {
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                path, 
+                path,
                 lockedToken => Task.FromResult(File.Exists(path)),
                 CancellationToken.None);
         }
@@ -351,12 +353,12 @@ namespace Microsoft.DotNet.CommandFactory
             var args = new List<string>();
 
             args.Add(toolDepsJsonGeneratorProject);
-            args.Add($"-property:ProjectAssetsFile=\"{toolLockFile.Path}\"");
-            args.Add($"-property:ToolName={toolLibrary.Name}");
-            args.Add($"-property:ProjectDepsFilePath={tempDepsFile}");
+            args.Add(CommonOptions.BuildProperty("ProjectAssetsFile", toolLockFile.Path, true));
+            args.Add(CommonOptions.BuildProperty("ToolName", toolLibrary.Name));
+            args.Add(CommonOptions.BuildProperty("ProjectDepsFilePath", tempDepsFile));
 
             var toolTargetFramework = toolLockFile.Targets.First().TargetFramework.GetShortFolderName();
-            args.Add($"-property:TargetFramework={toolTargetFramework}");
+            args.Add(CommonOptions.BuildProperty("TargetFramework", toolTargetFramework));
 
 
             //  Look for the .props file in the Microsoft.NETCore.App package, until NuGet
@@ -381,7 +383,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                     if (platformLibraryPropsFile != null)
                     {
-                        args.Add($"-property:AdditionalImport={platformLibraryPropsFile}");
+                        args.Add(CommonOptions.BuildProperty("AdditionalImport", platformLibraryPropsFile));
                     }
                 }
             }
@@ -452,7 +454,7 @@ namespace Microsoft.DotNet.CommandFactory
                 Reporter.Verbose.WriteLine(string.Format(
                     LocalizableStrings.UnableToGenerateDepsJson,
                     e.Message));
-                
+
                 try
                 {
                     File.Delete(tempDepsFile);

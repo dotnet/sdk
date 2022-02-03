@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli
                 return new[]
                 {
                     materializedString,
-                    $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"
+                    CommonOptions.BuildProperty("AdditionalProjects", string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath)))
                 };
             }
         }).AllowSingleArgPerToken();
@@ -49,23 +49,23 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version", LocalizableStrings.FrameworkVersionOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.FrameworkVersionOption
-        }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("RuntimeFrameworkVersion", o));
 
         public static readonly Option<string> OutputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.OutputOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.OutputOption
-        }.ForwardAsSingle(o => $"-property:ComposeDir={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("ComposeDir", CommandDirectoryContext.GetFullPath(o)));
 
         public static readonly Option<string> WorkingDirOption = new ForwardedOption<string>(new string[] { "-w", "--working-dir" }, LocalizableStrings.IntermediateWorkingDirOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.IntermediateWorkingDirOption
-        }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("ComposeWorkingDir", CommandDirectoryContext.GetFullPath(o)));
 
         public static readonly Option<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization", LocalizableStrings.SkipOptimizationOptionDescription)
-            .ForwardAs("-property:SkipOptimization=true");
+            .ForwardAs(CommonOptions.BuildProperty("SkipOptimization", true));
 
         public static readonly Option<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols", LocalizableStrings.SkipSymbolsOptionDescription)
-            .ForwardAs("-property:CreateProfilingSymbols=false");
+            .ForwardAs(CommonOptions.BuildProperty("CreateProfilingSymbols", false));
 
         private static readonly Command Command = ConstructCommand();
 

@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
 
             if (!_parseResult.HasOption(AddPackageParser.NoRestoreOption))
             {
-                
+
                 try
                 {
                     // Create a Dependency Graph file for the project
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
                     // Catch IOException from Path.GetTempFileName() and throw a graceful exception to the user.
                     throw new GracefulException(string.Format(LocalizableStrings.CmdDGFileIOException, projectFilePath), ioex);
                 }
-                
+
                 GetProjectDependencyGraph(projectFilePath, tempDgFilePath);
             }
 
@@ -78,13 +78,13 @@ namespace Microsoft.DotNet.Tools.Add.PackageReference
             args.Add("-target:GenerateRestoreGraphFile");
 
             // Pass Dependency Graph file output path
-            args.Add($"-property:RestoreGraphOutputPath=\"{dgFilePath}\"");
+            args.Add(CommonOptions.BuildProperty("RestoreGraphOutputPath", dgFilePath, true));
 
             // Turn off recursive restore
-            args.Add($"-property:RestoreRecursive=false");
+            args.Add(CommonOptions.BuildProperty("RestoreRecursive", false));
 
             // Turn off restore for Dotnet cli tool references so that we do not generate extra dg specs
-            args.Add($"-property:RestoreDotnetCliToolReferences=false");
+            args.Add(CommonOptions.BuildProperty("RestoreDotnetCliToolReferences", false));
 
             // Output should not include MSBuild version header
             args.Add("-nologo");

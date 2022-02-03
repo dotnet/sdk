@@ -25,16 +25,16 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> OuputOption = new ForwardedOption<string>(new string[] { "-o", "--output" }, LocalizableStrings.OutputOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.OutputOption
-        }.ForwardAsSingle(o => $"-property:PublishDir={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("PublishDir", CommandDirectoryContext.GetFullPath(o)));
 
         public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", LocalizableStrings.ManifestOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.ManifestOption
-        }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("TargetManifestFiles", string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))))
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.NoBuildOptionDescription)
-            .ForwardAs("-property:NoBuild=true");
+            .ForwardAs(CommonOptions.BuildProperty("NoBuild", true));
 
         public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
             .ForwardAs("-nologo");

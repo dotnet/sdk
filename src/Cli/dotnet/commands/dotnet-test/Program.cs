@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Test
                 var escaped = settings.Skip(1).Select(s => s.Replace("\\", "\\\\").Replace("\"", "\\\"")).ToArray();
 
                 var runSettingsArg = string.Join(";", escaped);
-                msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
+                msbuildArgs.Add(CommonOptions.BuildProperty("VSTestCLIRunSettings", runSettingsArg, true));
             }
 
             var verbosityArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "verbosity")?.SingleOrDefault() ?? null;
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Test
                 var verbosity = verbosityArg.Split(':', 2);
                 if (verbosity.Length == 2)
                 {
-                    msbuildArgs.Add($"-property:VSTestVerbosity={verbosity[1]}");
+                    msbuildArgs.Add(CommonOptions.BuildProperty("VSTestVerbosity", verbosity[1]));
                 }
             }
 
