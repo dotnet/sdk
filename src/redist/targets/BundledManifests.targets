@@ -6,8 +6,8 @@
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="6.0.200" Version="$(XamarinMacOSWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="6.0.200" Version="$(MauiWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="6.0.200" Version="$(XamarinTvOSWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="6.0.100" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="6.0.100" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="6.0.200" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="6.0.200" Version="$(EmscriptenWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
