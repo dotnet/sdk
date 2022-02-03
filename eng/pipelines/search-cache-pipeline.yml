@@ -16,7 +16,8 @@ parameters:
   default: true
 
 pool:
-    vmImage: ubuntu-20.04
+  name: NetCore1ESPool-Internal
+  demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
 steps:
 - checkout: self
