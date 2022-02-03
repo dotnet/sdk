@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli
             LocalizableStrings.CmdSourceOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdSourceOption
-        }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", string.Join("%3B", o)))
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", CommonOptions.GetSemiColonEscapedArgs(o)))
         .AllowSingleArgPerToken();
 
         private static Option[] FullRestoreOptions() =>
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     ArgumentHelpName = LocalizableStrings.CmdSourceOption,
                     IsHidden = !showHelp
-                }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", string.Join("%3B", o))) // '%3B' corresponds to ';'
+                }.ForwardAsSingle(o => CommonOptions.BuildProperty("RestoreSources", CommonOptions.GetSemiColonEscapedArgs(o)))
                 .AllowSingleArgPerToken(),
                 new ForwardedOption<string>(
                     "--packages",
@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Cli
                     {
                         ArgumentHelpName = LocalizableStrings.CmdRuntimeOption,
                         IsHidden = !showHelp
-                    }.ForwardAsSingle(o => CommonOptions.BuildProperty("RuntimeIdentifiers", string.Join("%3B", o)))
+                    }.ForwardAsSingle(o => CommonOptions.BuildProperty("RuntimeIdentifiers", CommonOptions.GetSemiColonEscapedArgs(o)))
                     .AllowSingleArgPerToken()
                     .AddCompletions(Complete.RunTimesFromProjectFile)
                 ).ToArray();

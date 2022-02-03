@@ -284,6 +284,29 @@ namespace Microsoft.DotNet.Cli
                 return $"-property:{name}=\"{value}\"";
             }
         }
+
+        internal static string GetSemiColonEscapedstring(string arg)
+        {
+            if (arg.IndexOf(";") != -1)
+            {
+                return arg.Replace(";", "%3b");
+            }
+
+            return arg;
+        }
+
+        internal static string[] GetSemiColonEscapedArgs(IEnumerable<string> args)
+        {
+            int counter = 0;
+            string[] array = new string[args.Count()];
+
+            foreach (string arg in args)
+            {
+                array[counter++] = GetSemiColonEscapedstring(arg);
+            }
+
+            return array;
+        }
     }
 
     public enum VerbosityOptions

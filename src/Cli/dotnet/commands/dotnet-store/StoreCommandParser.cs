@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli
                 return new[]
                 {
                     materializedString,
-                    CommonOptions.BuildProperty("AdditionalProjects", string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath)))
+                    CommonOptions.BuildProperty("AdditionalProjects", CommonOptions.GetSemiColonEscapedArgs(o.Skip(1).Select(CommandDirectoryContext.GetFullPath)))
                 };
             }
         }).AllowSingleArgPerToken();

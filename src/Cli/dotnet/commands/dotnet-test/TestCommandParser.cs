@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Cli
             ArgumentHelpName = LocalizableStrings.CmdLoggerOption
         }.ForwardAsSingle(o =>
         {
-            var loggersString = string.Join(";", GetSemiColonEscapedArgs(o));
+            var loggersString = string.Join(";", CommonOptions.GetSemiColonEscapedArgs(o));
 
             return CommonOptions.BuildProperty("VSTestLogger", loggersString, true);
         })
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<IEnumerable<string>> CollectOption = new ForwardedOption<IEnumerable<string>>("--collect", LocalizableStrings.cmdCollectDescription)
         {
             ArgumentHelpName = LocalizableStrings.cmdCollectFriendlyName
-        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestCollect", string.Join(";", GetSemiColonEscapedArgs(o)), true))
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("VSTestCollect", string.Join(";", CommonOptions.GetSemiColonEscapedArgs(o)), true))
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> BlameOption = new ForwardedOption<bool>("--blame", LocalizableStrings.CmdBlameDescription)
@@ -160,29 +160,6 @@ namespace Microsoft.DotNet.Cli
             command.SetHandler(TestCommand.Run);
 
             return command;
-        }
-
-        private static string GetSemiColonEscapedstring(string arg)
-        {
-            if (arg.IndexOf(";") != -1)
-            {
-                return arg.Replace(";", "%3b");
-            }
-
-            return arg;
-        }
-
-        private static string[] GetSemiColonEscapedArgs(IEnumerable<string> args)
-        {
-            int counter = 0;
-            string[] array = new string[args.Count()];
-
-            foreach (string arg in args)
-            {
-                array[counter++] = GetSemiColonEscapedstring(arg);
-            }
-
-            return array;
         }
     }
 }

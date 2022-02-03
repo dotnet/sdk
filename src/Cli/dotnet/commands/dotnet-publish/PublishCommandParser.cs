@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", LocalizableStrings.ManifestOptionDescription)
         {
             ArgumentHelpName = LocalizableStrings.ManifestOption
-        }.ForwardAsSingle(o => CommonOptions.BuildProperty("TargetManifestFiles", string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))))
+        }.ForwardAsSingle(o => CommonOptions.BuildProperty("TargetManifestFiles", CommonOptions.GetSemiColonEscapedArgs(o.Select(CommandDirectoryContext.GetFullPath))))
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.NoBuildOptionDescription)
