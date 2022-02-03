@@ -195,7 +195,7 @@ Detalhes: {0}.</target>
 Details: {1}</source>
         <target state="new">Failed to retrieve template packages from provider '{0}'.
 Details: {1}</target>
-        <note>{0} - provider name (not localized), last line should not end with a period - period is already included to message</note>
+        <note>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToScan">
         <source>Failed to scan {0}.
