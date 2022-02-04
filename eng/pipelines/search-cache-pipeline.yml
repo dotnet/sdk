@@ -24,11 +24,6 @@ steps:
 
 - script: '$(Build.SourcesDirectory)/build.sh'
 
-- bash: |
-    SdkVersion=$(dotnet msbuild $(Build.SourcesDirectory)/eng/Versions.props -verbosity:diagnostic | grep "VSRedistCommonNetCoreToolsetx64PackageVersion = " | xargs | cut -d' ' -f 3)
-    echo "##vso[task.setvariable variable=RepoSdkVersion;]$SdkVersion"
-  displayName: 'Determine SDK version'
-
 - task: UseDotNet@2
   displayName: 'Use .NET 3.1'
   inputs:
@@ -50,12 +45,18 @@ steps:
     version: 5.0.300
     installationPath: $(Build.SourcesDirectory)/.dotnet
 
+- bash: |
+    SdkVersion=$(dotnet msbuild $(Build.SourcesDirectory)/eng/Versions.props -verbosity:diagnostic | grep "VSRedistCommonNetCoreToolsetx64PackageVersion = " | xargs | cut -d' ' -f 3)
+    echo "##vso[task.setvariable variable=RepoSdkVersion;]$SdkVersion"
+  displayName: 'Determine SDK version'
+  failOnStderr: true
+
 - bash: >
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
     -Version $(RepoSdkVersion)
     -InstallDir $(Build.SourcesDirectory)/.dotnet
     -SkipNonVersionedFiles
-  displayName: Install .NET 6.0
+  displayName: Install .NET version used by reposity
 
 - bash: >
     $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net6.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
