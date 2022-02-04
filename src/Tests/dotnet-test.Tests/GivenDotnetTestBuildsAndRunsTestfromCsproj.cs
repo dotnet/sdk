@@ -676,11 +676,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact] // See issue https://github.com/dotnet/sdk/issues/10423
-        public void FilterPropertyCorrectlyHandlesComma()
+        [Theory] // See issue https://github.com/dotnet/sdk/issues/10423
+        [InlineData("TestCategory=CategoryA,CategoryB", "_comma")]
+        [InlineData("TestCategory=CategoryA%2cCategoryB", "_comma_encoded")]
+        [InlineData("\"TestCategory=CategoryA,CategoryB\"", "_already_escaped")]
+        public void FilterPropertyCorrectlyHandlesComma(string filter, string folderSuffix)
         {
             string testAppName = "TestCategoryWithComma";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, folderSuffix)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -689,7 +692,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
                 .WithWorkingDirectory(testProjectDirectory)
-                .Execute("--filter", "TestCategory=CategoryA,CategoryB");
+                .Execute("--filter", filter);
 
             // Verify
             if (!TestContext.IsLocalized())

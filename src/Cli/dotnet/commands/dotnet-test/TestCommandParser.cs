@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
@@ -188,6 +189,14 @@ namespace Microsoft.DotNet.Cli
         /// Adding double quotes around the property helps MSBuild arguments parser and avoid incorrect splits on ',' or ';'.
         /// </summary>
         private static string SurroundWithDoubleQuotes(string s)
-            => string.Concat("\"", s, "\"");
+        {
+            if (s.StartsWith("\"", StringComparison.Ordinal)
+                && s.EndsWith("\"", StringComparison.Ordinal))
+            {
+                return s;
+            }
+
+            return string.Concat("\"", s, "\"");
+        }
     }
 }
