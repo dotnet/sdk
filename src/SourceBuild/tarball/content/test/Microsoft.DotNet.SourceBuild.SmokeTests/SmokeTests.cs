@@ -24,10 +24,18 @@ public class SmokeTests
     [Fact]
     public void SmokeTestsScript()
     {
-        string smokeTestArgs = $"--dotnetDir {Directory.GetParent(DotNetHelper.DotNetPath)} --minimal --projectOutput --archiveRestoredPackages --targetRid {Config.TargetRid}";
+        string smokeTestArgs = $"--dotnetDir {Directory.GetParent(DotNetHelper.DotNetPath)} --projectOutput --archiveRestoredPackages --targetRid {Config.TargetRid}";
         if (Config.TargetRid.Contains("osx"))
         {
             smokeTestArgs += " --excludeWebHttpsTests";
+        }
+        if (Config.ExcludeOmniSharpTests)
+        {
+            smokeTestArgs += " --excludeOmniSharpTests";
+        }
+        if (Config.ExcludeOnlineTests)
+        {
+            smokeTestArgs += " --excludeOnlineTests";
         }
 
         (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess("./smoke-tests/smoke-test.sh", smokeTestArgs, OutputHelper);

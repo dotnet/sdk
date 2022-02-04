@@ -69,11 +69,24 @@ jobs:
           _ExcludeOmniSharpTests: false
           _RunOnline: false
   timeoutInMinutes: 300
+  variables:
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - group: AzureDevOps-Artifact-Feeds-Pats
   workspace:
     clean: all
 
   steps:
-  - checkout: none
+  - checkout: self
+    clean: true
+
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - task: Bash@3
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+        arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-build-tarball.yml
     parameters:
@@ -110,11 +123,24 @@ jobs:
           _Container: ${{ parameters.fedora33Container }}
           _RunOnline: false
     timeoutInMinutes: 180
+    variables:
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - group: AzureDevOps-Artifact-Feeds-Pats
     workspace:
       clean: all
 
     steps:
-    - checkout: none
+    - checkout: self
+      clean: true
+
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - task: Bash@3
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+          arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
     - download: current
       artifact: $(_PreviousSourceBuildArtifact)

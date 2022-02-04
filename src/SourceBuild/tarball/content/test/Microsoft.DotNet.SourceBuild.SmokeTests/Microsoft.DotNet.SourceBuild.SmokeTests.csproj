@@ -19,10 +19,18 @@
 
   <ItemGroup>
     <Content Include="baselines/*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="smoke-tests/*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <SmokeTestPrereqs Include="..\..\packages\smoke-test-prereqs\*" />
+  </ItemGroup>
+
+  <Target Name="CopySmokeTestPrereqs" BeforeTargets="Build">
+    <Copy SourceFiles="@(SmokeTestPrereqs)" DestinationFolder="$(OutputPath)\smoke-tests\prereq-packages" />
+  </Target>
 </Project>

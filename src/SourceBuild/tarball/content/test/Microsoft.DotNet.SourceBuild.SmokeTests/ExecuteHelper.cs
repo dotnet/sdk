@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using Xunit.Abstractions;
 
@@ -26,6 +27,13 @@ internal static class ExecuteHelper
                 RedirectStandardError = true,
             }
         };
+
+        // The `dotnet test` execution context sets a number of dotnet related ENVs that cause issues when executing
+        // dotnet commands.  Clear these to avoid side effects.
+        foreach (string key in process.StartInfo.Environment.Keys.Where(key => key != "HOME").ToList())
+        {
+            process.StartInfo.Environment.Remove(key);
+        }
 
         StringBuilder stdOutput = new();
         process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => stdOutput.AppendLine(e.Data));

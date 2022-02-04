@@ -99,11 +99,24 @@
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
     </PropertyGroup>
 
-    <Exec Command="$(DotnetToolCommand) test ./test/Microsoft.DotNet.SourceBuild.SmokeTests --logger:trx"
+    <Exec Command="$(DotnetToolCommand) test ./test/Microsoft.DotNet.SourceBuild.SmokeTests --logger:trx -c $(Configuration)"
           EnvironmentVariables="
             DOTNET_TARBALL_PATH=$(SdkTarballPath);
             TARGET_RID=$(TargetRid);
             " />
+  </Target>
+
+  <Target Name="CreateSmokeTestPrereqs"
+          AfterTargets="RunSmokeTest"
+          Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'" >
+    <PropertyGroup>
+      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).tar.gz</SmokeTestPrereqsTarballName>
+    </PropertyGroup>
+
+    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
+          WorkingDirectory="./test/Microsoft.DotNet.SourceBuild.SmokeTests/bin/$(Configuration)/net6.0/smoke-tests/prereq-packages/"/>
+
+    <Message Importance="High" Text="Packaged smoke-test prereqs to $(SmokeTestPrereqsTarballName)" />
   </Target>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />
