@@ -75,10 +75,13 @@ steps:
   artifact: outputs
   displayName: Publish Artifacts
 
-- bash: az config set extension.use_dynamic_install=yes_without_prompt
-  displayName: Disable Azure CLI prompts
-
 - ${{ if eq(parameters.publishToBlob, true) }}:
+  - bash: curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    displayName: Install Azure CLI
+
+  - bash: az config set extension.use_dynamic_install=yes_without_prompt
+    displayName: Disable Azure CLI prompts
+
   - bash: >
       az storage azcopy blob upload 
       -c $(CacheFileStorageContainer)
