@@ -64,7 +64,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return value1;
             }
 
-            return GlobalFlowStateDictionaryAnalysisValue.Merge(value1, value2);
+            // When merge multiple results from different blocks, if two values contain different deferred entities, merge it
+            // for the values of the common entities, perform intersaction operation.
+            // e.g.
+            // If block1 and block2 both has block3 as successor, 
+            // block1      block2 
+            //    \          /
+            //       block3
+            // suppose value1 is the output of block1, and value2 is the output of block2, parameter1 is enumerated once in block1, once in block2.
+            // In block3, parameter1 is considered as enumerated once, rather then twice.
+            return GlobalFlowStateDictionaryAnalysisValue.Merge(value1, value2, true);
         }
 
         public static GlobalFlowStateDictionaryAnalysisValue Intersect(GlobalFlowStateDictionaryAnalysisValue value1, GlobalFlowStateDictionaryAnalysisValue value2)
