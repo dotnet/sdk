@@ -33,7 +33,7 @@ index 79a935391..65e482b83 100644
      <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
      <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
      <NETFXTargetFramework>net472</NETFXTargetFramework>
--    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+-    <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
 -    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NETCoreTargetFramework>
 +    <NETCoreTargetFramework>net6.0</NETCoreTargetFramework>
      <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
