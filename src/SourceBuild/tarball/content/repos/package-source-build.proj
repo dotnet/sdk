@@ -47,7 +47,7 @@
       Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
 
     <PropertyGroup>
-      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(VersionPrefix)-$(VersionSuffix).tar.gz</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(installerOutputPackageVersion).tar.gz</SourceBuiltTarballName>
     </PropertyGroup>
 
     <Exec Command="tar --numeric-owner --exclude='$(SBRPIntermediateWildcard)' -czf $(SourceBuiltTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(SourceBuiltPackagesPath)" />
