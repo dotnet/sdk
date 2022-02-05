@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -18,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Build
     public class GetDependencyInfo : Task
     {
         [Required]
-        public string DotnetInstallerCommit { get; set; }
+        public string VersionDetailsXmlFile { get; set; }
 
         [Required]
         public string DependencyName { get; set; }
@@ -33,26 +32,22 @@ namespace Microsoft.DotNet.Cli.Build
         {
             try
             {
-                string versionsXmlUrl = $"https://raw.githubusercontent.com/dotnet/installer/{DotnetInstallerCommit}/eng/Version.Details.xml";
-                using (Stream file = new HttpClient().GetStreamAsync(versionsXmlUrl).Result)
-                {
-                    XDocument document = XDocument.Load(file);
-                    XElement dependency = document
-                        .Element("Dependencies")?
-                        .Element("ProductDependencies")?
-                        .Elements("Dependency")
-                        .FirstOrDefault(d => DependencyName.Equals(d.Attribute("Name")?.Value));
+                XDocument document = XDocument.Load(VersionDetailsXmlFile);
+                XElement dependency = document
+                    .Element("Dependencies")?
+                    .Element("ProductDependencies")?
+                    .Elements("Dependency")
+                    .FirstOrDefault(d => DependencyName.Equals(d.Attribute("Name")?.Value));
 
-                    if (dependency != null)
-                    {
-                        DependencyVersion = dependency.Attribute("Version")?.Value;
-                        DependencyCommit = dependency.Element("Sha")?.Value;
-                    }
+                if (dependency != null)
+                {
+                    DependencyVersion = dependency.Attribute("Version")?.Value;
+                    DependencyCommit = dependency.Element("Sha")?.Value;
                 }
             }
             catch (Exception ex)
             {
-                Log.LogWarning($"GetComponentCommit failed for DotnetInstallerCommit={DotnetInstallerCommit}, DependencyName={DependencyName}: {ex}");
+                Log.LogWarning($"GetComponentCommit failed for VersionDetailsXmlFile={VersionDetailsXmlFile}, DependencyName={DependencyName}: {ex}");
             }
             return true;
         }

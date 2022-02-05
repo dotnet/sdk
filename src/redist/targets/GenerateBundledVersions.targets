@@ -16,19 +16,25 @@
       Overwrite="true"
       Encoding="ASCII" />
 
+    <WriteLinesToFile
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      Lines="$(BUILD_SOURCEVERSION)%0A$(PackageVersion)"
+      Overwrite="true"
+      Encoding="ASCII"/>
+
     <GetDependencyInfo 
-      DotnetInstallerCommit="$(BUILD_SOURCEVERSION)"
+      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
       DependencyName="Microsoft.NETCore.App.Ref">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
 
-    <!-- Format for productCommit-%rid%.txt:
+    <!-- Format for productCommits-%rid%.txt:
        installer:%commit%, %version
        runtime:%commit%, $version
     -->
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      File="$(ArtifactsShippingPackagesDir)productCommits-$(Rid).txt"
       Lines="installer%3A$(BUILD_SOURCEVERSION)%2C%20$(PackageVersion)%0Aruntime%3A$(DepRuntimeCommit)%2C%20$(DepRuntimeVersion)%0A"
       Overwrite="true"
       Encoding="ASCII"/>
