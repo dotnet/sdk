@@ -81,7 +81,7 @@ These instructions originally authored by [rkm](https://github.com/rkm) & [leots
 1. FileType: C#
 1. Scope: Open Files
 1. Program: Write dotnet-format
-1. Arguments: $SolutionPath$ -verbosity diagnostic --include $FileRelativePath$
+1. Arguments: $SolutionPath$ --verbosity diagnostic --include $FileRelativePath$
 1. (Optionally) Append --fix-style warning to fix any style issues automatically on save.
 1. (Optionally) Append --fix-analyzers warning to fix any analyzer warnings on save.
 1. Disable all advanced option checkboxes.
