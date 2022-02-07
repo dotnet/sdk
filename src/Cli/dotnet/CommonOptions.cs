@@ -275,14 +275,15 @@ namespace Microsoft.DotNet.Cli
 
         internal static string BuildProperty<TValue>(string name, TValue value, bool escapeValue = false)
         {
-            if (escapeValue)
-            {
-                return $"-property:{name}={value}";
-            }
-            else
-            {
-                return $"-property:{name}=\"{value}\"";
-            }
+            var valueString = value.ToString();
+
+            var needsToBeEscaped = escapeValue
+                && !valueString.StartsWith("\"", StringComparison.Ordinal)
+                && !valueString.EndsWith("\"", StringComparison.Ordinal);
+
+            return needsToBeEscaped
+                ? $"-property:{name}=\"{valueString}\""
+                : $"-property:{name}={valueString}";
         }
 
         internal static string GetSemiColonEscapedstring(string arg)
