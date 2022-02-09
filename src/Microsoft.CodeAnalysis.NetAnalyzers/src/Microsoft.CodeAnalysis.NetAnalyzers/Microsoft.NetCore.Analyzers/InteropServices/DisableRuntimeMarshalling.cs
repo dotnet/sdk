@@ -128,8 +128,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return invocation.TargetMethod.Name switch
                 {
                     "OffsetOf" => false,
-                    "SizeOf" => invocation is { TargetMethod.IsGenericMethod: true } or { Arguments: [{ Value: ITypeOfOperation { TypeOperand.IsUnmanagedType: true } }] },
-                    "StructureToPtr" => invocation.Arguments is [{ Type.IsUnmanagedType: true }, ..],
+                    "SizeOf" => invocation.TargetMethod.IsGenericMethod || (invocation.Arguments.Length > 0 && invocation.Arguments[0] is ITypeOfOperation { TypeOperand.IsUnmanagedType: true }),
+                    "StructureToPtr" => invocation.Arguments.Length > 0 && invocation.Arguments[0].Type.IsUnmanagedType,
                     "PtrToStructure" => invocation.Type is not null,
                     _ => false
                 };
@@ -240,7 +240,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     foreach (var attr in type.GetAttributes(_structLayoutAttribute))
                     {
-                        if (attr.ConstructorArguments is [{ Type: not null } argument])
+                        if (attr.ConstructorArguments.Length > 0
+                            && attr.ConstructorArguments[0] is TypedConstant argument
+                            && argument.Type is not null)
                         {
                             SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
                                 ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
