@@ -128,8 +128,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return invocation.TargetMethod.Name switch
                 {
                     "OffsetOf" => false,
-                    "SizeOf" => invocation.TargetMethod.IsGenericMethod || invocation.Arguments[0].Value is ITypeOfOperation { TypeOperand.IsUnmanagedType: true },
-                    "StructureToPtr" => invocation.Arguments[0].Value.Type.IsUnmanagedType,
+                    "SizeOf" => invocation is { TargetMethod.IsGenericMethod: true } or { Arguments: [{ Value: ITypeOfOperation { TypeOperand.IsUnmanagedType: true } }] },
+                    "StructureToPtr" => invocation.Arguments is [{ Type.IsUnmanagedType: true }, ..],
                     "PtrToStructure" => invocation.Type is not null,
                     _ => false
                 };
@@ -238,30 +238,26 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (_structLayoutAttribute is not null)
                 {
-                    foreach (var attr in type.GetAttributes())
+                    foreach (var attr in type.GetAttributes(_structLayoutAttribute))
                     {
-                        if (attr.AttributeClass.OriginalDefinition.Equals(_structLayoutAttribute))
+                        if (attr.ConstructorArguments is [{ Type: not null } argument])
                         {
-                            var argument = attr.ConstructorArguments[0];
-                            if (argument.Type != null)
-                            {
-                                SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
-                                    ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
-                                    argument.Type.SpecialType;
+                            SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
+                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
+                                argument.Type.SpecialType;
 
-                                if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
-                                    convertedLayoutKindValue == (ulong)LayoutKind.Auto)
+                            if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
+                                convertedLayoutKindValue == (ulong)LayoutKind.Auto)
+                            {
+                                try
                                 {
-                                    try
-                                    {
-                                        _layoutCacheLock.EnterWriteLock();
-                                        _isAutoLayoutOrContainsAutoLayoutCache.Add(type, true);
-                                        return true;
-                                    }
-                                    finally
-                                    {
-                                        _layoutCacheLock.ExitWriteLock();
-                                    }
+                                    _layoutCacheLock.EnterWriteLock();
+                                    _isAutoLayoutOrContainsAutoLayoutCache.Add(type, true);
+                                    return true;
+                                }
+                                finally
+                                {
+                                    _layoutCacheLock.ExitWriteLock();
                                 }
                             }
                         }
@@ -270,9 +266,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 foreach (var member in type.GetMembers())
                 {
-                    if (member is IFieldSymbol { IsStatic: false, Type.IsValueType: true } valueTypeField)
+                    if (member is IFieldSymbol { IsStatic: false, Type.IsValueType: true } valueTypeField
+                        && TypeIsAutoLayoutOrContainsAutoLayout(valueTypeField.Type))
                     {
-                        return TypeIsAutoLayoutOrContainsAutoLayout(valueTypeField.Type);
+                        return true;
                     }
                 }
 
