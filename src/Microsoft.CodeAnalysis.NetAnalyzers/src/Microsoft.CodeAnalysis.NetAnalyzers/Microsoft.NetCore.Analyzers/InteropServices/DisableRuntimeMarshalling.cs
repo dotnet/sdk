@@ -128,8 +128,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return invocation.TargetMethod.Name switch
                 {
                     "OffsetOf" => false,
-                    "SizeOf" => invocation.TargetMethod.IsGenericMethod || (invocation.Arguments.Length > 0 && invocation.Arguments[0] is ITypeOfOperation { TypeOperand.IsUnmanagedType: true }),
-                    "StructureToPtr" => invocation.Arguments.Length > 0 && invocation.Arguments[0].Type.IsUnmanagedType,
+                    "SizeOf" => invocation.TargetMethod.IsGenericMethod || (invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is ITypeOfOperation { TypeOperand.IsUnmanagedType: true }),
+                    "StructureToPtr" => invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is { Type.IsUnmanagedType: true },
                     "PtrToStructure" => invocation.Type is not null,
                     _ => false
                 };
