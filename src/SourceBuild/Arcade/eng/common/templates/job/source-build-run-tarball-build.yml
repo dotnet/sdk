@@ -7,11 +7,12 @@ parameters:
   # Dependent jobs that must be completed before this job will run
   dependsOn:
 
-  # The resource id of the tarball to download and build
-  tarballResourceId: current
+  # Resource id of the installer build to retrieve source/product tarball's from
+  installerBuildResourceId: current
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
+  buildJobTimeout: 300
   centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build-20210714125450-5d87b80
   centOS8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-source-build-20211118190102-9355e7b
   debian9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-stretch-20211001171226-047508b
@@ -42,12 +43,14 @@ jobs:
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
         _ExcludeOmniSharpTests: true
+        _Platform: linux
         _RunOnline: true
       CentOS7-Offline:
         _BootstrapPrep: true
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
         _ExcludeOmniSharpTests: true
+        _Platform: linux
         _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         CentOS8-Offline:
@@ -55,20 +58,23 @@ jobs:
           _BuildArch: x64
           _Container: ${{ parameters.centOS8Container }}
           _ExcludeOmniSharpTests: false
+          _Platform: linux
           _RunOnline: false
         Fedora33-Offline:
           _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.fedora33Container }}
           _ExcludeOmniSharpTests: false
+          _Platform: linux
           _RunOnline: false
         Ubuntu1804-Offline:
           _BootstrapPrep: true
           _BuildArch: x64
           _Container: ${{ parameters.ubuntu1804Container }}
           _ExcludeOmniSharpTests: false
+          _Platform: linux
           _RunOnline: false
-  timeoutInMinutes: 300
+  timeoutInMinutes: ${{ parameters.buildJobTimeout }}
   variables:
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -79,20 +85,13 @@ jobs:
   - checkout: self
     clean: true
 
-  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - task: Bash@3
-      displayName: Setup Private Feeds Credentials
-      inputs:
-        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-        arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-      env:
-        Token: $(dn-bot-dnceng-artifact-feeds-rw)
-
   - template: /src/SourceBuild/Arcade/eng/common/templates/steps/source-build-build-tarball.yml
     parameters:
       buildArch: $(_BuildArch)
       container: $(_Container)
       excludeOmniSharpTests: $(_ExcludeOmniSharpTests)
+      installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
+      platform: $(_Platform)
       prepScript: |
         set -x
 
@@ -104,7 +103,6 @@ jobs:
         docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball $(_Container) ./prep.sh  ${customPrepArgs}
       runOnline: $(_RunOnline)
       tarballDir: ${{ parameters.tarballDir }}
-      tarballResourceId: ${{ parameters.tarballResourceId }}
 
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - job: Rebuild_Tarball
@@ -121,8 +119,9 @@ jobs:
           _PreviousSourceBuildArtifact: Build Tarball Fedora33-Offline_Artifacts
           _BuildArch: x64
           _Container: ${{ parameters.fedora33Container }}
+          _Platform: linux
           _RunOnline: false
-    timeoutInMinutes: 180
+    timeoutInMinutes: ${{ parameters.buildJobTimeout }}
     variables:
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
       - group: AzureDevOps-Artifact-Feeds-Pats
@@ -132,15 +131,6 @@ jobs:
     steps:
     - checkout: self
       clean: true
-
-    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - task: Bash@3
-        displayName: Setup Private Feeds Credentials
-        inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-          arguments: $(Build.SourcesDirectory)/NuGet.config $Token
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
     - download: current
       artifact: $(_PreviousSourceBuildArtifact)
@@ -159,6 +149,9 @@ jobs:
         additionalBuildArgs: --with-sdk /tarball/.dotnet
         buildArch: $(_BuildArch)
         container: $(_Container)
+        installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
+        isBootstrapped: true
+        platform: $(_Platform)
         prepScript: |
           set -x
 
@@ -168,4 +161,3 @@ jobs:
           eval rm -f "$tarballFilePath"
         runOnline: $(_RunOnline)
         tarballDir: ${{ parameters.tarballDir }}
-        tarballResourceId: ${{ parameters.tarballResourceId }}
