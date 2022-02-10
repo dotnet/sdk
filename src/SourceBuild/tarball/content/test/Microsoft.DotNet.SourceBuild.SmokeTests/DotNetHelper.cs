@@ -12,24 +12,27 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 internal class DotNetHelper
 {
+    private static readonly object s_lockObj = new object();
+
     public string DotNetPath { get; }
-    public string DotNetInstallDirectory { get; }
 
     public DotNetHelper(ITestOutputHelper outputHelper)
     {
-        if (!Directory.Exists(Config.DotNetDirectory))
+        lock (s_lockObj)
         {
-            if (!File.Exists(Config.DotNetTarballPath))
+            if (!Directory.Exists(Config.DotNetDirectory))
             {
-                throw new InvalidOperationException($"Tarball path '{Config.DotNetTarballPath}' specified in {Config.DotNetTarballPathEnv} does not exist.");
-            }
+                if (!File.Exists(Config.DotNetTarballPath))
+                {
+                    throw new InvalidOperationException($"Tarball path '{Config.DotNetTarballPath}' specified in {Config.DotNetTarballPathEnv} does not exist.");
+                }
 
-            Directory.CreateDirectory(Config.DotNetDirectory);
-            ExecuteHelper.ExecuteProcess("tar", $"xzf {Config.DotNetTarballPath} -C {Config.DotNetDirectory}", outputHelper);
+                Directory.CreateDirectory(Config.DotNetDirectory);
+                ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {Config.DotNetTarballPath} -C {Config.DotNetDirectory}", outputHelper);
+            }
         }
 
-        DotNetInstallDirectory = Path.Combine(Directory.GetCurrentDirectory(), Config.DotNetDirectory);
-        DotNetPath = Path.Combine(DotNetInstallDirectory, "dotnet");
+        DotNetPath = Path.Combine(Config.DotNetDirectory, "dotnet");
     }
 
     public void ExecuteDotNetCmd(string args, ITestOutputHelper outputHelper)
