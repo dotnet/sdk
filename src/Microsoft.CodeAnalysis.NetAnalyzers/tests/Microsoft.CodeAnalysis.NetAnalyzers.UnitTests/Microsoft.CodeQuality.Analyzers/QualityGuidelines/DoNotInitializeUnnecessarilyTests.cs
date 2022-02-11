@@ -313,7 +313,7 @@ public class Test
         }
 
         [Fact, WorkItem(5750, "https://github.com/dotnet/roslyn-analyzers/issues/5750")]
-        public async Task CA1805_ParameterlessValueTypeCtorAsync()
+        public async Task ParameterlessValueTypeCtor()
         {
             await new VerifyCS.Test
             {
