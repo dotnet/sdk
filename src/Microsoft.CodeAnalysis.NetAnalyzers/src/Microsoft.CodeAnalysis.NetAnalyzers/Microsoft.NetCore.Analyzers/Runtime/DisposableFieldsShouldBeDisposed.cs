@@ -101,6 +101,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
 
+                foreach (var type in namedType.GetBaseTypes())
+                {
+                    foreach (var method in type.GetMembers().OfType<IMethodSymbol>().WhereAsArray(x => x.IsVirtual))
+                    {
+                        if (IsDisposeMethod(method))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
                 return false;
             }
 
