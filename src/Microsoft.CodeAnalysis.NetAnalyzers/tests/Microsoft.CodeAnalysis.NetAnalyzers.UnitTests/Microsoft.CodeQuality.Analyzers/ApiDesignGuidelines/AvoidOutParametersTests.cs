@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.AvoidOutParameters,
@@ -425,6 +425,7 @@ public class Person
         }
 
         [Fact]
+        [WorkItem(5854, "https://github.com/dotnet/roslyn-analyzers/issues/5854")]
         public async Task MethodIsOverrideOrInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -461,6 +462,61 @@ public class InterfaceExplicitImpl : IInterface
         throw new System.NotImplementedException();
     }
 }
+
+public class InterfaceBothImplicitAndExplicitImpl : IInterface
+{
+    // Possibly false positive.
+    public void [|InterfaceMethod|](out string s) // No diagnostic here. This is not actionable.
+    {
+        throw new System.NotImplementedException();
+    }
+
+    void IInterface.InterfaceMethod(out string s) // No diagnostic here. This is not actionable.
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
+
+Interface IInterface
+    Sub InterfaceMethod(<Out> ByRef s As String)
+End Interface
+
+Public MustInherit Class Base
+    Public MustOverride Sub [|AbstractMethod|](<Out> ByRef s As String)
+
+    Public Overridable Sub [|VirtualMethod|](<Out> ByRef s As String)
+        s = Nothing
+    End Sub
+
+End Class
+
+Public Class Derived
+    Inherits Base
+
+    Public Overrides Sub AbstractMethod(<Out> ByRef s As String)
+        s = Nothing
+    End Sub
+
+    Public Overrides Sub VirtualMethod(<Out> ByRef s As String)
+        s = Nothing
+    End Sub
+End Class
+
+Public Class InterfaceImplicitImpl
+    Implements IInterface
+
+    ' Possibly a false positive.
+    Public Sub [|InterfaceMethod|](<Out> ByRef s As String)
+        Throw New System.NotImplementedException()
+    End Sub
+
+    Private Sub IInterface_InterfaceMethod(<Out> ByRef s As String) Implements IInterface.InterfaceMethod
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
 ");
         }
     }
