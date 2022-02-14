@@ -83,6 +83,7 @@ Configurable Rules:
 [CA1055](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055),
 [CA1056](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056),
 [CA1058](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058),
+[CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
 [CA1063](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063),
 [CA1068](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068),
 [CA1070](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070),
