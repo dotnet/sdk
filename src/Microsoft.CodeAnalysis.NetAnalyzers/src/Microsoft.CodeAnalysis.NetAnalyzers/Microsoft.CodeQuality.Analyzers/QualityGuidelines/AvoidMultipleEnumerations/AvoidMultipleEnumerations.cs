@@ -40,12 +40,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// All the immutable collections that have a conversion method from IEnumerable.
         /// </summary>
         private static readonly ImmutableArray<(string typeName, string methodName)> s_immutableCollectionsTypeNamesAndConvensionMethods = ImmutableArray.Create(
-            ("System.Collections.Immutable.ImmutableArray", nameof(ImmutableArray.ToImmutableArray)),
-            ("System.Collections.Immutable.ImmutableDictionary", nameof(ImmutableDictionary.ToImmutableDictionary)),
-            ("System.Collections.Immutable.ImmutableHashSet", nameof(ImmutableHashSet.ToImmutableHashSet)),
-            ("System.Collections.Immutable.ImmutableList", nameof(ImmutableList.ToImmutableList)),
-            ("System.Collections.Immutable.ImmutableSortedDictionary", nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
-            ("System.Collections.Immutable.ImmutableSortedSet", nameof(ImmutableSortedSet.ToImmutableSortedSet)));
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableArray, nameof(ImmutableArray.ToImmutableArray)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableDictionary, nameof(ImmutableDictionary.ToImmutableDictionary)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableHashSet, nameof(ImmutableHashSet.ToImmutableHashSet)),
+            (WellKnownTypeNames.SystemCollectionsImmutableIImmutableList, nameof(ImmutableList.ToImmutableList)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedDictionary, nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
         /// <summary>
         /// Linq methods causing its parameters to be enumerated.

@@ -308,7 +308,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         if (method is IMethodSymbol { Parameters: { Length: > 0 } parameters, IsExtensionMethod: true } methodSymbol
                             && parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)
                         {
-                            builder.AddRange(methodSymbol);
+                            builder.Add(methodSymbol);
                         }
                     }
                 }
@@ -382,7 +382,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 foreach (var methodName in methodNames)
                 {
-                    builder.AddRange(type.GetMembers(methodName).OfType<IMethodSymbol>());
+                    foreach (var methodSymbol in type.GetMembers(methodName).OfType<IMethodSymbol>())
+                    {
+                        builder.Add(methodSymbol);
+                    }
                 }
             }
         }
