@@ -428,7 +428,7 @@ public class Person
         [WorkItem(5854, "https://github.com/dotnet/roslyn-analyzers/issues/5854")]
         public async Task MethodIsOverrideOrInterfaceImplementation_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            var csSource = @"
 public interface IInterface
 {
     void [|InterfaceMethod|](out string s);
@@ -476,12 +476,25 @@ public class InterfaceBothImplicitAndExplicitImpl : IInterface
         throw new System.NotImplementedException();
     }
 }
-");
-            await VerifyVB.VerifyAnalyzerAsync(@"
+";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { csSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1021.api_surface = all
+") },
+                }
+            }.RunAsync();
+
+            var vbSource = @"
 Imports System.Runtime.InteropServices
 
-Interface IInterface
-    Sub InterfaceMethod(<Out> ByRef s As String)
+Public Interface IInterface
+    Sub [|InterfaceMethod|](<Out> ByRef s As String)
 End Interface
 
 Public MustInherit Class Base
@@ -517,7 +530,62 @@ Public Class InterfaceImplicitImpl
         Throw New System.NotImplementedException()
     End Sub
 End Class
-");
+";
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { vbSource },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1021.api_surface = all
+") },
+                }
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task TestTryPatternInterface()
+        {
+            var source = @"
+public interface ITry
+{
+    bool TrySomething(out string something);
+}
+
+public class Try : ITry
+{
+    bool ITry.TrySomething(out string something)
+    {
+        something = null;
+        return false;
+    }
+
+    public bool TryAnything(out string something)
+    {
+        return TrySecretly(out something);
+    }
+
+    private bool TrySecretly(out string something)
+    {
+        something = null;
+        return false;
+    }
+}
+";
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    AnalyzerConfigFiles = { ("/.editorconfig", @"root = true
+
+[*]
+dotnet_code_quality.CA1021.api_surface = all
+") },
+                }
+            }.RunAsync();
         }
     }
 }
