@@ -119,12 +119,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             if (symbol.HasAttribute(flagsAttribute))
             {
-                var additionalEnumNoneNames = context.Options.GetStringOptionValue(
-                    EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
-                    symbol.Locations[0].SourceTree, context.Compilation)
-                    .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
-                    .ToImmutableArray();
-                CheckFlags(symbol, zeroValuedFields, additionalEnumNoneNames, context.ReportDiagnostic);
+                CheckFlags(symbol, zeroValuedFields, context);
             }
             else
             {
@@ -133,7 +128,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         }
 
         private static void CheckFlags(INamedTypeSymbol namedType, ImmutableArray<IFieldSymbol> zeroValuedFields,
-            ImmutableArray<string> additionalEnumNoneNames, Action<Diagnostic> addDiagnostic)
+            SymbolAnalysisContext context)
         {
             switch (zeroValuedFields.Length)
             {
@@ -141,11 +136,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     break;
 
                 case 1:
-                    if (!IsMemberNamedNone(zeroValuedFields[0]) &&
-                        !additionalEnumNoneNames.Any(name => string.Equals(name, zeroValuedFields[0].Name, StringComparison.OrdinalIgnoreCase)))
+                    if (!IsMemberNamedNone(zeroValuedFields[0]))
                     {
-                        // In enum '{0}', change the name of '{1}' to 'None'.
-                        addDiagnostic(zeroValuedFields[0].CreateDiagnostic(RuleRename, namedType.Name, zeroValuedFields[0].Name));
+                        var additionalEnumNoneNames =
+                            context.Options.GetStringOptionValue(
+                                EditorConfigOptionNames.AdditionalEnumNoneNames, RuleRename,
+                                namedType.Locations[0].SourceTree, context.Compilation)
+                            .Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries)
+                            .ToImmutableArray();
+
+                        if (!additionalEnumNoneNames.Any(name => string.Equals(name, zeroValuedFields[0].Name, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            // In enum '{0}', change the name of '{1}' to 'None'.
+                            context.ReportDiagnostic(zeroValuedFields[0].CreateDiagnostic(RuleRename, namedType.Name, zeroValuedFields[0].Name));
+                        }
                     }
 
                     break;
@@ -153,7 +157,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 default:
                     {
                         // Remove all members that have the value zero from {0} except for one member that is named 'None'.
-                        addDiagnostic(namedType.CreateDiagnostic(RuleMultipleZero, namedType.Name));
+                        context.ReportDiagnostic(namedType.CreateDiagnostic(RuleMultipleZero, namedType.Name));
                     }
 
                     break;
