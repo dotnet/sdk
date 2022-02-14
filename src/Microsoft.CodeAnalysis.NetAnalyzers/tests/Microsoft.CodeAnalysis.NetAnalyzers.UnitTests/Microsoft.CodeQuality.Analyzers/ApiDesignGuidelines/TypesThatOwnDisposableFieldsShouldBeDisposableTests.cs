@@ -66,6 +66,37 @@ using System.IO;
         }
 
         [Fact]
+        [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
+        public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethod_TargetTypedNewAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.IO;
+
+public class [|NoDisposeClass|]
+{
+    FileStream newFile1, newFile2 = new(""data.txt"", FileMode.Append);
+}
+",
+                FixedCode = @"
+using System.IO;
+
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream newFile1, newFile2 = new(""data.txt"", FileMode.Append);
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethodAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -172,6 +203,49 @@ using System.IO;
     }
 }
 ");
+        }
+
+        [Fact]
+        [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
+        public async Task CA1001CSharpTestWithNoDisposeMethodInScope_TargetTypedNewAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.IO;
+
+// This class violates the rule.
+public class [|NoDisposeClass|]
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new(""data.txt"", FileMode.Append);
+    }
+}
+",
+                FixedCode = @"
+using System.IO;
+
+// This class violates the rule.
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new(""data.txt"", FileMode.Append);
+    }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
         }
 
         [Fact]

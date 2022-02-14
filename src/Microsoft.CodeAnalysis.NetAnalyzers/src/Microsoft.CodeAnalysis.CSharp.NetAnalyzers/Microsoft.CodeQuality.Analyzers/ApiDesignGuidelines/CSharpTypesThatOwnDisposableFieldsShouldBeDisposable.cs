@@ -29,7 +29,8 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             {
                 if (node is AssignmentExpressionSyntax assignment)
                 {
-                    if (assignment.Right is ObjectCreationExpressionSyntax &&
+                    // ImplicitObjectCreationExpression	8659
+                    if (assignment.Right.RawKind is (int)SyntaxKind.ObjectCreationExpression or 8659 &&
                         model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol is IFieldSymbol field &&
                         disposableFields.Contains(field))
                     {
@@ -40,7 +41,8 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                 {
                     foreach (VariableDeclaratorSyntax fieldInit in fieldDeclarationSyntax.Declaration.Variables)
                     {
-                        if (fieldInit.Initializer?.Value is ObjectCreationExpressionSyntax &&
+                        // ImplicitObjectCreationExpression	8659
+                        if (fieldInit.Initializer?.Value.RawKind is (int)SyntaxKind.ObjectCreationExpression or 8659 &&
                             model.GetDeclaredSymbol(fieldInit, cancellationToken) is IFieldSymbol field &&
                             disposableFields.Contains(field))
                         {
