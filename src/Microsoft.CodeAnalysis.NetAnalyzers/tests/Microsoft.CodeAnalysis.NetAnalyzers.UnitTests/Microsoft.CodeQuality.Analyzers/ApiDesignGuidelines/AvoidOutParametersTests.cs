@@ -493,7 +493,7 @@ dotnet_code_quality.CA1021.api_surface = all
             var vbSource = @"
 Imports System.Runtime.InteropServices
 
-Interface IInterface
+Public Interface IInterface
     Sub [|InterfaceMethod|](<Out> ByRef s As String)
 End Interface
 
