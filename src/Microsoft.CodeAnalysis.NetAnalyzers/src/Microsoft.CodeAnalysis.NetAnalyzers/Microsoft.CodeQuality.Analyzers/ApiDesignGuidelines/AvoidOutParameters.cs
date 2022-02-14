@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 var methodSymbol = (IMethodSymbol)analysisContext.Symbol;
                 if (methodSymbol.IsOverride ||
                     !analysisContext.Options.MatchesConfiguredVisibility(Rule, methodSymbol, analysisContext.Compilation) ||
-                    methodSymbol.IsImplementationOfAnyImplicitInterfaceMember())
+                    methodSymbol.IsImplementationOfAnyInterfaceMember())
                 {
                     return;
                 }
