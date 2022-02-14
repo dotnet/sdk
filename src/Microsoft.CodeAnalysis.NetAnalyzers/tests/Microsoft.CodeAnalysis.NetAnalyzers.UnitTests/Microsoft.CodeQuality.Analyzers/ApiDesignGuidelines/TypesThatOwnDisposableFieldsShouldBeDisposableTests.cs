@@ -47,12 +47,11 @@ using System.IO;
             await VerifyCS.VerifyAnalyzerAsync(@"
 using System.IO;
 
-    public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
     }
-",
-            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile2"));
+");
         }
 
         [Fact]
@@ -62,7 +61,7 @@ using System.IO;
 using System.IO;
 
     // This class violates the rule.
-    public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile;
 
@@ -71,8 +70,7 @@ using System.IO;
             newFile = new FileStream(""data.txt"", FileMode.Append);
         }
     }
-",
-            GetCA1001CSharpResultAt(5, 18, "NoDisposeClass", "newFile"));
+");
         }
 
         [Fact]
@@ -198,13 +196,12 @@ using System.IO;
 
 namespace ClassLibrary1
 {
-    public class Class1
+    public class [|Class1|]
     {
         private readonly IDisposable _disp1 = new MemoryStream();
     }
 }
-",
-            GetCA1001CSharpResultAt(7, 18, "Class1", "_disp1"));
+");
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
@@ -274,32 +271,29 @@ Imports System.IO
 Imports System.IO
            
    ' This class violates the rule. 
-    Public Class NoDisposeClass
+    Public Class [|NoDisposeClass|]
         Dim newFile As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile"));
+");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
       
    ' This class violates the rule. 
-    Public Class NoDisposeClass
+    Public Class [|NoDisposeClass|]
         Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
+");
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.IO
     
    ' This class violates the rule. 
-    Public Class NoDisposeClass
+    Public Class [|NoDisposeClass|]
         Dim newFile1 As FileStream
         Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
     End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
+");
         }
 
         [Fact]
@@ -310,7 +304,7 @@ Imports System.IO
    Imports System.IO
 
    ' This class violates the rule. 
-   Public Class NoDisposeMethod
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -319,8 +313,7 @@ Imports System.IO
       End Sub
 
    End Class
-",
-            GetCA1001BasicResultAt(6, 17, "NoDisposeMethod", "newFile"));
+");
         }
 
         [Fact]
@@ -442,12 +435,11 @@ Imports System
 Imports System.IO
 
 Namespace ClassLibrary1
-    Class Class1
+    Class [|Class1|]
         Private Readonly _disp1 As IDisposable = new MemoryStream()
     End Class
 End Namespace
-",
-            GetCA1001BasicResultAt(6, 11, "Class1", "_disp1"));
+");
         }
 
         [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
@@ -802,19 +794,5 @@ Public Class NoDisposeMethod
 End Class
 ");
         }
-
-        private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(objectName, disposableFields);
-
-        private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(objectName, disposableFields);
     }
 }
