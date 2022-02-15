@@ -27,8 +27,8 @@
 /src/src/Assets/TestProjects/Razor*/ @captainsafia, @pranavkm, @mkArtakMSFT
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @jmarolf, @JoeRobich
-/src/Tests/dotnet-format.Tests @jmarolf, @JoeRobich
+/src/Cli/dotnet/commands/dotnet-format @jmarolf @JoeRobich
+/src/Tests/dotnet-format.Tests @jmarolf @JoeRobich
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
