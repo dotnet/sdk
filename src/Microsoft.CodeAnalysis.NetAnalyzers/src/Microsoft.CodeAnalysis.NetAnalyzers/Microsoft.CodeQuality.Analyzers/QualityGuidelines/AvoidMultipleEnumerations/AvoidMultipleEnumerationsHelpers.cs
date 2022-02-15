@@ -114,12 +114,22 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             // Case 1:
             // For C# or the method is called as an ordinary method,
             // 'i.ElementAt(10)', is essentially 'ElementAt(i, 10)'
-            if (operation.Parent is IArgumentOperation { Parent: IInvocationOperation grandParentInvocationOperation } parentArgumentOperation)
+            if (operation.Parent is IArgumentOperation parentArgumentOperation)
             {
-                return IsInvocationCausingEnumerationOverArgument(
-                    grandParentInvocationOperation,
-                    parentArgumentOperation,
-                    wellKnownSymbolsInfo);
+                if (parentArgumentOperation.Parent is IInvocationOperation grandParentInvocationOperation)
+                {
+                    return IsInvocationCausingEnumerationOverArgument(
+                        grandParentInvocationOperation,
+                        parentArgumentOperation,
+                        wellKnownSymbolsInfo);
+                }
+                else if (parentArgumentOperation.Parent is IObjectCreationOperation grandParentObjectCreationOperation)
+                {
+                    return IsObjectCreationOperationCausingEnumerationOverArgument(
+                       grandParentObjectCreationOperation,
+                       parentArgumentOperation,
+                       wellKnownSymbolsInfo);
+                }
             }
 
             // Case 2:
@@ -182,12 +192,30 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownSymbolsInfo wellKnownSymbolsInfo)
         {
             RoslynDebug.Assert(invocationOperation.Arguments.Contains(argumentOperationToCheck));
-            if (!IsDeferredType(argumentOperationToCheck.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            RoslynDebug.Assert(!IsLinqChainInvocation(invocationOperation, argumentOperationToCheck, wellKnownSymbolsInfo));
+            return IsInvokingMethodEnumeratedOverArgument(invocationOperation.TargetMethod, argumentOperationToCheck, wellKnownSymbolsInfo);
+        }
+
+        private static bool IsObjectCreationOperationCausingEnumerationOverArgument(
+            IObjectCreationOperation objectCreationOperation,
+            IArgumentOperation argumentOperation,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            RoslynDebug.Assert(objectCreationOperation.Arguments.Contains(argumentOperation));
+            return IsInvokingMethodEnumeratedOverArgument(objectCreationOperation.Constructor, argumentOperation, wellKnownSymbolsInfo);
+        }
+
+        private static bool IsInvokingMethodEnumeratedOverArgument(
+            IMethodSymbol invokingMethod,
+            IArgumentOperation argumentOperation,
+            WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            if (!IsDeferredType(argumentOperation.Value.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
                 return false;
             }
 
-            var targetMethod = invocationOperation.TargetMethod;
+            var targetMethod = invokingMethod;
             var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
             var originalMethod = reducedFromMethod.OriginalDefinition;
 
@@ -198,8 +226,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var argumentMappingParameter = targetMethod.MethodKind == MethodKind.ReducedExtension
-                ? GetReducedFromParameter(targetMethod, argumentOperationToCheck.Parameter)
-                : argumentOperationToCheck.Parameter.OriginalDefinition;
+                ? GetReducedFromParameter(targetMethod, argumentOperation.Parameter)
+                : argumentOperation.Parameter.OriginalDefinition;
 
             // Common linq method case, like ElementAt
             if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalMethod)

@@ -3859,5 +3859,37 @@ End Module
 ";
             await VerifyVisualBasicAsync(vbCode);
         }
+
+        [Fact]
+        public async Task TestObjectCreationOperation()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub<T>(IEnumerable<T> collection1, IEnumerable<T> collection2)
+    {
+        var s = new HashSet<T>([|collection1|]);
+        var result = [|collection1|].Count();
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of T))
+        Dim x = New HashSet(Of T)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
     }
 }
