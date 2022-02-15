@@ -125,14 +125,14 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>3d2d70b8654e5b3a416eb34045ff67beeded50e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="7.0.100-1.22115.1">
+    <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="7.0.100-1.22115.2">
       <Uri>https://github.com/dotnet/linker</Uri>
-      <Sha>76ffc18a8e64ef4be91f2a267c21c7123f05e868</Sha>
+      <Sha>6e11d057a88b3fb403bfbb90317518c94e3e84a7</Sha>
       <SourceBuild RepoName="linker" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="7.0.100-1.22115.1">
+    <Dependency Name="Microsoft.NET.ILLink.Analyzers" Version="7.0.100-1.22115.2">
       <Uri>https://github.com/dotnet/linker</Uri>
-      <Sha>76ffc18a8e64ef4be91f2a267c21c7123f05e868</Sha>
+      <Sha>6e11d057a88b3fb403bfbb90317518c94e3e84a7</Sha>
     </Dependency>
     <Dependency Name="System.CodeDom" Version="7.0.0-preview.2.22113.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
