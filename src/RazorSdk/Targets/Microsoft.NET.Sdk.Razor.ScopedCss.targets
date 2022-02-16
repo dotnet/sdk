@@ -108,7 +108,18 @@ Integration with static web assets:
 
   <ItemGroup>
     <Content Remove="@(ScopedCssInput)" />
-    <Content Include="@(ScopedCssInput)" Pack="false" CopyToPublishDirectory="Never" />
+    <!--
+      See https://github.com/dotnet/maui/issues/791 for details.
+      PublishFolderType="None" prevents content items frrom being bundled as part of MAUI iOS targets.
+      ExcludeFromContentCheck="true" prevents content items from being inspected by MAUI Android targets for warnings.
+    -->
+
+    <Content
+      Include="@(ScopedCssInput)"
+      Pack="false"
+      CopyToPublishDirectory="Never"
+      PublishFolderType="None"
+      ExcludeFromContentCheck="true" />
   </ItemGroup>
 </Target>
 
