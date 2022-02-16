@@ -336,7 +336,16 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 scanResult?.Dispose();
             }
             _userTemplateCache = cache;
-            _environmentSettings.Host.FileSystem.WriteObject(_paths.TemplateCacheFile, cache);
+
+            try
+            {
+                _environmentSettings.Host.FileSystem.WriteObject(_paths.TemplateCacheFile, cache);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(LocalizableStrings.TemplatePackageManager_Error_FailedToStoreCache, ex.Message);
+                _logger.LogDebug($"Stack trace: {ex.StackTrace}");
+            }
 
             return cache;
         }

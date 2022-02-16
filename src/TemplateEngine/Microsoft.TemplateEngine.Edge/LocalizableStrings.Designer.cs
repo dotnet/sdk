@@ -410,5 +410,15 @@ namespace Microsoft.TemplateEngine.Edge {
                 return ResourceManager.GetString("TemplatePackageManager_Error_FailedToScan", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to store template cache, details: {0}
+        ///Template cache will be recreated on the next run..
+        /// </summary>
+        internal static string TemplatePackageManager_Error_FailedToStoreCache {
+            get {
+                return ResourceManager.GetString("TemplatePackageManager_Error_FailedToStoreCache", resourceCulture);
+            }
+        }
     }
 }

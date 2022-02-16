@@ -204,6 +204,13 @@ Details: {1}</source>
 세부 정보: {1}</target>
         <note>last line should not end with a period, period is a part of the format entry</note>
       </trans-unit>
+      <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
+        <source>Failed to store template cache, details: {0}
+Template cache will be recreated on the next run.</source>
+        <target state="new">Failed to store template cache, details: {0}
+Template cache will be recreated on the next run.</target>
+        <note>{0} should not end with period - period is a part of the format entry.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

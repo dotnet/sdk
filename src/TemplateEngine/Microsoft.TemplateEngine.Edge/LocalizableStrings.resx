@@ -242,4 +242,9 @@ Details: {1}</value>
 Details: {1}</value>
     <comment>last line should not end with a period, period is a part of the format entry</comment>
   </data>
+  <data name="TemplatePackageManager_Error_FailedToStoreCache" xml:space="preserve">
+    <value>Failed to store template cache, details: {0}
+Template cache will be recreated on the next run.</value>
+    <comment>{0} should not end with period - period is a part of the format entry.</comment>
+  </data>
 </root>
