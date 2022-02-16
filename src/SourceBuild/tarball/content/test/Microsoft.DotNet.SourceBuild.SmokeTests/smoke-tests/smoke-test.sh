@@ -251,12 +251,14 @@ function doCommand() {
                   "${dotnetCmd}" publish --self-contained false /bl:"${binlogPrefix}publish-fx-dep.binlog"
                   "${dotnetCmd}" publish --self-contained true -r "$targetRid" /bl:"${binlogPrefix}publish-self-contained-${targetRid}.binlog"
                   "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-portable.binlog"
+                  "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-R2R-portable.binlog" /p:PublishTrimmed=true /p:PublishReadyToRun=true
               }
             else
               runPublishScenarios() {
                   "${dotnetCmd}" publish --self-contained false /bl:"${binlogPrefix}publish-fx-dep.binlog"
                   "${dotnetCmd}" publish --self-contained true -r "$targetRid" /bl:"${binlogPrefix}publish-self-contained-${targetRid}.binlog"
                   "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-portable.binlog"
+                  "${dotnetCmd}" publish --self-contained true -r linux-x64 /bl:"${binlogPrefix}publish-self-contained-R2R-portable.binlog" /p:PublishTrimmed=true /p:PublishReadyToRun=true
               }
             fi
             if [ "$projectOutput" == "true" ]; then
@@ -351,6 +353,8 @@ function runWebTests() {
     doCommand C# razor "$@" new restore build run multi-rid-publish
     doCommand C# blazorwasm "$@" new restore build run publish
     doCommand C# blazorserver "$@" new restore build run publish
+    doCommand C# worker new restore
+    doCommand C# angular new restore
 
     doCommand F# web "$@" new restore build run multi-rid-publish
     doCommand F# mvc "$@" new restore build run multi-rid-publish
