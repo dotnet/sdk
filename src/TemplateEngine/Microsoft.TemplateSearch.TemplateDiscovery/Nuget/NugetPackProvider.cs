@@ -81,6 +81,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                     //try to get all remaining packages
                     skip = 3000;
                     pageSize = totalPackCount - 3000;
+                    if (pageSize > 1000)
+                    {
+                        pageSize = 1000;
+                        Console.WriteLine($"Warning: {totalPackCount} packages were found, but only first 4000 packages can be retrieved. Other packages will be skipped.");
+                    }
                 }
                 string queryString = string.Format(_searchUriFormat, skip, pageSize);
 
