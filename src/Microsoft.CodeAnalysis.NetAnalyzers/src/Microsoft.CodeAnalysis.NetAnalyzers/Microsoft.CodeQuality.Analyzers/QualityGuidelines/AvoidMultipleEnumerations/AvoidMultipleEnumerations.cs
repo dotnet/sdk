@@ -145,33 +145,38 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             context.RegisterCompilationStartAction(CompilationStartAction);
         }
 
-        private void CompilationStartAction(CompilationStartAnalysisContext compilationStartAnalysisContext)
+        private void CompilationStartAction(CompilationStartAnalysisContext context)
+            => context.RegisterOperationBlockStartAction(OnOperationBlockStart);
+
+        private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
-            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilationStartAnalysisContext.Compilation);
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
             var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
             var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
-            var compilation = compilationStartAnalysisContext.Compilation;
+            var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
+
+            var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
+            var syntaxTree = operationBlocks.IsEmpty ? null : operationBlocks[0].Syntax.SyntaxTree;
+            var customizedNoEnumerationMethods = syntaxTree == null
+                ? null
+                : operationBlockStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    syntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
+
+            var customizedLinqChainMethods = syntaxTree == null
+                ? null
+                : operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    syntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
+
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
-
-            var syntaxTree = compilation.SyntaxTrees.FirstOrDefault();
-            var customizedNoEnumerationMethods = syntaxTree == null
-                ? null
-                : compilationStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
-                    MultipleEnumerableDescriptor,
-                    syntaxTree,
-                    compilation);
-            var customizedLinqChainMethods = syntaxTree == null
-                ? null
-                : compilationStartAnalysisContext.Options.GetLinqChainMethodsOption(
-                    MultipleEnumerableDescriptor,
-                    syntaxTree,
-                    compilation);
-
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
                 linqChainMethods,
                 noEnumerationMethods,
@@ -182,23 +187,15 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 customizedNoEnumerationMethods,
                 customizedLinqChainMethods);
 
-            compilationStartAnalysisContext.RegisterOperationBlockStartAction(
-                context => OnOperationBlockStart(
-                    context,
-                    wellKnownTypeProvider,
-                    wellKnownSymbolsInfo));
-        }
-
-        private void OnOperationBlockStart(
-            OperationBlockStartAnalysisContext operationBlockStartAnalysisContext,
-            WellKnownTypeProvider wellKnownTypeProvider,
-            WellKnownSymbolsInfo wellKnownSymbolsInfo)
-        {
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(
-                context => CollectPotentialDiagnosticOperations(context, wellKnownSymbolsInfo, potentialDiagnosticOperationsBuilder),
-                OperationKind.LocalReference,
-                OperationKind.ParameterReference);
+                context => CollectPotentialDiagnosticOperations(
+                    context,
+                    wellKnownSymbolsInfo,
+                    potentialDiagnosticOperationsBuilder),
+                OperationKind.ParameterReference,
+                OperationKind.LocalReference);
+
             operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
                 context => Analyze(
                     context,
