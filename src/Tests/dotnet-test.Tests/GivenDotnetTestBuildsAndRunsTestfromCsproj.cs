@@ -594,7 +594,31 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Verify test results
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows, Linux x64 and macOS x64.");
+                result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows and Linux x64.");
+                result.StdOut.Should().Contain("Total:     1");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().NotContain("Failed!");
+            }
+
+            result.ExitCode.Should().Be(0);
+        }
+
+        [PlatformSpecificFact(TestPlatforms.Linux, Skip="https://github.com/dotnet/sdk/issues/22865")]
+        public void ItShouldShowWarningMessageOnCollectCodeCoverageThatProfilerWasNotInitialized()
+        {
+            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("13");
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                                        .WithWorkingDirectory(testProjectDirectory)
+                                        .Execute(
+                                            "--collect", "Code Coverage",
+                                            "--filter", "VSTestPassTest");
+
+            // Verify test results
+            if (!TestContext.IsLocalized())
+            {
+               result.StdOut.Should().Contain("No code coverage data available. Code coverage is currently supported only on Windows, Linux x64 and macOS x64.");
                 result.StdOut.Should().Contain("Total:     1");
                 result.StdOut.Should().Contain("Passed:     1");
                 result.StdOut.Should().NotContain("Failed!");
@@ -674,6 +698,56 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(1);
+        }
+
+        [Theory] // See issue https://github.com/dotnet/sdk/issues/10423
+        [InlineData("TestCategory=CategoryA,CategoryB", "_comma")]
+        [InlineData("TestCategory=CategoryA%2cCategoryB", "_comma_encoded")]
+        [InlineData("\"TestCategory=CategoryA,CategoryB\"", "_already_escaped")]
+        public void FilterPropertyCorrectlyHandlesComma(string filter, string folderSuffix)
+        {
+            string testAppName = "TestCategoryWithComma";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, folderSuffix)
+                .WithSource()
+                .WithVersionVariables();
+
+            var testProjectDirectory = testInstance.Path;
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--filter", filter);
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     1");
+                result.StdOut.Should().Contain("Passed:     1");
+            }
+        }
+
+        [Theory]
+        [InlineData("--output")]
+        [InlineData("--diag")]
+        [InlineData("--results-directory")]
+        public void EnsureOutputPathEscaped(string flag)
+        {
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(flag);
+
+            var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
+
+            // Call test
+            CommandResult result = new DotnetTestCommand(Log)
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute(flag, pathWithComma);
+
+            // Verify
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("Total:     2");
+                result.StdOut.Should().Contain("Passed:     1");
+                result.StdOut.Should().Contain("Failed:     1");
+            }
         }
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")

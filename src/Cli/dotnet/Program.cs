@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Cli
 
         internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null )
         {
-            return ProcessArgs(args, new TimeSpan(0));
+            return ProcessArgs(args, new TimeSpan(0), telemetryClient);
         }
 
         internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null )
@@ -253,6 +253,8 @@ namespace Microsoft.DotNet.Cli
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
             telemetryClient.Flush();
             PerformanceLogEventSource.Log.TelemetryClientFlushStop();
+
+            telemetryClient.Dispose();
 
             return exitCode;
         }

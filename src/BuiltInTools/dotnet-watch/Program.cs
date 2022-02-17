@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,6 +39,10 @@ Environment variables:
   dotnet-watch sets this variable to '1' and increments by one each time
   a file is changed and the command is restarted.
 
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  When set to '1' or 'true', dotnet-watch will not show emojis in the 
+  console output.
+
 Remarks:
   The special option '--' is used to delimit the end of the options and
   the beginning of arguments that will be passed to the child dotnet process.
@@ -60,6 +64,7 @@ Examples:
         private readonly string _workingDirectory;
         private readonly CancellationTokenSource _cts;
         private IReporter _reporter;
+        private IRequester _requester;
 
         public Program(IConsole console, string workingDirectory)
         {
@@ -83,7 +88,10 @@ Examples:
             _workingDirectory = workingDirectory;
             _cts = new CancellationTokenSource();
             console.CancelKeyPress += OnCancelKeyPress;
-            _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
+
+            var suppressEmojis = ShouldSuppressEmojis();
+            _reporter = CreateReporter(verbose: true, quiet: false, console: _console, suppressEmojis);
+            _requester = new ConsoleRequester(_console, quiet: false, suppressEmojis);
 
             // Register listeners that load Roslyn-related assemblies from the `Rosyln/bincore` directory.
             RegisterAssemblyResolutionEvents(sdkRootDirectory);
@@ -124,10 +132,8 @@ Examples:
             {
                 if (v.FindResultFor(quiet) is not null && v.FindResultFor(verbose) is not null)
                 {
-                    return Resources.Error_QuietAndVerboseSpecified;
+                    v.ErrorMessage = Resources.Error_QuietAndVerboseSpecified;
                 }
-
-                return null;
             });
 
             var listOption = new Option<bool>(
@@ -143,6 +149,8 @@ Examples:
                 new[] { "--non-interactive" },
                 "Runs dotnet-watch in non-interative mode. This option is only supported when running with Hot Reload enabled. " +
                 "Use this option to prevent console input from being captured.");
+            var forwardedArguments = new Argument<string[]>("forwardedArgs", "Arguments to pass to the child dotnet process");
+
             var root = new RootCommand(Description)
             {
                  quiet,
@@ -152,10 +160,10 @@ Examples:
                  longProjectOption,
                  shortProjectOption,
                  listOption,
+                 forwardedArguments
             };
 
-            root.TreatUnmatchedTokensAsErrors = false;
-            var binder = new CommandLineOptionsBinder(longProjectOption, shortProjectOption, quiet, listOption, noHotReloadOption, nonInteractiveOption, verbose, reporter);
+            var binder = new CommandLineOptionsBinder(longProjectOption, shortProjectOption, quiet, listOption, noHotReloadOption, nonInteractiveOption, verbose, forwardedArguments, reporter);
             root.SetHandler((CommandLineOptions options) => handler(options), binder);
             return root;
         }
@@ -163,7 +171,9 @@ Examples:
         private async Task<int> HandleWatch(CommandLineOptions options)
         {
             // update reporter as configured by options
-            _reporter = CreateReporter(options.Verbose, options.Quiet, _console);
+            var suppressEmojis = ShouldSuppressEmojis();
+            _reporter = CreateReporter(options.Verbose, options.Quiet, _console, suppressEmojis);
+            _requester = new ConsoleRequester(_console, quiet: options.Quiet, suppressEmojis);
 
             try
             {
@@ -180,7 +190,7 @@ Examples:
                 }
                 else
                 {
-                    return await MainInternalAsync(_reporter, options, _cts.Token);
+                    return await MainInternalAsync(options, _cts.Token);
                 }
             }
             catch (Exception ex)
@@ -204,13 +214,13 @@ Examples:
 
             if (args.Cancel)
             {
-                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.");
+                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "🛑");
             }
 
             _cts.Cancel();
         }
 
-        private async Task<int> MainInternalAsync(IReporter reporter, CommandLineOptions options, CancellationToken cancellationToken)
+        private async Task<int> MainInternalAsync(CommandLineOptions options, CancellationToken cancellationToken)
         {
             // TODO multiple projects should be easy enough to add here
             string projectFile;
@@ -220,7 +230,7 @@ Examples:
             }
             catch (FileNotFoundException ex)
             {
-                reporter.Error(ex.Message);
+                _reporter.Error(ex.Message);
                 return 1;
             }
 
@@ -240,7 +250,7 @@ Examples:
             var watchOptions = DotNetWatchOptions.Default;
             watchOptions.NonInteractive = options.NonInteractive;
 
-            var fileSetFactory = new MsBuildFileSetFactory(reporter,
+            var fileSetFactory = new MsBuildFileSetFactory(_reporter,
                 watchOptions,
                 projectFile,
                 waitOnError: true,
@@ -261,7 +271,7 @@ Examples:
                 _reporter.Output("Polling file watcher is enabled");
             }
 
-            var defaultProfile = LaunchSettingsProfile.ReadDefaultProfile(processInfo.WorkingDirectory, reporter) ?? new();
+            var defaultProfile = LaunchSettingsProfile.ReadDefaultProfile(processInfo.WorkingDirectory, _reporter) ?? new();
 
             var context = new DotNetWatchContext
             {
@@ -281,7 +291,7 @@ Examples:
                 // a) watch was invoked with no args or with exactly one arg - the run command e.g. `dotnet watch` or `dotnet watch run`
                 // b) The launch profile supports hot-reload based watching.
                 // The watcher will complain if users configure this for runtimes that would not support it.
-                await using var watcher = new HotReloadDotNetWatcher(reporter, fileSetFactory, watchOptions, _console);
+                await using var watcher = new HotReloadDotNetWatcher(_reporter, _requester, fileSetFactory, watchOptions, _console, _workingDirectory);
                 await watcher.WatchAsync(context, cancellationToken);
             }
             else
@@ -290,7 +300,7 @@ Examples:
 
                 // We'll use the presence of a profile to decide if we're going to use the hot-reload based watching.
                 // The watcher will complain if users configure this for runtimes that would not support it.
-                await using var watcher = new DotNetWatcher(reporter, fileSetFactory, watchOptions);
+                await using var watcher = new DotNetWatcher(_reporter, fileSetFactory, watchOptions);
                 await watcher.WatchAsync(context, cancellationToken);
             }
 
@@ -369,8 +379,8 @@ Examples:
             return 0;
         }
 
-        private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
-            => new PrefixConsoleReporter("watch : ", console, verbose || IsGlobalVerbose(), quiet);
+        private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console, bool suppressEmojis)
+            => new ConsoleReporter(console, verbose || IsGlobalVerbose(), quiet, suppressEmojis);
 
         private static bool IsGlobalVerbose()
         {
@@ -382,6 +392,13 @@ Examples:
         {
             _console.CancelKeyPress -= OnCancelKeyPress;
             _cts.Dispose();
+        }
+
+        private static bool ShouldSuppressEmojis()
+        {
+            var suppressEmojisEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_EMOJIS");
+            var suppressEmojis = suppressEmojisEnvironmentVariable == "1" || string.Equals(suppressEmojisEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
+            return suppressEmojis;
         }
 
         private static void RegisterAssemblyResolutionEvents(string sdkRootDirectory)
@@ -412,6 +429,8 @@ Examples:
             private readonly Option<bool> _noHotReloadOption;
             private readonly Option<bool> _nonInteractiveOption;
             private readonly Option<bool> _verboseOption;
+
+            private readonly Argument<string[]> _argumentsToForward;
             private readonly IReporter _reporter;
 
             internal CommandLineOptionsBinder(
@@ -422,6 +441,7 @@ Examples:
                 Option<bool> noHotReloadOption,
                 Option<bool> nonInteractiveOption,
                 Option<bool> verboseOption,
+                Argument<string[]> argumentsToForward,
                 IReporter reporter)
             {
                 _longProjectOption = longProjectOption;
@@ -431,6 +451,7 @@ Examples:
                 _noHotReloadOption = noHotReloadOption;
                 _nonInteractiveOption = nonInteractiveOption;
                 _verboseOption = verboseOption;
+                _argumentsToForward = argumentsToForward;
                 _reporter = reporter;
             }
 
@@ -449,18 +470,6 @@ Examples:
                         projectValue = projectShortValue;
                     }
                 }
-                var remainingArguments = new List<string>();
-                if (parseResults.UnparsedTokens.Any() && parseResults.UnmatchedTokens.Any())
-                {
-                    remainingArguments.AddRange(parseResults.UnmatchedTokens);
-                    remainingArguments.Add("--");
-                    remainingArguments.AddRange(parseResults.UnparsedTokens);
-                }
-                else
-                {
-                    remainingArguments.AddRange(parseResults.UnmatchedTokens);
-                    remainingArguments.AddRange(parseResults.UnparsedTokens);
-                }
 
                 var options = new CommandLineOptions
                 {
@@ -470,7 +479,7 @@ Examples:
                     NonInteractive = parseResults.GetValueForOption(_nonInteractiveOption),
                     Verbose = parseResults.GetValueForOption(_verboseOption),
                     Project = projectValue,
-                    RemainingArguments = remainingArguments.AsReadOnly(),
+                    RemainingArguments = parseResults.GetValueForArgument(_argumentsToForward),
                 };
                 return options;
             }
