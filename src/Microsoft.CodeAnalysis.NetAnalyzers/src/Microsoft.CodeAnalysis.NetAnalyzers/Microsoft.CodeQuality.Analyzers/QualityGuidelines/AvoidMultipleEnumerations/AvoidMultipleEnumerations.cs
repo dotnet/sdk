@@ -225,68 +225,70 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
             PooledHashSet<IOperation> potentialDiagnosticOperations)
         {
-            if (potentialDiagnosticOperations.Count == 0)
+            try
             {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            var cfg = context.OperationBlocks.GetControlFlowGraph();
-            if (cfg == null)
-            {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
-                cfg,
-                context.OwningSymbol,
-                analysisContext => CreateOperationVisitor(
-                    analysisContext,
-                    wellKnownSymbolsInfo),
-                wellKnownTypeProvider,
-                context.Options,
-                MultipleEnumerableDescriptor,
-                // We are only interested in the state of parameters & locals. So no need to pessimistic for instance field.
-                pessimisticAnalysis: false);
-
-            if (analysisResult == null)
-            {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
-            foreach (var operation in potentialDiagnosticOperations)
-            {
-                var result = analysisResult[operation.Kind, operation.Syntax];
-                if (result.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
+                if (potentialDiagnosticOperations.Count == 0)
                 {
-                    continue;
+                    return;
                 }
 
-                foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
+                var cfg = context.OperationBlocks.GetControlFlowGraph();
+                if (cfg == null)
                 {
-                    // Report if
-                    // 1. EnumerationCount is two or more times.
-                    // 2. There are two or more operations that might be involved.
-                    // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
-                    if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
+                    return;
+                }
+
+                var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
+                    cfg,
+                    context.OwningSymbol,
+                    analysisContext => CreateOperationVisitor(
+                        analysisContext,
+                        wellKnownSymbolsInfo),
+                    wellKnownTypeProvider,
+                    context.Options,
+                    MultipleEnumerableDescriptor,
+                    // We are only interested in the state of parameters & locals. So no need to pessimistic for instance field.
+                    pessimisticAnalysis: false);
+
+                if (analysisResult == null)
+                {
+                    return;
+                }
+
+                using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
+                foreach (var operation in potentialDiagnosticOperations)
+                {
+                    var result = analysisResult[operation.Kind, operation.Syntax];
+                    if (result.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
                     {
-                        foreach (var trackedOperation in trackedInvocationSet.Operations)
+                        continue;
+                    }
+
+                    foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
+                    {
+                        // Report if
+                        // 1. EnumerationCount is two or more times.
+                        // 2. There are two or more operations that might be involved.
+                        // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
+                        if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                         {
-                            diagnosticOperations.Add(trackedOperation);
+                            foreach (var trackedOperation in trackedInvocationSet.Operations)
+                            {
+                                diagnosticOperations.Add(trackedOperation);
+                            }
                         }
                     }
                 }
-            }
 
-            foreach (var operation in diagnosticOperations)
+                foreach (var operation in diagnosticOperations)
+                {
+                    context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                }
+            }
+            finally
             {
-                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                potentialDiagnosticOperations.Free(CancellationToken.None);
             }
-
-            potentialDiagnosticOperations.Free(CancellationToken.None);
         }
     }
 }
