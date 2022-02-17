@@ -211,17 +211,17 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>196656f99ffbdcac33c4da88fde6e02de631b6b2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.2.22115.3">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.3.22116.2">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>ca1728b83851de4211477ab37a2460bf567544d3</Sha>
+      <Sha>ed3572c5f6992a5d946d0054dccbe7b3d6144736</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.2.22115.3">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.3.22116.2">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>ca1728b83851de4211477ab37a2460bf567544d3</Sha>
+      <Sha>ed3572c5f6992a5d946d0054dccbe7b3d6144736</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.2.22115.3">
+    <Dependency Name="Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal" Version="7.0.0-preview.3.22116.2">
       <Uri>https://github.com/dotnet/razor-compiler</Uri>
-      <Sha>ca1728b83851de4211477ab37a2460bf567544d3</Sha>
+      <Sha>ed3572c5f6992a5d946d0054dccbe7b3d6144736</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.0-preview.2.22116.15">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -243,13 +243,13 @@
       <Uri>https://github.com/aspnet/xdt</Uri>
       <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0-preview1.22115.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0-preview1.22116.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>fea3577ed2a6dca8d3b0d80cb259f3f290a54c8c</Sha>
+      <Sha>4353ed51ea5a7ee1d123447326038b17cf4ea757</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.4-beta1.22115.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.3.4-beta1.22116.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>fea3577ed2a6dca8d3b0d80cb259f3f290a54c8c</Sha>
+      <Sha>4353ed51ea5a7ee1d123447326038b17cf4ea757</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta3.22109.1">
