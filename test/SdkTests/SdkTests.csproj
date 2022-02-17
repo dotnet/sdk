@@ -183,7 +183,8 @@
     
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet new tool-manifest"
       WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
+      IgnoreStandardErrorWarningFormat="true" />
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
