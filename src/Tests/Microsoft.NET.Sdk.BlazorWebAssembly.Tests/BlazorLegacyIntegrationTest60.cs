@@ -4,7 +4,7 @@
 
 using System.IO;
 using FluentAssertions;
-using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class BlazorLegacyIntegrationTest60 : AspNetSdkBaselineTest
+    public class BlazorLegacyIntegrationTest60 : BlazorWasmBaselineTests
     {
-        public BlazorLegacyIntegrationTest60(ITestOutputHelper log) : base(log)
+        public BlazorLegacyIntegrationTest60(ITestOutputHelper log) : base(log, GenerateBaselines)
         {
         }
 
@@ -52,9 +52,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Arrange
             var testAsset = "BlazorWasmHosted60";
             var targetFramework = "net6.0";
-            var testInstance = CreateAspNetSdkTestAsset(testAsset);
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(testInstance, "Server");
+            var publish = new PublishCommand(ProjectDirectory, "Server");
             publish.Execute()
                 .Should()
                 .Pass()
@@ -79,6 +79,19 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 $"wwwroot/_framework/{testAsset}.Client.dll.br",
                 "wwwroot/_framework/System.Text.Json.dll.br"
             });
+
+            var intermediateOutputPath = publish.GetIntermediateDirectory(targetFramework, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, LoadPublishManifest());
+
+            AssertPublishAssets(
+                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
+                publishOutputDirectory.FullName,
+                intermediateOutputPath);
         }
     }
 }
