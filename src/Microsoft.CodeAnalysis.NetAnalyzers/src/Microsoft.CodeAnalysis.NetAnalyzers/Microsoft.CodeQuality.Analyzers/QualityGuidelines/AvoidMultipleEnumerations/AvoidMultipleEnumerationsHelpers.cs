@@ -408,9 +408,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         {
             if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
             {
-                foreach (var methodName in methodNames)
+                foreach (var methodSymbol in type.GetMembers().OfType<IMethodSymbol>())
                 {
-                    foreach (var methodSymbol in type.GetMembers(methodName).OfType<IMethodSymbol>())
+                    if (methodNames.Contains(methodSymbol.Name))
                     {
                         builder.Add(methodSymbol);
                     }
