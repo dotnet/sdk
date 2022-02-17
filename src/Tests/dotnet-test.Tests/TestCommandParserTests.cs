@@ -2,18 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
