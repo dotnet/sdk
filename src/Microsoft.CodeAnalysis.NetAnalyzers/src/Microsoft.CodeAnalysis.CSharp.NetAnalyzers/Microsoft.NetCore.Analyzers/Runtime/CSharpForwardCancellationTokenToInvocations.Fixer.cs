@@ -67,24 +67,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         protected override SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type)
         {
-            var typeName = TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
-            if (type.ElementType.IsReferenceType)
-            {
-                var additionalAnnotation = type.NullableAnnotation() switch
-                {
-                    NullableAnnotation.None => NullableSyntaxAnnotationEx.Oblivious,
-                    NullableAnnotation.Annotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
-                    NullableAnnotation.NotAnnotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
-                    _ => null,
-                };
-
-                if (additionalAnnotation is not null)
-                {
-                    typeName = typeName.WithAdditionalAnnotations(additionalAnnotation);
-                }
-            }
-
-            return typeName;
+            return TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
         }
 
         protected override IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<ArgumentSyntax> newArguments)
