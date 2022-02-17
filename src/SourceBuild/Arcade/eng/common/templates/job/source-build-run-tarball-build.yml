@@ -40,14 +40,14 @@ jobs:
   strategy:
     matrix:
       CentOS7-Online:
-        _BootstrapPrep: true
+        _BootstrapPrep: false
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
         _ExcludeOmniSharpTests: true
         _Platform: linux
         _RunOnline: true
       CentOS7-Offline:
-        _BootstrapPrep: true
+        _BootstrapPrep: false
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
         _ExcludeOmniSharpTests: true
@@ -55,14 +55,14 @@ jobs:
         _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         CentOS8-Offline:
-          _BootstrapPrep: true
+          _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.centOS8Container }}
           _ExcludeOmniSharpTests: false
           _Platform: linux
           _RunOnline: false
         CentOSStream9-Offline:
-          _BootstrapPrep: true
+          _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.centOSStream9Container }}
           _ExcludeOmniSharpTests: false
@@ -76,7 +76,7 @@ jobs:
           _Platform: linux
           _RunOnline: false
         Ubuntu1804-Offline:
-          _BootstrapPrep: true
+          _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.ubuntu1804Container }}
           _ExcludeOmniSharpTests: false
