@@ -1,0 +1,38 @@
+name: dotnet-sdk
+version: 7.0.100-preview.1.22110.4
+summary: Cross-Platform .NET Core SDK
+description: |
+  .NET Core SDK. https://dot.net/core.
+
+grade: stable
+confinement: classic
+
+apps:
+  dotnet:
+    command: dotnet
+
+base: core18
+
+parts:
+  dotnet-sdk:
+      plugin: dump
+      source: https://download.visualstudio.microsoft.com/download/pr/1af9d3c3-a20e-400c-abe5-3d80dec7b63b/803f8dc5cf21fb28245aba71a7fdbc05/dotnet-sdk-7.0.100-preview.1.22110.4-linux-x64.tar.gz
+      source-checksum: sha512/54488a911172f059e3823d6bf52e1fa87305eb09e84d97f81a40e0815fc8a73a480b149023283f557a672ef0341f022b8ca16ebec92264ee16a56fac8f35e2e2
+      stage-packages:
+      - libicu60
+      - libc6
+      - libgcc1
+      - libstdc++6
+      - libssl1.0.0
+      - libcurl3
+      - libgssapi-krb5-2
+      - zlib1g
+      - lldb
+      - libunwind8
+      - libtinfo5
+      - liblttng-ust0
+      - liburcu6
+
+  runtime-wrapper:
+      plugin: dump
+      source: .
