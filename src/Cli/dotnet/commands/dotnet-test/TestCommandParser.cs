@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Cli
         /// </summary>
         internal /* for testing purposes */ static string SurroundWithDoubleQuotes(string input)
         {
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
