@@ -779,12 +779,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("--results-directory", "///")]
         public void PathEndsWithSlashOrBackslash(string flag, string slashOrBackslash)
         {
+            // NOTE: We also want to test with forward slashes because on Windows they
+            // are converted to backslashes and so need to be handled correctly.
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(Guid.NewGuid().ToString());
+            var flagDirectory = Path.Combine(testProjectDirectory, Guid.NewGuid().ToString()) + slashOrBackslash;
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
                 .WithWorkingDirectory(testProjectDirectory)
-                .Execute(flag, Path.Combine(testProjectDirectory, Guid.NewGuid().ToString()) + slashOrBackslash);
+                .Execute(flag, flagDirectory);
 
             // Verify
             if (!TestContext.IsLocalized())
@@ -793,6 +796,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Passed:     1");
                 result.StdOut.Should().Contain("Failed:     1");
             }
+
+            Directory.Exists(flagDirectory).Should().BeTrue();
+            Directory.EnumerateFileSystemEntries(flagDirectory).Should().NotBeEmpty();
         }
 
         private string CopyAndRestoreVSTestDotNetCoreTestApp([CallerMemberName] string callingMethod = "")

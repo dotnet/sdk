@@ -188,10 +188,15 @@ namespace Microsoft.DotNet.Cli
         /// <summary>
         /// Adding double quotes around the property helps MSBuild arguments parser and avoid incorrect splits on ',' or ';'.
         /// </summary>
-        private static string SurroundWithDoubleQuotes(string input)
+        internal /* for testing purposes */ static string SurroundWithDoubleQuotes(string input)
         {
+            if (input == null)
+            {
+                throw new ArgumentNullException(nameof(input));
+            }
+
             // If already escaped by double quotes then return original string.
-            if (input.EndsWith("\"", StringComparison.Ordinal)
+            if (input.StartsWith("\"", StringComparison.Ordinal)
                 && input.EndsWith("\"", StringComparison.Ordinal))
             {
                 return input;
