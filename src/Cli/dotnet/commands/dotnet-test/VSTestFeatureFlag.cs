@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Tools.Test
     {
         private const string Prefix = "VSTEST_FEATURE_";
 
-        public Dictionary<string, bool> FeatureFlagsBag { get; } = new();
+        public Dictionary<string, bool> FeatureFlags { get; } = new();
 
         public static FeatureFlag Default { get; } = new FeatureFlag();
 
         public FeatureFlag()
         {
-            FeatureFlagsBag.Add(ARTIFACTS_POSTPROCESSING, false);
+            FeatureFlags.Add(ARTIFACTS_POSTPROCESSING, false);
         }
 
         // Added for artifact porst-processing, it enable/disable the post processing.
@@ -29,13 +29,13 @@ namespace Microsoft.DotNet.Tools.Test
         public bool IsEnabled(string featureName) =>
             int.TryParse(Environment.GetEnvironmentVariable(featureName), out int enabled)
                 ? enabled == 1
-                : FeatureFlagsBag.TryGetValue(featureName, out bool isEnabled) && isEnabled;
+                : FeatureFlags.TryGetValue(featureName, out bool isEnabled) && isEnabled;
 
         public void PrintFlagFeatureState()
         {
             if (VSTestTrace.TraceEnabled)
             {
-                foreach (KeyValuePair<string, bool> flag in FeatureFlagsBag)
+                foreach (KeyValuePair<string, bool> flag in FeatureFlags)
                 {
                     VSTestTrace.WriteTrace($"Feature {flag.Key}: {IsEnabled(flag.Key)}");
                 }

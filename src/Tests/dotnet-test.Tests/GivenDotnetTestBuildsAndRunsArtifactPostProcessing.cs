@@ -9,6 +9,7 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using FluentAssertions;
+using FluentAssertions.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
@@ -125,44 +126,42 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (merge)
             {
-                Assert.Equal(string.Empty, output[output.Count - 3].Trim());
-                Assert.Equal("Attachments:", output[output.Count - 2].Trim());
-                string mergedFile = output[output.Count - 1].Trim();
+                output[^3].Trim().Should().BeEmpty();
+                output[^2].Trim().Should().Be("Attachments:");
+                string mergedFile = output[^1].Trim();
 
-                var fileContent = new List<string>();
+                var fileContent = new HashSet<string>();
                 using var streamReader = new StreamReader(mergedFile);
-                while (!streamReader.EndOfStream)
-                {
-                    string line = streamReader.ReadLine();
-                    Assert.StartsWith("SessionEnded_Handler_", line);
-                    fileContent.Add(line);
-                }
-
-                Assert.Equal(3, fileContent.Distinct().Count());
+                LoadLines(streamReader, fileContent);
+                fileContent.Count.Should().Be(3);
             }
             else
             {
-                Assert.Equal(string.Empty, output[output.Count - 5].Trim());
-                Assert.Equal("Attachments:", output[output.Count - 4].Trim());
+                output[^5].Trim().Should().BeEmpty();
+                output[^4].Trim().Should().Be("Attachments:");
 
                 int currentLine = 0;
                 for (int i = 3; i > 0; i--)
                 {
                     currentLine = output.Count - i;
                     string file = output[currentLine].Trim();
-                    var fileContent = new List<string>();
+                    var fileContent = new HashSet<string>();
                     using var streamReader = new StreamReader(file);
-                    while (!streamReader.EndOfStream)
-                    {
-                        string line = streamReader.ReadLine();
-                        Assert.StartsWith("SessionEnded_Handler_", line);
-                        fileContent.Add(line);
-                    }
-
-                    Assert.True(fileContent.Distinct().Count() == 1);
+                    LoadLines(streamReader, fileContent);
+                    fileContent.Count.Should().Be(1);
                 }
 
-                Assert.Equal(output.Count, currentLine + 1);
+                output.Count.Should().Be(currentLine + 1);
+            }
+
+            static void LoadLines(StreamReader stream, HashSet<string> fileContent)
+            {
+                while (!stream.EndOfStream)
+                {
+                    string line = stream.ReadLine();
+                    line.Should().StartWith("SessionEnded_Handler_");
+                    fileContent.Add(line);
+                }
             }
         }
 

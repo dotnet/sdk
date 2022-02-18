@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Tools.Test
                 string commandLineParameters = "";
                 if (args?.Length > 0)
                 {
-                    commandLineParameters = args.Aggregate((a, b) => $"{a}|{b}");
+                    commandLineParameters = args.Aggregate((a, b) => $"{a} | {b}");
                 }
                 VSTestTrace.WriteTrace($"Argument list: '{commandLineParameters}'");
             }
@@ -179,16 +179,16 @@ namespace Microsoft.DotNet.Tools.Test
 
             VSTestTrace.WriteTrace($"Artifacts found inside '{expectedArtifactDirectory}', running post-processing.");
 
-            var artifactsProcessingModePostprocess = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
+            var artifactsPostProcessArgs = new List<string> { "--artifactsProcessingMode-postprocess", $"--testSessionCorrelationId:{testSessionCorrelationId}" };
 
             if (parseResult.HasOption(TestCommandParser.DiagOption))
             {
-                artifactsProcessingModePostprocess.Add($"--diag:{parseResult.GetValueForOption(TestCommandParser.DiagOption)}");
+                artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValueForOption(TestCommandParser.DiagOption)}");
             }
 
             try
             {
-                return new VSTestForwardingApp(artifactsProcessingModePostprocess).Execute();
+                return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
             }
             finally
             {

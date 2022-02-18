@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Tools.Test
 {
     internal class VSTestTrace
     {
-        public static bool TraceEnabled { get; set; }
+        public static bool TraceEnabled { get; private set; }
         private static readonly string s_traceFilePath;
 
         static VSTestTrace()
@@ -23,37 +23,44 @@ namespace Microsoft.DotNet.Tools.Test
 
         public static void WriteTrace(string logText)
         {
-            if (TraceEnabled)
+            if (!TraceEnabled)
             {
-                try
+                return;
+            }
+
+            try
+            {
+                string message = $"[dotnet test - {DateTimeOffset.UtcNow}]{logText}";
+                if (!string.IsNullOrEmpty(s_traceFilePath))
                 {
-                    string message = $"[dotnet test - {DateTime.UtcNow}]{logText}";
-                    if (!string.IsNullOrEmpty(s_traceFilePath))
-                    {
-                        using StreamWriter logFile = File.AppendText(s_traceFilePath);
-                        logFile.WriteLine(message);
-                    }
-                    else
-                    {
-                        Console.WriteLine(message);
-                    }
+                    using StreamWriter logFile = File.AppendText(s_traceFilePath);
+                    logFile.WriteLine(message);
                 }
-                catch
+                else
                 {
-                    // Avoid exception if we have issue with the log file.
+                    Console.WriteLine(message);
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow}]{ex}");
             }
         }
 
         public static void SafeWriteTrace(Func<string> messageLog)
         {
+            if (!TraceEnabled)
+            {
+                return;
+            }
+
             try
             {
                 WriteTrace(messageLog());
             }
-            catch
+            catch (Exception ex)
             {
-                // Avoid exception in case of something is wrong with log composition.
+                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow}]{ex}");
             }
         }
     }
