@@ -27,9 +27,9 @@ namespace Microsoft.DotNet.Tools.Test
         // For now we're checking env var.
         // We could add it also to some section inside the runsettings.
         public bool IsEnabled(string featureName) =>
-            int.TryParse(Environment.GetEnvironmentVariable(featureName), out int enabled) ?
-            enabled == 1 :
-            FeatureFlagsBag.TryGetValue(featureName, out bool isEnabled) && isEnabled;
+            int.TryParse(Environment.GetEnvironmentVariable(featureName), out int enabled)
+                ? enabled == 1
+                : FeatureFlagsBag.TryGetValue(featureName, out bool isEnabled) && isEnabled;
 
         public void PrintFlagFeatureState()
         {
