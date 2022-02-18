@@ -194,7 +194,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 if (Directory.Exists(expectedArtifactDirectory))
                 {
-                    VSTestTrace.WriteTrace($"Cleaning artifact directory '{expectedArtifactDirectory}'");
+                    VSTestTrace.WriteTrace($"Cleaning artifact directory '{expectedArtifactDirectory}'.");
                     try
                     {
                         Directory.Delete(expectedArtifactDirectory, true);
