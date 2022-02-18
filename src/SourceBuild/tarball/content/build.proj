@@ -21,10 +21,6 @@
     <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <Target Name="CreateRootRepoFile" AfterTargets="PrepareOutput">
-    <WriteLinesToFile Lines="$(RootRepo)" File="$(BaseIntermediatePath)rootrepo.txt" Overwrite="True" />
-  </Target>
-
   <Target Name="PrepareOutput">
     <MakeDir Directories="$(OutputPath)" />
     <MakeDir Directories="$(LoggingDir)" />
@@ -128,7 +124,7 @@
     </PropertyGroup>
 
     <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
-          WorkingDirectory="./test/Microsoft.DotNet.SourceBuild.SmokeTests/bin/$(Configuration)/net6.0/smoke-tests/prereq-packages/"/>
+          WorkingDirectory="./test/Microsoft.DotNet.SourceBuild.SmokeTests/bin/$(Configuration)/net6.0/assets/smoke-tests/prereq-packages/"/>
 
     <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarballName)'" />
   </Target>

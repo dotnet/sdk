@@ -48,6 +48,6 @@ public class XmlDocTests
             }
         }
 
-        BaselineHelper.Compare("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
+        BaselineHelper.CompareEntries("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
     }
 }
