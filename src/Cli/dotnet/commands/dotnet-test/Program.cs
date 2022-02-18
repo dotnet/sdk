@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Tools.Test
                     }
                     catch (Exception ex)
                     {
-                        VSTestTrace.WriteTrace($"Exception during artifact cleanup:'{ex}'");
+                        VSTestTrace.WriteTrace($"Exception during artifact cleanup: {ex}");
                     }
                 }
             }
