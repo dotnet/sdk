@@ -4,6 +4,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0-preview-20220131-20" />
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0-preview-20220131-20" />
   </ItemGroup>
 </Project>
