@@ -5,6 +5,7 @@
 using System.IO;
 using FluentAssertions;
 using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build50Hosted_Works()
         {
             // Arrange
@@ -55,7 +56,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             content.Should().Contain(Path.Combine("Client", "wwwroot"));
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Publish50Hosted_Works()
         {
             // Arrange

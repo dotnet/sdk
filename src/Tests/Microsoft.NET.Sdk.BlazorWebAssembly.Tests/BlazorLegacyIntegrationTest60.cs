@@ -5,6 +5,7 @@
 using System.IO;
 using FluentAssertions;
 using Microsoft.AspNetCore.Razor.Tasks;
+using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Build60Hosted_Works()
         {
             // Arrange
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void Publish60Hosted_Works()
         {
             // Arrange
