@@ -9,7 +9,6 @@ using System.Threading;
 using System.Xml;
 using System.Xml.Linq;
 using FluentAssertions;
-using FluentAssertions.Common;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
