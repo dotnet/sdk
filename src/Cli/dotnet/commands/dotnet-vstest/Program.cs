@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Tools.VSTest
             int exitCode = vsTestforwardingApp.Execute();
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
-            TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
+            exitCode |= TestCommand.RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
 
             return exitCode;
         }

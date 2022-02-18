@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Tools.Test
                 int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
 
                 // We run post processing also if execution is failed for possible partial successful result to post process.
-                RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
+                exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
 
                 return exitCode;
             }
@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.Tools.Test
                 int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId).Execute();
 
                 // We run post processing also if execution is failed for possible partial successful result to post process.
-                RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
+                exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Default);
 
                 return exitCode;
             }
@@ -162,11 +162,11 @@ namespace Microsoft.DotNet.Tools.Test
             }
         }
 
-        internal static void RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag featureFlag)
+        internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag featureFlag)
         {
             if (!featureFlag.IsEnabled(FeatureFlag.ARTIFACTS_POSTPROCESSING))
             {
-                return;
+                return 0;
             }
 
             // VSTest runner will save artifacts inside a temp folder if needed.
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Tools.Test
             if (!Directory.Exists(expectedArtifactDirectory))
             {
                 VSTestTrace.WriteTrace("No artifact found, post-processing won't run.");
-                return;
+                return 0;
             }
 
             VSTestTrace.WriteTrace($"Artifacts found inside '{expectedArtifactDirectory}', running post-processing.");
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Tools.Test
 
             try
             {
-                new VSTestForwardingApp(artifactsProcessingModePostprocess).Execute();
+                return new VSTestForwardingApp(artifactsProcessingModePostprocess).Execute();
             }
             finally
             {
