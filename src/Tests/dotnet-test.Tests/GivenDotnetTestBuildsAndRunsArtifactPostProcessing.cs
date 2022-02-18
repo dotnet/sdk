@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_CsProjs(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", merge.ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_TestContainers(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", merge.ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(false)]
         public void ArtifactPostProcessing_VSTest_TestContainers(bool merge)
         {
-            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", merge.ToString())
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
 
             string runsettings = GetRunsetting(testInstance.Path);
