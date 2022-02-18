@@ -45,11 +45,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.ARTIFACTS_POSTPROCESSING, "1")
                                     .Execute(
-                                    "--configuration", "release",
-                                    "--collect", "SampleDataCollector",
-                                    "--test-adapter-path", merge ? Path.GetDirectoryName(s_dataCollectorDll) : Path.GetDirectoryName(s_dataCollectorNoMergeDll),
-                                    "--settings", runsettings,
-                                    "--diag", testInstance.Path + "/logs/");
+                                        "--configuration", "release",
+                                        "--collect", "SampleDataCollector",
+                                        "--test-adapter-path", merge ? Path.GetDirectoryName(s_dataCollectorDll) : Path.GetDirectoryName(s_dataCollectorNoMergeDll),
+                                        "--settings", runsettings,
+                                        "--diag", testInstance.Path + "/logs/");
 
             result.ExitCode.Should().Be(0);
             AssertOutput(result.StdOut, merge);
