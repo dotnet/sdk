@@ -7,8 +7,7 @@ VERSION_PREFIX=6.0
 # See https://github.com/dotnet/source-build/issues/579, this version
 # needs to be compatible with the runtime produced from source-build
 DEV_CERTS_VERSION_DEFAULT=6.0.0-preview.6.21355.2
-ARTIFACTS_DIR="$SCRIPT_ROOT/../../../../../../artifacts/"
-__ROOT_REPO=$(sed 's/\r$//' "${ARTIFACTS_DIR}obj/rootrepo.txt") # remove CR if mounted repo on Windows drive
+ARTIFACTS_DIR="$SCRIPT_ROOT/../../../../../../../artifacts/"
 executingUserHome=${HOME:-}
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
@@ -455,11 +454,6 @@ function copyRestoredPackages() {
 }
 
 echo "RID to test: ${targetRid?not specified. Use ./build.sh --run-smoke-test to detect RID, or specify manually.}"
-
-if [ "$__ROOT_REPO" != "known-good" ]; then
-    echo "Skipping smoke-tests since cli was not built";
-    exit
-fi
 
 # Clean up and create directory
 if [ -e "$testingDir"  ]; then

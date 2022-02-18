@@ -53,7 +53,7 @@ public class SdkContentTests
         diff = RemoveVersionedPaths(diff);
         diff = RemoveDiffMarkers(diff);
         diff = RemoveRids(diff);
-        BaselineHelper.Compare("MsftToSbSdk.diff", diff, OutputHelper);
+        BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper);
     }
 
     private void WriteTarballFileList(string tarballPath, string outputFileName)

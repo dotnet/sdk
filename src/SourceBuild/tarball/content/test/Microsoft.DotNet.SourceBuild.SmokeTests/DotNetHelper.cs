@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 internal class DotNetHelper
 {
     private static readonly object s_lockObj = new object();
+    private static readonly string s_timestamp = DateTime.Now.ToString("yyyyMMddHHmmssffff");
 
     public string DotNetPath { get; }
 
@@ -35,10 +36,22 @@ internal class DotNetHelper
         DotNetPath = Path.Combine(Config.DotNetDirectory, "dotnet");
     }
 
-    public void ExecuteDotNetCmd(string args, ITestOutputHelper outputHelper)
+    public void ExecuteCmd(string args, ITestOutputHelper outputHelper)
     {
         (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess(DotNetPath, args, outputHelper);
 
         Assert.Equal(0, executeResult.Process.ExitCode);
+    }
+
+    /// <summary>
+    /// Create a new .NET project and return the path to the created project folder.
+    /// </summary>
+    public string ExecuteNew(string projectType, string language, string name, ITestOutputHelper outputHelper)
+    {
+        string outputDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"projects-{s_timestamp}", name);
+
+        ExecuteCmd($"new {projectType} --language \"{language}\" --name {name} --output {outputDirectory}", outputHelper);
+
+        return outputDirectory;
     }
 }

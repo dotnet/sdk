@@ -38,7 +38,7 @@ public class SmokeTests
             smokeTestArgs += " --excludeOnlineTests";
         }
 
-        (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess("./smoke-tests/smoke-test.sh", smokeTestArgs, OutputHelper);
+        (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess("./assets/smoke-tests/smoke-test.sh", smokeTestArgs, OutputHelper);
 
         Assert.Equal(0, executeResult.Process.ExitCode);
     }
