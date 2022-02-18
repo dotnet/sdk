@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void ArtifactPostProcessing_CsProjs(bool merge)
+        public void ArtifactPostProcessing_SolutionProjects(bool merge)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
                 .WithSource();
