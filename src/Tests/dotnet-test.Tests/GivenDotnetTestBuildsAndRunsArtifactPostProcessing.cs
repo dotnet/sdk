@@ -97,16 +97,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             new PublishCommand(Log, Path.Combine(testInstance.Path, "sln.sln")).Execute("/p:Configuration=Release").Should().Pass();
 
             CommandResult result = new DotnetVSTestCommand(Log)
-                .WithWorkingDirectory(testInstance.Path)
-                .WithEnvironmentVariable(FeatureFlag.ARTIFACTS_POSTPROCESSING, "1")
-                .Execute(
-                    Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
-                    Directory.GetFiles(testInstance.Path, "test2.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
-                    Directory.GetFiles(testInstance.Path, "test3.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
-                    "--collect:SampleDataCollector",
-                    $"--testAdapterPath:{(merge ? Path.GetDirectoryName(s_dataCollectorDll) : Path.GetDirectoryName(s_dataCollectorNoMergeDll))}",
-                    $"--settings:{runsettings}",
-                    $"--diag:{testInstance.Path}/logs/");
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable(FeatureFlag.ARTIFACTS_POSTPROCESSING, "1")
+                                    .Execute(
+                                        Directory.GetFiles(testInstance.Path, "test1.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
+                                        Directory.GetFiles(testInstance.Path, "test2.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
+                                        Directory.GetFiles(testInstance.Path, "test3.dll", SearchOption.AllDirectories).SingleOrDefault(x => x.Contains("publish")),
+                                        "--collect:SampleDataCollector",
+                                        $"--testAdapterPath:{(merge ? Path.GetDirectoryName(s_dataCollectorDll) : Path.GetDirectoryName(s_dataCollectorNoMergeDll))}",
+                                        $"--settings:{runsettings}",
+                                        $"--diag:{testInstance.Path}/logs/");
 
             result.ExitCode.Should().Be(0);
             AssertOutput(result.StdOut, merge);

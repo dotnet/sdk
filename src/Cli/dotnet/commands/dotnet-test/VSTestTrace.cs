@@ -21,32 +21,6 @@ namespace Microsoft.DotNet.Tools.Test
             }
         }
 
-        public static void WriteTrace(string logText)
-        {
-            if (!TraceEnabled)
-            {
-                return;
-            }
-
-            try
-            {
-                string message = $"[dotnet test - {DateTimeOffset.UtcNow}]{logText}";
-                if (!string.IsNullOrEmpty(s_traceFilePath))
-                {
-                    using StreamWriter logFile = File.AppendText(s_traceFilePath);
-                    logFile.WriteLine(message);
-                }
-                else
-                {
-                    Console.WriteLine(message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[dotnet test - {DateTimeOffset.UtcNow}]{ex}");
-            }
-        }
-
         public static void SafeWriteTrace(Func<string> messageLog)
         {
             if (!TraceEnabled)
@@ -56,7 +30,19 @@ namespace Microsoft.DotNet.Tools.Test
 
             try
             {
-                WriteTrace(messageLog());
+                string message = $"[dotnet test - {DateTimeOffset.UtcNow}]{messageLog()}";
+                if (!string.IsNullOrEmpty(s_traceFilePath))
+                {
+                    lock (s_traceFilePath)
+                    {
+                        using StreamWriter logFile = File.AppendText(s_traceFilePath);
+                        logFile.WriteLine(message);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(message);
+                }
             }
             catch (Exception ex)
             {

@@ -7,4 +7,10 @@
   <ItemGroup>
 	<PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftNETTestSdkPackageVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <!-- Microsoft.NET.Test.Sdk package includes source files which shouldn't be automatically included. -->
+    <!-- Excluding those -->
+    <Compile Remove="pkgs\Microsoft.NET.Test.Sdk\**" />
+  </ItemGroup>
 </Project>

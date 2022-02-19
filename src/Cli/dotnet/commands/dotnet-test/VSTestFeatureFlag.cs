@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 foreach (KeyValuePair<string, bool> flag in FeatureFlags)
                 {
-                    VSTestTrace.WriteTrace($"Feature {flag.Key}: {IsEnabled(flag.Key)}");
+                    VSTestTrace.SafeWriteTrace(() => $"Feature {flag.Key}: {IsEnabled(flag.Key)}");
                 }
             }
         }
