@@ -208,18 +208,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, DirectoryPath? offlineCache = null)
         {
+            if (workloadInstaller.GetInstallationUnit() != InstallationUnit.Packs)
+                return;
             try
             {
-                if (workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
-                {
-                    workloadInstaller.GetPackInstaller().GarbageCollectInstalledWorkloadPacks(offlineCache);
-                }
+                workloadInstaller.GetPackInstaller().GarbageCollectInstalledWorkloadPacks(offlineCache);
             }
             catch (Exception e)
             {
                 // Garbage collection failed, warn user
                 reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
-                    verbosity.VerbosityIsDetailedOrDiagnostic() ? e.StackTrace.ToString() : e.Message).Yellow());
+                    verbosity.VerbosityIsDetailedOrDiagnostic() ? e.StackTrace : e.Message).Yellow());
             }
         }
 
