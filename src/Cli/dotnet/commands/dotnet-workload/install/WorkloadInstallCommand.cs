@@ -18,15 +18,14 @@ using NuGet.Common;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Threading.Tasks;
 
+#nullable enable
+
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal class WorkloadInstallCommand : CommandBase
     {
         private readonly IReporter _reporter;
         private readonly bool _skipManifestUpdate;
-        private readonly string _fromCacheOption;
-        private readonly string _downloadToCacheOption;
-        private readonly PackageSourceLocation _packageSourceLocation;
         private readonly bool _printDownloadLinkOnly;
         private readonly bool _includePreviews;
         private readonly VerbosityOptions _verbosity;
@@ -40,20 +39,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly string _userProfileDir;
         private readonly string _tempDirPath;
         private readonly string _dotnetPath;
-        private readonly string _fromRollbackDefinition;
+        // optional/nullable
+        private readonly PackageSourceLocation? _packageSourceLocation;
+        private readonly string? _fromCacheOption;
+        private readonly string? _downloadToCacheOption;
+        private readonly string? _fromRollbackDefinition;
 
         public WorkloadInstallCommand(
             ParseResult parseResult,
-            IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
-            IInstaller workloadInstaller = null,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            IWorkloadManifestUpdater workloadManifestUpdater = null,
-            string dotnetDir = null,
-            string userProfileDir = null,
-            string tempDirPath = null,
-            string version = null,
-            IReadOnlyCollection<string> workloadIds = null)
+            IReporter? reporter = null,
+            IWorkloadResolver? workloadResolver = null,
+            IInstaller? workloadInstaller = null,
+            INuGetPackageDownloader? nugetPackageDownloader = null,
+            IWorkloadManifestUpdater? workloadManifestUpdater = null,
+            string? dotnetDir = null,
+            string? userProfileDir = null,
+            string? tempDirPath = null,
+            string? version = null,
+            IReadOnlyCollection<string>? workloadIds = null)
             : base(parseResult)
         {
             _reporter = reporter ?? Reporter.Output;
@@ -64,27 +67,41 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _downloadToCacheOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.DownloadToCacheOption);
             _workloadIds = workloadIds ?? parseResult.GetValueForArgument(WorkloadInstallCommandParser.WorkloadIdArgument).ToList().AsReadOnly();
             _verbosity = parseResult.GetValueForOption(WorkloadInstallCommandParser.VerbosityOption);
-            _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+            _dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)!;
             _userProfileDir = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
             _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValueForOption(WorkloadInstallCommandParser.VersionOption), version, _dotnetPath, _userProfileDir);
-            _sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
-            _tempDirPath = tempDirPath ?? (string.IsNullOrWhiteSpace(parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption)) ?
-                Path.GetTempPath() :
-                parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption));
+            _sdkFeatureBand = new(_sdkVersion);
             _fromRollbackDefinition = parseResult.GetValueForOption(WorkloadInstallCommandParser.FromRollbackFileOption);
+            
+            if (tempDirPath is null)
+            {
+                var fromOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.TempDirOption);
+                _tempDirPath = string.IsNullOrWhiteSpace(fromOption) ? Path.GetTempPath() : fromOption;
+            }
+            else
+            {
+                _tempDirPath = tempDirPath;
+            }
+            
 
             var configOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.SourceOption);
-            _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-                new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+            if (string.IsNullOrEmpty(configOption) && sourceOption != null && sourceOption.Any())
+            {
+                _packageSourceLocation = null;
+            }
+            else
+            {
+                _packageSourceLocation = new(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+            }
 
             var sdkWorkloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetPath, _sdkVersion.ToString(), userProfileDir);
-            _workloadResolver = workloadResolver ?? WorkloadResolver.Create(sdkWorkloadManifestProvider, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
+            _workloadResolver = workloadResolver ?? Create(sdkWorkloadManifestProvider, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
             var tempPackagesDir = new DirectoryPath(Path.Combine(_tempDirPath, "dotnet-sdk-advertising-temp"));
             var restoreActionConfig = _parseResult.ToRestoreActionConfig();
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(tempPackagesDir,
-                                          filePermissionSetter: null,
+                                          null,
                                           new FirstPartyNuGetPackageSigningVerifier(tempPackagesDir, _verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger()),
                                           _verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger(), restoreActionConfig: restoreActionConfig);
             _workloadInstaller = workloadInstaller ??
@@ -236,7 +253,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             DirectoryPath? offlineCache)
         {
             var installer = _workloadInstaller.GetPackInstaller();
-            var workloadPackToInstall = Enumerable.Empty<PackInfo>();
+            var workloadPackToInstall = Enumerable.Empty<PackInfo?>();
             var newWorkloadInstallRecords = Enumerable.Empty<WorkloadId>();;
 
             TransactionalAction.Run(
@@ -337,10 +354,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     case InstallationUnit.Packs:
                         // The select will return a list of tasks Task<string> from the packageDownloader,
-                        // we then await for all of them to complete with Tasks.WhenAll and get an array of strings 
+                        // we then await for all of them to complete with Tasks.WhenAll and get an array of strings,
+                        // the from syntax supports the null check to make sure we do not have any nullable from
+                        // the enumerator
                         var packUrls = await Task.WhenAll(
-                            GetPacksToInstall(workloadIds).Select(pack => 
-                                _nugetPackageDownloader.GetPackageUrl(new(pack.ResolvedPackageId), new(pack.Version), _packageSourceLocation, includePreview)));
+                            from pack in GetPacksToInstall(workloadIds) 
+                                where pack is not null 
+                                select _nugetPackageDownloader.GetPackageUrl(
+                                    new(pack.ResolvedPackageId), 
+                                    new(pack.Version),
+                                    _packageSourceLocation, includePreview));
                         packageUrls.AddRange(packUrls);
                         return packageUrls;
                     default:
@@ -349,9 +372,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             finally
             {
-                if ( Directory.Exists(tempPath?.Value)) 
+                if (!string.IsNullOrWhiteSpace(tempPath?.Value) && Directory.Exists(tempPath?.Value)) 
                 {
-                    Directory.Delete(tempPath?.Value, true); // will not throw NRE thanks to Directory.Exists(null) => false
+                    Directory.Delete(tempPath?.Value!, true); // will not throw NRE thanks to Directory.Exists(null) => false
                 }
             }
         }
@@ -371,7 +394,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         async Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
         {
-            string tempManifestDir = null;
+            string? tempManifestDir = null;
             if (!skipManifestUpdate)
             {
                 var manifestPackagePaths = await _workloadManifestUpdater.DownloadManifestPackagesAsync(includePreviews, offlineCache);
@@ -416,14 +439,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        IEnumerable<PackInfo> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
+        IEnumerable<PackInfo?> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
         {
             var installedPacks = _workloadInstaller.GetPackInstaller().GetInstalledPacks(_sdkFeatureBand);
             return workloadIds
                 .SelectMany(workloadId => _workloadResolver.GetPacksInWorkload(workloadId))
                 .Distinct()
                 .Select(packId => _workloadResolver.TryGetPackInfo(packId))
-                .Where(pack => pack != null && !installedPacks.Contains((pack.Id, pack.Version)));
+                .Where(pack => pack is not null && !installedPacks.Contains((pack.Id, pack.Version)));
         }
     }
 }
