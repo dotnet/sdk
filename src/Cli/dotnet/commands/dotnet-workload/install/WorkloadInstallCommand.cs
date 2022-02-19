@@ -369,7 +369,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadResolver = _workloadResolver.CreateOverlayResolver(overlayProvider);
         }
 
-        private async Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
+        async Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
         {
             string tempManifestDir = null;
             if (!skipManifestUpdate)
@@ -391,24 +391,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
             }
 
-            if (_workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
+            switch (_workloadInstaller.GetInstallationUnit())
             {
-                var installer = _workloadInstaller.GetPackInstaller();
-
-                var workloadPacks = GetPacksToInstall(workloadIds);
-
-                foreach (var pack in workloadPacks)
-                {
-                    installer.DownloadToOfflineCache(pack, offlineCache, includePreviews);
-                }
-            }
-            else
-            {
-                var installer = _workloadInstaller.GetWorkloadInstaller();
-                foreach (var workloadId in workloadIds)
-                {
-                    installer.DownloadToOfflineCache(workloadId, offlineCache, includePreviews);
-                }
+                case InstallationUnit.Packs:
+                    var packInstaller= _workloadInstaller.GetPackInstaller();
+                    var workloadPacks = GetPacksToInstall(workloadIds);
+                    foreach (var pack in workloadPacks)
+                    {
+                        packInstaller.DownloadToOfflineCache(pack, offlineCache, includePreviews);
+                    }
+                    break;
+                default:
+                    var workloadInstaller = _workloadInstaller.GetWorkloadInstaller();
+                    foreach (var workloadId in workloadIds)
+                    {
+                        workloadInstaller.DownloadToOfflineCache(workloadId, offlineCache, includePreviews);
+                    }
+                    break;
             }
 
             if (!string.IsNullOrWhiteSpace(tempManifestDir) && Directory.Exists(tempManifestDir))
@@ -417,15 +416,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private IEnumerable<PackInfo> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
+        IEnumerable<PackInfo> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
         {
             var installedPacks = _workloadInstaller.GetPackInstaller().GetInstalledPacks(_sdkFeatureBand);
             return workloadIds
                 .SelectMany(workloadId => _workloadResolver.GetPacksInWorkload(workloadId))
                 .Distinct()
                 .Select(packId => _workloadResolver.TryGetPackInfo(packId))
-                .Where(pack => pack != null)
-                .Where(pack => !installedPacks.Contains((pack.Id, pack.Version)));
+                .Where(pack => pack != null && !installedPacks.Contains((pack.Id, pack.Version)));
         }
     }
 }
