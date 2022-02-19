@@ -12,8 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.ToolPackage;
-using NuGet.Versioning;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
