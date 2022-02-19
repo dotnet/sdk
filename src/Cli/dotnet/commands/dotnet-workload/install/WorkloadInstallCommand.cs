@@ -115,45 +115,61 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        int PrintDownloadLink() { 
+            _reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
+            var packageUrls = GetPackageDownloadUrlsAsync(_workloadIds.Select(id => new WorkloadId(id)), _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
+
+            _reporter.WriteLine("==allPackageLinksJsonOutputStart==");
+            _reporter.WriteLine(JsonSerializer.Serialize(packageUrls));
+            _reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
+
+            return _workloadInstaller.ExitCode;
+        }
+
+        int DownloadToCache()
+        {
+            try
+            {
+                InstallWorkloads(
+                    _workloadIds.Select(id => new WorkloadId(id)),
+                    _skipManifestUpdate,
+                    _includePreviews,
+                    string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+            }
+            catch (Exception e)
+            {
+                _workloadInstaller.Shutdown();
+                // Don't show entire stack trace
+                throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message),
+                    e, isUserError: false);
+            }
+            
+            return _workloadInstaller.ExitCode;
+        }
+
         public override int Execute()
         {
             if (_printDownloadLinkOnly)
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
-                var packageUrls = GetPackageDownloadUrlsAsync(_workloadIds.Select(id => new WorkloadId(id)), _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
+                return PrintDownloadLink();
+            }
 
-                _reporter.WriteLine("==allPackageLinksJsonOutputStart==");
-                _reporter.WriteLine(JsonSerializer.Serialize(packageUrls));
-                _reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
-            }
-            else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
+            if (string.IsNullOrWhiteSpace(_downloadToCacheOption))
             {
-                try
-                {
-                    DownloadToOfflineCacheAsync(_workloadIds.Select(id => new WorkloadId(id)), new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
-                }
-                catch (Exception e)
-                {
-                    _workloadInstaller.Shutdown();
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
-                }
+                return DownloadToCache();
             }
-            else
+            
+            try
             {
-                try
-                {
-                    InstallWorkloads(
-                        _workloadIds.Select(id => new WorkloadId(id)),
-                        _skipManifestUpdate,
-                        _includePreviews,
-                        string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
-                }
-                catch (Exception e)
-                {
-                    _workloadInstaller.Shutdown();
-                    // Don't show entire stack trace
-                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
-                }
+                DownloadToOfflineCacheAsync(_workloadIds.Select(id => new WorkloadId(id)),
+                    new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
+            }
+            catch (Exception e)
+            {
+                _workloadInstaller.Shutdown();
+                throw new GracefulException(
+                    string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e,
+                    isUserError: false);
             }
 
             return _workloadInstaller.ExitCode;
