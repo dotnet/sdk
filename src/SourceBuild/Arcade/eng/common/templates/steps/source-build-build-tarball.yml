@@ -87,8 +87,8 @@ steps:
       set -x
 
       # Use installer repo's NuGet.config during online testing to utilize internal feeds
-      rm -f ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
-      cp NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
+      rm -f ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/smoke-tests/online.NuGet.Config
+      cp NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/smoke-tests/online.NuGet.Config
 
       dockerVolumeArgs="-v ${{ parameters.tarballDir }}:/tarball"
       dockerEnvArgs="-e EXCLUDE_OMNISHARP_TESTS=${{ parameters.excludeOmniSharpTests}}"
@@ -115,7 +115,7 @@ steps:
       find artifacts/prebuilt-report/ -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find test/*/*/*/*/*/testing-smoke*/logs -exec cp {} --parents -t ${targetFolder} \;
+      find test/*/*/*/*/*/*/testing-smoke*/logs -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
     continueOnError: true
     condition: succeededOrFailed()
