@@ -99,22 +99,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             ValidateWorkloadIdsInput();
         }
 
-        private void ValidateWorkloadIdsInput()
+        void ValidateWorkloadIdsInput()
         {
             var availableWorkloads = _workloadResolver.GetAvailableWorkloads();
             foreach (var workloadId in _workloadIds)
             {
-                if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
-                {
-                    if (_workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)))
-                    {
-                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadNotSupportedOnPlatform, workloadId), isUserError: false);
-                    }
-                    else
-                    {
-                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadNotRecognized, workloadId), isUserError: false);
-                    }
-                }
+                if (availableWorkloads.Any(workload => workload.Id.ToString() == workloadId))
+                    continue;
+
+                var errorMsg = _workloadResolver.IsPlatformIncompatibleWorkload(new (workloadId)) ? 
+                    string.Format(LocalizableStrings.WorkloadNotSupportedOnPlatform, workloadId) :
+                    string.Format(LocalizableStrings.WorkloadNotRecognized, workloadId);
+                
+                throw new GracefulException(errorMsg, isUserError: false);
             }
         }
 
