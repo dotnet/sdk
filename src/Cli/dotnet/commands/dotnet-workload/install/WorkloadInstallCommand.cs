@@ -358,10 +358,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private async Task UseTempManifestsToResolvePacksAsync(DirectoryPath tempPath, bool includePreview)
+        async Task UseTempManifestsToResolvePacksAsync(DirectoryPath tempPath, bool includePreview)
         {
             var manifestPackagePaths = await _workloadManifestUpdater.DownloadManifestPackagesAsync(includePreview, tempPath);
-            if (manifestPackagePaths == null || !manifestPackagePaths.Any())
+            if (manifestPackagePaths != null && manifestPackagePaths.Any())
             {
                 _reporter.WriteLine(LocalizableStrings.SkippingManifestUpdate);
                 return;
