@@ -315,7 +315,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
+        async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
         {
             var packageUrls = new List<string>();
             DirectoryPath? tempPath = null;
@@ -330,31 +330,30 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     tempPath = new DirectoryPath(Path.Combine(_tempDirPath, "dotnet-manifest-extraction"));
                     await UseTempManifestsToResolvePacksAsync(tempPath.Value, includePreview);
 
-                    var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
+                    var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository()
+                        .GetInstalledWorkloads(new(_sdkVersion));
                     workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
                 }
 
-                if (_workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
+                switch (_workloadInstaller.GetInstallationUnit())
                 {
-                    var installer = _workloadInstaller.GetPackInstaller();
-
-                    var packUrls = GetPacksToInstall(workloadIds)
-                        .Select(pack => _nugetPackageDownloader.GetPackageUrl(new PackageId(pack.ResolvedPackageId), new NuGetVersion(pack.Version),
-                            packageSourceLocation: _packageSourceLocation, includePreview: includePreview).GetAwaiter().GetResult());
-                    packageUrls.AddRange(packUrls);
+                    case InstallationUnit.Packs:
+                        // The select will return a list of tasks Task<string> from the packageDownloader,
+                        // we then await for all of them to complete with Tasks.WhenAll and get an array of strings 
+                        var packUrls = await Task.WhenAll(
+                            GetPacksToInstall(workloadIds).Select(pack => 
+                                _nugetPackageDownloader.GetPackageUrl(new(pack.ResolvedPackageId), new(pack.Version), _packageSourceLocation, includePreview)));
+                        packageUrls.AddRange(packUrls);
+                        return packageUrls;
+                    default:
+                        throw new NotImplementedException();
                 }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-
-                return packageUrls;
             }
             finally
             {
-                if (tempPath != null && tempPath.HasValue && Directory.Exists(tempPath.Value.Value))
+                if ( Directory.Exists(tempPath?.Value)) 
                 {
-                    Directory.Delete(tempPath.Value.Value, true);
+                    Directory.Delete(tempPath?.Value, true); // will not throw NRE thanks to Directory.Exists(null) => false
                 }
             }
         }
