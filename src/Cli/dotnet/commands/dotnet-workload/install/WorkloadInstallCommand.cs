@@ -221,81 +221,97 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     verbosity.VerbosityIsDetailedOrDiagnostic() ? e.StackTrace : e.Message).Yellow());
             }
         }
+        
+        void InstallWorkloadsWithInstallRecord(IEnumerable<WorkloadId> workloadIds)
+        {
+            var installer = _workloadInstaller.GetWorkloadInstaller();
+            foreach (var workloadId in workloadIds)
+            {
+                installer.InstallWorkload(workloadId);
+            }
+        }
 
-        private void InstallWorkloadsWithInstallRecord(
+        void InstallPacksWithInstallRecord(
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<(ManifestId manifestId, ManifestVersion existingVersion, ManifestVersion newVersion)> manifestsToUpdate,
             DirectoryPath? offlineCache)
         {
-            if (_workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
-            {
-                var installer = _workloadInstaller.GetPackInstaller();
-                IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
-                IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
+            var installer = _workloadInstaller.GetPackInstaller();
+            var workloadPackToInstall = Enumerable.Empty<PackInfo>();
+            var newWorkloadInstallRecords = Enumerable.Empty<WorkloadId>();;
 
-                TransactionalAction.Run(
-                    action: () =>
+            TransactionalAction.Run(
+                action: () =>
+                {
+                    bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+
+                    foreach (var (manifestId, _, newVersion) in manifestsToUpdate)
                     {
-                        bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+                        _workloadInstaller.InstallWorkloadManifest(manifestId, newVersion, sdkFeatureBand, offlineCache, rollback);
+                    }
 
-                        foreach (var manifest in manifestsToUpdate)
+                    _workloadResolver.RefreshWorkloadManifests();
+
+                    workloadPackToInstall = GetPacksToInstall(workloadIds);
+
+                    foreach (var packId in workloadPackToInstall)
+                    {
+                        installer.InstallWorkloadPack(packId, sdkFeatureBand, offlineCache);
+                    }
+
+                    var recordRepo = _workloadInstaller.GetWorkloadInstallationRecordRepository();
+                    newWorkloadInstallRecords = workloadIds.Except(recordRepo.GetInstalledWorkloads(sdkFeatureBand));
+                    foreach (var workloadId in newWorkloadInstallRecords)
+                    {
+                        recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
+                    }
+                },
+                rollback: () =>
+                {
+                    try
+                    {
+                        _reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+
+                        foreach (var (manifestId, existingVersion, _) in manifestsToUpdate)
                         {
-                            _workloadInstaller.InstallWorkloadManifest(manifest.manifestId, manifest.newVersion, sdkFeatureBand, offlineCache, rollback);
+                            _workloadInstaller.InstallWorkloadManifest(manifestId, existingVersion, sdkFeatureBand, null, true);
                         }
-
-                        _workloadResolver.RefreshWorkloadManifests();
-
-                        workloadPackToInstall = GetPacksToInstall(workloadIds);
 
                         foreach (var packId in workloadPackToInstall)
                         {
-                            installer.InstallWorkloadPack(packId, sdkFeatureBand, offlineCache);
+                            installer.RollBackWorkloadPackInstall(packId, sdkFeatureBand);
                         }
 
-                        var recordRepo = _workloadInstaller.GetWorkloadInstallationRecordRepository();
-                        newWorkloadInstallRecords = workloadIds.Except(recordRepo.GetInstalledWorkloads(sdkFeatureBand));
                         foreach (var workloadId in newWorkloadInstallRecords)
                         {
-                            recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
+                            _workloadInstaller.GetWorkloadInstallationRecordRepository()
+                                .DeleteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                         }
-                    },
-                    rollback: () =>
+                    }
+                    catch (Exception e)
                     {
-                        try
-                        {
-                            _reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+                        // Don't hide the original error if roll back fails
+                        _reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, e.Message));
+                    }
+                });
+        }
 
-                            foreach (var manifest in manifestsToUpdate)
-                            {
-                                _workloadInstaller.InstallWorkloadManifest(manifest.manifestId, manifest.existingVersion, sdkFeatureBand, offlineCache: null, isRollback: true);
-                            }
-
-                            foreach (var packId in workloadPackToInstall)
-                            {
-                                installer.RollBackWorkloadPackInstall(packId, sdkFeatureBand);
-                            }
-
-                            foreach (var workloadId in newWorkloadInstallRecords)
-                            {
-                                _workloadInstaller.GetWorkloadInstallationRecordRepository()
-                                    .DeleteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            // Don't hide the original error if roll back fails
-                            _reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, e.Message));
-                        }
-                    });
-            }
-            else
+        void InstallWorkloadsWithInstallRecord(
+            IEnumerable<WorkloadId> workloadIds,
+            SdkFeatureBand sdkFeatureBand,
+            IEnumerable<(ManifestId manifestId, ManifestVersion existingVersion, ManifestVersion newVersion)> manifestsToUpdate,
+            DirectoryPath? offlineCache)
+        {
+            var installUnit = _workloadInstaller.GetInstallationUnit();
+            switch(installUnit)
             {
-                var installer = _workloadInstaller.GetWorkloadInstaller();
-                foreach (var workloadId in workloadIds)
-                {
-                    installer.InstallWorkload(workloadId);
-                }
+                case InstallationUnit.Packs:
+                    InstallPacksWithInstallRecord(workloadIds, sdkFeatureBand, manifestsToUpdate, offlineCache);
+                    break;
+                default:    
+                    InstallWorkloadsWithInstallRecord(workloadIds);
+                    break;
             }
         }
 
