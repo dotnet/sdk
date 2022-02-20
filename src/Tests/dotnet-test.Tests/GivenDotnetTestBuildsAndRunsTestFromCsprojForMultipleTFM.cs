@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [WindowsOnlyFact]
-        public void ItCreatesMergedCoverageFilesForMultiTargetedProject()
+        public void ItCreatesMergedCoverageFileForMultiTargetedProject()
         {
             // Copy XunitMulti project in output directory of project dotnet-test.Tests
             string testAppName = "XunitMulti";
