@@ -777,17 +777,17 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("--results-directory", "\\\\\\")]
         [InlineData("--results-directory", "/")]
         [InlineData("--results-directory", "///")]
-        public void PathEndsWithSlashOrBackslash(string flag, string slashOrBackslash)
+        public void PathEndsWithSlashOrBackslash(string flag, string slashesOrBackslashes)
         {
             // NOTE: We also want to test with forward slashes because on Windows they
             // are converted to backslashes and so need to be handled correctly.
-            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(Guid.NewGuid().ToString());
-            var flagDirectory = Path.Combine(testProjectDirectory, Guid.NewGuid().ToString()) + slashOrBackslash;
+            string testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
+            string flagDirectory = Path.Combine(testProjectDirectory, "flag-dir");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
                 .WithWorkingDirectory(testProjectDirectory)
-                .Execute(flag, flagDirectory);
+                .Execute(flag, flagDirectory + slashesOrBackslashes);
 
             // Verify
             if (!TestContext.IsLocalized())
@@ -797,7 +797,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Failed:     1");
             }
 
-            Directory.Exists(flagDirectory).Should().BeTrue("Expected folder '{0}' to exists but it does not.", flagDirectory);
+            Directory.Exists(flagDirectory).Should().BeTrue("folder '{0}' should exist.", flagDirectory);
             Directory.EnumerateFileSystemEntries(flagDirectory).Should().NotBeEmpty();
         }
 
