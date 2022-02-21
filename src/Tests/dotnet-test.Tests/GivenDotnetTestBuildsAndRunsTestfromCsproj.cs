@@ -798,7 +798,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 result.StdOut.Should().Contain("Failed:     1");
             }
 
-            Directory.Exists(flagDirectory).Should().BeTrue();
+            Directory.Exists(flagDirectory).Should().BeTrue("Expected folder '{0}' to exists but it does not.", flagDirectory);
             Directory.EnumerateFileSystemEntries(flagDirectory).Should().NotBeEmpty();
         }
 
