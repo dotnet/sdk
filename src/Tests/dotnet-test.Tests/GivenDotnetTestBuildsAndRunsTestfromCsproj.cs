@@ -781,7 +781,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             // NOTE: We also want to test with forward slashes because on Windows they
             // are converted to backslashes and so need to be handled correctly.
-            string testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
+            string testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp(Guid.NewGuid().ToString());
             string flagDirectory = Path.Combine(testProjectDirectory, "flag-dir");
 
             // Call test
