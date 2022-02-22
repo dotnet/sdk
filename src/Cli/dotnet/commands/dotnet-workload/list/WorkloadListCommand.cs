@@ -116,11 +116,11 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             }
             else
             {
-                InstalledWorkloadsCollection www = new(installedList, $"SDK {_currentSdkFeatureBand}");
+                InstalledWorkloadsCollection installedWorkloads = new(installedList, $"SDK {_currentSdkFeatureBand}");
 
                 if (OperatingSystem.IsWindows())
                 {
-                    VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, _currentSdkFeatureBand, ref www);
+                    VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, _currentSdkFeatureBand, ref installedWorkloads);
                 }
                 
                 _reporter.WriteLine();
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 table.AddColumn(LocalizableStrings.WorkloadIdColumn, workload => workload.Key);
                 table.AddColumn(LocalizableStrings.WorkloadSourceColumn, workload => workload.Value);
 
-                table.PrintRows(www.AsEnumerable(), l => _reporter.WriteLine(l));
+                table.PrintRows(installedWorkloads.AsEnumerable(), l => _reporter.WriteLine(l));
 
                 _reporter.WriteLine();
                 _reporter.WriteLine(LocalizableStrings.WorkloadListFooter);

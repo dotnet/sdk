@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         /// <param name="sdkFeatureBand">The feature band of the executing SDK.</param>
         /// <param name="installedWorkloads">The collection of installed workloads to update.</param>
         internal static void GetInstalledWorkloads(IWorkloadResolver workloadResolver, SdkFeatureBand sdkFeatureBand,
-            ref InstalledWorkloadsCollection installedWorkloads)
+            InstalledWorkloadsCollection installedWorkloads)
         {
             IEnumerable<string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
             HashSet<string> installedWorkloadComponents = new();
