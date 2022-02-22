@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var configOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.ConfigOption);
             var sourceOption = parseResult.GetValueForOption(WorkloadInstallCommandParser.SourceOption);
-            if (string.IsNullOrEmpty(configOption) && sourceOption != null && sourceOption.Any())
+            if (string.IsNullOrEmpty(configOption) && !(sourceOption != null && sourceOption.Any()))
             {
                 _packageSourceLocation = null;
             }
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        int PrintDownloadLink() { 
+        private int PrintDownloadLink() { 
             _reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
             var packageUrls = GetPackageDownloadUrlsAsync(_workloadIds.Select(id => new WorkloadId(id)), _skipManifestUpdate, _includePreviews).GetAwaiter().GetResult();
 
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return _workloadInstaller.ExitCode;
         }
 
-        int DownloadToCache()
+        private int DownloadToCache()
         {
             try
             {
@@ -379,10 +379,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        async Task UseTempManifestsToResolvePacksAsync(DirectoryPath tempPath, bool includePreview)
+        private async Task UseTempManifestsToResolvePacksAsync(DirectoryPath tempPath, bool includePreview)
         {
             var manifestPackagePaths = await _workloadManifestUpdater.DownloadManifestPackagesAsync(includePreview, tempPath);
-            if (manifestPackagePaths != null && manifestPackagePaths.Any())
+            if (!(manifestPackagePaths != null && manifestPackagePaths.Any()))
             {
                 _reporter.WriteLine(LocalizableStrings.SkippingManifestUpdate);
                 return;
@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadResolver = _workloadResolver.CreateOverlayResolver(overlayProvider);
         }
 
-        async Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
+        private async Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
         {
             string? tempManifestDir = null;
             if (!skipManifestUpdate)
@@ -417,7 +417,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             switch (_workloadInstaller.GetInstallationUnit())
             {
                 case InstallationUnit.Packs:
-                    var packInstaller= _workloadInstaller.GetPackInstaller();
+                    var packInstaller = _workloadInstaller.GetPackInstaller();
                     var workloadPacks = GetPacksToInstall(workloadIds);
                     foreach (var pack in workloadPacks)
                     {
@@ -439,7 +439,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        IEnumerable<PackInfo?> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
+        private IEnumerable<PackInfo?> GetPacksToInstall(IEnumerable<WorkloadId> workloadIds)
         {
             var installedPacks = _workloadInstaller.GetPackInstaller().GetInstalledPacks(_sdkFeatureBand);
             return workloadIds
