@@ -103,23 +103,12 @@ Integration with static web assets:
   </DiscoverDefaultScopedCssItems>
 
   <ItemGroup Condition="'$(EnableDefaultScopedCssItems)' == 'true'">
-    <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" />
+    <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" Pack="false" CopyToPublishDirectory="Never" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="@(ScopedCssInput)" />
-    <!--
-      See https://github.com/dotnet/maui/issues/791 for details.
-      PublishFolderType="None" prevents content items frrom being bundled as part of MAUI iOS targets.
-      ExcludeFromContentCheck="true" prevents content items from being inspected by MAUI Android targets for warnings.
-    -->
-
-    <Content
-      Include="@(ScopedCssInput)"
-      Pack="false"
-      CopyToPublishDirectory="Never"
-      PublishFolderType="None"
-      ExcludeFromContentCheck="true" />
+    <!-- Configure Pack="false" and CopyToPublishDirectory="Never" for Content items that are ScopedCssInputs. -->
+    <Content Pack="%(ScopedCssInput.Pack)" CopyToPublishDirectory="%(ScopedCssInput.CopyToPublishDirectory)" />
   </ItemGroup>
 </Target>
 
