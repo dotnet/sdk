@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                 if (OperatingSystem.IsWindows())
                 {
-                    VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, _currentSdkFeatureBand, ref installedWorkloads);
+                    VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, _currentSdkFeatureBand, installedWorkloads);
                 }
                 
                 _reporter.WriteLine();
