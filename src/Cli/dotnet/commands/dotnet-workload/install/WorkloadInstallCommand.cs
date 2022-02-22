@@ -246,7 +246,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallPacksWithInstallRecord(
+        private void InstallPacksWithInstallRecord(
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<(ManifestId manifestId, ManifestVersion existingVersion, ManifestVersion newVersion)> manifestsToUpdate,
