@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
+        private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
         {
             var packageUrls = new List<string>();
             DirectoryPath? tempPath = null;
