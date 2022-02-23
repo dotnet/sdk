@@ -175,7 +175,8 @@ namespace Microsoft.TemplateSearch.Common.Providers
                 {
                     HttpClientHandler handler = new HttpClientHandler()
                     {
-                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                        AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                        CheckCertificateRevocationList = true
                     };
                     using (HttpClient client = new HttpClient(handler))
                     {
