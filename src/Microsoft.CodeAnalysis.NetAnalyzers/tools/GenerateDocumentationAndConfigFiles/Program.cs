@@ -245,7 +245,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project>
-  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}{getCompilerVisibleProperties()}
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
@@ -303,17 +303,17 @@ $@"<Project>
                 }
             }
 
-            string getCodeAnalysisTreatWarningsNotAsErrors()
+            string getCodeAnalysisTreatWarningsAsErrors()
             {
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $@"
   <!-- 
-    This property group prevents the rule ids implemented in this package to be bumped to errors when
-    the 'CodeAnalysisTreatWarningsAsErrors' = 'false'.
+    This property group handles 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
   -->
   <PropertyGroup>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
     <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+    <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
   </PropertyGroup>";
             }
 
@@ -907,7 +907,7 @@ Rule ID | Missing Help Link | Title |
                 startRulesSection,
                 endRulesSection,
                 addRuleEntry,
-                getSeverityString,
+                GetSeverityString,
                 commentStart: "# ",
                 commentEnd: string.Empty,
                 category,
@@ -951,23 +951,6 @@ Rule ID | Missing Help Link | Title |
                 result.AppendLine();
                 result.AppendLine($"# {rule.Id}: {rule.Title}");
                 result.AppendLine($@"dotnet_diagnostic.{rule.Id}.severity = {severity}");
-            }
-
-            static string getSeverityString(DiagnosticSeverity? severity)
-            {
-                if (!severity.HasValue)
-                {
-                    return "none";
-                }
-
-                return severity.Value switch
-                {
-                    DiagnosticSeverity.Error => "error",
-                    DiagnosticSeverity.Warning => "warning",
-                    DiagnosticSeverity.Info => "suggestion",
-                    DiagnosticSeverity.Hidden => "silent",
-                    _ => throw new NotImplementedException(severity.Value.ToString()),
-                };
             }
         }
 
@@ -1315,26 +1298,26 @@ Rule ID | Missing Help Link | Title |
                         {
                             return GetSeverityString(null);
                         }
-
-                        static string GetSeverityString(DiagnosticSeverity? severity)
-                        {
-                            if (!severity.HasValue)
-                            {
-                                return "none";
-                            }
-
-                            return severity.Value switch
-                            {
-                                DiagnosticSeverity.Error => "error",
-                                DiagnosticSeverity.Warning => "warning",
-                                DiagnosticSeverity.Info => "suggestion",
-                                DiagnosticSeverity.Hidden => "silent",
-                                _ => throw new NotImplementedException(severity.Value.ToString()),
-                            };
-                        }
                     }
                 }
             }
+        }
+
+        private static string GetSeverityString(DiagnosticSeverity? severity)
+        {
+            if (!severity.HasValue)
+            {
+                return "none";
+            }
+
+            return severity.Value switch
+            {
+                DiagnosticSeverity.Error => "error",
+                DiagnosticSeverity.Warning => "warning",
+                DiagnosticSeverity.Info => "suggestion",
+                DiagnosticSeverity.Hidden => "silent",
+                _ => throw new NotImplementedException(severity.Value.ToString()),
+            };
         }
 
         private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName, IOrderedEnumerable<string> categories)
@@ -1551,13 +1534,14 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
             {
                 return $@"
   <!--
-    Design-time target to prevent the rule ids implemented in this package to be bumped to errors in the IDE
-    when 'CodeAnalysisTreatWarningsAsErrors' = 'false'. Note that a similar 'WarningsNotAsErrors'
-    property group is present in the generated props file to ensure this functionality on command line builds.
+    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
+    Note that similar 'WarningsNotAsErrors' and 'WarningsAsErrors'
+    property groups are present in the generated props file to ensure this functionality on command line builds.
   -->
-  <Target Name=""_CodeAnalysisTreatWarningsNotAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false' AND ('$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true')"">
+  <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
     <PropertyGroup>
-      <WarningsNotAsErrors>$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+      <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+	  <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
     </PropertyGroup>
   </Target>
 ";

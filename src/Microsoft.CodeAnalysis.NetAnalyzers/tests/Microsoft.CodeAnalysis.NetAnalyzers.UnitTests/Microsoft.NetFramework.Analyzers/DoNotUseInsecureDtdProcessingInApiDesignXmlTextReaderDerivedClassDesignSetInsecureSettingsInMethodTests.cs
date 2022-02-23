@@ -344,16 +344,15 @@ namespace TestNamespace
         public TestClass()
         {
             this.XmlResolver = null;
-            this.DtdProcessing = DtdProcessing.Prohibit;
+            this.DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
         }
 
         public void method()
         {
-            DtdProcessing = DtdProcessing.Prohibit;
+            DtdProcessing = DtdProcessing.{|CS1061:Prohib|};
         }
     }
-}"
-            );
+}");
 
             await VerifyVisualBasicAnalyzerAsync(@"
 Imports System.Xml
@@ -363,11 +362,11 @@ Namespace TestNamespace
         Inherits XmlTextReader
         Public Sub New()
             Me.XmlResolver = Nothing
-            Me.DtdProcessing = DtdProcessing.Prohibit
+            Me.DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
         End Sub
 
         Public Sub method()
-            DtdProcessing = DtdProcessing.Prohibit
+            DtdProcessing = {|BC30456:DtdProcessing.Prohib|}
         End Sub
     End Class
 End Namespace");

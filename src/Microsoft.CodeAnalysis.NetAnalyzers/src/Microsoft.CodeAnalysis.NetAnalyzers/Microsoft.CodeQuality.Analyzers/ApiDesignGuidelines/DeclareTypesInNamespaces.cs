@@ -35,16 +35,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 
-            context.RegisterSymbolAction(context => AnalyzeSymbol(context), SymbolKind.NamedType);
+            context.RegisterSymbolAction(context => AnalyzeNamedType(context), SymbolKind.NamedType);
         }
 
-        private static void AnalyzeSymbol(SymbolAnalysisContext context)
+        private static void AnalyzeNamedType(SymbolAnalysisContext context)
         {
-            ISymbol type = context.Symbol;
+            var type = (INamedTypeSymbol)context.Symbol;
 
             if (type.DeclaredAccessibility == Accessibility.Public &&
                 type.ContainingType == null &&
-                type.ContainingNamespace.IsGlobalNamespace)
+                type.ContainingNamespace.IsGlobalNamespace &&
+                !type.IsTopLevelStatementsEntryPointType())
             {
                 context.ReportDiagnostic(type.CreateDiagnostic(Rule));
             }
