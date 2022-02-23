@@ -103,12 +103,12 @@ Integration with static web assets:
   </DiscoverDefaultScopedCssItems>
 
   <ItemGroup Condition="'$(EnableDefaultScopedCssItems)' == 'true'">
-    <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" Pack="false" CopyToPublishDirectory="Never" />
+    <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Configure Pack="false" and CopyToPublishDirectory="Never" for Content items that are ScopedCssInputs. -->
-    <Content Pack="%(ScopedCssInput.Pack)" CopyToPublishDirectory="%(ScopedCssInput.CopyToPublishDirectory)" />
+    <Content Remove="@(ScopedCssInput)" />
+    <Content Include="@(ScopedCssInput)" Pack="false" CopyToPublishDirectory="Never" />
   </ItemGroup>
 </Target>
 
