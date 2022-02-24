@@ -118,7 +118,6 @@ namespace Microsoft.DotNet.Cli
             .UseParseDirective()
             .UseSuggestDirective()
             .DisablePosixBinding()
-            .EnableLegacyDoubleDashBehavior()
             .Build();
 
         class HelpResult : IInvocationResult

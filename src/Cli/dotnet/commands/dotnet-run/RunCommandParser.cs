@@ -42,6 +42,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to the application being run");
+
         private static readonly Command Command = ConstructCommand();
 
         public static Command GetCommand()
@@ -68,7 +70,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.VerbosityOption);
             command.AddOption(CommonOptions.ArchitectureOption);
             command.AddOption(CommonOptions.OperatingSystemOption);
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
 
             command.SetHandler(RunCommand.Run);
 

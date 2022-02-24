@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
     {
         public static int Run(ParseResult parseResult)
         {
-            return new MSBuildForwardingApp(parseResult.GetArguments()).Execute();
+            return new MSBuildForwardingApp(parseResult.GetValueForArgument(MSBuildCommandParser.ForwardedArguments)).Execute();
         }
     }
 }

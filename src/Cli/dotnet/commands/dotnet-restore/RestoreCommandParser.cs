@@ -55,6 +55,8 @@ namespace Microsoft.DotNet.Cli
                             .ForwardAs("-property:RestoreForceEvaluate=true") })
                 .ToArray();
 
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to MSBuild");
+
         private static readonly Command Command = ConstructCommand();
 
         public static Command GetCommand()
@@ -73,7 +75,8 @@ namespace Microsoft.DotNet.Cli
                 command.AddOption(option);
             }
 
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
+
 
             command.SetHandler(RestoreCommand.Run);
 

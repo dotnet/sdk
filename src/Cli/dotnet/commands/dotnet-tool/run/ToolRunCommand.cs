@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             : base(result)
         {
             _toolCommandName = result.GetValueForArgument(ToolRunCommandParser.CommandNameArgument);
-            _forwardArgument = result.UnmatchedTokens.Concat(result.UnparsedTokens);
+            _forwardArgument = result.GetValueForArgument(ToolRunCommandParser.ForwardedArguments);
             _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
         }
 

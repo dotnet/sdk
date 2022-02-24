@@ -40,6 +40,8 @@ namespace Microsoft.DotNet.Tools.Pack
 
             msbuildArgs.AddRange(parseResult.GetValueForArgument(PackCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
 
+            msbuildArgs.AddRange(parseResult.GetValueForArgument(PackCommandParser.ForwardedArguments) ?? Array.Empty<string>());
+
             bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
 
             return new PackCommand(

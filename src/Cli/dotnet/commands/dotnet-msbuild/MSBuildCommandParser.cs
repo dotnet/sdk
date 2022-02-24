@@ -13,7 +13,10 @@ namespace Microsoft.DotNet.Tools.MSBuild
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-msbuild";
 
+        internal static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to msbuild");
+
         private static readonly Command Command = ConstructCommand();
+        
 
         public static Command GetCommand()
         {
@@ -23,8 +26,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
         private static Command ConstructCommand()
         {
             var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName);
-            // this is set because unmatched tokens should be forwarded along to the underlying application
-            command.TreatUnmatchedTokensAsErrors  = false;
+            command.AddArgument(ForwardedArguments);
             command.SetHandler(MSBuildCommand.Run);
 
             return command;

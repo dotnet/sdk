@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli;
 using System.CommandLine.Parsing;
 using System;
+using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Build
 {
@@ -43,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Build
             {
                 msbuildArgs.Add("-target:Rebuild");
             }
-            var arguments = parseResult.GetValueForArgument(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
+            var arguments = parseResult.GetValueForArgument(BuildCommandParser.SlnOrProjectArgument).Concat(parseResult.GetValueForArgument(BuildCommandParser.ForwardedArguments)) ?? Array.Empty<string>();
 
             msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
 

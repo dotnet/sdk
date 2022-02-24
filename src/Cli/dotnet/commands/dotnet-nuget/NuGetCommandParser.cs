@@ -36,8 +36,6 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(GetVerifyCommand());
             command.AddCommand(GetTrustCommand());
             command.AddCommand(GetSignCommand());
-            // make sure that commands that aren't explicitly listed here aren't flagged as errors
-            command.TreatUnmatchedTokensAsErrors = false;
             command.SetHandler(NuGetCommand.Run);
 
             return command;

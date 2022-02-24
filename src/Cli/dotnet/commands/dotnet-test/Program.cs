@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tools.Test
         {
             parseResult.HandleDebugSwitch();
 
-            var args = parseResult.GetArguments();
+            var args = parseResult.GetValueForArgument(TestCommandParser.ForwardedArguments);
 
             // settings parameters are after -- (including --), these should not be considered by the parser
             var settings = args.SkipWhile(a => a != "--").ToArray();

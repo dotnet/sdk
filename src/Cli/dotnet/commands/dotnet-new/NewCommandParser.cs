@@ -43,6 +43,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option ColumnsOption = new Option<bool>("--columns");
 
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to the template engine");
+
         private static readonly Command Command = ConstructCommand();
 
         public static Command GetCommand()
@@ -69,7 +71,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(UpdateCheckOption);
             command.AddOption(UpdateApplyOption);
             command.AddOption(ColumnsOption);
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
             command.SetHandler((ParseResult parseResult) => NewCommandShim.Run(parseResult.GetArguments()));
 
             return command;

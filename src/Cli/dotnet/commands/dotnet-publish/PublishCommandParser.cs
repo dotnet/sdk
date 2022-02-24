@@ -51,6 +51,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
 
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to MSBuild");
+
         private static readonly Command Command = ConstructCommand();
 
         public static Command GetCommand()
@@ -79,8 +81,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.VerbosityOption);
             command.AddOption(CommonOptions.ArchitectureOption);
             command.AddOption(CommonOptions.OperatingSystemOption);
-
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
 
             command.SetHandler(PublishCommand.Run);
 

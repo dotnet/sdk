@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-vstest";
 
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to VSTest");
+
         private static readonly Command Command = ConstructCommand();
 
         public static Command GetCommand()
@@ -26,7 +28,7 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CommonOptions.TestPlatformOption);
             command.AddOption(CommonOptions.TestFrameworkOption);
             command.AddOption(CommonOptions.TestLoggerOption);
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
             command.SetHandler(VSTestCommand.Run);
 
             return command;

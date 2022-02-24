@@ -23,14 +23,24 @@ namespace Microsoft.DotNet.Tools.VSTest
 
         private static string[] GetArgs(ParseResult parseResult)
         {
-            IEnumerable<string> args = parseResult.GetArguments();
+            IEnumerable<string> args = parseResult.GetValueForArgument(VSTestCommandParser.ForwardedArguments).ToList();
+            var platformOption = parseResult.GetValueForOption(CommonOptions.TestPlatformOption);
+            var frameworkOption = parseResult.GetValueForOption(CommonOptions.TestFrameworkOption);
+            if (platformOption != null)
+            {
+                args = args.Prepend(platformOption);
+            }
+            if (frameworkOption != null)
+            {
+                args = args.Prepend(frameworkOption);
+            }
 
             if (parseResult.HasOption(CommonOptions.TestLoggerOption))
             {
                 // System command line might have mutated the options, reformat test logger option so vstest recognizes it
                 var loggerValue = parseResult.GetValueForOption(CommonOptions.TestLoggerOption);
                 args = args.Where(a => !a.Equals(loggerValue) && !CommonOptions.TestLoggerOption.Aliases.Contains(a));
-                args = args.Prepend($"{CommonOptions.TestLoggerOption.Aliases.First()}:{loggerValue}");
+                args= args.Prepend($"{CommonOptions.TestLoggerOption.Aliases.First()}:{loggerValue}");
             }
 
             return args.ToArray();

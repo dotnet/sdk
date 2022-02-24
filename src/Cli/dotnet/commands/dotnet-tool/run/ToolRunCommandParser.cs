@@ -11,10 +11,9 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolRunCommandParser
     {
-        public static readonly Argument<string> CommandNameArgument = new Argument<string>(LocalizableStrings.CommandNameArgumentName)
-        {
-            Description = LocalizableStrings.CommandNameArgumentDescription
-        };
+        public static readonly Argument<string> CommandNameArgument = new Argument<string>(LocalizableStrings.CommandNameArgumentName, LocalizableStrings.CommandNameArgumentDescription);
+
+        public static readonly Argument<string[]> ForwardedArguments = new Argument<string[]>("forwardedArguments", "Arguments to forward to the tool");
 
         private static readonly Command Command = ConstructCommand();
 
@@ -28,7 +27,7 @@ namespace Microsoft.DotNet.Cli
             var command = new Command("run", LocalizableStrings.CommandDescription);
 
             command.AddArgument(CommandNameArgument);
-            command.TreatUnmatchedTokensAsErrors = false;
+            command.AddArgument(ForwardedArguments);
 
             command.SetHandler((parseResult) => new ToolRunCommand(parseResult).Execute());
 

@@ -198,18 +198,45 @@ namespace Microsoft.DotNet.Cli
             }
             else
             {
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValueForArgument(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                try
+                {
+                    // since error-handling for most dotnet CLI commands is handled _in_ the pipeline, we have to recreate that error-handling ehre
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
+                    var resolvedCommand = CommandFactoryUsingResolver.Create(
+                            "dotnet-" + parseResult.GetValueForArgument(Parser.DotnetSubCommand),
+                            args.GetSubArguments(),
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
-                exitCode = result.ExitCode;
+                    exitCode = result.ExitCode;
+                }
+                catch (Exception e) when (e.ShouldBeDisplayedAsError())
+                {
+                    Reporter.Error.WriteLine(CommandContext.IsVerbose()
+                        ? e.ToString().Red().Bold()
+                        : e.Message.Red().Bold());
+
+                    var commandParsingException = e as CommandParsingException;
+                    if (commandParsingException != null && commandParsingException.ParseResult != null)
+                    {
+
+                        Parser.Instance.Invoke("--help");
+                    }
+
+                    return 1;
+                }
+                catch (Exception e) when (!e.ShouldBeDisplayedAsError())
+                {
+                    // If telemetry object has not been initialized yet. It cannot be collected
+                    TelemetryEventEntry.SendFiltered(e);
+                    Reporter.Error.WriteLine(e.ToString().Red().Bold());
+
+                    return 1;
+                }
             }
 
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
