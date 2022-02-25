@@ -30,10 +30,10 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_analyzer_warnings_are_produced(string targetFramework)
+        public void ILLink_aot_analyzer_warnings_are_produced(string targetFramework)
         {
-            var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            var projectName = "ILLinkAotAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -47,10 +47,10 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_linker_analyzer_warnings_are_not_produced(string targetFramework)
+        public void ILLink_linker_warnings_not_produced_if_not_set(string targetFramework)
         {
-            var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            var projectName = "ILLinkAotAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
             // Inactive linker settings should have no effect on the aot analyzer,
             // unless PublishTrimmed is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
@@ -66,10 +66,10 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_analyzer_can_treat_warnings_as_errors(string targetFramework)
+        public void ILLink_aot_analyzer_can_treat_warnings_as_errors(string targetFramework)
         {
-            var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            var projectName = "ILLinkAotAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["WarningsAsErrors"] = "IL3050";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -84,10 +84,10 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_analyzer_can_ignore_warnings(string targetFramework)
+        public void ILLink_aot_analyzer_can_ignore_warnings(string targetFramework)
         {
-            var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
+            var projectName = "ILLinkAotAnalyzerWarningsApp";
+            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["WarningsAsErrors"] = "IL3050";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("(18,12): warning IL3052");
         }
 
-        private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
+        private TestProject CreateTestProjectWithAotAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()
             {
