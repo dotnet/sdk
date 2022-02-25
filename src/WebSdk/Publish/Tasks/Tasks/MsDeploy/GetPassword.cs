@@ -43,8 +43,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             string plainPWD = "";
             try
             {
-                Byte[] uncrypted = System.Security.Cryptography.ProtectedData.Unprotect(encryptedData, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
-                plainPWD = Encoding.Unicode.GetString(uncrypted);
+                if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)) {
+                    Byte[] uncrypted = System.Security.Cryptography.ProtectedData.Unprotect(encryptedData, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+                    plainPWD = Encoding.Unicode.GetString(uncrypted);
+                } else {
+                    throw new PlatformNotSupportedException();
+                }
             }
             catch
             {
