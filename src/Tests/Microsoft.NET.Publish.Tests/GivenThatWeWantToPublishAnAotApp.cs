@@ -34,7 +34,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var projectName = "ILLinkAnalyzerWarningsApp";
             var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
             // Inactive linker settings should have no effect on the aot analyzer,
             // unless PublishTrimmed is also set.
-            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -62,23 +62,6 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2026");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_analyzer_warnings_are_produced_using_EnableAotAnalyzer(string targetFramework)
-        {
-            var projectName = "ILLinkAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
-                .Execute(RuntimeIdentifier)
-                .Should().Pass()
-                .And.HaveStdOutContaining("(8,9): warning IL3050")
-                .And.HaveStdOutContaining("(18,12): warning IL3052");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -142,7 +125,9 @@ class C
     }
 
     [RequiresDynamicCode(""Aot analysis warning"")]
-    static C() {}
+    static C()
+    {
+    }
 
     [RequiresUnreferencedCode(""Linker analysis warning"")]
     static void ProduceLinkerAnalysisWarning()
