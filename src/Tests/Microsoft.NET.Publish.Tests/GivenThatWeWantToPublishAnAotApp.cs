@@ -29,7 +29,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData(LatestTfm)]
         public void ILLink_aot_analyzer_warnings_are_produced(string targetFramework)
         {
             var projectName = "ILLinkAotAnalyzerWarningsApp";
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [InlineData(LatestTfm)]
         public void ILLink_linker_warnings_not_produced_if_not_set(string targetFramework)
         {
             var projectName = "ILLinkAotAnalyzerWarningsApp";
@@ -62,41 +62,6 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
                 .And.NotHaveStdOutContaining("IL2026");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_aot_analyzer_can_treat_warnings_as_errors(string targetFramework)
-        {
-            var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
-            testProject.AdditionalProperties["WarningsAsErrors"] = "IL3050";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
-                .Execute(RuntimeIdentifier)
-                .Should().Fail()
-                .And.HaveStdOutContaining("(8,9): error IL3050")
-                .And.HaveStdOutContaining("(18,12): warning IL3052");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void ILLink_aot_analyzer_can_ignore_warnings(string targetFramework)
-        {
-            var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
-            testProject.AdditionalProperties["WarningsAsErrors"] = "IL3050";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
-                .Execute(RuntimeIdentifier, "/p:NoWarn=IL3050", "/p:WarnAsError=IL3050")
-                .Should().Pass()
-                .And.HaveStdOutContaining("(18,12): warning IL3052");
         }
 
         private TestProject CreateTestProjectWithAotAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
