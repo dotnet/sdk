@@ -14,7 +14,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftBuildVersion>16.11.0</MicrosoftBuildVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.2</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>5.0.0</MicrosoftExtensionsDependencyInjectionVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNETCoreCompilersPackageVersion>4.1.0-5.22116.13</MicrosoftNETCoreCompilersPackageVersion>
