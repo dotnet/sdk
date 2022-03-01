@@ -148,18 +148,9 @@
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
     <ConflictingPackageReportDir>$(BaseOutputPath)conflict-report/</ConflictingPackageReportDir>
     <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
-    <ReferencePackagesBaseDir>$(IntermediatePath)reference-packages/</ReferencePackagesBaseDir>
-    <TextOnlyPackageBaseDir>$(IntermediatePath)text-only-packages/</TextOnlyPackageBaseDir>
-    <ExternalTarballsDir>$(IntermediatePath)external-tarballs/</ExternalTarballsDir>
-    <!--
-      Change ReferencePackagesBaseDir & ExternalTarballsDir conditionally in offline build.
-      See corresponding change in build-source-tarball.sh to copy reference-packages & external-tarballs
-      from source-build bin dir to tarball packages/reference dir & packages/archive.
-    -->
     <ExternalTarballsDir>$(ProjectDir)packages/archive/</ExternalTarballsDir>
-    <ReferencePackagesBaseDir>$(ProjectDir)packages/reference/</ReferencePackagesBaseDir>
     <TextOnlyPackageBaseDir>$(ProjectDir)packages/text-only/</TextOnlyPackageBaseDir>
-    <ReferencePackagesDir>$(ReferencePackagesBaseDir)packages/</ReferencePackagesDir>
+    <ReferencePackagesDir>$(ProjectDir)packages/reference/</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
     <SourceBuiltArtifactsTarballUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/</SourceBuiltArtifactsTarballUrl>
