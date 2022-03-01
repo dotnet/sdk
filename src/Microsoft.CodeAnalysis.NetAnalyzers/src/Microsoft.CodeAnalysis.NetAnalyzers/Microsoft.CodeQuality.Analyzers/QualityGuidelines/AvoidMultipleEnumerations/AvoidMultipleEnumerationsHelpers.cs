@@ -179,8 +179,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             // Well-known linq methods, like 'ElementAt', or if the parameter's type is deferred type.
-            return wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod)
-                || IsDeferredType(originalTargetMethod.Parameters[0].Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
+            return wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod);
         }
 
         /// <summary>
@@ -230,14 +229,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 : argumentOperation.Parameter.OriginalDefinition;
 
             // Common linq method case, like ElementAt
-            if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalMethod)
+            return wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalMethod)
                 && originalMethod.Parameters.Any(
-                    methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter)))
-            {
-                return true;
-            }
-
-            return IsDeferredType(argumentMappingParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
+                    methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter));
         }
 
         /// <summary>

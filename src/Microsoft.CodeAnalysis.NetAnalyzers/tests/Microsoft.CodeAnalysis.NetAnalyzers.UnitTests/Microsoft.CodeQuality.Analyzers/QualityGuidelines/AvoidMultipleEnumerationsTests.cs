@@ -14,11 +14,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
-        private static Task VerifyCSharpAsync(string code, string customizedNoEnumerationMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyCSharpAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedNoEnumerationMethods == null
+            var noEnumrationMethods = customizedEnumerationMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedNoEnumerationMethods}";
+                : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
@@ -43,11 +43,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             return test.RunAsync();
         }
 
-        private static Task VerifyVisualBasicAsync(string code, string customizedNoEnumerationMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyVisualBasicAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedNoEnumerationMethods == null
+            var noEnumrationMethods = customizedEnumerationMethods == null
                 ? string.Empty
-                : $"dotnet_code_quality.CA1851.no_enumeration_methods = {customizedNoEnumerationMethods}";
+                : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
@@ -1709,11 +1709,11 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        TestMethod([|i|]);
-        [|i|].First();
+        TestMethod(i);
+        i.First();
 
-        TestMethod([|h|]);
-        [|h|].First();
+        TestMethod(h);
+        h.First();
     }
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
@@ -1732,11 +1732,11 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            TestMethod([|i|])
-            [|i|].First()
+            TestMethod(i)
+            i.First()
             
-            TestMethod([|h|])
-            [|h|].First()
+            TestMethod(h)
+            h.First()
         End Sub
 
   
@@ -3324,7 +3324,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task TestByDefaultSupposeMethodEnuemrationArgument()
+        public async Task TestByDefaultSupposeMethodNotEnuemratesArgument()
         {
             var csharpCode = @"
 using System.Collections.Generic;
@@ -3334,8 +3334,8 @@ public class Bar
 {
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
     {
-        [|j|].UnionBy(i, p => p).ElementAt(10);
-        Method([|j|]);
+        j.UnionBy(i, p => p).ElementAt(10);
+        Method(j);
     }
 
     private void Method(IEnumerable<int> k)
@@ -3352,8 +3352,8 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
-            Method([|j|])
+            j.UnionBy(i, Function(p) p).ElementAt(10)
+            Method(j)
         End Sub
 
         Private Sub Method(j As IEnumerable(Of Integer))
@@ -3575,7 +3575,7 @@ Module Ex
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
         }
 
         [Fact]
@@ -3728,7 +3728,7 @@ public class Bar
     }
 }";
 
-            await VerifyCSharpAsync(csharpCode, customizedNoEnumerationMethods: "M:Bar.TestMethod*");
+            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: "M:Bar.TestMethod*");
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3751,7 +3751,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedNoEnumerationMethods: "M:Ns.Hoo.TestMethod*");
+            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: "M:Ns.Hoo.TestMethod*");
         }
 
         [Fact]
@@ -3766,8 +3766,8 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        i.TestMethod([|h|]);
-        i.Concat([|h|]).ElementAt(100);
+        i.TestMethod(h);
+        i.Concat(h).ElementAt(100);
     }
 }
 
@@ -3790,8 +3790,8 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            i.TestMethod([|h|])
-            i.Concat([|h|]).ElementAt(100)
+            i.TestMethod(h)
+            i.Concat(h).ElementAt(100)
         End Sub
 
     End Class
@@ -3819,8 +3819,8 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        [|i|].TestMethod(h);
-        [|i|].Concat(h).ElementAt(100);
+        i.TestMethod(h);
+        i.Concat(h).ElementAt(100);
     }
 }
 
@@ -3843,8 +3843,8 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            [|i|].TestMethod(h)
-            [|i|].Concat(h).ElementAt(100)
+            i.TestMethod(h)
+            i.Concat(h).ElementAt(100)
         End Sub
 
     End Class

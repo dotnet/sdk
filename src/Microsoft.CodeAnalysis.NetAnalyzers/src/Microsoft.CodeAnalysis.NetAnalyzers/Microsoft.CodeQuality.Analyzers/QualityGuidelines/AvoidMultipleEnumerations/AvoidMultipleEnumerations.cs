@@ -43,7 +43,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableArray, nameof(ImmutableArray.ToImmutableArray)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableDictionary, nameof(ImmutableDictionary.ToImmutableDictionary)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableHashSet, nameof(ImmutableHashSet.ToImmutableHashSet)),
-            (WellKnownTypeNames.SystemCollectionsImmutableIImmutableList, nameof(ImmutableList.ToImmutableList)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableList, nameof(ImmutableList.ToImmutableList)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedDictionary, nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
