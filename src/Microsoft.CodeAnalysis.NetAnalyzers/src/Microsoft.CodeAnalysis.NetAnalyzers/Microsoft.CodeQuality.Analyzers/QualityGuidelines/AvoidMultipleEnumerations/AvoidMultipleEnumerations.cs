@@ -47,6 +47,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedDictionary, nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
+        /// <summary>
+        /// All the types under System.Collections.Generic which the constructor takes deferred type parameter.
+        /// </summary>
         private static readonly ImmutableArray<string> s_contructorsEnumeratedParameterTypes = ImmutableArray.Create(
             WellKnownTypeNames.SystemCollectionsGenericDictionary2,
             WellKnownTypeNames.SystemCollectionsGenericHashSet1,

@@ -3860,8 +3860,47 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
+
+        [Theory]
+        [InlineData("HashSet")]
+        [InlineData("LinkedList")]
+        [InlineData("List")]
+        [InlineData("Queue")]
+        [InlineData("SortedSet")]
+        [InlineData("Stack")]
+        public async Task TestObjectCreationOperation1(string typeName)
+        {
+            var csharpCode = $@"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{{
+    public void Sub<T>(IEnumerable<int> collection1, IEnumerable<T> collection2)
+    {{
+        var s = new {typeName}<int>([|collection1|]);
+        var result = [|collection1|].Count();
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of T))
+        Dim x = New {typeName}(Of T)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
         [Fact]
-        public async Task TestObjectCreationOperation()
+        public async Task TestObjectCreationOperation2()
         {
             var csharpCode = @"
 using System.Linq;
@@ -3869,22 +3908,54 @@ using System.Collections.Generic;
 
 public class Bar
 {
-    public void Sub<T>(IEnumerable<T> collection1, IEnumerable<T> collection2)
+    public void Sub<T>(IEnumerable<KeyValuePair<int, int>> collection1)
     {
-        var s = new HashSet<T>([|collection1|]);
+        var s = new Dictionary<int, int>([|collection1|]);
         var result = [|collection1|].Count();
     }
 }
 ";
             await VerifyCSharpAsync(csharpCode);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 
 Module Program
-    Sub Bar(Of T)(collection1 As IEnumerable(Of T))
-        Dim x = New HashSet(Of T)([|collection1|])
+    Sub Bar(Of T)(collection1 As IEnumerable(Of KeyValuePair(Of Integer, Integer)))
+        Dim x = New Dictionary(Of Integer, Integer)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestObjectCreationOperation3()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub<T>(IEnumerable<(int, int)> collection1)
+    {
+        var s = new PriorityQueue<int, int>([|collection1|]);
+        var result = [|collection1|].Count();
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of (A As Integer, B As Integer)))
+        Dim x = New PriorityQueue(Of Integer, Integer)([|collection1|])
         Dim z = [|collection1|].Count()
     End Sub
 End Module
