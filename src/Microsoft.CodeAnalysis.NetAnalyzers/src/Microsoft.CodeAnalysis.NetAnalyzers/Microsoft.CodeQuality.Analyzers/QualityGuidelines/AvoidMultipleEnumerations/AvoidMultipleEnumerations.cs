@@ -160,9 +160,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
             var syntaxTree = operationBlocks.IsEmpty ? null : operationBlocks[0].Syntax.SyntaxTree;
-            var customizedNoEnumerationMethods = syntaxTree == null
+            var customizedEnumerationMethods = syntaxTree == null
                 ? null
-                : operationBlockStartAnalysisContext.Options.GetNoEnumeratedMethodsOption(
+                : operationBlockStartAnalysisContext.Options.GetEnumerationMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
                     operationBlockStartAnalysisContext.Compilation);
@@ -184,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 noEffectLinqChainMethods,
                 additionalDeferTypes,
                 getEnumeratorSymbols,
-                customizedNoEnumerationMethods,
+                customizedEnumerationMethods,
                 customizedLinqChainMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
@@ -212,8 +212,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var operation = context.Operation;
             if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
-                                   || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
+                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo) != EnumerationCount.Zero
+                                   || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo) != EnumerationCount.Zero;
                 if (isEnumerated)
                     builder.Add(operation);
             }
@@ -270,7 +270,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                         // 1. EnumerationCount is two or more times.
                         // 2. There are two or more operations that might be involved.
                         // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
-                        if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
+                        if (trackedInvocationSet.EnumerationCount == EnumerationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                         {
                             foreach (var trackedOperation in trackedInvocationSet.Operations)
                             {

@@ -2,7 +2,7 @@
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
-    internal enum InvocationCount
+    internal enum EnumerationCount
     {
         None = -1,
         Zero,

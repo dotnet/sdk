@@ -3367,7 +3367,7 @@ End Namespace
         }
 
         [Fact]
-        public async Task TestNoEnumerationMethodFromEditorConfig()
+        public async Task TestEnumerationMethodFromEditorConfig()
         {
             var csharpCode = @"
 using System.Collections.Generic;
@@ -3377,8 +3377,8 @@ public class Bar
 {
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
     {
-        Method1(j);
-        j.UnionBy(i, p => p).ElementAt(10);
+        Method1([|j|]);
+        [|j|].UnionBy(i, p => p).ElementAt(10);
     }
 
     private void Method1(IEnumerable<int> k)
@@ -3394,8 +3394,8 @@ Imports System.Linq
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            Method1(j)
-            j.UnionBy(i, Function(p) p).ElementAt(10)
+            Method1([|j|])
+            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
         End Sub
 
         Private Sub Method1(j As IEnumerable(Of Integer))
@@ -3715,11 +3715,11 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        TestMethod(i);
-        i.First();
+        TestMethod([|i|]);
+        [|i|].First();
 
-        TestMethod(h);
-        h.First();
+        TestMethod([|h|]);
+        [|h|].First();
     }
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
@@ -3738,11 +3738,11 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            TestMethod(i)
-            i.First()
+            TestMethod([|i|])
+            [|i|].First()
             
-            TestMethod(h)
-            h.First()
+            TestMethod([|h|])
+            [|h|].First()
         End Sub
 
   
@@ -3890,6 +3890,72 @@ Module Program
 End Module
 ";
             await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestLinqChainEnumeratedTheArgument()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> a)
+    {
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1([|t|], [|a|]);
+        var y = [|t|].LinqChain2([|a|]);
+    }
+
+    public T LinqChain1<T>(T u, T v)
+    {
+        return u;
+    }
+}
+
+public static class Ex
+{
+    public static T LinqChain2<T>(this T u, T v)
+    {
+        return u;
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode,
+                customizedEnumerationMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*",
+                customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(a As IEnumerable(Of Integer))
+            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+            Dim x = LinqChain1([|t|], [|a|])
+            Dim y = [|t|].LinqChain2([|a|])
+        End Sub
+
+        Public Function LinqChain1(Of T)(q As T, p As T) As T
+            Return q
+        End Function
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode,
+                customizedEnumerationMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*",
+                customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
         }
     }
 }

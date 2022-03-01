@@ -55,24 +55,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
         }
 
-        private static InvocationCount Min(InvocationCount count1, InvocationCount count2)
+        private static EnumerationCount Min(EnumerationCount count1, EnumerationCount count2)
         {
             // Unknown = -1, Zero = 0, One = 1, TwoOrMoreTime = 2
             var min = Math.Min((int)count1, (int)count2);
-            return (InvocationCount)min;
+            return (EnumerationCount)min;
         }
 
-        private static InvocationCount AddInvocationCount(InvocationCount count1, InvocationCount count2)
+        public static EnumerationCount AddInvocationCount(EnumerationCount count1, EnumerationCount count2)
             => (count1, count2) switch
             {
-                (InvocationCount.None, _) => InvocationCount.None,
-                (_, InvocationCount.None) => InvocationCount.None,
-                (InvocationCount.Zero, _) => count2,
-                (_, InvocationCount.Zero) => count1,
-                (InvocationCount.One, InvocationCount.One) => InvocationCount.TwoOrMoreTime,
-                (InvocationCount.TwoOrMoreTime, _) => InvocationCount.TwoOrMoreTime,
-                (_, InvocationCount.TwoOrMoreTime) => InvocationCount.TwoOrMoreTime,
-                (_, _) => InvocationCount.None,
+                (EnumerationCount.None, _) => EnumerationCount.None,
+                (_, EnumerationCount.None) => EnumerationCount.None,
+                (EnumerationCount.Zero, _) => count2,
+                (_, EnumerationCount.Zero) => count1,
+                (EnumerationCount.One, EnumerationCount.One) => EnumerationCount.TwoOrMoreTime,
+                (EnumerationCount.TwoOrMoreTime, _) => EnumerationCount.TwoOrMoreTime,
+                (_, EnumerationCount.TwoOrMoreTime) => EnumerationCount.TwoOrMoreTime,
+                (_, _) => EnumerationCount.None,
             };
     }
 }

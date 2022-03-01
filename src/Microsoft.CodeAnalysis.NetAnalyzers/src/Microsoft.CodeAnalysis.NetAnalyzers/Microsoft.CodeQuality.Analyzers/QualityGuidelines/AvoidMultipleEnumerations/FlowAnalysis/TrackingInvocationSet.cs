@@ -30,11 +30,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// The total number of enumeration.
         /// </summary>
-        public InvocationCount EnumerationCount { get; }
+        public EnumerationCount EnumerationCount { get; }
 
-        public static readonly TrackingInvocationSet Empty = new(ImmutableHashSet<IOperation>.Empty, InvocationCount.Zero);
+        public static readonly TrackingInvocationSet Empty = new(ImmutableHashSet<IOperation>.Empty, EnumerationCount.Zero);
 
-        public TrackingInvocationSet(ImmutableHashSet<IOperation> operations, InvocationCount enumerationCount)
+        public TrackingInvocationSet(ImmutableHashSet<IOperation> operations, EnumerationCount enumerationCount)
         {
             Operations = operations;
             EnumerationCount = enumerationCount;

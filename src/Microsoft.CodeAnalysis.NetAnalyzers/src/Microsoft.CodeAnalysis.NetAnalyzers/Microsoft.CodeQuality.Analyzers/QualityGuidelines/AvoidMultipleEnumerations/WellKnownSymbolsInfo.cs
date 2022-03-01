@@ -48,12 +48,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
         /// <summary>
-        /// User specified methods that would not enumerated its parameters. The value comes from editorConfig.
+        /// User specified methods that would enumerate its parameters. The value comes from editorConfig.
         /// </summary>
-        public SymbolNamesWithValueOption<Unit>? CustomizedNoEnumerationMethods { get; }
+        public SymbolNamesWithValueOption<Unit>? CustomizedEumerationMethods { get; }
 
         /// <summary>
-        /// User specified methods that would not enumerated its parameters and the return type is deferred type. The value comes from editorConfig.
+        /// User specified methods that accept a deferred type parameter and the return a deferred type value. The value comes from editorConfig.
         /// </summary>
         public SymbolNamesWithValueOption<Unit>? CustomizedLinqChainMethods { get; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods,
-            SymbolNamesWithValueOption<Unit>? customizedNoEnumerationMethods,
+            SymbolNamesWithValueOption<Unit>? customizedEnumerationMethods,
             SymbolNamesWithValueOption<Unit>? customizedLinqChainMethods)
         {
             LinqChainMethods = linqChainMethods;
@@ -73,8 +73,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
-            CustomizedNoEnumerationMethods = customizedNoEnumerationMethods;
+            CustomizedEumerationMethods = customizedEnumerationMethods;
             CustomizedLinqChainMethods = customizedLinqChainMethods;
         }
+
+        public bool IsCustomizedEnumerationMethods(IMethodSymbol methodSymbol)
+            => CustomizedEumerationMethods is not null && CustomizedEumerationMethods.Contains(methodSymbol);
+
+        public bool IsCustomizedLinqChainMethods(IMethodSymbol methodSymbol)
+            => CustomizedLinqChainMethods is not null && CustomizedLinqChainMethods.Contains(methodSymbol);
     }
 }
