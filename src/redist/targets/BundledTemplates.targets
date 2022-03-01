@@ -85,13 +85,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0"/>
-    <BundledTemplates Include="@(Bundled50Templates)" TemplateFrameworkVersion="5.0"/>
-    <BundledTemplates Include="@(Bundled31Templates)" TemplateFrameworkVersion="3.1"/>
-    <BundledTemplates Include="@(Bundled30Templates)" TemplateFrameworkVersion="3.0"/>
-    <BundledTemplates Include="@(Bundled21Templates)" TemplateFrameworkVersion="2.1"/>
+    <CurrentVersionBundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0"/>
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <PreviousVersionBundledTemplates Include="@(Bundled50Templates)" TemplateFrameworkVersion="5.0"/>
+    <PreviousVersionBundledTemplates Include="@(Bundled31Templates)" TemplateFrameworkVersion="3.1"/>
+    <PreviousVersionBundledTemplates Include="@(Bundled30Templates)" TemplateFrameworkVersion="3.0"/>
+    <PreviousVersionBundledTemplates Include="@(Bundled21Templates)" TemplateFrameworkVersion="2.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
+    <BundledTemplates Include="@(PreviousVersionBundledTemplates)" Condition="$(ProductMonikerRid.StartsWith('win'))" />
+  </ItemGroup>
+
   <ItemGroup>
     <BundledTemplates Update="@(BundledTemplates)">
       <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
