@@ -53,7 +53,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public SymbolNamesWithValueOption<Unit>? CustomizedEumerationMethods { get; }
 
         /// <summary>
-        /// User specified methods that accept a deferred type parameter and the return a deferred type value. The value comes from editorConfig.
+        /// User specified methods that accept a deferred type parameter and the return a new deferred type value. The value comes from editorConfig.
         /// </summary>
         public SymbolNamesWithValueOption<Unit>? CustomizedLinqChainMethods { get; }
 

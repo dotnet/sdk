@@ -223,13 +223,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             PooledHashSet<IOperation> builder)
         {
             var operation = context.Operation;
-            if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                && IsEnumerated(operation, wellKnownSymbolsInfo))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo) != EnumerationCount.Zero
-                                   || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo) != EnumerationCount.Zero;
-                if (isEnumerated)
-                    builder.Add(operation);
+                builder.Add(operation);
             }
+        }
+
+        private static bool IsEnumerated(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            var (linqChainTailOperation, enumerationCount) = SkipLinqChainAndConversionMethod(operation, wellKnownSymbolsInfo);
+            if (enumerationCount == EnumerationCount.None)
+            {
+                return false;
+            }
+
+            if (enumerationCount > EnumerationCount.Zero)
+            {
+                return true;
+            }
+
+            return IsOperationEnumeratedByInvocation(linqChainTailOperation, wellKnownSymbolsInfo)
+                || IsOperationEnumeratedByForEachLoop(linqChainTailOperation, wellKnownSymbolsInfo);
         }
 
         private void Analyze(

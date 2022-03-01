@@ -16,7 +16,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
     {
         private static Task VerifyCSharpAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedEnumerationMethods == null
+            var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
@@ -34,7 +34,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                     },
                     AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
 [*]
-{noEnumrationMethods}
+{enumerationMethods}
 {linqChainMethods}
 ") },
                 },
@@ -45,7 +45,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 
         private static Task VerifyVisualBasicAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
         {
-            var noEnumrationMethods = customizedEnumerationMethods == null
+            var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
             var linqChainMethods = customizedLinqChainMethods == null
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                     },
                     AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
 [*]
-{noEnumrationMethods}
+{enumerationMethods}
 {linqChainMethods}
 ") },
                 },
