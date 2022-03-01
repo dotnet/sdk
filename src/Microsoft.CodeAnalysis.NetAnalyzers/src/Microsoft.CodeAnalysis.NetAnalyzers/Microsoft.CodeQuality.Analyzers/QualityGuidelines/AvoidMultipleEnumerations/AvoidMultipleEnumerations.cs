@@ -47,6 +47,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedDictionary, nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
+        private static readonly ImmutableArray<string> s_contructorsEnumeratedParameterTypes = ImmutableArray.Create(
+            WellKnownTypeNames.SystemCollectionsGenericDictionary2,
+            WellKnownTypeNames.SystemCollectionsGenericHashSet1,
+            WellKnownTypeNames.SystemCollectionsGenericLinkedList1,
+            WellKnownTypeNames.SystemCollectionsGenericList1,
+            WellKnownTypeNames.SystemCollectionsGenericPriorityQueue2,
+            WellKnownTypeNames.SystemCollectionsGenericQueue1,
+            WellKnownTypeNames.SystemCollectionsGenericSortedSet1,
+            WellKnownTypeNames.SystemCollectionsGenericStack1);
+
         /// <summary>
         /// Linq methods causing its parameters to be enumerated.
         /// </summary>
@@ -153,7 +163,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
             var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
             var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
-            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
+            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods, s_contructorsEnumeratedParameterTypes);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);

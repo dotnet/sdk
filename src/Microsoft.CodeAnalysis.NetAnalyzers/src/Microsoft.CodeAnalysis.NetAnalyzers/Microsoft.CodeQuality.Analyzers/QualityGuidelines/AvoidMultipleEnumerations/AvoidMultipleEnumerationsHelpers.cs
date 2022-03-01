@@ -383,12 +383,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         public static ImmutableArray<IMethodSymbol> GetEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
-            ImmutableArray<string> linqMethodNames)
+            ImmutableArray<string> linqMethodNames,
+            ImmutableArray<string> constuctorTypeNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
             GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
             GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
+            GetConstructors(wellKnownTypeProvider, constuctorTypeNames, builder);
             return builder.ToImmutable();
+        }
+
+        public static void GetConstructors(
+            WellKnownTypeProvider wellKnownTypeProvider,
+            ImmutableArray<string> typeNames,
+            ArrayBuilder<IMethodSymbol> builder)
+        {
+            foreach (var typeName in typeNames)
+            {
+                if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var type))
+                {
+                    builder.AddRange(type.Constructors.Where(c => c.Parameters.Any(p => p.Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)));
+                }
+            }
         }
 
         private static void GetImmutableCollectionConversionMethods(
