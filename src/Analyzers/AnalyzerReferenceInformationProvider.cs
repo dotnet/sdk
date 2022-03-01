@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Microsoft.Extensions.Logging;
 
@@ -31,14 +32,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         private AnalyzersAndFixers GetAnalyzersAndFixers(Project project)
         {
             var analyzerAssemblies = project.AnalyzerReferences
-                .Select(reference => TryLoadAssemblyFrom(reference.FullPath))
+                .Select(reference => TryLoadAssemblyFrom(reference.FullPath, reference as AnalyzerFileReference))
                 .OfType<Assembly>()
                 .ToImmutableArray();
 
             return AnalyzerFinderHelpers.LoadAnalyzersAndFixers(analyzerAssemblies);
         }
 
-        private static Assembly? TryLoadAssemblyFrom(string? path)
+        private static Assembly? TryLoadAssemblyFrom(string? path, AnalyzerFileReference? analyzerFileReference)
         {
             // Since we are not deploying these assemblies we need to ensure the files exist.
             if (path is null || !File.Exists(path))
@@ -55,6 +56,15 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
                 try
                 {
+                    if (analyzerFileReference is not null)
+                    {
+                        // If we have access to the analyzer file reference we can prepopulate our
+                        // cache with the assembly. We will still go through the AnalyzerLoadContext
+                        // so that dependency resolution will be handled.
+                        var analyzerAssembly = analyzerFileReference.GetAssembly();
+                        s_namesToAssemblies.TryAdd(analyzerAssembly.GetName().FullName, analyzerAssembly);
+                    }
+
                     var context = new AnalyzerLoadContext(path);
                     var assembly = context.LoadFromAssemblyPath(path);
 
