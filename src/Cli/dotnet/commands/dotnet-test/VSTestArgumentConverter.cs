@@ -177,7 +177,10 @@ namespace Microsoft.DotNet.Cli
                     {
                         UpdateVerbosity(arg, newArgList);
                     }
-                    // This case should be processed before 's_ignoredArguments.Contains'.
+                    // It's possible to have activeArgument that is both ignored and considered as a switch.
+                    // Order of the two contains clauses is important because the current implementation wants
+                    // to check first if activeArgument is a switch first so that we don't consume the arg, and the
+                    // inner if will take care of deciding if active argument should be ignored or handled.
                     else if (s_switchArguments.Contains(activeArgument))
                     {
                         if (s_ignoredArguments.Contains(activeArgument))
@@ -194,14 +197,26 @@ namespace Microsoft.DotNet.Cli
                         // either add it to the ignored args or have a specific failure.
                         newArgList.Add(arg);
                     }
+                    // When reaching this point, we are sure that activeArgument is not a switch so we
+                    // can add it and the arg to the list of ignored arguments.
                     else if (s_ignoredArguments.Contains(activeArgument))
                     {
                         ignoredArgs.Add(activeArgument);
                         ignoredArgs.Add(arg);
                     }
+                    // When entering this condition, we know that the activeArgument is either a blame
+                    // switch or a blame argument. Blame args have to be handled differently because
+                    // they are cumulative and so need to be combined. The inner logic will decide how 
+                    // to handle it.
                     else if (BlameArgs.IsBlameArg(activeArgument))
                     {
-                        if (!BlameArgs.IsBlameSwitch(activeArgument)
+                        // We know that activeArgument is a blame kind, we now want to see if arg is linked to the
+                        // blame or not. 
+                        // If activeArgument is a not blame switch (e.g., --blame-crash-dump-type full) or if it is the
+                        // legacy blame syntax (e.g., --blame CollectDump;DumpType=full) then we do want to 
+                        // update the blame combination based both on activeArgument and arg.
+                        // Otherwise, we have a simple blame switch (e.g., --blame some.dll) so we can add it to the
+                        // args list.
                             || BlameArgs.IsLegacyBlame(activeArgument, arg))
                         {
                             blame.UpdateBlame(activeArgument, arg);
