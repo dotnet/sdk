@@ -114,14 +114,10 @@ namespace Microsoft.CodeAnalysis.Tools
 
         public static ILogger<Program> SetupLogging(this IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(new LoggerFactory().AddSimpleConsole(console, minimalLogLevel, minimalErrorLevel));
-            serviceCollection.AddLogging();
-
-            var serviceProvider = serviceCollection.BuildServiceProvider();
-            var logger = serviceProvider.GetService<ILogger<Program>>();
-
-            return logger!;
+            var loggerFactory = new LoggerFactory()
+                .AddSimpleConsole(console, minimalLogLevel, minimalErrorLevel);
+            var logger = loggerFactory.CreateLogger<Program>();
+            return logger;
         }
 
         public static int GetExitCode(this WorkspaceFormatResult formatResult, bool check)
