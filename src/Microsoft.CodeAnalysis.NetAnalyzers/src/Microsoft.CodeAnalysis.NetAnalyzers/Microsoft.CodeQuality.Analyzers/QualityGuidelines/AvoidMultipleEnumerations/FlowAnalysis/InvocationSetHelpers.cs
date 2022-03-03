@@ -8,7 +8,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal static class InvocationSetHelpers
     {
-        public static TrackingInvocationSet Merge(TrackingInvocationSet set1, TrackingInvocationSet set2)
+        public static TrackingEnumerationSet Merge(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
             var builder = ImmutableHashSet.CreateBuilder<IOperation>();
             var totalCount = AddInvocationCount(set1.EnumerationCount, set2.EnumerationCount);
@@ -22,10 +22,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 builder.Add(operation);
             }
 
-            return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
+            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
         }
 
-        public static TrackingInvocationSet Intersect(TrackingInvocationSet set1, TrackingInvocationSet set2)
+        public static TrackingEnumerationSet Intersect(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
             var builder = ImmutableHashSet.CreateBuilder<IOperation>();
 
@@ -52,7 +52,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 builder.Add(operation);
             }
 
-            return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
+            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
         }
 
         private static EnumerationCount Min(EnumerationCount count1, EnumerationCount count2)

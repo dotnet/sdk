@@ -10,16 +10,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal class GlobalFlowStateDictionaryAnalysisValue : CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue>
     {
-        public ImmutableDictionary<IDeferredTypeEntity, TrackingInvocationSet> TrackedEntities { get; }
+        public ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> TrackedEntities { get; }
 
         public GlobalFlowStateDictionaryAnalysisValueKind Kind { get; }
 
-        public static readonly GlobalFlowStateDictionaryAnalysisValue Empty = new(ImmutableDictionary<IDeferredTypeEntity, TrackingInvocationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Empty);
+        public static readonly GlobalFlowStateDictionaryAnalysisValue Empty = new(ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Empty);
 
-        public static readonly GlobalFlowStateDictionaryAnalysisValue Unknown = new(ImmutableDictionary<IDeferredTypeEntity, TrackingInvocationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Unknown);
+        public static readonly GlobalFlowStateDictionaryAnalysisValue Unknown = new(ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.Empty, GlobalFlowStateDictionaryAnalysisValueKind.Unknown);
 
         public GlobalFlowStateDictionaryAnalysisValue(
-            ImmutableDictionary<IDeferredTypeEntity, TrackingInvocationSet> trackedEntities,
+            ImmutableDictionary<IDeferredTypeEntity, TrackingEnumerationSet> trackedEntities,
             GlobalFlowStateDictionaryAnalysisValueKind kind)
         {
             TrackedEntities = trackedEntities;
@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return value1;
             }
 
-            using var builder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
+            using var builder = PooledDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.GetInstance();
             foreach (var kvp in value2.TrackedEntities)
             {
                 builder[kvp.Key] = kvp.Value;
@@ -69,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public static GlobalFlowStateDictionaryAnalysisValue Intersect(GlobalFlowStateDictionaryAnalysisValue value1, GlobalFlowStateDictionaryAnalysisValue value2)
         {
-            var builder = ImmutableDictionary.CreateBuilder<IDeferredTypeEntity, TrackingInvocationSet>();
+            var builder = ImmutableDictionary.CreateBuilder<IDeferredTypeEntity, TrackingEnumerationSet>();
             var intersectedKeys = new HashSet<IDeferredTypeEntity>();
 
             foreach (var kvp in value1.TrackedEntities)
@@ -93,7 +93,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     // {
                     // }
                     // The AnalysisValue after the if-else branch should be Zero Times.
-                    builder[key] = InvocationSetHelpers.Intersect(invocationSet, TrackingInvocationSet.Empty);
+                    builder[key] = InvocationSetHelpers.Intersect(invocationSet, TrackingEnumerationSet.Empty);
                 }
             }
 
@@ -104,7 +104,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 if (!intersectedKeys.Contains(kvp.Key))
                 {
-                    builder[key] = InvocationSetHelpers.Intersect(invocationSet, TrackingInvocationSet.Empty);
+                    builder[key] = InvocationSetHelpers.Intersect(invocationSet, TrackingEnumerationSet.Empty);
                 }
             }
 

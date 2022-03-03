@@ -18,7 +18,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> LinqChainMethods { get; }
 
         /// <summary>
-        /// Methods don't enumerated the IEnumerable types.
+        /// Methods that do not enumerate the IEnumerable types.
         /// e.g. TryGetNonEnumeratedCount
         /// </summary>
         public ImmutableArray<IMethodSymbol> NoEnumerationMethods { get; }
@@ -48,14 +48,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
         /// <summary>
-        /// User specified methods that would enumerate its parameters. The value comes from editorConfig.
+        /// User specified methods that would enumerate its parameters. This value comes from options.
         /// </summary>
-        public SymbolNamesWithValueOption<Unit>? CustomizedEumerationMethods { get; }
+        public SymbolNamesWithValueOption<Unit> CustomizedEumerationMethods { get; }
 
         /// <summary>
-        /// User specified methods that accept a deferred type parameter and the return a new deferred type value. The value comes from editorConfig.
+        /// User specified methods that accept a deferred type parameter and the return a new deferred type value. This value comes from options.
         /// </summary>
-        public SymbolNamesWithValueOption<Unit>? CustomizedLinqChainMethods { get; }
+        public SymbolNamesWithValueOption<Unit> CustomizedLinqChainMethods { get; }
 
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> linqChainMethods,
@@ -64,8 +64,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods,
-            SymbolNamesWithValueOption<Unit>? customizedEnumerationMethods,
-            SymbolNamesWithValueOption<Unit>? customizedLinqChainMethods)
+            SymbolNamesWithValueOption<Unit> customizedEnumerationMethods,
+            SymbolNamesWithValueOption<Unit> customizedLinqChainMethods)
         {
             LinqChainMethods = linqChainMethods;
             NoEnumerationMethods = noEnumerationMethods;
@@ -78,9 +78,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         public bool IsCustomizedEnumerationMethods(IMethodSymbol methodSymbol)
-            => CustomizedEumerationMethods is not null && CustomizedEumerationMethods.Contains(methodSymbol);
+            => CustomizedEumerationMethods.Contains(methodSymbol);
 
         public bool IsCustomizedLinqChainMethods(IMethodSymbol methodSymbol)
-            => CustomizedLinqChainMethods is not null && CustomizedLinqChainMethods.Contains(methodSymbol);
+            => CustomizedLinqChainMethods.Contains(methodSymbol);
     }
 }

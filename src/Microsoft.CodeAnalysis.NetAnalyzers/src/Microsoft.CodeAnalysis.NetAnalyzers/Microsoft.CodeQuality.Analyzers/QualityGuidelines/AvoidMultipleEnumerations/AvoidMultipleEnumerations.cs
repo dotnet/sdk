@@ -172,17 +172,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
             var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
-            var syntaxTree = operationBlocks.IsEmpty ? null : operationBlocks[0].Syntax.SyntaxTree;
-            var customizedEnumerationMethods = syntaxTree == null
-                ? null
-                : operationBlockStartAnalysisContext.Options.GetEnumerationMethodsOption(
+            if (operationBlocks.IsEmpty)
+            {
+                return;
+            }
+
+            var syntaxTree = operationBlocks[0].Syntax.SyntaxTree;
+            var customizedEnumerationMethods = operationBlockStartAnalysisContext.Options.GetEnumerationMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
                     operationBlockStartAnalysisContext.Compilation);
 
-            var customizedLinqChainMethods = syntaxTree == null
-                ? null
-                : operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
+            var customizedLinqChainMethods = operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
                     operationBlockStartAnalysisContext.Compilation);

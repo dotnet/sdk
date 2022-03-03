@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -3254,18 +3255,18 @@ End Namespace
         [Fact]
         public async Task TestChunk()
         {
-            var csharpCode = $@"
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{{
+{
     public void Sub(IEnumerable<int> j)
-    {{
+    {
         var a = [|j|].Chunk(1000).Count();
         [|j|].ElementAt(10);
-    }}
-}}";
+    }
+}";
             await VerifyCSharpAsync(csharpCode);
 
             var vbCode = $@"
@@ -3287,21 +3288,21 @@ End Namespace
         [Fact]
         public async Task TestTryGetNonEnumeratedCount()
         {
-            var csharpCode = $@"
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{{
+{
     public void Sub(IEnumerable<int> j)
-    {{
+    {
         if (j.TryGetNonEnumeratedCount(out var count))
-        {{
-        }}
+        {
+        }
 
         j.ElementAt(10);
-    }}
-}}";
+    }
+}";
             await VerifyCSharpAsync(csharpCode);
 
             var vbCode = $@"
@@ -3366,86 +3367,88 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
-        public async Task TestEnumerationMethodFromEditorConfig()
+        [Theory]
+        [InlineData("M:Bar.Method1*")]
+        [InlineData("")]
+        public async Task TestEnumerationMethodFromEditorConfig(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
-    {
-        Method1([|j|]);
-        [|j|].UnionBy(i, p => p).ElementAt(10);
-    }
+    {{
+        Method1({diagnositcReference});
+        {diagnositcReference}.UnionBy(i, p => p).ElementAt(10);
+    }}
 
     private void Method1(IEnumerable<int> k)
-    {
-    }
-}";
-            await VerifyCSharpAsync(csharpCode, "M:Bar.Method1*");
+    {{
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            Method1([|j|])
-            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
-        End Sub
+Public Class Bar
+    Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+        Method1({diagnositcReference})
+        {diagnositcReference}.UnionBy(i, Function(p) p).ElementAt(10)
+    End Sub
 
-        Private Sub Method1(j As IEnumerable(Of Integer))
-        End Sub
-    End Class
-End Namespace
+    Private Sub Method1(j As IEnumerable(Of Integer))
+    End Sub
+End Class
 ";
-            await VerifyVisualBasicAsync(vbCode, "M:Ns.Hoo.Method1*");
+            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
         }
 
-        [Fact]
-        public async Task TestLinqMethodFromEditorConfig()
+        [Theory]
+        [InlineData("M:Bar.Chain*")]
+        [InlineData("")]
+        public async Task TestLinqChainMethodFromEditorConfig(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
-    {
-        [|j|].UnionBy(i, p => p).ElementAt(10);
-        Chain([|j|]).ElementAt(100);
-    }
+    {{
+        {diagnositcReference}.UnionBy(i, p => p).ElementAt(10);
+        Chain({diagnositcReference}).ElementAt(100);
+    }}
 
     private IEnumerable<int> Chain(IEnumerable<int> k)
-    {
+    {{
         return k;
-    }
-}";
-            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.Chain*");
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            [|j|].UnionBy(i, Function(p) p).ElementAt(10)
-            Chain([|j|]).ElementAt(10)
-        End Sub
+Public Class Bar
+    Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+        {diagnositcReference}.UnionBy(i, Function(p) p).ElementAt(10)
+        Chain({diagnositcReference}).ElementAt(10)
+    End Sub
 
-        Private Function Chain(j As IEnumerable(Of Integer)) As IEnumerable(Of Integer)
-            Return j
-        End Function
-    End Class
-End Namespace
+    Private Function Chain(j As IEnumerable(Of Integer)) As IEnumerable(Of Integer)
+        Return j
+    End Function
+End Class
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.Chain*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
         [Fact]
@@ -3516,56 +3519,57 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
-        public async Task TestGenericConstraints3()
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints3(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub()
-    {
+    {{
         var t = Enumerable.Range(1, 100).OrderBy(i => i);
-        var x = LinqChain1<IEnumerable<int>, IOrderedEnumerable<int>>([|t|]).ElementAt(10000);
-        var y = [|t|].LinqChain2<IEnumerable<int>, IOrderedEnumerable<int>>().ElementAt(10000);
-    }
+        var x = LinqChain1<IEnumerable<int>, IOrderedEnumerable<int>>({diagnosticReference}).ElementAt(10000);
+        var y = {diagnosticReference}.LinqChain2<IEnumerable<int>, IOrderedEnumerable<int>>().ElementAt(10000);
+    }}
 
     public T LinqChain1<T, U>(U u) where U : T where T : IEnumerable<int>
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 
 public static class Ex
-{
+{{
     public static T LinqChain2<T, U>(this U u) where U : T where T : IEnumerable<int>
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 ";
-            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Runtime.CompilerServices
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo()
-            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))([|t|]).ElementAt(100)
-            Dim y = [|t|].LinqChain2().ElementAt(100)
-        End Sub
+Public Class Bar
+    Public Sub Goo()
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))({diagnosticReference}).ElementAt(100)
+        Dim y = {diagnosticReference}.LinqChain2().ElementAt(100)
+    End Sub
 
-        Public Shared Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
-            Return q
-        End Function
-    End Class
-End Namespace
+    Public Shared Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+        Return q
+    End Function
+End Class
 
 Module Ex
 
@@ -3575,59 +3579,60 @@ Module Ex
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact]
-        public async Task TestGenericConstraints4()
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints4(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub()
-    {
+    {{
         var t = Enumerable.Range(1, 100).OrderBy(i => i);
-        var x = LinqChain1([|t|]).ElementAt(10000);
-        var y = [|t|].LinqChain2().ElementAt(10000);
-    }
+        var x = LinqChain1({diagnosticReference}).ElementAt(10000);
+        var y = {diagnosticReference}.LinqChain2().ElementAt(10000);
+    }}
 
     public T LinqChain1<T>(T u)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 
 public static class Ex
-{
+{{
     public static T LinqChain2<T>(this T u)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 ";
-            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Runtime.CompilerServices
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo()
-            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1([|t|]).ElementAt(100)
-            Dim y = [|t|].LinqChain2().ElementAt(100)
-        End Sub
+Public Class Bar
+    Public Sub Goo()
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference}).ElementAt(100)
+        Dim y = {diagnosticReference}.LinqChain2().ElementAt(100)
+    End Sub
 
-        Public Function LinqChain1(Of T)(q As T) As T
-            Return q
-        End Function
-    End Class
-End Namespace
+    Public Function LinqChain1(Of T)(q As T) As T
+        Return q
+    End Function
+End Class
 
 Module Ex
 
@@ -3637,59 +3642,61 @@ Module Ex
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact]
-        public async Task TestGenericConstraints5()
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints5(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "a" : "[|a|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> a)
-    {
+    {{
         var t = Enumerable.Range(1, 100).OrderBy(i => i);
-        var x = LinqChain1([|t|], [|a|]).ElementAt(10000);
-        var y = [|t|].LinqChain2([|a|]).ElementAt(10000);
-    }
+        var x = LinqChain1({diagnosticReference1}, {diagnosticReference2}).ElementAt(10000);
+        var y = {diagnosticReference1}.LinqChain2({diagnosticReference2}).ElementAt(10000);
+    }}
 
     public T LinqChain1<T>(T u, T v)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 
 public static class Ex
-{
+{{
     public static T LinqChain2<T>(this T u, T v)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 ";
-            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Runtime.CompilerServices
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo(a As IEnumerable(Of Integer))
-            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1([|t|], [|a|]).ElementAt(100)
-            Dim y = [|t|].LinqChain2([|a|]).ElementAt(100)
-        End Sub
+Public Class Bar
+    Public Sub Goo(a As IEnumerable(Of Integer))
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference1}, {diagnosticReference2}).ElementAt(100)
+        Dim y = {diagnosticReference1}.LinqChain2({diagnosticReference2}).ElementAt(100)
+    End Sub
 
-        Public Function LinqChain1(Of T)(q As T, p As T) As T
-            Return q
-        End Function
-    End Class
-End Namespace
+    Public Function LinqChain1(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Class
 
 Module Ex
 
@@ -3699,59 +3706,61 @@ Module Ex
     End Function
 End Module
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
         }
 
-        [Fact]
-        public async Task TestGenericConstraints6()
+        [Theory]
+        [InlineData("M:Bar.TestMethod*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints6(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "i" : "[|i|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "h" : "[|h|]";
+            var csharpCode = $@"
 using System;
 using System.Linq;
 using System.Collections.Generic;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> h)
-    {
+    {{
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        TestMethod([|i|]);
-        [|i|].First();
+        TestMethod({diagnosticReference1});
+        {diagnosticReference1}.First();
 
-        TestMethod([|h|]);
-        [|h|].First();
-    }
+        TestMethod({diagnosticReference2});
+        {diagnosticReference2}.First();
+    }}
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
-    {
+    {{
         var x = o;
-    }
-}";
+    }}
+}}";
 
-            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: "M:Bar.TestMethod*");
+            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo(h As IEnumerable(Of Integer))
-            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            TestMethod([|i|])
-            [|i|].First()
-            
-            TestMethod([|h|])
-            [|h|].First()
-        End Sub
+Public Class Bar
+    Public Sub Goo(h As IEnumerable(Of Integer))
+        Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+        TestMethod({diagnosticReference1})
+        {diagnosticReference1}.First()
+        
+        TestMethod({diagnosticReference2})
+        {diagnosticReference2}.First()
+    End Sub
 
-  
-        Public Sub TestMethod(Of T As IEnumerable(Of Integer))(o As T)
-        End Sub
-    End Class
-End Namespace
+
+    Public Sub TestMethod(Of T As IEnumerable(Of Integer))(o As T)
+    End Sub
+End Class
 ";
-            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: "M:Ns.Hoo.TestMethod*");
+            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
         }
 
         [Fact]
@@ -3963,58 +3972,60 @@ End Module
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
-        public async Task TestLinqChainEnumeratedTheArgument()
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestLinqChainEnumeratedTheArgument(string editorConfig)
         {
-            var csharpCode = @"
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "a" : "[|a|]";
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> a)
-    {
+    {{
         var t = Enumerable.Range(1, 100).OrderBy(i => i);
-        var x = LinqChain1([|t|], [|a|]);
-        var y = [|t|].LinqChain2([|a|]);
-    }
+        var x = LinqChain1({diagnosticReference1}, {diagnosticReference2});
+        var y = {diagnosticReference1}.LinqChain2({diagnosticReference2});
+    }}
 
     public T LinqChain1<T>(T u, T v)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 
 public static class Ex
-{
+{{
     public static T LinqChain2<T>(this T u, T v)
-    {
+    {{
         return u;
-    }
-}
+    }}
+}}
 ";
             await VerifyCSharpAsync(csharpCode,
-                customizedEnumerationMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*",
-                customizedLinqChainMethods: "M:Bar.LinqChain1*|Ex.LinqChain2*");
+                customizedEnumerationMethods: editorConfig,
+                customizedLinqChainMethods: editorConfig);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 Imports System.Runtime.CompilerServices
 
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo(a As IEnumerable(Of Integer))
-            Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
-            Dim x = LinqChain1([|t|], [|a|])
-            Dim y = [|t|].LinqChain2([|a|])
-        End Sub
+Public Class Bar
+    Public Sub Goo(a As IEnumerable(Of Integer))
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference1}, {diagnosticReference2})
+        Dim y = {diagnosticReference1}.LinqChain2({diagnosticReference2})
+    End Sub
 
-        Public Function LinqChain1(Of T)(q As T, p As T) As T
-            Return q
-        End Function
-    End Class
-End Namespace
+    Public Function LinqChain1(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Class
 
 Module Ex
 
@@ -4025,8 +4036,8 @@ Module Ex
 End Module
 ";
             await VerifyVisualBasicAsync(vbCode,
-                customizedEnumerationMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*",
-                customizedLinqChainMethods: "M:Ns.Hoo.LinqChain1*|Ex.LinqChain2*");
+                customizedEnumerationMethods: editorConfig,
+                customizedLinqChainMethods: editorConfig);
         }
     }
 }

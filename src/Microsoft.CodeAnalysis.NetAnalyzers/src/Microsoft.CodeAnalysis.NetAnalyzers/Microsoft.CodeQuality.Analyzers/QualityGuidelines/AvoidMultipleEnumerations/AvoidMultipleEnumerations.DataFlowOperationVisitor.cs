@@ -83,13 +83,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     parameterOrLocalReferenceOperation,
                     wellKnownSymbolsInfo);
 
-                var isEnumeratedByInvocation = IsOperationEnumeratedByInvocation(linqChainTailOperation, wellKnownSymbolsInfo);
-                if (isEnumeratedByInvocation)
-                {
-                    return InvocationSetHelpers.AddInvocationCount(linqChainEnumerationCount, EnumerationCount.One);
-                }
-
-                if (IsGetEnumeratorOfForEachLoopInvoked(linqChainTailOperation))
+                if (IsOperationEnumeratedByInvocation(linqChainTailOperation, wellKnownSymbolsInfo)
+                    || IsGetEnumeratorOfForEachLoopInvoked(linqChainTailOperation))
                 {
                     return InvocationSetHelpers.AddInvocationCount(linqChainEnumerationCount, EnumerationCount.One);
                 }
@@ -302,11 +297,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 var operationsSetBuilder = PooledHashSet<IOperation>.GetInstance();
                 operationsSetBuilder.Add(parameterOrLocalReferenceOperation);
-                var newInvocationSet = new TrackingInvocationSet(
+                var newInvocationSet = new TrackingEnumerationSet(
                     operationsSetBuilder.ToImmutableAndFree(),
                     enumerationCount);
 
-                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
+                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.GetInstance();
                 trackedEntitiesBuilder.Add(entity, newInvocationSet);
 
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
