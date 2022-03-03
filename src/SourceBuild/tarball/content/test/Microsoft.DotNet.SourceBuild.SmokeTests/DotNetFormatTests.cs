@@ -8,19 +8,12 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class DotNetFormatTests
+public class DotNetFormatTests : SmokeTests
 {
     private const string UnformattedFileName = "FormatTestUnformatted.cs";
     private const string ExpectedFormattedFileName = "FormatTestExpectedFormatted.cs";
 
-    private ITestOutputHelper OutputHelper { get; }
-    private DotNetHelper DotNetHelper { get; }
-
-    public DotNetFormatTests(ITestOutputHelper outputHelper)
-    {
-        OutputHelper = outputHelper;
-        DotNetHelper = new DotNetHelper(outputHelper);
-    }
+    public DotNetFormatTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
@@ -33,14 +26,14 @@ public class DotNetFormatTests
         string unformattedCsFilePath = Path.Combine(assetsDirectory, UnformattedFileName);
         string expectedFormattedCsFilePath = Path.Combine(assetsDirectory, ExpectedFormattedFileName);
 
-        string projectDirectory = DotNetHelper.ExecuteNew("console", "C#", nameof(FormatProject), OutputHelper);
+        string projectDirectory = DotNetHelper.ExecuteNew("console", nameof(FormatProject), "C#");
 
         string projectFilePath = Path.Combine(projectDirectory, nameof(FormatProject) + ".csproj");
         string formattedCsFilePath = Path.Combine(projectDirectory, UnformattedFileName);
 
         File.Copy(unformattedCsFilePath, formattedCsFilePath);
 
-        DotNetHelper.ExecuteCmd($"format {projectFilePath}", OutputHelper);
+        DotNetHelper.ExecuteCmd($"format {projectFilePath}");
 
         BaselineHelper.CompareFiles(expectedFormattedCsFilePath, formattedCsFilePath, OutputHelper);
     }
