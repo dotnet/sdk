@@ -1319,4 +1319,7 @@
     <value>Possible multiple enumerations of 'IEnumerable' collection</value>
     <comment>{Locked="IEnumerable"}</comment>
   </data>
+  <data name="CollectionsShouldImplementGenericInterfaceMultipleMessage" xml:space="preserve">
+    <value>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</value>
+  </data>
 </root>

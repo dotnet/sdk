@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2018";
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(RuleId,
                                                                                       CreateLocalizableResourceString(nameof(BufferBlockCopyLengthTitle)),
                                                                                       CreateLocalizableResourceString(nameof(BufferBlockCopyLengthMessage)),
                                                                                       DiagnosticCategory.Reliability,
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                                                                       isPortedFxCopRule: false,
                                                                                       isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

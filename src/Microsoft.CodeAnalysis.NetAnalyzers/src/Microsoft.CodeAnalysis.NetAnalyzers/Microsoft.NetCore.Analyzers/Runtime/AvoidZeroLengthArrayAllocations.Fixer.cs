@@ -6,7 +6,6 @@ using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
-using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
@@ -51,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SemanticModel semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
 
-            INamedTypeSymbol? arrayTypeSymbol = semanticModel.Compilation.GetOrCreateTypeByMetadataName(AvoidZeroLengthArrayAllocationsAnalyzer.ArrayTypeName);
+            INamedTypeSymbol? arrayTypeSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Array);
             if (arrayTypeSymbol == null)
             {
                 return document;

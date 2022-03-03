@@ -365,6 +365,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task IQueryableContext_NoDiagnostic()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public string Name { get; }
+    public void DoSomething(IQueryable<C> data)
+    {
+        var dictionary = new Dictionary<string, int>();
+        var result1 = data.Where(c => dictionary.Keys.Contains(c.Name));
+    }
+}");
+        }
         #endregion
 
         #region Helpers

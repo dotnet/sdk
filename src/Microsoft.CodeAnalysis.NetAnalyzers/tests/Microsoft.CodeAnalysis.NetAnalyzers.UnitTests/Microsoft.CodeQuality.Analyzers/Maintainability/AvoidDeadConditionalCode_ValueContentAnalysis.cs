@@ -3135,5 +3135,22 @@ internal class Class1
             }.RunAsync();
         }
 #endif
+
+        [Fact, WorkItem(5789, "https://github.com/dotnet/roslyn-analyzers/issues/5789")]
+        public async Task TestVarPattern()
+        {
+            var source = @"
+public class C
+{
+    public void M(object o)
+    {
+        if (o is var o2 && o2 != null)
+        {
+        }
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
     }
 }

@@ -603,7 +603,7 @@ class C
         }
 
         [Theory]
-        [MemberData(nameof(CSharpUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
@@ -613,7 +613,7 @@ class C
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
-        [MemberData(nameof(CSharpUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
@@ -623,7 +623,7 @@ class C
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
-        [MemberData(nameof(CSharpUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
@@ -633,7 +633,7 @@ class C
             CSharpVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
-        [MemberData(nameof(CSharpUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(CSharpNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(CSharpUnnamedArgumentsPartialBufferTestData))]
@@ -922,7 +922,7 @@ End Class
         }
 
         [Theory]
-        [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
@@ -933,7 +933,7 @@ End Class
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
-        [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
@@ -944,14 +944,14 @@ End Class
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "FileStream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: false);
 
         [Theory]
-        [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
         public Task VB_Fixer_Diagnostic_AsStreamAsync(string originalArgs, string fixedArgs) =>
             VisualBasicVerifyCodeFixAsync(originalArgs, fixedArgs, streamTypeName: "Stream", isEmptyByteDeclaration: false, isEmptyConfigureAwait: true);
 
         [Theory]
-        [MemberData(nameof(VisualBasicUnnamedArgumentsFullBufferTestData))]
+        [MemberData(nameof(UnnamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsFullBufferTestData))]
         [MemberData(nameof(VisualBasicNamedArgumentsWithCancellationTokenFullBufferTestData))]
         [MemberData(nameof(VisualBasicUnnamedArgumentsPartialBufferTestData))]
