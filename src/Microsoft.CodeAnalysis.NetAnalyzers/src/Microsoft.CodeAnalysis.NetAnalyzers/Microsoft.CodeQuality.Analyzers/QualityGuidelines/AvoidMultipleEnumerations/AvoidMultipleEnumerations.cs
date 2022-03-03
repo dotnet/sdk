@@ -48,7 +48,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
 
         /// <summary>
-        /// All the types under System.Collections.Generic which the constructor takes deferred type parameter.
+        /// All the types under System.Collections.Generic which constructor takes deferred type parameter.
         /// </summary>
         private static readonly ImmutableArray<string> s_contructorsEnumeratedParameterTypes = ImmutableArray.Create(
             WellKnownTypeNames.SystemCollectionsGenericDictionary2,
@@ -141,7 +141,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             nameof(Enumerable.AsEnumerable));
 
         /// <summary>
-        /// Linq methods don't enumerated deferred type, and is not a linq chain.
+        /// Linq methods don't enumerate deferred type, and is not a linq chain.
         /// </summary>
         private static readonly ImmutableArray<string> s_noEnumerationLinqMethods = ImmutableArray.Create(
             // Only available on .net6 or later

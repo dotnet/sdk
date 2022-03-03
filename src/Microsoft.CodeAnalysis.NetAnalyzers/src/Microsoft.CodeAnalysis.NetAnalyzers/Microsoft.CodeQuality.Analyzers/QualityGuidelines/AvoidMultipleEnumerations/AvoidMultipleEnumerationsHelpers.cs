@@ -41,7 +41,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return VisitLinqChainAndCoversionMethod(operation.Parent, enumerationCount, wellKnownSymbolsInfo);
                 }
 
-                if (IsOperationTheArgumentOfLinqChainInvocation(operation.Parent, wellKnownSymbolsInfo, out var enumerateArgument))
+                if (IsOperationIsArgumentOfLinqChainInvocation(operation.Parent, wellKnownSymbolsInfo, out var enumerateArgument))
                 {
                     // This operation is used as an argument of a deferred execution method.
                     // Check if the invocation of the deferred execution method is used in another deferred execution method.
@@ -55,7 +55,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
                 if (IsInstanceOfLinqChainInvocation(operation, wellKnownSymbolsInfo, out var enumerateInstance))
                 {
-                    // If the extension method could be used as reduced method, also check the its invocation instance.
+                    // If the extension method could be used as reduced method, also check its invocation instance.
                     // Like in VB,
                     // 'i.Select(Function(a) a)', 'i' is the invocation instance of 'Select'
                     return VisitLinqChainAndCoversionMethod(
@@ -88,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Check if the operation has deferred type and is the collecton of is enumerated by for each loop.
+        /// Check if the operation is deferred type and also it is the collecton of is enumerated by for each loop.
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
@@ -186,7 +186,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            // Well-known linq methods, like 'ElementAt', or if the parameter's type is deferred type.
+            // Well-known linq methods, like 'ElementAt'
             if (wellKnownSymbolsInfo.EnumeratedMethods.Contains(originalTargetMethod))
             {
                 return true;
@@ -228,8 +228,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var targetMethod = invokingMethod;
-            var reducedFromMethod = targetMethod.ReducedFrom ?? targetMethod;
+            var reducedFromMethod = invokingMethod.ReducedFrom ?? invokingMethod;
             var originalMethod = reducedFromMethod.OriginalDefinition;
 
             if (wellKnownSymbolsInfo.NoEnumerationMethods.Contains(originalMethod))
@@ -237,8 +236,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return false;
             }
 
-            var argumentMappingParameter = targetMethod.MethodKind == MethodKind.ReducedExtension
-                ? GetReducedFromParameter(targetMethod, argumentOperation.Parameter)
+            var argumentMappingParameter = invokingMethod.MethodKind == MethodKind.ReducedExtension
+                ? GetReducedFromParameter(invokingMethod, argumentOperation.Parameter)
                 : argumentOperation.Parameter.OriginalDefinition;
 
             // Common linq method case, like ElementAt
@@ -256,7 +255,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// Check if <param name="operation"/> is an argument that passed into a linq chain. (like Select, Where etc.)
         /// </summary>
-        private static bool IsOperationTheArgumentOfLinqChainInvocation(
+        private static bool IsOperationIsArgumentOfLinqChainInvocation(
             IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo, out bool enumerateArgument)
         {
             if (operation is IArgumentOperation { Parent: IInvocationOperation invocationOperation } argumentOperation)
@@ -305,7 +304,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 && originalMethod.Parameters.Any(
                     methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter.OriginalDefinition)))
             {
-                // All well-known linq chain method under Linq namespace won't enumerated the argument.
+                // All well-known linq chain methods under Linq namespace won't enumerate the argument.
                 return true;
             }
 
@@ -350,12 +349,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         public static ImmutableArray<IMethodSymbol> GetEnumeratedMethods(WellKnownTypeProvider wellKnownTypeProvider,
             ImmutableArray<(string typeName, string methodName)> typeAndMethodNames,
             ImmutableArray<string> linqMethodNames,
-            ImmutableArray<string> constuctorTypeNames)
+            ImmutableArray<string> constructorTypeNames)
         {
             using var builder = ArrayBuilder<IMethodSymbol>.GetInstance();
             GetImmutableCollectionConversionMethods(wellKnownTypeProvider, typeAndMethodNames, builder);
             GetWellKnownMethods(wellKnownTypeProvider, WellKnownTypeNames.SystemLinqEnumerable, linqMethodNames, builder);
-            GetConstructors(wellKnownTypeProvider, constuctorTypeNames, builder);
+            GetConstructors(wellKnownTypeProvider, constructorTypeNames, builder);
             return builder.ToImmutable();
         }
 
