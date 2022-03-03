@@ -27,9 +27,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Merge <param name="value1"/> and <param name="value2"/>
+        /// Merge <param name="value1"/> and <param name="value2"/>, if <param name="intersectValueInCommonKeys"/> is true,
+        /// perform <see cref="InvocationSetHelpers.Intersect(TrackingEnumerationSet, TrackingEnumerationSet)"/> operation between the values
+        /// of the common keys, otherwise, perform <see cref="InvocationSetHelpers.Merge(TrackingEnumerationSet, TrackingEnumerationSet)"/>
         /// </summary>
-        public static GlobalFlowStateDictionaryAnalysisValue Merge(GlobalFlowStateDictionaryAnalysisValue value1, GlobalFlowStateDictionaryAnalysisValue value2)
+        public static GlobalFlowStateDictionaryAnalysisValue Merge(
+            GlobalFlowStateDictionaryAnalysisValue value1, GlobalFlowStateDictionaryAnalysisValue value2, bool intersectValueInCommonKeys)
         {
             if (value1.TrackedEntities.Count == 0)
             {
@@ -53,7 +56,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 var trackedEntities1 = kvp.Value;
                 if (value2.TrackedEntities.TryGetValue(key, out var trackedEntities2))
                 {
-                    builder[key] = InvocationSetHelpers.Merge(trackedEntities1, trackedEntities2);
+                    builder[key] = intersectValueInCommonKeys
+                        ? InvocationSetHelpers.Intersect(trackedEntities1, trackedEntities2)
+                        : InvocationSetHelpers.Merge(trackedEntities1, trackedEntities2);
                 }
                 else
                 {

@@ -77,6 +77,11 @@
         <target state="translated">避免使用 out 参数</target>
         <note />
       </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMultipleMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">类型“{0}”会直接或间接继承“{1}”，而不实现任何“{2}”。公共可见的类型应实现通用版本以扩大可用性。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
         <source>A general exception such as System.Exception or System.SystemException or a disallowed exception type is caught in a catch statement, or a general catch clause is used. General and disallowed exceptions should not be caught.</source>
         <target state="translated">在 catch 语句中捕获到了 System.Exception 或 System.SystemException 等常规异常或不允许的异常类型，或者已使用常规 catch 子句。不应捕获常规异常和不允许的异常。</target>

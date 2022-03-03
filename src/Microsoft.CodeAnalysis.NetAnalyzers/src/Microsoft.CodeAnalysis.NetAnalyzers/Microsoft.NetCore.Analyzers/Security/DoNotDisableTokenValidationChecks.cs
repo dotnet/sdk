@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Security
 
         internal const string DiagnosticId = "CA5404";
 
-        internal static DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
                 DiagnosticId,
                 CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksTitle)),
                 CreateLocalizableResourceString(nameof(DoNotDisableTokenValidationChecksMessage)),
@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                 isPortedFxCopRule: false,
                 isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         public override void Initialize(AnalysisContext context)
         {

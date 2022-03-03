@@ -10,7 +10,6 @@ using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Test.Utilities;
 using Xunit;
-using Xunit.Abstractions;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCountProperlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUsePropertyInsteadOfCountMethodWhenAvailableFixer>;
@@ -740,6 +739,37 @@ Public Class C
 End Class
 ",
             }.RunAsync();
+        }
+
+        [Fact]
+        public static async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+
+class C
+{
+    void M(IQueryable<string> strings)
+    {
+        var result = strings.Where(s => s.Count() > 0);
+    }
+}");
+        }
+
+        [Fact]
+        public static async Task CA1836_ExpressionTree_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Collections.Concurrent;
+using System.Linq;
+
+class C
+{
+    void M(IQueryable<string> strings, ConcurrentQueue<int> queue)
+    {
+        var result = strings.Select(s => queue.Count == 0 ? ""empty"" : ""not empty"");
+    }
+}");
         }
     }
 

@@ -4039,5 +4039,43 @@ End Module
                 customizedEnumerationMethods: editorConfig,
                 customizedLinqChainMethods: editorConfig);
         }
+
+        [Fact]
+        public async Task TestDomainMerge()
+        {
+            var csharpCode1 = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> collection1, IEnumerable<int> collection2, IEnumerable<int> collection3)
+    {
+        var d = collection2.Count();
+        foreach (var i in collection1)
+        {
+            [|collection3|].Count();
+        }
+    }
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(collection1 As IEnumerable(Of Integer), collection2 As IEnumerable(Of Integer), collection3 As IEnumerable(Of Integer))
+            Dim d = collection2.Count()
+            For Each i In collection1
+                [|collection3|].Count()
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
     }
 }
