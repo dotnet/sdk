@@ -5,7 +5,7 @@
     <Identity Id="81f388f0-1777-4c56-be8f-51f5f420037d" Version="|%CurrentProject%;GetVsixVersion|" Language="en-US" Publisher="Microsoft" />
     <DisplayName>Microsoft.CodeAnalysis.NetAnalyzers</DisplayName>
     <Description xml:space="preserve">Microsoft.CodeAnalysis.NetAnalyzers</Description>
-    <License>EULA.rtf</License>
+    <License>EULA.txt</License>
   </Metadata>
   <Installation>
     <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.27130.0,]" />

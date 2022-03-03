@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         internal const string NonStaticMemberIsMethodKey = nameof(NonStaticMemberIsMethodKey);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             DynamicInterfaceCastableImplementationUnsupported,
             InterfaceMembersMissingImplementation,
             MembersDeclaredOnImplementationTypeMustBeStatic);
