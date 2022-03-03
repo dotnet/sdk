@@ -91,12 +91,12 @@ steps:
       cp $(Build.SourcesDirectory)/NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/smoke-tests/online.NuGet.Config
 
       dockerVolumeArgs="-v ${{ parameters.tarballDir }}:/tarball"
-      dockerEnvArgs="-e EXCLUDE_OMNISHARP_TESTS=${{ parameters.excludeOmniSharpTests}}"
+      dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=${{ parameters.excludeOmniSharpTests}}"
 
       if [[ '${{ parameters.isBootstrapped }}' != 'true' && '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
         dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
         msftSdkTarballName=$(find "$(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/" -name "dotnet-sdk-*-${{ parameters.Platform }}-${{ parameters.buildArch }}.tar.gz" -exec basename {} \;)
-        dockerEnvArgs+=" -e MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
+        dockerEnvArgs+=" -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
       fi
 
       docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
@@ -115,7 +115,7 @@ steps:
       find artifacts/prebuilt-report/ -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find test/*/*/*/*/*/*/testing-smoke*/logs -exec cp {} --parents -t ${targetFolder} \;
+      find test/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
     continueOnError: true
     condition: succeededOrFailed()

@@ -13,7 +13,12 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 internal static class ExecuteHelper
 {
     public static (Process Process, string StdOut, string StdErr) ExecuteProcess(
-        string fileName, string args, ITestOutputHelper outputHelper, bool logOutput = false)
+        string fileName,
+        string args,
+        ITestOutputHelper outputHelper,
+        bool logOutput = false,
+        Action<Process>? configure = null,
+        int millisecondTimeout = -1)
     {
         outputHelper.WriteLine($"Executing: {fileName} {args}");
 
@@ -36,6 +41,8 @@ internal static class ExecuteHelper
             process.StartInfo.Environment.Remove(key);
         }
 
+        configure?.Invoke(process);
+
         StringBuilder stdOutput = new();
         process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => stdOutput.AppendLine(e.Data));
 
@@ -45,7 +52,14 @@ internal static class ExecuteHelper
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        process.WaitForExit();
+        process.WaitForExit(millisecondTimeout);
+
+        if (!process.HasExited)
+        {
+            outputHelper.WriteLine($"Killing: {fileName} {args}");
+            process.Kill(true);
+            process.WaitForExit();
+        }
 
         string output = stdOutput.ToString().Trim();
         if (logOutput && !string.IsNullOrWhiteSpace(output))
@@ -65,16 +79,21 @@ internal static class ExecuteHelper
     public static string ExecuteProcessValidateExitCode(string fileName, string args, ITestOutputHelper outputHelper)
     {
         (Process Process, string StdOut, string StdErr) result = ExecuteHelper.ExecuteProcess(fileName, args, outputHelper);
+        ValidateExitCode(result);
 
+        return result.StdOut;
+    }
+
+    public static void ValidateExitCode((Process Process, string StdOut, string StdErr) result)
+    {
         if (result.Process.ExitCode != 0)
         {
             ProcessStartInfo startInfo = result.Process.StartInfo;
             string msg = $"Failed to execute {startInfo.FileName} {startInfo.Arguments}" +
                 $"{Environment.NewLine}Exit code: {result.Process.ExitCode}" +
-                $"{Environment.NewLine}Standard Error: {result.StdErr}";
+                $"{Environment.NewLine}{result.StdOut}" +
+                $"{Environment.NewLine}{result.StdErr}";
             throw new InvalidOperationException(msg);
         }
-
-        return result.StdOut;
     }
 }

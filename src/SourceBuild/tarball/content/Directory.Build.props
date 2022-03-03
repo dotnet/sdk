@@ -159,6 +159,7 @@
     <BaselineDataFile>$(ToolsLocalDir)prebuilt-baseline.xml</BaselineDataFile>
     <!--Exclude tests that are failing for test enabled projects like - corefx -->
     <TestExclusionsDir>$(ProjectDir)test/exclusions/</TestExclusionsDir>
+    <SmokeTestsDir>$(ProjectDir)test/Microsoft.DotNet.SourceBuild.SmokeTests/</SmokeTestsDir>
   </PropertyGroup>
 
   <!-- Import Build tools common props file where repo-independent properties are found -->
