@@ -19,7 +19,7 @@
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
     <CloneVerbosity>quiet</CloneVerbosity> <!-- Support quiet and full -->
-    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' ">true</ConvertInternalRepos>
+    <ConvertInternalRepos Condition="'$(ConvertInternalRepos)' == '' and '$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' == '' and '$(AzDoPat)' == ''">true</ConvertInternalRepos>
   </PropertyGroup>
 
   <Target Name="CreateSourceTarball"
@@ -87,8 +87,8 @@
     <ItemGroup>
       <SourceBuildRepos Include="$(GitHubRepositoryName)">
         <Name>$(GitHubRepositoryName)</Name>
-        <Version>1.0.0</Version>
-        <ExactVersion>1.0.0</ExactVersion>
+        <Version>$(VersionPrefix)</Version>
+        <ExactVersion>$(VersionPrefix)</ExactVersion>
         <Sha>@(RootRepoCommitSha)</Sha>
         <Uri>@(RootRepoUri)</Uri>
         <GitCommitCount>@(RootRepoCommitCount)</GitCommitCount>

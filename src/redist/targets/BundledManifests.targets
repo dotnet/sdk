@@ -1,13 +1,13 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="6.0.100" Version="$(XamarinAndroidWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="6.0.100" Version="$(XamarinIOSWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="6.0.100" Version="$(XamarinMacCatalystWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="6.0.100" Version="$(XamarinMacOSWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="6.0.100" Version="$(MauiWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="6.0.100" Version="$(XamarinTvOSWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="6.0.100" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="6.0.100" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="6.0.200" Version="$(XamarinAndroidWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="6.0.200" Version="$(XamarinIOSWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="6.0.200" Version="$(XamarinMacCatalystWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="6.0.200" Version="$(XamarinMacOSWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Maui" FeatureBand="6.0.200" Version="$(MauiWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.tvOS" FeatureBand="6.0.200" Version="$(XamarinTvOSWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain" FeatureBand="6.0.200" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten" FeatureBand="6.0.200" Version="$(EmscriptenWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->

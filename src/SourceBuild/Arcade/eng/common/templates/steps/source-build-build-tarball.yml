@@ -66,7 +66,11 @@ steps:
   - script: |
       set -x
 
-      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball -e excludeOmniSharpTests=${{ parameters.excludeOmniSharpTests}} ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
+      # Use installer repo's NuGet.config during online testing to utilize internal feeds
+      rm -f ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
+      cp NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
+
+      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball -e EXCLUDE_OMNISHARP_TESTS=${{ parameters.excludeOmniSharpTests}} ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
@@ -82,7 +86,7 @@ steps:
       find artifacts/prebuilt-report/ -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
       find src/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find testing-smoke/logs -exec cp {} --parents -t ${targetFolder} \;
+      find test/*/*/*/*/*/testing-smoke*/logs -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
     continueOnError: true
     condition: succeededOrFailed()
@@ -93,6 +97,20 @@ steps:
     continueOnError: true
     condition: succeededOrFailed()
 
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      testRunner: vSTest
+      testResultsFiles: 'test/**/*.trx'
+      searchFolder: ${{ parameters.tarballDir }}
+      mergeTestResults: true
+      publishRunAttachments: true
+      testRunTitle: SourceBuild_SmokeTests_$(Agent.JobName)
+
   - publish: '${{ parameters.tarballDir }}/artifacts/${{ parameters.buildArch}}/Release/'
     artifact: $(Agent.JobName)_Artifacts
     displayName: Publish Artifacts
+    condition: succeededOrFailed()
+    continueOnError: true
