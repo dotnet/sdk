@@ -88,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Check if the LocalReferenceOperation or ParameterReferenceOperation is enumerated by for each loop.
+        /// Check if the operation has deferred type and is the collecton of is enumerated by for each loop.
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
