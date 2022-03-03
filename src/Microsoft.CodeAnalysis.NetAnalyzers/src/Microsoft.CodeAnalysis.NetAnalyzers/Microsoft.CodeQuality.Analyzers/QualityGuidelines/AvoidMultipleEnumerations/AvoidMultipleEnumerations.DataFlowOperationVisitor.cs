@@ -146,7 +146,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 && IsDeferredType(location.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                             {
                                 var analysisValue = CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeSymbolEntity(location.Symbol), defaultValue);
-                                resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                                resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                                 continue;
                             }
 
@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                     var analysisValue =
                                         CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
 
-                                    resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                                    resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                                 }
 
                                 continue;
@@ -185,7 +185,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 new DeferredTypeEntitySet(result.Locations),
                                 defaultValue);
 
-                            resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue);
+                            resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                         }
                     }
 
@@ -289,7 +289,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     GlobalFlowStateDictionaryAnalysisValueKind.Known);
 
                 return defaultValue.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known
-                    ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, defaultValue)
+                    ? GlobalFlowStateDictionaryAnalysisValue.Merge(analysisValue, defaultValue, false)
                     : analysisValue;
             }
 
@@ -297,7 +297,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             {
                 if (value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known)
                 {
-                    var newState = GlobalFlowStateDictionaryAnalysisValue.Merge(GlobalState, value);
+                    var newState = GlobalFlowStateDictionaryAnalysisValue.Merge(GlobalState, value, false);
                     SetAbstractValue(GlobalEntity, newState);
                 }
             }
