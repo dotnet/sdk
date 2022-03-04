@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations
@@ -14,7 +15,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// Methods defer enumerating IEnumerable types.
         /// e.g. Select, Where
         /// </summary>
-        public ImmutableArray<IMethodSymbol> DeferredMethods { get; }
+        public ImmutableArray<IMethodSymbol> LinqChainMethods { get; }
+
+        /// <summary>
+        /// Methods that do not enumerate the IEnumerable types.
+        /// e.g. TryGetNonEnumeratedCount
+        /// </summary>
+        public ImmutableArray<IMethodSymbol> NoEnumerationMethods { get; }
 
         /// <summary>
         /// Methods enumerate IEnumerable types.
@@ -40,18 +47,40 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public ImmutableArray<IMethodSymbol> GetEnumeratorMethods { get; }
 
+        /// <summary>
+        /// User specified methods that would enumerate its parameters. This value comes from options.
+        /// </summary>
+        public SymbolNamesWithValueOption<Unit> CustomizedEumerationMethods { get; }
+
+        /// <summary>
+        /// User specified methods that accept a deferred type parameter and return a new deferred type value. This value comes from options.
+        /// </summary>
+        public SymbolNamesWithValueOption<Unit> CustomizedLinqChainMethods { get; }
+
         public WellKnownSymbolsInfo(
-            ImmutableArray<IMethodSymbol> deferredMethods,
+            ImmutableArray<IMethodSymbol> linqChainMethods,
+            ImmutableArray<IMethodSymbol> noEnumerationMethods,
             ImmutableArray<IMethodSymbol> enumeratedMethods,
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
-            ImmutableArray<IMethodSymbol> getEnumeratorMethods)
+            ImmutableArray<IMethodSymbol> getEnumeratorMethods,
+            SymbolNamesWithValueOption<Unit> customizedEnumerationMethods,
+            SymbolNamesWithValueOption<Unit> customizedLinqChainMethods)
         {
-            DeferredMethods = deferredMethods;
+            LinqChainMethods = linqChainMethods;
+            NoEnumerationMethods = noEnumerationMethods;
             EnumeratedMethods = enumeratedMethods;
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
+            CustomizedEumerationMethods = customizedEnumerationMethods;
+            CustomizedLinqChainMethods = customizedLinqChainMethods;
         }
+
+        public bool IsCustomizedEnumerationMethods(IMethodSymbol methodSymbol)
+            => CustomizedEumerationMethods.Contains(methodSymbol);
+
+        public bool IsCustomizedLinqChainMethods(IMethodSymbol methodSymbol)
+            => CustomizedLinqChainMethods.Contains(methodSymbol);
     }
 }

@@ -47,8 +47,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     return defaultValue;
                 }
 
-                if (!IsOperationEnumeratedByMethodInvocation(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo)
-                    && !IsGetEnumeratorOfForEachLoopInvoked(parameterOrLocalReferenceOperation))
+                var enumerationCount = GetEnumerationCount(parameterOrLocalReferenceOperation, _wellKnownSymbolsInfo);
+                if (enumerationCount is EnumerationCount.Zero or EnumerationCount.None)
                 {
                     return defaultValue;
                 }
@@ -73,7 +73,23 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return VisitDeferTypeEntities(
                     DataFlowAnalysisContext.PointsToAnalysisResult,
                     parameterOrLocalReferenceOperation,
-                    defaultValue);
+                    defaultValue,
+                    enumerationCount);
+            }
+
+            private EnumerationCount GetEnumerationCount(IOperation parameterOrLocalReferenceOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+            {
+                var (linqChainTailOperation, linqChainEnumerationCount) = SkipLinqChainAndConversionMethod(
+                    parameterOrLocalReferenceOperation,
+                    wellKnownSymbolsInfo);
+
+                if (IsOperationEnumeratedByInvocation(linqChainTailOperation, wellKnownSymbolsInfo)
+                    || IsGetEnumeratorOfForEachLoopInvoked(linqChainTailOperation))
+                {
+                    return InvocationSetHelpers.AddInvocationCount(linqChainEnumerationCount, EnumerationCount.One);
+                }
+
+                return linqChainEnumerationCount;
             }
 
             /// <summary>
@@ -82,7 +98,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private GlobalFlowStateDictionaryAnalysisValue VisitDeferTypeEntities(
                 PointsToAnalysisResult pointsToAnalysisResult,
                 IOperation parameterOrLocalOperation,
-                GlobalFlowStateDictionaryAnalysisValue defaultValue)
+                GlobalFlowStateDictionaryAnalysisValue defaultValue,
+                EnumerationCount enumerationCount)
             {
                 RoslynDebug.Assert(parameterOrLocalOperation is IParameterReferenceOperation or ILocalReferenceOperation);
                 // With the initial operation as the root, expand it if
@@ -145,7 +162,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 && location.Symbol != null
                                 && IsDeferredType(location.LocationType?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                             {
-                                var analysisValue = CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeSymbolEntity(location.Symbol), defaultValue);
+                                var analysisValue = CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeSymbolEntity(location.Symbol), defaultValue, enumerationCount);
                                 resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                                 continue;
                             }
@@ -162,7 +179,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                                 {
                                     // Node 2: Invocation operation that returns a deferred type.
                                     var analysisValue =
-                                        CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue);
+                                        CreateAndUpdateAnalysisValue(currentOperation, new DeferredTypeCreationEntity(invocationCreationOperation), defaultValue, enumerationCount);
 
                                     resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                                 }
@@ -183,7 +200,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                             var analysisValue = CreateAndUpdateAnalysisValue(
                                 currentOperation,
                                 new DeferredTypeEntitySet(result.Locations),
-                                defaultValue);
+                                defaultValue,
+                                enumerationCount);
 
                             resultAnalysisValue = GlobalFlowStateDictionaryAnalysisValue.Merge(resultAnalysisValue, analysisValue, false);
                         }
@@ -222,7 +240,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 return resultAnalysisValue;
             }
 
-            private void ExpandInvocationOperation(
+            private static void ExpandInvocationOperation(
                 IInvocationOperation invocationOperation,
                 WellKnownSymbolsInfo wellKnownSymbolsInfo,
                 Queue<IOperation> queue)
@@ -233,7 +251,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // When we looking at the creation of 'a', we want to find both 'b' and 'c'
                 foreach (var argument in invocationOperation.Arguments)
                 {
-                    if (IsDeferredExecutingInvocation(invocationOperation, argument, wellKnownSymbolsInfo))
+                    if (IsLinqChainInvocation(invocationOperation, argument, wellKnownSymbolsInfo, out _))
                     {
                         queue.Enqueue(argument.Value);
                     }
@@ -243,7 +261,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // e.g.
                 // Dim a = b.Concat(c)
                 // We need enqueue the invocation instance (which is 'b') if the target method is a reduced extension method
-                if (IsInvocationDeferredExecutingInvocationInstance(invocationOperation, wellKnownSymbolsInfo))
+                if (IsLinqChainInvocation(invocationOperation, wellKnownSymbolsInfo, out _))
                 {
                     queue.Enqueue(invocationOperation.Instance);
                 }
@@ -263,9 +281,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private GlobalFlowStateDictionaryAnalysisValue CreateAndUpdateAnalysisValue(
                 IOperation parameterOrLocalOperation,
                 IDeferredTypeEntity entity,
-                GlobalFlowStateDictionaryAnalysisValue defaultValue)
+                GlobalFlowStateDictionaryAnalysisValue defaultValue,
+                EnumerationCount enumerationCount)
             {
-                var analysisValueForNewEntity = CreateAnalysisValue(entity, parameterOrLocalOperation, defaultValue);
+                var analysisValueForNewEntity = CreateAnalysisValue(entity, parameterOrLocalOperation, defaultValue, enumerationCount);
                 UpdateGlobalValue(analysisValueForNewEntity);
                 return analysisValueForNewEntity;
             }
@@ -273,15 +292,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             private static GlobalFlowStateDictionaryAnalysisValue CreateAnalysisValue(
                 IDeferredTypeEntity entity,
                 IOperation parameterOrLocalReferenceOperation,
-                GlobalFlowStateDictionaryAnalysisValue defaultValue)
+                GlobalFlowStateDictionaryAnalysisValue defaultValue,
+                EnumerationCount enumerationCount)
             {
                 var operationsSetBuilder = PooledHashSet<IOperation>.GetInstance();
                 operationsSetBuilder.Add(parameterOrLocalReferenceOperation);
-                var newInvocationSet = new TrackingInvocationSet(
+                var newInvocationSet = new TrackingEnumerationSet(
                     operationsSetBuilder.ToImmutableAndFree(),
-                    InvocationCount.One);
+                    enumerationCount);
 
-                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingInvocationSet>.GetInstance();
+                var trackedEntitiesBuilder = PooledDictionary<IDeferredTypeEntity, TrackingEnumerationSet>.GetInstance();
                 trackedEntitiesBuilder.Add(entity, newInvocationSet);
 
                 var analysisValue = new GlobalFlowStateDictionaryAnalysisValue(
@@ -304,11 +324,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             private bool IsGetEnumeratorOfForEachLoopInvoked(IOperation operation)
             {
-                RoslynDebug.Assert(operation is ILocalReferenceOperation or IParameterReferenceOperation);
-                var operationToCheck = SkipDeferredAndConversionMethodIfNeeded(operation, _wellKnownSymbolsInfo);
-
                 // Make sure it has IEnumerable type, not some other types like list, array, etc...
-                if (!IsDeferredType(operationToCheck.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                if (!IsDeferredType(operation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
                 {
                     return false;
                 }
@@ -316,7 +333,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 // Check 1: Operation would be invoked by GetEnumerator method
                 // Check 2: Make sure the linked syntax node is the expression of ForEachLoop. It can't be done by finding IForEachLoopOperation,
                 // because the Operation in CFG doesn't have that information. (CFG will convert the for each operation to control flow blocks)
-                return operationToCheck.Parent is IInvocationOperation invocationOperation
+                return operation.Parent is IInvocationOperation invocationOperation
                    && _wellKnownSymbolsInfo.GetEnumeratorMethods.Contains(invocationOperation.TargetMethod.OriginalDefinition)
                    && IsExpressionOfForEachStatement(invocationOperation.Syntax);
             }

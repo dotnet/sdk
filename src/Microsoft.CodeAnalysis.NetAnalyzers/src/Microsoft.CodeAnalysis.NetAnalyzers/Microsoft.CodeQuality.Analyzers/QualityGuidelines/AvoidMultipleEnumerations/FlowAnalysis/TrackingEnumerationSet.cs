@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis
 {
-    internal class TrackingInvocationSet : CacheBasedEquatable<TrackingInvocationSet>
+    internal class TrackingEnumerationSet : CacheBasedEquatable<TrackingEnumerationSet>
     {
         /// <summary>
         /// All the operations that might contribute to the <see cref="EnumerationCount"/>
@@ -30,11 +30,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// The total number of enumeration.
         /// </summary>
-        public InvocationCount EnumerationCount { get; }
+        public EnumerationCount EnumerationCount { get; }
 
-        public static readonly TrackingInvocationSet Empty = new(ImmutableHashSet<IOperation>.Empty, InvocationCount.Zero);
+        public static readonly TrackingEnumerationSet Empty = new(ImmutableHashSet<IOperation>.Empty, EnumerationCount.Zero);
 
-        public TrackingInvocationSet(ImmutableHashSet<IOperation> operations, InvocationCount enumerationCount)
+        public TrackingEnumerationSet(ImmutableHashSet<IOperation> operations, EnumerationCount enumerationCount)
         {
             Operations = operations;
             EnumerationCount = enumerationCount;
@@ -46,9 +46,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             hashCode.Add(HashUtilities.Combine(Operations));
         }
 
-        protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<TrackingInvocationSet> obj)
+        protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<TrackingEnumerationSet> obj)
         {
-            var other = (TrackingInvocationSet)obj;
+            var other = (TrackingEnumerationSet)obj;
             return other.EnumerationCount.GetHashCode() == EnumerationCount.GetHashCode()
                 && HashUtilities.Combine(other.Operations) == HashUtilities.Combine(Operations);
         }

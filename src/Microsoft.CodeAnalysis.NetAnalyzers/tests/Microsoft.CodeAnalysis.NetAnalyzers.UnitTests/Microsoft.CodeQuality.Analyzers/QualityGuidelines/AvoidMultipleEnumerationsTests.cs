@@ -1,7 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.CodeQuality.Analyzers.QualityGuidelines.CSharpAvoidMultipleEnumerationsAnalyzer,
@@ -14,10 +15,68 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
+        private static Task VerifyCSharpAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
+        {
+            var enumerationMethods = customizedEnumerationMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
+            var linqChainMethods = customizedLinqChainMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
+            var test = new VerifyCS.Test()
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                LanguageVersion = CSharp.LanguageVersion.Latest,
+                TestState =
+                {
+                    Sources =
+                    {
+                        code
+                    },
+                    AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
+[*]
+{enumerationMethods}
+{linqChainMethods}
+") },
+                },
+            };
+
+            return test.RunAsync();
+        }
+
+        private static Task VerifyVisualBasicAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
+        {
+            var enumerationMethods = customizedEnumerationMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.enumeration_methods = {customizedEnumerationMethods}";
+            var linqChainMethods = customizedLinqChainMethods == null
+                ? string.Empty
+                : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
+            var test = new VerifyVB.Test()
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.Net60,
+                LanguageVersion = VisualBasic.LanguageVersion.Latest,
+                TestState =
+                {
+                    Sources =
+                    {
+                        code
+                    },
+                    AnalyzerConfigFiles = { ("/.editorConfig", $@"root = true
+[*]
+{enumerationMethods}
+{linqChainMethods}
+") },
+                },
+            };
+
+            return test.RunAsync();
+        }
+
         [Fact]
         public async Task TestMultipleInvocations()
         {
-            var csharpCode1 = @"
+            var csharpCode = @"
 using System.Collections.Generic;
 using System.Linq;
 
@@ -34,7 +93,7 @@ public class Bar
         var h = [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -54,7 +113,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -77,7 +136,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -96,7 +155,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -114,12 +173,12 @@ public class Bar
         foreach (var c in Enumerable.Range(1, 10))
         {
             i.Count();
-            [|j|].DefaultIfEmpty();
+            [|j|].DefaultIfEmpty().MaxBy(k => k);
         }
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -137,7 +196,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -158,7 +217,7 @@ public class Bar
         [|i|].Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -176,7 +235,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -197,7 +256,7 @@ public class Bar
         i.Count();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -215,7 +274,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -237,7 +296,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -256,7 +315,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -292,7 +351,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -319,7 +378,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -343,7 +402,7 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -363,7 +422,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -388,7 +447,7 @@ public class Bar
         [|i|].Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -409,7 +468,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -433,7 +492,7 @@ public class Bar
         i.Max();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -453,7 +512,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -475,7 +534,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -493,7 +552,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -529,7 +588,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -556,7 +615,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -591,7 +650,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -618,7 +677,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -652,7 +711,7 @@ public class Bar
         k.LastOrDefault();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -681,7 +740,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -709,7 +768,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -731,7 +790,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -765,7 +824,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -795,7 +854,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -833,7 +892,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -865,7 +924,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -894,7 +953,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -916,7 +975,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -948,7 +1007,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -972,7 +1031,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -998,7 +1057,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1017,7 +1076,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1048,7 +1107,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1070,7 +1129,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1104,7 +1163,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1128,7 +1187,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1153,7 +1212,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1179,7 +1238,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1205,7 +1264,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1231,7 +1290,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1257,7 +1316,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1277,7 +1336,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1307,7 +1366,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1329,7 +1388,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1359,7 +1418,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1381,7 +1440,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1417,7 +1476,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1446,7 +1505,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1486,7 +1545,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1517,7 +1576,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1544,7 +1603,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1567,7 +1626,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1584,21 +1643,31 @@ public class Bar
         IEnumerable<int> i = Enumerable.Range(1, 10);
         TestMethod(i);
         i.First();
+        i.TestMethod2();
 
         TestMethod(h);
         h.First();
+        h.TestMethod2();
     }
 
     public void TestMethod<T>(T o)
     {
     }
+}
+
+public static class Ex 
+{
+    public static void TestMethod2<T>(this T o)
+    {
+    }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
 Imports System.Linq
+Imports System.Runtime.CompilerServices
 
 Namespace Ns
     Public Class Hoo
@@ -1606,17 +1675,26 @@ Namespace Ns
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
             TestMethod(i)
             i.First()
-            
+            i.TestMethod2()
+
             TestMethod(h)
             h.First()
+            h.TestMethod2()
         End Sub
-  
+
         Public Sub TestMethod(Of T)(o As T)
         End Sub
     End Class
 End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod2(Of T)(q As T)
+    End Sub
+End Module
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1632,19 +1710,20 @@ public class Bar
     public void Sub(IEnumerable<int> h)
     {
         IEnumerable<int> i = Enumerable.Range(1, 10);
-        TestMethod([|i|]);
-        [|i|].First();
+        TestMethod(i);
+        i.First();
 
-        TestMethod([|h|]);
-        [|h|].First();
+        TestMethod(h);
+        h.First();
     }
 
     public void TestMethod<T>(T o) where T : IEnumerable<int>
     {
+        var x = o;
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1654,11 +1733,11 @@ Namespace Ns
     Public Class Hoo
         Public Sub Goo(h As IEnumerable(Of Integer))
             Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            TestMethod([|i|])
-            [|i|].First()
+            TestMethod(i)
+            i.First()
             
-            TestMethod([|h|])
-            [|h|].First()
+            TestMethod(h)
+            h.First()
         End Sub
 
   
@@ -1667,11 +1746,11 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
-        public async Task TestExplicteInvocations()
+        public async Task TestExplictInvocations()
         {
             var csharpCode = @"
 using System.Collections.Immutable;
@@ -1691,7 +1770,7 @@ public class Bar
     }
 }";
 
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1711,7 +1790,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1730,7 +1809,7 @@ public class Bar
         [|h|].Concat([|i|]).ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1746,7 +1825,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1765,7 +1844,7 @@ public class Bar
         [|h|].SequenceEqual([|i|]);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1781,7 +1860,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1800,7 +1879,7 @@ public class Bar
         [|x|].GroupJoin([|h|], i => i, i => i, (i, ints) => i).Last();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1816,14 +1895,12 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
         public async Task TestDelayExecutions()
         {
-            // SkipLast and TakeLast are unavailable for NET472
-#if NETCOREAPP2_0_OR_GREATER
             var csharpCode = @"
 using System;
 using System.Collections.Generic;
@@ -1849,7 +1926,7 @@ public class Bar
             .Where(i => i != 10).First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System
@@ -1877,64 +1954,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
-#endif
-
-#if NET472
-            var csharpCode = @"
-using System;
-using System.Linq;
-using System.Collections.Generic;
-
-public class Bar
-{
-    public void Sub()
-    {
-        IEnumerable<int> x = Enumerable.Range(1, 10);
-        var c1 = [|x|].Append(1).Cast<Object>().Distinct()
-            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
-            .ThenBy(i => i).ThenByDescending(i => i)
-            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
-            .Where(i => i != 10).ToArray();
-
-        var c2 = [|x|].Append(1).Cast<Object>().Distinct()
-            .OfType<int>().OrderBy(i => i).OrderByDescending(i => i)
-            .ThenBy(i => i).ThenByDescending(i => i)
-            .Prepend(1).Reverse().Select(i => i + 1).Skip(100)
-            .SkipWhile(i => i == 99).Take(1).TakeWhile(i => i == 100)
-            .Where(i => i != 10).First();
-    }
-}";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
-
-            var vbCode = @"
-Imports System.Collections.Generic
-Imports System.Linq
-
-Namespace Ns
-    Public Class Hoo
-        Public Sub Goo()
-            Dim x As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
-            Dim c1 = [|x|].Append(1).Cast(Of Object)().Distinct().
-                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
-                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
-                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
-                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
-                Where(Function(i) i <> 10).ToArray()
-
-            Dim c2 = [|x|].Append(1).Cast(Of Object)().Distinct().
-                OfType(Of Integer).OrderBy(Function(i) i).OrderByDescending(Function(i) i).
-                ThenBy(Function(i) i).ThenByDescending(Function(i) i).
-                Prepend(1).Reverse().Select(Function(i) i + 1).Skip(100).
-                SkipWhile(Function(i) i = 99).Take(1).TakeWhile(Function(i) i = 100).
-                Where(Function(i) i <> 10).First()
-        End Sub
-    End Class
-End Namespace
-";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
-#endif
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1954,7 +1974,7 @@ public class Bar
         var z2 = [|x|].GroupBy(i => i.GetHashCode()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -1970,7 +1990,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -1988,7 +2008,7 @@ public class Bar
         var b = [|y|].SelectMany(x => x.ToArray()).ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2003,7 +2023,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2022,7 +2042,7 @@ public class Bar
         [|h|].Cast<int>().ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2038,7 +2058,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2055,7 +2075,7 @@ public class Bar
         [|h|].ToList();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Linq
@@ -2069,7 +2089,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2087,7 +2107,7 @@ public class Bar
         [|h|].ToArray().Select(j => j + 1).Where(x => x != 100);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2102,7 +2122,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2128,7 +2148,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2150,7 +2170,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2177,7 +2197,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2197,7 +2217,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2217,7 +2237,7 @@ public class Bar
         [|c|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2233,7 +2253,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2279,7 +2299,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2315,7 +2335,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2339,7 +2359,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2358,7 +2378,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2382,7 +2402,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections
@@ -2401,7 +2421,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2424,7 +2444,7 @@ public class Bar
         }
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2441,7 +2461,7 @@ Namespace NS
         End Sub
     End Class
 End Namespace";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2462,7 +2482,7 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2479,7 +2499,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2501,7 +2521,7 @@ public class Bar
         [|k|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2519,7 +2539,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2540,7 +2560,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharp);
+            await VerifyCSharpAsync(csharp);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2557,7 +2577,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2579,7 +2599,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2597,7 +2617,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2616,7 +2636,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2631,7 +2651,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2654,7 +2674,7 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2673,7 +2693,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2696,7 +2716,7 @@ public class Bar
         b.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2715,7 +2735,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2737,7 +2757,7 @@ public class Bar
         [|b|].ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2755,7 +2775,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2775,7 +2795,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2792,7 +2812,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2812,7 +2832,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2828,7 +2848,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2848,7 +2868,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2864,7 +2884,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2885,7 +2905,7 @@ public class Bar
         z.ToArray();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2902,7 +2922,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2923,7 +2943,7 @@ public class Bar
         Enumerable.ToArray(z);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2940,7 +2960,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -2962,7 +2982,7 @@ public class Bar
         [|i|].ElementAt(100);
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -2979,7 +2999,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3004,7 +3024,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3029,7 +3049,7 @@ public class Bar
         i.First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3050,7 +3070,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3071,7 +3091,7 @@ public class Bar
         z.First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+            await VerifyCSharpAsync(csharpCode);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3088,7 +3108,7 @@ Namespace NS
     End Class
 End Namespace";
 
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
@@ -3108,7 +3128,7 @@ public class Bar
         [|i|].First();
     }
 }";
-            await VerifyCS.VerifyAnalyzerAsync(csharpCode1);
+            await VerifyCSharpAsync(csharpCode1);
 
             var vbCode = @"
 Imports System.Collections.Generic
@@ -3125,20 +3145,899 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("MaxBy")]
+        [InlineData("MinBy")]
+        public async Task TestNet6AddedEnumeratedMethods(string methodName)
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        var a = [|j|].{methodName}(p => p);
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].{methodName}(Function (p) p)
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("ExceptBy")]
+        [InlineData("IntersectBy")]
+        [InlineData("UnionBy")]
+        public async Task TestNet6AddedLinqChainMethods(string methodName)
+        {
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {{
+        var a = [|j|].{methodName}(i, p => p).Count();
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+            Dim a = [|j|].{methodName}(i, Function (p) p).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
         }
 
         [Fact]
-        public void TestNet6AddedMethod()
+        public async Task TestDistinctBy()
         {
-            // newly added method in .Net 6, currently can't found by unit tests
-            Assert.Contains("MaxBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("MinBy", AvoidMultipleEnumerations.s_enumeratedParametersLinqMethods);
-            Assert.Contains("Chunk", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("DistinctBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("ExceptBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("IntersectBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
-            Assert.Contains("UnionBy", AvoidMultipleEnumerations.s_deferParametersEnumeratedLinqMethods);
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j)
+    {{
+        var a = [|j|].DistinctBy(p => p).Count();
+        [|j|].ElementAt(10);
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].DistinctBy(Function (p) p).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestChunk()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j)
+    {
+        var a = [|j|].Chunk(1000).Count();
+        [|j|].ElementAt(10);
+    }
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim a = [|j|].Chunk(100).Count()
+            [|j|].ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestTryGetNonEnumeratedCount()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j)
+    {
+        if (j.TryGetNonEnumeratedCount(out var count))
+        {
+        }
+
+        j.ElementAt(10);
+    }
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer))
+            Dim count = 0
+            If j.TryGetNonEnumeratedCount(count) then
+
+            End If
+            j.ElementAt(10)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestByDefaultSupposeMethodNotEnuemratesArgument()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {
+        j.UnionBy(i, p => p).ElementAt(10);
+        Method(j);
+    }
+
+    private void Method(IEnumerable<int> k)
+    {
+        foreach (var p in k) { }
+    }
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+            j.UnionBy(i, Function(p) p).ElementAt(10)
+            Method(j)
+        End Sub
+
+        Private Sub Method(j As IEnumerable(Of Integer))
+            For Each kk in j
+            Next
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.Method1*")]
+        [InlineData("")]
+        public async Task TestEnumerationMethodFromEditorConfig(string editorConfig)
+        {
+            var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {{
+        Method1({diagnositcReference});
+        {diagnositcReference}.UnionBy(i, p => p).ElementAt(10);
+    }}
+
+    private void Method1(IEnumerable<int> k)
+    {{
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Bar
+    Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+        Method1({diagnositcReference})
+        {diagnositcReference}.UnionBy(i, Function(p) p).ElementAt(10)
+    End Sub
+
+    Private Sub Method1(j As IEnumerable(Of Integer))
+    End Sub
+End Class
+";
+            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.Chain*")]
+        [InlineData("")]
+        public async Task TestLinqChainMethodFromEditorConfig(string editorConfig)
+        {
+            var diagnositcReference = string.IsNullOrEmpty(editorConfig) ? "j" : "[|j|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> j, IEnumerable<int> i)
+    {{
+        {diagnositcReference}.UnionBy(i, p => p).ElementAt(10);
+        Chain({diagnositcReference}).ElementAt(100);
+    }}
+
+    private IEnumerable<int> Chain(IEnumerable<int> k)
+    {{
+        return k;
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Bar
+    Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
+        {diagnositcReference}.UnionBy(i, Function(p) p).ElementAt(10)
+        Chain({diagnositcReference}).ElementAt(10)
+    End Sub
+
+    Private Function Chain(j As IEnumerable(Of Integer)) As IEnumerable(Of Integer)
+        Return j
+    End Function
+End Class
+";
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints1()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub<T>(T t) where T : IEnumerable<int>
+    {
+        var x = [|t|].Select(p => p).ElementAt(10000);
+        var y = [|t|].Where(p => p != 100).ElementAt(10000);
+    }
+
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(Of T As R, R As V, V As IEnumerable(Of Integer))(q As T)
+            Dim x = [|q|].Select(Function(p) p).ElementAt(100)
+            Dim y = [|q|].Where(Function(p) p <> 100).ElementAt(100)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints2()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub<T, R, V>(T t) where T : R where R : V where V: IEnumerable<int>
+    {
+        var x = [|t|].Select(p => p).ElementAt(10000);
+        var y = [|t|].Where(p => p != 100).ElementAt(10000);
+    }
+
+}";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(Of T As R, R As V, V As IEnumerable(Of Integer))(q As T)
+            Dim x = [|q|].Select(Function(p) p).ElementAt(100)
+            Dim y = [|q|].Where(Function(p) p <> 10).ElementAt(100)
+        End Sub
+    End Class
+End Namespace
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints3(string editorConfig)
+        {
+            var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub()
+    {{
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1<IEnumerable<int>, IOrderedEnumerable<int>>({diagnosticReference}).ElementAt(10000);
+        var y = {diagnosticReference}.LinqChain2<IEnumerable<int>, IOrderedEnumerable<int>>().ElementAt(10000);
+    }}
+
+    public T LinqChain1<T, U>(U u) where U : T where T : IEnumerable<int>
+    {{
+        return u;
+    }}
+}}
+
+public static class Ex
+{{
+    public static T LinqChain2<T, U>(this U u) where U : T where T : IEnumerable<int>
+    {{
+        return u;
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Public Class Bar
+    Public Sub Goo()
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1(Of IEnumerable(Of Integer), IOrderedEnumerable(Of Integer))({diagnosticReference}).ElementAt(100)
+        Dim y = {diagnosticReference}.LinqChain2().ElementAt(100)
+    End Sub
+
+    Public Shared Function LinqChain1(Of T As IEnumerable(Of Integer), U As T)(q As U) As T
+        Return q
+    End Function
+End Class
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T As IEnumerable(Of Integer))(q As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints4(string editorConfig)
+        {
+            var diagnosticReference = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub()
+    {{
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1({diagnosticReference}).ElementAt(10000);
+        var y = {diagnosticReference}.LinqChain2().ElementAt(10000);
+    }}
+
+    public T LinqChain1<T>(T u)
+    {{
+        return u;
+    }}
+}}
+
+public static class Ex
+{{
+    public static T LinqChain2<T>(this T u)
+    {{
+        return u;
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Public Class Bar
+    Public Sub Goo()
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference}).ElementAt(100)
+        Dim y = {diagnosticReference}.LinqChain2().ElementAt(100)
+    End Sub
+
+    Public Function LinqChain1(Of T)(q As T) As T
+        Return q
+    End Function
+End Class
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T)(q As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints5(string editorConfig)
+        {
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "a" : "[|a|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> a)
+    {{
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1({diagnosticReference1}, {diagnosticReference2}).ElementAt(10000);
+        var y = {diagnosticReference1}.LinqChain2({diagnosticReference2}).ElementAt(10000);
+    }}
+
+    public T LinqChain1<T>(T u, T v)
+    {{
+        return u;
+    }}
+}}
+
+public static class Ex
+{{
+    public static T LinqChain2<T>(this T u, T v)
+    {{
+        return u;
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode, customizedLinqChainMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Public Class Bar
+    Public Sub Goo(a As IEnumerable(Of Integer))
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference1}, {diagnosticReference2}).ElementAt(100)
+        Dim y = {diagnosticReference1}.LinqChain2({diagnosticReference2}).ElementAt(100)
+    End Sub
+
+    Public Function LinqChain1(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Class
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode, customizedLinqChainMethods: editorConfig);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.TestMethod*")]
+        [InlineData("")]
+        public async Task TestGenericConstraints6(string editorConfig)
+        {
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "i" : "[|i|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "h" : "[|h|]";
+            var csharpCode = $@"
+using System;
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> h)
+    {{
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        TestMethod({diagnosticReference1});
+        {diagnosticReference1}.First();
+
+        TestMethod({diagnosticReference2});
+        {diagnosticReference2}.First();
+    }}
+
+    public void TestMethod<T>(T o) where T : IEnumerable<int>
+    {{
+        var x = o;
+    }}
+}}";
+
+            await VerifyCSharpAsync(csharpCode, customizedEnumerationMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Bar
+    Public Sub Goo(h As IEnumerable(Of Integer))
+        Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+        TestMethod({diagnosticReference1})
+        {diagnosticReference1}.First()
+        
+        TestMethod({diagnosticReference2})
+        {diagnosticReference2}.First()
+    End Sub
+
+
+    Public Sub TestMethod(Of T As IEnumerable(Of Integer))(o As T)
+    End Sub
+End Class
+";
+            await VerifyVisualBasicAsync(vbCode, customizedEnumerationMethods: editorConfig);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints7()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        i.TestMethod(h);
+        i.Concat(h).ElementAt(100);
+    }
+}
+
+public static class Ex
+{
+    public static void TestMethod<T, U>(this T u, U v) where U : IEnumerable<int>
+    {
+    }
+}
+";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            i.TestMethod(h)
+            i.Concat(h).ElementAt(100)
+        End Sub
+
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod(Of T, U As IEnumerable(Of Integer))(o As T, o2 As U)
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestGenericConstraints8()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> h)
+    {
+        IEnumerable<int> i = Enumerable.Range(1, 10);
+        i.TestMethod(h);
+        i.Concat(h).ElementAt(100);
+    }
+}
+
+public static class Ex
+{
+    public static void TestMethod<T, U>(this T u, U v) where T : IEnumerable<int>
+    {
+    }
+}
+";
+
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(h As IEnumerable(Of Integer))
+            Dim i As IEnumerable(Of Integer) = Enumerable.Range(1, 10)
+            i.TestMethod(h)
+            i.Concat(h).ElementAt(100)
+        End Sub
+
+    End Class
+End Namespace
+
+Module Ex
+
+    <Extension()>
+    Public Sub TestMethod(Of U, T As IEnumerable(Of Integer))(o As T, o2 As U)
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+
+        [Theory]
+        [InlineData("HashSet")]
+        [InlineData("LinkedList")]
+        [InlineData("List")]
+        [InlineData("Queue")]
+        [InlineData("SortedSet")]
+        [InlineData("Stack")]
+        public async Task TestObjectCreationOperation1(string typeName)
+        {
+            var csharpCode = $@"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{{
+    public void Sub<T>(IEnumerable<int> collection1, IEnumerable<T> collection2)
+    {{
+        var s = new {typeName}<int>([|collection1|]);
+        var result = [|collection1|].Count();
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of T))
+        Dim x = New {typeName}(Of T)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestObjectCreationOperation2()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub<T>(IEnumerable<KeyValuePair<int, int>> collection1)
+    {
+        var s = new Dictionary<int, int>([|collection1|]);
+        var result = [|collection1|].Count();
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of KeyValuePair(Of Integer, Integer)))
+        Dim x = New Dictionary(Of Integer, Integer)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestObjectCreationOperation3()
+        {
+            var csharpCode = @"
+using System.Linq;
+using System.Collections.Generic;
+
+public class Bar
+{
+    public void Sub<T>(IEnumerable<(int, int)> collection1)
+    {
+        var s = new PriorityQueue<int, int>([|collection1|]);
+        var result = [|collection1|].Count();
+    }
+}
+";
+            await VerifyCSharpAsync(csharpCode);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Module Program
+    Sub Bar(Of T)(collection1 As IEnumerable(Of (A As Integer, B As Integer)))
+        Dim x = New PriorityQueue(Of Integer, Integer)([|collection1|])
+        Dim z = [|collection1|].Count()
+    End Sub
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode);
+        }
+
+        [Theory]
+        [InlineData("M:Bar.LinqChain1*|Ex.LinqChain2*")]
+        [InlineData("")]
+        public async Task TestLinqChainEnumeratedTheArgument(string editorConfig)
+        {
+            var diagnosticReference1 = string.IsNullOrEmpty(editorConfig) ? "t" : "[|t|]";
+            var diagnosticReference2 = string.IsNullOrEmpty(editorConfig) ? "a" : "[|a|]";
+            var csharpCode = $@"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{{
+    public void Sub(IEnumerable<int> a)
+    {{
+        var t = Enumerable.Range(1, 100).OrderBy(i => i);
+        var x = LinqChain1({diagnosticReference1}, {diagnosticReference2});
+        var y = {diagnosticReference1}.LinqChain2({diagnosticReference2});
+    }}
+
+    public T LinqChain1<T>(T u, T v)
+    {{
+        return u;
+    }}
+}}
+
+public static class Ex
+{{
+    public static T LinqChain2<T>(this T u, T v)
+    {{
+        return u;
+    }}
+}}
+";
+            await VerifyCSharpAsync(csharpCode,
+                customizedEnumerationMethods: editorConfig,
+                customizedLinqChainMethods: editorConfig);
+
+            var vbCode = $@"
+Imports System.Collections.Generic
+Imports System.Linq
+Imports System.Runtime.CompilerServices
+
+Public Class Bar
+    Public Sub Goo(a As IEnumerable(Of Integer))
+        Dim t = Enumerable.Range(1, 100).OrderBy(Function(i) i)
+        Dim x = LinqChain1({diagnosticReference1}, {diagnosticReference2})
+        Dim y = {diagnosticReference1}.LinqChain2({diagnosticReference2})
+    End Sub
+
+    Public Function LinqChain1(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Class
+
+Module Ex
+
+    <Extension()>
+    Public Function LinqChain2(Of T)(q As T, p As T) As T
+        Return q
+    End Function
+End Module
+";
+            await VerifyVisualBasicAsync(vbCode,
+                customizedEnumerationMethods: editorConfig,
+                customizedLinqChainMethods: editorConfig);
         }
 
         [Fact]

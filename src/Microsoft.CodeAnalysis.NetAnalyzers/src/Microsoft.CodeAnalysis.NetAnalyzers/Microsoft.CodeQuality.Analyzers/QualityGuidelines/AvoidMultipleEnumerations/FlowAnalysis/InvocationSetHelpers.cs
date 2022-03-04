@@ -8,7 +8,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 {
     internal static class InvocationSetHelpers
     {
-        public static TrackingInvocationSet Merge(TrackingInvocationSet set1, TrackingInvocationSet set2)
+        public static TrackingEnumerationSet Merge(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
             var builder = ImmutableHashSet.CreateBuilder<IOperation>();
             var totalCount = AddInvocationCount(set1.EnumerationCount, set2.EnumerationCount);
@@ -22,10 +22,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 builder.Add(operation);
             }
 
-            return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
+            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
         }
 
-        public static TrackingInvocationSet Intersect(TrackingInvocationSet set1, TrackingInvocationSet set2)
+        public static TrackingEnumerationSet Intersect(TrackingEnumerationSet set1, TrackingEnumerationSet set2)
         {
             var builder = ImmutableHashSet.CreateBuilder<IOperation>();
 
@@ -52,27 +52,27 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 builder.Add(operation);
             }
 
-            return new TrackingInvocationSet(builder.ToImmutable(), totalCount);
+            return new TrackingEnumerationSet(builder.ToImmutable(), totalCount);
         }
 
-        private static InvocationCount Min(InvocationCount count1, InvocationCount count2)
+        private static EnumerationCount Min(EnumerationCount count1, EnumerationCount count2)
         {
             // Unknown = -1, Zero = 0, One = 1, TwoOrMoreTime = 2
             var min = Math.Min((int)count1, (int)count2);
-            return (InvocationCount)min;
+            return (EnumerationCount)min;
         }
 
-        private static InvocationCount AddInvocationCount(InvocationCount count1, InvocationCount count2)
+        public static EnumerationCount AddInvocationCount(EnumerationCount count1, EnumerationCount count2)
             => (count1, count2) switch
             {
-                (InvocationCount.None, _) => InvocationCount.None,
-                (_, InvocationCount.None) => InvocationCount.None,
-                (InvocationCount.Zero, _) => count2,
-                (_, InvocationCount.Zero) => count1,
-                (InvocationCount.One, InvocationCount.One) => InvocationCount.TwoOrMoreTime,
-                (InvocationCount.TwoOrMoreTime, _) => InvocationCount.TwoOrMoreTime,
-                (_, InvocationCount.TwoOrMoreTime) => InvocationCount.TwoOrMoreTime,
-                (_, _) => InvocationCount.None,
+                (EnumerationCount.None, _) => EnumerationCount.None,
+                (_, EnumerationCount.None) => EnumerationCount.None,
+                (EnumerationCount.Zero, _) => count2,
+                (_, EnumerationCount.Zero) => count1,
+                (EnumerationCount.One, EnumerationCount.One) => EnumerationCount.TwoOrMoreTime,
+                (EnumerationCount.TwoOrMoreTime, _) => EnumerationCount.TwoOrMoreTime,
+                (_, EnumerationCount.TwoOrMoreTime) => EnumerationCount.TwoOrMoreTime,
+                (_, _) => EnumerationCount.None,
             };
     }
 }

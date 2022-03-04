@@ -40,24 +40,36 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// All the immutable collections that have a conversion method from IEnumerable.
         /// </summary>
         private static readonly ImmutableArray<(string typeName, string methodName)> s_immutableCollectionsTypeNamesAndConvensionMethods = ImmutableArray.Create(
-            ("System.Collections.Immutable.ImmutableArray", nameof(ImmutableArray.ToImmutableArray)),
-            ("System.Collections.Immutable.ImmutableDictionary", nameof(ImmutableDictionary.ToImmutableDictionary)),
-            ("System.Collections.Immutable.ImmutableHashSet", nameof(ImmutableHashSet.ToImmutableHashSet)),
-            ("System.Collections.Immutable.ImmutableList", nameof(ImmutableList.ToImmutableList)),
-            ("System.Collections.Immutable.ImmutableSortedDictionary", nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
-            ("System.Collections.Immutable.ImmutableSortedSet", nameof(ImmutableSortedSet.ToImmutableSortedSet)));
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableArray, nameof(ImmutableArray.ToImmutableArray)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableDictionary, nameof(ImmutableDictionary.ToImmutableDictionary)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableHashSet, nameof(ImmutableHashSet.ToImmutableHashSet)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableList, nameof(ImmutableList.ToImmutableList)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedDictionary, nameof(ImmutableSortedDictionary.ToImmutableSortedDictionary)),
+            (WellKnownTypeNames.SystemCollectionsImmutableImmutableSortedSet, nameof(ImmutableSortedSet.ToImmutableSortedSet)));
+
+        /// <summary>
+        /// All the types under System.Collections.Generic which constructor takes deferred type parameter.
+        /// </summary>
+        private static readonly ImmutableArray<string> s_contructorsEnumeratedParameterTypes = ImmutableArray.Create(
+            WellKnownTypeNames.SystemCollectionsGenericDictionary2,
+            WellKnownTypeNames.SystemCollectionsGenericHashSet1,
+            WellKnownTypeNames.SystemCollectionsGenericLinkedList1,
+            WellKnownTypeNames.SystemCollectionsGenericList1,
+            WellKnownTypeNames.SystemCollectionsGenericPriorityQueue2,
+            WellKnownTypeNames.SystemCollectionsGenericQueue1,
+            WellKnownTypeNames.SystemCollectionsGenericSortedSet1,
+            WellKnownTypeNames.SystemCollectionsGenericStack1);
 
         /// <summary>
         /// Linq methods causing its parameters to be enumerated.
         /// </summary>
-        public static readonly ImmutableArray<string> s_enumeratedParametersLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_enumeratedParametersLinqMethods = ImmutableArray.Create(
             nameof(Enumerable.Aggregate),
             nameof(Enumerable.All),
             nameof(Enumerable.Any),
             nameof(Enumerable.Average),
             nameof(Enumerable.Contains),
             nameof(Enumerable.Count),
-            nameof(Enumerable.DefaultIfEmpty),
             nameof(Enumerable.ElementAt),
             nameof(Enumerable.ElementAtOrDefault),
             nameof(Enumerable.First),
@@ -82,9 +94,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             "ToHashSet");
 
         /// <summary>
-        /// Linq methods deferring its parameters to be enumerated.
+        /// Linq chain methods deferring its parameters to be enumerated, and return a deferred type.
         /// </summary>
-        public static readonly ImmutableArray<string> s_deferParametersEnumeratedLinqMethods = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_linqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.Append),
             nameof(Enumerable.AsEnumerable),
             nameof(Enumerable.Cast),
@@ -111,6 +123,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             nameof(Enumerable.Join),
             nameof(Enumerable.Union),
             nameof(Enumerable.Zip),
+            nameof(Enumerable.DefaultIfEmpty),
             // Only available on .net6 or later
             "Chunk",
             "DistinctBy",
@@ -126,6 +139,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         private static readonly ImmutableArray<string> s_noEffectLinqChainMethods = ImmutableArray.Create(
             nameof(Enumerable.AsEnumerable));
+
+        /// <summary>
+        /// Linq methods don't enumerate deferred type, and is not a linq chain.
+        /// </summary>
+        private static readonly ImmutableArray<string> s_noEnumerationLinqMethods = ImmutableArray.Create(
+            // Only available on .net6 or later
+            "TryGetNonEnumeratedCount");
 
         protected abstract GlobalFlowStateDictionaryFlowOperationVisitor CreateOperationVisitor(
             GlobalFlowStateDictionaryAnalysisContext context,
@@ -144,21 +164,42 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
-            var deferredMethods = GetLinqMethods(wellKnownTypeProvider, s_deferParametersEnumeratedLinqMethods);
-            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods);
+            var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
+            var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
+            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods, s_contructorsEnumeratedParameterTypes);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var compilation = operationBlockStartAnalysisContext.Compilation;
             var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
+
+            var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
+            if (operationBlocks.IsEmpty)
+            {
+                return;
+            }
+
+            var syntaxTree = operationBlocks[0].Syntax.SyntaxTree;
+            var customizedEnumerationMethods = operationBlockStartAnalysisContext.Options.GetEnumerationMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    syntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
+
+            var customizedLinqChainMethods = operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
+                    MultipleEnumerableDescriptor,
+                    syntaxTree,
+                    operationBlockStartAnalysisContext.Compilation);
 
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
             var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
-                deferredMethods,
+                linqChainMethods,
+                noEnumerationMethods,
                 enumeratedMethods,
                 noEffectLinqChainMethods,
                 additionalDeferTypes,
-                getEnumeratorSymbols);
+                getEnumeratorSymbols,
+                customizedEnumerationMethods,
+                customizedLinqChainMethods);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(
@@ -183,13 +224,28 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             PooledHashSet<IOperation> builder)
         {
             var operation = context.Operation;
-            if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes))
+            if (IsDeferredType(operation.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes)
+                && IsEnumerated(operation, wellKnownSymbolsInfo))
             {
-                var isEnumerated = IsOperationEnumeratedByMethodInvocation(operation, wellKnownSymbolsInfo)
-                                   || IsOperationEnumeratedByForEachLoop(operation, wellKnownSymbolsInfo);
-                if (isEnumerated)
-                    builder.Add(operation);
+                builder.Add(operation);
             }
+        }
+
+        private static bool IsEnumerated(IOperation operation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
+        {
+            var (linqChainTailOperation, enumerationCount) = SkipLinqChainAndConversionMethod(operation, wellKnownSymbolsInfo);
+            if (enumerationCount == EnumerationCount.None)
+            {
+                return false;
+            }
+
+            if (enumerationCount > EnumerationCount.Zero)
+            {
+                return true;
+            }
+
+            return IsOperationEnumeratedByInvocation(linqChainTailOperation, wellKnownSymbolsInfo)
+                || IsOperationEnumeratedByForEachLoop(linqChainTailOperation, wellKnownSymbolsInfo);
         }
 
         private void Analyze(
@@ -198,68 +254,70 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             WellKnownSymbolsInfo wellKnownSymbolsInfo,
             PooledHashSet<IOperation> potentialDiagnosticOperations)
         {
-            if (potentialDiagnosticOperations.Count == 0)
+            try
             {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            var cfg = context.OperationBlocks.GetControlFlowGraph();
-            if (cfg == null)
-            {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
-                cfg,
-                context.OwningSymbol,
-                analysisContext => CreateOperationVisitor(
-                    analysisContext,
-                    wellKnownSymbolsInfo),
-                wellKnownTypeProvider,
-                context.Options,
-                MultipleEnumerableDescriptor,
-                // We are only interested in the state of parameters & locals. So no need to pessimistic for instance field.
-                pessimisticAnalysis: false);
-
-            if (analysisResult == null)
-            {
-                potentialDiagnosticOperations.Free(CancellationToken.None);
-                return;
-            }
-
-            using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
-            foreach (var operation in potentialDiagnosticOperations)
-            {
-                var result = analysisResult[operation.Kind, operation.Syntax];
-                if (result.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
+                if (potentialDiagnosticOperations.Count == 0)
                 {
-                    continue;
+                    return;
                 }
 
-                foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
+                var cfg = context.OperationBlocks.GetControlFlowGraph();
+                if (cfg == null)
                 {
-                    // Report if
-                    // 1. EnumerationCount is two or more times.
-                    // 2. There are two or more operations that might be involved.
-                    // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
-                    if (trackedInvocationSet.EnumerationCount == InvocationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
+                    return;
+                }
+
+                var analysisResult = GlobalFlowStateDictionaryAnalysis.TryGetOrComputeResult(
+                    cfg,
+                    context.OwningSymbol,
+                    analysisContext => CreateOperationVisitor(
+                        analysisContext,
+                        wellKnownSymbolsInfo),
+                    wellKnownTypeProvider,
+                    context.Options,
+                    MultipleEnumerableDescriptor,
+                    // We are only interested in the state of parameters & locals. So no need to pessimistic for instance field.
+                    pessimisticAnalysis: false);
+
+                if (analysisResult == null)
+                {
+                    return;
+                }
+
+                using var diagnosticOperations = PooledHashSet<IOperation>.GetInstance();
+                foreach (var operation in potentialDiagnosticOperations)
+                {
+                    var result = analysisResult[operation.Kind, operation.Syntax];
+                    if (result.Kind != GlobalFlowStateDictionaryAnalysisValueKind.Known)
                     {
-                        foreach (var trackedOperation in trackedInvocationSet.Operations)
+                        continue;
+                    }
+
+                    foreach (var (_, trackedInvocationSet) in result.TrackedEntities)
+                    {
+                        // Report if
+                        // 1. EnumerationCount is two or more times.
+                        // 2. There are two or more operations that might be involved.
+                        // (Note: 2 is an aggressive way to report diagnostic, because it is not guaranteed that happens on all the code path)
+                        if (trackedInvocationSet.EnumerationCount == EnumerationCount.TwoOrMoreTime || trackedInvocationSet.Operations.Count > 1)
                         {
-                            diagnosticOperations.Add(trackedOperation);
+                            foreach (var trackedOperation in trackedInvocationSet.Operations)
+                            {
+                                diagnosticOperations.Add(trackedOperation);
+                            }
                         }
                     }
                 }
-            }
 
-            foreach (var operation in diagnosticOperations)
+                foreach (var operation in diagnosticOperations)
+                {
+                    context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                }
+            }
+            finally
             {
-                context.ReportDiagnostic(operation.CreateDiagnostic(MultipleEnumerableDescriptor));
+                potentialDiagnosticOperations.Free(CancellationToken.None);
             }
-
-            potentialDiagnosticOperations.Free(CancellationToken.None);
         }
     }
 }
