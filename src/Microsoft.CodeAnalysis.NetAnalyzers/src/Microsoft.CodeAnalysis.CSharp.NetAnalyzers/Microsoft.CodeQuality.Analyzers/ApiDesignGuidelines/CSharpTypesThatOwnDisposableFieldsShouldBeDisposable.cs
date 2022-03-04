@@ -31,8 +31,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             {
                 if (node is AssignmentExpressionSyntax assignment)
                 {
-                    // ImplicitObjectCreationExpression	8659
-                    if (assignment.Right.RawKind is (int)SyntaxKind.ObjectCreationExpression or 8659 &&
+                    if (assignment.Right.Kind() is SyntaxKind.ObjectCreationExpression or ImplicitObjectCreationExpression &&
                         model.GetSymbolInfo(assignment.Left, cancellationToken).Symbol is IFieldSymbol field &&
                         disposableFields.Contains(field))
                     {
