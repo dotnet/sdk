@@ -57,6 +57,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// </summary>
         public SymbolNamesWithValueOption<Unit> CustomizedLinqChainMethods { get; }
 
+        /// <summary>
+        /// User specified value that should assume method enumerates take IEnumerable type arguments or not.
+        /// </summary>
+        public bool AssumeMethodEnumeratesArguments { get; }
+
         public WellKnownSymbolsInfo(
             ImmutableArray<IMethodSymbol> linqChainMethods,
             ImmutableArray<IMethodSymbol> noEnumerationMethods,
@@ -64,8 +69,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
             ImmutableArray<IMethodSymbol> getEnumeratorMethods,
-            SymbolNamesWithValueOption<Unit> customizedEnumerationMethods,
-            SymbolNamesWithValueOption<Unit> customizedLinqChainMethods)
+            SymbolNamesWithValueOption<Unit> customizedEumerationMethods,
+            SymbolNamesWithValueOption<Unit> customizedLinqChainMethods,
+            bool assumeMethodEnumeratesArguments)
         {
             LinqChainMethods = linqChainMethods;
             NoEnumerationMethods = noEnumerationMethods;
@@ -73,8 +79,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             NoEffectLinqChainMethods = noEffectLinqChainMethods;
             AdditionalDeferredTypes = additionalDeferredTypes;
             GetEnumeratorMethods = getEnumeratorMethods;
-            CustomizedEumerationMethods = customizedEnumerationMethods;
+            CustomizedEumerationMethods = customizedEumerationMethods;
             CustomizedLinqChainMethods = customizedLinqChainMethods;
+            AssumeMethodEnumeratesArguments = assumeMethodEnumeratesArguments;
         }
 
         public bool IsCustomizedEnumerationMethods(IMethodSymbol methodSymbol)
