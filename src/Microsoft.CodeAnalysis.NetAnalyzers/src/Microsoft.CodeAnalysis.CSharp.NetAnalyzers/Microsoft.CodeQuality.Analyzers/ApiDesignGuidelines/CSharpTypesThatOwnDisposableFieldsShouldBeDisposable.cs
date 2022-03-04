@@ -13,6 +13,8 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public sealed class CSharpTypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer : TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer<TypeDeclarationSyntax>
     {
+        private const SyntaxKind ImplicitObjectCreationExpression = (SyntaxKind)8659;
+
         protected override DisposableFieldAnalyzer GetAnalyzer(Compilation compilation)
         {
             return new CSharpDisposableFieldAnalyzer(compilation);
@@ -41,8 +43,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
                 {
                     foreach (VariableDeclaratorSyntax fieldInit in fieldDeclarationSyntax.Declaration.Variables)
                     {
-                        // ImplicitObjectCreationExpression	8659
-                        if (fieldInit.Initializer?.Value.RawKind is (int)SyntaxKind.ObjectCreationExpression or 8659 &&
+                        if (fieldInit.Initializer?.Value.Kind() is SyntaxKind.ObjectCreationExpression or ImplicitObjectCreationExpression &&
                             model.GetDeclaredSymbol(fieldInit, cancellationToken) is IFieldSymbol field &&
                             disposableFields.Contains(field))
                         {
