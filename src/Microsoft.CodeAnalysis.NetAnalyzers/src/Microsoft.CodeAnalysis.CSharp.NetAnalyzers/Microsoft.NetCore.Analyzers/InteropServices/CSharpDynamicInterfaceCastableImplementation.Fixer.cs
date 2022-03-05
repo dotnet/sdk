@@ -126,7 +126,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             foreach (var accessor in propDecl.AccessorList.Accessors)
             {
-                if (accessor.IsKind(InitAccessorDeclaration))
+                if (accessor.IsKind(SyntaxKindEx.InitAccessorDeclaration))
                 {
                     oldInitAccessor = accessor;
                     break;
