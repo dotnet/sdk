@@ -118,7 +118,7 @@ jobs:
     dependsOn: Build_Tarball
     # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
     # The bootstrap build will shortcut if the stage 1 build failed.
-    condition: succeededOrFailed()
+    condition: and(${{ parameters.condition }}, succeededOrFailed())
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         ${{ parameters.poolPublic }}
