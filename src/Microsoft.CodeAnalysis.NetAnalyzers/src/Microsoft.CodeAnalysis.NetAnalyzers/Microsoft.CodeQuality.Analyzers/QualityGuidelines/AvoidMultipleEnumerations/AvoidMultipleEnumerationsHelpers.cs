@@ -249,7 +249,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             // Enumeration methods specified in editorConfig
-            return wellKnownSymbolsInfo.IsCustomizedEnumerationMethods(originalMethod);
+            if (wellKnownSymbolsInfo.IsCustomizedEnumerationMethods(originalMethod))
+            {
+                return true;
+            }
+
+            // Analyzer is in aggressive mode, assuming all methods enumerated the argument if we know the type of mapping parameter is IEnumerable type.
+            return wellKnownSymbolsInfo.AssumeMethodEnumeratesArguments
+                && IsDeferredType(argumentMappingParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
         /// <summary>

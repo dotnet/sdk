@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -15,7 +14,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 {
     public class AvoidMultipleEnumerationsTests
     {
-        private static Task VerifyCSharpAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyCSharpAsync(
+            string code,
+            string customizedEnumerationMethods = null,
+            string customizedLinqChainMethods = null,
+            bool? assumeMethodEnumeratesArguments = null)
         {
             var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
@@ -23,6 +26,13 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
+            var assumeMethodEnumeratesArgumentsConfig = assumeMethodEnumeratesArguments switch
+            {
+                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = true",
+                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments  = false",
+                _ => string.Empty,
+            };
+
             var test = new VerifyCS.Test()
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
@@ -37,6 +47,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 [*]
 {enumerationMethods}
 {linqChainMethods}
+{assumeMethodEnumeratesArgumentsConfig}
 ") },
                 },
             };
@@ -44,7 +55,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             return test.RunAsync();
         }
 
-        private static Task VerifyVisualBasicAsync(string code, string customizedEnumerationMethods = null, string customizedLinqChainMethods = null)
+        private static Task VerifyVisualBasicAsync(
+            string code,
+            string customizedEnumerationMethods = null,
+            string customizedLinqChainMethods = null,
+            bool? assumeMethodEnumeratesArguments = null)
         {
             var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
@@ -52,6 +67,13 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
+
+            var assumeMethodEnumeratesArgumentsConfig = assumeMethodEnumeratesArguments switch
+            {
+                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = true",
+                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = false",
+                _ => string.Empty,
+            };
             var test = new VerifyVB.Test()
             {
                 ReferenceAssemblies = AdditionalMetadataReferences.Net60,
@@ -66,6 +88,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 [*]
 {enumerationMethods}
 {linqChainMethods}
+{assumeMethodEnumeratesArgumentsConfig}
 ") },
                 },
             };
@@ -3324,37 +3347,42 @@ End Namespace
             await VerifyVisualBasicAsync(vbCode);
         }
 
-        [Fact]
-        public async Task TestByDefaultSupposeMethodNotEnuemratesArgument()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [InlineData(null)]
+        public async Task TestAssumeMethodEnumeratesArgumentsFromEditorConfig(bool? assumeMethodEnumeratesArguments)
         {
-            var csharpCode = @"
+            var diagnostic = assumeMethodEnumeratesArguments == true ? "[|j|]" : "j";
+
+            var csharpCode = $@"
 using System.Collections.Generic;
 using System.Linq;
 
 public class Bar
-{
+{{
     public void Sub(IEnumerable<int> j, IEnumerable<int> i)
-    {
-        j.UnionBy(i, p => p).ElementAt(10);
-        Method(j);
-    }
+    {{
+        {diagnostic}.UnionBy(i, p => p).ElementAt(10);
+        Method({diagnostic});
+    }}
 
     private void Method(IEnumerable<int> k)
-    {
-        foreach (var p in k) { }
-    }
-}";
-            await VerifyCSharpAsync(csharpCode);
+    {{
+        foreach (var p in k) {{ }}
+    }}
+}}";
+            await VerifyCSharpAsync(csharpCode, assumeMethodEnumeratesArguments: assumeMethodEnumeratesArguments);
 
-            var vbCode = @"
+            var vbCode = $@"
 Imports System.Collections.Generic
 Imports System.Linq
 
 Namespace Ns
     Public Class Hoo
         Public Sub Goo(j As IEnumerable(Of Integer), i As IEnumerable(Of Integer))
-            j.UnionBy(i, Function(p) p).ElementAt(10)
-            Method(j)
+            {diagnostic}.UnionBy(i, Function(p) p).ElementAt(10)
+            Method({diagnostic})
         End Sub
 
         Private Sub Method(j As IEnumerable(Of Integer))
@@ -3364,7 +3392,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVisualBasicAsync(vbCode);
+            await VerifyVisualBasicAsync(vbCode, assumeMethodEnumeratesArguments: assumeMethodEnumeratesArguments);
         }
 
         [Theory]

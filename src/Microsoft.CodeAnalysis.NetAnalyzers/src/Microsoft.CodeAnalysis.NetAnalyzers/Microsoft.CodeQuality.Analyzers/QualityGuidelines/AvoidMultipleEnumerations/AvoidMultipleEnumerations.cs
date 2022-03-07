@@ -178,15 +178,24 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             var syntaxTree = operationBlocks[0].Syntax.SyntaxTree;
-            var customizedEnumerationMethods = operationBlockStartAnalysisContext.Options.GetEnumerationMethodsOption(
+            var options = operationBlockStartAnalysisContext.Options;
+            var customizedEnumerationMethods = options.GetEnumerationMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
-                    operationBlockStartAnalysisContext.Compilation);
+                    compilation);
 
-            var customizedLinqChainMethods = operationBlockStartAnalysisContext.Options.GetLinqChainMethodsOption(
+            var customizedLinqChainMethods = options.GetLinqChainMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
-                    operationBlockStartAnalysisContext.Compilation);
+                    compilation);
+
+
+            var assumeMethodEnumeratesArguments = options.GetBoolOptionValue(
+                EditorConfigOptionNames.AssumeMethodEnumeratesArguments,
+                MultipleEnumerableDescriptor,
+                syntaxTree,
+                compilation,
+                defaultValue: false);
 
             // In CFG blocks there is no foreach loop related Operation, so use the
             // the GetEnumerator method to find the foreach loop
@@ -199,7 +208,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 additionalDeferTypes,
                 getEnumeratorSymbols,
                 customizedEnumerationMethods,
-                customizedLinqChainMethods);
+                customizedLinqChainMethods,
+                assumeMethodEnumeratesArguments);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             operationBlockStartAnalysisContext.RegisterOperationAction(
