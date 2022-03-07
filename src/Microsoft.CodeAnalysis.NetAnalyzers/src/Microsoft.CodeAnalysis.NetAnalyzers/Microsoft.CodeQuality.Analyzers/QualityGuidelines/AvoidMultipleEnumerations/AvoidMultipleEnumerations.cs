@@ -189,7 +189,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     syntaxTree,
                     compilation);
 
-            var assumeMethodEnumeratesArguments = options.GetAssumeMethodEnumeratesArgumentsOption(
+
+            var assumeMethodEnumeratesArguments = options.GetBoolOptionValue(
+                EditorConfigOptionNames.AssumeMethodEnumeratesArguments,
                 MultipleEnumerableDescriptor,
                 syntaxTree,
                 compilation,
