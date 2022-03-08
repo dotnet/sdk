@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -76,8 +77,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             private readonly INamedTypeSymbol? _structLayoutAttribute;
             private readonly INamedTypeSymbol? _lcidConversionAttribute;
             private readonly ImmutableArray<ISymbol> _marshalMethods;
-            private readonly ReaderWriterLockSlim _layoutCacheLock = new();
-            private readonly Dictionary<ITypeSymbol, bool> _isAutoLayoutOrContainsAutoLayoutCache = new();
+            private readonly ConcurrentDictionary<ITypeSymbol, bool> _isAutoLayoutOrContainsAutoLayoutCache = new();
 
             public PerCompilationAnalyzer(Compilation compilation)
             {
@@ -121,18 +121,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         ImmutableDictionary.Create<string, string?>().Add(CanConvertToDisabledMarshallingEquivalentKey, canTransformToDisabledMarshallingEquivalent ? "true" : null),
                         invocation.TargetMethod.ToDisplayString()));
                 }
-            }
 
-            private static bool CanTransformToDisabledMarshallingEquivalent(IInvocationOperation invocation)
-            {
-                return invocation.TargetMethod.Name switch
+                static bool CanTransformToDisabledMarshallingEquivalent(IInvocationOperation invocation)
                 {
-                    "OffsetOf" => false,
-                    "SizeOf" => invocation.TargetMethod.IsGenericMethod || (invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is ITypeOfOperation { TypeOperand.IsUnmanagedType: true }),
-                    "StructureToPtr" => invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is { Type.IsUnmanagedType: true },
-                    "PtrToStructure" => invocation.Type is not null,
-                    _ => false
-                };
+                    return invocation.TargetMethod.Name switch
+                    {
+                        "OffsetOf" => false,
+                        "SizeOf" => invocation.TargetMethod.IsGenericMethod || (invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is ITypeOfOperation { TypeOperand.IsUnmanagedType: true }),
+                        "StructureToPtr" => invocation.Arguments.Length > 0 && invocation.Arguments[0].Value is { Type.IsUnmanagedType: true },
+                        "PtrToStructure" => invocation.Type is not null,
+                        _ => false
+                    };
+                }
             }
 
             public void AnalyzeFunctionPointerCall(OperationAnalysisContext context)
@@ -207,14 +207,30 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 void AnalyzeSignatureType(ImmutableArray<Location> locations, ITypeSymbol type)
                 {
-                    if (!type.IsUnmanagedType)
+                    if (type.SpecialType == SpecialType.System_Void)
+                    {
+                        return;
+                    }
+
+                    if (type.Language == LanguageNames.CSharp)
+                    {
+                        if (!type.IsUnmanagedType)
+                        {
+                            reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ManagedParameterOrReturnTypes));
+                        }
+                    }
+                    // For non-C# languages, we'll do a quick check to catch simple cases
+                    // since IsUnmanagedType only works in languages that support unmanaged types
+                    // and non-C# languages that might not support is (such as VB) aren't a big focus of the attribute
+                    // this analyzer validates.
+                    else if (type.IsReferenceType || type.GetMembers().Any(m => m is IFieldSymbol { IsStatic: false, Type.IsReferenceType: true }))
                     {
                         reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ManagedParameterOrReturnTypes));
                     }
 
                     if (type.IsValueType && TypeIsAutoLayoutOrContainsAutoLayout(type))
                     {
-                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ByRefParameters));
+                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, AutoLayoutTypes));
                     }
                 }
             }
@@ -223,17 +239,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 Debug.Assert(type.IsValueType);
 
-                try
+                if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
                 {
-                    _layoutCacheLock.EnterReadLock();
-                    if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
-                    {
-                        return isAutoLayoutOrContainsAutoLayout;
-                    }
-                }
-                finally
-                {
-                    _layoutCacheLock.ExitReadLock();
+                    return isAutoLayoutOrContainsAutoLayout;
                 }
 
                 if (_structLayoutAttribute is not null)
@@ -251,16 +259,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
                                 convertedLayoutKindValue == (ulong)LayoutKind.Auto)
                             {
-                                try
-                                {
-                                    _layoutCacheLock.EnterWriteLock();
-                                    _isAutoLayoutOrContainsAutoLayoutCache.Add(type, true);
-                                    return true;
-                                }
-                                finally
-                                {
-                                    _layoutCacheLock.ExitWriteLock();
-                                }
+                                _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
+                                return true;
                             }
                         }
                     }
@@ -271,10 +271,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     if (member is IFieldSymbol { IsStatic: false, Type.IsValueType: true } valueTypeField
                         && TypeIsAutoLayoutOrContainsAutoLayout(valueTypeField.Type))
                     {
+                        _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
                         return true;
                     }
                 }
 
+                _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, false);
                 return false;
             }
         }

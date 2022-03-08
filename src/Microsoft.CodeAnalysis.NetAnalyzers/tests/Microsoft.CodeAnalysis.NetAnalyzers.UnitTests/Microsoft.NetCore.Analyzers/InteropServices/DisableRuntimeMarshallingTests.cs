@@ -8,13 +8,16 @@ using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DisableRuntimeMarshallingAnalyzer,
     Microsoft.NetCore.Analyzers.InteropServices.CSharpDisableRuntimeMarshallingFixer>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.InteropServices.DisableRuntimeMarshallingAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.NetCore.Analyzers.InteropServices
 {
     public class DisableRuntimeMarshallingTests
     {
         [Fact]
-        public async Task PInvokeWithSetLastError_Emits_Diagnostic()
+        public async Task CS_PInvokeWithSetLastError_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -32,7 +35,23 @@ class Foo
         }
 
         [Fact]
-        public async Task PInvokeWithLCIDConversion_Emits_Diagnostic()
+        public async Task VB_PInvokeWithSetLastError_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"", SetLastError:=True)>
+    Public Shared Sub {|CA1420:Bar|}()
+    End Sub
+End Class
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithLCIDConversion_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -51,7 +70,24 @@ class Foo
         }
 
         [Fact]
-        public async Task PInvokeWithClassParameter_Emits_Diagnostic()
+        public async Task VB_PInvokeWithLCIDConversion_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    <LCIDConversion(0)>
+    Public Shared Sub {|CA1420:Bar|}()
+    End Sub
+End Class
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -69,7 +105,23 @@ class Foo
         }
 
         [Fact]
-        public async Task PInvokeWithClassReturnValue_Emits_Diagnostic()
+        public async Task VB_PInvokeWithClassParameter_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar({|CA1420:s|} As string)
+    End Sub
+End Class
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -86,8 +138,25 @@ class Foo
             await VerifyCSAnalyzerAsync(source);
         }
 
+
         [Fact]
-        public async Task PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
+        public async Task VB_PInvokeWithClassReturnValue_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Function {|CA1420:Bar|}() As string
+    End Function
+End Class
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -110,7 +179,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithManagedValueTypeParameter_Emits_Diagnostic()
+        public async Task VB_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Function {|CA1420:Bar|}() As ValueType
+    End Function
+End Class
+
+Public Structure ValueType
+    Public s As String
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -133,7 +222,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithByRefManagedValueTypeParameter_Emits_Diagnostic()
+        public async Task VB_PInvokeWithManagedValueTypeParameter_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+    End Sub
+End Class
+
+Public Structure ValueType
+    Public s As String
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithByRefManagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -156,7 +265,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
+        public async Task VB_PInvokeWithByRefManagedValueTypeParameter_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar(ByRef {|CA1420:{|CA1420:param|}|} As ValueType)
+    End Sub
+End Class
+
+Public Structure ValueType
+    Public s As String
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -179,7 +308,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
+        public async Task VB_PInvokeWithByRefUnmanagedValueTypeParameter_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar(ByRef {|CA1420:param|} As ValueType)
+    End Sub
+End Class
+
+Public Structure ValueType
+    Public s As Char
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -202,7 +351,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
+        public async Task VB_PInvokeWithUnmnagedValueTypeReturnValue_Does_Not_Emit_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Function Bar() As ValueType
+    End Function
+End Class
+
+Public Structure ValueType
+    Public s As Char
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -225,7 +394,27 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
+        public async Task VB_PInvokeWithUnmanagedValueTypeParameter_Does_Not_Emit_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar(param As ValueType)
+    End Sub
+End Class
+
+Public Structure ValueType
+    Public s As Char
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -249,7 +438,28 @@ struct ValueType
         }
 
         [Fact]
-        public async Task PInvokeWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
+        public async Task VB_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayout_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+    End Sub
+End Class
+
+<StructLayout(LayoutKind.Auto)>
+Public Structure ValueType
+    Public s As Char
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -278,6 +488,45 @@ struct ValueType2
         }
 
         [Fact]
+        public async Task VB_PInvokeWithUnmanagedValueTypeParameter_WithAutoLayoutField_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class Foo
+    <DllImport(""foo"")>
+    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+    End Sub
+End Class
+
+Public Structure ValueType
+    Public s As ValueType2
+End Structure
+
+<StructLayout(LayoutKind.Auto)>
+Public Structure ValueType2
+    Public s As char
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task Declare_Declaration_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Public Class D
+    Declare Sub {|CA1420:Method|} Lib ""Foo""
+End Class
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task PInvokeWithVarargs_Emits_Diagnostic()
         {
             string source = @"
@@ -296,7 +545,7 @@ class Foo
         }
 
         [Fact]
-        public async Task DelegateWithClassParameter_Emits_Diagnostic()
+        public async Task CS_DelegateWithClassParameter_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -314,7 +563,22 @@ class Foo
         }
 
         [Fact]
-        public async Task DelegateWithClassReturnValue_Emits_Diagnostic()
+        public async Task VB_DelegateWithClassParameter_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+
+<UnmanagedFunctionPointer(CallingConvention.Winapi)>
+Public Delegate Sub Foo({|CA1420:param|} As String)
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_DelegateWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -329,6 +593,21 @@ class Foo
 }
 ";
             await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task VB_DelegateWithClassReturnValue_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+
+<UnmanagedFunctionPointer(CallingConvention.Winapi)>
+Public Delegate Function {|CA1420:Foo|}() As String
+";
+            await VerifyVBAnalyzerAsync(source);
         }
 
         [Fact]
@@ -1042,6 +1321,38 @@ class ClassType
             await VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks: false);
         }
 
+
+
+        [Fact]
+        public async Task VB_Marshal_APIs_Emits_Diagnostic()
+        {
+            string source = @"
+Imports System
+Imports System.Runtime.CompilerServices
+Imports System.Runtime.InteropServices
+<assembly:DisableRuntimeMarshalling>
+Class Foo
+    Public Shared Sub Test()
+        Dim size As Int32
+        Dim ptr As IntPtr
+        Dim bar As Bar
+        
+        size = {|CA1421:Marshal.SizeOf(GetType(Bar))|}
+        size = {|CA1421:Marshal.SizeOf(Of Bar)()|}
+        bar = {|CA1421:Marshal.PtrToStructure(Of Bar)(ptr)|}
+        {|CA1421:Marshal.StructureToPtr(bar, ptr, False)|}
+        size = {|CA1421:Marshal.OffsetOf(GetType(bar), NameOf(bar.Baz))|}
+        size = {|CA1421:Marshal.OffsetOf(Of Bar)(NameOf(bar.Baz))|}
+    End Sub
+End Class
+
+Structure Bar
+    Public Baz As Int32
+End Structure
+";
+            await VerifyVBAnalyzerAsync(source);
+        }
+
         private static Task VerifyCSAnalyzerAsync(string source, bool allowUnsafeBlocks = false)
         {
             return VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks);
@@ -1060,11 +1371,30 @@ class ClassType
                 {
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId, (solution.GetProject(projectId).CompilationOptions as CSharpCompilationOptions)?.WithAllowUnsafe(allowUnsafeBlocks))
                 },
+                // Because we can't always fix all cases of our diagnostic,
+                // the test infrastructure can run up to 2 iterations of our fix-all code fix.
+                // The first run fixes all the fixable diagnostics.
+                // Since there are still some (unfixable) diagnostics, the test infrastructure decides to run the fix-all provider again.
+                // The second run doesn't do anything, since the remaining diagnostics are unfixable.
+                // Setting NumberOfFixAllIterations to -2 specifies that the fix-all provider can be run up to 2 times as part of a test run.
                 NumberOfFixAllIterations = -2
             };
 
             // Verify that there are some instances of the diagnostic that we can't fix.
             test.FixedState.MarkupHandling = MarkupMode.Allow;
+
+            await test.RunAsync();
+        }
+
+        private static async Task VerifyVBAnalyzerAsync(string source)
+        {
+            var test = new VerifyVB.Test
+            {
+                ReferenceAssemblies = new ReferenceAssemblies("net7.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "7.0.0-preview.1.22075.6"), Path.Combine("ref", "net7.0"))
+                    .WithNuGetConfigFilePath(Path.Combine(Path.GetDirectoryName(typeof(DisableRuntimeMarshallingTests).Assembly.Location), "NuGet.config")),
+                TestCode = source,
+                FixedCode = source
+            };
 
             await test.RunAsync();
         }
