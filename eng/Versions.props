@@ -7,6 +7,7 @@
   <!-- Opt out of certain Arcade features -->
   <PropertyGroup>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
+    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
   <!-- Repo Version Information -->
   <PropertyGroup>
@@ -129,6 +130,7 @@
     <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.2.0-3.22151.16</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.2.0-3.22151.16</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.2.0-3.22151.16</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetVersion>$(MicrosoftNetCompilersToolsetPackageVersion)</MicrosoftNetCompilersToolsetVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
