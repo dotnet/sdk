@@ -234,6 +234,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 codeStyleSeverity,
                 analyzerSeverity,
                 (diagnostics ?? Array.Empty<string>()).ToImmutableHashSet(),
+                ExcludeDiagnostics: ImmutableHashSet<string>.Empty,
                 SaveFormattedFiles: true,
                 ChangesAreErrors: false,
                 fileMatcher,
