@@ -3522,5 +3522,31 @@ class SubSub : Sub
     private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
 }");
         }
+
+        [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
+        public async Task OwnDisposableButDoesNotOverrideDisposableMember_DisposeAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+class MyBase : IAsyncDisposable
+{
+    public virtual ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+}
+
+class Sub : MyBase
+{
+}
+
+class SubSub : Sub
+{
+    private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
+}");
+        }
     }
 }

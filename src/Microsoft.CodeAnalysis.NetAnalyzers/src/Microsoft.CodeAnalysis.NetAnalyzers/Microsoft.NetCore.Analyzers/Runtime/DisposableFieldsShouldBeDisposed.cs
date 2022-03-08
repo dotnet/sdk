@@ -103,9 +103,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 foreach (var type in namedType.GetBaseTypes())
                 {
-                    foreach (var method in type.GetMembers().OfType<IMethodSymbol>().WhereAsArray(x => x.IsVirtual))
+                    foreach (var method in type.GetMembers().WhereAsArray(x => x.IsVirtual && x.Kind == SymbolKind.Method))
                     {
-                        if (IsDisposeMethod(method))
+                        if (IsDisposeMethod((IMethodSymbol)method))
                         {
                             return true;
                         }
