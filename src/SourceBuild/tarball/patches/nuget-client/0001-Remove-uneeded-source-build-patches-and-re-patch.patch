@@ -33,7 +33,7 @@ index 79a935391..65e482b83 100644
      <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
      <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
      <NETFXTargetFramework>net472</NETFXTargetFramework>
--    <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+-    <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
 -    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</NETCoreTargetFramework>
 +    <NETCoreTargetFramework>net6.0</NETCoreTargetFramework>
      <NETCoreTestTargetFramework>netcoreapp5.0</NETCoreTestTargetFramework>
@@ -69,7 +69,7 @@ index c11557248..0e7dd7861 100644
  
      <!-- Test and package versions -->
 @@ -33,7 +34,7 @@
-         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+         <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
          <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
          <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
 -        <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
@@ -94,7 +94,7 @@ index c94acffd8..f4d083e52 100644
        <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
          <PackagePath>$(PackagePathDir)</PackagePath>
        </TfmSpecificPackageFile>
--    </ItemGroup>    
+-    </ItemGroup>
 +    </ItemGroup>
    </Target>
  
