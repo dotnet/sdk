@@ -83,6 +83,7 @@ Configurable Rules:
 [CA1055](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055),
 [CA1056](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056),
 [CA1058](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058),
+[CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
 [CA1063](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063),
 [CA1068](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068),
 [CA1070](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070),
@@ -792,3 +793,15 @@ Option Values: `true` or `false`
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1826.exclude_ordefault_methods = true`
+
+### Additional enum `None` names
+
+Option Name: `additional_enum_none_names`
+
+Configurable Rules: [CA1008](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1008)
+
+Option Values: Names of additional enum None names (separated by `|`).
+
+Default Value: empty
+
+Example: `dotnet_code_quality.CA1008.additional_enum_none_names = Never` or `dotnet_code_quality.CA1008.additional_enum_none_names = Never|Nothing`

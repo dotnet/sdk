@@ -144,6 +144,49 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         End Function
 
         Protected Overrides Function GetConstraintSyntaxNodeForTypeConstrainedByPreviewTypes(typeOrMethodSymbol As ISymbol, previewInterfaceConstraintSymbol As ISymbol) As SyntaxNode
+            Dim typeSymbolDeclaringReferences = typeOrMethodSymbol.DeclaringSyntaxReferences
+
+            For Each syntaxReference In typeSymbolDeclaringReferences
+                Dim classStatement = TryCast(syntaxReference.GetSyntax(), ClassStatementSyntax)
+                If classStatement IsNot Nothing AndAlso classStatement.TypeParameterList IsNot Nothing Then
+                    Return GetSyntaxNodeFromTypeConstraints(classStatement.TypeParameterList, previewInterfaceConstraintSymbol)
+                End If
+
+                Dim methodDeclaration = TryCast(syntaxReference.GetSyntax(), MethodStatementSyntax)
+                If methodDeclaration IsNot Nothing AndAlso methodDeclaration.TypeParameterList IsNot Nothing Then
+                    Return GetSyntaxNodeFromTypeConstraints(methodDeclaration.TypeParameterList, previewInterfaceConstraintSymbol)
+                End If
+            Next
+            Return Nothing
+        End Function
+
+        Private Function GetSyntaxNodeFromTypeConstraints(typeParameters As TypeParameterListSyntax, previewSymbol As ISymbol) As SyntaxNode
+            For Each typeParameter In typeParameters.Parameters
+                Dim singleConstraint = TryCast(typeParameter.TypeParameterConstraintClause, TypeParameterSingleConstraintClauseSyntax)
+                If singleConstraint IsNot Nothing Then
+                    Return GetTypeConstraints(singleConstraint.Constraint, previewSymbol)
+                End If
+
+                Dim multipleConstraint = TryCast(typeParameter.TypeParameterConstraintClause, TypeParameterMultipleConstraintClauseSyntax)
+                If multipleConstraint IsNot Nothing Then
+                    For Each constraint In multipleConstraint.Constraints
+                        Dim constraintSyntax = GetTypeConstraints(constraint, previewSymbol)
+                        If constraintSyntax IsNot Nothing Then
+                            Return constraintSyntax
+                        End If
+                    Next
+                End If
+            Next
+
+            Return Nothing
+        End Function
+
+        Private Function GetTypeConstraints(constraint As ConstraintSyntax, previewSymbol As ISymbol) As SyntaxNode
+            Dim typeConstraint = TryCast(constraint, TypeConstraintSyntax)
+            If typeConstraint IsNot Nothing AndAlso IsIdentifierNameSyntax(typeConstraint.Type, previewSymbol) Then
+                Return typeConstraint.Type
+            End If
+
             Return Nothing
         End Function
 
@@ -167,6 +210,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
 
             Return Nothing
         End Function
+
         Protected Overrides Function GetPreviewReturnTypeSyntaxNodeForMethodOrProperty(methodOrPropertySymbol As ISymbol, previewReturnTypeSymbol As ISymbol) As SyntaxNode
             Dim methodOrPropertySymbolDeclaringReferences = methodOrPropertySymbol.DeclaringSyntaxReferences
 
