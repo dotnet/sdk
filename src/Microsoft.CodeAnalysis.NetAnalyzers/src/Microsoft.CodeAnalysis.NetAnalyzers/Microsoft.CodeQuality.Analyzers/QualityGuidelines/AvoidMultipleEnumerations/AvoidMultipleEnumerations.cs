@@ -159,26 +159,42 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         private void CompilationStartAction(CompilationStartAnalysisContext context)
-            => context.RegisterOperationBlockStartAction(OnOperationBlockStart);
-
-        private void OnOperationBlockStart(OperationBlockStartAnalysisContext operationBlockStartAnalysisContext)
         {
-            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(operationBlockStartAnalysisContext.Compilation);
+            var compilation = context.Compilation;
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
             var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
             var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
             var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods, s_contructorsEnumeratedParameterTypes);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
-            var compilation = operationBlockStartAnalysisContext.Compilation;
-            var additionalDeferTypes = GetTypes(compilation, s_additionalDeferredTypes);
+            var additionalDeferredTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
-            var operationBlocks = operationBlockStartAnalysisContext.OperationBlocks;
+            context.RegisterOperationBlockStartAction(context => OnOperationBlockStart(
+                linqChainMethods,
+                noEnumerationMethods,
+                enumeratedMethods,
+                noEffectLinqChainMethods,
+                additionalDeferredTypes,
+                context));
+        }
+
+        private void OnOperationBlockStart(
+            ImmutableArray<IMethodSymbol> linqChainMethods,
+            ImmutableArray<IMethodSymbol> noEnumerationMethods,
+            ImmutableArray<IMethodSymbol> enumeratedMethods,
+            ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
+            ImmutableArray<ITypeSymbol> additionalDeferredTypes,
+            OperationBlockStartAnalysisContext context)
+        {
+            var operationBlocks = context.OperationBlocks;
             if (operationBlocks.IsEmpty)
             {
                 return;
             }
 
             var syntaxTree = operationBlocks[0].Syntax.SyntaxTree;
-            var options = operationBlockStartAnalysisContext.Options;
+            var options = context.Options;
+            var compilation = context.Compilation;
+            var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
             var customizedEnumerationMethods = options.GetEnumerationMethodsOption(
                     MultipleEnumerableDescriptor,
                     syntaxTree,
@@ -205,14 +221,14 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 noEnumerationMethods,
                 enumeratedMethods,
                 noEffectLinqChainMethods,
-                additionalDeferTypes,
+                additionalDeferredTypes,
                 getEnumeratorSymbols,
                 customizedEnumerationMethods,
                 customizedLinqChainMethods,
                 assumeMethodEnumeratesArguments);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
-            operationBlockStartAnalysisContext.RegisterOperationAction(
+            context.RegisterOperationAction(
                 context => CollectPotentialDiagnosticOperations(
                     context,
                     wellKnownSymbolsInfo,
@@ -220,7 +236,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 OperationKind.ParameterReference,
                 OperationKind.LocalReference);
 
-            operationBlockStartAnalysisContext.RegisterOperationBlockEndAction(
+            context.RegisterOperationBlockEndAction(
                 context => Analyze(
                     context,
                     wellKnownTypeProvider,
