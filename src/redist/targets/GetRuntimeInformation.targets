@@ -37,8 +37,15 @@
       <!-- Warning: changing the value "ProductBandCombinedHostHostFxrFrameworkSdkName" can only occur on a product-band boundary [CliProductBandVersion],
                Changing "ProductBandCombinedHostHostFxrFrameworkSdkName" mid-product-band will break the upgradability of the SDK bundle installer. -->
       <ProductBandCombinedHostHostFxrFrameworkSdkName>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</ProductBandCombinedHostHostFxrFrameworkSdkName>
-      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(Architecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
-      <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(Architecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+
+      <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
+      <InstallerTargetArchitecture Condition=" '$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64' ">aarch64</InstallerTargetArchitecture>
+
+      <DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-$(InstallerTargetArchitecture)</DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <!-- Mariner RPM names -->
+      <MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.1-$(InstallerTargetArchitecture)</MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+      <Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk Condition=" '$(IsRPMBasedDistro)' == 'True' ">$(ArtifactNameCombinedHostHostFxrFrameworkSdk)-$(Version)-cm.2-$(InstallerTargetArchitecture)</Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+
     </PropertyGroup>
   </Target>
 </Project>
