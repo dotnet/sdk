@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "6.0.102"
+    "dotnet": "6.0.103"
   },
   "msbuild-sdks": {
     "Microsoft.Build.CentralPackageVersions": "2.0.1",
