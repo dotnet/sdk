@@ -15,7 +15,8 @@
     <PackageReference Include="NuGet.Versioning" Version="$(NuGetVersioningPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetVersioningPackageVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="1.4.2" />
-    <PackageReference Include="WindowsAzure.Storage" Version="8.4.0" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
