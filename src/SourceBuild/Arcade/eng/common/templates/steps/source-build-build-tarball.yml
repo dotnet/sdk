@@ -13,6 +13,15 @@ parameters:
   # Skip running the OmniSharp smoke-tests
   excludeOmniSharpTests: false
 
+  # Resource id of the installer build to retrieve source/product tarball's from
+  installerBuildResourceId: null
+
+  # Whether or not this is a bootstrapped build
+  isBootstrapped: false
+
+  # Platform the build is running on (linux, osx, win)
+  platform: null
+
   # Script logic to prep the tarball for building
   prepScript: null
 
@@ -22,21 +31,32 @@ parameters:
   # Directory to build the tarball in
   tarballDir:
 
-  # Resource id of the tarball to download and build
-  tarballResourceId: null
-
 steps:
-  - download: ${{ parameters.tarballResourceId }}
+  - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    - task: Bash@3
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
+        arguments: $(Build.SourcesDirectory)/NuGet.config $Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
+
+  - download: ${{ parameters.installerBuildResourceId }}
     artifact: BlobArtifacts
     patterns: '**/dotnet-sdk-source*.tar.gz'
-    displayName: Download Tarball
+    displayName: Download Source Tarball
+
+  - download: ${{ parameters.installerBuildResourceId }}
+    artifact: BlobArtifacts
+    patterns: '**/dotnet-sdk-!(*-*)-${{ parameters.platform }}-${{ parameters.buildArch }}.tar.gz'
+    displayName: Download MSFT sdk Tarball
 
   - script: |
       set -x
 
       resourceIdPathSegment=
-      if [ '${{ parameters.tarballResourceId }}' != 'current' ]; then
-        resourceIdPathSegment='${{ parameters.tarballResourceId }}/'
+      if [ '${{ parameters.installerBuildResourceId }}' != 'current' ]; then
+        resourceIdPathSegment='${{ parameters.installerBuildResourceId }}/'
       fi
 
       mkdir -p "${{ parameters.tarballDir }}"
@@ -70,7 +90,16 @@ steps:
       rm -f ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
       cp NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/smoke-tests/online.NuGet.Config
 
-      docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball -e EXCLUDE_OMNISHARP_TESTS=${{ parameters.excludeOmniSharpTests}} ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
+      dockerVolumeArgs="-v ${{ parameters.tarballDir }}:/tarball"
+      dockerEnvArgs="-e EXCLUDE_OMNISHARP_TESTS=${{ parameters.excludeOmniSharpTests}}"
+
+      if [ '${{ parameters.isBootstrapped}}' != 'true' && '${{ parameters.installerBuildResourceId }}' != 'current' ]; then
+        dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
+        msftSdkTarballName=$(find "$(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/" -name "dotnet-sdk-*-${{ parameters.Platform }}-${{ parameters.buildArch }}.tar.gz" -exec basename {} \;)
+        dockerEnvArgs+=" -e MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
+      fi
+
+      docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.

@@ -154,5 +154,6 @@
     <ArcadeSharedFrameworkSdkOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Group="ARCADE_SHARED_FX_SDK" Version="$(arcadeOutputPackageVersion)"/>
     <ILSdkOverride Include="Microsoft.NET.Sdk.IL" Group="IL" />
     <MsBuildTraversalSdkOverride Include="Microsoft.Build.Traversal" Group="MSBUILD_TRAVERSAL" Version="2.0.2"/>
+    <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsLocalDir)EmptySdk"/>
   </ItemGroup>
 </Project>

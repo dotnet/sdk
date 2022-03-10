@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 internal static class ExecuteHelper
 {
     public static (Process Process, string StdOut, string StdErr) ExecuteProcess(
-        string fileName, string args, ITestOutputHelper outputHelper)
+        string fileName, string args, ITestOutputHelper outputHelper, bool logOutput = false)
     {
         outputHelper.WriteLine($"Executing: {fileName} {args}");
 
@@ -47,17 +48,33 @@ internal static class ExecuteHelper
         process.WaitForExit();
 
         string output = stdOutput.ToString().Trim();
-        if (outputHelper != null && !string.IsNullOrWhiteSpace(output))
+        if (logOutput && !string.IsNullOrWhiteSpace(output))
         {
             outputHelper.WriteLine(output);
         }
 
         string error = stdError.ToString().Trim();
-        if (outputHelper != null && !string.IsNullOrWhiteSpace(error))
+        if (logOutput && !string.IsNullOrWhiteSpace(error))
         {
             outputHelper.WriteLine(error);
         }
 
         return (process, output, error);
+    }
+
+    public static string ExecuteProcessValidateExitCode(string fileName, string args, ITestOutputHelper outputHelper)
+    {
+        (Process Process, string StdOut, string StdErr) result = ExecuteHelper.ExecuteProcess(fileName, args, outputHelper);
+
+        if (result.Process.ExitCode != 0)
+        {
+            ProcessStartInfo startInfo = result.Process.StartInfo;
+            string msg = $"Failed to execute {startInfo.FileName} {startInfo.Arguments}" +
+                $"{Environment.NewLine}Exit code: {result.Process.ExitCode}" +
+                $"{Environment.NewLine}Standard Error: {result.StdErr}";
+            throw new InvalidOperationException(msg);
+        }
+
+        return result.StdOut;
     }
 }
