@@ -491,7 +491,8 @@
                       '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
-                      '$(SdkMSBuildExtensionsNupkgFile)'" />
+                      '$(SdkMSBuildExtensionsNupkgFile)' ^
+                      '$(Architecture)'" />
       
       <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
                                     OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
@@ -511,7 +512,8 @@
                       '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)'" />
+                      '$(VSTemplateLocatorNupkgFile)' ^
+                      '$(Architecture)'" />
 
   </Target>
 
