@@ -16,7 +16,7 @@
       Overwrite="true"
       Encoding="ASCII" />
 
-    <GetDependencyInfo 
+    <GetDependencyInfo
       VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
       DependencyName="Microsoft.NETCore.App.Ref">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
@@ -37,9 +37,9 @@
 
   <PropertyGroup>
       <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>22</VersionFeature31>
-      <VersionFeature50>14</VersionFeature50>
-      <VersionFeature60>2</VersionFeature60>
+      <VersionFeature31>23</VersionFeature31>
+      <VersionFeature50>15</VersionFeature50>
+      <VersionFeature60>3</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
@@ -53,11 +53,11 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
       <_NET60RuntimePackVersion>6.0.$(VersionFeature60)</_NET60RuntimePackVersion>
-      <_NET60TargetingPackVersion>6.0.0</_NET60TargetingPackVersion>
+      <_NET60TargetingPackVersion>6.0.$(VersionFeature60)</_NET60TargetingPackVersion>
       <_WindowsDesktop60RuntimePackVersion>6.0.$(VersionFeature60)</_WindowsDesktop60RuntimePackVersion>
-      <_WindowsDesktop60TargetingPackVersion>6.0.0</_WindowsDesktop60TargetingPackVersion>
+      <_WindowsDesktop60TargetingPackVersion>6.0.$(VersionFeature60)</_WindowsDesktop60TargetingPackVersion>
       <_AspNet60RuntimePackVersion>6.0.$(VersionFeature60)</_AspNet60RuntimePackVersion>
-      <_AspNet60TargetingPackVersion>6.0.0</_AspNet60TargetingPackVersion>
+      <_AspNet60TargetingPackVersion>6.0.$(VersionFeature60)</_AspNet60TargetingPackVersion>
 
       <_NET50RuntimePackVersion>5.0.$(VersionFeature50)</_NET50RuntimePackVersion>
       <_NET50TargetingPackVersion>5.0.0</_NET50TargetingPackVersion>
