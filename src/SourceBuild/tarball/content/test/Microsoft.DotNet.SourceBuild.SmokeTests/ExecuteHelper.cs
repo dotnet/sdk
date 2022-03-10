@@ -43,6 +43,7 @@ internal static class ExecuteHelper
 
         configure?.Invoke(process);
 
+        StringBuilder stdOutput = new();
         process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => stdOutput.AppendLine(e.Data));
 
         StringBuilder stdError = new();
