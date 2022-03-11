@@ -1311,8 +1311,12 @@
   <data name="OperatorOverloadsHaveNamedAlternatesCodeFixTitle" xml:space="preserve">
     <value>Add operator overload named alternate</value>
   </data>
-  <data name="PosssibleMultipleEnumerationsOfIEnumrableCollection" xml:space="preserve">
+  <data name="AvoidMultipleEnumerationsMessage" xml:space="preserve">
     <value>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.</value>
+    <comment>{Locked="IEnumerable"}</comment>
+  </data>
+  <data name="AvoidMultipleEnumerationsTitle" xml:space="preserve">
+    <value>Possible multiple enumerations of 'IEnumerable' collection</value>
     <comment>{Locked="IEnumerable"}</comment>
   </data>
   <data name="CollectionsShouldImplementGenericInterfaceMultipleMessage" xml:space="preserve">

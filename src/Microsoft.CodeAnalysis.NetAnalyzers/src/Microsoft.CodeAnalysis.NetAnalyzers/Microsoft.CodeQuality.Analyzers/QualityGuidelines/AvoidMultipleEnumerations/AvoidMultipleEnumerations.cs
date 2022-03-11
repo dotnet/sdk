@@ -20,8 +20,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         private static readonly DiagnosticDescriptor MultipleEnumerableDescriptor = DiagnosticDescriptorHelper.Create(
             RuleId,
-            CreateLocalizableResourceString(nameof(PosssibleMultipleEnumerationsOfIEnumrableCollection)),
-            CreateLocalizableResourceString(nameof(PosssibleMultipleEnumerationsOfIEnumrableCollection)),
+            CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsTitle)),
+            CreateLocalizableResourceString(nameof(AvoidMultipleEnumerationsMessage)),
             DiagnosticCategory.Performance,
             RuleLevel.Disabled,
             description: null,
