@@ -7,21 +7,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class SdkContentTests
+public class SdkContentTests : SmokeTests
 {
-    private ITestOutputHelper OutputHelper { get; }
-    private DotNetHelper DotNetHelper { get; }
-
-    public SdkContentTests(ITestOutputHelper outputHelper)
-    {
-        OutputHelper = outputHelper;
-        DotNetHelper = new DotNetHelper(outputHelper);
-    }
+    public SdkContentTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
     /// <Summary>
     /// Verifies the file layout of the source built sdk tarball to the Microsoft build.
@@ -30,34 +22,28 @@ public class SdkContentTests
     /// This makes the baseline durable between releases.  This does mean however, entries
     /// in the baseline may appear identical if the diff is version specific.
     /// </Summary>
-    [Fact]
+    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.MsftSdkTarballPathEnv }, skipOnNullOrWhiteSpace: true)]
     public void CompareMsftToSb()
     {
-        if (string.IsNullOrWhiteSpace(Config.MsftSdkTarballPath))
-        {
-            OutputHelper.WriteLine($"skipping {nameof(CompareMsftToSb)} because {Config.MsftSdkTarballPathEnv} was not specified.");
-            return;
-        }
-
-        if (!File.Exists(Config.MsftSdkTarballPath))
-        {
-            throw new InvalidOperationException($"Tarball path '{Config.MsftSdkTarballPath}' specified in {Config.MsftSdkTarballPathEnv} does not exist.");
-        }
-
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string sbFileListingFileName = "sbSdkFiles.txt";
         WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName);
-        WriteTarballFileList(Config.DotNetTarballPath, sbFileListingFileName);
+        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveVersionedPaths(diff);
         diff = RemoveDiffMarkers(diff);
         diff = RemoveRids(diff);
-        BaselineHelper.Compare("MsftToSbSdk.diff", diff, OutputHelper);
+        BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper);
     }
 
-    private void WriteTarballFileList(string tarballPath, string outputFileName)
+    private void WriteTarballFileList(string? tarballPath, string outputFileName)
     {
+        if (!File.Exists(tarballPath))
+        {
+            throw new InvalidOperationException($"Tarball path '{tarballPath}' does not exist.");
+        }
+
         string fileListing = ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"tf {tarballPath}", OutputHelper);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
         File.WriteAllLines(outputFileName, files);
@@ -72,7 +58,7 @@ public class SdkContentTests
         return diffSegmentRegex.Replace(result, "@@ ------------ @@");
     }
 
-    private string RemoveRids(string diff) => diff.Replace(Config.TargetRid, "bannana.rid");
+    private static string RemoveRids(string diff) => diff.Replace(Config.TargetRid, "banana.rid");
 
     private static string RemoveVersionedPaths(string source)
     {

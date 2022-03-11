@@ -4,22 +4,15 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
-using System.Linq;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class XmlDocTests
+public class XmlDocTests : SmokeTests
 {
-    private ITestOutputHelper OutputHelper { get; }
-    private DotNetHelper DotNetHelper { get; }
-
-    public XmlDocTests(ITestOutputHelper outputHelper)
-    {
-        OutputHelper = outputHelper;
-        DotNetHelper = new DotNetHelper(outputHelper);
-    }
+    public XmlDocTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
     /// <Summary>
     /// Verifies every targeting pack assembly has a xml doc file.
@@ -48,6 +41,6 @@ public class XmlDocTests
             }
         }
 
-        BaselineHelper.Compare("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
+        BaselineHelper.CompareEntries("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
     }
 }

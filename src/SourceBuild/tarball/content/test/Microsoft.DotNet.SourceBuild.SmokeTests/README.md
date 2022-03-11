@@ -4,6 +4,7 @@
 * Various configuration settings are stored in `Config.cs`
 
 ## Prereq Packages
+
 Some prerelease scenarios, usually security updates, require non-source-built packages which are not publicly available.
-Place these packages in the tarball's `packages/smoke-test-prereqs`. When prereq packages are required, the
-`EXCLUDE_ONLINE_TESTS=true` environment variable should be set when running tests via `build.sh --run-smoke-test`.
+Specify the directory where these packages can be found via the `SMOKE_TESTS_PREREQS_PATH` environment variable when running tests via `build.sh --run-smoke-test` e.g.
+`SMOKE_TESTS_PREREQS_PATH=packages/smoke-test-prereqs`.
