@@ -88,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Check if the operation is deferred type and also it is the collecton of is enumerated by for each loop.
+        /// Check if the operation is deferred type and also it is a collecton enumerated by a for each loop.
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
@@ -312,6 +312,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     methodParameter => IsDeferredType(methodParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes) && methodParameter.Equals(argumentMappingParameter.OriginalDefinition)))
             {
                 // All well-known linq chain methods under Linq namespace won't enumerate the argument.
+                // e.g. For methods like 'Select', 'Where', etc..
+                // call 'a.Select(i => i + 1)' won't enumerate 'a'
                 return true;
             }
 
