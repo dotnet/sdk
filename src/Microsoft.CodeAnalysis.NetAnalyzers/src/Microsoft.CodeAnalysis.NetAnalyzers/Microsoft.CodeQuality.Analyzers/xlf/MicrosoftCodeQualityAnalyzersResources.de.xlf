@@ -333,8 +333,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PosssibleMultipleEnumerationsOfIEnumrableCollection">
-        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
-        <target state="new">Possible multiple enumerations of 'IEnumerable' collection</target>
+        <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.</source>
+        <target state="new">Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="RemoveRedundantElementInitializationCodeFixTitle">
