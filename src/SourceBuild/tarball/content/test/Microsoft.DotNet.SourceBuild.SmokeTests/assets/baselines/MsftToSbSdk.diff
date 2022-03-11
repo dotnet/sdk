@@ -764,14 +764,6 @@ index ------------
  ./sdk/x.y.z/ref/mscorlib.dll
  ./sdk/x.y.z/ref/netstandard.dll
 @@ ------------ @@
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
- ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll
-+./sdk/x.y.z/Roslyn/bincore/runtimes/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/
-+./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Runtime.CompilerServices.Unsafe.dll
