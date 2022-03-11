@@ -18,12 +18,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="baselines/*">
+    <Content Include="assets/**">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="smoke-tests/*">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="assets/**" />
+    <EmbeddedResource Remove="assets/**" />
+    <None Remove="assets/**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +34,6 @@
   </ItemGroup>
 
   <Target Name="CopySmokeTestPrereqs" BeforeTargets="Build">
-    <Copy SourceFiles="@(SmokeTestPrereqs)" DestinationFolder="$(OutputPath)\smoke-tests\prereq-packages" />
+    <Copy SourceFiles="@(SmokeTestPrereqs)" DestinationFolder="$(OutputPath)\assets\smoke-tests\prereq-packages" />
   </Target>
 </Project>

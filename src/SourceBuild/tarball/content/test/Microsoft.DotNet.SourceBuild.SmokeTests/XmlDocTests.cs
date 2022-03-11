@@ -4,23 +4,15 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
-using System;
-using System.Linq;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class XmlDocTests
+public class XmlDocTests : SmokeTests
 {
-    private ITestOutputHelper OutputHelper { get; }
-    private DotNetHelper DotNetHelper { get; }
-
-    public XmlDocTests(ITestOutputHelper outputHelper)
-    {
-        OutputHelper = outputHelper;
-        DotNetHelper = new DotNetHelper(outputHelper);
-    }
+    public XmlDocTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
     /// <Summary>
     /// Verifies every targeting pack assembly has a xml doc file.
@@ -31,7 +23,7 @@ public class XmlDocTests
     {
         List<string> missingXmlDoc = new();
 
-        string targetingPacksDirectory = Path.Combine(DotNetHelper.DotNetInstallDirectory, "packs");
+        string targetingPacksDirectory = Path.Combine(Config.DotNetDirectory, "packs");
         foreach (string targetingPackAssembly in Directory.EnumerateFiles(targetingPacksDirectory, "*.dll", SearchOption.AllDirectories))
         {
             if (targetingPackAssembly.EndsWith("resources.dll"))
@@ -42,13 +34,13 @@ public class XmlDocTests
             string xmlFile = Path.ChangeExtension(targetingPackAssembly, ".xml");
             if (!File.Exists(xmlFile))
             {
-                string pathWithoutPacksPrefix = xmlFile.Substring(targetingPacksDirectory.Length + 1);
-                String[] pathParts = pathWithoutPacksPrefix.Split(Path.DirectorySeparatorChar);
+                string pathWithoutPacksPrefix = xmlFile[(targetingPacksDirectory.Length + 1)..];
+                string[] pathParts = pathWithoutPacksPrefix.Split(Path.DirectorySeparatorChar);
                 string pathWithoutVersion = string.Join(Path.DirectorySeparatorChar, pathParts.Take(1).Concat(pathParts.Skip(2)));
                 missingXmlDoc.Add(pathWithoutVersion);
             }
         }
 
-        BaselineHelper.Compare("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
+        BaselineHelper.CompareEntries("MissingXmlDoc.txt", missingXmlDoc.OrderBy(entry => entry));
     }
 }

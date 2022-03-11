@@ -21,10 +21,6 @@
     <MSBuild Projects="repos\$(RootRepoTests).proj" Targets="Build" Properties="RunTests=true;SkipEnsurePackagesCreated=true" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <Target Name="CreateRootRepoFile" AfterTargets="PrepareOutput">
-    <WriteLinesToFile Lines="$(RootRepo)" File="$(BaseIntermediatePath)rootrepo.txt" Overwrite="True" />
-  </Target>
-
   <Target Name="PrepareOutput">
     <MakeDir Directories="$(OutputPath)" />
     <MakeDir Directories="$(LoggingDir)" />
@@ -99,24 +95,47 @@
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
     </PropertyGroup>
 
-    <Exec Command="$(DotnetToolCommand) test ./test/Microsoft.DotNet.SourceBuild.SmokeTests --logger:trx -c $(Configuration)"
+    <Exec Command="$(DotnetToolCommand) test $(SmokeTestsDir) --logger:trx -c $(Configuration)"
           EnvironmentVariables="
-            DOTNET_TARBALL_PATH=$(SdkTarballPath);
-            TARGET_RID=$(TargetRid);
+            SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
+            SMOKE_TESTS_TARGET_RID=$(TargetRid);
             " />
   </Target>
 
-  <Target Name="CreateSmokeTestPrereqs"
+  <Target Name="CreateSmokeTestPrereqsTarball"
           AfterTargets="RunSmokeTest"
-          Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'" >
+          Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'"
+          DependsOnTargets="
+            CheckIfCreateSmokeTestPrereqsExistToPack;
+            CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"/>
+
+  <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).tar.gz</SmokeTestPrereqsTarballName>
+      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/net6.0/</SmokeTestsArtifactsDir>
+      <SmokeTestsPackagesDir>$(SmokeTestsArtifactsDir)packages/</SmokeTestsPackagesDir>
     </PropertyGroup>
 
-    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
-          WorkingDirectory="./test/Microsoft.DotNet.SourceBuild.SmokeTests/bin/$(Configuration)/net6.0/smoke-tests/prereq-packages/"/>
+    <ItemGroup>
+      <SmokeTestsPrereqs Include="$(SmokeTestsPackagesDir)**/*.nupkg" />
+    </ItemGroup>
 
-    <Message Importance="High" Text="Packaged smoke-test prereqs to $(SmokeTestPrereqsTarballName)" />
+    <Message Text="Found @(SmokeTestsPrereqs->Count()) prereqs in '$(SmokeTestsPackagesDir)'." Importance="High" />
+  </Target>
+
+  <Target Name="CreateCreateSmokeTestPrereqsTarballIfPrereqsExist"
+          Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
+    <PropertyGroup>
+      <SmokeTestPrereqsTarballName>$(OutputPath)dotnet-smoke-test-prereqs.$(installerOutputPackageVersion).tar.gz</SmokeTestPrereqsTarballName>
+      <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(SmokeTestsPrereqs)"
+          DestinationFolder="$(SmokeTestsPrereqPackagesDir)" />
+
+    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
+          WorkingDirectory="$(SmokeTestsPrereqPackagesDir)"/>
+
+    <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarballName)'" />
   </Target>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UploadToAzure" />

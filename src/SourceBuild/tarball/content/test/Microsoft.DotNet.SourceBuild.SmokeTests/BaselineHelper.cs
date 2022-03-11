@@ -4,15 +4,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests
 {
     internal class BaselineHelper
     {
-        public static void Compare(string baselineFileName, IOrderedEnumerable<string> actualEntries)
+        public static void CompareEntries(string baselineFileName, IOrderedEnumerable<string> actualEntries)
         {
             IEnumerable<string> baseline = File.ReadAllLines(GetBaselineFilePath(baselineFileName));
             string[] missingEntries = actualEntries.Except(baseline).ToArray();
@@ -32,6 +34,45 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             Assert.Null(message);
         }
 
-        private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(Directory.GetCurrentDirectory(), "baselines", baselineFileName);
+        public static void CompareContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper)
+        {
+            string baselineFilePath = GetBaselineFilePath(baselineFileName);
+
+            string actualFilePath = Path.Combine(Environment.CurrentDirectory, $"{baselineFileName}");
+            File.WriteAllText(actualFilePath, actualContents);
+
+            CompareFiles(baselineFilePath, actualFilePath, outputHelper);
+        }
+
+        public static void CompareFiles(string baselineFilePath, string actualFilePath, ITestOutputHelper outputHelper)
+        {
+            string baselineFileText = File.ReadAllText(baselineFilePath);
+            string actualFileText = File.ReadAllText(actualFilePath);
+
+            string? message = null;
+
+            if (baselineFileText != actualFileText)
+            {
+                // Retrieve a diff in order to provide a UX which calls out the diffs.
+                string diff = DiffFiles(baselineFilePath, actualFilePath, outputHelper);
+                message = $"{Environment.NewLine}Baseline '{baselineFilePath}' does not match actual '{actualFilePath}`.  {Environment.NewLine}"
+                    + $"{diff}{Environment.NewLine}";
+            }
+
+            Assert.Null(message);
+        }
+
+        public static string DiffFiles(string file1Path, string file2Path, ITestOutputHelper outputHelper)
+        {
+            (Process Process, string StdOut, string StdErr) diffResult =
+                ExecuteHelper.ExecuteProcess("git", $"diff --no-index {file1Path} {file2Path}", outputHelper);
+            Assert.Equal(1, diffResult.Process.ExitCode);
+
+            return diffResult.StdOut;
+        }
+
+        public static string GetAssetsDirectory() => Path.Combine(Directory.GetCurrentDirectory(), "assets");
+
+        private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
     }
 }
