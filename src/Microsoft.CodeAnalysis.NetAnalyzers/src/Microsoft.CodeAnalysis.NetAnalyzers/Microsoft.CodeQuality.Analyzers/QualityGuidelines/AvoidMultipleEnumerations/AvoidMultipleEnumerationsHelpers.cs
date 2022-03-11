@@ -88,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Check if the operation is deferred type and also it is a collecton of is enumerated by for a each loop.
+        /// Check if the operation is deferred type and also it is a collecton enumerated by a for each loop.
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,

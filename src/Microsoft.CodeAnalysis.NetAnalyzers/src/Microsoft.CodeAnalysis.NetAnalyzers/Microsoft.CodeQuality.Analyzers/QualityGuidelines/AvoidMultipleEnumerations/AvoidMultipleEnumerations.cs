@@ -168,12 +168,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var additionalDeferredTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
+            // In CFG blocks there is no foreach loop related Operation, so use the
+            // the GetEnumerator method to find the foreach loop
+            var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
             context.RegisterOperationBlockStartAction(context => OnOperationBlockStart(
                 linqChainMethods,
                 noEnumerationMethods,
                 enumeratedMethods,
                 noEffectLinqChainMethods,
                 additionalDeferredTypes,
+                getEnumeratorSymbols,
                 context));
         }
 
@@ -183,6 +187,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             ImmutableArray<IMethodSymbol> enumeratedMethods,
             ImmutableArray<IMethodSymbol> noEffectLinqChainMethods,
             ImmutableArray<ITypeSymbol> additionalDeferredTypes,
+            ImmutableArray<IMethodSymbol> getEnumeratorSymbols,
             OperationBlockStartAnalysisContext context)
         {
             var operationBlocks = context.OperationBlocks;
@@ -213,9 +218,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 compilation,
                 defaultValue: false);
 
-            // In CFG blocks there is no foreach loop related Operation, so use the
-            // the GetEnumerator method to find the foreach loop
-            var getEnumeratorSymbols = GetGetEnumeratorMethods(wellKnownTypeProvider);
             var wellKnownSymbolsInfo = new WellKnownSymbolsInfo(
                 linqChainMethods,
                 noEnumerationMethods,
