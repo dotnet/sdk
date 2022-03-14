@@ -415,7 +415,7 @@
 
   <Target Name="GenerateTemplatesNupkgs"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SignTemplatesMsis;SetupTemplatesNupkgs"
-          Condition="$(ProductMonikerRid.StartsWith('win')) And !$(Architecture.StartsWith('arm'))"
+          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm' "
           Inputs="@(TemplatesNupkgComponent->'%(MSIInstallerFile)');
                     $(TemplatesInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -480,7 +480,7 @@
 
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
           DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Condition=" '$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64') "
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
                     $(SdkMSBuildExtensionsNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -491,7 +491,8 @@
                       '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
-                      '$(SdkMSBuildExtensionsNupkgFile)'" />
+                      '$(SdkMSBuildExtensionsNupkgFile)' ^
+                      '$(Architecture)'" />
       
       <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
                                     OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
@@ -500,7 +501,7 @@
 
   <Target Name="GenerateVSTemplateLocatorNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Condition=" '$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64') "
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
                     $(VSTemplateLocatorNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -511,7 +512,8 @@
                       '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)'" />
+                      '$(VSTemplateLocatorNupkgFile)' ^
+                      '$(Architecture)'" />
 
   </Target>
 
