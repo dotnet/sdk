@@ -480,7 +480,7 @@
 
   <Target Name="GenerateSdkMSBuildExtensionsNupkg"
           DependsOnTargets="GenerateLayout;GenerateMSBuildExtensions;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64') "
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
                     $(SdkMSBuildExtensionsNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -491,18 +491,16 @@
                       '$(MSBuildExtensionsLayoutDirectory.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
-                      '$(SdkMSBuildExtensionsNupkgFile)' ^
-                      '$(Architecture)'" />
+                      '$(SdkMSBuildExtensionsNupkgFile)'" />
       
-      <GenerateMSBuildExtensionsSWR Condition="'$(Architecture)' == 'x64'"
-                                    MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
+      <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
                                     OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
 
   </Target>
 
   <Target Name="GenerateVSTemplateLocatorNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64') "
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
                     $(VSTemplateLocatorNuspecFile);
                     $(GenerateNupkgPowershellScript)"
@@ -513,8 +511,7 @@
                       '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(VSTemplateLocatorNuspecFile)' ^
-                      '$(VSTemplateLocatorNupkgFile)' ^
-                      '$(Architecture)'" />
+                      '$(VSTemplateLocatorNupkgFile)'" />
 
   </Target>
 
