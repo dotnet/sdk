@@ -323,7 +323,7 @@ using System;
 struct S
 {
     public static readonly S Value = new();
-    public static readonly TimeSpan Time [|= new()|];
+    public static readonly TimeSpan Time = new();
 
     public S() => throw null;
 }
@@ -348,7 +348,7 @@ using System;
 struct S
 {
     public static readonly S Value = new();
-    public static readonly TimeSpan Time;
+    public static readonly TimeSpan Time = new();
 
     public S() => throw null;
 }
@@ -368,6 +368,42 @@ class C
     private S2 s4;
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        public async Task DoNotReportOnInstanceMembersForStructs()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestCode = @"
+public record struct MyRecord
+{
+     public bool SomeBool { get; set; } = false;
+}
+
+public struct MyStruct
+{
+     public bool SomeBool { get; set; } = false;
+}
+
+public record struct MyRecord2()
+{
+     public bool SomeBool { get; set; } = false;
+}
+
+public record struct MyRecord3
+{
+    public MyRecord3() { }
+    public bool SomeBool { get; set; } = false;
+}
+
+public struct MyStruct3
+{
+    public MyStruct3() { }
+    public bool SomeBool { get; set; } = false;
+}",
             }.RunAsync();
         }
 

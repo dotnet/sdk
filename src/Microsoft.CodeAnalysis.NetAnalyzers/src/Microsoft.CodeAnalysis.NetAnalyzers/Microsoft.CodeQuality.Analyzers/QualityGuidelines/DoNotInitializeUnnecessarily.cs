@@ -45,6 +45,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 if (field != null &&
                     !field.IsConst &&
                     init.Value != null &&
+                    field.ContainingType?.TypeKind != TypeKind.Struct && // Do not report on instance members of struct
                     field.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
                     UsesKnownDefaultValue(init.Value, field.Type))
                 {
@@ -58,6 +59,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 IPropertySymbol? prop = init.InitializedProperties.FirstOrDefault();
                 if (prop != null &&
                     init.Value != null &&
+                    prop.ContainingType?.TypeKind != TypeKind.Struct && // Do not report on instance members of struct
                     prop.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
                     UsesKnownDefaultValue(init.Value, prop.Type))
                 {
