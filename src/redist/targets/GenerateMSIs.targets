@@ -494,7 +494,8 @@
                       '$(SdkMSBuildExtensionsNupkgFile)' ^
                       '$(Architecture)'" />
       
-      <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
+      <GenerateMSBuildExtensionsSWR Condition="'$(Architecture)' == 'x64'"
+                                    MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
                                     OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
 
   </Target>

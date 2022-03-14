@@ -9,15 +9,18 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 internal static class Config
 {
-    public static string DotNetDirectory { get; } = 
-        Environment.GetEnvironmentVariable("DOTNET_DIR") ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
-    public static string DotNetTarballPath { get; } = Environment.GetEnvironmentVariable(DotNetTarballPathEnv) ?? string.Empty;
-    public const string DotNetTarballPathEnv = "DOTNET_TARBALL_PATH";
-    public static bool ExcludeOmniSharpTests { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable("EXCLUDE_OMNISHARP_TESTS"), out bool excludeOmniSharpTests) ? excludeOmniSharpTests : false;
-    public static bool ExcludeOnlineTests { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable("EXCLUDE_ONLINE_TESTS"), out bool excludeOnlineTests) ? excludeOnlineTests : false;
-    public static string MsftSdkTarballPath { get; } = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv) ?? string.Empty;
-    public const string MsftSdkTarballPathEnv = "MSFT_SDK_TARBALL_PATH";
-    public static string TargetRid { get; } = Environment.GetEnvironmentVariable("TARGET_RID") ?? string.Empty;
+    public const string DotNetDirectoryEnv = "SMOKE_TESTS_DOTNET_DIR";
+    public const string ExcludeOmniSharpEnv = "SMOKE_TESTS_EXCLUDE_OMNISHARP";
+    public const string MsftSdkTarballPathEnv = "SMOKE_TESTS_MSFT_SDK_TARBALL_PATH";
+    public const string PrereqsPathEnv = "SMOKE_TESTS_PREREQS_PATH";
+    public const string SdkTarballPathEnv = "SMOKE_TESTS_SDK_TARBALL_PATH";
+    public const string TargetRidEnv = "SMOKE_TESTS_TARGET_RID";
+
+    public static string DotNetDirectory { get; } =
+        Environment.GetEnvironmentVariable(DotNetDirectoryEnv) ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
+    public static string? MsftSdkTarballPath { get; } = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv);
+    public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
+    public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
+    public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
+        throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
 }

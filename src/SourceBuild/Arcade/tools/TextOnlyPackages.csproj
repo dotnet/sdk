@@ -11,36 +11,10 @@
     should be added to source-build-reference-packages.
   -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.DotNet.Common.ItemTemplates"
-                     Version="[$(MicrosoftDotNetCommonItemTemplates30PackageVersion)];
-                              [$(MicrosoftDotNetCommonItemTemplates31PackageVersion)];
-                              [$(MicrosoftDotNetCommonItemTemplates50PackageVersion)];
-                              [$(MicrosoftDotNetCommonItemTemplates60PackageVersion)]" />
-
-    <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates"
-                     Version="[$(AspNetCorePackageVersionFor21Templates)];
-                              [$(AspNetCorePackageVersionFor30Templates)];
-                              [$(AspNetCorePackageVersionFor31Templates)];
-                              [$(AspNetCorePackageVersionFor50Templates)]" />
-
-    <!-- TODO: Re-enable once successful build completes -->
-    <!-- <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" /> -->
-
-    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.0" Version="[$(MicrosoftDotNetCommonProjectTemplates30PackageVersion)]" />
-    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.3.1" Version="[$(MicrosoftDotNetCommonProjectTemplates31PackageVersion)]" />
-    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" Version="[$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Common.ItemTemplates" Version="[$(MicrosoftDotNetCommonItemTemplates60PackageVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" Version="[$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)]" />
-
-    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="[$(AspNetCorePackageVersionFor21Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.3.0" Version="[$(AspNetCorePackageVersionFor30Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.3.1" Version="[$(AspNetCorePackageVersionFor31Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" Version="[$(AspNetCorePackageVersionFor50Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
-
-    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1" Version="[$(AspNetCorePackageVersionFor21Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" Version="[$(AspNetCorePackageVersionFor30Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1" Version="[$(AspNetCorePackageVersionFor31Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" Version="[$(AspNetCorePackageVersionFor50Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
 
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.200" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
