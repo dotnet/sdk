@@ -58,7 +58,8 @@
       <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
     </ItemGroup>
 
-    <Exec Command="$(SignCheckExe) ^
+    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'" 
+                   Command="$(SignCheckExe) ^
                    --recursive ^
                    -f UnsignedFiles ^
                    -i @(SignCheckWorkloadManifestMsiInputFiles, ' ') ^
