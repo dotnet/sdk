@@ -52,11 +52,6 @@
         <target state="translated">특성 문자열 리터럴이 올바르게 구문 분석되어야 합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AutoLayoutTypes">
-        <source>Types with '[StructLayout(LayoutKind.Auto)]'</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder'를 마샬링하는 경우 항상 네이티브 버퍼 복사본이 만들어지므로 하나의 마샬링 작업에 대해 할당이 여러 번 이루어집니다.</target>
@@ -1127,9 +1122,39 @@
         <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage">
-        <source>'{0}' requires runtime marshalling to be enabled</source>
-        <target state="new">'{0}' requires runtime marshalling to be enabled</target>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
+        <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
+        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
+        <source>By-ref parameters require runtime marshalling to be enabled</source>
+        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
+        <source>HResult-swapping requires runtime marshalling to be enabled</source>
+        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
+        <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
+        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
+        <source>Managed parameter or return types require runtime marshalling to be enabled</source>
+        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
+        <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
+        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
+        <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
+        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
@@ -1175,11 +1200,6 @@
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
         <target state="translated">'CancellationToken' 매개 변수를 메서드로 전달</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HResultSwapping">
-        <source>HResult-swapping</source>
-        <target state="new">HResult-swapping</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1497,11 +1517,6 @@
         <target state="translated">매개 변수가 0인 생성자를 '공개'로 설정</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManagedParameterOrReturnTypes">
-        <source>Managed parameter or return types</source>
-        <target state="new">Managed parameter or return types</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">직렬화할 수 없는 형식의 인스턴스 필드는 직렬화할 수 있는 형식으로 선언됩니다.</target>
@@ -1658,13 +1673,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
-        <source>'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</target>
+        <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
+        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
-        <source>This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</target>
+        <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
+        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2302,11 +2317,6 @@
         <target state="translated">HttpCookie를 사용할 경우 HttpCookie.HttpOnly가 false로 설정되거나, 설정되지 않습니다. 악성 스크립트가 쿠키를 도용하지 못하도록 하려면 보안에 중요한 쿠키가 HttpOnly로 표시되어 있는지 확인하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SetLastErrorTrue">
-        <source>Setting SetLastError to 'true'</source>
-        <target state="new">Setting SetLastError to 'true'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetViewStateUserKey">
         <source>Set ViewStateUserKey For Classes Derived From Page</source>
         <target state="translated">Page에서 파생된 클래스의 ViewStateUserKey 설정</target>
@@ -2587,7 +2597,7 @@
         <target state="translated">{0} 메서드는 P/Invokes에 DefaultDllImportSearchPaths 특성을 사용하지 않았습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseDisabledMarshallingEquivalent">
+      <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
         <target state="new">Use equivalent code that works when marshalling is disabled</target>
         <note />
@@ -2895,16 +2905,6 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을(를) 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsingLCIDConversionAttribute">
-        <source>Using 'LCIDConversionAttribute'</source>
-        <target state="new">Using 'LCIDConversionAttribute'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VarargPInvokes">
-        <source>Varadic P/Invoke signatures</source>
-        <target state="new">Varadic P/Invoke signatures</target>
         <note />
       </trans-unit>
     </body>

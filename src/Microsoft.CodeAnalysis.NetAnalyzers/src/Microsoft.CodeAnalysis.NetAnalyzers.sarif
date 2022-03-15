@@ -1654,7 +1654,7 @@
         },
         "CA1421": {
           "id": "CA1421",
-          "shortDescription": "This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied",
+          "shortDescription": "This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied",
           "fullDescription": "This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.",
           "defaultLevel": "note",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421",

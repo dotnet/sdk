@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             public static readonly CustomFixAllProvider Instance = new();
 
-            protected override string CodeActionTitle => MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalent;
+            protected override string CodeActionTitle => MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix;
 
             protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             identifierGenerator = scopeMap[block] = new IdentifierGenerator(editor.SemanticModel, block);
                         }
-                        if (TryRewriteMethodCall(node, editor, identifierGenerator, fixAllContext.CancellationToken))
+                        if (TryRewriteMethodCall(node, editor, identifierGenerator, addRenameAnnotation: false, fixAllContext.CancellationToken))
                         {
                             AddUnsafeModifierToEnclosingMethod(editor, node);
                         }
@@ -127,9 +127,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     context.RegisterCodeFix(
                         CodeAction.Create(
-                            MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalent,
+                            MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix,
                             async ct => await UseDisabledMarshallingEquivalentAsync(enclosingNode, context.Document, context.CancellationToken).ConfigureAwait(false),
-                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalent)),
+                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix)),
                         diagnostic);
                 }
             }
@@ -156,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         {
             var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
             var identifierGenerator = new IdentifierGenerator(editor.SemanticModel, node.SpanStart);
-            var addUnsafeToEnclosingMethod = TryRewriteMethodCall(node, editor, identifierGenerator, ct);
+            var addUnsafeToEnclosingMethod = TryRewriteMethodCall(node, editor, identifierGenerator, addRenameAnnotation: true, ct);
 
             if (addUnsafeToEnclosingMethod)
             {
@@ -166,7 +166,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             return editor.GetChangedDocument();
         }
 
-        private static bool TryRewriteMethodCall(SyntaxNode node, DocumentEditor editor, IdentifierGenerator pointerIdentifierGenerator, CancellationToken ct)
+        private static bool TryRewriteMethodCall(SyntaxNode node, DocumentEditor editor, IdentifierGenerator pointerIdentifierGenerator, bool addRenameAnnotation, CancellationToken ct)
         {
             var operation = (IInvocationOperation)editor.SemanticModel.GetOperation(node, ct);
             InvocationExpressionSyntax syntax = (InvocationExpressionSyntax)operation.Syntax;
@@ -227,6 +227,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             // We couldn't generate an identifier to use, so don't update the call
                             return false;
                         }
+
+                        SyntaxAnnotation renameIdentiferAnnotation = RenameAnnotation.Create();
+
+                        IdentifierNameSyntax nonNullPtrIdentifierNode = SyntaxFactory.IdentifierName(nonNullPtrIdentifier);
+
+                        if (addRenameAnnotation)
+                        {
+                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentiferAnnotation);
+                        }
+
                         var pointerCast = editor.Generator.CastExpression(
                                 editor.SemanticModel.Compilation.CreatePointerTypeSymbol(underlyingType),
                                 pointer.Syntax);
@@ -238,7 +248,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         nullCheckAndDecl = nullCheckAndDecl.WithExpression((ExpressionSyntax)pointerCast);
                         replacementNode = editor.Generator.ConditionalExpression(
                             nullCheckAndDecl,
-                            SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression, SyntaxFactory.IdentifierName(nonNullPtrIdentifier)),
+                            SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression, nonNullPtrIdentifierNode),
                             editor.Generator.CastExpression(operation.TargetMethod.ReturnType, editor.Generator.NullLiteralExpression()));
                     }
                     else if (type is { IsUnmanagedType: true })

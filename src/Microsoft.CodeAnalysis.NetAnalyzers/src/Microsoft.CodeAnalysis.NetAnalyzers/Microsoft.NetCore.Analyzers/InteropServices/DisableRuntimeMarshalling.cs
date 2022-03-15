@@ -22,11 +22,77 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         internal const string FeatureUnsupportedWhenRuntimeMarshallingDisabledId = "CA1420";
 
-        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabled =
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue =
             DiagnosticDescriptorHelper.Create(
                 FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
                 CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
-                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledVarargPInvokes =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledByRefParameters =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledManagedParameterOrReturnTypes =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes)),
+                DiagnosticCategory.Interoperability,
+                RuleLevel.BuildWarning,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
+                isPortedFxCopRule: false,
+                isDataflowRule: false);
+
+        private static readonly DiagnosticDescriptor FeatureUnsupportedWhenRuntimeMarshallingDisabledAutoLayoutTypes =
+            DiagnosticDescriptorHelper.Create(
+                FeatureUnsupportedWhenRuntimeMarshallingDisabledId,
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle)),
+                CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes)),
                 DiagnosticCategory.Interoperability,
                 RuleLevel.BuildWarning,
                 CreateLocalizableResourceString(nameof(FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription)),
@@ -49,7 +115,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         public const string CanConvertToDisabledMarshallingEquivalentKey = nameof(CanConvertToDisabledMarshallingEquivalentKey);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
-            FeatureUnsupportedWhenRuntimeMarshallingDisabled,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledVarargPInvokes,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledByRefParameters,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledManagedParameterOrReturnTypes,
+            FeatureUnsupportedWhenRuntimeMarshallingDisabledAutoLayoutTypes,
             MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabled);
 
         public override void Initialize(AnalysisContext context)
@@ -169,22 +241,22 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (dllImportData.SetLastError)
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, SetLastErrorTrue));
+                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue));
                 }
 
                 if (!method.MethodImplementationFlags().HasFlag(System.Reflection.MethodImplAttributes.PreserveSig))
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, HResultSwapping));
+                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping));
                 }
 
-                if (_lcidConversionAttribute is not null && method.GetAttributes(_lcidConversionAttribute).Any())
+                if (_lcidConversionAttribute is not null && method.HasAttribute(_lcidConversionAttribute))
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, UsingLCIDConversionAttribute));
+                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute));
                 }
 
                 if (method.IsVararg)
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, VarargPInvokes));
+                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledVarargPInvokes));
                 }
 
                 AnalyzeMethodSignature(context.ReportDiagnostic, method);
@@ -198,7 +270,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     var paramLocation = locationsOverride.IsDefaultOrEmpty ? param.Locations : locationsOverride;
                     if (param.RefKind != RefKind.None)
                     {
-                        reportDiagnostic(paramLocation.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ByRefParameters));
+                        reportDiagnostic(paramLocation.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledByRefParameters));
                     }
                     AnalyzeSignatureType(paramLocation, param.Type);
                 }
@@ -214,7 +286,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         if (!type.IsUnmanagedType)
                         {
-                            reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ManagedParameterOrReturnTypes));
+                            reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledManagedParameterOrReturnTypes));
                         }
                     }
                     // For non-C# languages, we'll do a quick check to catch simple cases
@@ -223,12 +295,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     // this analyzer validates.
                     else if (type.IsReferenceType || type.GetMembers().Any(m => m is IFieldSymbol { IsStatic: false, Type.IsReferenceType: true }))
                     {
-                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, ManagedParameterOrReturnTypes));
+                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledManagedParameterOrReturnTypes));
                     }
 
                     if (type.IsValueType && TypeIsAutoLayoutOrContainsAutoLayout(type))
                     {
-                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabled, AutoLayoutTypes));
+                        reportDiagnostic(locations.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledAutoLayoutTypes));
                     }
                 }
             }

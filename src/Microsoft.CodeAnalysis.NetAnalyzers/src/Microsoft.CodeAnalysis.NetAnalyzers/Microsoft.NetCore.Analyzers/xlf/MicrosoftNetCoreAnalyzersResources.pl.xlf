@@ -52,11 +52,6 @@
         <target state="translated">Analiza literałów ciągu atrybutu powinna kończyć się powodzeniem</target>
         <note />
       </trans-unit>
-      <trans-unit id="AutoLayoutTypes">
-        <source>Types with '[StructLayout(LayoutKind.Auto)]'</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">Marshalling elementu „StringBuilder” zawsze tworzy natywną kopię buforu, co powoduje powstanie wielu alokacji dla jednej operacji marshallingu.</target>
@@ -1127,9 +1122,39 @@
         <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessage">
-        <source>'{0}' requires runtime marshalling to be enabled</source>
-        <target state="new">'{0}' requires runtime marshalling to be enabled</target>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
+        <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
+        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
+        <source>By-ref parameters require runtime marshalling to be enabled</source>
+        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
+        <source>HResult-swapping requires runtime marshalling to be enabled</source>
+        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
+        <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
+        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
+        <source>Managed parameter or return types require runtime marshalling to be enabled</source>
+        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
+        <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
+        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
+        <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
+        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
@@ -1175,11 +1200,6 @@
       <trans-unit id="ForwardCancellationTokenToInvocationsTitle">
         <source>Forward the 'CancellationToken' parameter to methods</source>
         <target state="translated">Prześlij dalej parametr „CancellationToken” do metod</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HResultSwapping">
-        <source>HResult-swapping</source>
-        <target state="new">HResult-swapping</target>
         <note />
       </trans-unit>
       <trans-unit id="HardCodedSecurityProtocolMessage">
@@ -1497,11 +1517,6 @@
         <target state="translated">Ustaw konstruktora publicznego, który przyjmuje zero parametrów jako „publiczny”</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManagedParameterOrReturnTypes">
-        <source>Managed parameter or return types</source>
-        <target state="new">Managed parameter or return types</target>
-        <note />
-      </trans-unit>
       <trans-unit id="MarkAllNonSerializableFieldsDescription">
         <source>An instance field of a type that is not serializable is declared in a type that is serializable.</source>
         <target state="translated">Wystąpienie pola typu, którego nie można serializować, jest zadeklarowane w typie, który można serializować.</target>
@@ -1658,13 +1673,13 @@
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
-        <source>'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results</target>
+        <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
+        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
-        <source>This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied</target>
+        <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
+        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2302,11 +2317,6 @@
         <target state="translated">Właściwość HttpCookie.HttpOnly jest ustawiana na wartość false lub nie jest konfigurowana wcale w przypadku używania elementu HttpCookie. Upewnij się, że wpływające na zabezpieczenia pliki cookie są oznaczone jako HttpOnly, aby uniemożliwić złośliwym skryptom kradzież plików cookie</target>
         <note />
       </trans-unit>
-      <trans-unit id="SetLastErrorTrue">
-        <source>Setting SetLastError to 'true'</source>
-        <target state="new">Setting SetLastError to 'true'</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SetViewStateUserKey">
         <source>Set ViewStateUserKey For Classes Derived From Page</source>
         <target state="translated">Ustaw właściwość ViewStateUserKey dla klas pochodzących od klasy Page</target>
@@ -2587,7 +2597,7 @@
         <target state="translated">Metoda {0} nie korzystała z atrybutu DefaultDllImportSearchPaths dla elementów P/Invoke.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UseDisabledMarshallingEquivalent">
+      <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
         <target state="new">Use equivalent code that works when marshalling is disabled</target>
         <note />
@@ -2895,16 +2905,6 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3} „{0}” używa typu w wersji zapoznawczej „{1}” i wymaga wyrażenia zgody na korzystanie z funkcji w wersji zapoznawczej. Aby uzyskać więcej informacji, zobacz {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UsingLCIDConversionAttribute">
-        <source>Using 'LCIDConversionAttribute'</source>
-        <target state="new">Using 'LCIDConversionAttribute'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VarargPInvokes">
-        <source>Varadic P/Invoke signatures</source>
-        <target state="new">Varadic P/Invoke signatures</target>
         <note />
       </trans-unit>
     </body>

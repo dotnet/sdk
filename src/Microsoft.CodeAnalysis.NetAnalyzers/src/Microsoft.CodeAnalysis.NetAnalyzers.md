@@ -744,7 +744,7 @@ Using features that require runtime marshalling when runtime marshalling is disa
 |CodeFix|False|
 ---
 
-## [CA1421](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421): This method uses runtime marshalling even when the 'System.Runtime.CompilerServices.DisableRuntimeMarshallingAttribute' is applied
+## [CA1421](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421): This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied
 
 This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.
 
