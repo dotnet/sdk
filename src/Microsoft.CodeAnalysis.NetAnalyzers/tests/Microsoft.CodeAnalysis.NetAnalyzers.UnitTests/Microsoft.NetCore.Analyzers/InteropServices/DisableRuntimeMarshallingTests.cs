@@ -1382,6 +1382,7 @@ End Structure
 
             // Verify that there are some instances of the diagnostic that we can't fix.
             test.FixedState.MarkupHandling = MarkupMode.Allow;
+            test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
             await test.RunAsync();
         }
@@ -1395,6 +1396,7 @@ End Structure
                 TestCode = source,
                 FixedCode = source
             };
+            test.MarkupOptions = MarkupOptions.UseFirstDescriptor;
 
             await test.RunAsync();
         }
