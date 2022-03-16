@@ -17,6 +17,11 @@
         <target state="translated">Chemin d'un fichier solution, d'un fichier projet ou d'un dossier contenant un fichier solution ou un fichier projet. Si aucun chemin n'est spécifié, le répertoire actif est utilisé.</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
         <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
         <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>
