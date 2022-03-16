@@ -255,7 +255,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             }
 
             // Analyzer is in aggressive mode, assuming all methods enumerated the argument if we know the type of mapping parameter is IEnumerable type.
-            return wellKnownSymbolsInfo.AssumeMethodEnumeratesArguments
+            return wellKnownSymbolsInfo.AssumeMethodEnumeratesParameters
                 && IsDeferredType(argumentMappingParameter.Type?.OriginalDefinition, wellKnownSymbolsInfo.AdditionalDeferredTypes);
         }
 
