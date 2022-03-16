@@ -812,7 +812,7 @@ Option Name: `enumeration_methods`
 
 Configurable Rules: [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1851)
 
-Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) of additional methods enumerating all parameters with IEnumerable type (separated by `|`). 
+Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) of additional methods enumerating all parameters with IEnumerable type (separated by `|`).
 
 Default Value: empty
 
@@ -830,6 +830,7 @@ Default Value: empty
 
 This option is used to include customized methods like [Select](https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
 Consider the example:
+
 ```
 public static MyClass
 {
@@ -839,8 +840,10 @@ public static MyClass
   } 
 }
 ```
+
 In this example the options could be: `dotnet_code_quality.CA1851.linq_chain_methods = M:MyClass.MyNoEnumerationIncrementSelect*`.
 If the method enumerates the parameter, this option can be used with `enumeration_methods` for example:
+
 ```
 public static MyClass
 {
@@ -850,6 +853,7 @@ public static MyClass
   } 
 }
 ```
+
 In this example the options would be `dotnet_code_quality.CA1851.linq_chain_methods = M:MyClass.MyEnumerationLinqChain*` and `dotnet_code_quality.CA1851.enumeration_methods = M:MyClass.MyEnumerationLinqChain*`.
 
 ### Assume method enumerates parameters
