@@ -831,7 +831,7 @@ Default Value: empty
 This option is used to include customized methods like [Select](https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
 Consider the example:
 
-```
+```csharp
 public static MyClass
 {
   public static IEnumerable<int> MyNoEnumerationIncrementSelect(this IEnumerable<int> source)
@@ -844,7 +844,7 @@ public static MyClass
 In this example the options could be: `dotnet_code_quality.CA1851.linq_chain_methods = M:MyClass.MyNoEnumerationIncrementSelect*`.
 If the method enumerates the parameter, this option can be used with `enumeration_methods` for example:
 
-```
+```csharp
 public static MyClass
 {
   public static IEnumerable<int> MyEnumerationLinqChain(this IEnumerable<int> source)
