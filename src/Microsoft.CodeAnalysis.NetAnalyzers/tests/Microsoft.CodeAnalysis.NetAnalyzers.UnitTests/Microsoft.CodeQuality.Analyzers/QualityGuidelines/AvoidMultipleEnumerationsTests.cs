@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             string code,
             string customizedEnumerationMethods = null,
             string customizedLinqChainMethods = null,
-            bool? assumeMethodEnumeratesArguments = null)
+            bool? assumeMethodEnumeratesParameters = null)
         {
             var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
@@ -26,10 +26,10 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             var linqChainMethods = customizedLinqChainMethods == null
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
-            var assumeMethodEnumeratesArgumentsConfig = assumeMethodEnumeratesArguments switch
+            var assumeMethodEnumeratesParametersConfig = assumeMethodEnumeratesParameters switch
             {
-                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = true",
-                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments  = false",
+                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true",
+                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_parameters  = false",
                 _ => string.Empty,
             };
 
@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 [*]
 {enumerationMethods}
 {linqChainMethods}
-{assumeMethodEnumeratesArgumentsConfig}
+{assumeMethodEnumeratesParametersConfig}
 ") },
                 },
             };
@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
             string code,
             string customizedEnumerationMethods = null,
             string customizedLinqChainMethods = null,
-            bool? assumeMethodEnumeratesArguments = null)
+            bool? assumeMethodEnumeratesParameters = null)
         {
             var enumerationMethods = customizedEnumerationMethods == null
                 ? string.Empty
@@ -68,10 +68,10 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
                 ? string.Empty
                 : $"dotnet_code_quality.CA1851.linq_chain_methods = {customizedLinqChainMethods}";
 
-            var assumeMethodEnumeratesArgumentsConfig = assumeMethodEnumeratesArguments switch
+            var assumeMethodEnumeratesParametersConfig = assumeMethodEnumeratesParameters switch
             {
-                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = true",
-                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_arguments = false",
+                true => $"dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true",
+                false => $"dotnet_code_quality.CA1851.assume_method_enumerates_parameters = false",
                 _ => string.Empty,
             };
             var test = new VerifyVB.Test()
@@ -88,7 +88,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.Microsoft.CodeQuality.An
 [*]
 {enumerationMethods}
 {linqChainMethods}
-{assumeMethodEnumeratesArgumentsConfig}
+{assumeMethodEnumeratesParametersConfig}
 ") },
                 },
             };
@@ -3351,9 +3351,9 @@ End Namespace
         [InlineData(true)]
         [InlineData(false)]
         [InlineData(null)]
-        public async Task TestAssumeMethodEnumeratesArgumentsFromEditorConfig(bool? assumeMethodEnumeratesArguments)
+        public async Task TestAssumeMethodEnumeratesParametersFromEditorConfig(bool? assumeMethodEnumeratesParameters)
         {
-            var diagnostic = assumeMethodEnumeratesArguments == true ? "[|j|]" : "j";
+            var diagnostic = assumeMethodEnumeratesParameters == true ? "[|j|]" : "j";
 
             var csharpCode = $@"
 using System.Collections.Generic;
@@ -3372,7 +3372,7 @@ public class Bar
         foreach (var p in k) {{ }}
     }}
 }}";
-            await VerifyCSharpAsync(csharpCode, assumeMethodEnumeratesArguments: assumeMethodEnumeratesArguments);
+            await VerifyCSharpAsync(csharpCode, assumeMethodEnumeratesParameters: assumeMethodEnumeratesParameters);
 
             var vbCode = $@"
 Imports System.Collections.Generic
@@ -3392,7 +3392,7 @@ Namespace Ns
     End Class
 End Namespace
 ";
-            await VerifyVisualBasicAsync(vbCode, assumeMethodEnumeratesArguments: assumeMethodEnumeratesArguments);
+            await VerifyVisualBasicAsync(vbCode, assumeMethodEnumeratesParameters: assumeMethodEnumeratesParameters);
         }
 
         [Theory]
