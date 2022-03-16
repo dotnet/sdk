@@ -807,6 +807,7 @@ Default Value: empty
 Example: `dotnet_code_quality.CA1008.additional_enum_none_names = Never` or `dotnet_code_quality.CA1008.additional_enum_none_names = Never|Nothing`
 
 ### Enumeration methods
+
 Option Name: `enumeration_methods`
 
 Configurable Rules: [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1851)
