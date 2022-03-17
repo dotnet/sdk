@@ -9,27 +9,27 @@ namespace Microsoft.DotNet.Tools.Test
     // !!! FEATURES MUST BE KEPT IN SYNC WITH https://github.com/microsoft/vstest/blob/main/src/Microsoft.TestPlatform.CoreUtilities/FeatureFlag/FeatureFlag.cs !!!
     internal class FeatureFlag
     {
-        private const string Prefix = "VSTEST_FEATURE_";
+        private static readonly Dictionary<string, bool> FeatureFlags = new();
 
-        public Dictionary<string, bool> FeatureFlags { get; } = new();
+        private const string VSTEST_ = nameof(VSTEST_);
 
-        public static FeatureFlag Default { get; } = new FeatureFlag();
+        public static FeatureFlag Instance { get; } = new FeatureFlag();
 
-        public FeatureFlag()
+        static FeatureFlag()
         {
-            FeatureFlags.Add(ARTIFACTS_POSTPROCESSING, true);
+            FeatureFlags.Add(DISABLE_ARTIFACTS_POSTPROCESSING, false);
         }
 
-        // Added for artifact porst-processing, it enable/disable the post processing.
+        // Added for artifact post-processing, it enable/disable the post processing.
         // Added in 17.2-preview 7.0-preview
-        public const string ARTIFACTS_POSTPROCESSING = Prefix + "ARTIFACTS_POSTPROCESSING";
+        public const string DISABLE_ARTIFACTS_POSTPROCESSING = VSTEST_ + "_" + nameof(DISABLE_ARTIFACTS_POSTPROCESSING);
 
         // For now we're checking env var.
         // We could add it also to some section inside the runsettings.
-        public bool IsEnabled(string featureName) =>
-            int.TryParse(Environment.GetEnvironmentVariable(featureName), out int enabled)
-                ? enabled == 1
-                : FeatureFlags.TryGetValue(featureName, out bool isEnabled) && isEnabled;
+        public bool IsDisabled(string featureName) =>
+            int.TryParse(Environment.GetEnvironmentVariable(featureName), out int disabled) ?
+            disabled == 1 :
+            FeatureFlags.TryGetValue(featureName, out bool isDisabled) && isDisabled;
 
         public void PrintFlagFeatureState()
         {
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Test
             {
                 foreach (KeyValuePair<string, bool> flag in FeatureFlags)
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"Feature {flag.Key}: {IsEnabled(flag.Key)}");
+                    VSTestTrace.SafeWriteTrace(() => $"Feature {flag.Key}: {IsDisabled(flag.Key)}");
                 }
             }
         }
