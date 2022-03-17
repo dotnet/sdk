@@ -2984,6 +2984,26 @@
             ]
           }
         },
+        "CA2019": {
+          "id": "CA2019",
+          "shortDescription": "Improper 'ThreadStatic' field initialization",
+          "fullDescription": "'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",
@@ -3798,6 +3818,26 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "DynamicInterfaceCastableImplementationAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2259": {
+          "id": "CA2259",
+          "shortDescription": "'ThreadStatic' only affects static fields",
+          "fullDescription": "'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
             "languages": [
               "C#",
               "Visual Basic"

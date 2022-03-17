@@ -1644,6 +1644,18 @@ Number of parameters supplied in the logging message template do not match the n
 |CodeFix|False|
 ---
 
+## [CA2019](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019): Improper 'ThreadStatic' field initialization
+
+'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
 ## [CA2100](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.
@@ -2163,6 +2175,18 @@ Since a type that implements 'IDynamicInterfaceCastable' may not implement a dyn
 ## [CA2258](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2258): Providing a 'DynamicInterfaceCastableImplementation' interface in Visual Basic is unsupported
 
 Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attributed interface requires the Default Interface Members feature, which is unsupported in Visual Basic.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA2259](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259): 'ThreadStatic' only affects static fields
+
+'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.
 
 |Item|Value|
 |-|-|

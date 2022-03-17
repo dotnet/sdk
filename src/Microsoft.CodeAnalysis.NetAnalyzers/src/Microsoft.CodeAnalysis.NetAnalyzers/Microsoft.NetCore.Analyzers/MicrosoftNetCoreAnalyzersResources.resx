@@ -1449,6 +1449,24 @@
   <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
     <value>Use 'Environment.CurrentManagedThreadId'</value>
   </data>
+  <data name="ThreadStaticOnNonStaticFieldDescription" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldMessage" xml:space="preserve">
+    <value>Ensure 'ThreadStatic' is only used with static fields</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldTitle" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineDescription" xml:space="preserve">
+    <value>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineMessage" xml:space="preserve">
+    <value>'ThreadStatic' fields should not use inline initialization</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineTitle" xml:space="preserve">
+    <value>Improper 'ThreadStatic' field initialization</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
