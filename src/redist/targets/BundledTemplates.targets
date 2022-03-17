@@ -26,7 +26,7 @@
     <Bundled60Templates Include="Microsoft.DotNet.Web.ItemTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
-    
+
     <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
 
@@ -39,7 +39,7 @@
     <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates60PackageVersion)" />
     -->
   </ItemGroup>
-  
+
   <ItemGroup>
     <Bundled50Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates50PackageVersion)" />
     <Bundled50Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)" />
@@ -97,7 +97,7 @@
 
   <ItemGroup>
     <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
-    <BundledTemplates Include="@(PreviousVersionBundledTemplates)" Condition="$(ProductMonikerRid.StartsWith('win'))" />
+    <BundledTemplates Include="@(PreviousVersionBundledTemplates)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -106,7 +106,7 @@
       <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLower())</RestoredNupkgPath>
     </BundledTemplates>
   </ItemGroup>
-  
+
   <Target Name="DownloadBundledTemplateNupkgs">
     <CollatePackageDownloads Packages="@(BundledTemplates)">
       <Output TaskParameter="PackageDownloads" ItemName="BundledTemplatePackageDownload" />
