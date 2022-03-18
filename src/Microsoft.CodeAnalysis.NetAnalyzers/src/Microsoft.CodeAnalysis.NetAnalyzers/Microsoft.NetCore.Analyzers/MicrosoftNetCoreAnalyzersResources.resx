@@ -1852,4 +1852,43 @@
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
+    <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle" xml:space="preserve">
+    <value>Property, type, or attribute requires runtime marshalling</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription" xml:space="preserve">
+    <value>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage" xml:space="preserve">
+    <value>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle" xml:space="preserve">
+    <value>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</value>
+  </data>
+  <data name="UseDisabledMarshallingEquivalentCodeFix" xml:space="preserve">
+    <value>Use equivalent code that works when marshalling is disabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes" xml:space="preserve">
+    <value>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters" xml:space="preserve">
+    <value>By-ref parameters require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping" xml:space="preserve">
+    <value>HResult-swapping requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute" xml:space="preserve">
+    <value>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes" xml:space="preserve">
+    <value>Managed parameter or return types require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError" xml:space="preserve">
+    <value>Setting SetLastError to 'true' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes" xml:space="preserve">
+    <value>Varadic P/Invoke signatures require runtime marshalling to be enabled</value>
+  </data>
 </root>
