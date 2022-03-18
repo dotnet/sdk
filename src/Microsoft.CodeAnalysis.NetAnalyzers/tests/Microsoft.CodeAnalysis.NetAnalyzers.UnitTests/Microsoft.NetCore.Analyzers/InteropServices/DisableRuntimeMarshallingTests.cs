@@ -1432,7 +1432,7 @@ Class C
         size = {|CA1421:Marshal.SizeOf(Of S)()|}
         bar = {|CA1421:Marshal.PtrToStructure(Of S)(ptr)|}
         {|CA1421:Marshal.StructureToPtr(bar, ptr, False)|}
-        size = {|CA1421:Marshal.OffsetOf(GetType(bar), NameOf(bar.Baz))|}
+        size = {|CA1421:Marshal.OffsetOf(GetType(S), NameOf(bar.Baz))|}
         size = {|CA1421:Marshal.OffsetOf(Of S)(NameOf(bar.Baz))|}
     End Sub
 End Class
