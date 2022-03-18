@@ -175,9 +175,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
 
+                context.RegisterSymbolAction(AnalyzeEvent, SymbolKind.Event);
+
                 if (_unmanagedFunctionPointerAttribute is not null)
                 {
                     context.RegisterSymbolAction(AnalyzeType, SymbolKind.NamedType);
+                }
+            }
+
+            private void AnalyzeEvent(SymbolAnalysisContext context)
+            {
+                // The getter or setter of a static extern event can be a P/Invoke.
+                IEventSymbol property = (IEventSymbol)context.Symbol;
+                if (property.AddMethod is not null)
+                {
+                    AnalyzeMethod(context.ReportDiagnostic, property.AddMethod);
+                }
+                else if (property.RemoveMethod is not null)
+                {
+                    AnalyzeMethod(context.ReportDiagnostic, property.RemoveMethod);
                 }
             }
 

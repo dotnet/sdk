@@ -177,6 +177,60 @@ End Class
         }
 
         [Fact]
+        public async Task CS_PInvokePropertyWithClassReturnValue_EmitsDiagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    public static extern string P { [DllImport(""abc"")] {|CA1420:get|}; }
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeOperatorWithClassType_EmitsDiagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    [DllImport(""abc"")]
+    public static extern int operator +(C {|CA1420:a|}, C {|CA1420:b|});
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeEvent_EmitsDiagnostic()
+        {
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    [method: DllImport(""abc"")]
+    public extern static event Action {|CA1420:G|};
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task CS_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"
