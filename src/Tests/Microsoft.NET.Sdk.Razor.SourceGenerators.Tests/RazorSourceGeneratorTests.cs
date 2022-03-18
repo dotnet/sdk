@@ -998,7 +998,7 @@ public class HeaderTagHelper : TagHelper
                     var sourceText = sourceResult.SourceText.ToString();
                     Assert.Contains("public partial class Counter", sourceText);
                     // Regression test for https://github.com/dotnet/aspnetcore/issues/36116. Verify that @onclick is resolved as a component, and not as a regular attribute
-                    Assert.Contains("__builder.AddAttribute(2, \"onclick\", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,", sourceText);
+                    Assert.Contains("__builder.AddAttribute(2, \"onclick\", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,", sourceText);
                 });
         }
 
@@ -1325,21 +1325,21 @@ public class HeaderTagHelper : TagHelper
 
         private class AppLocalResolver : ICompilationAssemblyResolver
         {
-            public bool TryResolveAssemblyPaths(CompilationLibrary library, List<string> assemblies)
+            public bool TryResolveAssemblyPaths(CompilationLibrary library, List<string>? assemblies)
             {
                 foreach (var assembly in library.Assemblies)
                 {
                     var dll = Path.Combine(Directory.GetCurrentDirectory(), "refs", Path.GetFileName(assembly));
                     if (File.Exists(dll))
                     {
-                        assemblies.Add(dll);
+                        assemblies!.Add(dll);
                         return true;
                     }
 
                     dll = Path.Combine(Directory.GetCurrentDirectory(), Path.GetFileName(assembly));
                     if (File.Exists(dll))
                     {
-                        assemblies.Add(dll);
+                        assemblies!.Add(dll);
                         return true;
                     }
                 }
@@ -1363,7 +1363,7 @@ public class HeaderTagHelper : TagHelper
             project = project.WithParseOptions(((CSharpParseOptions)project.ParseOptions!).WithLanguageVersion(LanguageVersion.Preview));
 
 
-            foreach (var defaultCompileLibrary in DependencyContext.Load(typeof(RazorSourceGeneratorTests).Assembly).CompileLibraries)
+            foreach (var defaultCompileLibrary in DependencyContext.Load(typeof(RazorSourceGeneratorTests).Assembly)!.CompileLibraries)
             {
                 foreach (var resolveReferencePath in defaultCompileLibrary.ResolveReferencePaths(new AppLocalResolver()))
                 {

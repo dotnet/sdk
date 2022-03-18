@@ -2,6 +2,7 @@
 #
 # This file locates the native compiler with the given name and version and sets the environment variables to locate it.
 #
+# NOTE: some scripts source this file and rely on stdout being empty, make sure to not output anything here!
 
 source="${BASH_SOURCE[0]}"
 
@@ -19,14 +20,43 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 if [ $# -lt 0 ]
 then
   echo "Usage..."
-  echo "find-native-compiler.sh <compiler> <compiler major version> <compiler minor version>"
+  echo "init-compiler.sh <script directory> <Architecture> <compiler>"
+  echo "Specify the script directory."
+  echo "Specify the target architecture."
   echo "Specify the name of compiler (clang or gcc)."
-  echo "Specify the major version of compiler."
-  echo "Specify the minor version of compiler."
   exit 1
 fi
 
-. $scriptroot/../pipeline-logging-functions.sh
+nativescriptroot="$1"
+build_arch="$2"
+compiler="$3"
+
+case "$compiler" in
+    clang*|-clang*|--clang*)
+        # clangx.y or clang-x.y
+        version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
+        parts=(${version//./ })
+        majorVersion="${parts[0]}"
+        minorVersion="${parts[1]}"
+        if [[ -z "$minorVersion" && "$majorVersion" -le 6 ]]; then
+            minorVersion=0;
+        fi
+        compiler=clang
+        ;;
+
+    gcc*|-gcc*|--gcc*)
+        # gccx.y or gcc-x.y
+        version="$(echo "$compiler" | tr -d '[:alpha:]-=')"
+        parts=(${version//./ })
+        majorVersion="${parts[0]}"
+        minorVersion="${parts[1]}"
+        compiler=gcc
+        ;;
+esac
+
+cxxCompiler="$compiler++"
+
+. "$nativescriptroot"/../pipeline-logging-functions.sh
 
 compiler="$1"
 cxxCompiler="$compiler++"
@@ -116,6 +146,13 @@ if [ -z "$CC" ]; then
     exit 1
 fi
 
-export CCC_CC="$CC"
-export CCC_CXX="$CXX"
-export SCAN_BUILD_COMMAND="$(command -v "scan-build$desired_version")"
+# Only lld version >= 9 can be considered stable
+if [[ "$compiler" == "clang" && "$majorVersion" -ge 9 ]]; then
+    if "$CC" -fuse-ld=lld -Wl,--version >/dev/null 2>&1; then
+        LDFLAGS="-fuse-ld=lld"
+    fi
+fi
+
+SCAN_BUILD_COMMAND="$(command -v "scan-build$desired_version")"
+
+export CC CXX LDFLAGS SCAN_BUILD_COMMAND

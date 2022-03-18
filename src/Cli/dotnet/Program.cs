@@ -26,6 +26,17 @@ namespace Microsoft.DotNet.Cli
 
         public static int Main(string[] args)
         {
+            //setting output encoding is not available on those platforms
+            if (!OperatingSystem.IsIOS() && !OperatingSystem.IsAndroid() && !OperatingSystem.IsTvOS())
+            {
+                //if output is redirected, force encoding to utf-8;
+                //otherwise the caller may not decode it correctly
+                if (Console.IsOutputRedirected)
+                {
+                    Console.OutputEncoding = Encoding.UTF8;
+                }
+            }
+
             DebugHelper.HandleDebugSwitch(ref args);
 
             // Capture the current timestamp to calculate the host overhead.
@@ -107,7 +118,7 @@ namespace Microsoft.DotNet.Cli
 
         internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null )
         {
-            return ProcessArgs(args, new TimeSpan(0));
+            return ProcessArgs(args, new TimeSpan(0), telemetryClient);
         }
 
         internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null )
@@ -242,6 +253,8 @@ namespace Microsoft.DotNet.Cli
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
             telemetryClient.Flush();
             PerformanceLogEventSource.Log.TelemetryClientFlushStop();
+
+            telemetryClient.Dispose();
 
             return exitCode;
         }

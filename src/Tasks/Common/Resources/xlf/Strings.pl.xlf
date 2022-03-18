@@ -449,9 +449,14 @@
         <target state="translated">NETSDK1102: Optymalizacja zestawów pod kątem rozmiaru nie jest obsługiwana w przypadku wybranej konfiguracji publikowania. Upewnij się, że publikujesz niezależną aplikację.</target>
         <note>{StrBegin="NETSDK1102: "}</note>
       </trans-unit>
-      <trans-unit id="ILLink_Info">
-        <source>Optimizing assemblies for size, which may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</source>
-        <target state="translated">Zestawy są optymalizowane pod kątem rozmiaru, co może spowodować zmianę zachowania aplikacji. Pamiętaj, aby wykonać testy po opublikowaniu. Zobacz: https://aka.ms/dotnet-illink</target>
+      <trans-unit id="ILLinkOptimizedAssemblies">
+        <source>Optimizing assemblies for size may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</source>
+        <target state="new">Optimizing assemblies for size may change the behavior of the app. Be sure to test after publishing. See: https://aka.ms/dotnet-illink</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ILLinkRunning">
+        <source>Optimizing assemblies for size. This process might take a while.</source>
+        <target state="new">Optimizing assemblies for size. This process might take a while.</target>
         <note />
       </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
@@ -706,8 +711,8 @@ The following are names of parameters or literal values and should not be transl
         <note />
       </trans-unit>
       <trans-unit id="ReadyToRunNoValidRuntimePackageError">
-        <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing.</source>
-        <target state="translated">NETSDK1094: Nie można zoptymalizować zestawów pod kątem wydajności — nie odnaleziono prawidłowego pakietu środowiska wykonawczego. Ustaw właściwość PublishReadyToRun na wartość false lub użyj obsługiwanego identyfikatora środowiska uruchomieniowego podczas publikowania.</target>
+        <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing. When targeting .NET 6 or higher, make sure to restore packages with the PublishReadyToRun property set to true.</source>
+        <target state="needs-review-translation">NETSDK1094: Nie można zoptymalizować zestawów pod kątem wydajności — nie odnaleziono prawidłowego pakietu środowiska wykonawczego. Ustaw właściwość PublishReadyToRun na wartość false lub użyj obsługiwanego identyfikatora środowiska uruchomieniowego podczas publikowania.</target>
         <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -856,8 +861,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1107: "}</note>
       </trans-unit>
       <trans-unit id="UsingPreviewSdk_Info">
-        <source>You are using a preview version of .NET. See: https://aka.ms/dotnet-core-preview</source>
-        <target state="translated">Korzystasz z wersji zapoznawczej programu .NET. Zobacz: https://aka.ms/dotnet-core-preview</target>
+        <source>You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
+        <target state="translated">Korzystasz z wersji zapoznawczej programu .NET. Zobacz: https://aka.ms/dotnet-support-policy</target>
         <note />
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
