@@ -142,11 +142,6 @@
         <target state="translated">Buffer.BlockCopy očekává počet bajtů, které se mají zkopírovat pro argument count.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ByRefParameters">
-        <source>By-ref parameters</source>
-        <target state="new">By-ref parameters</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Metoda, která je implementací metody Dispose, nevolá GC.SuppressFinalize, nebo metoda, která není implementací metody Dispose, volá GC.SuppressFinalize, nebo metoda volá GC.SuppressFinalize a předává něco jiného než this (Me v jazyce Visual Basic).</target>

@@ -1834,9 +1834,6 @@
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
-  <data name="ByRefParameters" xml:space="preserve">
-    <value>By-ref parameters</value>
-  </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
     <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
   </data>

@@ -142,11 +142,6 @@
         <target state="translated">'Buffer.BlockCopy'는 'count' 인수에 대해 복사할 바이트 수를 예상합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ByRefParameters">
-        <source>By-ref parameters</source>
-        <target state="new">By-ref parameters</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Dispose를 구현하는 메서드가 GC.SuppressFinalize를 호출하지 않거나, Dispose를 구현하지 않는 메서드가 GC.SuppressFinalize를 호출하거나, 메서드가 GC.SuppressFinalize를 호출하고 다른 개체(Visual Basic의 경우 Me)를 전달합니다.</target>

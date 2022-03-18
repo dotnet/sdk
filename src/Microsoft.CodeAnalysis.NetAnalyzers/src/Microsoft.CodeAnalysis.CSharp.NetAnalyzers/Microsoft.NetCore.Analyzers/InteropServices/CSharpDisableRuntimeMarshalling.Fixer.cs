@@ -1,12 +1,9 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -19,90 +16,8 @@ using Microsoft.CodeAnalysis.Operations;
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public sealed class CSharpDisableRuntimeMarshallingFixer : CodeFixProvider
+    public sealed partial class CSharpDisableRuntimeMarshallingFixer : CodeFixProvider
     {
-        private class CustomFixAllProvider : DocumentBasedFixAllProvider
-        {
-            public static readonly CustomFixAllProvider Instance = new();
-
-            protected override string CodeActionTitle => MicrosoftNetCoreAnalyzersResources.UseDisabledMarshallingEquivalentCodeFix;
-
-            protected override async Task<SyntaxNode> FixAllInDocumentAsync(FixAllContext fixAllContext, Document document, ImmutableArray<Diagnostic> diagnostics)
-            {
-                if (document.Project.CompilationOptions is CSharpCompilationOptions { AllowUnsafe: false })
-                {
-                    // We can't code fix if unsafe code isn't allowed.
-                    return await document.GetSyntaxRootAsync(fixAllContext.CancellationToken);
-                }
-                var editor = await DocumentEditor.CreateAsync(document, fixAllContext.CancellationToken).ConfigureAwait(false);
-                SyntaxNode root = await document.GetSyntaxRootAsync(fixAllContext.CancellationToken).ConfigureAwait(false);
-
-                Dictionary<IBlockOperation, IdentifierGenerator> scopeMap = new();
-                foreach (var diagnostic in diagnostics)
-                {
-                    if (diagnostic.Properties[DisableRuntimeMarshallingAnalyzer.CanConvertToDisabledMarshallingEquivalentKey] is not null)
-                    {
-                        SyntaxNode node = root.FindNode(diagnostic.Location.SourceSpan);
-                        IBlockOperation? block = editor.SemanticModel.GetOperation(node, fixAllContext.CancellationToken).GetFirstParentBlock();
-                        IdentifierGenerator identifierGenerator;
-                        if (block is null)
-                        {
-                            identifierGenerator = new IdentifierGenerator(editor.SemanticModel, node.SpanStart);
-                        }
-                        else if (!scopeMap.TryGetValue(block, out identifierGenerator))
-                        {
-                            identifierGenerator = scopeMap[block] = new IdentifierGenerator(editor.SemanticModel, block);
-                        }
-                        if (TryRewriteMethodCall(node, editor, identifierGenerator, addRenameAnnotation: false, fixAllContext.CancellationToken))
-                        {
-                            AddUnsafeModifierToEnclosingMethod(editor, node);
-                        }
-                    }
-                }
-                return editor.GetChangedRoot();
-            }
-        }
-        private class IdentifierGenerator
-        {
-            private int? _nextIdentifier;
-
-            public IdentifierGenerator(SemanticModel model, int offsetForSpeculativeSymbolResolution)
-            {
-                _nextIdentifier = FindFirstUnusedIdentifierIndex(model, offsetForSpeculativeSymbolResolution, "ptr");
-            }
-            public IdentifierGenerator(SemanticModel model, IBlockOperation block)
-            {
-                _nextIdentifier = FindFirstUnusedIdentifierIndex(model, block.Syntax.SpanStart, "ptr");
-                HashSet<string> localNames = new HashSet<string>(block.Locals.Select(x => x.Name));
-                string? identifier = NextIdentifier();
-                while (identifier is not null && localNames.Contains(identifier))
-                {
-                    identifier = NextIdentifier();
-                }
-                if (identifier is not null)
-                {
-                    // The last identifier was not in use, so go back one to use it the next call.
-                    _nextIdentifier--;
-                }
-            }
-
-            public string? NextIdentifier()
-            {
-                if (_nextIdentifier == null || _nextIdentifier == int.MaxValue)
-                {
-                    return null;
-                }
-
-                if (_nextIdentifier == 0)
-                {
-                    _nextIdentifier++;
-                    return "ptr";
-                }
-
-                return $"ptr{_nextIdentifier++}";
-            }
-        }
-
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DisableRuntimeMarshallingAnalyzer.MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledId);
 
         public sealed override FixAllProvider GetFixAllProvider()

@@ -142,11 +142,6 @@
         <target state="translated">'Buffer.BlockCopy' では、'count' 引数にコピーされるバイト数が必要です</target>
         <note />
       </trans-unit>
-      <trans-unit id="ByRefParameters">
-        <source>By-ref parameters</source>
-        <target state="new">By-ref parameters</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Dispose の実装であるメソッドでは GC.SuppressFinalize を呼び出しません。または、Dispose の実装ではないメソッドでは GC.SuppressFinalize を呼び出します。または、メソッドでは GC.SuppressFinalize を呼び出し、this (Visual Basic では Me) 以外のものを渡します。</target>

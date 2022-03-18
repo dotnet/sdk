@@ -25,10 +25,31 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"", SetLastError = true)]
-    public static extern void {|CA1420:Bar|}();
+    [DllImport(""NativeLibrary"", SetLastError = true)]
+    public static extern void {|CA1420:Method|}();
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_Local_PInvokeWithSetLastError_Emits_Diagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    public static void Outer()
+    {
+        [DllImport(""NativeLibrary"", SetLastError = true)]
+        static extern void {|CA1420:Method|}();
+    }
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -41,9 +62,9 @@ class Foo
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"", SetLastError:=True)>
-    Public Shared Sub {|CA1420:Bar|}()
+Public Class C
+    <DllImport(""NativeLibrary"", SetLastError:=True)>
+    Public Shared Sub {|CA1420:Method|}()
     End Sub
 End Class
 ";
@@ -59,11 +80,11 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
+    [DllImport(""NativeLibrary"")]
     [LCIDConversion(0)]
-    public static extern void {|CA1420:Bar|}();
+    public static extern void {|CA1420:Method|}();
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -76,10 +97,10 @@ class Foo
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
+Public Class C
+    <DllImport(""NativeLibrary"")>
     <LCIDConversion(0)>
-    Public Shared Sub {|CA1420:Bar|}()
+    Public Shared Sub {|CA1420:Method|}()
     End Sub
 End Class
 ";
@@ -95,10 +116,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(string {|CA1420:param|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(string {|CA1420:param|});
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -111,9 +132,9 @@ class Foo
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar({|CA1420:s|} As string)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method({|CA1420:s|} As string)
     End Sub
 End Class
 ";
@@ -129,10 +150,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern string {|CA1420:Bar|}();
+    [DllImport(""NativeLibrary"")]
+    public static extern string {|CA1420:Method|}();
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -146,9 +167,9 @@ class Foo
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Function {|CA1420:Bar|}() As string
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Function {|CA1420:Method|}() As string
     End Function
 End Class
 ";
@@ -164,10 +185,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern ValueType {|CA1420:Bar|}();
+    [DllImport(""NativeLibrary"")]
+    public static extern ValueType {|CA1420:Method|}();
 }
 
 struct ValueType
@@ -185,9 +206,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Function {|CA1420:Bar|}() As ValueType
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Function {|CA1420:Method|}() As ValueType
     End Function
 End Class
 
@@ -207,10 +228,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ValueType {|CA1420:param|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -228,9 +249,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method({|CA1420:param|} As ValueType)
     End Sub
 End Class
 
@@ -250,10 +271,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ref ValueType {|CA1420:{|CA1420:param|}|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ref ValueType {|CA1420:{|CA1420:param|}|});
 }
 
 struct ValueType
@@ -271,9 +292,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar(ByRef {|CA1420:{|CA1420:param|}|} As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method(ByRef {|CA1420:{|CA1420:param|}|} As ValueType)
     End Sub
 End Class
 
@@ -293,10 +314,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ref ValueType {|CA1420:param|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ref ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -314,9 +335,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar(ByRef {|CA1420:param|} As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method(ByRef {|CA1420:param|} As ValueType)
     End Sub
 End Class
 
@@ -336,10 +357,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern ValueType Bar();
+    [DllImport(""NativeLibrary"")]
+    public static extern ValueType Method();
 }
 
 struct ValueType
@@ -357,9 +378,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Function Bar() As ValueType
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Function Method() As ValueType
     End Function
 End Class
 
@@ -379,10 +400,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ValueType param);
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ValueType param);
 }
 
 struct ValueType
@@ -400,9 +421,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar(param As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method(param As ValueType)
     End Sub
 End Class
 
@@ -422,10 +443,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ValueType {|CA1420:param|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ValueType {|CA1420:param|});
 }
 
 [StructLayout(LayoutKind.Auto)]
@@ -444,9 +465,9 @@ struct ValueType
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method({|CA1420:param|} As ValueType)
     End Sub
 End Class
 
@@ -467,10 +488,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void Bar(ValueType {|CA1420:param|});
+    [DllImport(""NativeLibrary"")]
+    public static extern void Method(ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -494,9 +515,9 @@ struct ValueType2
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Public Class Foo
-    <DllImport(""foo"")>
-    Public Shared Sub Bar({|CA1420:param|} As ValueType)
+Public Class C
+    <DllImport(""NativeLibrary"")>
+    Public Shared Sub Method({|CA1420:param|} As ValueType)
     End Sub
 End Class
 
@@ -520,7 +541,7 @@ Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
 Public Class D
-    Declare Sub {|CA1420:Method|} Lib ""Foo""
+    Declare Sub {|CA1420:Method|} Lib ""NativeLibrary""
 End Class
 ";
             await VerifyVBAnalyzerAsync(source);
@@ -535,10 +556,28 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
-    [DllImport(""Foo"")]
-    public static extern void {|CA1420:Bar|}(__arglist);
+    [DllImport(""NativeLibrary"")]
+    public static extern void {|CA1420:Method|}(__arglist);
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task PInvokeWithPreserveSigFalse_Emits_Diagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    [DllImport(""NativeLibrary"", PreserveSig = false)]
+    public static extern int {|CA1420:Method|}(int p);
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -553,10 +592,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(string {|CA1420:param|});
+    public delegate void DelegateType(string {|CA1420:param|});
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -572,7 +611,7 @@ Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
 
 <UnmanagedFunctionPointer(CallingConvention.Winapi)>
-Public Delegate Sub Foo({|CA1420:param|} As String)
+Public Delegate Sub DelegateType({|CA1420:param|} As String)
 ";
             await VerifyVBAnalyzerAsync(source);
         }
@@ -586,10 +625,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate string {|CA1420:Bar|}();
+    public delegate string {|CA1420:DelegateType|}();
 }
 ";
             await VerifyCSAnalyzerAsync(source);
@@ -605,7 +644,7 @@ Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
 
 <UnmanagedFunctionPointer(CallingConvention.Winapi)>
-Public Delegate Function {|CA1420:Foo|}() As String
+Public Delegate Function {|CA1420:DelegateType|}() As String
 ";
             await VerifyVBAnalyzerAsync(source);
         }
@@ -619,10 +658,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate ValueType {|CA1420:Bar|}();
+    public delegate ValueType {|CA1420:DelegateType|}();
 }
 
 struct ValueType
@@ -642,10 +681,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ValueType {|CA1420:param|});
+    public delegate void DelegateType(ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -665,10 +704,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ref ValueType {|CA1420:{|CA1420:param|}|});
+    public delegate void DelegateType(ref ValueType {|CA1420:{|CA1420:param|}|});
 }
 
 struct ValueType
@@ -688,10 +727,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ref ValueType {|CA1420:param|});
+    public delegate void DelegateType(ref ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -711,10 +750,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate ValueType Bar();
+    public delegate ValueType DelegateType();
 }
 
 struct ValueType
@@ -734,10 +773,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ValueType param);
+    public delegate void DelegateType(ValueType param);
 }
 
 struct ValueType
@@ -757,10 +796,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ValueType {|CA1420:param|});
+    public delegate void DelegateType(ValueType {|CA1420:param|});
 }
 
 [StructLayout(LayoutKind.Auto)]
@@ -781,10 +820,10 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi)]
-    public delegate void Bar(ValueType {|CA1420:param|});
+    public delegate void DelegateType(ValueType {|CA1420:param|});
 }
 
 struct ValueType
@@ -810,7 +849,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<string, void> cb)
     {
@@ -830,7 +869,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<string> cb)
     {
@@ -850,7 +889,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType> cb)
     {
@@ -875,7 +914,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType, void> cb)
     {
@@ -900,7 +939,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ref ValueType, void> cb)
     {
@@ -926,7 +965,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ref ValueType, void> cb)
     {
@@ -952,7 +991,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType> cb)
     {
@@ -977,7 +1016,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType, void> cb)
     {
@@ -1002,7 +1041,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType, void> cb)
     {
@@ -1028,7 +1067,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate* unmanaged<ValueType, void> cb)
     {
@@ -1059,7 +1098,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public static unsafe void Test(delegate*<ValueType, void> cb)
     {
@@ -1091,7 +1130,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public void Test()
     {
@@ -1117,7 +1156,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public void Test<T, U>(System.Type type)
         where U : unmanaged
@@ -1143,7 +1182,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public unsafe void Test<T, U>(System.Type type)
         where U : unmanaged
@@ -1179,7 +1218,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public void Test(IntPtr ptr)
     {
@@ -1208,7 +1247,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public unsafe void Test(IntPtr ptr)
     {
@@ -1246,7 +1285,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public void Test(IntPtr ptr, Type t)
     {
@@ -1284,7 +1323,7 @@ using System.Runtime.CompilerServices;
 
 [assembly:DisableRuntimeMarshalling]
 
-class Foo
+class C
 {
     public unsafe void Test(IntPtr ptr, Type t)
     {
@@ -1321,8 +1360,6 @@ class ClassType
             await VerifyCSCodeFixAsync(source, source, allowUnsafeBlocks: false);
         }
 
-
-
         [Fact]
         public async Task VB_Marshal_APIs_Emits_Diagnostic()
         {
@@ -1331,22 +1368,22 @@ Imports System
 Imports System.Runtime.CompilerServices
 Imports System.Runtime.InteropServices
 <assembly:DisableRuntimeMarshalling>
-Class Foo
+Class C
     Public Shared Sub Test()
         Dim size As Int32
         Dim ptr As IntPtr
-        Dim bar As Bar
+        Dim bar As S
         
-        size = {|CA1421:Marshal.SizeOf(GetType(Bar))|}
-        size = {|CA1421:Marshal.SizeOf(Of Bar)()|}
-        bar = {|CA1421:Marshal.PtrToStructure(Of Bar)(ptr)|}
+        size = {|CA1421:Marshal.SizeOf(GetType(S))|}
+        size = {|CA1421:Marshal.SizeOf(Of S)()|}
+        bar = {|CA1421:Marshal.PtrToStructure(Of S)(ptr)|}
         {|CA1421:Marshal.StructureToPtr(bar, ptr, False)|}
         size = {|CA1421:Marshal.OffsetOf(GetType(bar), NameOf(bar.Baz))|}
-        size = {|CA1421:Marshal.OffsetOf(Of Bar)(NameOf(bar.Baz))|}
+        size = {|CA1421:Marshal.OffsetOf(Of S)(NameOf(bar.Baz))|}
     End Sub
 End Class
 
-Structure Bar
+Structure S
     Public Baz As Int32
 End Structure
 ";

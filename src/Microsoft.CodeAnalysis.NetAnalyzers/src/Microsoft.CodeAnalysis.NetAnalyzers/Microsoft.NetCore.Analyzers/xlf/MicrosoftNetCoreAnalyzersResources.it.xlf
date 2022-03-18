@@ -142,11 +142,6 @@
         <target state="translated">Con 'Buffer.BlockCopy' è previsto il numero di byte da copiare per l'argomento 'count'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ByRefParameters">
-        <source>By-ref parameters</source>
-        <target state="new">By-ref parameters</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CallGCSuppressFinalizeCorrectlyDescription">
         <source>A method that is an implementation of Dispose does not call GC.SuppressFinalize; or a method that is not an implementation of Dispose calls GC.SuppressFinalize; or a method calls GC.SuppressFinalize and passes something other than this (Me in Visual Basic).</source>
         <target state="translated">Un metodo che è un'implementazione di Dispose non chiama GC.SuppressFinalize, un metodo che non è un'implementazione di Dispose chiama GC.SuppressFinalize oppure un metodo chiama GC.SuppressFinalize e passa un elemento diverso da this (Me in Visual Basic).</target>

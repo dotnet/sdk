@@ -169,6 +169,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 context.RegisterSymbolAction(AnalyzeMethod, SymbolKind.Method);
 
+                context.RegisterOperationAction(AnalyzeLocalFunction, OperationKind.LocalFunction);
+
                 context.RegisterOperationAction(AnalyzeMethodCall, OperationKind.Invocation);
 
                 context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
@@ -217,6 +219,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 AnalyzeMethodSignature(context.ReportDiagnostic, functionPointerInvocation.GetFunctionPointerSignature(), ImmutableArray.Create(functionPointerInvocation.WrappedOperation.Syntax.GetLocation()));
             }
 
+            public void AnalyzeLocalFunction(OperationAnalysisContext context)
+            {
+                var functionPointerInvocation = (ILocalFunctionOperation)context.Operation;
+                AnalyzeMethod(context.ReportDiagnostic, functionPointerInvocation.Symbol);
+            }
+
             public void AnalyzeType(SymbolAnalysisContext context)
             {
                 Debug.Assert(_unmanagedFunctionPointerAttribute is not null);
@@ -233,6 +241,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 IMethodSymbol method = (IMethodSymbol)context.Symbol;
 
+                AnalyzeMethod(context.ReportDiagnostic, method);
+            }
+
+            private void AnalyzeMethod(Action<Diagnostic> reportDiagnostic, IMethodSymbol method)
+            {
+                // DisableRuntimeMarshalling only applies to DllImport-attributed methods.
                 DllImportData? dllImportData = method.GetDllImportData();
                 if (dllImportData is null)
                 {
@@ -241,25 +255,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 if (dllImportData.SetLastError)
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue));
+                    reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledSetLastErrorTrue));
                 }
 
                 if (!method.MethodImplementationFlags().HasFlag(System.Reflection.MethodImplAttributes.PreserveSig))
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping));
+                    reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledHResultSwapping));
                 }
 
-                if (_lcidConversionAttribute is not null && method.HasAttribute(_lcidConversionAttribute))
+                if (method.HasAttribute(_lcidConversionAttribute))
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute));
+                    reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledUsingLCIDConversionAttribute));
                 }
 
                 if (method.IsVararg)
                 {
-                    context.ReportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledVarargPInvokes));
+                    reportDiagnostic(method.CreateDiagnostic(FeatureUnsupportedWhenRuntimeMarshallingDisabledVarargPInvokes));
                 }
 
-                AnalyzeMethodSignature(context.ReportDiagnostic, method);
+                AnalyzeMethodSignature(reportDiagnostic, method);
             }
 
             private void AnalyzeMethodSignature(Action<Diagnostic> reportDiagnostic, IMethodSymbol method, ImmutableArray<Location> locationsOverride = default)
