@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tools.VSTest
             var args = new List<string>();
             args.AddRange(GetArgs(parseResult));
 
-            if (!FeatureFlag.Instance.IsDisabled(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
+            if (!FeatureFlag.Instance.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
             {
                 // Add artifacts processing mode and test session id for the artifact post-processing
                 args.Add("--artifactsProcessingMode-collect");

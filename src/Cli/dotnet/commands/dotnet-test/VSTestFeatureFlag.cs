@@ -2,44 +2,38 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Test
 {
-    // !!! FEATURES MUST BE KEPT IN SYNC WITH https://github.com/microsoft/vstest/blob/main/src/Microsoft.TestPlatform.CoreUtilities/FeatureFlag/FeatureFlag.cs !!!
+    // !!! USED FEATURES NAME MUST BE KEPT IN SYNC WITH https://github.com/microsoft/vstest/blob/main/src/Microsoft.TestPlatform.CoreUtilities/FeatureFlag/FeatureFlag.cs !!!
     internal class FeatureFlag
     {
-        private static readonly Dictionary<string, bool> FeatureFlags = new();
-
-        private const string VSTEST_ = nameof(VSTEST_);
+        private readonly ConcurrentDictionary<string, bool> _cache = new();
 
         public static FeatureFlag Instance { get; } = new FeatureFlag();
 
-        static FeatureFlag()
-        {
-            FeatureFlags.Add(DISABLE_ARTIFACTS_POSTPROCESSING, false);
-        }
+        private FeatureFlag() { }
 
-        // Added for artifact post-processing, it enable/disable the post processing.
-        // Added in 17.2-preview 7.0-preview
-        public const string DISABLE_ARTIFACTS_POSTPROCESSING = VSTEST_ + "_" + nameof(DISABLE_ARTIFACTS_POSTPROCESSING);
+        private const string VSTEST_ = nameof(VSTEST_);
 
-        // For now we're checking env var.
-        // We could add it also to some section inside the runsettings.
-        public bool IsDisabled(string featureName) =>
-            int.TryParse(Environment.GetEnvironmentVariable(featureName), out int disabled) ?
-            disabled == 1 :
-            FeatureFlags.TryGetValue(featureName, out bool isDisabled) && isDisabled;
+        // Only check the env variable once, when it is not set or is set to 0, consider it unset. When it is anything else, consider it set.
+        public bool IsSet(string featureFlag) => _cache.GetOrAdd(featureFlag, f => (Environment.GetEnvironmentVariable(f)?.Trim() ?? "0") != "0");
 
         public void PrintFlagFeatureState()
         {
             if (VSTestTrace.TraceEnabled)
             {
-                foreach (KeyValuePair<string, bool> flag in FeatureFlags)
+                foreach (KeyValuePair<string, bool> flag in _cache)
                 {
-                    VSTestTrace.SafeWriteTrace(() => $"Feature {flag.Key}: {IsDisabled(flag.Key)}");
+                    VSTestTrace.SafeWriteTrace(() => $"Feature {flag.Key}: {IsSet(flag.Key)}");
                 }
             }
         }
+
+        // Added for artifact post-processing, it enable/disable the post processing.
+        // Added in 17.2-preview 7.0-preview
+        public const string DISABLE_ARTIFACTS_POSTPROCESSING = VSTEST_ + "_" + nameof(DISABLE_ARTIFACTS_POSTPROCESSING);
     }
 }

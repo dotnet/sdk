@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Test
             // one more time, there is no extra hop via msbuild
             convertedArgs.AddRange(settings);
 
-            if (!FeatureFlag.Instance.IsDisabled(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
+            if (!FeatureFlag.Instance.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
             {
                 // Add artifacts processing mode and test session id for the artifact post-processing
                 convertedArgs.Add("--artifactsProcessingMode-collect");
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Tools.Test
                 }
             }
 
-            if (!FeatureFlag.Instance.IsDisabled(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
+            if (!FeatureFlag.Instance.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
             {
                 // Add artifacts processing mode and test session id for the artifact post-processing
                 msbuildArgs.Add("-property:VSTestArtifactsProcessingMode=collect");
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         internal static int RunArtifactPostProcessingIfNeeded(string testSessionCorrelationId, ParseResult parseResult, FeatureFlag disableFeatureFlag)
         {
-            if (disableFeatureFlag.IsDisabled(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
+            if (disableFeatureFlag.IsSet(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING))
             {
                 return 0;
             }
