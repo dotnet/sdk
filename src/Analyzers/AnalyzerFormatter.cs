@@ -87,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var severity = _informationProvider.GetSeverity(formatOptions);
 
             // Filter to analyzers that report diagnostics with equal or greater severity.
-            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, cancellationToken).ConfigureAwait(false);
+            var projectAnalyzers = await FilterAnalyzersAsync(solution, projectAnalyzersAndFixers, formattablePaths, severity, formatOptions.Diagnostics, formatOptions.ExcludeDiagnostics, cancellationToken).ConfigureAwait(false);
 
             // Determine which diagnostics are being reported for each project.
             var projectDiagnostics = await GetProjectDiagnosticsAsync(solution, projectAnalyzers, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
@@ -101,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 logger.LogTrace(Resources.Fixing_diagnostics);
 
                 // Run each analyzer individually and apply fixes if possible.
-                solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
+                solution = await FixDiagnosticsAsync(solution, projectAnalyzers, allFixers, projectDiagnostics, formattablePaths, formatOptions, severity, fixableCompilerDiagnostics, logger, cancellationToken).ConfigureAwait(false);
 
                 var fixDiagnosticsMS = analysisStopwatch.ElapsedMilliseconds - projectDiagnosticsMS;
                 logger.LogTrace(Resources.Complete_in_0_ms, fixDiagnosticsMS);
@@ -146,7 +146,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var result = new CodeAnalysisResult();
+            var result = new CodeAnalysisResult(options.Diagnostics, options.ExcludeDiagnostics);
             var projects = options.WorkspaceType == WorkspaceType.Solution
                 ? solution.Projects
                 : solution.Projects.Where(project => project.FilePath == options.WorkspaceFilePath);
@@ -195,6 +195,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableArray<CodeFixProvider> allFixers,
             ImmutableDictionary<ProjectId, ImmutableHashSet<string>> projectDiagnostics,
             ImmutableHashSet<string> formattablePaths,
+            FormatOptions options,
             DiagnosticSeverity severity,
             ImmutableHashSet<string> fixableCompilerDiagnostics,
             ILogger logger,
@@ -221,7 +222,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     continue;
                 }
 
-                var result = new CodeAnalysisResult();
+                var result = new CodeAnalysisResult(options.Diagnostics, options.ExcludeDiagnostics);
                 foreach (var project in solution.Projects)
                 {
                     // Only run analysis on projects that had previously reported the diagnostic
@@ -271,6 +272,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             ImmutableHashSet<string> formattablePaths,
             DiagnosticSeverity minimumSeverity,
             ImmutableHashSet<string> diagnostics,
+            ImmutableHashSet<string> excludeDiagnostics,
             CancellationToken cancellationToken)
         {
             // We only want to run analyzers for each project that have the potential for reporting a diagnostic with
@@ -298,6 +300,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     .Where(analyzer => DoesAnalyzerSupportLanguage(analyzer, project.Language));
                 foreach (var analyzer in filteredAnalyzer)
                 {
+                    // Filter by excluded diagnostics
+                    if (!excludeDiagnostics.IsEmpty &&
+                        analyzer.SupportedDiagnostics.All(descriptor => excludeDiagnostics.Contains(descriptor.Id)))
+                    {
+                        continue;
+                    }
+
                     // Filter by diagnostics
                     if (!diagnostics.IsEmpty &&
                         !analyzer.SupportedDiagnostics.Any(descriptor => diagnostics.Contains(descriptor.Id)))
