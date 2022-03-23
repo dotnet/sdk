@@ -15,6 +15,7 @@ internal static class Config
     public const string PrereqsPathEnv = "SMOKE_TESTS_PREREQS_PATH";
     public const string SdkTarballPathEnv = "SMOKE_TESTS_SDK_TARBALL_PATH";
     public const string TargetRidEnv = "SMOKE_TESTS_TARGET_RID";
+    public const string WarnSdkContentDiffsEnv = "SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS";
 
     public static string DotNetDirectory { get; } =
         Environment.GetEnvironmentVariable(DotNetDirectoryEnv) ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
@@ -23,4 +24,6 @@ internal static class Config
     public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
+    public static bool WarnOnSdkContentDiffs { get; } =
+        bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
 }

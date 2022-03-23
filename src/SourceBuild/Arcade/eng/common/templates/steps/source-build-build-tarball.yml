@@ -91,7 +91,7 @@ steps:
       cp $(Build.SourcesDirectory)/NuGet.config ${{ parameters.tarballDir }}/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config
 
       dockerVolumeArgs="-v ${{ parameters.tarballDir }}:/tarball"
-      dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=${{ parameters.excludeOmniSharpTests}}"
+      dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=${{ parameters.excludeOmniSharpTests}} -e SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS=true"
 
       if [[ '${{ parameters.isBootstrapped }}' != 'true' && '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
         dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
@@ -99,7 +99,7 @@ steps:
         dockerEnvArgs+=" -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
       fi
 
-      docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }}
+      docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }} -- /p:SmokeTestConsoleVerbosity=detailed
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
