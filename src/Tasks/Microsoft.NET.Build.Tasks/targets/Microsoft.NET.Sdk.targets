@@ -954,7 +954,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          PublicSign="$(PublicSign)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
-         DisabledWarnings="$(DisabledWarnings)"
+         DisabledWarnings="$(NoWarn)"
          WarningLevel="$(WarningLevel)"
          WarningsAsErrors="$(WarningsAsErrors)"
          WarningsNotAsErrors="$(WarningsNotAsErrors)"
