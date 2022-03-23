@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             string basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
             string architecture = IntPtr.Size == 8 ? "x64" : "x86";
-            architecture = dllFileName.Equals("hostfxr", StringComparison.OrdinalIgnoreCase) && RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "arm64" : architecture;
+            architecture = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "arm64" : architecture;
             string dllPath = Path.Combine(basePath, architecture, $"{dllFileName}.dll");
 
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
