@@ -18,6 +18,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         public static AnalyzerFormatter CodeStyleFormatter => new AnalyzerFormatter(
             Resources.Code_Style,
             FixCategory.CodeStyle,
+            includeCompilerDiagnostics: false,
             new CodeStyleInformationProvider(),
             new AnalyzerRunner(),
             new SolutionCodeFixApplier());
@@ -25,11 +26,13 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         public static AnalyzerFormatter ThirdPartyFormatter => new AnalyzerFormatter(
             Resources.Analyzer_Reference,
             FixCategory.Analyzers,
+            includeCompilerDiagnostics: true,
             new AnalyzerReferenceInformationProvider(),
             new AnalyzerRunner(),
             new SolutionCodeFixApplier());
 
         private readonly string _name;
+        private readonly bool _includeCompilerDiagnostics;
         private readonly IAnalyzerInformationProvider _informationProvider;
         private readonly IAnalyzerRunner _runner;
         private readonly ICodeFixApplier _applier;
@@ -39,12 +42,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
         public AnalyzerFormatter(
             string name,
             FixCategory category,
+            bool includeCompilerDiagnostics,
             IAnalyzerInformationProvider informationProvider,
             IAnalyzerRunner runner,
             ICodeFixApplier applier)
         {
             _name = name;
             Category = category;
+            _includeCompilerDiagnostics = includeCompilerDiagnostics;
             _informationProvider = informationProvider;
             _runner = runner;
             _applier = applier;
@@ -67,10 +72,12 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var allFixers = projectAnalyzersAndFixers.Values.SelectMany(analyzersAndFixers => analyzersAndFixers.Fixers).ToImmutableArray();
 
             // Only include compiler diagnostics if we have an associated fixer that supports FixAllScope.Solution
-            var fixableCompilerDiagnostics = allFixers
-                .Where(codefix => codefix.GetFixAllProvider()?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) == true)
-                .SelectMany(codefix => codefix.FixableDiagnosticIds.Where(id => id.StartsWith("CS") || id.StartsWith("BC")))
-                .ToImmutableHashSet();
+            var fixableCompilerDiagnostics = _includeCompilerDiagnostics
+                ? allFixers
+                    .Where(codefix => codefix.GetFixAllProvider()?.GetSupportedFixAllScopes()?.Contains(FixAllScope.Solution) == true)
+                    .SelectMany(codefix => codefix.FixableDiagnosticIds.Where(id => id.StartsWith("CS") || id.StartsWith("BC")))
+                    .ToImmutableHashSet()
+                : ImmutableHashSet<string>.Empty;
 
             // Filter compiler diagnostics
             if (!fixableCompilerDiagnostics.IsEmpty && !formatOptions.Diagnostics.IsEmpty)
