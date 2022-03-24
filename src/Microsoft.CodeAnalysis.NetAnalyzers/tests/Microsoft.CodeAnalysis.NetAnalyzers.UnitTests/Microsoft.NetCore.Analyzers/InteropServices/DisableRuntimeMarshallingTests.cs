@@ -254,6 +254,56 @@ struct ValueType
         }
 
         [Fact]
+        public async Task CS_PInvokeWithRecursiveManagedValueTypeReturnValue_DoesNotEmitDiagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    [DllImport(""NativeLibrary"")]
+    public static extern ValueType Method();
+}
+
+struct ValueType
+{
+    ValueType {|CS0523:v|};
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        public async Task CS_PInvokeWithMutuallyRecursiveManagedValueTypeReturnValue_DoesNotEmitDiagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    [DllImport(""NativeLibrary"")]
+    public static extern ValueType Method();
+}
+
+struct ValueType
+{
+    ValueType2 {|CS0523:v|};
+}
+struct ValueType2
+{
+    ValueType {|CS0523:v|};
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task VB_PInvokeWithManagedValueTypeReturnValue_Emits_Diagnostic()
         {
             string source = @"

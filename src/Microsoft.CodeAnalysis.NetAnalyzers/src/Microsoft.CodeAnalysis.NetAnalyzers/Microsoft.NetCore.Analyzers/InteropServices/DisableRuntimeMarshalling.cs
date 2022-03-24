@@ -337,47 +337,65 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             private bool TypeIsAutoLayoutOrContainsAutoLayout(ITypeSymbol type)
             {
-                Debug.Assert(type.IsValueType);
-
-                if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
+                return TypeIsAutoLayoutOrContainsAutoLayout(type, ImmutableHashSet<ITypeSymbol>.Empty.WithComparer(SymbolEqualityComparer.Default));
+                bool TypeIsAutoLayoutOrContainsAutoLayout(ITypeSymbol type, ImmutableHashSet<ITypeSymbol> seenTypes)
                 {
-                    return isAutoLayoutOrContainsAutoLayout;
-                }
+                    Debug.Assert(type.IsValueType);
 
-                if (_structLayoutAttribute is not null)
-                {
-                    foreach (var attr in type.GetAttributes(_structLayoutAttribute))
+                    if (_isAutoLayoutOrContainsAutoLayoutCache.TryGetValue(type, out bool isAutoLayoutOrContainsAutoLayout))
                     {
-                        if (attr.ConstructorArguments.Length > 0
-                            && attr.ConstructorArguments[0] is TypedConstant argument
-                            && argument.Type is not null)
-                        {
-                            SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
-                                ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
-                                argument.Type.SpecialType;
+                        return isAutoLayoutOrContainsAutoLayout;
+                    }
 
-                            if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
-                                convertedLayoutKindValue == (ulong)LayoutKind.Auto)
+                    if (seenTypes.Contains(type.OriginalDefinition))
+                    {
+                        // If we have a recursive type, we are in one of two scenarios.
+                        // 1. We're analyzing CoreLib and see the struct definition of a primitive type.
+                        // In all of these cases, the type does not have auto layout.
+                        // 2. We found a recursive type definition.
+                        // Recursive type definitions are invalid and Roslyn will emit another error diagnostic anyway,
+                        // so we don't care here.
+                        _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, false);
+                        return false;
+                    }
+
+                    if (_structLayoutAttribute is not null)
+                    {
+                        foreach (var attr in type.GetAttributes(_structLayoutAttribute))
+                        {
+                            if (attr.ConstructorArguments.Length > 0
+                                && attr.ConstructorArguments[0] is TypedConstant argument
+                                && argument.Type is not null)
                             {
-                                _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
-                                return true;
+                                SpecialType specialType = argument.Type.TypeKind == TypeKind.Enum ?
+                                    ((INamedTypeSymbol)argument.Type).EnumUnderlyingType.SpecialType :
+                                    argument.Type.SpecialType;
+
+                                if (DiagnosticHelpers.TryConvertToUInt64(argument.Value, specialType, out ulong convertedLayoutKindValue) &&
+                                    convertedLayoutKindValue == (ulong)LayoutKind.Auto)
+                                {
+                                    _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
+                                    return true;
+                                }
                             }
                         }
                     }
-                }
 
-                foreach (var member in type.GetMembers())
-                {
-                    if (member is IFieldSymbol { IsStatic: false, Type.IsValueType: true } valueTypeField
-                        && TypeIsAutoLayoutOrContainsAutoLayout(valueTypeField.Type))
+                    var seenTypesWithCurrentType = seenTypes.Add(type.OriginalDefinition);
+
+                    foreach (var member in type.GetMembers())
                     {
-                        _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
-                        return true;
+                        if (member is IFieldSymbol { IsStatic: false, Type.IsValueType: true } valueTypeField
+                            && TypeIsAutoLayoutOrContainsAutoLayout(valueTypeField.Type, seenTypesWithCurrentType))
+                        {
+                            _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, true);
+                            return true;
+                        }
                     }
-                }
 
-                _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, false);
-                return false;
+                    _isAutoLayoutOrContainsAutoLayoutCache.TryAdd(type, false);
+                    return false;
+                }
             }
         }
     }
