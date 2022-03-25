@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.DisplayName.Should().StartWith("Microsoft.TemplateEngine.TestTemplates::");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             source.Installer.Should().Be(installer);
-            source.LocalPackage.Should().Be(true);
+            source.IsLocalPackage.Should().Be(true);
             source.Provider.Should().Be(provider);
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates::1.0.0");
             source.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             source.Installer.Should().Be(installer);
-            source.LocalPackage.Should().Be(false);
+            source.IsLocalPackage.Should().Be(false);
             source.Provider.Should().Be(provider);
             source.NuGetSource.Should().Be(MockPackageManager.DefaultFeed);
         }
@@ -396,7 +396,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             updatedSource.DisplayName.Should().Be("Microsoft.TemplateEngine.TestTemplates::1.0.1");
             updatedSource.Identifier.Should().Be("Microsoft.TemplateEngine.TestTemplates");
             updatedSource.Installer.Should().Be(installer);
-            updatedSource.LocalPackage.Should().Be(false);
+            updatedSource.IsLocalPackage.Should().Be(false);
             updatedSource.Provider.Should().Be(provider);
             updatedSource.NuGetSource.Should().Be(MockPackageManager.DefaultFeed);
             Assert.False(File.Exists(oldMountPoint));
@@ -421,7 +421,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source.DisplayName.Should().Be($"{identifier}::{version}");
             source.Identifier.Should().Be(identifier);
             source.Installer.Should().Be(installer);
-            source.LocalPackage.Should().Be(local);
+            source.IsLocalPackage.Should().Be(local);
             source.Provider.Should().Be(provider);
             source.NuGetSource.Should().Be(nugetFeed);
         }

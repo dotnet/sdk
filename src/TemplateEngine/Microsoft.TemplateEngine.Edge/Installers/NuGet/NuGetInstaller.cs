@@ -217,7 +217,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                     Author = nuGetPackageInfo.Author,
                     NuGetSource = nuGetPackageInfo.NuGetSource,
                     Version = nuGetPackageInfo.PackageVersion.ToString(),
-                    LocalPackage = isLocalPackage
+                    IsLocalPackage = isLocalPackage
                 };
 
                 return InstallResult.CreateSuccess(installRequest, package);

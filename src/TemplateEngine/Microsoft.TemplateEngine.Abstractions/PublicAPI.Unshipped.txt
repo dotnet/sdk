@@ -1,1 +1,2 @@
 ﻿Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.IsLocalPackage.get -> bool

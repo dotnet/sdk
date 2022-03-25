@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
         }
 
-        public bool LocalPackage
+        public bool IsLocalPackage
         {
             get
             {

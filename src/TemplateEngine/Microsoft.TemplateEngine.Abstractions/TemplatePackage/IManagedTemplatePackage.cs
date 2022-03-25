@@ -44,6 +44,11 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         string Version { get; }
 
         /// <summary>
+        /// Indicates whether package was installed from local source (e.g. local extracted folder, local nuget etc.).
+        /// </summary>
+        bool IsLocalPackage { get; }
+
+        /// <summary>
         /// Gets additional details about template package. The details depend on <see cref="IInstaller"/> implementation.
         /// </summary>
         IReadOnlyDictionary<string, string> GetDetails();

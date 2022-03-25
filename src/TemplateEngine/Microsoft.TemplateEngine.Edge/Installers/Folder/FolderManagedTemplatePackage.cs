@@ -61,6 +61,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public string? Version => null;
 
+        public bool IsLocalPackage => true;
+
         public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;
     }
 }
