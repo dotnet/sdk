@@ -84,9 +84,9 @@ internal static class ExecuteHelper
         return result.StdOut;
     }
 
-    public static void ValidateExitCode((Process Process, string StdOut, string StdErr) result)
+    public static void ValidateExitCode((Process Process, string StdOut, string StdErr) result, int expectedExitCode = 0)
     {
-        if (result.Process.ExitCode != 0)
+        if (result.Process.ExitCode != expectedExitCode)
         {
             ProcessStartInfo startInfo = result.Process.StartInfo;
             string msg = $"Failed to execute {startInfo.FileName} {startInfo.Arguments}" +
