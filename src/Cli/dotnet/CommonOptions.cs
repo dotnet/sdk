@@ -151,15 +151,9 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p)); 
 
-        public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
+        public static readonly Option<string> TestPlatformOption = new Option<string>("--platform");
 
-        public static readonly Option<string> TestFrameworkOption = new Option<string>("--Framework");
-
-        public static readonly Option<string> TestLoggerOption = new Option<string>("--logger");
-
-        public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
-
-        public static readonly Option<string> TestFrameworkOption = new Option<string>("--Framework");
+        public static readonly Option<string> TestFrameworkOption = new Option<string>("--framework");
 
         public static readonly Option<string> TestLoggerOption = new Option<string>("--logger");
 
