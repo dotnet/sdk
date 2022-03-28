@@ -99,6 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
+                                AotEnabled="$(PublishAot)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
@@ -107,6 +108,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 EnableTargetingPackDownload="$(EnableTargetingPackDownload)"
                                 EnableRuntimePackDownload="$(EnableRuntimePackDownload)"
                                 KnownCrossgen2Packs="@(KnownCrossgen2Pack)"
+                                KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
                                 NETCoreSdkVersion="$(NETCoreSdkVersion)">
