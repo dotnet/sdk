@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
 
         private void PrintResults(IReadOnlyList<ExportResult> results)
         {
-            using IDisposable scope = Logger.BeginScope("Results");
+            using IDisposable? scope = Logger.BeginScope("Results");
             Logger.LogInformation(LocalizableStrings.command_export_log_executionEnded, results.Count);
 
             foreach (ExportResult result in results)
