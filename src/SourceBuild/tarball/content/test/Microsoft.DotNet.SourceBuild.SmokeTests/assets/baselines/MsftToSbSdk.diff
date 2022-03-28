@@ -47,18 +47,18 @@ index ------------
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Encodings.Web.xml
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.dll
 +./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.xml
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/apphost
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/coreclr_delegates.h
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/hostfxr.h
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/libnethost.a
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/libnethost.so
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/nethost.h
-+./packs/Microsoft.NETCore.App.Host.bannana.rid/x.y.z/runtimes/bannana.rid/native/singlefilehost
++./packs/Microsoft.NETCore.App.Host.banana.rid/
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/apphost
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/coreclr_delegates.h
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/hostfxr.h
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/libnethost.a
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/libnethost.so
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/nethost.h
++./packs/Microsoft.NETCore.App.Host.banana.rid/x.y.z/runtimes/banana.rid/native/singlefilehost
  ./packs/Microsoft.NETCore.App.Ref/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
@@ -764,6 +764,14 @@ index ------------
  ./sdk/x.y.z/ref/mscorlib.dll
  ./sdk/x.y.z/ref/netstandard.dll
 @@ ------------ @@
+ ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.CSharp.resources.dll
+ ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.resources.dll
+ ./sdk/x.y.z/Roslyn/bincore/ru/Microsoft.CodeAnalysis.VisualBasic.resources.dll
++./sdk/x.y.z/Roslyn/bincore/runtimes/
++./sdk/x.y.z/Roslyn/bincore/runtimes/win/
++./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/
++./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/
++./sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
  ./sdk/x.y.z/Roslyn/bincore/System.Runtime.CompilerServices.Unsafe.dll

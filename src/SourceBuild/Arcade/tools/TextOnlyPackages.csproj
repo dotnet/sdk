@@ -11,9 +11,7 @@
     should be added to source-build-reference-packages.
   -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.DotNet.Common.ItemTemplates" Version="[$(MicrosoftDotNetCommonItemTemplates60PackageVersion)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" Version="[$(MicrosoftDotNetCommonProjectTemplates60PackageVersion)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
     <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
 
