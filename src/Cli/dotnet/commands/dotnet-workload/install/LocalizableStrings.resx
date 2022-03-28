@@ -327,4 +327,7 @@
   <data name="SkipSignCheckOptionDescription" xml:space="preserve">
     <value>Skip signature verification of workload packages and installers.</value>
   </data>
+  <data name="CheckForUpdatedWorkloadManifests" xml:space="preserve">
+    <value>Checking for updated workload manifests.</value>
+  </data>
 </root>
