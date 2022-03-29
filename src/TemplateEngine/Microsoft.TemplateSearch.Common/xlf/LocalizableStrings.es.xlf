@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Exception_LocalCacheDoesNotExist">
         <source>Local search cache '{0}' does not exist.</source>
-        <target state="translated">La caché de búsqueda local "{0}" no existe.</target>
+        <target state="translated">La caché de búsqueda local \"{0}\" no existe.</target>
         <note>{0} - file path to search cache</note>
       </trans-unit>
       <trans-unit id="BlobStoreSourceFileProvider_Warning_LocalCacheWillBeUsed">

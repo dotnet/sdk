@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
         <source>'{0}' could not be parsed as a regular expression</source>
-        <target state="translated">Nie można przeanalizować szablonu "{0}" jako wyrażenia regularnego</target>
+        <target state="translated">Nie można przeanalizować szablonu \"{0}\" jako wyrażenia regularnego</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">

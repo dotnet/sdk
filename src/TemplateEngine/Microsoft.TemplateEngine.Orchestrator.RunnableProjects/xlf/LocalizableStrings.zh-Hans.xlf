@@ -52,7 +52,7 @@
       </trans-unit>
       <trans-unit id="Authoring_PostActionMustHaveActionId">
         <source>[{0}]: Post action at index '{1}' should have an 'actionId' to declare the action to be executed.</source>
-        <target state="translated">[{0}]: 索引 "{1}" 处的发布操作应具有“actionId”以声明要执行的操作。</target>
+        <target state="translated">[{0}]: 索引 “{1}” 处的发布操作应具有“actionId”以声明要执行的操作。</target>
         <note>{0} is a whole number representing the zero-based index of the post action. Such as "5" or "0".
 Do not localize: actionId</note>
       </trans-unit>

@@ -20,7 +20,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidRegex">
         <source>'{0}' could not be parsed as a regular expression</source>
-        <target state="translated">"{0}" konnte nicht als regulärer Ausdruck analysiert werden.</target>
+        <target state="translated">\"{0}\" konnte nicht als regulärer Ausdruck analysiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Authoring_MalformedPostActionManualInstructions">
@@ -78,7 +78,7 @@ Do not localize: actionId</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled">
         <source>Failed to load template from {0}:</source>
-        <target state="translated">Fehler beim Laden der Vorlage von "{0}":</target>
+        <target state="translated">Fehler beim Laden der Vorlage von \"{0}\":</target>
         <note>{0} is template configuration location.</note>
       </trans-unit>
       <trans-unit id="Authoring_TemplateNotInstalled_Message">

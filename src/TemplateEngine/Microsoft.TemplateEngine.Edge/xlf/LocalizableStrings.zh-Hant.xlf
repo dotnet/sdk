@@ -176,7 +176,7 @@ Details: {1}.</source>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}</source>
-        <target state="needs-review-translation">無法建立範本。
+        <target state="translated">無法建立範本。
 詳細資料: {0}。</target>
         <note />
       </trans-unit>
@@ -187,7 +187,7 @@ Details: {0}</source>
       </trans-unit>
       <trans-unit id="TemplateInfo_Warning_FailedToReadHostData">
         <source>Failed to load host data in {0} at {1}.</source>
-        <target state="new">Failed to load host data in {0} at {1}.</target>
+        <target state="translated">無法在 {1} 的 {0} 處載入主機資料。</target>
         <note>{0} - path to template location, {1} relative path inside template location.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">

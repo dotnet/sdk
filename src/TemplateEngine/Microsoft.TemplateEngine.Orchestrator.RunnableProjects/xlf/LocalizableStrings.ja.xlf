@@ -30,7 +30,7 @@
       </trans-unit>
       <trans-unit id="Authoring_ManualInstructionIdIsNotUnique">
         <source>'id' of the manual instruction '{0}' at index {1} is not unique. Only the first manual instruction that uses this id will be localized.</source>
-        <target state="translated">インデックス {1} の手動手順 "{0}" の 'ID' が一意ではありません。この ID を使用する最初の手動手順のみがローカライズされます。</target>
+        <target state="translated">インデックス {1} の手動手順 \"{0}\" の 'ID' が一意ではありません。この ID を使用する最初の手動手順のみがローカライズされます。</target>
         <note>{0} is any identifier string that user provided in the file. Such as: "myInstruction", "firstInstruction", "instruction1" etc.
 {1} is a whole number representing the zero-based index of the manual instruction. Such as "5", or "0".</note>
       </trans-unit>
