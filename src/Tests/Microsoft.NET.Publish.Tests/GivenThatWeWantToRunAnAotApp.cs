@@ -33,7 +33,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [InlineData(LatestTfm)]        
         public void NativeAot_only_runs_when_switch_is_enabled(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -41,10 +41,16 @@ namespace Microsoft.NET.Publish.Tests
             var rid = "win-x64";
 
             var testProject = CreateTestProjectForNativeAotTesting(targetFramework, projectName);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var publishCommand = new PublishCommand(testAsset);
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishAot=true").Should().Pass();
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute(@"-bl")
+//                .Execute(@"-bl:C:\Work\Core\Test\NativeAOT\3_28\bin\GivenThatWeWantToRunAnAotApp.binlog")
+                .Should().Pass();
+
 
         }
 
