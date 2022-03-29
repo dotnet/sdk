@@ -14,7 +14,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Packaging;
-using NuGet.Versioning;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
@@ -81,7 +80,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 //check if identifier is a valid package ID
                 bool validPackageId = PackageIdValidator.IsValidPackageId(installationRequest.PackageIdentifier);
                 //check if version is specified it is correct version
-                bool hasValidVersion = string.IsNullOrWhiteSpace(installationRequest.Version) || NuGetVersion.TryParse(installationRequest.Version, out _);
+                bool hasValidVersion = NuGetVersionHelper.IsSupportedVersionString(installationRequest.Version);
                 if (!validPackageId)
                 {
                     _logger.LogDebug($"{installationRequest.PackageIdentifier} is not a valid NuGet package ID.");
