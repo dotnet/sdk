@@ -14,7 +14,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="clicommandlineparser" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="source-build" />
   </ItemGroup>

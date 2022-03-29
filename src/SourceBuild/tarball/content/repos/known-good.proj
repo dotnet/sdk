@@ -31,7 +31,6 @@
         <RepositoryReference Include="arcade" />
 
         <!-- Tier 1 -->
-        <RepositoryReference Include="clicommandlineparser" />
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
         <RepositoryReference Include="roslyn" />

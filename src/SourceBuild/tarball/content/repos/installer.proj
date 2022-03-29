@@ -55,7 +55,6 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="aspnetcore" />
-    <RepositoryReference Include="clicommandlineparser" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build" />
