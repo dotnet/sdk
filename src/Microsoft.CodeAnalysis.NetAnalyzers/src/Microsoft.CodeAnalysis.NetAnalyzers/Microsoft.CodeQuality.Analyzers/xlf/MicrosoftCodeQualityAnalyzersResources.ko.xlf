@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
         <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.</source>
-        <target state="new">Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.</target>
+        <target state="translated">'IEnumerable' 컬렉션에 대해 여러 개의 열거형이 가능합니다. 여러 열거형을 방지하는 구현을 사용하는 것이 좋습니다.</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">
         <source>Possible multiple enumerations of 'IEnumerable' collection</source>
-        <target state="new">Possible multiple enumerations of 'IEnumerable' collection</target>
+        <target state="translated">'IEnumerable' 컬렉션에 대해 여러 개의 열거 가능</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">

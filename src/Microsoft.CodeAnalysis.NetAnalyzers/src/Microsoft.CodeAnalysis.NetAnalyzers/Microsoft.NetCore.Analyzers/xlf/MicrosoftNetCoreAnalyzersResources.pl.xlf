@@ -1114,47 +1114,47 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
         <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
-        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <target state="translated">Użycie funkcji, które wymagają kierowania środowiska uruchomieniowego, gdy kierowanie środowiska uruchomieniowego jest wyłączone, spowoduje wyjątki środowiska uruchomieniowego.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
         <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <target state="translated">Typy z elementem „[StructLayout(LayoutKind.Auto)]“ wymagają włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
-        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <target state="translated">Parametry by-ref wymagają włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
         <source>HResult-swapping requires runtime marshalling to be enabled</source>
-        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <target state="translated">Zamiana HResult wymaga włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
         <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
-        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <target state="translated">Użycie atrybutu „LCIDConversionAttribute“ wymaga włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
         <source>Managed parameter or return types require runtime marshalling to be enabled</source>
-        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <target state="translated">Typy parametrów zarządzanych lub zwracanych wymagają włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
         <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
-        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <target state="translated">Ustawienie wartości SetLastError na wartość „True“ wymaga włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
         <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
-        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
+        <target state="translated">Sygnatury Varadic P/Invoke wymagają włączenia kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
         <source>Property, type, or attribute requires runtime marshalling</source>
-        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <target state="translated">Właściwość, typ lub atrybut wymaga kierowania środowiska uruchomieniowego</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
@@ -1664,17 +1664,17 @@
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
         <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
-        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <target state="translated">Ta metoda używa kierowania środowiska uruchomieniowego nawet wtedy, gdy kierowanie środowiska uruchomieniowego jest wyłączone, co może powodować nieoczekiwane różnice w zachowaniu środowiska uruchomieniowego ze względu na różne oczekiwania dotyczące układu natywnego typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
         <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
+        <target state="translated">Element „{0}“ używa kierowania środowiska uruchomieniowego nawet wtedy, gdy jest zastosowany atrybut „DisableRuntimeMarsbezpieczeńingAttribute“. Użyj bezpośrednio funkcji, takich jak „sizeof“ i wskaźników, aby zapewnić dokładne wyniki.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
         <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
+        <target state="translated">Ta metoda używa kierowania środowiska uruchomieniowego nawet wtedy, gdy jest stosowany atrybut „DisableRuntimeMarsbezpieczeńingAttribute“</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2469,32 +2469,32 @@
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineDescription">
         <source>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</source>
-        <target state="new">'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</target>
+        <target state="translated">Pola „ThreadStatic“ powinny być inicjowane z opóźnieniem w użyciu, a nie z inicjacją śródwierszową ani jawnie w konstruktorze statycznym, co spowodowałoby zainicjowanie pola tylko w wątku, w którym działa konstruktor statyczny typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineMessage">
         <source>'ThreadStatic' fields should not use inline initialization</source>
-        <target state="new">'ThreadStatic' fields should not use inline initialization</target>
+        <target state="translated">Pola „ThreadStatic“ nie powinny używać inicjowania wbudowanego</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
-        <target state="new">Improper 'ThreadStatic' field initialization</target>
+        <target state="translated">Nieprawidłowe inicjowanie pola „ThreadStatic“</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
         <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="new">'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</target>
+        <target state="translated">Element „ThreadStatic“ ma wpływ tylko na pola statyczne. Po zastosowaniu do pól wystąpienia, nie ma on wpływu na zachowanie.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
         <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="new">Ensure 'ThreadStatic' is only used with static fields</target>
+        <target state="translated">Upewnij się, że element „ThreadStatic“ jest używany tylko z polami statycznymi</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
         <source>'ThreadStatic' only affects static fields</source>
-        <target state="new">'ThreadStatic' only affects static fields</target>
+        <target state="translated">Element „ThreadStatic“ ma wpływ tylko na pola statyczne</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2624,7 +2624,7 @@
       </trans-unit>
       <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
-        <target state="new">Use equivalent code that works when marshalling is disabled</target>
+        <target state="translated">Użyj równoważnego kodu, który działa, gdy kierowanie jest wyłączone</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
