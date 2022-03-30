@@ -2074,6 +2074,37 @@ class Some
         }
 
         [Fact]
+        public async Task MergePlatformAttributesCrushTest()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""ios10.0"")]
+static class Program
+{
+    public static void Main()
+    {
+        [|Some.Api1()|]; // This call site is reachable on all platforms. 'Some.Api1()' is only supported on: 'ios' 14.0 and later, 'maccatalyst' 14.0 and later
+    }
+}
+
+[SupportedOSPlatform(""ios10.0"")]
+[SupportedOSPlatform(""tvos10.0"")]
+[SupportedOSPlatform(""macos10.14"")]
+[SupportedOSPlatform(""maccatalyst13.1"")]
+[UnsupportedOSPlatform(""watchos"")]
+class Some
+{
+    [UnsupportedOSPlatform(""watchos"")]
+    [UnsupportedOSPlatform(""tvos"")]
+    [UnsupportedOSPlatform(""macos"")]
+    [SupportedOSPlatform(""ios14.0"")]
+    public static void Api1() {}
+}";
+            await VerifyAnalyzerCSAsync(source);
+        }
+
+        [Fact]
         public async Task PlatformOverridesAsync()
         {
             var source = @"
