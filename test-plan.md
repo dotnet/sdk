@@ -4,10 +4,35 @@ dotnet-format includes project loading tests which validate clean project loadin
 
 ## Steps:
 1. Install the SDK being validated against.
-1. Checkout the dotnet-format repo. `git clone https://github.com/dotnet/format.git`
-2. Update the gobal.json by removing the "sdk" configuration.
-3. Run `Restore.cmd`.
-4. Run `Build.cmd`.
-5. Run `Test.cmd`.
+2. Checkout the dotnet-format repo. `git clone https://github.com/dotnet/format.git`
+3. Update the gobal.json by removing the "sdk" configuration.
+Before:
+```json
+{
+  "tools": {
+    "dotnet": "6.0.103"
+  },
+  "sdk": {
+    "version": "6.0.103"
+  },
+  "msbuild-sdks": {
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.22166.2"
+  }
+}
+```
+After:
+```json
+{
+  "tools": {
+    "dotnet": "6.0.103"
+  },
+  "msbuild-sdks": {
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.22166.2"
+  }
+}
+```
+4. Run `Restore.cmd`.
+5. Run `Build.cmd`.
+6. Run `Test.cmd`.
 
 You can report test failures here: https://github.com/dotnet/format/issues
