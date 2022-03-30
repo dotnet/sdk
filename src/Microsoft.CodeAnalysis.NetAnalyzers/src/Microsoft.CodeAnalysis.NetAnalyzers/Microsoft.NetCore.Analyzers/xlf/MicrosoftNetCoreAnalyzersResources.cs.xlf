@@ -1114,47 +1114,47 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
         <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
-        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <target state="translated">Používání funkcí, které vyžadují zařazování modulu runtime, když je zařazování modulu runtime zakázané, bude mít za následek výjimky modulu runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
         <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <target state="translated">Typy s „[StructLayout(LayoutKind.Auto)]“ vyžadují, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
-        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <target state="translated">Parametry By-ref vyžadují, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
         <source>HResult-swapping requires runtime marshalling to be enabled</source>
-        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <target state="translated">HResult-swapping vyžaduje, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
         <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
-        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <target state="translated">Používání „LCIDConversionAttribute“ vyžadují, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
         <source>Managed parameter or return types require runtime marshalling to be enabled</source>
-        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <target state="translated">Spravovaný parametr nebo typy vratek vyžadují, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
         <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
-        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <target state="translated">Nastavení SetLastError na „true“ vyžaduje, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
         <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
-        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
+        <target state="translated">Varadic P/Invoke signatures vyžaduje, aby bylo povoleno zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
         <source>Property, type, or attribute requires runtime marshalling</source>
-        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <target state="translated">Vlastnost, typ nebo atribut vyžaduje zařazování modulu runtime</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
@@ -1664,17 +1664,17 @@
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
         <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
-        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <target state="translated">Tato metoda používá zařazování modulu runtime i tehdy, když je zařazování modulu runtime zakázáno, což může mít za následek neočekávané rozdíly v chování během doby spuštění vzhledem k různým očekáváním nativního rozložení typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
         <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
+        <target state="translated">{0} používá zařazování modulu runtime i tehdy, když se používá „DisableRuntimeMarshallingAttribute“. Abyste zajistili přesné výsledky, použijte funkce jako „sizeof“ a ukazatele.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
         <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
+        <target state="translated">Tato metoda používá vyžaduje zařazování modulu runtime i tehdy, když se používá „DisableRuntimeMarshallingAttribute“.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2469,32 +2469,32 @@
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineDescription">
         <source>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</source>
-        <target state="new">'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</target>
+        <target state="translated">Pole ThreadStatic by se měla inicializovat laxně při použití, ne s vloženou inicializací ani explicitně ve statickém konstruktoru, což by inicializovalo pole jenom ve vlákně, které spouští statický konstruktor typu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineMessage">
         <source>'ThreadStatic' fields should not use inline initialization</source>
-        <target state="new">'ThreadStatic' fields should not use inline initialization</target>
+        <target state="translated">Pole ThreadStatic by neměla používat vloženou inicializaci.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
-        <target state="new">Improper 'ThreadStatic' field initialization</target>
+        <target state="translated">Nesprávná inicializace pole ThreadStatic</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
         <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="new">'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</target>
+        <target state="translated">ThreadStatic má vliv jenom na statická pole. Když se pole instance použijí, nemá to žádný vliv na chování.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
         <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="new">Ensure 'ThreadStatic' is only used with static fields</target>
+        <target state="translated">Ujistěte se, že ThreadStatic se používá jenom se statickými poli.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
         <source>'ThreadStatic' only affects static fields</source>
-        <target state="new">'ThreadStatic' only affects static fields</target>
+        <target state="translated">ThreadStatic má vliv jenom na statická pole.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2624,7 +2624,7 @@
       </trans-unit>
       <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
-        <target state="new">Use equivalent code that works when marshalling is disabled</target>
+        <target state="translated">Použít ekvivalentní kód, který funguje při zakázání zařazování</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">

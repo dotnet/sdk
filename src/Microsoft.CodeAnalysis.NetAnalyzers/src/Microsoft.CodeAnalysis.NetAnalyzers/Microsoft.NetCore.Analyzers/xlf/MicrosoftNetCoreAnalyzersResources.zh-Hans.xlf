@@ -1114,47 +1114,47 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
         <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
-        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <target state="translated">在禁用运行时封送时使用需要运行时封送的功能将导致运行时异常。</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
         <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <target state="translated">具有 “[StructLayout(LayoutKind.Auto)]” 的类型需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
-        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <target state="translated">By-ref 参数需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
         <source>HResult-swapping requires runtime marshalling to be enabled</source>
-        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <target state="translated">HResult-swapping 需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
         <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
-        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <target state="translated">使用 “LCIDConversionAttribute” 需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
         <source>Managed parameter or return types require runtime marshalling to be enabled</source>
-        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <target state="translated">托管参数或返回类型需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
         <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
-        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <target state="translated">将 SetLastError 设置为 “true” 需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
         <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
-        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
+        <target state="translated">Varadic P/Invoke 签名需要启用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
         <source>Property, type, or attribute requires runtime marshalling</source>
-        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <target state="translated">属性、类型或特性需要运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
@@ -1664,17 +1664,17 @@
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
         <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
-        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <target state="translated">即使禁用运行时封送，此方法也使用运行时封送，这可能会由于类型的本机布局的不同期望导致在运行时出现意外的行为差异。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
         <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
+        <target state="translated">即使应用了 “DisableRuntimeMarshallingAttribute”，“{0}”也使用运行时封送。直接使用 “sizeof” 和指针等功能可确保结果准确。</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
         <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
+        <target state="translated">即使应用了 “DisableRuntimeMarshallingAttribute”，此方法也会使用运行时封送</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2469,32 +2469,32 @@
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineDescription">
         <source>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</source>
-        <target state="new">'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</target>
+        <target state="translated">“ThreadStatic” 字段应在使用时延迟初始化，不应使用内联初始化，也不应在静态构造函数中显式初始化，这只会初始化县城上运行该类型的静态构造函数的字段。</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineMessage">
         <source>'ThreadStatic' fields should not use inline initialization</source>
-        <target state="new">'ThreadStatic' fields should not use inline initialization</target>
+        <target state="translated">“ThreadStatic” 字段不应使用内联初始化</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
-        <target state="new">Improper 'ThreadStatic' field initialization</target>
+        <target state="translated">“ThreadStatic” 字段初始化不正确</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
         <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="new">'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</target>
+        <target state="translated">“ThreadStatic” 仅影响静态字段。应用于实例字段时，它不会影响行为。</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
         <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="new">Ensure 'ThreadStatic' is only used with static fields</target>
+        <target state="translated">确保 “ThreadStatic” 仅用于静态字段</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
         <source>'ThreadStatic' only affects static fields</source>
-        <target state="new">'ThreadStatic' only affects static fields</target>
+        <target state="translated">“ThreadStatic” 仅影响静态字段</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2624,7 +2624,7 @@
       </trans-unit>
       <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
-        <target state="new">Use equivalent code that works when marshalling is disabled</target>
+        <target state="translated">使用在禁用封送时起作用的等效代码</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">

@@ -1114,47 +1114,47 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
         <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
-        <target state="new">Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</target>
+        <target state="translated">런타임 마샬링이 비활성화된 경우 런타임 마샬링이 필요한 기능을 사용하면 런타임 예외가 발생합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
         <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
-        <target state="new">Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</target>
+        <target state="translated">'[StructLayout(LayoutKind.Auto)]' 유형은 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
-        <target state="new">By-ref parameters require runtime marshalling to be enabled</target>
+        <target state="translated">By-ref 매개 변수는 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
         <source>HResult-swapping requires runtime marshalling to be enabled</source>
-        <target state="new">HResult-swapping requires runtime marshalling to be enabled</target>
+        <target state="translated">HResult-swapping은 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
         <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
-        <target state="new">Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</target>
+        <target state="translated">'LCIDConversionAttribute'를 사용하려면 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
         <source>Managed parameter or return types require runtime marshalling to be enabled</source>
-        <target state="new">Managed parameter or return types require runtime marshalling to be enabled</target>
+        <target state="translated">관리되는 매개 변수 또는 반환 유형은 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
         <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
-        <target state="new">Setting SetLastError to 'true' requires runtime marshalling to be enabled</target>
+        <target state="translated">SetLastError를 'true'로 설정하려면 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
         <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
-        <target state="new">Varadic P/Invoke signatures require runtime marshalling to be enabled</target>
+        <target state="translated">Varadic P/Invoke 서명은 런타임 마샬링을 활성화해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
         <source>Property, type, or attribute requires runtime marshalling</source>
-        <target state="new">Property, type, or attribute requires runtime marshalling</target>
+        <target state="translated">속성, 유형 또는 특성에는 런타임 마샬링이 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
@@ -1664,17 +1664,17 @@
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
         <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
-        <target state="new">This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</target>
+        <target state="translated">이 메서드는 런타임 마샬링이 비활성화된 경우에도 런타임 마샬링을 사용하므로 형식의 기본 레이아웃에 대한 기대치가 다르기 때문에 런타임에 예기치 않은 동작 차이가 발생할 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
         <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
-        <target state="new">'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</target>
+        <target state="translated">'{0}'은(는) 'DisableRuntimeMarshallingAttribute'가 적용된 경우에도 런타임 마샬링을 사용합니다. 정확한 결과를 보장하기 위해 'sizeof' 및 포인터와 같은 기능을 직접 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
         <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
-        <target state="new">This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</target>
+        <target state="translated">이 메서드는 'DisableRuntimeMarshallingAttribute'가 적용된 경우에도 런타임 마샬링을 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2469,32 +2469,32 @@
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineDescription">
         <source>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</source>
-        <target state="new">'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</target>
+        <target state="translated">'ThreadStatic' 필드는 인라인 초기화를 사용하거나 명시적으로 유형의 정적 생성자를 실행하는 스레드의 필드만 초기화하는 정적 생성자에서가 아니라 사용 시 느리게 초기화되어야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineMessage">
         <source>'ThreadStatic' fields should not use inline initialization</source>
-        <target state="new">'ThreadStatic' fields should not use inline initialization</target>
+        <target state="translated">'ThreadStatic' 필드는 인라인 초기화를 사용하면 안 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticInitializedInlineTitle">
         <source>Improper 'ThreadStatic' field initialization</source>
-        <target state="new">Improper 'ThreadStatic' field initialization</target>
+        <target state="translated">잘못된 'ThreadStatic' 필드 초기화</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
         <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
-        <target state="new">'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</target>
+        <target state="translated">'ThreadStatic'은(는) 정적 필드에만 영향을 줍니다. 인스턴스 필드에 적용할 때 동작에 영향을 주지 않습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
         <source>Ensure 'ThreadStatic' is only used with static fields</source>
-        <target state="new">Ensure 'ThreadStatic' is only used with static fields</target>
+        <target state="translated">'ThreadStatic'이(가) 정적 필드에서만 사용되는지 확인</target>
         <note />
       </trans-unit>
       <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
         <source>'ThreadStatic' only affects static fields</source>
-        <target state="new">'ThreadStatic' only affects static fields</target>
+        <target state="translated">'ThreadStatic'은(는) 정적 필드에만 영향을 줍니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseArrayEmpty">
@@ -2624,7 +2624,7 @@
       </trans-unit>
       <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
         <source>Use equivalent code that works when marshalling is disabled</source>
-        <target state="new">Use equivalent code that works when marshalling is disabled</target>
+        <target state="translated">마샬링이 비활성화된 경우 작동하는 동등한 코드 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
