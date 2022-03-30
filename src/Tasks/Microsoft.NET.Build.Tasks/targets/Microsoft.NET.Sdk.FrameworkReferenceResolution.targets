@@ -255,11 +255,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output TaskParameter="Output" ItemName="ResolvedILCompilerPack" />
     </GetPackageDirectory>
-
-    <PropertyGroup>
-        <ILCompilerDir>%(ResolvedILCompilerPack.PackageDirectory)</ILCompilerDir>
-    </PropertyGroup>
-
     
     <GetPackageDirectory
       Items="@(PackAsToolShimAppHostPack)"

@@ -47,8 +47,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
-                .Execute(@"-bl")
-//                .Execute(@"-bl:C:\Work\Core\Test\NativeAOT\3_28\bin\GivenThatWeWantToRunAnAotApp.binlog")
+                .Execute()
+                // .Execute(@"-bl:C:\Work\Core\Test\NativeAOT\3_28\bin\GivenThatWeWantToRunAnAotApp.binlog")
                 .Should().Pass();
 
 
