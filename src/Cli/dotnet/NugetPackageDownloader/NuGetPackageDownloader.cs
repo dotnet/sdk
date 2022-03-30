@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 if (!_validationMessagesDisplayed)
                 {
                     _reporter.WriteLine(
-                        LocalizableStrings.SkipNuGetpackageSigningValidationSDKNotFirstParty);
+                        LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                     _validationMessagesDisplayed = true;
                 }
 

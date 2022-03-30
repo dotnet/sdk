@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    LocalizableStrings.SkipNuGetpackageSigningValidationSDKNotFirstParty);
+                    LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 

@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 throw new GracefulException(LocalizableStrings.SkipSignCheckInvalidOption);
             }
 
-            return policyEnabled || !skipSignCheck;
+            return !skipSignCheck;
         }
     }
 }
