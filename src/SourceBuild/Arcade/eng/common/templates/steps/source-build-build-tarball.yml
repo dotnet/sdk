@@ -10,6 +10,9 @@ parameters:
   # Container image to build within
   container: null
 
+  # Enable the poison report
+  enablePoison: false
+
   # Skip running the OmniSharp smoke-tests
   excludeOmniSharpTests: false
 
@@ -26,7 +29,7 @@ parameters:
   prepScript: null
 
   # Whether or not to build online
-  runOnline: null
+  runOnline: false
 
   # Directory to build the tarball in
   tarballDir:
@@ -55,7 +58,7 @@ steps:
       set -x
 
       resourceIdPathSegment=
-      if [ '${{ parameters.installerBuildResourceId }}' != 'current' ]; then
+      if [[ '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
         resourceIdPathSegment='${{ parameters.installerBuildResourceId }}/'
       fi
 
@@ -74,10 +77,14 @@ steps:
 
       networkArgs=
       customBuildArgs=
-      if [ '${{ parameters.runOnline}}' = 'true' ]; then
+      if [[ '${{ parameters.runOnline }}' == 'true' ]]; then
         customBuildArgs='--online'
       else
         networkArgs='--network none'
+      fi
+
+      if [[ '${{ parameters.enablePoison }}' == 'true' ]]; then
+        customBuildArgs="$customBuildArgs --poison"
       fi
 
       docker run --rm -v ${{ parameters.tarballDir }}:/tarball -w /tarball ${networkArgs} ${{ parameters.container }} ./build.sh ${customBuildArgs} ${{ parameters.additionalBuildArgs }} -- /p:CleanWhileBuilding=true
@@ -92,6 +99,7 @@ steps:
 
       dockerVolumeArgs="-v ${{ parameters.tarballDir }}:/tarball"
       dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=${{ parameters.excludeOmniSharpTests}} -e SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS=true"
+      poisonArg=''
 
       if [[ '${{ parameters.isBootstrapped }}' != 'true' && '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
         dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
@@ -99,7 +107,12 @@ steps:
         dockerEnvArgs+=" -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
       fi
 
-      docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh --run-smoke-test ${{ parameters.additionalBuildArgs }} -- /p:SmokeTestConsoleVerbosity=detailed
+      if [[ '${{ parameters.enablePoison }}' == 'true' ]]; then
+        poisonArg='--poison'
+        dockerEnvArgs+=" -e SMOKE_TESTS_WARN_POISON_DIFFS=true"
+      fi
+
+      docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs ${{ parameters.container }} ./build.sh $poisonArg --run-smoke-test ${{ parameters.additionalBuildArgs }} -- /p:SmokeTestConsoleVerbosity=detailed
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
