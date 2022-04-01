@@ -28,7 +28,7 @@ the `template.json` file. This requires that a few changes have to be done on th
 |Name|Description|Default|
 |---|---|---|
 |sources|The set of mappings in the template content to user directories. It's defined as any array of [Source](#source-definition) |If not specified, an implicit source is created with `"source": "./"` and `"target": "./"`, all other properties in the source are set to their defaults|
-|guids|A list of guids which appear in the template source and should be replaced in the template output. For each guid listed, a replacement guid is generated, and replaces all occurrences of the source guid in the output|
+|guids|[See Below](#guids)|
 |symbols|[See Below](#symbols)|
 
 #### Source Definition
@@ -50,6 +50,68 @@ the `template.json` file. This requires that a few changes have to be done on th
 |include|Include configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.include for more info.|
 |exclude|Exclude configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.exclude for more info|
 |copyOnly|CopyOnly configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.copyonly for more info|
+
+### Guids
+An optional list of guids which appear in the template source and should be replaced in the template output. For each guid listed, a replacement guid is generated, and replaces all occurrences of the source guid in the output. Matching of the guids in the source template works independently on the format and casing of the guids in the `template.json` file and source files. Format and casing from template source is preserved in the output (casing and format of the guid in `Guids` section of `template.json` doesn't influence matching or output generation).
+
+##### Example
+Sample template.json snippet:
+```json
+  "guids": [
+    "98048C9C-BF28-46BA-A98E-63767EE5E3A8",
+    "c7ab42cf938548c08b8784349ab5e04b"
+  ],
+```
+
+Sample template file content:
+```
+[n]: 98048c9cbf2846baa98e63767ee5e3a8
+[d]: 98048c9c-bf28-46ba-a98e-63767ee5e3a8
+[b]: {98048c9c-bf28-46ba-a98e-63767ee5e3a8}
+[p]: (98048c9c-bf28-46ba-a98e-63767ee5e3a8)
+[x]: {0x98048c9c,0xbf28,0x46ba,{0xa9,0x8e,0x63,0x76,0x7e,0xe5,0xe3,0xa8}}
+[N]: 98048C9CBF2846BAA98E63767EE5E3A8
+[D]: 98048C9C-BF28-46BA-A98E-63767EE5E3A8
+[B]: {98048C9C-BF28-46BA-A98E-63767EE5E3A8}
+[P]: (98048C9C-BF28-46BA-A98E-63767EE5E3A8)
+[X]: {0X98048C9C,0XBF28,0X46BA,{0XA9,0X8E,0X63,0X76,0X7E,0XE5,0XE3,0XA8}}
+
+[n]: c7ab42cf938548c08b8784349ab5e04b
+[d]: c7ab42cf-9385-48c0-8b87-84349ab5e04b
+[b]: {c7ab42cf-9385-48c0-8b87-84349ab5e04b}
+[p]: (c7ab42cf-9385-48c0-8b87-84349ab5e04b)
+[x]: {0xc7ab42cf,0x9385,0x48c0,{0x8b,0x87,0x84,0x34,0x9a,0xb5,0xe0,0x4b}}
+[N]: C7AB42CF938548C08B8784349AB5E04B
+[D]: C7AB42CF-9385-48C0-8B87-84349AB5E04B
+[B]: {C7AB42CF-9385-48C0-8B87-84349AB5E04B}
+[P]: (C7AB42CF-9385-48C0-8B87-84349AB5E04B)
+[X]: {0XC7AB42CF,0X9385,0X48C0,{0X8B,0X87,0X84,0X34,0X9A,0XB5,0XE0,0X4B}}
+```
+
+Output content after template instantiation:
+```
+[n]: a6d920ff125841318f5e07df108f5a4a
+[d]: a6d920ff-1258-4131-8f5e-07df108f5a4a
+[b]: {a6d920ff-1258-4131-8f5e-07df108f5a4a}
+[p]: (a6d920ff-1258-4131-8f5e-07df108f5a4a)
+[x]: {0xa6d920ff,0x1258,0x4131,{0x8f,0x5e,0x07,0xdf,0x10,0x8f,0x5a,0x4a}}
+[N]: A6D920FF125841318F5E07DF108F5A4A
+[D]: A6D920FF-1258-4131-8F5E-07DF108F5A4A
+[B]: {A6D920FF-1258-4131-8F5E-07DF108F5A4A}
+[P]: (A6D920FF-1258-4131-8F5E-07DF108F5A4A)
+[X]: {0XA6D920FF,0X1258,0X4131,{0X8F,0X5E,0X07,0XDF,0X10,0X8F,0X5A,0X4A}}
+
+[n]: 2879773c9a5241f78fa5ac318214f54d
+[d]: 2879773c-9a52-41f7-8fa5-ac318214f54d
+[b]: {2879773c-9a52-41f7-8fa5-ac318214f54d}
+[p]: (2879773c-9a52-41f7-8fa5-ac318214f54d)
+[x]: {0x2879773c,0x9a52,0x41f7,{0x8f,0xa5,0xac,0x31,0x82,0x14,0xf5,0x4d}}
+[N]: 2879773C9A5241F78FA5AC318214F54D
+[D]: 2879773C-9A52-41F7-8FA5-AC318214F54D
+[B]: {2879773C-9A52-41F7-8FA5-AC318214F54D}
+[P]: (2879773C-9A52-41F7-8FA5-AC318214F54D)
+[X]: {0X2879773C,0X9A52,0X41F7,{0X8F,0XA5,0XAC,0X31,0X82,0X14,0XF5,0X4D}}
+```
 
 ### Symbols 
 The symbols section defines variables and their values, the values may be the defined in terms of other symbols. When a defined symbol name is encountered anywhere in the template definition, it is replaced by the value defined in this configuration. The symbols configuration is a collection of key-value pairs. The keys are the symbol names, and the value contains key-value-pair configuration information on how to assign the symbol a value.

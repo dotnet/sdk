@@ -353,7 +353,7 @@ Exclude configuration specific to this sources.modifiers instance, contingent on
 CopyOnly configuration specific to this sources.modifiers instance, contingent on the corresponding sources.modifiers.condition. See sources.copyonly for more info.
 
 ### guids (optional)
-A list of guids which appear in the template source and should be replaced in the template output. For each guid listed, a replacement guid is generated, and replaces all occurrences of the source guid in the output.
+[More details in `template.json` reference](Reference-for-template.json.md#guids)
 
 ### symbols (optional)
 The `symbols` section defines variables and their values, the values may be the defined in terms of other symbols. See more information on symbols in [this](https://github.com/dotnet/templating/wiki/Reference-for-template.json#symbols) article.
