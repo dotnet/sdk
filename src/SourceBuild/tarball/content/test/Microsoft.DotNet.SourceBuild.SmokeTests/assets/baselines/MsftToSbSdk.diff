@@ -860,65 +860,65 @@ index ------------
  ./sdk/x.y.z/Sdks/FSharp.NET.Sdk/Sdk/Sdk.props
  ./sdk/x.y.z/Sdks/FSharp.NET.Sdk/Sdk/Sdk.targets
  ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/
-+./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/microsoft.docker.sdk.1.1.0.csproj
++./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/microsoft.docker.sdk.x.y.z.csproj
  ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/
  ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/Sdk.props
  ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/Sdk.targets
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Buffers.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Collections.Immutable.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Numerics.Vectors.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Reflection.Metadata.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Buffers.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Memory.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Numerics.Vectors.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Reflection.Metadata.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/netx.y/
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/targets/TransformTargets/Transforms/EnvironmentNoLocation.transform
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/targets/TransformTargets/Transforms/EnvironmentWithLocation.transform
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/de/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/de/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/es/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/es/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/fr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/fr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/it/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/it/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ja/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ja/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ko/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ko/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.Bcl.AsyncInterfaces.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.NET.Sdk.Publish.Tasks.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.NET.Sdk.Publish.Tasks.dll.config
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.Web.Delegation.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.Web.Deployment.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.Web.Deployment.Tracing.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/Microsoft.Web.XmlTransform.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/pl/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/pl/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/pt-BR/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/pt-BR/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ru/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/ru/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Buffers.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Numerics.Vectors.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Security.Cryptography.ProtectedData.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Text.Encodings.Web.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Text.Json.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.Threading.Tasks.Extensions.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/System.ValueTuple.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/tr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/tr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hans/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hans/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hant/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/zh-Hant/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/cs/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/cs/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/de/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/de/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/es/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/es/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/fr/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/fr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/it/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/it/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ja/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ja/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ko/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ko/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.NET.Sdk.Publish.Tasks.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.NET.Sdk.Publish.Tasks.dll.config
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Delegation.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Deployment.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.Deployment.Tracing.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/Microsoft.Web.XmlTransform.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pl/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pl/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/pt-BR/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ru/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/ru/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Buffers.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Memory.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Numerics.Vectors.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Security.Cryptography.ProtectedData.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Text.Encodings.Web.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Text.Json.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.Threading.Tasks.Extensions.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/System.ValueTuple.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/tr/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/tr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hans/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/zh-Hant/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/cs/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
@@ -934,13 +934,13 @@ index ------------
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/tr/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/netx.y/tr/Microsoft.NET.Sdk.Publish.Tasks.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Buffers.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Collections.Immutable.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Numerics.Vectors.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Reflection.Metadata.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Runtime.CompilerServices.Unsafe.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/System.Text.Encodings.Web.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Buffers.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Collections.Immutable.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Memory.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Numerics.Vectors.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Reflection.Metadata.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Runtime.CompilerServices.Unsafe.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Text.Encodings.Web.dll
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.deps.json
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.dll
@@ -972,40 +972,40 @@ index ------------
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/targets/System.Windows.Forms.Analyzers.props
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/THIRD-PARTY-NOTICES.TXT
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/cs/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/cs/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/de/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/de/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/es/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/es/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/fr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/fr/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/it/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/it/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ja/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ja/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ko/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ko/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/pl/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/pl/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/PresentationBuildTasks.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/pt-BR/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/pt-BR/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ru/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/ru/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Collections.Immutable.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Numerics.Vectors.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Reflection.Metadata.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Reflection.MetadataLoadContext.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/tr/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/tr/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/zh-Hans/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/zh-Hans/PresentationBuildTasks.resources.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/zh-Hant/
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/zh-Hant/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/cs/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/cs/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/de/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/de/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/es/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/es/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/fr/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/fr/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/it/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/it/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ja/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ja/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ko/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ko/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/pl/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/pl/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/PresentationBuildTasks.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/pt-BR/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/pt-BR/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ru/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/ru/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Collections.Immutable.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Memory.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Numerics.Vectors.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Reflection.Metadata.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Reflection.MetadataLoadContext.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/tr/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/tr/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/zh-Hans/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/zh-Hans/PresentationBuildTasks.resources.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/zh-Hant/
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/net472/zh-Hant/PresentationBuildTasks.resources.dll
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/cs/
 -./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/tools/netx.y/cs/PresentationBuildTasks.resources.dll
@@ -1041,13 +1041,13 @@ index ------------
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.props
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Buffers.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Collections.Immutable.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Memory.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Numerics.Vectors.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Reflection.Metadata.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/System.Text.Encodings.Web.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Buffers.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Collections.Immutable.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Memory.dll
+-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Numerics.Vectors.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Reflection.Metadata.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
+ ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Text.Encodings.Web.dll
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/buildCrossTargeting/
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/buildCrossTargeting/NuGet.Build.Tasks.Pack.targets

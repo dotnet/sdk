@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp6.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>$(LeakDetectionTasksBinDir)</OutputPath>
   </PropertyGroup>
@@ -24,6 +24,10 @@
 
   <ItemGroup>
     <Reference Include="@(SdkAssemblyReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="*.cs" />
   </ItemGroup>
 
 </Project>

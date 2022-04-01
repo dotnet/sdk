@@ -68,12 +68,16 @@
     <ItemGroup>
       <FinalCliTarball Include="$(SourceBuiltTarBallPath)**/*$(TarBallExtension)" />
     </ItemGroup>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(FinalCliTarball) for poisoned files." />
+
     <CheckForPoison FilesToCheck="@(FinalCliTarball)"
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
                     PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)ReportPoisonUsage.complete" Overwrite="true" />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
   </Target>
 
   <Target Name="GeneratePrebuiltBurndownData"
@@ -92,6 +96,7 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <CustomTestEnvVars Condition="'$(EnablePoison)' == 'true'">SMOKE_TESTS_POISON_REPORT_PATH=$(PoisonUsageReportFile);</CustomTestEnvVars>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
       <SmokeTestConsoleVerbosity Condition="'$(SmokeTestConsoleVerbosity)' == ''">normal</SmokeTestConsoleVerbosity>
     </PropertyGroup>
@@ -101,7 +106,7 @@
           EnvironmentVariables="
             SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
             SMOKE_TESTS_TARGET_RID=$(TargetRid);
-            " />
+            $(CustomTestEnvVars)" />
   </Target>
 
   <Target Name="CreateSmokeTestPrereqsTarball"

@@ -43,6 +43,7 @@ jobs:
         _BootstrapPrep: false
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
+        _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _Platform: linux
         _RunOnline: true
@@ -50,6 +51,7 @@ jobs:
         _BootstrapPrep: false
         _BuildArch: x64
         _Container: ${{ parameters.centOS7Container }}
+        _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _Platform: linux
         _RunOnline: false
@@ -58,6 +60,7 @@ jobs:
           _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.centOS8Container }}
+          _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _Platform: linux
           _RunOnline: false
@@ -65,6 +68,7 @@ jobs:
           _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.centOSStream9Container }}
+          _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _Platform: linux
           _RunOnline: false
@@ -72,6 +76,7 @@ jobs:
           _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.fedora33Container }}
+          _EnablePoison: true
           _ExcludeOmniSharpTests: false
           _Platform: linux
           _RunOnline: false
@@ -79,6 +84,7 @@ jobs:
           _BootstrapPrep: false
           _BuildArch: x64
           _Container: ${{ parameters.ubuntu1804Container }}
+          _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _Platform: linux
           _RunOnline: false
@@ -97,6 +103,7 @@ jobs:
     parameters:
       buildArch: $(_BuildArch)
       container: $(_Container)
+      enablePoison: $(_EnablePoison)
       excludeOmniSharpTests: $(_ExcludeOmniSharpTests)
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       platform: $(_Platform)
@@ -104,7 +111,7 @@ jobs:
         set -x
 
         customPrepArgs=
-        if [ '$(_BootstrapPrep)' = 'true' ]; then
+        if [[ '$(_BootstrapPrep)' == 'true' ]]; then
           customPrepArgs='--bootstrap'
         fi
 

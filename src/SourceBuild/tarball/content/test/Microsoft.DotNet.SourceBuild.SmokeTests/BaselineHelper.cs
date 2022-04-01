@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,18 +37,17 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static void CompareContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
-            string baselineFilePath = GetBaselineFilePath(baselineFileName);
-
             string actualFilePath = Path.Combine(Environment.CurrentDirectory, $"{baselineFileName}");
             File.WriteAllText(actualFilePath, actualContents);
 
-            CompareFiles(baselineFilePath, actualFilePath, outputHelper, warnOnDiffs);
+            CompareFiles(baselineFileName, actualFilePath, outputHelper, warnOnDiffs);
         }
 
-        public static void CompareFiles(string baselineFilePath, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
+        public static void CompareFiles(string baselineFileName, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
         {
-            string baselineFileText = File.ReadAllText(baselineFilePath);
-            string actualFileText = File.ReadAllText(actualFilePath);
+            string baselineFilePath = GetBaselineFilePath(baselineFileName);
+            string baselineFileText = File.ReadAllText(baselineFilePath).Trim();
+            string actualFileText = File.ReadAllText(actualFilePath).Trim();
 
             string? message = null;
 
@@ -84,5 +84,23 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static string GetAssetsDirectory() => Path.Combine(Directory.GetCurrentDirectory(), "assets");
 
         private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
+
+        public static string RemoveRids(string diff) => diff.Replace(Config.TargetRid, "banana.rid");
+
+        public static string RemoveVersions(string source)
+        {
+            // Remove semantic versions
+            // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+            Regex semanticVersionRegex = new(
+                $"(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
+                + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
+                + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
+            string result = semanticVersionRegex.Replace(source, $"x.y.z");
+
+            // Remove netx.y path segments
+            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+            Regex netTfmRegex = new($"{pathSeparator}net[1-9]+\\.[0-9]+{pathSeparator}");
+            return netTfmRegex.Replace(result, $"{Path.DirectorySeparatorChar}netx.y{Path.DirectorySeparatorChar}");
+        }
     }
 }
