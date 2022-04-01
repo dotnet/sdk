@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             // if we should write out the poison report, do that
             if (!string.IsNullOrWhiteSpace(PoisonReportOutputFilePath))
             {
-                File.WriteAllText(PoisonReportOutputFilePath, (new XElement("PrebuiltLeakReport", poisons.Select(p => p.ToXml()))).ToString());
+                File.WriteAllText(PoisonReportOutputFilePath, (new XElement("PrebuiltLeakReport", poisons.OrderBy(p => p.Path).Select(p => p.ToXml()))).ToString());
             }
 
             if (FailOnPoisonFound && poisons.Count() > 0)
@@ -167,8 +167,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             IEnumerable<CatalogPackageEntry> catalogedPackages = ReadCatalog(catalogedPackagesFilePath);
             var poisons = new List<PoisonedFileEntry>();
             var candidateQueue = new Queue<string>(initialCandidates);
-            // avoid collisions between nupkgs with the same name
-            var dirCounter = 0;
             if (!string.IsNullOrWhiteSpace(OverrideTempPath))
             {
                 Directory.CreateDirectory(OverrideTempPath);
@@ -184,7 +182,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                 // add its contents to the list to be checked.
                 if (ZipFileExtensions.Concat(TarFileExtensions).Concat(TarGzFileExtensions).Any(e => checking.ToLowerInvariant().EndsWith(e)))
                 {
-                    var tempCheckingDir = Path.Combine(tempDir.FullName, Path.GetRandomFileName(), Path.GetFileNameWithoutExtension(checking) + "." + (++dirCounter).ToString());
+                    var tempCheckingDir = Path.Combine(tempDir.FullName, Path.GetFileNameWithoutExtension(checking));
                     PoisonedFileEntry result = ExtractAndCheckZipFileOnly(catalogedPackages, checking, markerFileName, tempCheckingDir, candidateQueue);
                     if (result != null)
                     {
