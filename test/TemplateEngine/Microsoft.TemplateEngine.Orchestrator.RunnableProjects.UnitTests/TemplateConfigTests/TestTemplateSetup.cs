@@ -59,15 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 if (_sourceMountPoint == null)
                 {
-                    foreach (var factory in _environmentSettings.Components.OfType<IMountPointFactory>())
-                    {
-                        if (factory.TryMount(_environmentSettings, null, _sourceBaseDir, out IMountPoint myMountPoint))
-                        {
-                            _sourceMountPoint = myMountPoint;
-                            return _sourceMountPoint;
-                        }
-                    }
-                    Assert.True(false, "couldn't create source mount point");
+                    _sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(_environmentSettings, _sourceBaseDir);
                 }
 
                 return _sourceMountPoint;
@@ -86,13 +78,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public void WriteSource()
         {
-            foreach (KeyValuePair<string, string> fileInfo in _sourceFiles)
-            {
-                string filePath = Path.Combine(_sourceBaseDir, fileInfo.Key);
-                string fullPathDir = Path.GetDirectoryName(filePath);
-                _environmentSettings.Host.FileSystem.CreateDirectory(fullPathDir);
-                _environmentSettings.Host.FileSystem.WriteAllText(filePath, fileInfo.Value ?? string.Empty);
-            }
+            TemplateConfigTestHelpers.WriteTemplateSource(_environmentSettings, _sourceBaseDir, _sourceFiles);
         }
 
         public void InstantiateTemplate(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)

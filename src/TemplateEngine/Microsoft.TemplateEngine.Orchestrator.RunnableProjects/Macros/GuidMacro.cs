@@ -41,16 +41,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             for (int i = 0; i < guidFormats.Length; ++i)
             {
-                string value = char.IsUpper(guidFormats[i]) ? g.ToString(guidFormats[i].ToString()).ToUpperInvariant() : g.ToString(guidFormats[i].ToString()).ToLowerInvariant();
-                Parameter p = new Parameter
+                bool isUpperCase = char.IsUpper(guidFormats[i]);
+                string value = g.ToString(guidFormats[i].ToString());
+                value = isUpperCase ? value.ToUpperInvariant() : value.ToLowerInvariant();
+                Parameter pLegacy = new Parameter
                 {
                     IsVariable = true,
                     Name = config.VariableName + "-" + guidFormats[i],
                     DataType = config.DataType
                 };
 
-                vars[p.Name] = value;
-                setter(p, value);
+                // Not breaking any dependencies on exact param names and on the
+                //  case insensitive matching of parameters (https://github.com/dotnet/templating/blob/7e14ef44/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/RunnableProjectGenerator.cs#L726)
+                //  we need to introduce new parameters - with distinc naming for upper- and lower- casing replacements
+                Parameter pNew = new Parameter
+                {
+                    IsVariable = true,
+                    Name =
+                        config.VariableName +
+                        (isUpperCase ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +
+                        guidFormats[i],
+                    DataType = config.DataType
+                };
+
+                vars[pLegacy.Name] = value;
+                vars[pNew.Name] = value;
+                setter(pLegacy, value);
+                setter(pNew, value);
             }
 
             Parameter pd;

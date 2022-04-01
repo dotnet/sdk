@@ -10,6 +10,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
     internal class GuidMacroConfig : IMacroConfig
     {
         internal const string DefaultFormats = "ndbpxNDPBX";
+        internal const string UpperCaseDenominator = "-uc-";
+        internal const string LowerCaseDenominator = "-lc-";
 
         internal GuidMacroConfig(string variableName, string dataType, string? format, string? defaultFormat)
         {

@@ -1018,8 +1018,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (char format in GuidMacroConfig.DefaultFormats)
                 {
-                    string newGuid = char.IsUpper(format) ? map.Key.ToString(format.ToString()).ToUpperInvariant() : map.Key.ToString(format.ToString()).ToLowerInvariant();
-                    macroGeneratedReplacements.Add(new ReplacementTokens(map.Value + "-" + format, newGuid.TokenConfig()));
+                    bool isUpperCase = char.IsUpper(format);
+                    string newGuid = map.Key.ToString(format.ToString());
+                    newGuid = isUpperCase ? newGuid.ToUpperInvariant() : newGuid.ToLowerInvariant();
+                    string replacementKey = map.Value + (isUpperCase ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) + format;
+                    macroGeneratedReplacements.Add(new ReplacementTokens(replacementKey, newGuid.TokenConfig()));
                 }
             }
 

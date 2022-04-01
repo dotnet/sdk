@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -44,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
         public void TestDeferredGuidConfig()
         {
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
+            Dictionary<string, JToken?> jsonParameters = new();
             jsonParameters.Add("format", null);
             string variableName = "myGuid1";
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", "string", variableName, jsonParameters);
@@ -76,6 +79,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 Assert.True(parameters.TryGetParameterDefinition(otherFormatParamName, out testParam));
                 Guid testValue = Guid.Parse((string)parameters.ResolvedValues[testParam]);
                 Assert.Equal(paramValue, testValue);
+
+                // Test the new formats - that distinguish upper and lower case by tags that are
+                //  distinguishable regardless of casing comparison
+                otherFormatParamName =
+                    variableName +
+                    (char.IsUpper(guidFormats[i]) ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +
+                    guidFormats[i];
+                Assert.True(parameters.TryGetParameterDefinition(otherFormatParamName, out testParam));
+                string resolvedValue = (string)parameters.ResolvedValues[testParam];
+                testValue = Guid.Parse(resolvedValue);
+                Assert.Equal(paramValue, testValue);
+                Assert.Equal(char.IsUpper(guidFormats[i]), char.IsUpper(resolvedValue.First(char.IsLetter)));
             }
         }
 
