@@ -19,7 +19,6 @@ namespace Microsoft.DotNet.Cli
         {
             var telemetry = new ThreadBlockingTelemetry();
             ProcessInputAndSendTelemetry(parseResult, telemetry);
-            telemetry.Dispose();
             return 0;
         }
 

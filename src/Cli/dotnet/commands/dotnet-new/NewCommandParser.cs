@@ -4,25 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.New;
-using Microsoft.DotNet.Tools.Restore;
-using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge;
-using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
     internal static class NewCommandParser
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-new";
-        public const string CommandName = "new";
-        private const string HostIdentifier = "dotnetcli";
+
+        public static readonly Argument Argument = new Argument<IEnumerable<string>>() { Arity = ArgumentArity.ZeroOrMore };
 
         private static readonly Option<bool> _disableSdkTemplates = new Option<bool>("--debug:disable-sdk-templates", () => false, "If present, prevents templates bundled in the SDK from being presented").Hide();
 
@@ -72,36 +64,36 @@ namespace Microsoft.DotNet.Cli
             return command;
         }
 
-        private static ITemplateEngineHost CreateHost(bool disableSdkTemplates)
+        private static readonly Command Command = ConstructCommand();
+
+        public static Command GetCommand()
         {
-            var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
-            builtIns.AddRange(Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateEngine.Edge.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateEngine.Cli.Components.AllComponents);
-            builtIns.AddRange(Microsoft.TemplateSearch.Common.Components.AllComponents);
-            if (!disableSdkTemplates)
-            {
-                builtIns.Add((typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackageProviderFactory()));
-                builtIns.Add((typeof(ITemplatePackageProviderFactory), new OptionalWorkloadProviderFactory()));
-            }
-
-            string preferredLangEnvVar = Environment.GetEnvironmentVariable("DOTNET_NEW_PREFERRED_LANG");
-            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar)? "C#" : preferredLangEnvVar;
-
-            var preferences = new Dictionary<string, string>
-            {
-                { "prefs:language", preferredLang },
-                { "dotnet-cli-version", Product.Version },
-                { "RuntimeFrameworkVersion", new Muxer().SharedFxVersion },
-                { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() },
-            };
-
-            return new DefaultTemplateEngineHost(HostIdentifier, "v" + Product.Version, preferences, builtIns);
+            return Command;
         }
 
-        private static bool RestoreProject(string pathToRestore)
+        private static Command ConstructCommand()
         {
-            return RestoreCommand.Run(new string[] { pathToRestore }) == 0;
+            var command = new DocumentedCommand("new", DocsLink);
+
+            command.AddArgument(Argument);
+            command.AddOption(ListOption);
+            command.AddOption(NameOption);
+            command.AddOption(OutputOption);
+            command.AddOption(InstallOption);
+            command.AddOption(UninstallOption);
+            command.AddOption(InteractiveOption);
+            command.AddOption(NuGetSourceOption);
+            command.AddOption(TypeOption);
+            command.AddOption(DryRunOption);
+            command.AddOption(ForceOption);
+            command.AddOption(LanguageOption);
+            command.AddOption(UpdateCheckOption);
+            command.AddOption(UpdateApplyOption);
+            command.AddOption(ColumnsOption);
+
+            command.SetHandler((ParseResult parseResult) => NewCommandShim.Run(parseResult.GetArguments()));
+
+            return command;
         }
     }
 }
