@@ -14,14 +14,15 @@
     <BuildTasksTarget Include="Restore;Build;InstallResolver" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(BuildWithOnlineSources)' != 'true' ">
-    <BuildTasksOfflineSources>$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)</BuildTasksOfflineSources>
+  <PropertyGroup>
+    <BuildTasksOfflineSources>$(ReferencePackagesDir)%3B$(PrebuiltPackagesPath)%3B$(PrebuiltSourceBuiltPackagesPath)</BuildTasksOfflineSources>
   </PropertyGroup>
 
   <Target Name="Build">
     <CallTarget Targets="
       UnpackTarballs;
       BuildXPlatTasks;
+      BuildLeakDetection;
       ExtractToolPackage;
       GenerateRootFs;
       BuildTextOnlyPackages;
@@ -103,10 +104,11 @@
           DependsOnTargets="UnpackTarballs"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)BuildXPlatTasks.complete">
+    <PropertyGroup>
+      <XPlatTaskProjects>tasks\Microsoft.DotNet.SourceBuild.Tasks.XPlat\Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj;tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj</XPlatTaskProjects>
+    </PropertyGroup>
     <MSBuild
-      Projects="
-        tasks\Microsoft.DotNet.SourceBuild.Tasks.XPlat\Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj;
-        tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
+      Projects="$(XPlatTaskProjects)"
       Targets="%(BuildTasksTarget.Identity)"
       SkipNonexistentTargets="true"
       Properties="
@@ -114,6 +116,25 @@
         __ToolInitPhase=%(BuildTasksTarget.Identity)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)BuildXPlatTasks.complete" Overwrite="true" />
+  </Target>
+
+  <Target Name="BuildLeakDetection"
+          DependsOnTargets="ExtractToolPackage"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(CompletedSemaphorePath)BuildLeakDetection.complete"
+          Condition="'$(EnablePoison)' == 'true'">
+    <PropertyGroup>
+      <LeakDetectionProjects>tasks\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj</LeakDetectionProjects>
+    </PropertyGroup>
+    <MSBuild
+      Projects="$(LeakDetectionProjects)"
+      Targets="%(BuildTasksTarget.Identity)"
+      SkipNonexistentTargets="true"
+      Properties="
+        RestoreSources=$(BuildTasksOfflineSources);
+        __ToolInitPhase=%(BuildTasksTarget.Identity)" />
+
+    <WriteLinesToFile File="$(CompletedSemaphorePath)BuildLeakDetection.complete" Overwrite="true" />
   </Target>
 
   <Target Name="GenerateRootFs" Condition="'$(OS)' != 'Windows_NT'">
@@ -185,10 +206,14 @@
       <PrebuiltPackages Include="$(PrebuiltPackagesPath)**/*.nupkg" />
       <PrebuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)**/*.nupkg" />
     </ItemGroup>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Poisoning existing packages for leak detection." />
+
     <MarkAndCatalogPackages PackagesToMark="@(PrebuiltPackages)" CatalogOutputFilePath="$(PoisonReportDataFile)" MarkerFileName="$(PoisonMarkerFile)" />
     <MarkAndCatalogPackages PackagesToMark="@(PrebuiltSourceBuiltPackages)" CatalogOutputFilePath="$(SourceBuiltPoisonReportDataFile)" MarkerFileName="$(SourceBuiltPoisonMarkerFile)" />
 
     <WriteLinesToFile File="$(CompletedSemaphorePath)PoisonPrebuiltPackages.complete" Overwrite="true" />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done poisoning." />
   </Target>
 
 </Project>
