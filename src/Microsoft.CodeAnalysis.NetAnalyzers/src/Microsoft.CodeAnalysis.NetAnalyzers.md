@@ -1502,7 +1502,7 @@ It is more efficient to use the static 'HashData' method over creating and manag
 
 ## [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851): Possible multiple enumerations of 'IEnumerable' collection
 
-Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.
+Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.
 
 |Item|Value|
 |-|-|
