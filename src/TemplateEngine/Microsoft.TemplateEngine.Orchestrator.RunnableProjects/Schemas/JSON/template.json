@@ -1,6 +1,6 @@
 {
   "title": "JSON schema .NET template files",
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-06/schema#",
 
   "type": "object",
   "required": [ "author", "classifications", "identity", "name", "shortName", "tags" ],
@@ -713,8 +713,19 @@
       }
     },
     "shortName": {
-      "description": "A shorthand name for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI).",
-      "type": [ "string" ],
+      "oneOf": [
+        {
+          "description": "A shorthand name for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI).",
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "description": "A shorthand name for selecting the template (applies to environments where the template name is specified by the user - not selected via a GUI).",
+          "items": {
+            "type": "string"
+          }
+        }
+      ],
       "minLength": 1
     },
     "sourceName": {
