@@ -64,7 +64,7 @@ Sample template.json snippet:
 ```
 
 Sample template file content:
-```
+```console
 [n]: 98048c9cbf2846baa98e63767ee5e3a8
 [d]: 98048c9c-bf28-46ba-a98e-63767ee5e3a8
 [b]: {98048c9c-bf28-46ba-a98e-63767ee5e3a8}
@@ -89,7 +89,7 @@ Sample template file content:
 ```
 
 Output content after template instantiation:
-```
+```console
 [n]: a6d920ff125841318f5e07df108f5a4a
 [d]: a6d920ff-1258-4131-8f5e-07df108f5a4a
 [b]: {a6d920ff-1258-4131-8f5e-07df108f5a4a}
