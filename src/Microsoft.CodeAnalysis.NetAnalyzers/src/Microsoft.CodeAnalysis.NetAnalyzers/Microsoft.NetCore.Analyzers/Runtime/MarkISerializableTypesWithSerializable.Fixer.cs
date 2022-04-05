@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -10,6 +9,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             string title = MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle;
-            context.RegisterCodeFix(new MyCodeAction(title,
+            context.RegisterCodeFix(CodeAction.Create(title,
                                         async ct => await AddSerializableAttributeAsync(context.Document, node, ct).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     context.Diagnostics);
@@ -46,15 +46,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
             editor.AddAttribute(node, attr);
             return editor.GetChangedDocument();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         public override FixAllProvider GetFixAllProvider()

@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Globalization;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -37,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             if (parameter != null)
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.CreatePropertyAccessorForParameter;
-                                context.RegisterCodeFix(new MyCodeAction(title,
+                                context.RegisterCodeFix(CodeAction.Create(title,
                                                              async ct => await AddAccessorAsync(context.Document, parameter, ct).ConfigureAwait(false),
                                                              equivalenceKey: title),
                                                         diagnostic);
@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             if (property != null)
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.MakeGetterPublic;
-                                context.RegisterCodeFix(new MyCodeAction(title,
+                                context.RegisterCodeFix(CodeAction.Create(title,
                                                                  async ct => await MakePublicAsync(context.Document, node, property, ct).ConfigureAwait(false),
                                                                  equivalenceKey: title),
                                                         diagnostic);
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         case DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase:
                             title = MicrosoftCodeQualityAnalyzersResources.MakeSetterNonPublic;
-                            context.RegisterCodeFix(new MyCodeAction(title,
+                            context.RegisterCodeFix(CodeAction.Create(title,
                                                          async ct => await RemoveSetterAsync(context.Document, node, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                                     diagnostic);
@@ -150,15 +150,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             editor.SetAccessibility(setMethod, Accessibility.Internal);
             return editor.GetChangedDocument();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         public override FixAllProvider GetFixAllProvider()

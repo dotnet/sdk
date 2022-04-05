@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -33,14 +33,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse;
                 context.RegisterCodeFix(
-                    new MyCodeAction(title,
+                    CodeAction.Create(title,
                         async ct => await GetFixAsync(context.Document, expression, argument: false, cancellationToken: ct).ConfigureAwait(false),
                         equivalenceKey: nameof(AppendConfigureAwaitFalse)),
                     context.Diagnostics);
 
                 title = MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue;
                 context.RegisterCodeFix(
-                    new MyCodeAction(title,
+                    CodeAction.Create(title,
                         async ct => await GetFixAsync(context.Document, expression, argument: true, cancellationToken: ct).ConfigureAwait(false),
                         equivalenceKey: nameof(AppendConfigureAwaitTrue)),
                     context.Diagnostics);
@@ -72,14 +72,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public sealed override FixAllProvider GetFixAllProvider()
         {
             return CustomFixAllProvider.Instance;
-        }
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey) :
-                base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider

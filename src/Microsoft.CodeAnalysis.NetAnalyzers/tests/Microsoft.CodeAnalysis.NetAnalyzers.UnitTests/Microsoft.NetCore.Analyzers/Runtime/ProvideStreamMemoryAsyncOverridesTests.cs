@@ -1,12 +1,8 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<

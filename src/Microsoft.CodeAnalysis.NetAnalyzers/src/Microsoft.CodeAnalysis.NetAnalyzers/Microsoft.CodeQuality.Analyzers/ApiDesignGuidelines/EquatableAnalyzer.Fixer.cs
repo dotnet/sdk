@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -11,6 +10,7 @@ using Analyzer.Utilities;
 using System.Threading;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -58,7 +58,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (type.TypeKind == TypeKind.Struct && !TypeImplementsEquatable(type, equatableType))
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.ImplementEquatable;
-                context.RegisterCodeFix(new MyCodeAction(
+                context.RegisterCodeFix(CodeAction.Create(
                     title,
                     async ct =>
                         await ImplementEquatableInStructAsync(context.Document, declaration, type, model.Compilation,
@@ -69,7 +69,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (!type.OverridesEquals())
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsOnImplementingIEquatableCodeActionTitle;
-                context.RegisterCodeFix(new MyCodeAction(
+                context.RegisterCodeFix(CodeAction.Create(
                     title,
                     async ct =>
                         await OverrideObjectEqualsAsync(context.Document, declaration, type, equatableType,
@@ -230,15 +230,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         generator.CastExpression(
                             typeSymbol,
                             argumentName))));
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }
