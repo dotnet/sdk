@@ -54,7 +54,7 @@
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
         <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
-        <target state="needs-review-translation">Mögliche mehrere Enumerationen der „IEnumerable“-Auflistung. Erwägen Sie die Verwendung einer Implementierung, die mehrere Enumerationen vermeidet.</target>
+        <target state="new">Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</target>
         <note>{Locked="IEnumerable"}</note>
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsTitle">
