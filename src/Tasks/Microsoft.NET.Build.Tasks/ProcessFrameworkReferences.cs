@@ -634,14 +634,7 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            // If we're using NativeAOT we need to download the platform-independent package and the runtime pack
-            // @TODO - given the SDK assets are in the runtimePackName, we might not need this pack
-            if (packageType == AotPackageType.ILCompiler)
-            {
-                var ilCompilerPack = new TaskItem("Microsoft.DotNet.ILCompiler");
-                ilCompilerPack.SetMetadata(MetadataKeys.Version, packVersion);
-                packagesToDownload.Add(ilCompilerPack);
-            }
+            // If we're using NativeAOT we need to download the runtime pack
             TaskItem runtimePackToDownload = new TaskItem(runtimePackName);
             runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
             packagesToDownload.Add(runtimePackToDownload);
