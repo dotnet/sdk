@@ -579,18 +579,27 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         // NOTE: IsKnownValueGuarded mutates the input values, so we pass in cloned values
                         // to ensure that evaluation of each part of || is independent of evaluation of other parts.
                         var parentAttributes = CopyAttributes(attributes);
+                        var parentCsAttributes = csAttributes == null ? null : CopyAttributes(csAttributes);
                         using var parentCapturedVersions = PooledDictionary<string, Version>.GetInstance(capturedVersions);
 
-                        if (value.AnalysisValues.Count != 0 && value.AnalysisValues.Count == parent.AnalysisValues.Count)
+                        if (parent.AnalysisValues.Count > 0)
                         {
-                            if (IsNegationOfParentValues(value, parent.AnalysisValues.GetEnumerator()))
+                            if (parentCsAttributes != null && parentCsAttributes.Any() &&
+                                IsNegationOfCallsiteAttributes(parentCsAttributes, parent.AnalysisValues))
+                            {
+                                continue;
+                            }
+
+                            if (value.AnalysisValues.Count == parent.AnalysisValues.Count &&
+                                IsNegationOfParentValues(value, parent.AnalysisValues.GetEnumerator()))
                             {
                                 continue;
                             }
                         }
 
-                        if (!IsKnownValueGuarded(parentAttributes, ref csAttributes, parent, parentCapturedVersions, originalCsAttributes))
+                        if (!IsKnownValueGuarded(parentAttributes, ref parentCsAttributes, parent, parentCapturedVersions, originalCsAttributes))
                         {
+                            csAttributes = parentCsAttributes;
                             return false;
                         }
                     }
@@ -604,6 +613,31 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     AllowList(versions) &&
                     attributes.Count() == 1 &&
                     csAttributes.Any(cs => !cs.Key.Equals(platformName, StringComparison.OrdinalIgnoreCase));
+
+            static bool IsNegationOfCallsiteAttributes(SmallDictionary<string, Versions> csAttributes, ImmutableHashSet<IAbstractAnalysisValue> parentValues)
+            {
+                foreach (var value in parentValues)
+                {
+                    if (value is not PlatformMethodValue info ||
+                        !csAttributes.TryGetValue(info.PlatformName, out var version))
+                    {
+                        return false;
+                    }
+
+                    if (info.Negated)
+                    {
+                        if (version.SupportedFirst != info.Version)
+                            return false;
+                    }
+                    else
+                    {
+                        if (version.UnsupportedFirst != info.Version)
+                            return false;
+                    }
+                }
+
+                return true;
+            }
 
             static bool IsNegationOfParentValues(GlobalFlowStateAnalysisValueSet value, ImmutableHashSet<IAbstractAnalysisValue>.Enumerator parentEnumerator)
             {

@@ -1066,6 +1066,41 @@ class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact, WorkItem(5938, "https://github.com/dotnet/roslyn-analyzers/issues/5938")]
+        public async Task Guarded_TwoConditionalsAndReturns_WithCallSiteAttribute()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    [SupportedOSPlatform(""ios"")]
+    public void M1()
+    {
+        [|M2()|];
+        if(OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0))
+        {
+            M2();
+            return;
+        }
+        M3(); // should not warn as ios 13.0 or below case returns with above condition
+    }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""ios13.0"")]
+    [SupportedOSPlatform(""tvos"")]
+    [UnsupportedOSPlatform(""tvos13.0"")]
+    public void M2() { }
+
+    [SupportedOSPlatform(""ios13.0"")]
+    [SupportedOSPlatform(""tvos13.0"")]
+    public void M3() { }
+}
+";
+            await VerifyAnalyzerCSAsync(source);
+        }
+
         [Fact]
         public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElseAsync()
         {
@@ -1505,7 +1540,7 @@ class Test
         }
         else
         {
-            [|M2()|];
+            M2();
             [|M3()|];
         }
 
@@ -1540,7 +1575,7 @@ Class Test
             [|M2()|]
             M3()
         Else
-            [|M2()|]
+            M2()
             [|M3()|]
         End If
 
