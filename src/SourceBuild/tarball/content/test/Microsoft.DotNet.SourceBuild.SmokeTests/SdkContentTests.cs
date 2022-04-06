@@ -31,9 +31,9 @@ public class SdkContentTests : SmokeTests
         WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
-        diff = RemoveVersionedPaths(diff);
+        diff = BaselineHelper.RemoveVersions(diff);
         diff = RemoveDiffMarkers(diff);
-        diff = RemoveRids(diff);
+        diff = BaselineHelper.RemoveRids(diff);
         BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
@@ -56,23 +56,5 @@ public class SdkContentTests : SmokeTests
 
         Regex diffSegmentRegex = new("^@@ .* @@", RegexOptions.Multiline);
         return diffSegmentRegex.Replace(result, "@@ ------------ @@");
-    }
-
-    private static string RemoveRids(string diff) => diff.Replace(Config.TargetRid, "banana.rid");
-
-    private static string RemoveVersionedPaths(string source)
-    {
-        // Remove semantic version path segments
-        string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
-        // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-        Regex semanticVersionRegex = new(
-            $"{pathSeparator}(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
-            + $"(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))"
-            + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?{pathSeparator}");
-        string result = semanticVersionRegex.Replace(source, $"{Path.DirectorySeparatorChar}x.y.z{Path.DirectorySeparatorChar}");
-
-        // Remove net.x.y path segments
-        Regex netTfmRegex = new($"{pathSeparator}net[1-9]*.[0-9]{pathSeparator}");
-        return netTfmRegex.Replace(result, $"{Path.DirectorySeparatorChar}netx.y{Path.DirectorySeparatorChar}");
     }
 }
