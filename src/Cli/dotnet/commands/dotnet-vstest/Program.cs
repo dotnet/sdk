@@ -6,10 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine.Parsing;
 using System.Linq;
 using Microsoft.DotNet.Cli;
-using System.CommandLine.Parsing;
-using System.Collections.Generic;
-using System.Linq;
-using System;
+using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Tools.VSTest
 {
@@ -19,7 +16,9 @@ namespace Microsoft.DotNet.Tools.VSTest
         {
             parseResult.HandleDebugSwitch();
 
-            VSTestForwardingApp vsTestforwardingApp = new VSTestForwardingApp(GetArgs(parseResult));
+            // We use also current process id for the correlation id for possible future usage in case we need to know the parent process
+            // from the VSTest side.
+            string testSessionCorrelationId = $"{Environment.ProcessId}_{Guid.NewGuid()}";
 
             var args = new List<string>();
             args.AddRange(GetArgs(parseResult));
@@ -49,21 +48,6 @@ namespace Microsoft.DotNet.Tools.VSTest
             {
                 // System command line might have mutated the options, reformat test logger option so vstest recognizes it
                 string loggerValue = parseResult.GetValueForOption(CommonOptions.TestLoggerOption);
-                args = args.Where(a => !a.Equals(loggerValue) && !CommonOptions.TestLoggerOption.Aliases.Contains(a));
-                args = args.Prepend($"{CommonOptions.TestLoggerOption.Aliases.First()}:{loggerValue}");
-            }
-
-            return args.ToArray();
-        }
-
-        private static string[] GetArgs(ParseResult parseResult)
-        {
-            IEnumerable<string> args = parseResult.GetArguments();
-
-            if (parseResult.HasOption(CommonOptions.TestLoggerOption))
-            {
-                // System command line might have mutated the options, reformat test logger option so vstest recognizes it
-                var loggerValue = parseResult.GetValueForOption(CommonOptions.TestLoggerOption);
                 args = args.Where(a => !a.Equals(loggerValue) && !CommonOptions.TestLoggerOption.Aliases.Contains(a));
                 args = args.Prepend($"{CommonOptions.TestLoggerOption.Aliases.First()}:{loggerValue}");
             }
