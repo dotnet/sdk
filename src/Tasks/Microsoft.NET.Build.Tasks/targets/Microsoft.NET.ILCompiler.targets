@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.ILCompiler.props
+Microsoft.NET.ILCompiler.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -11,6 +11,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.IlCompiler" />
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.ILCompiler" />
 
 </Project>

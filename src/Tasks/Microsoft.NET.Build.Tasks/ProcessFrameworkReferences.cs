@@ -340,7 +340,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
-                if (!AddCrossgen2Package(_normalizedTargetFrameworkVersion, packagesToDownload))
+                if (!AddAotOrR2RRuntimePackage(AotPackageType.Crossgen2, _normalizedTargetFrameworkVersion, packagesToDownload))
                 {
                     Log.LogError(Strings.ReadyToRunNoValidRuntimePackageError);
                     return;
@@ -349,9 +349,9 @@ namespace Microsoft.NET.Build.Tasks
             
             if (AotEnabled)
             {
-                if (!AddAotRuntimePackage(AotPackageType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload))
+                if (!AddAotOrR2RRuntimePackage(AotPackageType.ILCompiler, _normalizedTargetFrameworkVersion, packagesToDownload))
                 {
-                    Log.LogError("@TODO - add Strings.ILCompilerNoValidRuntimePackageError resource");
+                    Log.LogError(Strings.AotNoValidRuntimePackageError);
                     return;
                 }
             }            
@@ -555,51 +555,8 @@ namespace Microsoft.NET.Build.Tasks
             Crossgen2,
             ILCompiler
         }
-        private bool AddCrossgen2Package(Version normalizedTargetFrameworkVersion, List<ITaskItem> packagesToDownload)
-        {
-            var knownCrossgen2Pack = KnownCrossgen2Packs.Where(crossgen2Pack =>
-            {
-                var packTargetFramework = NuGetFramework.Parse(crossgen2Pack.GetMetadata("TargetFramework"));
-                return packTargetFramework.Framework.Equals(TargetFrameworkIdentifier, StringComparison.OrdinalIgnoreCase) &&
-                    NormalizeVersion(packTargetFramework.Version) == normalizedTargetFrameworkVersion;
-            }).SingleOrDefault();
 
-            if (knownCrossgen2Pack == null)
-            {
-                return false;
-            }
-
-            var crossgen2PackPattern = knownCrossgen2Pack.GetMetadata("Crossgen2PackNamePattern");
-            var crossgen2PackVersion = knownCrossgen2Pack.GetMetadata("Crossgen2PackVersion");
-            var crossgen2PackSupportedRuntimeIdentifiers = knownCrossgen2Pack.GetMetadata("Crossgen2RuntimeIdentifiers").Split(';');
-
-            // Get the best RID for the host machine, which will be used to validate that we can run crossgen for the target platform and architecture
-            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
-            var hostRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, NETCoreSdkRuntimeIdentifier, crossgen2PackSupportedRuntimeIdentifiers, out bool wasInGraph);
-            if (hostRuntimeIdentifier == null)
-            {
-                return false;
-            }
-
-            var crossgen2PackName = crossgen2PackPattern.Replace("**RID**", hostRuntimeIdentifier);
-            if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
-            {
-                crossgen2PackVersion = RuntimeFrameworkVersion;
-            }
-
-            TaskItem packageToDownload = new TaskItem(crossgen2PackName);
-            packageToDownload.SetMetadata(MetadataKeys.Version, crossgen2PackVersion);
-            packagesToDownload.Add(packageToDownload);
-
-            Crossgen2Packs = new ITaskItem[1];
-            Crossgen2Packs[0] = new TaskItem(crossgen2PackName);
-            Crossgen2Packs[0].SetMetadata(MetadataKeys.NuGetPackageId, crossgen2PackName);
-            Crossgen2Packs[0].SetMetadata(MetadataKeys.NuGetPackageVersion, crossgen2PackVersion);
-
-            return true;
-        }
-
-        private bool AddAotRuntimePackage(AotPackageType packageType, Version normalizedTargetFrameworkVersion, List<ITaskItem> packagesToDownload)
+        private bool AddAotOrR2RRuntimePackage(AotPackageType packageType, Version normalizedTargetFrameworkVersion, List<ITaskItem> packagesToDownload)
         {
             var knownPacks = packageType == AotPackageType.Crossgen2 ? KnownCrossgen2Packs : KnownILCompilerPacks;
             var knownPack = knownPacks.Where(pack =>
@@ -634,7 +591,7 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            // If we're using NativeAOT we need to download the runtime pack
+            // We need to download the runtime pack
             TaskItem runtimePackToDownload = new TaskItem(runtimePackName);
             runtimePackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
             packagesToDownload.Add(runtimePackToDownload);
