@@ -49,11 +49,14 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public bool SupportLocalizedComponentNames { get; set; } = false;
 
         public bool Equals(RazorSourceGenerationOptions other)
+                   => SuppressRazorSourceGenerator == other.SuppressRazorSourceGenerator && EqualsIgnoringSupression(other);
+
+        public bool EqualsIgnoringSupression(RazorSourceGenerationOptions other)
         {
-            return RootNamespace == other.RootNamespace &&
-                Configuration == other.Configuration &&
+            return
+                RootNamespace == other.RootNamespace &&
+                Configuration.Equals(other.Configuration) &&
                 GenerateMetadataSourceChecksumAttributes == other.GenerateMetadataSourceChecksumAttributes &&
-                SuppressRazorSourceGenerator == other.SuppressRazorSourceGenerator &&
                 CSharpLanguageVersion == other.CSharpLanguageVersion &&
                 SupportLocalizedComponentNames == other.SupportLocalizedComponentNames;
         }

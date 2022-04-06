@@ -8,8 +8,43 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
+    internal sealed class RazorSourceGeneratorComparer<T> : IEqualityComparer<(T Left, RazorSourceGenerationOptions Right)> where T : notnull
+    {
+        private readonly Func<T, T, bool> _equals;
+        public RazorSourceGeneratorComparer(Func<T, T, bool>? equals = null)
+        {
+            _equals = equals ?? EqualityComparer<T>.Default.Equals;
+        }
+
+        public bool Equals((T Left, RazorSourceGenerationOptions Right) x, (T Left, RazorSourceGenerationOptions Right) y)
+        {
+            if (y.Right.SuppressRazorSourceGenerator)
+            {
+                // If source generation is suppressed, we can always use previously cached results.
+                return true;
+            }
+
+            return _equals(x.Left, y.Left);
+        }
+
+        public int GetHashCode((T Left, RazorSourceGenerationOptions Right) obj) => obj.Left.GetHashCode();
+    }
+
     internal static class IncrementalValuesProviderExtensions
     {
+        internal static IncrementalValueProvider<T> AsCachedIfSuppressed<T>(this IncrementalValueProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
+            where T : notnull
+        {
+            return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
+        }
+
+        internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
+    where T : notnull
+        {
+            return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
+        }
+
+
         internal static IncrementalValueProvider<T> WithLambdaComparer<T>(this IncrementalValueProvider<T> source, Func<T, T, bool> equal, Func<T, int> getHashCode)
         {
             var comparer = new LambdaComparer<T>(equal, getHashCode);
