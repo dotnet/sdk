@@ -4105,5 +4105,141 @@ End Namespace
 ";
             await VerifyVB.VerifyAnalyzerAsync(vbCode);
         }
+
+        [Fact]
+        public async Task TestValueReset1()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub()
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            var x = Create();
+            var d = x.ElementAt(10);
+        }
+    }
+
+    private IEnumerable<int> Create() => Enumerable.Range(1, 10);
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            For i As Integer = 1 To 100
+                Dim x = Create()
+                Dim d = x.ElementAt(10)
+            Next
+        End Sub
+
+        Private Function Create() As IEnumerable(Of Integer)
+            Return Enumerable.Range(1, 10)
+        End Function
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestValueReset2()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub()
+    {
+        var x = Create();
+        for (int i = 0; i < 100; i++)
+        {
+            var a = Create();
+            var y = x;
+            var d = [|y|].ElementAt(10);
+        }
+    }
+
+    private IEnumerable<int> Create() => Enumerable.Range(1, 10);
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo()
+            Dim x = Create()
+            For i As Integer = 1 To 100
+                Dim a = Create()
+                Dim y = x
+                Dim d = [|y|].ElementAt(10)
+            Next
+        End Sub
+
+        Private Function Create() As IEnumerable(Of Integer)
+            Return Enumerable.Range(1, 10)
+        End Function
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
+
+        [Fact]
+        public async Task TestValueReset3()
+        {
+            var csharpCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Bar
+{
+    public void Sub(IEnumerable<int> n)
+    {
+        for (int i = 0; i < 100; i++)
+        {
+            var x = Create().Concat([|n|]);
+            var d = x.ElementAt(10);
+        }
+    }
+
+    private IEnumerable<int> Create() => Enumerable.Range(1, 10);
+}";
+            await VerifyCS.VerifyAnalyzerAsync(csharpCode);
+
+            var vbCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Namespace Ns
+    Public Class Hoo
+        Public Sub Goo(n As IEnumerable(Of Integer))
+            For i As Integer = 1 To 100
+                Dim x = Create().Concat([|n|])
+                Dim d = x.ElementAt(10)
+            Next
+        End Sub
+
+        Private Function Create() As IEnumerable(Of Integer)
+            Return Enumerable.Range(1, 10)
+        End Function
+    End Class
+End Namespace
+";
+            await VerifyVB.VerifyAnalyzerAsync(vbCode);
+        }
     }
 }
