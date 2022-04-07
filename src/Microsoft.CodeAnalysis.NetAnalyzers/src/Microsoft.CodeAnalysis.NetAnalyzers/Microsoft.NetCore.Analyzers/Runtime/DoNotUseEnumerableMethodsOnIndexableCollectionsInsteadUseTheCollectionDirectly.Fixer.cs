@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
@@ -75,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var title = MicrosoftNetCoreAnalyzersResources.UseIndexer;
 
-            context.RegisterCodeFix(new MyCodeAction(title,
+            context.RegisterCodeFix(CodeAction.Create(title,
                                         ct => UseCollectionDirectlyAsync(context.Document, root, invocationNode, collectionSyntax, method),
                                         equivalenceKey: title),
                                     diagnostic);
@@ -130,14 +129,5 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         [return: NotNullIfNotNull("syntaxNode")]
         private protected abstract SyntaxNode? AdjustSyntaxNode(SyntaxNode? syntaxNode);
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
-        }
     }
 }

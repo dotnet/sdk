@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
@@ -39,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.UseLiteralsWhereAppropriateCodeActionTitle;
             context.RegisterCodeFix(
-                new MyCodeAction(
+                CodeAction.Create(
                     title,
                     cancellationToken => ToConstantDeclarationAsync(context.Document, fieldFeclaration, cancellationToken),
                     equivalenceKey: title),
@@ -98,13 +97,5 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         protected abstract SyntaxTokenList GetModifiers(SyntaxNode fieldSyntax);
         protected abstract SyntaxNode WithModifiers(SyntaxNode fieldSyntax, SyntaxTokenList modifiers);
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
-        }
     }
 }

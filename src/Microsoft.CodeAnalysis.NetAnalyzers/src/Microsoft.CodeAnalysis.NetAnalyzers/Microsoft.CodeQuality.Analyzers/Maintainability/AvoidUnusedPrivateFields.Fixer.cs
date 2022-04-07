@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Analyzer.Utilities;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
@@ -38,7 +37,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
 
             string title = MicrosoftCodeQualityAnalyzersResources.AvoidUnusedPrivateFieldsTitle;
             context.RegisterCodeFix(
-                new MyCodeAction(
+                CodeAction.Create(
                     title,
                     async ct => await RemoveFieldAsync(context.Document, node, ct).ConfigureAwait(false),
                     equivalenceKey: title),
@@ -53,15 +52,6 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
             node = editor.Generator.GetDeclaration(node);
             editor.RemoveNode(node);
             return editor.GetChangedDocument();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }
