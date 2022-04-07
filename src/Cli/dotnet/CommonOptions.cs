@@ -142,14 +142,13 @@ namespace Microsoft.DotNet.Cli
             new ForwardedOption<bool>(
                 new string[] { "--sc", "--self-contained" },
                 CommonLocalizableStrings.SelfContainedOptionDescription)
-            .SetForwardingFunction(ForwardSelfContainedOptions);
+            .ForwardAsMany(o => new string[] { $"-property:SelfContained={o}", "-property:_CommandLineDefinedSelfContained=true" });
 
         public static Option<bool> NoSelfContainedOption =
             new ForwardedOption<bool>(
                 "--no-self-contained",
                 CommonLocalizableStrings.FrameworkDependentOptionDescription)
-            // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p)); 
+            .ForwardAsMany(o => new string[] { "-property:SelfContained=false", "-property:_CommandLineDefinedSelfContained=true" });
 
         public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
 
@@ -224,7 +223,7 @@ namespace Microsoft.DotNet.Cli
             return $"{os}-{arch}";
         }
 
-        public static string GetCurrentRuntimeId()
+        private static string GetCurrentRuntimeId()
         {
             var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
             // When running under test the path does not always contain "dotnet" and Product.Version is empty.
