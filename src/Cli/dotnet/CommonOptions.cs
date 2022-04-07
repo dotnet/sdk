@@ -223,7 +223,7 @@ namespace Microsoft.DotNet.Cli
             return $"{os}-{arch}";
         }
 
-        private static string GetCurrentRuntimeId()
+        public static string GetCurrentRuntimeId()
         {
             var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
             // When running under test the path does not always contain "dotnet" and Product.Version is empty.
