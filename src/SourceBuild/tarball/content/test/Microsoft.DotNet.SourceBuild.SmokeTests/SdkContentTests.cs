@@ -27,17 +27,16 @@ public class SdkContentTests : SmokeTests
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string sbFileListingFileName = "sbSdkFiles.txt";
-        WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName);
-        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName);
+        WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true);
+        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = BaselineHelper.RemoveVersions(diff);
         diff = RemoveDiffMarkers(diff);
-        diff = BaselineHelper.RemoveRids(diff);
         BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
-    private void WriteTarballFileList(string? tarballPath, string outputFileName)
+    private void WriteTarballFileList(string? tarballPath, string outputFileName, bool isPortable)
     {
         if (!File.Exists(tarballPath))
         {
@@ -45,7 +44,9 @@ public class SdkContentTests : SmokeTests
         }
 
         string fileListing = ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"tf {tarballPath}", OutputHelper);
+        fileListing = BaselineHelper.RemoveRids(fileListing, isPortable);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
+
         File.WriteAllLines(outputFileName, files);
     }
 

@@ -106,6 +106,7 @@
           EnvironmentVariables="
             SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
             SMOKE_TESTS_TARGET_RID=$(TargetRid);
+            SMOKE_TESTS_PORTABLE_RID=$(PortableRid);
             $(CustomTestEnvVars)" />
   </Target>
 
