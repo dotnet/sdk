@@ -85,6 +85,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var sdkWorkloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(_dotnetPath, _sdkVersion.ToString(), userProfileDir);
             _workloadResolver = workloadResolver ?? WorkloadResolver.Create(sdkWorkloadManifestProvider, _dotnetPath, _sdkVersion.ToString(), _userProfileDir);
+            var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             var tempPackagesDir = new DirectoryPath(Path.Combine(_tempDirPath, "dotnet-sdk-advertising-temp"));
             var restoreActionConfig = _parseResult.ToRestoreActionConfig();
             _nugetPackageDownloader = nugetPackageDownloader ??
