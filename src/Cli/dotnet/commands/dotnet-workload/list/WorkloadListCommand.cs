@@ -22,7 +22,7 @@ using Product = Microsoft.DotNet.Cli.Utils.Product;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
 {
-    internal class WorkloadListCommand : WorkloadCommandBase
+    internal class WorkloadListCommand : CommandBase
     {
         private readonly SdkFeatureBand _currentSdkFeatureBand;
         private readonly string _dotnetPath;
@@ -85,7 +85,6 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
             _workloadRecordRepo = workloadRecordRepo ??
                 WorkloadInstallerFactory.GetWorkloadInstaller(reporter, _currentSdkFeatureBand, _workloadResolver, _verbosity, _userProfileDir,
-                VerifySignatures,
                 elevationRequired: false).GetWorkloadInstallationRecordRepository();
 
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(_reporter,
@@ -151,21 +150,22 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         internal UpdateAvailableEntry[] GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
             HashSet<WorkloadId> installedWorkloads = installedList.ToHashSet();
-            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
-            var manifestsToUpdate =
+            Task.Run(() => _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews)).Wait();
+            IEnumerable<(ManifestId manifestId, ManifestVersion existingVersion, ManifestVersion newVersion,
+                Dictionary<WorkloadId, WorkloadDefinition> Workloads)> manifestsToUpdate =
                 _workloadManifestUpdater.CalculateManifestUpdates();
 
             List<UpdateAvailableEntry> updateList = new();
-            foreach ((ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> workloads) in manifestsToUpdate)
+            foreach ((ManifestId _, ManifestVersion existingVersion, ManifestVersion newVersion,
+                Dictionary<WorkloadId, WorkloadDefinition> workloads) in manifestsToUpdate)
             {
                 foreach ((WorkloadId WorkloadId, WorkloadDefinition workloadDefinition) in
                     workloads)
                 {
                     if (installedWorkloads.Contains(new WorkloadId(WorkloadId.ToString())))
                     {
-                        //  TODO: Potentially show existing and new feature bands
-                        updateList.Add(new UpdateAvailableEntry(manifestUpdate.ExistingVersion.ToString(),
-                            manifestUpdate.NewVersion.ToString(),
+                        updateList.Add(new UpdateAvailableEntry(existingVersion.ToString(),
+                            newVersion.ToString(),
                             workloadDefinition.Description, WorkloadId.ToString()));
                     }
                 }

@@ -14,7 +14,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
-    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class TelemetryCommandTests : SdkTest
     {
         private readonly FakeRecordEventNameTelemetry _fakeTelemetry;

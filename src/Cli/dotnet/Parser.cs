@@ -12,14 +12,13 @@ using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.DotNet.Cli.Utils;
+using System.Threading.Tasks;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Format;
 using Microsoft.DotNet.Tools.Help;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.NuGet;
-using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -174,23 +173,18 @@ namespace Microsoft.DotNet.Cli
 
             if (exception is Utils.GracefulException)
             {
-                Reporter.Error.WriteLine(CommandContext.IsVerbose()
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
-                
+                context.Console.Error.WriteLine(exception.Message);
             }
             else if (exception is CommandParsingException)
             {
-                Reporter.Error.WriteLine(CommandContext.IsVerbose()
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
-                context.ParseResult.ShowHelp();
+                context.Console.Error.WriteLine(exception.Message);
             }
             else
             {
-                Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
-            }    
+                context.Console.Error.Write("Unhandled exception: ");
+                context.Console.Error.WriteLine(exception.ToString());
+            }
+            context.ParseResult.ShowHelp();
             context.ExitCode = 1;
         }
 
@@ -266,10 +260,6 @@ namespace Microsoft.DotNet.Cli
                 else if (command.Name.Equals(MSBuildCommandParser.GetCommand().Name))
                 {
                     new MSBuildForwardingApp(helpArgs).Execute();
-                }
-                else if (command.Name.Equals(NewCommandParser.GetCommand().Name))
-                {
-                    NewCommandShim.Run(context.ParseResult.GetArguments());
                 }
                 else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
                 {
