@@ -85,7 +85,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
 
-        public static string RemoveRids(string diff) => diff.Replace(Config.TargetRid, "banana.rid");
+        public static string RemoveRids(string diff, bool isPortable = false) =>
+            isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
 
         public static string RemoveVersions(string source)
         {
