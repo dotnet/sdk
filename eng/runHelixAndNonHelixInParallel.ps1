@@ -1,4 +1,4 @@
-[CmdletBinding(PositionalBinding = $false)]
+    [CmdletBinding(PositionalBinding = $false)]
     Param(
         [string] $configuration,
         [string] $buildSourcesDirectory,
@@ -45,4 +45,3 @@
   foreach ($processName in $processesToStopOnExit) {
     Get-Process -Name $processName -ErrorAction SilentlyContinue | Stop-Process
   }
-  
