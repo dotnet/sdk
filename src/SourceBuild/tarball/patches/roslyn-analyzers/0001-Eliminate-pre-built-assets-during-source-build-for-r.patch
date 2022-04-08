@@ -123,7 +123,7 @@ index 738fdebf2..6d13947ce 100644
 --- a/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
 +++ b/src/NetAnalyzers/Core/Microsoft.CodeQuality.Analyzers/ApiDesignGuidelines/DoNotDirectlyAwaitATask.Fixer.cs
 @@ -82,7 +82,7 @@ private class MyCodeAction : DocumentChangeAction
-             }
+             return CustomFixAllProvider.Instance;
          }
  
 -        private sealed class CustomFixAllProvider : DocumentBasedFixAllProvider
