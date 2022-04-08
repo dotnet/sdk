@@ -1,0 +1,113 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: William Godbe <wigodbe@microsoft.com>
+Date: Wed, 23 Mar 2022 09:11:11 -0700
+Subject: [PATCH] Revert "Revert "[release/6.0] Build ProjectTemplates in
+ Source-Build (#40650)" (#40805)"
+
+This reverts commit a351c437ac7bc9f9be96de51832608438a7a37df.
+---
+ Directory.Build.props                                    | 3 +++
+ Directory.Build.targets                                  | 9 +++++++--
+ .../src/Microsoft.Authentication.WebAssembly.Msal.csproj | 9 ++++++++-
+ ...pNetCore.Components.WebAssembly.Authentication.csproj | 9 ++++++++-
+ 4 files changed, 26 insertions(+), 4 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 8f0ac59422..721f099a77 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -30,6 +30,9 @@
+           $(MSBuildProjectName.EndsWith('.Test')) OR
+           $(MSBuildProjectName.EndsWith('.FunctionalTest')) ) ">true</IsUnitTestProject>
+     <IsTestAssetProject Condition=" $(RepoRelativeProjectDir.Contains('testassets')) OR $(MSBuildProjectName.Contains('TestCommon'))">true</IsTestAssetProject>
++    <IsProjectTemplateProject Condition=" ($(RepoRelativeProjectDir.Contains('ProjectTemplates')) OR $(MSBuildProjectName.Contains('ProjectTemplates')) ) AND
++        '$(IsUnitTestProject)' != 'true' AND
++        '$(IsTestAssetProject)' != 'true' ">true</IsProjectTemplateProject>
+     <IsSampleProject Condition=" $(RepoRelativeProjectDir.ToUpperInvariant().Contains('SAMPLE')) ">true</IsSampleProject>
+     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
+     <IsShipping Condition=" '$(IsSampleProject)' == 'true' OR
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index a195c0fb2e..fd388a1176 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -1,10 +1,15 @@
+ ﻿<Project>
+ 
+   <PropertyGroup>
+-    <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, and ref/ assemblies in source build. -->
++    <!-- Only build Microsoft.AspNetCore.App, Microsoft.AspNetCore.App.Ref, ref/ assemblies, and ProjectTemplates in source build. -->
+     <!-- Analyzer package are needed in source build for WebSDK -->
+     <ExcludeFromSourceBuild
+-        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(MSBuildProjectName)' != '$(TargetingPackName)' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
++        Condition="'$(ExcludeFromSourceBuild)' == '' and 
++            '$(DotNetBuildFromSource)' == 'true' and 
++            '$(IsAspNetCoreApp)' != 'true' and 
++            '$(MSBuildProjectName)' != '$(TargetingPackName)' and 
++            '$(IsAnalyzersProject)' != 'true' and 
++            '$(IsProjectTemplateProject)' != 'true'">true</ExcludeFromSourceBuild>
+ 
+     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
+      suppress all targets for TestProjects using ExcludeFromBuild. -->
+diff --git a/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
+index 8ae5d1c43d..8e0f53957e 100644
+--- a/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
++++ b/src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj
+@@ -1,6 +1,6 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+ 
+-  <Sdk Name="Yarn.MSBuild" />
++  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+ 
+   <PropertyGroup>
+     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+@@ -25,6 +25,7 @@
+   <PropertyGroup>
+     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+     <ResolveStaticWebAssetsInputsDependsOn>
++      CheckForSourceBuild;
+       CompileInterop;
+       IncludeCompileInteropOutput;
+       $(ResolveStaticWebAssetsInputsDependsOn)
+@@ -91,5 +92,11 @@
+       <FileWrites Include="$(_InteropBuildOutput)" />
+     </ItemGroup>
+   </Target>
++   
++  <Target Name="CheckForSourceBuild" Condition=" '$(DotNetBuildFromSource)' == 'true'">
++    <Error Text="The Yarn.Msbuild SDK is currently excluded from SourceBuild. If you are enabling this project for SourceBuild, remove the condition on the Yarn.Msbuild SDK above." />
++  </Target>
++   
++  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+ 
+ </Project>
+diff --git a/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj b/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
+index 8d6a000d74..35c79a73eb 100644
+--- a/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
++++ b/src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk.Razor">
+ 
+-  <Sdk Name="Yarn.MSBuild" />
++  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
+ 
+   <PropertyGroup>
+     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+@@ -26,6 +26,7 @@
+   <PropertyGroup>
+     <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+     <ResolveStaticWebAssetsInputsDependsOn>
++      CheckForSourceBuild;
+       CompileInterop;
+       IncludeCompileInteropOutput;
+       $(ResolveStaticWebAssetsInputsDependsOn)
+@@ -93,4 +94,10 @@
+     </ItemGroup>
+   </Target>
+ 
++  <Target Name="CheckForSourceBuild" Condition=" '$(DotNetBuildFromSource)' == 'true'">
++    <Error Text="The Yarn.Msbuild SDK is currently excluded from SourceBuild. If you are enabling this project for SourceBuild, remove the condition on the Yarn.Msbuild SDK above." />
++  </Target>
++
++  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
++
+ </Project>
