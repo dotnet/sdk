@@ -6,11 +6,6 @@
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 
-  <PropertyGroup>
-    <!-- Disable until they are better supported in tooling. -->
-    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
-  </PropertyGroup>
-
   <!-- Nuget settings -->
   <PropertyGroup>
     <!-- Use Directory.Packages.props for nuget package versions -->
