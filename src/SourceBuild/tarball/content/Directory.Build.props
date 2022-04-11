@@ -177,13 +177,12 @@
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">OSX</TargetOS>
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">Linux</TargetOS>
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">FreeBSD</TargetOS>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(PortableBuild)' == 'true'">
-    <TargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</TargetRid>
-    <TargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</TargetRid>
-    <TargetRid Condition="'$(TargetOS)' == 'Linux'">linux-$(Platform)</TargetRid>
-    <TargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</TargetRid>
+    <PortableRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(TargetOS)' == 'Linux'">linux-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</PortableRid>
+    <TargetRid Condition="'$(PortableBuild)' == 'true' AND '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
   </PropertyGroup>
 
   <PropertyGroup>
