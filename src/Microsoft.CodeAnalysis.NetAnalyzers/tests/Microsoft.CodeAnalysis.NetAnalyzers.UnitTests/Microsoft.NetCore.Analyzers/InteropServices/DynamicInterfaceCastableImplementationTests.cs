@@ -1135,7 +1135,7 @@ interface I2 : I
 
         [Fact]
         [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
-        public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType()
+        public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType_NoDiagnostic()
         {
             string source = @"
 using System.Runtime.InteropServices;
@@ -1157,6 +1157,48 @@ public interface IMyInterface
 }
 ";
             await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
+        public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType_Diagnostic()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+public interface IMyInterface
+{
+    internal class C { }
+    internal abstract class C2 { }
+
+    [DynamicInterfaceCastableImplementation]
+    internal interface {|CA2256:INestedInterface|} : IMyInterface
+    {
+    }
+
+    void M();
+}
+";
+            string codeFix = @"
+using System.Runtime.InteropServices;
+
+public interface IMyInterface
+{
+    internal class C { }
+    internal abstract class C2 { }
+
+    [DynamicInterfaceCastableImplementation]
+    internal interface INestedInterface : IMyInterface
+    {
+        void IMyInterface.M()
+        {
+        }
+    }
+
+    void M();
+}
+";
+            await VerifyCSCodeFixAsync(source, codeFix);
         }
 
         [Fact]
