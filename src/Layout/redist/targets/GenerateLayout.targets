@@ -408,6 +408,11 @@
       <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
     </PropertyGroup>
     <ItemGroup>
+      <TextReplacement>
+        <Include>"rollForward": "LatestMajor"</Include>
+        <ReplacementString>"rollForward": "Major"</ReplacementString>
+      </TextReplacement>
+
       <!-- Exclude F# from retargeting: https://github.com/dotnet/toolset/issues/2866 -->
       <!-- Exclude testhost from retargeting: https://github.com/dotnet/sdk/issues/24769 -->
       <ToolRuntimeConfigPath Include="$(OutputPath)/**/*.runtimeconfig.json"
@@ -418,6 +423,7 @@
     <ReplaceFileContents
       InputFiles="@(ToolRuntimeConfigPath)"
       DestinationFiles="@(ToolRuntimeConfigPath)"
+      ReplacementItems="@(TextReplacement)"
       ReplacementPatterns="$(ReplacementPattern)"
       ReplacementStrings="$(ReplacementString)" />
 
