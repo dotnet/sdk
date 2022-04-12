@@ -89,12 +89,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 propertyDecl = generator.WithAccessorDeclarations(propertyDecl);
 
                 if (property.GetMethod is not null
-                    && editor.SemanticModel.Compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
+                    && compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
                 {
                     propertyDecl = generator.WithGetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
                 }
                 if (property.SetMethod is not null
-                    && editor.SemanticModel.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
+                    && compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {
                     propertyDecl = AddSetAccessor(property, propertyDecl, generator, defaultMethodBodyStatements, includeAccessibility: false);
                 }
