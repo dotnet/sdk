@@ -1138,6 +1138,34 @@ class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
+        public async Task IosGuardAttributeWithinMacCatalystTargetedAssembly()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""MacCatalyst13.1"")]
+
+public class Test
+{
+    [SupportedOSPlatformGuard(""ios14.0"")]
+	internal static bool IsiOS14OrNewer => true;
+
+    [SupportedOSPlatform(""ios13.4"")]
+    public static void iOS13Method() { }
+
+    static void M1()
+    {
+        [|iOS13Method()|]; // This call site is reachable on: 'MacCatalyst' 13.1 and later. 'Test.iOS13Method()' is only supported on: 'MacCatalyst' 13.4 and later.
+        if (IsiOS14OrNewer)
+            iOS13Method(); // Should not warn
+            
+    }
+}";
+            await VerifyAnalyzerCSAsync(csSource);
+        }
+
         [Fact]
         public async Task GuardedWith_RuntimeInformation_IsOSPlatform_SimpleIfElseAsync()
         {
@@ -4090,6 +4118,39 @@ class Test
 }";
 
             await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+        }
+
+        [Fact, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
+        public async Task GuardCallingCachedValue_CallSiteHasAssemblyAttributeAsync()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""ios10.0"")]
+class Test
+{
+    static bool s_isiOS11OrNewer => false;
+
+    [SupportedOSPlatformGuard(""ios11.0"")]
+    private bool IsIos11Supported() => s_isiOS11OrNewer; // should not warn
+
+    void M1()
+    {
+        [|SupportedOniOS11()|]; 
+
+        if (IsIos11Supported())
+        {
+            SupportedOniOS11();    
+        }
+    }
+
+    [SupportedOSPlatform(""ios11.0"")]
+    void SupportedOniOS11() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]

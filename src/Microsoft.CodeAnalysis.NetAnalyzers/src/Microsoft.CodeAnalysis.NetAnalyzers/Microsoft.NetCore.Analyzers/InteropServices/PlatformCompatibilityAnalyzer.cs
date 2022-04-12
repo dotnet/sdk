@@ -616,24 +616,34 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             static bool IsNegationOfCallsiteAttributes(SmallDictionary<string, Versions> csAttributes, ImmutableHashSet<IAbstractAnalysisValue> parentValues)
             {
+                bool allowList = AllowList(csAttributes.First().Value);
+
                 foreach (var value in parentValues)
                 {
-                    if (value is not PlatformMethodValue info ||
-                        !csAttributes.TryGetValue(info.PlatformName, out var version))
+                    if (value is PlatformMethodValue info)
                     {
-                        return false;
+                        if (csAttributes.TryGetValue(info.PlatformName, out var version))
+                        {
+                            if (info.Negated)
+                            {
+                                if (version.SupportedFirst != info.Version)
+                                    return false;
+                            }
+                            else
+                            {
+                                if (version.UnsupportedFirst != info.Version)
+                                    return false;
+                            }
+
+                            continue;
+                        }
+                        else if (allowList) // If callsite is supported only list then no need to worry about other platform guard
+                        {
+                            continue;
+                        }
                     }
 
-                    if (info.Negated)
-                    {
-                        if (version.SupportedFirst != info.Version)
-                            return false;
-                    }
-                    else
-                    {
-                        if (version.UnsupportedFirst != info.Version)
-                            return false;
-                    }
+                    return false;
                 }
 
                 return true;
@@ -1343,7 +1353,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         if (callSiteAttributes.TryGetValue(platformName, out var callSiteAttribute))
                         {
                             var attributeToCheck = attribute.SupportedSecond ?? attribute.SupportedFirst;
-                            if (MandatoryOsVersionsSuppressed(callSiteAttribute, attributeToCheck) && AllowList(callSiteAttribute))
+                            if ((MandatoryOsVersionsSuppressed(callSiteAttribute, attributeToCheck) || crossPlatform) && AllowList(callSiteAttribute))
                             {
                                 mandatorySupportFound = true;
                             }
@@ -1582,7 +1592,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (attribute.AttributeClass.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute)
                     {
-                        parentAttributes = new PlatformAttributes();
+                        if (!parentAttributes.IsAssemblyAttribute)
+                        {
+                            parentAttributes = new PlatformAttributes();
+                        }
                         return;
                     }
                     if (s_osPlatformAttributes.Contains(attribute.AttributeClass.Name))
