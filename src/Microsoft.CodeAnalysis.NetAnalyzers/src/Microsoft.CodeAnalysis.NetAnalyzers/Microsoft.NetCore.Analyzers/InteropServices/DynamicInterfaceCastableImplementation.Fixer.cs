@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -38,6 +39,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
                 {
+                    var model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+                    var symbol = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, context.CancellationToken);
+                    if (symbol.AllInterfaces.SelectMany(m => m.GetMembers()).Any(m => m.IsStatic && m.IsAbstract))
+                    {
+                        // Cannot offer a fix for static abstracts.
+                        return;
+                    }
+
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,

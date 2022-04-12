@@ -41,8 +41,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             {
                 foreach (var member in iface.GetMembers())
                 {
-                    // TODO: Should IsStatic check remain here?
-                    if (!member.IsStatic && member.IsVirtual && type.FindImplementationForInterfaceMember(member) is null)
+                    if (!member.IsStatic && member.IsAbstract && type.FindImplementationForInterfaceMember(member) is null)
                     {
                         var implementation = member.Kind switch
                         {

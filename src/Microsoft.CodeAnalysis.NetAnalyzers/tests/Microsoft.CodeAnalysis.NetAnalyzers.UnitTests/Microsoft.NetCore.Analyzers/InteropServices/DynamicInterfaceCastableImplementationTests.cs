@@ -1143,7 +1143,7 @@ using System.Runtime.InteropServices;
 public interface IMyInterface
 {
     internal class C { }
-    internal abstract class C { }
+    internal abstract class C2 { }
 
     [DynamicInterfaceCastableImplementation]
     internal interface INestedInterface : IMyInterface
@@ -1159,7 +1159,7 @@ public interface IMyInterface
             await VerifyCSAnalyzerAsync(source);
         }
 
-        [Fact(Skip = "TODO: How should the codefix behave.")]
+        [Fact]
         [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
         public async Task DynamicInterfaceCastableImplementation_AbstractStaticInInterface()
         {
