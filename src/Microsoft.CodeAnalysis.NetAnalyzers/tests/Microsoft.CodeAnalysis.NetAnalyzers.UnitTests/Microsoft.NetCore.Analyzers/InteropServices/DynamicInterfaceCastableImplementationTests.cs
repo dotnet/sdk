@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DynamicInterfaceCastableImplementationAnalyzer,
@@ -1132,6 +1133,53 @@ interface I2 : I
             await VerifyCSCodeFixAsync(source, codeFix);
         }
 
+        [Fact]
+        [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
+        public async Task DynamicInterfaceCastableImplementation_InterfaceContainingNamedType()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+public interface IMyInterface
+{
+    internal class C { }
+    internal abstract class C { }
+
+    [DynamicInterfaceCastableImplementation]
+    internal interface INestedInterface : IMyInterface
+    {
+        void IMyInterface.M()
+        {
+        }
+    }
+
+    void M();
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact(Skip = "TODO: How should the codefix behave.")]
+        [WorkItem(5964, "https://github.com/dotnet/roslyn-analyzers/issues/5964")]
+        public async Task DynamicInterfaceCastableImplementation_AbstractStaticInInterface()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+public interface I
+{
+    static abstract void M();
+}
+
+[DynamicInterfaceCastableImplementation]
+public interface {|CA2256:I2|} : I
+{
+}
+";
+
+            await VerifyCSCodeFixAsync(source, source, CSharp.LanguageVersion.Preview, ReferenceAssemblies.Net.Net60);
+        }
+
         private static Task VerifyCSAnalyzerAsync(string source)
         {
             return VerifyCSCodeFixAsync(source, source);
@@ -1148,10 +1196,15 @@ interface I2 : I
 
         private static async Task VerifyCSCodeFixAsync(string source, string codeFix)
         {
+            await VerifyCSCodeFixAsync(source, codeFix, CSharp.LanguageVersion.CSharp9, ReferenceAssemblies.Net.Net50);
+        }
+
+        private static async Task VerifyCSCodeFixAsync(string source, string codeFix, CSharp.LanguageVersion languageVersion, ReferenceAssemblies referenceAssemblies)
+        {
             await new VerifyCS.Test
             {
-                LanguageVersion = CSharp.LanguageVersion.CSharp9,
-                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = languageVersion,
+                ReferenceAssemblies = referenceAssemblies,
                 TestCode = source,
                 FixedCode = codeFix
             }.RunAsync();
