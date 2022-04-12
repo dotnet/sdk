@@ -50,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(root, declaration, symbol, context.Document, generator, model.Compilation, context.CancellationToken).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                         diagnostic);
                 }
@@ -75,8 +75,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
         protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+            SyntaxNode root,
             SyntaxNode declaration,
+            INamedTypeSymbol type,
             Document document,
+            SyntaxGenerator generator,
+            Compilation compilation,
             CancellationToken cancellationToken);
 
         protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(

@@ -1192,6 +1192,7 @@ public interface IMyInterface
     {
         void IMyInterface.M()
         {
+            throw new System.NotImplementedException();
         }
     }
 

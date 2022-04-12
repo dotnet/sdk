@@ -26,16 +26,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         private const SyntaxKind InitAccessorDeclaration = (SyntaxKind)9060;
 
         protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+            SyntaxNode root,
             SyntaxNode declaration,
+            INamedTypeSymbol type,
             Document document,
+            SyntaxGenerator generator,
+            Compilation compilation,
             CancellationToken cancellationToken)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-
-            var type = (INamedTypeSymbol)editor.SemanticModel.GetDeclaredSymbol(declaration, cancellationToken);
-            var generator = editor.Generator;
-
-            var defaultMethodBodyStatements = generator.DefaultMethodBody(editor.SemanticModel.Compilation).ToArray();
+            var defaultMethodBodyStatements = generator.DefaultMethodBody(compilation).ToArray();
             var generatedMembers = new List<SyntaxNode>();
             foreach (var iface in type.AllInterfaces)
             {
@@ -64,9 +63,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             var typeDeclaration = (TypeDeclarationSyntax)declaration;
             typeDeclaration = typeDeclaration.AddMembers(generatedMembers.Cast<MemberDeclarationSyntax>().ToArray());
 
-            editor.ReplaceNode(declaration, typeDeclaration);
-
-            return editor.GetChangedDocument();
+            return document.WithSyntaxRoot(root.ReplaceNode(declaration, typeDeclaration));
 
             SyntaxNode? GenerateMethodImplementation(IMethodSymbol method)
             {
