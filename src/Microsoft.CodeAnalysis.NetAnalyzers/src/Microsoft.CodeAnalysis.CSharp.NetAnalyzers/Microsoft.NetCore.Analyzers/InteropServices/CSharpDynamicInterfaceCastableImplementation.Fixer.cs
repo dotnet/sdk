@@ -25,14 +25,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
         private const SyntaxKind InitKeyword = (SyntaxKind)8443;
         private const SyntaxKind InitAccessorDeclaration = (SyntaxKind)9060;
 
-        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+        protected override Document ImplementInterfacesOnDynamicCastableImplementation(
             SyntaxNode root,
             SyntaxNode declaration,
             INamedTypeSymbol type,
             Document document,
             SyntaxGenerator generator,
-            Compilation compilation,
-            CancellationToken cancellationToken)
+            Compilation compilation)
         {
             var defaultMethodBodyStatements = generator.DefaultMethodBody(compilation).ToArray();
             var generatedMembers = new List<SyntaxNode>();
