@@ -457,6 +457,27 @@ class P
             ");
         }
 
+        [Fact]
+        [WorkItem(5965, "https://github.com/dotnet/roslyn-analyzers/issues/5965")]
+        public async Task CS_ArgList()
+        {
+            var source = @"
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+class P
+{
+    static void M1(string s, CancellationToken cancellationToken, __arglist)
+    {
+        var result = M2(s, __arglist(0));
+    }
+    static Task M2(string s, __arglist) { throw new NotImplementedException(); }
+    static int M2(string s, CancellationToken cancellationToken, __arglist) { throw new NotImplementedException(); }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
         #endregion
 
         #region Diagnostics with no fix = C#

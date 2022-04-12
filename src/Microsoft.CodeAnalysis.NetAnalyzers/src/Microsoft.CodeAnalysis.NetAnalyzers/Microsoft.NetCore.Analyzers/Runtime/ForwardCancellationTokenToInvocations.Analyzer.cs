@@ -135,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             // Verify that the current invocation is not passing an explicit token already
             if (AnyArgument(invocation.Arguments,
-                            a => a.Parameter.Type.Equals(cancellationTokenType) && !a.IsImplicit))
+                            a => cancellationTokenType.Equals(a.Parameter?.Type) && !a.IsImplicit))
             {
                 return false;
             }
