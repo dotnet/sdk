@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 23 Nov 2021 17:45:25 +0000
+Subject: [PATCH] Update nuspec project target frameworks for source-build
+
+This patch removes prebuilts caused from targetting netcoreapp1.0
+
+Backported with https://github.com/microsoft/vstest/pull/3188
+---
+ src/package/nuspec/Microsoft.TestPlatform.Build.csproj | 3 ++-
+ src/package/nuspec/Microsoft.TestPlatform.CLI.csproj   | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/package/nuspec/Microsoft.TestPlatform.Build.csproj b/src/package/nuspec/Microsoft.TestPlatform.Build.csproj
+index 038fbf8..57cde8e 100644
+--- a/src/package/nuspec/Microsoft.TestPlatform.Build.csproj
++++ b/src/package/nuspec/Microsoft.TestPlatform.Build.csproj
+@@ -1,7 +1,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>netcoreapp1.0</TargetFramework>
++    <TargetFramework Condition=" '$(DotNetBuildFromSource)' != 'true' ">netcoreapp1.0</TargetFramework>
++    <TargetFramework Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFramework>
+     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+     <NuspecFile>TestPlatform.Build.nuspec</NuspecFile>
+     <NuspecProperties>version=$(Version)</NuspecProperties>
+diff --git a/src/package/nuspec/Microsoft.TestPlatform.CLI.csproj b/src/package/nuspec/Microsoft.TestPlatform.CLI.csproj
+index 29198ba..19386eb 100644
+--- a/src/package/nuspec/Microsoft.TestPlatform.CLI.csproj
++++ b/src/package/nuspec/Microsoft.TestPlatform.CLI.csproj
+@@ -1,7 +1,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>netcoreapp1.0</TargetFramework>
++    <TargetFramework Condition=" '$(DotNetBuildFromSource)' != 'true' ">netcoreapp1.0</TargetFramework>
++    <TargetFramework Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFramework>
+     <CheckEolTargetFramework>false</CheckEolTargetFramework>
+     <NuspecFile>TestPlatform.CLI.nuspec</NuspecFile>
+     <NuspecProperties>version=$(Version)</NuspecProperties>
