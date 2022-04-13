@@ -11,10 +11,6 @@
     should be added to source-build-reference-packages.
   -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.DotNet.Web.ItemTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
-    <PackageDownload Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" Version="[$(AspNetCorePackageVersionFor60Templates)]" />
-
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.200" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.200" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.200" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
