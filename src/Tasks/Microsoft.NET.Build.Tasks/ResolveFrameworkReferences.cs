@@ -26,7 +26,6 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             var resolvedTargetingPacks = ResolvedTargetingPacks.ToDictionary(tp => tp.ItemSpec, StringComparer.OrdinalIgnoreCase);
-            var resolvedRuntimePacks = ResolvedRuntimePacks.ToDictionary(rp => rp.GetMetadata(MetadataKeys.FrameworkName), StringComparer.OrdinalIgnoreCase);
 
             var resolvedFrameworkReferences = new List<TaskItem>(FrameworkReferences.Length);
 
@@ -48,13 +47,14 @@ namespace Microsoft.NET.Build.Tasks
                 resolvedFrameworkReference.SetMetadata("TargetingPackVersion", targetingPack.GetMetadata(MetadataKeys.NuGetPackageVersion));
                 resolvedFrameworkReference.SetMetadata("Profile", targetingPack.GetMetadata("Profile"));
 
-                ITaskItem runtimePack;
-                if (resolvedRuntimePacks.TryGetValue(frameworkReference.ItemSpec, out runtimePack))
+                // Allow more than one runtime pack to be associated with this FrameworkReference
+                var matchingRuntimePacks = ResolvedRuntimePacks.Where(rp => rp.GetMetadata(MetadataKeys.FrameworkName).Equals(frameworkReference.ItemSpec, StringComparison.OrdinalIgnoreCase));
+                if (matchingRuntimePacks.Any())
                 {
-                    resolvedFrameworkReference.SetMetadata("RuntimePackPath", runtimePack.GetMetadata(MetadataKeys.PackageDirectory));
-                    resolvedFrameworkReference.SetMetadata("RuntimePackName", runtimePack.GetMetadata(MetadataKeys.NuGetPackageId));
-                    resolvedFrameworkReference.SetMetadata("RuntimePackVersion", runtimePack.GetMetadata(MetadataKeys.NuGetPackageVersion));
-                }
+                    resolvedFrameworkReference.SetMetadata("RuntimePackPath", string.Join (";", matchingRuntimePacks.Select (mrp => mrp.GetMetadata(MetadataKeys.PackageDirectory))));
+                    resolvedFrameworkReference.SetMetadata("RuntimePackName", string.Join (";", matchingRuntimePacks.Select (mrp => mrp.GetMetadata(MetadataKeys.NuGetPackageId))));
+                    resolvedFrameworkReference.SetMetadata("RuntimePackVersion", string.Join (";", matchingRuntimePacks.Select (mrp => mrp.GetMetadata(MetadataKeys.NuGetPackageVersion))));
+                 }
 
                 resolvedFrameworkReferences.Add(resolvedFrameworkReference);
             }

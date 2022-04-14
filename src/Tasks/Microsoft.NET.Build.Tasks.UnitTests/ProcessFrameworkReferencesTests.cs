@@ -317,5 +317,56 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref",
                 "it should not resolve runtime pack for Microsoft.NETCore.App");
         }
+
+        [Fact]
+        public void It_resolves_FrameworkReference_with_multiple_runtime_patterns()
+        {
+            const string minimalRuntimeGraphPathContent =
+                "{\"runtimes\":{\"android\":{\"#import\":[\"linux\"]},\"linux\":{\"#import\":[]},\"android-arm\":{\"#import\":[\"android\"]},\"android-arm64\":{\"#import\":[\"android\"]}}}";
+            var runtimeGraphPathPath = Path.GetTempFileName();
+            File.WriteAllText(runtimeGraphPathPath, minimalRuntimeGraphPathContent);
+
+            var task = new ProcessFrameworkReferences
+            {
+                BuildEngine = new MockNeverCacheBuildEngine4(),
+                EnableTargetingPackDownload = true,
+                TargetFrameworkIdentifier = ".NETCoreApp",
+                TargetFrameworkVersion = "6.0",
+                TargetPlatformIdentifier = "Android",
+                RuntimeGraphPath = runtimeGraphPathPath,
+                RuntimeIdentifiers = new[]
+                {
+                    "android-arm", "android-arm64"
+                },
+
+                FrameworkReferences = new[]
+                {
+                    new MockTaskItem("Microsoft.Android", new Dictionary<string, string>()),
+                },
+
+                KnownFrameworkReferences = new[]
+                {
+                    new MockTaskItem("Microsoft.Android",
+                        new Dictionary<string, string>()
+                        {
+                            {"TargetFramework", "net6.0"},
+                            {"RuntimeFrameworkName", "Microsoft.Android"},
+                            {"LatestRuntimeFrameworkVersion", "32.0.300"},
+                            {"TargetingPackName", "Microsoft.Android.Ref.32"},
+                            {"TargetingPackVersion", "32.0.300"},
+                            {"RuntimePackNamePatterns", "Microsoft.Android.Runtime.32;Microsoft.Android.Runtime.32.**RID**"},
+                            {"RuntimePackRuntimeIdentifiers", "android-arm;android-arm64;android-x86;android-x64"},
+                            {"Profile", "Android"},
+                        }),
+                },
+            };
+
+            task.Execute().Should().BeTrue();
+            task.PackagesToDownload.Length.Should().Be(4);
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Android.Ref.32");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Android.Runtime.32");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Android.Runtime.32.android-arm");
+            task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.Android.Runtime.32.android-arm64");
+        }
     }
 }
