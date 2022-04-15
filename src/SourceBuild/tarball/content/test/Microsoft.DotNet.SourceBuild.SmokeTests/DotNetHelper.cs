@@ -5,7 +5,6 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -81,15 +80,6 @@ internal class DotNetHelper
 
     public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? additionalProcessConfigCallback = null, int expectedExitCode = 0, int millisecondTimeout = -1)
     {
-        Action<Process, string?> configureProcess = (Process process, string? workingDirectory) => {
-            ConfigureProcess(process, workingDirectory);
-
-            if (additionalProcessConfigCallback != null)
-            {
-                additionalProcessConfigCallback(process);
-            }
-        };
-
         (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess(
             DotNetPath,
             args,
@@ -98,6 +88,13 @@ internal class DotNetHelper
             millisecondTimeout: millisecondTimeout);
         
         ExecuteHelper.ValidateExitCode(executeResult, expectedExitCode);
+
+        void configureProcess(Process process, string? workingDirectory)
+        {
+            ConfigureProcess(process, workingDirectory);
+
+            additionalProcessConfigCallback?.Invoke(process);
+        }
     }
 
     public static void ConfigureProcess(Process process, string? workingDirectory, bool setPath = false)
