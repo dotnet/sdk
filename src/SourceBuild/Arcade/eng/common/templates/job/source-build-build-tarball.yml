@@ -132,7 +132,7 @@ jobs:
         customBuildArgs="$customBuildArgs --poison"
       fi
 
-      docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh ${customBuildArgs} $(additionalBuildArgs) -- /p:CleanWhileBuilding=true
+      docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh --clean-while-building ${customBuildArgs} $(additionalBuildArgs)
     displayName: Build Tarball
 
   - script: |
