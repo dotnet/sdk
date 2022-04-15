@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Wed, 13 Apr 2022 21:30:39 +0000
+Subject: [PATCH] Condition out the BannedApiAnalyzers usage in source-build
+
+Removes prebuilt.
+Patch for https://github.com/dotnet/linker/pull/2742
+---
+ src/linker/Mono.Linker.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/linker/Mono.Linker.csproj b/src/linker/Mono.Linker.csproj
+index 391300aa..d276003e 100644
+--- a/src/linker/Mono.Linker.csproj
++++ b/src/linker/Mono.Linker.csproj
+@@ -31,7 +31,7 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)">
++    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="$(MicrosoftCodeAnalysisBannedApiAnalyzersVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'">
+       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+       <PrivateAssets>all</PrivateAssets>
+     </PackageReference>
