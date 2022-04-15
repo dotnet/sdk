@@ -176,9 +176,7 @@
       <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR=&amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath DOTNET_HOST_PATH DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet new tool-manifest"
