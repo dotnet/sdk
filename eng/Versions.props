@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MajorVersion>6</MajorVersion>
-    <MinorVersion>3</MinorVersion>
+    <MinorVersion>4</MinorVersion>
     <!-- Build release-only package. -->
     <PreReleaseVersionLabel>
     </PreReleaseVersionLabel>
