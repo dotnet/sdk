@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 new XAttribute("Include", "Microsoft.DotNet.ILCompiler"),
                 new XAttribute("TargetFramework", "net7.0"),
                 new XAttribute("ILCompilerPackNamePattern", "runtime.**RID**.Microsoft.DotNet.ILCompiler"),
-                new XAttribute("ILCompilerPackVersion", "7.0.0-preview.4.22213.1"),
+                new XAttribute("ILCompilerPackVersion", microsoftNETCoreAppRefPackageVersion),
                 new XAttribute("ILCompilerRuntimeIdentifiers", "linux-musl-x64;linux-x64;win-x64;linux-arm;win-arm64")
             );
             itemGroup.Add(ilcInfo);
