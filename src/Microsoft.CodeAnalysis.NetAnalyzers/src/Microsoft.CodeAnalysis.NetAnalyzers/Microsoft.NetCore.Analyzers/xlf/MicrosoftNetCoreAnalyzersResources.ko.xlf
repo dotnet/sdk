@@ -2327,6 +2327,21 @@
         <target state="translated">System.Web.UI.Page에서 파생된 {0} 클래스가 OnInit 메서드 또는 Page_Init 메서드에서 ViewStateUserKey 속성을 설정하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="new">Specify a culture or use an invariant version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">메서드 또는 생성자는 System.Globalization.CultureInfo 매개 변수를 허용하는 오버로드가 있는 멤버를 호출하며 CultureInfo 매개 변수를 사용하는 오버로드를 호출하지 않습니다. CultureInfo 또는 System.IFormatProvider 개체가 제공되지 않으면 오버로드된 멤버가 제공한 기본값을 사용하여 원하는 결과를 모든 로캘에서 얻지 못할 수 있습니다. 결과가 사용자에게 표시되는 경우 'CultureInfo.CurrentCulture'를 'CultureInfo' 매개 변수로 지정하세요. 반면 디스크 또는 데이터베이스에 보관될 때와 같이 결과가 저장되고, 소프트웨어에서 결과에 액세스하는 경우 'CultureInfo.InvariantCulture'를 지정하세요.</target>
@@ -2340,6 +2355,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">CultureInfo를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="new">Specify current culture</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2690,6 +2710,11 @@
       <trans-unit id="UseIndexer">
         <source>Use indexer</source>
         <target state="translated">인덱서 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>User an invariant version</source>
+        <target state="new">User an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">

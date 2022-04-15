@@ -1852,6 +1852,21 @@
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
   </data>
+  <data name="SpecifyCultureForToLowerAndToUpperTitle" xml:space="preserve">
+    <value>Specify a culture or use an invariant version</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperDescription" xml:space="preserve">
+    <value>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperMessage" xml:space="preserve">
+    <value>Specify a culture or use an invariant version to avoid implicit dependency on current culture</value>
+  </data>
+  <data name="SpecifyCurrentCulture" xml:space="preserve">
+    <value>Specify current culture</value>
+  </data>
+  <data name="UseInvariantVersion" xml:space="preserve">
+    <value>User an invariant version</value>
+  </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
     <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
   </data>

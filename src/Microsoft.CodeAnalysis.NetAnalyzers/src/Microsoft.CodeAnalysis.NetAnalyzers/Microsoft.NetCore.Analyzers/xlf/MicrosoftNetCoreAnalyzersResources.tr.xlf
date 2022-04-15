@@ -2327,6 +2327,21 @@
         <target state="translated">System.Web.UI.Page sınıfından türetilen {0} sınıfı OnInit metodunda veya Page_Init metodunda ViewStateUserKey özelliğini ayarlamıyor</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="new">Specify a culture or use an invariant version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">Bir yöntem veya oluşturucu, bir System.Globalization.CultureInfo parametresini kabul eden bir aşırı yüklemeye sahip bir üyeyi çağırır, ancak bu yöntem veya oluşturucu, CultureInfo parametresini almayan aşırı yüklemeyi çağırmaz. CultureInfo veya System.IFormatProvider nesnesi sağlanmadığında, aşırı yüklenen üye tarafından sağlanan varsayılan değer tüm yerel ayarlarda istediğiniz etkiye sahip olmayabilir. Sonuç kullanıcıya görüntülenecekse 'CultureInfo' parametresi olarak 'CultureInfo.CurrentCulture' değerini belirtin. Aksi takdirde, sonuç depolanacak ve yazılım tarafından erişilecekse (örneğin, diskte veya bir veritabanında kalıcı hale getirildiğinde) 'CultureInfo.InvariantCulture' değerini belirtin.</target>
@@ -2340,6 +2355,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">CultureInfo’yu belirtin</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="new">Specify current culture</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2690,6 +2710,11 @@
       <trans-unit id="UseIndexer">
         <source>Use indexer</source>
         <target state="translated">Dizin oluşturucuyu kullanın</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>User an invariant version</source>
+        <target state="new">User an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">

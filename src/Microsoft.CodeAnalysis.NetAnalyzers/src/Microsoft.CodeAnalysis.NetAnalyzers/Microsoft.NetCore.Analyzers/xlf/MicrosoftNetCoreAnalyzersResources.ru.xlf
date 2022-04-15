@@ -2327,6 +2327,21 @@
         <target state="translated">В классе {0}, производном от System.Web.UI.Page, не установлено свойство ViewStateUserKey в методах OnInit и Page_Init.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="new">Specify a culture or use an invariant version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">Метод или конструктор вызывает элемент, который имеет перегрузку, принимающую параметр System.Globalization.CultureInfo, при этом данный метод или конструктор не вызывает перегрузку, принимающую параметр CultureInfo. Если объект CultureInfo или System.IFormatProvider не задан, значение по умолчанию, предоставленное перегруженным элементом, может не оказывать требуемое вам воздействие для всех языковых стандартов. Если результат выводится пользователю, укажите "CultureInfo.CurrentCulture" в качестве параметра "CultureInfo". В противном случае, если результат сохраняется и используется программным обеспечением, например при сохранении его на диск или в базу данных, укажите "CultureInfo.InvariantCulture".</target>
@@ -2340,6 +2355,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">Укажите CultureInfo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="new">Specify current culture</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2690,6 +2710,11 @@
       <trans-unit id="UseIndexer">
         <source>Use indexer</source>
         <target state="translated">Использовать индексатор</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>User an invariant version</source>
+        <target state="new">User an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">

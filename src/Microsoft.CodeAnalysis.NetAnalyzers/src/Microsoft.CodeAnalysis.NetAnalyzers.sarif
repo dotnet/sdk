@@ -88,6 +88,25 @@
             ]
           }
         },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1507": {
           "id": "CA1507",
           "shortDescription": "Use nameof to express symbol names",
@@ -5737,6 +5756,25 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "BasicSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
