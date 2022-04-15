@@ -36,8 +36,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 
         internal IReadOnlyList<SupportedQueries> Queries { get; init; } = new List<SupportedQueries>();
 
-        internal string? LatestSdkToTest { get; init; }
-
         internal bool DiffMode { get; init; }
 
         internal FileInfo? DiffOverrideSearchCacheLocation { get; init; }

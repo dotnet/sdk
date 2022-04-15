@@ -49,16 +49,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             CanSearch(workingDirectory, metadataPath);
 
             //latest
-            if (!string.IsNullOrWhiteSpace(config.LatestSdkToTest))
-            {
-                sdkVersion = config.LatestSdkToTest;
-                workingDirectory = TestUtils.CreateTemporaryFolder("latest");
-                UseSdkVersion(workingDirectory, sdkVersion, resolvedVersionPattern: string.Join('.', sdkVersion.Split('.', 3).Take(2)) + '.', rollForward: "latestFeature");
-                Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
-                CanSearch(workingDirectory, legacyMetadataPath);
-                Console.WriteLine($"Running tests on .NET {sdkVersion} for: {metadataPath}.");
-                CanSearch(workingDirectory, metadataPath);
-            }
+            workingDirectory = TestUtils.CreateTemporaryFolder("latest");
+            //print the version
+            new DotnetCommand(TestOutputLogger.Instance, "--version")
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0);
+            Console.WriteLine($"Running tests on latest .NET for: {legacyMetadataPath}.");
+            CanSearch(workingDirectory, legacyMetadataPath);
+            Console.WriteLine($"Running tests on latest .NET for: {metadataPath}.");
+            CanSearch(workingDirectory, metadataPath);
         }
 
         private static void UseSdkVersion(string workingDirectory, string requestedSdkVersion, string resolvedVersionPattern, string rollForward = "latestMinor", bool allowPrerelease = false)

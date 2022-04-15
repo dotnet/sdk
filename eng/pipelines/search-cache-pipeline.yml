@@ -45,22 +45,24 @@ steps:
     version: 5.0.300
     installationPath: $(Build.SourcesDirectory)/.dotnet
 
-- bash: |
-    SdkVersion=$(dotnet msbuild $(Build.SourcesDirectory)/eng/Versions.props -verbosity:diagnostic | grep "VSRedistCommonNetCoreToolsetx64PackageVersion = " | xargs | cut -d' ' -f 3)
-    echo "##vso[task.setvariable variable=RepoSdkVersion;]$SdkVersion"
-  displayName: 'Determine SDK version'
-  failOnStderr: true
+- task: UseDotNet@2
+  displayName: 'Use .NET 6.0.100'
+  inputs:
+    packageType: sdk
+    version: 6.0.100
+    installa6ionPath: $(Build.SourcesDirectory)/.dotnet
 
 - bash: >
     curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-    -Version $(RepoSdkVersion)
+    -Channel 7.0.1xx
+    -Quality daily
     -InstallDir $(Build.SourcesDirectory)/.dotnet
     -SkipNonVersionedFiles
-  displayName: Install .NET version used by reposity
+  displayName: Install latest daily .NET version 
 
 - bash: >
     $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net6.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
-    --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --latestVersionToTest $(RepoSdkVersion) --diff $(EnableDiffMode)
+    --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
   displayName: Run Cache Updater
 
 - task: CopyFiles@2

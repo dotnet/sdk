@@ -68,11 +68,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             Description = $"Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org.",
         }.ExistingOnly());
 
-        private Option<string> _latestSdkToTestOption = (new Option<string>("--latestVersionToTest")
-        {
-            Description = $"Latest .NET SDK version to be tested.",
-        });
-
         private Option<bool> _diffOption = new Option<bool>("--diff", getDefaultValue: () => true)
         {
             Description = $"The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
@@ -102,7 +97,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             AddOption(_queriesOption);
             AddOption(_packagesPathOption);
             AddOption(_verboseOption);
-            AddOption(_latestSdkToTestOption);
             AddOption(_diffOption);
             AddOption(_diffOverrideCacheOption);
             AddOption(_diffOverrideNonPackagesOption);
@@ -169,7 +163,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                     Verbose = bindingContext.ParseResult.GetValueForOption(_command._verboseOption),
                     TestEnabled = bindingContext.ParseResult.GetValueForOption(_command._testOption),
                     Queries = bindingContext.ParseResult.GetValueForOption(_command._queriesOption) ?? Array.Empty<SupportedQueries>(),
-                    LatestSdkToTest = bindingContext.ParseResult.GetValueForOption(_command._latestSdkToTestOption),
                     DiffMode = bindingContext.ParseResult.GetValueForOption(_command._diffOption),
                     DiffOverrideSearchCacheLocation = bindingContext.ParseResult.GetValueForOption(_command._diffOverrideCacheOption),
                     DiffOverrideKnownPackagesLocation = bindingContext.ParseResult.GetValueForOption(_command._diffOverrideNonPackagesOption),
