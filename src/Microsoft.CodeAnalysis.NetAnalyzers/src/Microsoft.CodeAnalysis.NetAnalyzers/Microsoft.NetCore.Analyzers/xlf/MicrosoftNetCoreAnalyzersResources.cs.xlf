@@ -2297,6 +2297,26 @@
         <target state="translated">Zkontrolujte dotazy SQL pro chyby zabezpečení</target>
         <note />
       </trans-unit>
+      <trans-unit id="SealInternalTypesCodeFixTitle">
+        <source>Seal class</source>
+        <target state="new">Seal class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesDescription">
+        <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
+        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesMessage">
+        <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
+        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesTitle">
+        <source>Seal internal types</source>
+        <target state="new">Seal internal types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Nastavit HttpOnly na hodnotu true pro HttpCookie</target>

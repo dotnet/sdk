@@ -1524,6 +1524,18 @@ Possible multiple enumerations of 'IEnumerable' collection. Consider using an im
 |CodeFix|False|
 ---
 
+## [CA1852](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852): Seal internal types
+
+When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Hidden|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.

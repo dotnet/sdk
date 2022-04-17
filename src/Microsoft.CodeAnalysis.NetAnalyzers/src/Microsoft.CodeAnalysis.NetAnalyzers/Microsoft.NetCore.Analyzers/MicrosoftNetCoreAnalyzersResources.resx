@@ -1906,4 +1906,16 @@
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes" xml:space="preserve">
     <value>Varadic P/Invoke signatures require runtime marshalling to be enabled</value>
   </data>
+  <data name="SealInternalTypesDescription" xml:space="preserve">
+    <value>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</value>
+  </data>
+  <data name="SealInternalTypesMessage" xml:space="preserve">
+    <value>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</value>
+  </data>
+  <data name="SealInternalTypesTitle" xml:space="preserve">
+    <value>Seal internal types</value>
+  </data>
+  <data name="SealInternalTypesCodeFixTitle" xml:space="preserve">
+    <value>Seal class</value>
+  </data>
 </root>
