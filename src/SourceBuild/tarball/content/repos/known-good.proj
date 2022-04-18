@@ -27,45 +27,45 @@
       <ItemGroup>
         <!-- Toolsets -->
         <RepositoryReference Include="source-build-reference-packages" />
-        <RepositoryReference Include="sourcelink" />
-        <RepositoryReference Include="arcade" />
+        <!-- <RepositoryReference Include="sourcelink" /> -->
+        <!-- <RepositoryReference Include="arcade" /> -->
 
         <!-- Tier 1 -->
-        <RepositoryReference Include="command-line-api" />
-        <RepositoryReference Include="diagnostics" />
-        <RepositoryReference Include="roslyn" />
-        <RepositoryReference Include="source-build" />
-        <RepositoryReference Include="symreader" />
-        <RepositoryReference Include="test-templates" />
-        <RepositoryReference Include="xdt" />
-        <RepositoryReference Include="xliff-tasks" />
+        <!-- <RepositoryReference Include="command-line-api" /> -->
+        <!-- <RepositoryReference Include="diagnostics" /> -->
+        <!-- <RepositoryReference Include="roslyn" /> -->
+        <!-- <RepositoryReference Include="source-build" /> -->
+        <!-- <RepositoryReference Include="symreader" /> -->
+        <!-- <RepositoryReference Include="test-templates" /> -->
+        <!-- <RepositoryReference Include="xdt" /> -->
+        <!-- <RepositoryReference Include="xliff-tasks" /> -->
 
         <!-- Tier 2 -->
-        <RepositoryReference Include="linker" />
-        <RepositoryReference Include="msbuild" />
-        <RepositoryReference Include="runtime-portable" />
-        <RepositoryReference Include="runtime" />
-        <RepositoryReference Include="templating" />
+        <!-- <RepositoryReference Include="linker" /> -->
+        <!-- <RepositoryReference Include="msbuild" /> -->
+        <!-- <RepositoryReference Include="runtime-portable" /> -->
+        <!-- <RepositoryReference Include="runtime" /> -->
+        <!-- <RepositoryReference Include="templating" /> -->
 
         <!-- Tier 3 -->
-        <RepositoryReference Include="roslyn-analyzers" />
+        <!-- <RepositoryReference Include="roslyn-analyzers" /> -->
 
         <!-- Tier 4 -->
-        <RepositoryReference Include="aspnetcore" />
-        <RepositoryReference Include="deployment-tools" />
-        <RepositoryReference Include="format" />
-        <RepositoryReference Include="nuget-client" />
+        <!-- <RepositoryReference Include="aspnetcore" /> -->
+        <!-- <RepositoryReference Include="deployment-tools" /> -->
+        <!-- <RepositoryReference Include="format" /> -->
+        <!-- <RepositoryReference Include="nuget-client" /> -->
 
         <!-- Tier 5 -->
-        <RepositoryReference Include="fsharp" />
-        <RepositoryReference Include="sdk" />
-        <RepositoryReference Include="vstest" />
+        <!-- <RepositoryReference Include="fsharp" /> -->
+        <!-- <RepositoryReference Include="sdk" /> -->
+        <!-- <RepositoryReference Include="vstest" /> -->
 
         <!-- Tier 6 -->
-        <RepositoryReference Include="installer" />
+        <!-- <RepositoryReference Include="installer" /> -->
 
         <!-- Package source-build artifacts -->
-        <RepositoryReference Include="package-source-build" />
+        <!-- <RepositoryReference Include="package-source-build" /> -->
       </ItemGroup>
     </Otherwise>
   </Choose>
