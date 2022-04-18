@@ -323,7 +323,7 @@ using System;
 struct S
 {
     public static readonly S Value = new();
-    public static readonly TimeSpan Time = new();
+    public static readonly TimeSpan Time [|= new()|];
 
     public S() => throw null;
 }
@@ -348,7 +348,7 @@ using System;
 struct S
 {
     public static readonly S Value = new();
-    public static readonly TimeSpan Time = new();
+    public static readonly TimeSpan Time;
 
     public S() => throw null;
 }
@@ -403,6 +403,47 @@ public struct MyStruct3
 {
     public MyStruct3() { }
     public bool SomeBool { get; set; } = false;
+}",
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        public async Task ReportOnStaticMembersForStructs()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestCode = @"
+public record struct MyRecord
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public struct MyStruct
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public record struct MyRecord2()
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public record struct MyRecord3
+{
+    private static bool _x [|= false|];
+    public MyRecord3() { }
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public struct MyStruct3
+{
+    private static bool _x [|= false|];
+    public MyStruct3() { }
+    public static bool SomeBool { get; set; } [|= false|];
 }",
             }.RunAsync();
         }
