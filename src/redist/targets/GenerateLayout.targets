@@ -82,22 +82,21 @@
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' == 'true' ">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
-      <AspNetCoreSharedFxInstallerRid Condition="'$(AspNetCoreSharedFxInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreSharedFxInstallerRid>
-      <AspNetCoreSharedFxInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreSharedFxInstallerRid>
-      <AspNetCoreSharedFxArchiveRid>$(AspNetCoreSharedFxInstallerRid)</AspNetCoreSharedFxArchiveRid>
-      <AspNetCoreSharedFxInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(Architecture)' != 'arm64'">x64</AspNetCoreSharedFxInstallerRid>
-      <AspNetCoreSharedFxInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(Architecture)' == 'arm64'">aarch64</AspNetCoreSharedFxInstallerRid>
+      <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
+      <AspNetCoreInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreInstallerRid>
+      <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
+      <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(Architecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
+      <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(Architecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
 
-      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX')) ">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
-      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx6460PackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX')) ">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+      <DownloadedAspNetCoreSharedFxInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx6460PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
       <!-- Note: we use the "-internal" archives and installers that contain only the aspnetcore shared framework, and shouldn't overlap with Microsoft.NETCore.App. -->
-      <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.rpm' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
-      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreSharedFxInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetCoreSharedFxWixLibFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid).wixlib</DownloadedAspNetCoreSharedFxWixLibFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' != '' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
+      <DownloadedAspNetTargetingPackInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
       <DownloadedAspNetCoreV2ModuleInstallerFileName Condition=" '$(InstallerExtension)' == '.msi' ">aspnetcoremodule_$(Architecture)_en_v2_$(MicrosoftAspNetCoreAppRuntimePackageVersion)$(InstallerExtension)</DownloadedAspNetCoreV2ModuleInstallerFileName>
-      <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
-      <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreSharedFxArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
+      <AspNetTargetingPackArchiveFileName>aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetTargetingPackArchiveFileName>
+      <AspNetCoreSharedFxArchiveFileName>aspnetcore-runtime-internal-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreArchiveRid)$(ArchiveExtension)</AspNetCoreSharedFxArchiveFileName>
 
       <!-- Used to detect if ASP.NET Core is built against the same version of Microsoft.NETCore.App. -->
       <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
