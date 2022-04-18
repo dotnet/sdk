@@ -378,30 +378,23 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
                 TestCode = @"
-public record struct MyRecord
+public record struct MyRecord1
 {
-     public bool SomeBool { get; set; } = false;
+    private bool _x = false;
+    public MyRecord1() { }
+    public bool SomeBool { get; set; } = false;
 }
 
-public struct MyStruct
+public struct MyStruct1
 {
-     public bool SomeBool { get; set; } = false;
+    private bool _x = false;
+    public MyStruct1() { }
+    public bool SomeBool { get; set; } = false;
 }
 
 public record struct MyRecord2()
 {
-     public bool SomeBool { get; set; } = false;
-}
-
-public record struct MyRecord3
-{
-    public MyRecord3() { }
-    public bool SomeBool { get; set; } = false;
-}
-
-public struct MyStruct3
-{
-    public MyStruct3() { }
+    private bool _x = false;
     public bool SomeBool { get; set; } = false;
 }",
             }.RunAsync();
@@ -444,6 +437,38 @@ public struct MyStruct3
     private static bool _x [|= false|];
     public MyStruct3() { }
     public static bool SomeBool { get; set; } [|= false|];
+}",
+                FixedCode = @"
+public record struct MyRecord
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public struct MyStruct
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public record struct MyRecord2()
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public record struct MyRecord3
+{
+    private static bool _x;
+    public MyRecord3() { }
+    public static bool SomeBool { get; set; }
+}
+
+public struct MyStruct3
+{
+    private static bool _x;
+    public MyStruct3() { }
+    public static bool SomeBool { get; set; }
 }",
             }.RunAsync();
         }
