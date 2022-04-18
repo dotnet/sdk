@@ -88,6 +88,25 @@
             ]
           }
         },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1507": {
           "id": "CA1507",
           "shortDescription": "Use nameof to express symbol names",
@@ -249,7 +268,7 @@
         "CA1851": {
           "id": "CA1851",
           "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
-          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
           "properties": {
@@ -1652,6 +1671,46 @@
             ]
           }
         },
+        "CA1420": {
+          "id": "CA1420",
+          "shortDescription": "Property, type, or attribute requires runtime marshalling",
+          "fullDescription": "Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1421": {
+          "id": "CA1421",
+          "shortDescription": "This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied",
+          "fullDescription": "This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1501": {
           "id": "CA1501",
           "shortDescription": "Avoid excessive inheritance",
@@ -2761,6 +2820,27 @@
             ]
           }
         },
+        "CA1852": {
+          "id": "CA1852",
+          "shortDescription": "Seal internal types",
+          "fullDescription": "When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "SealInternalTypes",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode",
+              "CompilationEnd"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -2974,6 +3054,26 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "BufferBlockCopyLengthAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2019": {
+          "id": "CA2019",
+          "shortDescription": "Improper 'ThreadStatic' field initialization",
+          "fullDescription": "'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3798,6 +3898,26 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "DynamicInterfaceCastableImplementationAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2259": {
+          "id": "CA2259",
+          "shortDescription": "'ThreadStatic' only affects static fields",
+          "fullDescription": "'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
             "languages": [
               "C#",
               "Visual Basic"
@@ -5662,6 +5782,25 @@
             ]
           }
         },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "BasicSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1507": {
           "id": "CA1507",
           "shortDescription": "Use nameof to express symbol names",
@@ -5823,7 +5962,7 @@
         "CA1851": {
           "id": "CA1851",
           "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
-          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
           "properties": {

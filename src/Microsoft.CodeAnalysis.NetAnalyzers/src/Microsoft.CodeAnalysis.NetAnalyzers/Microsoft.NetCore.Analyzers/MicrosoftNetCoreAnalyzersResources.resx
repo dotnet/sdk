@@ -1449,6 +1449,24 @@
   <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
     <value>Use 'Environment.CurrentManagedThreadId'</value>
   </data>
+  <data name="ThreadStaticOnNonStaticFieldDescription" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldMessage" xml:space="preserve">
+    <value>Ensure 'ThreadStatic' is only used with static fields</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldTitle" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineDescription" xml:space="preserve">
+    <value>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineMessage" xml:space="preserve">
+    <value>'ThreadStatic' fields should not use inline initialization</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineTitle" xml:space="preserve">
+    <value>Improper 'ThreadStatic' field initialization</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
@@ -1833,5 +1851,71 @@
   </data>
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperTitle" xml:space="preserve">
+    <value>Specify a culture or use an invariant version</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperDescription" xml:space="preserve">
+    <value>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperMessage" xml:space="preserve">
+    <value>Specify a culture or use an invariant version to avoid implicit dependency on current culture</value>
+  </data>
+  <data name="SpecifyCurrentCulture" xml:space="preserve">
+    <value>Specify current culture</value>
+  </data>
+  <data name="UseInvariantVersion" xml:space="preserve">
+    <value>User an invariant version</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
+    <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle" xml:space="preserve">
+    <value>Property, type, or attribute requires runtime marshalling</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription" xml:space="preserve">
+    <value>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage" xml:space="preserve">
+    <value>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle" xml:space="preserve">
+    <value>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</value>
+  </data>
+  <data name="UseDisabledMarshallingEquivalentCodeFix" xml:space="preserve">
+    <value>Use equivalent code that works when marshalling is disabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes" xml:space="preserve">
+    <value>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters" xml:space="preserve">
+    <value>By-ref parameters require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping" xml:space="preserve">
+    <value>HResult-swapping requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute" xml:space="preserve">
+    <value>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes" xml:space="preserve">
+    <value>Managed parameter or return types require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError" xml:space="preserve">
+    <value>Setting SetLastError to 'true' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes" xml:space="preserve">
+    <value>Varadic P/Invoke signatures require runtime marshalling to be enabled</value>
+  </data>
+  <data name="SealInternalTypesDescription" xml:space="preserve">
+    <value>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</value>
+  </data>
+  <data name="SealInternalTypesMessage" xml:space="preserve">
+    <value>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</value>
+  </data>
+  <data name="SealInternalTypesTitle" xml:space="preserve">
+    <value>Seal internal types</value>
+  </data>
+  <data name="SealInternalTypesCodeFixTitle" xml:space="preserve">
+    <value>Seal class</value>
   </data>
 </root>

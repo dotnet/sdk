@@ -1112,6 +1112,51 @@
         <target state="translated">Visual Basic에서 'DynamicInterfaceCastableImplementation' 인터페이스 제공은 지원되지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription">
+        <source>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</source>
+        <target state="translated">런타임 마샬링이 비활성화된 경우 런타임 마샬링이 필요한 기능을 사용하면 런타임 예외가 발생합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes">
+        <source>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</source>
+        <target state="translated">'[StructLayout(LayoutKind.Auto)]' 유형은 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
+        <source>By-ref parameters require runtime marshalling to be enabled</source>
+        <target state="translated">By-ref 매개 변수는 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
+        <source>HResult-swapping requires runtime marshalling to be enabled</source>
+        <target state="translated">HResult-swapping은 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute">
+        <source>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</source>
+        <target state="translated">'LCIDConversionAttribute'를 사용하려면 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes">
+        <source>Managed parameter or return types require runtime marshalling to be enabled</source>
+        <target state="translated">관리되는 매개 변수 또는 반환 유형은 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError">
+        <source>Setting SetLastError to 'true' requires runtime marshalling to be enabled</source>
+        <target state="translated">SetLastError를 'true'로 설정하려면 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes">
+        <source>Varadic P/Invoke signatures require runtime marshalling to be enabled</source>
+        <target state="translated">Varadic P/Invoke 서명은 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle">
+        <source>Property, type, or attribute requires runtime marshalling</source>
+        <target state="translated">속성, 유형 또는 특성에는 런타임 마샬링이 필요합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FieldIsPreviewTypeMessage">
         <source>'{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</source>
         <target state="translated">'{0}'의 유형에 미리 보기 유형 '{1}'이(가) 포함되어 있으며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}을(를) 참조하세요.</target>
@@ -1615,6 +1660,21 @@
       <trans-unit id="MethodUsesPreviewTypeAsParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' takes in a preview parameter of type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}'은(는) '{1}' 유형의 미리 보기 매개 변수를 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription">
+        <source>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</source>
+        <target state="translated">이 메서드는 런타임 마샬링이 비활성화된 경우에도 런타임 마샬링을 사용하므로 형식의 기본 레이아웃에 대한 기대치가 다르기 때문에 런타임에 예기치 않은 동작 차이가 발생할 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage">
+        <source>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</source>
+        <target state="translated">'{0}'은(는) 'DisableRuntimeMarshallingAttribute'가 적용된 경우에도 런타임 마샬링을 사용합니다. 정확한 결과를 보장하기 위해 'sizeof' 및 포인터와 같은 기능을 직접 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle">
+        <source>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</source>
+        <target state="translated">이 메서드는 'DisableRuntimeMarshallingAttribute'가 적용된 경우에도 런타임 마샬링을 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MissHttpVerbAttribute">
@@ -2237,6 +2297,26 @@
         <target state="translated">보안상 취약한 부분이 있는지 SQL 쿼리를 검토하십시오.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SealInternalTypesCodeFixTitle">
+        <source>Seal class</source>
+        <target state="new">Seal class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesDescription">
+        <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
+        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesMessage">
+        <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
+        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesTitle">
+        <source>Seal internal types</source>
+        <target state="new">Seal internal types</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">HttpCookie에 대해 HttpOnly를 true로 설정</target>
@@ -2267,6 +2347,21 @@
         <target state="translated">System.Web.UI.Page에서 파생된 {0} 클래스가 OnInit 메서드 또는 Page_Init 메서드에서 ViewStateUserKey 속성을 설정하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="new">Specify a culture or use an invariant version</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">메서드 또는 생성자는 System.Globalization.CultureInfo 매개 변수를 허용하는 오버로드가 있는 멤버를 호출하며 CultureInfo 매개 변수를 사용하는 오버로드를 호출하지 않습니다. CultureInfo 또는 System.IFormatProvider 개체가 제공되지 않으면 오버로드된 멤버가 제공한 기본값을 사용하여 원하는 결과를 모든 로캘에서 얻지 못할 수 있습니다. 결과가 사용자에게 표시되는 경우 'CultureInfo.CurrentCulture'를 'CultureInfo' 매개 변수로 지정하세요. 반면 디스크 또는 데이터베이스에 보관될 때와 같이 결과가 저장되고, 소프트웨어에서 결과에 액세스하는 경우 'CultureInfo.InvariantCulture'를 지정하세요.</target>
@@ -2280,6 +2375,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">CultureInfo를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="new">Specify current culture</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2407,6 +2507,36 @@
         <target state="translated">NaN에 대해 정확하게 테스트하세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ThreadStaticInitializedInlineDescription">
+        <source>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</source>
+        <target state="translated">'ThreadStatic' 필드는 인라인 초기화를 사용하거나 명시적으로 유형의 정적 생성자를 실행하는 스레드의 필드만 초기화하는 정적 생성자에서가 아니라 사용 시 느리게 초기화되어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ThreadStaticInitializedInlineMessage">
+        <source>'ThreadStatic' fields should not use inline initialization</source>
+        <target state="translated">'ThreadStatic' 필드는 인라인 초기화를 사용하면 안 됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ThreadStaticInitializedInlineTitle">
+        <source>Improper 'ThreadStatic' field initialization</source>
+        <target state="translated">잘못된 'ThreadStatic' 필드 초기화</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ThreadStaticOnNonStaticFieldDescription">
+        <source>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</source>
+        <target state="translated">'ThreadStatic'은(는) 정적 필드에만 영향을 줍니다. 인스턴스 필드에 적용할 때 동작에 영향을 주지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ThreadStaticOnNonStaticFieldMessage">
+        <source>Ensure 'ThreadStatic' is only used with static fields</source>
+        <target state="translated">'ThreadStatic'이(가) 정적 필드에서만 사용되는지 확인</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ThreadStaticOnNonStaticFieldTitle">
+        <source>'ThreadStatic' only affects static fields</source>
+        <target state="translated">'ThreadStatic'은(는) 정적 필드에만 영향을 줍니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseArrayEmpty">
         <source>Use Array.Empty</source>
         <target state="translated">Array.Empty를 사용하세요.</target>
@@ -2532,6 +2662,11 @@
         <target state="translated">{0} 메서드는 P/Invokes에 DefaultDllImportSearchPaths 특성을 사용하지 않았습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseDisabledMarshallingEquivalentCodeFix">
+        <source>Use equivalent code that works when marshalling is disabled</source>
+        <target state="translated">마샬링이 비활성화된 경우 작동하는 동등한 코드 사용</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseEnvironmentCurrentManagedThreadIdDescription">
         <source>'Environment.CurrentManagedThreadId' is simpler and faster than 'Thread.CurrentThread.ManagedThreadId'.</source>
         <target state="translated">'Environment.CurrentManagedThreadId'는 'Thread.CurrentThread.ManagedThreadId'보다 간단하고 빠릅니다.</target>
@@ -2595,6 +2730,11 @@
       <trans-unit id="UseIndexer">
         <source>Use indexer</source>
         <target state="translated">인덱서 사용</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>User an invariant version</source>
+        <target state="new">User an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
