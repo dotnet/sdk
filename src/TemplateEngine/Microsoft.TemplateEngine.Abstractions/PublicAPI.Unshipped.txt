@@ -1,2 +1,24 @@
-﻿Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+﻿const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraint
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.DisplayName.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Evaluate(string! args) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Type.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.Type.get -> string!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.Args.get -> string!
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.TemplateConstraintInfo(string! type, string! args) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.Type.get -> string!
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.CallToAction.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.EvaluationStatus.get -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.LocalizedErrorMessage.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.Allowed = 1 -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.NotEvaluated = 0 -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.Restricted = 2 -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.TemplateConstraintResult(Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status status, string? localizedMessage = null, string? callToAction = null) -> void
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.IsLocalPackage.get -> bool

@@ -1,1 +1,4 @@
-﻿~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>
+﻿Microsoft.TemplateEngine.Edge.TemplateConstraintManager
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string! args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>!
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.GetConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>? templates = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!>!
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.TemplateConstraintManager(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironmentSettings) -> void

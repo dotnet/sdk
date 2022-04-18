@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -222,6 +223,40 @@ namespace Microsoft.TemplateEngine.Utils
                 }
                 return new MatchInfo(MatchInfo.BuiltIn.Author, author, MatchKind.Mismatch);
             };
+        }
+
+        /// <summary>
+        /// Gets the list of template filters for template constraints defintion <paramref name="constraintDefinitions"/> <br/>
+        /// For each constraint the template filter will be created: <br/>
+        /// - if the constraint is not used in the template, does not add match disposition;<br/>
+        /// - if the template meets the constraint, adds match disposition with <see cref="MatchKind.Exact"/>;<br/>
+        /// - if the template does not meet the constraint or constraint cannot be evaluated, adds match disposition with <see cref="MatchKind.Mismatch"/>.<br/>
+        /// The match info name used is 'Constraint.&lt;constraint type&gt;'.
+        /// </summary>
+        /// <returns> the list of predicates to be used when filtering the templates.</returns>
+        public static IEnumerable<Func<ITemplateInfo, MatchInfo?>> ConstraintFilters(IEnumerable<ITemplateConstraint> constraintDefinitions)
+        {
+            foreach (ITemplateConstraint constraintDefinition in constraintDefinitions)
+            {
+                yield return (template) =>
+                {
+                    var matchingConstraints = template.Constraints.Where(c => c.Type == constraintDefinition.Type);
+                    if (!matchingConstraints.Any())
+                    {
+                        //no constraint of such type defined in the template
+                        return null;
+                    }
+                    foreach (var constraint in matchingConstraints)
+                    {
+                        var result = constraintDefinition.Evaluate(constraint.Args);
+                        if (result.EvaluationStatus != TemplateConstraintResult.Status.Allowed)
+                        {
+                            return new MatchInfo($"{MatchInfo.BuiltIn.Constraint}.{constraintDefinition.Type}", null, MatchKind.Mismatch);
+                        }
+                    }
+                    return new MatchInfo($"{MatchInfo.BuiltIn.Constraint}.{constraintDefinition.Type}", null, MatchKind.Exact);
+                };
+            }
         }
     }
 }

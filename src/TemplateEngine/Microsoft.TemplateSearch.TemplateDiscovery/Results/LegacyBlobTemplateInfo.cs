@@ -172,6 +172,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
         [JsonIgnore]
         public IReadOnlyList<Guid> PostActions { get; private set; }
 
+        [JsonIgnore]
+        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => throw new NotImplementedException();
+
         // ShortName should get deserialized when it exists, for backwards compat.
         // But moving forward, ShortNameList should be the definitive source.
         // It can still be ShortName in the template.json, but in the caches it'll be ShortNameList

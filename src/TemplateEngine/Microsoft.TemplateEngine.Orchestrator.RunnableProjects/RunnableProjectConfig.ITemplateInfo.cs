@@ -129,5 +129,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
         IReadOnlyList<Guid> ITemplateInfo.PostActions => _configuration.PostActionModels.Select(pam => pam.ActionId).ToArray();
+
+        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => _configuration.Constraints;
     }
 }

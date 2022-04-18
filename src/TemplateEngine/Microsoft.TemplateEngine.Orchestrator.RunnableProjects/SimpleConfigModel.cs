@@ -290,7 +290,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal IReadOnlyList<ExtendedFileSource> Sources { get; init; } = Array.Empty<ExtendedFileSource>();
 
+        internal IReadOnlyList<TemplateConstraintInfo> Constraints { get; init; } = Array.Empty<TemplateConstraintInfo>();
+
         internal IReadOnlyDictionary<string, ISymbolModel> Symbols
+
         {
             get
             {

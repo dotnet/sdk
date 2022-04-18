@@ -10,6 +10,15 @@ namespace Microsoft.TemplateEngine.Edge
     [Obsolete("This class is deprecated.")]
     public class FilterableTemplateInfo : ITemplateInfo, IShortNameList
     {
+        private readonly ITemplateInfo _source;
+
+        public FilterableTemplateInfo() { }
+
+        private FilterableTemplateInfo(ITemplateInfo source)
+        {
+            _source = source;
+        }
+
         public string Author { get; private set; }
 
         public string Description { get; private set; }
@@ -58,11 +67,13 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyDictionary<string, string> TagsCollection { get; private set; }
 
-        public IReadOnlyList<Guid> PostActions { get; private set; }
+        IReadOnlyList<Guid> ITemplateInfo.PostActions => _source?.PostActions ?? Array.Empty<Guid>();
+
+        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => _source?.Constraints ?? Array.Empty<TemplateConstraintInfo>();
 
         public static FilterableTemplateInfo FromITemplateInfo(ITemplateInfo source)
         {
-            FilterableTemplateInfo filterableTemplate = new FilterableTemplateInfo()
+            FilterableTemplateInfo filterableTemplate = new FilterableTemplateInfo(source)
             {
                 Author = source.Author,
                 Description = source.Description,
@@ -86,7 +97,6 @@ namespace Microsoft.TemplateEngine.Edge
                 HasScriptRunningPostActions = source.HasScriptRunningPostActions,
                 ShortNameList = source.ShortNameList,
                 TagsCollection = source.TagsCollection,
-                PostActions = source.PostActions
             };
 
             return filterableTemplate;

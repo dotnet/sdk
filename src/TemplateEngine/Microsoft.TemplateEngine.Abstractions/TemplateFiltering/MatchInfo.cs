@@ -82,6 +82,12 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplateFiltering
             /// Template author <see cref="ITemplateInfo.Author"/>.
             /// </summary>
             public const string Author = "Author";
+
+            /// <summary>
+            /// Prefix used for <see cref="ITemplateConstraint"/> matching.
+            /// The full name is 'Constraint.&lt;constraint type&gt;'.
+            /// </summary>
+            public const string Constraint = "Constraint";
         }
     }
 }

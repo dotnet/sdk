@@ -125,5 +125,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets the list of post actions IDs defined in the template.
         /// </summary>
         IReadOnlyList<Guid> PostActions { get;  }
+
+        IReadOnlyList<TemplateConstraintInfo> Constraints { get; }
     }
 }

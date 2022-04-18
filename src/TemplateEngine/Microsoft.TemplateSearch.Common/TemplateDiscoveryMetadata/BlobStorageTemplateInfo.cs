@@ -150,6 +150,9 @@ namespace Microsoft.TemplateSearch.Common
         [JsonProperty]
         public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
 
+        [JsonIgnore]
+        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => throw new NotImplementedException();
+
         public static BlobStorageTemplateInfo FromJObject(JObject entry)
         {
             string identity = entry.ToString(nameof(Identity))

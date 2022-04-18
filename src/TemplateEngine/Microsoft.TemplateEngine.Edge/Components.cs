@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.BuiltInManagedProvider;
+using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.TemplateEngine.Edge.Installers.Folder;
 using Microsoft.TemplateEngine.Edge.Installers.NuGet;
 using Microsoft.TemplateEngine.Edge.Mount.Archive;
@@ -26,7 +27,8 @@ namespace Microsoft.TemplateEngine.Edge
                 (typeof(IMountPointFactory), new FileSystemMountPointFactory()),
                 (typeof(ITemplatePackageProviderFactory), new GlobalSettingsTemplatePackageProviderFactory()),
                 (typeof(IInstallerFactory), new FolderInstallerFactory()),
-                (typeof(IInstallerFactory), new NuGetInstallerFactory())
+                (typeof(IInstallerFactory), new NuGetInstallerFactory()),
+                (typeof(ITemplateConstraintFactory), new OSConstraintFactory())
             };
     }
 }

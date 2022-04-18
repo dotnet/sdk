@@ -252,6 +252,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
 
+        [JsonIgnore]
+        public IReadOnlyList<TemplateConstraintInfo> Constraints => throw new NotImplementedException();
+
         public static TemplateInfo FromJObject(JObject entry)
         {
             return TemplateInfoReader.FromJObject(entry);

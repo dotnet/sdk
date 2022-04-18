@@ -149,6 +149,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<Guid> PostActions => _postActions;
 
+        public IReadOnlyList<TemplateConstraintInfo> Constraints => Array.Empty<TemplateConstraintInfo>();
+
         public MockTemplateInfo WithParameters(params string[] parameters)
         {
             foreach (var param in parameters)
