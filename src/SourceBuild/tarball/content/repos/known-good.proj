@@ -27,8 +27,8 @@
       <ItemGroup>
         <!-- Toolsets -->
         <RepositoryReference Include="source-build-reference-packages" />
-        <!-- <RepositoryReference Include="sourcelink" /> -->
-        <!-- <RepositoryReference Include="arcade" /> -->
+        <RepositoryReference Include="sourcelink" />
+        <RepositoryReference Include="arcade" />
 
         <!-- Tier 1 -->
         <!-- <RepositoryReference Include="command-line-api" /> -->
