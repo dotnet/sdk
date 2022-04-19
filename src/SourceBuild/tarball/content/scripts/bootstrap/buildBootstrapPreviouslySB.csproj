@@ -4,7 +4,7 @@
   <Import Project="$(MSBuildProjectDirectory)/PackageVersions.props" />
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <BaseOutputPath>$(MSBuildProjectDirectory)/artifacts/</BaseOutputPath>
     <RestorePackagesPath>$(MSBuildProjectDirectory)/artifacts/restoredPkgs/</RestorePackagesPath>
     <UnpackedTarPath>$(MSBuildProjectDirectory)/artifacts/unpacked/</UnpackedTarPath>
