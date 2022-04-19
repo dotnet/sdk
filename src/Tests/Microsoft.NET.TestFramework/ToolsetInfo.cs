@@ -259,6 +259,9 @@ namespace Microsoft.NET.TestFramework
                 dotnetRoot = Path.GetDirectoryName(ResolveCommand("dotnet"));
             }
 
+            var manifestFile = Path.Combine(dotnetRoot,"sdk-manifests","7.0.100","microsoft.net.workload.mono.toolchain","WorkloadManifest.json");
+            File.SetAttributes(manifestFile,FileAttributes.ReadOnly);
+
             var ret = new ToolsetInfo(dotnetRoot);
 
             if (!string.IsNullOrEmpty(commandLine.FullFrameworkMSBuildPath))
