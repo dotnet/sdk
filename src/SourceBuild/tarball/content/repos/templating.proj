@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="nuget-client" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
   <ItemGroup>

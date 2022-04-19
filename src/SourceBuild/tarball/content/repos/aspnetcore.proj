@@ -37,7 +37,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
