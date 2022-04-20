@@ -90,7 +90,7 @@
     <SystemCodeDomPackageVersion>7.0.0-preview.4.22217.5</SystemCodeDomPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>7.0.0-preview.4.22217.5</SystemTextEncodingCodePagesPackageVersion>
     <SystemResourcesExtensionsPackageVersion>7.0.0-preview.4.22217.5</SystemResourcesExtensionsPackageVersion>
-    <MicrosoftNETILCompilerPackageVersion>7.0.0-preview.4.22218.7</MicrosoftNETILCompilerPackageVersion>
+    <MicrosoftNETILCompilerPackageVersion>7.0.0-preview.4.22219.9</MicrosoftNETILCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/format -->
