@@ -60,9 +60,9 @@ public class OmniSharpTests : SmokeTests
         if (!Directory.Exists(OmniSharpDirectory))
         {
             using HttpClient client = new();
-            string omniSharpTarballFile = "omnisharp-linux-x64.tar.gz";
+            string omniSharpTarballFile = $"omnisharp-linux-{Config.TargetArchitecture}.tar.gz";
             Uri omniSharpTarballUrl = new($"https://github.com/OmniSharp/omnisharp-roslyn/releases/latest/download/{omniSharpTarballFile}");
-            await client.DownloadFileAsync(omniSharpTarballUrl, omniSharpTarballFile);
+            await client.DownloadFileAsync(omniSharpTarballUrl, omniSharpTarballFile, OutputHelper);
 
             Directory.CreateDirectory(OmniSharpDirectory);
             ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {omniSharpTarballFile} -C {OmniSharpDirectory}", OutputHelper);
