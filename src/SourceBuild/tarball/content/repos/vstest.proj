@@ -13,7 +13,8 @@
 
   <ItemGroup>
     <RepositoryReference Include="diagnostics" />
-    <RepositoryReference Include="runtime" />
+    <!-- TODO: Renable once runtime is building in tarball -->
+    <!-- <RepositoryReference Include="runtime" /> -->
     <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 

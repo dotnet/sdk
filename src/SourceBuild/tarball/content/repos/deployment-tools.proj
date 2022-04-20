@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="runtime" />
+    <!-- TODO: Renable once runtime is building in tarball -->
+    <!-- <RepositoryReference Include="runtime" /> -->
   </ItemGroup>
 
   <ItemGroup>
