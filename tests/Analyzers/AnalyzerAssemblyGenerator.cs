@@ -30,7 +30,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                 MetadataReference.CreateFromFile(typeof(CodeFixProvider).Assembly.Location),
             };
 
-            var netcoreMetadataReferences = await ReferenceAssemblies.Net.Net60.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
+            var netcoreMetadataReferences = await ReferenceAssemblies.Net.Net70.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
             references.AddRange(netcoreMetadataReferences.Where(reference => Path.GetFileName(reference.Display) != "System.Collections.Immutable.dll"));
 
             return references;
