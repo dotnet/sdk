@@ -47,6 +47,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.StaticWebAssetsGeneratePackManifest"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />    
+
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
       ResolveStaticWebAssetsInputs;
@@ -91,7 +96,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       _CreateStaticWebAssetsCustomPropsCacheFile;
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
-    <TargetsForTfmSpecificContentInPackage>
+    <TargetsForTfmSpecificContentInPackage Condition="$(IsInnerBuild) != 'true'" >
       GenerateStaticWebAssetsPackTargets;
       $(TargetsForTfmSpecificContentInPackage)
     </TargetsForTfmSpecificContentInPackage>
@@ -109,6 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Development manifest generation -->
     <_GeneratedStaticWebAssetsInputsCacheFile>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.Manifest.cache</_GeneratedStaticWebAssetsInputsCacheFile>
     <_GeneratedStaticWebAssetsDevelopmentManifest>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
+    <_GeneratedStaticWebAssetsPackManifest>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).pack.json</_GeneratedStaticWebAssetsDevelopmentManifest>
 
     <!-- Project packing generation -->
     <_GeneratedStaticWebAssetsCustomPropsCacheFile>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.Pack.cache</_GeneratedStaticWebAssetsCustomPropsCacheFile>
@@ -435,12 +441,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_DeleteSentinelFile" BeforeTargets="_GetTargetFrameworksOutput">
-    <!-- We use this to detect when we are packing in a multitarget scenario, the first pack task to run creates the sentinel and
-    the other ones no-op when they see it. -->
-    <Delete Files="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" Condition="Exists('$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel')" />
-  </Target>
-
   <Target
     Name="_CreateStaticWebAssetsCustomPropsCacheFile"
     DependsOnTargets="_PrepareForStaticWebAssets">
@@ -494,17 +494,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
-      <!-- When multitargeting, nuget will call many times with each target framework to pack. We must include our assets only once.
-        For that reason, we will emit a sentinel file the first time we run to make sure other target frameworks don't try to
-        include the pack content again. -->
-      <_AlreadyIncludedByAnotherTfm Condition="Exists('$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel')">true</_AlreadyIncludedByAnotherTfm>
     </PropertyGroup>
-
-    <WriteLinesToFile 
-      Condition="'$(_AlreadyIncludedByAnotherTfm)' != 'true'"
-      File="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel"
-      Lines="1.0"
-      WriteOnlyWhenDifferent="true" />
 
     <!-- Validate that there are no path conflicts between the assets we are about to pack. -->
     <ValidateStaticWebAssetsUniquePaths Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
@@ -550,11 +540,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(_GeneratedBuildPropsFile)" />
       <FileWrites Include="$(_GeneratedBuildMultitargetingPropsFile)" />
       <FileWrites Include="$(_GeneratedBuildTransitivePropsFile)" />
-      <FileWrites Include="$(BaseIntermediateOutputPath)staticwebassets.pack.sentinel" />
     </ItemGroup>
 
     <!-- All files that go into the nuget package -->
-    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true' and '$(_AlreadyIncludedByAnotherTfm)' != 'true'">
+    <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'">
 
       <!-- MSBuild prop files -->
 
@@ -589,6 +578,51 @@ Copyright (c) .NET Foundation. All rights reserved.
       </TfmSpecificPackageFile>
     </ItemGroup>
 
+  </Target>
+
+    <!-- This target is invoked in cross targeting builds to resolve the paths for the pack and build manifests. 
+         Since for static web assets V1 there is no build manifest, the cross build targets remove the items
+         included in the pack manifest from the relevant content item groups.  -->
+  <Target Name="ResolveStaticWebAssetsManifestPaths" DependsOnTargets="ResolveStaticWebAssetsInputs" Returns="_StaticWebAssetsManifestPaths">
+
+    <ItemGroup>
+
+      <StaticWebAssetPackageFile Include="$(_GeneratedStaticWebAssetsPropsFile)" Condition="'$(DisableStaticWebAssetsBuildPropsFileGeneration)' == ''">
+        <PackagePath>build\Microsoft.AspNetCore.StaticWebAssets.props</PackagePath>
+      </StaticWebAssetPackageFile>
+
+      <StaticWebAssetPackageFile Include="$(_GeneratedBuildPropsFile)" Condition="'$(StaticWebAssetsDisableProjectBuildPropsFileGeneration)' == ''">
+        <PackagePath>build\$(PackageId).props</PackagePath>
+      </StaticWebAssetPackageFile>
+
+      <StaticWebAssetPackageFile Include="$(_GeneratedBuildMultitargetingPropsFile)" Condition="'$(StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration)' == ''">
+        <PackagePath>buildMultiTargeting\$(PackageId).props</PackagePath>
+      </StaticWebAssetPackageFile>
+
+      <StaticWebAssetPackageFile Include="$(_GeneratedBuildTransitivePropsFile)" Condition="'$(StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration)' == ''">
+        <PackagePath>buildTransitive\$(PackageId).props</PackagePath>
+      </StaticWebAssetPackageFile>
+
+      <_PackStaticWebAssetWithTargetPath
+        Include="@(StaticWebAsset)"
+        Condition="'%(SourceType)' == ''">
+        <TargetPath>staticwebassets\%(_CurrentProjectStaticWebAsset.RelativePath)</TargetPath>
+      </_PackStaticWebAssetWithTargetPath>
+    </ItemGroup>
+
+    <StaticWebAssetsGeneratePackManifest
+      Assets="@(_PackStaticWebAssetWithTargetPath)"
+      AdditionalPackageFiles="@(StaticWebAssetPackageFile)"
+      AdditionalElementsToRemoveFromPacking="@(_ThisProjectStaticWebAsset)"
+      ManifestPath="$(StaticWebAssetPackManifestPath)">
+    </StaticWebAssetsGeneratePackManifest>
+
+    <ItemGroup>
+      <_StaticWebAssetsManifestPaths Include="$(MSBuildProjectName)">
+        <BuildManifest></BuildManifest>
+        <PackManifest>$(_GeneratedStaticWebAssetsPackManifest)</PackManifest>
+      </_StaticWebAssetsManifestPaths>
+    </ItemGroup>
   </Target>
 
   <!--
