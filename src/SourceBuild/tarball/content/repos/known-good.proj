@@ -41,7 +41,7 @@
         <RepositoryReference Include="xliff-tasks" />
 
         <!-- Tier 2 -->
-        <!-- <RepositoryReference Include="linker" /> -->
+        <RepositoryReference Include="linker" />
         <!-- <RepositoryReference Include="msbuild" /> -->
         <!-- <RepositoryReference Include="runtime-portable" /> -->
         <!-- <RepositoryReference Include="runtime" /> -->
@@ -65,7 +65,7 @@
         <!-- <RepositoryReference Include="installer" /> -->
 
         <!-- Package source-build artifacts -->
-        <!-- <RepositoryReference Include="package-source-build" /> -->
+        <RepositoryReference Include="package-source-build" />
       </ItemGroup>
     </Otherwise>
   </Choose>
