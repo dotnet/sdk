@@ -57,6 +57,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveStaticWebAssetsInputs;
       $(GenerateStaticWebAssetsManifestDependsOn)
       _CreateStaticWebAssetsInputsCacheFile;
+      GenerateStaticWebAssetsPackTargets;
     </GenerateStaticWebAssetsManifestDependsOn>
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
@@ -97,7 +98,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
     <TargetsForTfmSpecificContentInPackage Condition="$(IsInnerBuild) != 'true'" >
-      GenerateStaticWebAssetsPackTargets;
+      IncludeStaticWebAssetPackItems;
       $(TargetsForTfmSpecificContentInPackage)
     </TargetsForTfmSpecificContentInPackage>
 
@@ -114,7 +115,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Development manifest generation -->
     <_GeneratedStaticWebAssetsInputsCacheFile>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.Manifest.cache</_GeneratedStaticWebAssetsInputsCacheFile>
     <_GeneratedStaticWebAssetsDevelopmentManifest>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
-    <_GeneratedStaticWebAssetsPackManifest>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).pack.json</_GeneratedStaticWebAssetsDevelopmentManifest>
+    <_GeneratedStaticWebAssetsPackManifest>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).pack.json</_GeneratedStaticWebAssetsPackManifest>
 
     <!-- Project packing generation -->
     <_GeneratedStaticWebAssetsCustomPropsCacheFile>$(_StaticWebAssetsIntermediateOutputPath)$(TargetName).StaticWebAssets.Pack.cache</_GeneratedStaticWebAssetsCustomPropsCacheFile>
@@ -542,6 +543,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(_GeneratedBuildTransitivePropsFile)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="IncludeStaticWebAssetPackItems">
+    
     <!-- All files that go into the nuget package -->
     <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'">
 
@@ -583,7 +588,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- This target is invoked in cross targeting builds to resolve the paths for the pack and build manifests. 
          Since for static web assets V1 there is no build manifest, the cross build targets remove the items
          included in the pack manifest from the relevant content item groups.  -->
-  <Target Name="ResolveStaticWebAssetsManifestPaths" DependsOnTargets="ResolveStaticWebAssetsInputs" Returns="_StaticWebAssetsManifestPaths">
+  <Target Name="ResolveStaticWebAssetsManifestPaths" DependsOnTargets="ResolveStaticWebAssetsInputs" Returns="@(_StaticWebAssetsManifestPaths)">
 
     <ItemGroup>
 
@@ -606,15 +611,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackStaticWebAssetWithTargetPath
         Include="@(StaticWebAsset)"
         Condition="'%(SourceType)' == ''">
-        <TargetPath>staticwebassets\%(_CurrentProjectStaticWebAsset.RelativePath)</TargetPath>
+        <TargetPath>staticwebassets\%(StaticWebAsset.RelativePath)</TargetPath>
       </_PackStaticWebAssetWithTargetPath>
     </ItemGroup>
 
     <StaticWebAssetsGeneratePackManifest
       Assets="@(_PackStaticWebAssetWithTargetPath)"
-      AdditionalPackageFiles="@(StaticWebAssetPackageFile)"
+      AdditionalPackageFiles="@(StaticWebAssetPackageFile->'%(FullPath)')"
       AdditionalElementsToRemoveFromPacking="@(_ThisProjectStaticWebAsset)"
-      ManifestPath="$(StaticWebAssetPackManifestPath)">
+      ManifestPath="$(_GeneratedStaticWebAssetsPackManifest)">
     </StaticWebAssetsGeneratePackManifest>
 
     <ItemGroup>

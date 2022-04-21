@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var manifest = new StaticWebAssetsPackManifest
             {
                 Files = packageFiles.ToArray(),
-                ElementsToRemove = AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).ToArray()
+                ElementsToRemove = AdditionalElementsToRemoveFromPacking.Select(e => e.ItemSpec).OrderBy(id => id).ToArray()
             };
 
             PersistManifest(manifest);

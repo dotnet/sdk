@@ -57,19 +57,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             
             public string TargetFrameworkVersion { get; set; }
 
-            internal int GetStaticWebAssetsVersion() =>
+            internal double GetStaticWebAssetsVersion() =>
                 (TargetFrameworkIdentifier, TargetFrameworkVersion) switch
                 {
-                    ("NETStandard", "2.0") => 1,
-                    ("NETStandard", "2.1") => 1,
-                    ("NETCoreapp", "3.0") => 1,
-                    ("NETCoreapp", "3.1") => 1,
-                    ("NETCoreapp", "5.0") => 1,
-                    ("NETCoreapp", "6.0") => 2,
-                    ("NETCoreapp", "7.0") => 2,
-                    // Any future netcoreapp will be version 2. If in the future we make additional changes to static web assets
+                    (".NETStandard", "2.0") => 1,
+                    (".NETStandard", "2.1") => 1,
+                    (".NETCoreApp", "3.0") => 1,
+                    (".NETCoreApp", "3.1") => 1,
+                    // If there is a net5.0 target, prefer that over netstandard because it supports scoped CSS
+                    (".NETCoreApp", "5.0") => 1.1,
+                    (".NETCoreApp", "6.0") => 2,
+                    (".NETCoreApp", "7.0") => 2,
+                    // Any future netcoreapp or netstandard will be version 2. If in the future we make additional changes to static web assets
                     // that require a new version, some of our tests will fail to point out we need to change this value.
-                    ("NETCoreapp", _) => 2,
+                    (".NETCoreApp", _) => 2,
+                    (".NETStandard", _) => 2,
                     // For anything that we don't know, we return 0. This filters out things like full framework as we won't
                     // consider them.
                     (_, _) => 0,

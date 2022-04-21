@@ -45,8 +45,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <GenerateNuspecDependsOn Condition="$(IsInnerBuild) != 'true'">
       IncludeStaticWebAssetsPackItems;
-      $(GenerateNuspecDependsOn)
+      $(GenerateNuspecDependsOn);
     </GenerateNuspecDependsOn>
+
+    <IncludeStaticWebAssetsPackItemsDependsOn>
+      ResolveStaticWebAssetsConfiguration;LoadStaticWebAssetsBuildManifest
+    </IncludeStaticWebAssetsPackItemsDependsOn>
+
+    <IncludeStaticWebAssetsPackItemsDependsOn Condition="'$(NoBuild)' != 'true' and '$(GeneratePackageOnBuild)' != 'true'">
+      Build;$(IncludeStaticWebAssetsPackItemsDependsOn);
+    </IncludeStaticWebAssetsPackItemsDependsOn>
 
   </PropertyGroup>
 
@@ -122,6 +130,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProjectMode="$(StaticWebAssetProjectMode)"
       AssetKind="Publish"
       Source="$(PackageId)"
+      UpdateSourceType="false"
     >
       <Output TaskParameter="StaticWebAssets" ItemName="_PackStaticWebAssets" />
     </ComputeReferenceStaticWebAssetItems>
@@ -177,7 +186,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- This target is invoked in cross targeting builds to resolve the paths for the pack and build manifests -->
-  <Target Name="ResolveStaticWebAssetsManifestPaths" Returns="_StaticWebAssetsManifestPaths" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+  <Target Name="ResolveStaticWebAssetsManifestPaths" Returns="@(_StaticWebAssetsManifestPaths)" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
     <ItemGroup>
       <_StaticWebAssetsManifestPaths Include="$(MSBuildProjectName)">
         <BuildManifest>$(StaticWebAssetBuildManifestPath)</BuildManifest>
@@ -187,15 +196,15 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="IncludeStaticWebAssetsPackItems" 
-    DependsOnTargets="LoadStaticWebAssetsBuildManifest">
+    DependsOnTargets="$(IncludeStaticWebAssetsPackItemsDependsOn)">
     
     <!-- LoadStaticWebAssetsBuildManifest takes care of removing all the static web assets from existing item groups
          if they were present already. That ensures no static web asset is mistakenly included as content even if it is
          not an asset that needs to be included on the package. -->
     
-    <StaticWebAssetsReadPackManifest Manifest="$(StaticWebAssetPackManifestPath)">
+    <StaticWebAssetsReadPackManifest ManifestPath="$(StaticWebAssetPackManifestPath)">
       <Output TaskParameter="Files" ItemName="_StaticWebAssetsFilesToPack" />
-    <StaticWebAssetsReadPackManifest>
+    </StaticWebAssetsReadPackManifest>
 
     <ItemGroup>
       <Content Include="@(_StaticWebAssetsFilesToPack)" 

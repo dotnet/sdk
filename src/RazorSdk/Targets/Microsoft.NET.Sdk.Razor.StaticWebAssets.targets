@@ -832,5 +832,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </Target>
 
-    <Import Project="./Microsoft.NET.Sdk.Razor.StaticWebAssets.Pack.targets" />
+    <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.Pack.targets" />
 </Project>

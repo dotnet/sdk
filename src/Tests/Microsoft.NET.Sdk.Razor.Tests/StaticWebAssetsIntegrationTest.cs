@@ -1488,7 +1488,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/38371")]
+        [Fact]
         public void Pack_NoBuild_DoesNotIncludeFilesAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
