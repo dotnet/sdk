@@ -67,31 +67,37 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]        
+        [InlineData(LatestTfm)]
         public void NativeAot_only_runs_when_switch_is_enabled(string targetFramework)
         {
-            var projectName = "AotPublishWithWarnings";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            // PublishAot should enable the EnableAotAnalyzer
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["PublishAot"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
+            // https://github.com/dotnet/sdk/issues/24983
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var projectName = "AotPublishWithWarnings";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOutContaining("warning IL3050");
+                // PublishAot should enable the EnableAotAnalyzer
+                var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute()
+                    .Should().Pass()
+                    .And.HaveStdOutContaining("warning IL3050");
 
-            var publishedExe = Path.Combine(publishDirectory, $"{projectName}.exe");
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
 
-            // The exe exist and should be native
-            File.Exists(publishedExe).Should().BeTrue();
-            IsNativeImage(publishedExe).Should().BeTrue();
+                var publishedExe = Path.Combine(publishDirectory, $"{projectName}.exe");
+
+                // The exe exist and should be native
+                File.Exists(publishedExe).Should().BeTrue();
+                IsNativeImage(publishedExe).Should().BeTrue();
+            }
 
         }
 
