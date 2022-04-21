@@ -41,7 +41,7 @@
       VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
       DependencyName="Microsoft.NET.Sdk">
        <Output TaskParameter="DependencyVersion" PropertyName="DepDotNetSdkVersion" />
-       <Output TaskParameter="DependencyCommit" PropertyName="DepDotNetSdCommit" />
+       <Output TaskParameter="DependencyCommit" PropertyName="DepDotNetSdkCommit" />
     </GetDependencyInfo>
 
     <!-- Format for productCommits-%rid%.txt:
