@@ -34,6 +34,8 @@ jobs:
     architecture: x64
     condition: ${{ parameters.condition }}
     dependsOn: ${{ parameters.dependsOn }}
+    ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+      excludeSdkContentTests: true
     installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
     matrix:
       CentOS7-Online:
@@ -86,6 +88,8 @@ jobs:
       architecture: arm64
       condition: ${{ parameters.condition }}
       dependsOn: ${{ parameters.dependsOn }}
+      ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+        excludeSdkContentTests: true
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
         ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
