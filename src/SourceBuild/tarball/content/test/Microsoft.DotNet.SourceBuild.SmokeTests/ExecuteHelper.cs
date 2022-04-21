@@ -44,10 +44,24 @@ internal static class ExecuteHelper
         configure?.Invoke(process);
 
         StringBuilder stdOutput = new();
-        process.OutputDataReceived += new DataReceivedEventHandler((sender, e) => stdOutput.AppendLine(e.Data));
+        process.OutputDataReceived += new DataReceivedEventHandler(
+            (sender, e) =>
+            {
+                lock (stdOutput)
+                {
+                    stdOutput.AppendLine(e.Data);
+                }
+            });
 
         StringBuilder stdError = new();
-        process.ErrorDataReceived += new DataReceivedEventHandler((sender, e) => stdError.AppendLine(e.Data));
+        process.ErrorDataReceived += new DataReceivedEventHandler(
+            (sender, e) =>
+            {
+                lock (stdError)
+                {
+                    stdError.AppendLine(e.Data);
+                }
+            });
 
         process.Start();
         process.BeginOutputReadLine();

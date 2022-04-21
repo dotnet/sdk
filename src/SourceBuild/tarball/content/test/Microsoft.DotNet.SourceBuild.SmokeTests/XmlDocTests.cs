@@ -37,6 +37,7 @@ public class XmlDocTests : SmokeTests
                 string pathWithoutPacksPrefix = xmlFile[(targetingPacksDirectory.Length + 1)..];
                 string[] pathParts = pathWithoutPacksPrefix.Split(Path.DirectorySeparatorChar);
                 string pathWithoutVersion = string.Join(Path.DirectorySeparatorChar, pathParts.Take(1).Concat(pathParts.Skip(2)));
+                pathWithoutVersion = BaselineHelper.RemoveNetTfmPaths(pathWithoutVersion);
                 missingXmlDoc.Add(pathWithoutVersion);
             }
         }

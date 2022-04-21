@@ -85,6 +85,13 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         private static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
 
+        public static string RemoveNetTfmPaths(string source)
+        {
+            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
+            Regex netTfmRegex = new($"{pathSeparator}net[1-9]+\\.[0-9]+{pathSeparator}");
+            return netTfmRegex.Replace(source, $"{Path.DirectorySeparatorChar}netx.y{Path.DirectorySeparatorChar}");
+        }
+
         public static string RemoveRids(string diff, bool isPortable = false) =>
             isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
 
@@ -98,10 +105,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 + $"?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
             string result = semanticVersionRegex.Replace(source, $"x.y.z");
 
-            // Remove netx.y path segments
-            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
-            Regex netTfmRegex = new($"{pathSeparator}net[1-9]+\\.[0-9]+{pathSeparator}");
-            return netTfmRegex.Replace(result, $"{Path.DirectorySeparatorChar}netx.y{Path.DirectorySeparatorChar}");
+            return RemoveNetTfmPaths(result);
         }
     }
 }

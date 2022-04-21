@@ -30,6 +30,7 @@ internal static class Config
     public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
+    public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
     public static bool WarnOnPoisonDiffs { get; } =
         bool.TryParse(Environment.GetEnvironmentVariable(WarnPoisonDiffsEnv), out bool excludeOnlineTests) && excludeOnlineTests;
     public static bool WarnOnSdkContentDiffs { get; } =
