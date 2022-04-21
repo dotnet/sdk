@@ -11,12 +11,12 @@
     should be added to source-build-reference-packages.
   -->
   <ItemGroup>
-    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.200" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.200" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.200" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.200" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.200" Version="[$(MauiWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.200" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-6.0.300" Version="[$(XamarinAndroidWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.iOS.Manifest-6.0.300" Version="[$(XamarinIOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-6.0.300" Version="[$(XamarinMacCatalystWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-6.0.300" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-6.0.300" Version="[$(MauiWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-6.0.300" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-7.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
   </ItemGroup>
