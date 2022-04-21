@@ -857,14 +857,6 @@ index ------------
  ./sdk/x.y.z/SdkResolvers/
  ./sdk/x.y.z/SdkResolvers/Microsoft.Build.NuGetSdkResolver/
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/FSharp.NET.Sdk/Sdk/Sdk.props
- ./sdk/x.y.z/Sdks/FSharp.NET.Sdk/Sdk/Sdk.targets
- ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/
-+./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/microsoft.docker.sdk.x.y.z.csproj
- ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/
- ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/Sdk.props
- ./sdk/x.y.z/Sdks/Microsoft.Docker.Sdk/Sdk/Sdk.targets
-@@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Buffers.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Memory.dll
