@@ -98,6 +98,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
     <TargetsForTfmSpecificContentInPackage Condition="$(IsInnerBuild) != 'true'" >
+      ResolveStaticWebAssetsInputs;
       IncludeStaticWebAssetPackItems;
       $(TargetsForTfmSpecificContentInPackage)
     </TargetsForTfmSpecificContentInPackage>
@@ -547,6 +548,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="IncludeStaticWebAssetPackItems">
     
+    <ItemGroup>
+      <!-- This is the list of inputs that will be used for generating the props file that will be packed with
+      the package.  -->
+      <_CurrentProjectStaticWebAsset
+        Include="@(StaticWebAsset)"
+        Condition="'%(SourceType)' == ''" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
+    </PropertyGroup>
+
     <!-- All files that go into the nuget package -->
     <ItemGroup Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'">
 
