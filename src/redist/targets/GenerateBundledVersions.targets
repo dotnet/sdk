@@ -45,11 +45,11 @@
     </GetDependencyInfo>
 
     <!-- Format for productCommits-%rid%.txt:
-       installer:%commit%, %version
-       runtime:%commit%, $version
-       aspnetcore:%commit%, $version
-       windowsdesktop:%commit%, $version
-       sdk:%commit%, $version
+       installer:%commit%, %version%
+       runtime:%commit%, %version%
+       aspnetcore:%commit%, %version%
+       windowsdesktop:%commit%, %version%
+       sdk:%commit%, %version%
     -->
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
