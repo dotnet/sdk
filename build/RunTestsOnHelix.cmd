@@ -26,4 +26,8 @@ mkdir %TestExecutionDirectory%
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s
 
 REM call dotnet new so the first run message doesn't interfere with the first test
+
 dotnet new --debug:ephemeral-hive
+REM avoid potetial cocurrency issues when nuget is creating nuget.config
+dotnet nuget list source
+

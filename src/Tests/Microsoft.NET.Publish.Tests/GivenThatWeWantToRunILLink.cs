@@ -589,11 +589,13 @@ namespace Microsoft.NET.Publish.Tests
 
             // Please keep list below sorted and de-duplicated
             var expectedOutput = new string[] {
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr,IntPtr,IntPtr,IntPtr,IntPtr,IntPtr",
-                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr,IntPtr",
-                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper,String,RuntimeLicenseContext",
-                "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream,Assembly",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.ComponentActivator.GetFunctionPointer(IntPtr, IntPtr, IntPtr, IntPtr, IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
+                "ILLink : Trim analysis warning IL2026: System.ComponentModel.Design.DesigntimeLicenseContextSerializer.DeserializeUsingBinaryFormatter(DesigntimeLicenseContextSerializer.StreamWrapper, String, RuntimeLicenseContext",
+                "ILLink : Trim analysis warning IL2026: System.Resources.ManifestBasedResourceGroveler.CreateResourceSet(Stream, Assembly",
                 "ILLink : Trim analysis warning IL2026: System.StartupHookProvider.ProcessStartupHooks(",
+                "ILLink : Trim analysis warning IL2063: System.RuntimeType.GetInterface(String, Boolean",
+                "ILLink : Trim analysis warning IL2065: System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(Type",
             };
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -798,7 +800,7 @@ namespace Microsoft.NET.Publish.Tests
 
             File.Exists(referenceDll).Should().BeTrue();
             DoesImageHaveMethod(referenceDll, "FeatureAPI").Should().BeTrue();
-            DoesImageHaveMethod(referenceDll, "get_FeatureDisabled").Should().BeTrue();
+            DoesImageHaveMethod(referenceDll, "get_FeatureDisabled").Should().BeFalse();
             // Check that this method is removed when the feature is disabled
             DoesImageHaveMethod(referenceDll, "FeatureImplementation").Should().BeFalse();
         }
@@ -1103,19 +1105,21 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            testProject.AdditionalProperties["WarningsNotAsErrors"] = "IL2075;IL2026;IL2046";
+            testProject.AdditionalProperties["WarningsNotAsErrors"] = "IL2026;IL2046;IL2075";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
-                                    "/p:TreatWarningsAsErrors=true")
+                                    "/p:TreatWarningsAsErrors=true", "/p:EnableTrimAnalyzer=false")
                 .Should().Fail()
-                // This warning is produced by both the analyzer and the linker. Don't make it an error for the test.
                 .And.HaveStdOutContaining("warning IL2026")
-                // This warning is produced by both the analyzer and the linker. Don't make it an error for the test.
                 .And.HaveStdOutContaining("warning IL2046")
+                .And.HaveStdOutContaining("warning IL2075")
                 .And.HaveStdOutContaining("error IL2043")
-                .And.HaveStdOutContaining("warning IL2075");
+                .And.NotHaveStdOutContaining("error IL2026")
+                .And.NotHaveStdOutContaining("error IL2046")
+                .And.NotHaveStdOutContaining("error IL2075")
+                .And.NotHaveStdOutContaining("warning IL2043");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -1182,15 +1186,14 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
-                                    "/p:TreatWarningsAsErrors=true", "/p:ILLinkTreatWarningsAsErrors=false", "/p:NoWarn=IL2026%3BIL2046")
+                                    "/p:TreatWarningsAsErrors=true", "/p:ILLinkTreatWarningsAsErrors=false", "/p:EnableTrimAnalyzer=false")
                 .Should().Pass()
-                // This warning is produced by both the analyzer and the linker. Ignore it for this test.
-                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL2026")
+                .And.HaveStdOutContaining("warning IL2046")
+                .And.HaveStdOutContaining("warning IL2075")
                 .And.NotHaveStdOutContaining("error IL2026")
-                // This warning is produced by both the analyzer and the linker. Ignore it for this test.
-                .And.NotHaveStdOutContaining("warning IL2046")
                 .And.NotHaveStdOutContaining("error IL2046")
-                .And.HaveStdOutContaining("warning IL2075");
+                .And.NotHaveStdOutContaining("error IL2075");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
