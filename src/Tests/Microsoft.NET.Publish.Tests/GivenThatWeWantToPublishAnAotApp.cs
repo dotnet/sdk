@@ -43,8 +43,8 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
-                .And.HaveStdOutContaining("(8,9): warning IL3050")
-                .And.HaveStdOutContaining("(18,12): warning IL3052");
+                .And.HaveStdOutContaining("(9,9): warning IL3050")
+                .And.HaveStdOutContaining("(20,12): warning IL3052");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -97,9 +97,50 @@ namespace Microsoft.NET.Publish.Tests
                 // The exe exist and should be native
                 File.Exists(publishedExe).Should().BeTrue();
                 IsNativeImage(publishedExe).Should().BeTrue();
+
+                var command = new RunExeCommand(Log, publishedExe)
+                    .Execute().Should().Pass()
+                    .And.HaveStdOutContaining("Hello world");                
             }
 
         }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(LatestTfm)]
+        public void NativeAotLib_only_runs_when_switch_is_enabled(string targetFramework)
+        {
+
+            // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
+            // https://github.com/dotnet/sdk/issues/24983
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var projectName = "AotLibraryPublish";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName, false);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+                testProject.AdditionalProperties["NativeLib"] = "Static";
+                testProject.AdditionalProperties["SelfContained"] = "true";
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute()
+                    .Should().Pass();
+
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+
+                var publishedDll = Path.Combine(publishDirectory, $"{projectName}.lib");
+
+                // The exe exist and should be native
+                File.Exists(publishedDll).Should().BeTrue();
+                IsNativeImage(publishedDll).Should().BeTrue();
+
+            }
+
+        }
+
 
         private TestProject CreateTestProjectWithAotAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
@@ -111,6 +152,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
+using System;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 class C
@@ -119,6 +161,7 @@ class C
     {
         ProduceAotAnalysisWarning();
         ProduceLinkerAnalysisWarning();
+        Console.WriteLine(""Hello world"");
     }
 
     [RequiresDynamicCode(""Aot analysis warning"")]
@@ -139,6 +182,27 @@ class C
 
             return testProject;
         }
+
+        private TestProject CreateTestProjectWithAotLibrary(string targetFramework, string projectName, bool isExecutable)
+        {
+            var testProject = new TestProject()
+            {
+                Name = projectName,
+                TargetFrameworks = targetFramework,
+                IsExe = isExecutable
+            };
+
+            testProject.SourceFiles[$"{projectName}.cs"] = @"
+public class NativeLibraryClass
+{
+    public void LibraryMethod()
+    {
+    }
+}";
+
+            return testProject;
+        }
+
 
         private static bool IsNativeImage(string path)
         {
