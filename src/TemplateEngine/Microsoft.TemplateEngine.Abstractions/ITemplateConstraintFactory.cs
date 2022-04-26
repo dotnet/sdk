@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -21,7 +22,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Creates and initializes new <see cref="ITemplateConstraint"/> based on current <paramref name="environmentSettings"/>.
         /// </summary>
-        Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings);
+        Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken);
     }
 }
 

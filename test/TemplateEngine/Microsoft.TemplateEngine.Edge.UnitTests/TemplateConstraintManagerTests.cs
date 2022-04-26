@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            await Assert.ThrowsAsync<Exception>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
+            await Assert.ThrowsAsync<TemplateConstraintManager.ConstraintInitializationException>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            await Assert.ThrowsAsync<Exception>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
+            await Assert.ThrowsAsync<TemplateConstraintManager.ConstraintInitializationException>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
 
             var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default).ConfigureAwait(false);
 
@@ -184,7 +184,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public Guid Id { get; }
 
-            public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings)
+            public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
             {
                 return Task.FromResult((ITemplateConstraint)new TestConstraint(this));
             }
@@ -227,7 +227,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public Guid Id { get; }
 
-            public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings)
+            public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
             {
                 throw new Exception("creation failed");
             }
@@ -245,7 +245,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public Guid Id { get; }
 
-            public async Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings)
+            public async Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
             {
                 await Task.Delay(30000).ConfigureAwait(false);
                 throw new Exception("creation failed");

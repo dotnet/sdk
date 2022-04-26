@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Newtonsoft.Json.Linq;
@@ -19,8 +20,9 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
         public string Type => "os";
 
-        public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings)
+        public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult((ITemplateConstraint)new OSConstraint(environmentSettings, this));
         }
 
@@ -50,6 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                         return new TemplateConstraintResult(TemplateConstraintResult.Status.Allowed);
                     }
                 }
+                //TODO: localize
                 return new TemplateConstraintResult(TemplateConstraintResult.Status.Restricted, $"Running template on {RuntimeInformation.OSDescription} is not supported, supported OS is/are: {string.Join(", ", supportedOS)}.");
             }
 

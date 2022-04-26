@@ -4,7 +4,7 @@ Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.DisplayName.get -> str
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Evaluate(string! args) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Type.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory
-Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.Type.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!

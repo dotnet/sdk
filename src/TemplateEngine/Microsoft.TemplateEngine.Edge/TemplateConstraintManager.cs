@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,9 +17,10 @@ namespace Microsoft.TemplateEngine.Edge
     /// <summary>
     /// Manages evaluation of constraints for the templates.
     /// </summary>
-    public class TemplateConstraintManager
+    public class TemplateConstraintManager : IDisposable
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private Dictionary<string, Task<ITemplateConstraint>> _templateConstrains = new Dictionary<string, Task<ITemplateConstraint>>();
 
         public TemplateConstraintManager(IEngineEnvironmentSettings engineEnvironmentSettings)
@@ -26,7 +28,7 @@ namespace Microsoft.TemplateEngine.Edge
             var constraintFactories = engineEnvironmentSettings.Components.OfType<ITemplateConstraintFactory>();
             foreach (var constraintFactory in constraintFactories)
             {
-                _templateConstrains[constraintFactory.Type] = Task.Run(() => constraintFactory.CreateTemplateConstraintAsync(engineEnvironmentSettings));
+                _templateConstrains[constraintFactory.Type] = Task.Run (() => constraintFactory.CreateTemplateConstraintAsync(engineEnvironmentSettings, _cancellationTokenSource.Token));
             }
             _engineEnvironmentSettings = engineEnvironmentSettings;
         }
@@ -41,6 +43,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// <returns>The list of successfully initialized <see cref="ITemplateConstraint"/>s.</returns>
         public async Task<IReadOnlyList<ITemplateConstraint>> GetConstraintsAsync(IReadOnlyList<ITemplateInfo>? templates = null, CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             IEnumerable<(string Type, Task<ITemplateConstraint> Task)> constraintsToInitialize;
             if (templates?.Any() ?? false)
             {
@@ -54,7 +57,12 @@ namespace Microsoft.TemplateEngine.Edge
 
             try
             {
-                return await Task.WhenAll(constraintsToInitialize.Select(c => c.Task)).ConfigureAwait(false);
+                await CancellableWhenAll(constraintsToInitialize.Select(c => c.Task), cancellationToken).ConfigureAwait(false);
+                return constraintsToInitialize.Select(c => c.Task.Result).ToList();
+            }
+            catch (TaskCanceledException)
+            {
+                throw;
             }
             catch (Exception)
             {
@@ -84,41 +92,102 @@ namespace Microsoft.TemplateEngine.Edge
         /// <exception cref="Exception">when constraint is not found or cannot be evaluated.</exception>
         public async Task<TemplateConstraintResult> EvaluateConstraintAsync(string type, string args, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!_templateConstrains.TryGetValue(type, out Task<ITemplateConstraint> task))
             {
-                //TODO: localize and create custom Exception type.
-                throw new Exception($"The constraint of type '{type}' is unknown.");
+                throw new UnknownConstraintException(type);
             }
 
-            if (task.IsFaulted || task.IsCanceled)
-            {
-                //TODO: localize and create custom Exception type.
-                throw new Exception($"The constraint of type '{type}' failed to initialize: {task.Exception.Message}.");
-            }
-
-            if (task.IsCompleted)
+            if (!task.IsCompleted)
             {
                 try
                 {
-                    return task.Result.Evaluate(args);
+                    if (!task.IsCompleted)
+                    {
+                        await CancellableWhenAll(new[] { task }, cancellationToken).ConfigureAwait(false);
+                    }
                 }
-                catch (Exception e)
+                catch (TaskCanceledException)
                 {
-                    //TODO: localize and create custom Exception type.
-                    throw new Exception($"The constraint of type '{type}' failed to evaluate: {e.Message}.");
+                    throw;
                 }
+                catch (Exception)
+                {
+                    //handled below
+                }
+            }
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                throw new ConstraintInitializationException(type, task.Exception);
             }
 
             try
             {
-                ITemplateConstraint constraint = await task.ConfigureAwait(false);
-                return constraint.Evaluate(args);
+                return task.Result.Evaluate(args);
             }
             catch (Exception e)
             {
-                //TODO: localize and create custom Exception type.
-                throw new Exception($"The constraint of type '{type}' failed to evaluate: {e.Message}.");
+                throw new ConstraintEvaluationException(task.Result, e);
             }
+
         }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            _cancellationTokenSource.Cancel();
+        }
+
+        private async Task CancellableWhenAll(IEnumerable<Task> tasks, CancellationToken cancellationToken)
+        {
+            await Task.WhenAny(
+                Task.WhenAll(tasks),
+                Task.Delay(Timeout.Infinite, cancellationToken)).ConfigureAwait(false);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new TaskCanceledException();
+            }
+
+            //throws exceptions
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        #region Exceptions
+
+        public class UnknownConstraintException : Exception
+        {
+            public UnknownConstraintException(string type)
+                : base($"The constraint of type '{type}' is unknown.")
+            {
+                Type = type;
+            }
+
+            public string Type { get; }
+        }
+
+        public class ConstraintEvaluationException : Exception
+        {
+            public ConstraintEvaluationException(ITemplateConstraint constraint, Exception? innerException = null)
+                : base($"The constraint '{constraint.DisplayName}' failed to evaluate.", innerException)
+            {
+                Constraint = constraint;
+            }
+
+            public ITemplateConstraint Constraint { get; }
+        }
+
+        public class ConstraintInitializationException : Exception
+        {
+            public ConstraintInitializationException(string type, Exception? innerException = null)
+                : base($"The constraint of type '{type}' failed to initialize.", innerException)
+            {
+                Type = type;
+            }
+
+            public string Type { get; }
+        }
+
+        #endregion
     }
 }
