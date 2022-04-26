@@ -73,8 +73,8 @@ namespace Microsoft.NET.Publish.Tests
 
             // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
             // https://github.com/dotnet/sdk/issues/24983
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
                 var projectName = "AotPublishWithWarnings";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Publish.Tests
                 var command = new RunExeCommand(Log, publishedExe)
                     .Execute().Should().Pass()
                     .And.HaveStdOutContaining("Hello world");                
-            }
+            // }
 
         }
 
@@ -112,8 +112,8 @@ namespace Microsoft.NET.Publish.Tests
 
             // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
             // https://github.com/dotnet/sdk/issues/24983
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // {
                 var projectName = "AotLibraryPublish";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Publish.Tests
                 File.Exists(publishedDll).Should().BeTrue();
                 IsNativeImage(publishedDll).Should().BeTrue();
 
-            }
+            // }
 
         }
 
