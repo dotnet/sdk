@@ -5,11 +5,12 @@ IFS=$'\n\t'
 usage() {
     echo "usage: $0 [options]"
     echo "options:"
+    echo "  --clean-while-building             cleans each repo after building (reduces disk space usage)"
     echo "  --online                           build using online sources"
-    echo "  --with-packages <dir>              use the specified directory of previously-built packages"
-    echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
     echo "  --poison                           build with poisoning checks"
     echo "  --run-smoke-test                   don't build; run smoke tests"
+    echo "  --with-packages <dir>              use the specified directory of previously-built packages"
+    echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
     echo "use -- to send the remaining arguments to MSBuild"
     echo ""
 }
@@ -29,15 +30,18 @@ while :; do
 
     lowerI="$(echo $1 | awk '{print tolower($0)}')"
     case $lowerI in
-        --run-smoke-test)
-            alternateTarget=true
-            MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
+        --clean-while-building)
+            MSBUILD_ARGUMENTS+=( "/p:CleanWhileBuilding=true")
             ;;
         --online)
             MSBUILD_ARGUMENTS+=( "/p:BuildWithOnlineSources=true")
             ;;
         --poison)
             MSBUILD_ARGUMENTS+=( "/p:EnablePoison=true")
+            ;;
+        --run-smoke-test)
+            alternateTarget=true
+            MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
             ;;
         --with-packages)
             CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR="$(cd -P "$2" && pwd)"

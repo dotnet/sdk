@@ -132,7 +132,7 @@ jobs:
         customBuildArgs="$customBuildArgs --poison"
       fi
 
-      docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh ${customBuildArgs} $(additionalBuildArgs) -- /p:CleanWhileBuilding=true
+      docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh --clean-while-building ${customBuildArgs} $(additionalBuildArgs)
     displayName: Build Tarball
 
   - script: |
@@ -146,7 +146,7 @@ jobs:
       dockerEnvArgs="-e SMOKE_TESTS_EXCLUDE_OMNISHARP=$(_ExcludeOmniSharpTests) -e SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS=true"
       poisonArg=''
 
-      if [[ '${{ parameters.excludeSdkContentTests}}' != 'true' && '${{ parameters.installerBuildResourceId }}' != 'current' ]]; then
+      if [[ '${{ parameters.excludeSdkContentTests}}' != 'true' ]]; then
         dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
         msftSdkTarballName=$(find "$(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/" -name "dotnet-sdk-*-linux-${{ parameters.architecture }}.tar.gz" -exec basename {} \;)
         dockerEnvArgs+=" -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
