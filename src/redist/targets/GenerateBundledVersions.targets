@@ -23,13 +23,37 @@
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
 
+    <GetDependencyInfo
+      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      DependencyName="Microsoft.AspNetCore.App.Ref">
+       <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
+       <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
+    </GetDependencyInfo>
+
+    <GetDependencyInfo
+      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      DependencyName="Microsoft.WindowsDesktop.App.Ref">
+       <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
+       <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
+    </GetDependencyInfo>
+
+    <GetDependencyInfo
+      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      DependencyName="Microsoft.NET.Sdk">
+       <Output TaskParameter="DependencyVersion" PropertyName="DepDotNetSdkVersion" />
+       <Output TaskParameter="DependencyCommit" PropertyName="DepDotNetSdkCommit" />
+    </GetDependencyInfo>
+
     <!-- Format for productCommits-%rid%.txt:
-       installer:%commit%, %version
-       runtime:%commit%, $version
+       installer:%commit%, %version%
+       runtime:%commit%, %version%
+       aspnetcore:%commit%, %version%
+       windowsdesktop:%commit%, %version%
+       sdk:%commit%, %version%
     -->
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
-      Lines="installer%3A$(BUILD_SOURCEVERSION)%2C%20$(PackageVersion)%0Aruntime%3A$(DepRuntimeCommit)%2C%20$(DepRuntimeVersion)%0A"
+      Lines="installer%3A$(BUILD_SOURCEVERSION)%2C%20$(PackageVersion)%0Aruntime%3A$(DepRuntimeCommit)%2C%20$(DepRuntimeVersion)%0Aaspnetcore%3A$(DepAspNetCoreCommit)%2C%20$(DepAspNetCoreVersion)%0Awindowsdesktop%3A$(DepWindowsDesktopCommit)%2C%20$(DepWindowsDesktopVersion)%0Asdk%3A$(DepDotNetSdkCommit)%2C%20$(DepDotNetSdkVersion)%0A"
       Overwrite="true"
       Encoding="ASCII"/>
 
