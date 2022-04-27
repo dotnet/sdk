@@ -523,20 +523,20 @@
           BeforeTargets="Build"
           Condition=" '$(CleanWhileBuilding)' == 'true' ">
     <Message Text="DirSize Before Building $(RepositoryName)" Importance="High" />
-    <Exec Command="df --block-size=1M $(ProjectDir)" />
+    <Exec Command="df -h $(ProjectDir)" />
   </Target>
   <Target Name="DisplayDirSizeAfterBuild"
           AfterTargets="Build"
           BeforeTargets="CleanupRepo"
           Condition=" '$(CleanWhileBuilding)' == 'true' ">
     <Message Text="DirSize After Building $(RepositoryName)" Importance="High" />
-    <Exec Command="df --block-size=1M $(ProjectDir)" />
+    <Exec Command="df -h $(ProjectDir)" />
   </Target>
   <Target Name="DisplayDirSizeAfterClean"
           AfterTargets="CleanupRepo"
           Condition=" '$(CleanWhileBuilding)' == 'true' ">
     <Message Text="DirSize After CleanupRepo $(RepositoryName)" Importance="High" />
-    <Exec Command="df --block-size=1M $(ProjectDir)" />
+    <Exec Command="df -h $(ProjectDir)" />
   </Target>
 
   <Target Name="CleanupRepo" 
