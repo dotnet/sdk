@@ -1552,6 +1552,18 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyDescription" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyMessage" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyTitle" xml:space="preserve">
+    <value>Unnecessary call to 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
+    <value>Remove unnecessary call</value>
+  </data>
   <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
     <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
   </data>

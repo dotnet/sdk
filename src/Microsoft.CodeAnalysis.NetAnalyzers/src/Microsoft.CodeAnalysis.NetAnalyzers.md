@@ -1536,6 +1536,18 @@ When a type is not accessible outside its assembly and has no subtypes within it
 |CodeFix|True|
 ---
 
+## [CA1853](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853): Unnecessary call to 'Dictionary.ContainsKey(key)'
+
+Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
