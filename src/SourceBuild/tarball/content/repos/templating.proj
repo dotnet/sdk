@@ -14,7 +14,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="nuget-client" />
+    <!-- TODO: Renable once nuget-client is building in tarball -->
+    <!-- <RepositoryReference Include="nuget-client" /> -->
     <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
