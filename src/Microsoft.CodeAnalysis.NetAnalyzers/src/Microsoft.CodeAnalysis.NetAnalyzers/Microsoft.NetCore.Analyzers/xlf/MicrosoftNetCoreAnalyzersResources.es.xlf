@@ -2319,22 +2319,22 @@
       </trans-unit>
       <trans-unit id="SealInternalTypesCodeFixTitle">
         <source>Seal class</source>
-        <target state="new">Seal class</target>
+        <target state="translated">Clase de sello</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesDescription">
         <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
-        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <target state="translated">Cuando un tipo no es accesible fuera de su ensamblado y no tiene subtipos dentro de su ensamblado contenedor, se puede sellar de forma segura. Los tipos de sellado pueden mejorar el rendimiento.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesMessage">
         <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
-        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <target state="translated">El tipo '{0}' se puede sellar porque no tiene subtipos en su ensamblado contenedor y no es visible externamente</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesTitle">
         <source>Seal internal types</source>
-        <target state="new">Seal internal types</target>
+        <target state="translated">Sellar tipos internos</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
@@ -2369,17 +2369,17 @@
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
         <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
-        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <target state="translated">Especifique la referencia cultural para ayudar a evitar la dependencia implícita accidental en la referencia cultural actual. El uso de una versión invariable produce resultados coherentes independientemente de la referencia cultural de la aplicación.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
         <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
-        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <target state="translated">Especifique una referencia cultural o use una versión invariable para evitar la dependencia implícita de la referencia cultural actual</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
         <source>Specify a culture or use an invariant version</source>
-        <target state="new">Specify a culture or use an invariant version</target>
+        <target state="translated">Especificar una referencia cultural o usar una versión invariable</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
@@ -2399,7 +2399,7 @@
       </trans-unit>
       <trans-unit id="SpecifyCurrentCulture">
         <source>Specify current culture</source>
-        <target state="new">Specify current culture</target>
+        <target state="translated">Especificar la referencia cultural actual</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2754,7 +2754,7 @@
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
         <source>User an invariant version</source>
-        <target state="new">User an invariant version</target>
+        <target state="translated">Usuario de una versión invariable</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">

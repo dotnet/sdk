@@ -2319,22 +2319,22 @@
       </trans-unit>
       <trans-unit id="SealInternalTypesCodeFixTitle">
         <source>Seal class</source>
-        <target state="new">Seal class</target>
+        <target state="translated">密封類別</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesDescription">
         <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
-        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <target state="translated">當一個類型無法在其組建外部進行存取，且其包含元件內沒有子類型時，可以安全地密封該類型。密封類型可以改善效能。</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesMessage">
         <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
-        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <target state="translated">類型 '{0}' 可以被密封，因為它包含的組建中沒有任何子類型，而且無法從外部所見</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesTitle">
         <source>Seal internal types</source>
-        <target state="new">Seal internal types</target>
+        <target state="translated">密封內部類型</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
@@ -2369,17 +2369,17 @@
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
         <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
-        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <target state="translated">指定文化，以避免意外隱含相依於目前的文化。無論應用程式的文化如何，使用固定版本會產生一致的結果。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
         <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
-        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <target state="translated">指定文化或使用固定版本，以避免目前文化上的隱含相依性</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
         <source>Specify a culture or use an invariant version</source>
-        <target state="new">Specify a culture or use an invariant version</target>
+        <target state="translated">指定文化或使用固定版本</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
@@ -2399,7 +2399,7 @@
       </trans-unit>
       <trans-unit id="SpecifyCurrentCulture">
         <source>Specify current culture</source>
-        <target state="new">Specify current culture</target>
+        <target state="translated">指定目前的文化</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2754,7 +2754,7 @@
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
         <source>User an invariant version</source>
-        <target state="new">User an invariant version</target>
+        <target state="translated">使用者固定版本</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
