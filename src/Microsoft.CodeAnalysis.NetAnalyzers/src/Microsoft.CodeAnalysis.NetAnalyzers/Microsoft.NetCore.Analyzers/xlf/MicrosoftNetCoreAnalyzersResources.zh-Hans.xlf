@@ -728,8 +728,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="translated">默认情况下，“受信任的根证书颁发机构”证书存储配置有一组符合 Microsoft 根证书程序的公共 CA。由于所有受信任的根 CA 都可为任意域颁发证书，因此攻击者可能会选择你自行安装的某个安全性较弱或可强迫的 CA 进行攻击；一个易受攻击、恶意或可强迫的 CA 就会降低整个系统的安全性。更糟糕的是，这些攻击者可能很难被察觉。</target>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="needs-review-translation">默认情况下，“受信任的根证书颁发机构”证书存储配置有一组符合 Microsoft 根证书程序的公共 CA。由于所有受信任的根 CA 都可为任意域颁发证书，因此攻击者可能会选择你自行安装的某个安全性较弱或可强迫的 CA 进行攻击；一个易受攻击、恶意或可强迫的 CA 就会降低整个系统的安全性。更糟糕的是，这些攻击者可能很难被察觉。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2808,8 +2808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">设置具有足够密钥大小的 Rivest–Shamir–Adleman (RSA)算法</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="needs-review-translation">设置具有足够密钥大小的 Rivest–Shamir–Adleman (RSA)算法</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">

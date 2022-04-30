@@ -728,8 +728,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="translated">De forma predeterminada, el almacén de certificados de entidades de certificación raíz de confianza está configurado con un conjunto de entidades de certificación públicas que cumplen los requisitos del programa de certificados raíz de Microsoft. Dado que todas las entidades de certificación raíz de confianza pueden emitir certificados para cualquier dominio, un atacante puede elegir una entidad de certificación coaccionable o débil que instale por su cuenta para destinar un ataque, y una única entidad de certificación vulnerable, malintencionada o convertible socava la seguridad de todo el sistema. Para empeorar las cosas, estos ataques pueden pasar desapercibidos con bastante facilidad.</target>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="needs-review-translation">De forma predeterminada, el almacén de certificados de entidades de certificación raíz de confianza está configurado con un conjunto de entidades de certificación públicas que cumplen los requisitos del programa de certificados raíz de Microsoft. Dado que todas las entidades de certificación raíz de confianza pueden emitir certificados para cualquier dominio, un atacante puede elegir una entidad de certificación coaccionable o débil que instale por su cuenta para destinar un ataque, y una única entidad de certificación vulnerable, malintencionada o convertible socava la seguridad de todo el sistema. Para empeorar las cosas, estos ataques pueden pasar desapercibidos con bastante facilidad.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2808,8 +2808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">Usar un algoritmo de Rivest-Shamir-Adleman (RSA) con un tamaño de clave suficiente</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="needs-review-translation">Usar un algoritmo de Rivest-Shamir-Adleman (RSA) con un tamaño de clave suficiente</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">

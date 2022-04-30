@@ -728,8 +728,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="translated">기본적으로 신뢰할 수 있는 루트 인증 기관 인증서 저장소는 Microsoft 루트 인증서 프로그램의 요구 사항을 준수하는 공용 CA 세트로 구성됩니다. 모든 신뢰할 수 있는 루트 CA는 모든 도메인에 대한 인증서를 발급할 수 있으므로 공격자는 사용자가 직접 설치한 약하거나 강제할 수 있는 CA를 선택하여 공격 대상으로 지정할 수 있으며, 취약하거나 악의적이거나 강제할 수 있는 CA 하나가 전체 시스템의 보안을 약화시킵니다. 설상가상으로 이러한 공격자는 상당히 쉽게 눈에 띄지 않고 넘어갈 수 있습니다.</target>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="needs-review-translation">기본적으로 신뢰할 수 있는 루트 인증 기관 인증서 저장소는 Microsoft 루트 인증서 프로그램의 요구 사항을 준수하는 공용 CA 세트로 구성됩니다. 모든 신뢰할 수 있는 루트 CA는 모든 도메인에 대한 인증서를 발급할 수 있으므로 공격자는 사용자가 직접 설치한 약하거나 강제할 수 있는 CA를 선택하여 공격 대상으로 지정할 수 있으며, 취약하거나 악의적이거나 강제할 수 있는 CA 하나가 전체 시스템의 보안을 약화시킵니다. 설상가상으로 이러한 공격자는 상당히 쉽게 눈에 띄지 않고 넘어갈 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2808,8 +2808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">충분한 키 크기로 RSA(Rivest–Shamir–Adleman) 알고리즘 사용</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="needs-review-translation">충분한 키 크기로 RSA(Rivest–Shamir–Adleman) 알고리즘 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">

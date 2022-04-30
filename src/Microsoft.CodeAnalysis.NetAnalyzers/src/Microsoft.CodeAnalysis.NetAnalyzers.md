@@ -3038,7 +3038,7 @@ Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm 
 
 ## [CA5380](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380): Do Not Add Certificates To Root Store
 
-By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
 
 |Item|Value|
 |-|-|
@@ -3050,7 +3050,7 @@ By default, the Trusted Root Certification Authorities certificate store is conf
 
 ## [CA5381](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381): Ensure Certificates Are Not Added To Root Store
 
-By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
 
 |Item|Value|
 |-|-|
@@ -3096,7 +3096,7 @@ DSA is too weak to use.
 |CodeFix|False|
 ---
 
-## [CA5385](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385): Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size
+## [CA5385](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385): Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size
 
 Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.
 

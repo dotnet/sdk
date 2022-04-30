@@ -728,8 +728,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="translated">Per impostazione predefinita, l'archivio certificati di Autorità di certificazione radice disponibile nell'elenco locale è configurato con un set di CA pubbliche che soddisfa i requisiti del programma Microsoft Root Certificate. Dal momento che tutte le CA radice attendibili possono rilasciare certificati per qualsiasi dominio, un utente malintenzionato può selezionare come destinazione di attacco una CA debole o coercibile installata dall'utente. Una CA vulnerabile, dannosa o coercibile compromette la sicurezza dell'intero sistema, senza contare che questi attacchi possono passare inosservati abbastanza facilmente.</target>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="needs-review-translation">Per impostazione predefinita, l'archivio certificati di Autorità di certificazione radice disponibile nell'elenco locale è configurato con un set di CA pubbliche che soddisfa i requisiti del programma Microsoft Root Certificate. Dal momento che tutte le CA radice attendibili possono rilasciare certificati per qualsiasi dominio, un utente malintenzionato può selezionare come destinazione di attacco una CA debole o coercibile installata dall'utente. Una CA vulnerabile, dannosa o coercibile compromette la sicurezza dell'intero sistema, senza contare che questi attacchi possono passare inosservati abbastanza facilmente.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2808,8 +2808,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">Usa l'algoritmo RSA (Rivest-Shamir-Adleman) con dimensione di chiave sufficiente</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="needs-review-translation">Usa l'algoritmo RSA (Rivest-Shamir-Adleman) con dimensione di chiave sufficiente</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
