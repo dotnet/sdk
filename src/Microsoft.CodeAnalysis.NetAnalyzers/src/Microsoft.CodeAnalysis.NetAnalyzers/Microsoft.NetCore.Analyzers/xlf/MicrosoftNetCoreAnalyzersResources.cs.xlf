@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
         <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="needs-review-translation">Standardně je úložiště certifikátů důvěryhodných kořenových certifikačních autorit nakonfigurované na sadu veřejných CA, které splnily požadavky programu Microsoft Root Certificate Program. Vzhledem k tomu, že všechny důvěryhodné kořenové CA můžou vystavovat certifikáty pro libovolnou doménu, útočník si může vybrat slabou nebo zranitelnou CA, kterou si sami nainstalujete na cíl útoku – a jedna ohrožená, škodlivá nebo zranitelná CA ohrožuje zabezpečení celého systému. A co je horší, tyto útoky se dají vcelku snadno skrýt.</target>
+        <target state="new">By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2809,7 +2809,7 @@
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
         <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="needs-review-translation">Použijte algoritmus RSA (Rivest-Shamir-Adleman) s dostatečnou velikostí klíče</target>
+        <target state="new">Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">

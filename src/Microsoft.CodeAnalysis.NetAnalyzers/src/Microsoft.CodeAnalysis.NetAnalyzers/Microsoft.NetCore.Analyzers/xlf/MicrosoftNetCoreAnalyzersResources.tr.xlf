@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
         <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="needs-review-translation">Varsayılan olarak, Güvenilen Kök Sertifika Yetkilileri sertifika deposu, Microsoft Kök Sertifika Programı gereksinimlerini karşılayan bir genel CA kümesiyle yapılandırılır. Tüm güvenilen kök CA'lar herhangi bir etki alanı için sertifika verebileceği için, bir saldırgan kendiniz yüklediğiniz savunmasız veya zorlanabilir bir CA'yı saldırı için seçebilir ve tek bir zayıf, kötü amaçlı ya da zorlanabilir CA tüm sistemin güvenliğini tehlikeye atabilir. Daha da kötüsü, bu saldırıların gözden kaçırılması oldukça kolaydır.</target>
+        <target state="new">By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2809,7 +2809,7 @@
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
         <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="needs-review-translation">Yeterli Anahtar Boyutuna Sahip Rivest–Shamir–Adleman (RSA) Algoritmasını Kullan</target>
+        <target state="new">Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
