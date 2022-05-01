@@ -684,17 +684,17 @@
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
         <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
-        <target state="new">Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</target>
+        <target state="translated">Защищать \"Dictionary.Remove(key)\" с помощью \"Dictionary.ContainsKey(key)\" не требуется. Первый элемент уже проверяет существование ключа и не выдаст исключения при его отсутствии.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
         <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
-        <target state="new">Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</target>
+        <target state="translated">Не защищайте \"Dictionary.Remove(key)\" с помощью \"Dictionary.ContainsKey(key)\".</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
         <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
-        <target state="new">Unnecessary call to 'Dictionary.ContainsKey(key)'</target>
+        <target state="translated">Ненужный вызов \"Dictionary.ContainsKey(key)\"</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
         <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="needs-review-translation">По умолчанию в хранилище сертификатов Доверенных корневых центров сертификации настроен набор общедоступных центров сертификации, удовлетворяющих требованиям программы корневых сертификатов Майкрософт. Поскольку все доверенные корневые ЦС могут создавать сертификаты для любого домена, злоумышленник может выбрать слабозащищенный или обязательный центр сертификации, который вы устанавливали для отражения атаки. Всего один слабозащищенный, вредоносный или обязательный ЦС может скомпрометировать всю систему. Что еще хуже, эти атаки могут пройти незамеченными.</target>
+        <target state="new">By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2159,7 +2159,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
         <source>Remove unnecessary call</source>
-        <target state="new">Remove unnecessary call</target>
+        <target state="translated">Удалите ненужный вызов</target>
         <note />
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
@@ -2809,7 +2809,7 @@
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
         <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="needs-review-translation">Использовать алгоритм шифрования RSA с достаточным размером ключа</target>
+        <target state="new">Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">

@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
         <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="needs-review-translation">既定では、信頼されたルート証明機関の証明書ストアは、Microsoft ルート証明書プログラムの要件を満たす一連の公的 CA で構成されています。すべての信頼されたルート CA は任意のドメインの証明書を発行できますが、攻撃者はユーザー自身がインストールする脆弱な CA または制御可能な CA を攻撃対象として選択できます。脆弱な CA、悪意のあるCA、制御可能な CA が 1 つでもあると、システム全体のセキュリティが弱体化します。さらに悪いことに、こうした攻撃はまったく気付かずに、しかも簡単に行うことができます。</target>
+        <target state="new">By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -2809,7 +2809,7 @@
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
         <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="needs-review-translation">十分なキー サイズの Rivest–Shamir–Adleman (RSA) アルゴリズムを使用します</target>
+        <target state="new">Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
