@@ -70,8 +70,6 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(LatestTfm)]
         public void NativeAot_only_runs_when_switch_is_enabled(string targetFramework)
         {
-            // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
-            // https://github.com/dotnet/sdk/issues/24983
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 var projectName = "AotPublishWithWarnings";
@@ -105,14 +103,11 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(LatestTfm)]
-        public void NativeAotLib_only_runs_when_switch_is_enabled(string targetFramework)
+        public void NativeAotStaticLib_only_runs_when_switch_is_enabled(string targetFramework)
         {
-
-            // Need to enable this in a Linux distro by adding the pre-reqs to a suitable container
-            // https://github.com/dotnet/sdk/issues/24983
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var projectName = "AotLibraryPublish";
+                var projectName = "AotStaticLibraryPublish";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
                 var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
@@ -128,10 +123,41 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().Pass();
 
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+                var staticLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".lib" : ".a";
+                var publishedDll = Path.Combine(publishDirectory, $"{projectName}{staticLibSuffix}");
 
-                var publishedDll = Path.Combine(publishDirectory, $"{projectName}.lib");
+                // The lib exist and should be native
+                File.Exists(publishedDll).Should().BeTrue();
+                IsNativeImage(publishedDll).Should().BeTrue();
+            }
+        }
 
-                // The exe exist and should be native
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(LatestTfm)]
+        public void NativeAotSharedLib_only_runs_when_switch_is_enabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var projectName = "AotSharedLibraryPublish";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                var testProject = CreateTestProjectWithAotLibrary(targetFramework, projectName);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+                testProject.AdditionalProperties["NativeLib"] = "Shared";
+                testProject.AdditionalProperties["SelfContained"] = "true";
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute()
+                    .Should().Pass();
+
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+                var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+                var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+
+                // The lib exist and should be native
                 File.Exists(publishedDll).Should().BeTrue();
                 IsNativeImage(publishedDll).Should().BeTrue();
             }
