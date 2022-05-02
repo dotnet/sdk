@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.TestHelper;
+using NuGet.Protocol;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
@@ -19,148 +20,39 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: false);
         }
 
-        private static string ExcludesWithIncludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""exclude"": [ ""**/*.config"" ],
-      ""modifiers"": [
-        {
-          ""include"": [""core.config""]
-        }
-      ]
-    }
-  ]
-}";
-                return configString;
-            }
-        }
-
-        private static string CopyOnlyWithoutCorrespondingIncludeConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [ ""**/*.txt"" ],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""copy.me""]
-        },
-      ]
-    }
-  ]
-}";
-                return configString;
-            }
-        }
-
-        private static string CopyOnlyWithIncludeInParentConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [""**/*.me""],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""copy.me""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
-        private static string CopyOnlyWithWildcardAndParentIncludeConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      ""include"": [""*copy.me""],
-      ""modifiers"": [
-        {
-          ""copyOnly"": [""**/*.me""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
-        private static string IncludeModifierOverridesPreviousExcludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      // use the default ICE
-      ""modifiers"": [
-        {
-          ""exclude"": [""*.xyz""]
-        },
-        {
-          ""include"": [""include.xyz""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
-        private static string ExcludeModifierOverridesPreviousIncludeModifierConfigText
-        {
-            get
-            {
-                string configString = @"
-{
-  ""sources"": [
-    {
-      // use the default ICE
-      ""modifiers"": [
-        {
-          ""include"": [""*.xyz""]
-        },
-        {
-          ""exclude"": [""exclude.xyz""]
-        }
-      ]
-    }
-  ]
-}
-";
-                return configString;
-            }
-        }
-
         [Fact(DisplayName = nameof(SourceConfigExcludesAreOverriddenByIncludes))]
         public void SourceConfigExcludesAreOverriddenByIncludes()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                { 
+                    new ExtendedFileSource()
+                    {
+                        Exclude = "**/*.config",
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                Include = "core.config"
 
-            TestTemplateSetup setup = SetupTwoFilesWithConfigExtensionTemplate(_engineEnvironmentSettings, sourceBasePath);
+                            }
+                        }
+                    }
+                }
+            };
+
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            // config
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            // content
+            templateSourceFiles.Add("core.config", null);
+            templateSourceFiles.Add("full.config", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             setup.InstantiateTemplate(targetDir);
 
@@ -173,7 +65,32 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupCopyOnlyWithoutCorrespondingIncludeTemplate(_engineEnvironmentSettings, sourceBasePath);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                {
+                    new ExtendedFileSource()
+                    {
+                        Include = "**/*.txt",
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                CopyOnly = "copy.me"
+                            }
+                        }
+                    }
+                }
+            };
+
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add("something.txt", null);
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -194,8 +111,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CopyOnlyWithParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                {
+                    new ExtendedFileSource()
+                    {
+                        Include = "**/*.me",
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                CopyOnly = "copy.me"
+                            }
+                        }
+                    }
+                }
+            };
 
-            TestTemplateSetup setup = SetupCopyOnlyWithParentInclude(_engineEnvironmentSettings, sourceBasePath);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -215,8 +155,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                {
+                    new ExtendedFileSource()
+                    {
+                        Include = "*copy.me",
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                CopyOnly = "**/*.me"
+                            }
+                        }
+                    }
+                }
+            };
 
-            TestTemplateSetup setup = SetupCopyOnlyWithWildcardAndParentInclude(_engineEnvironmentSettings, sourceBasePath);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add("copy.me", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -236,8 +199,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void IncludeModifierOverridesPreviousExcludeModifierTemplateTest()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                {
+                    new ExtendedFileSource()
+                    {
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                Exclude = "*.xyz",
+                            },
+                            new SourceModifier()
+                            {
+                                Include = "include.xyz"
+                            }
+                        }
+                    }
+                }
+            };
 
-            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(_engineEnvironmentSettings, sourceBasePath, IncludeModifierOverridesPreviousExcludeModifierConfigText);
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add("other.xyz", null);
+            templateSourceFiles.Add("include.xyz", null);
+            templateSourceFiles.Add("exclude.xyz", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -258,7 +249,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            TestTemplateSetup setup = SetupXYZFilesForModifierOverrideTestsTemplate(_engineEnvironmentSettings, sourceBasePath, ExcludeModifierOverridesPreviousIncludeModifierConfigText);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Sources = new List<ExtendedFileSource>()
+                {
+                    new ExtendedFileSource()
+                    {
+                        Modifiers = new List<SourceModifier>()
+                        {
+                            new SourceModifier()
+                            {
+                                Include = "*.xyz"
+                            },
+                            new SourceModifier()
+                            {
+                                Exclude = "exclude.xyz",
+                            },
+                        }
+                    }
+                }
+            };
+
+            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add("other.xyz", null);
+            templateSourceFiles.Add("include.xyz", null);
+            templateSourceFiles.Add("exclude.xyz", null);
+            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
+            setup.WriteSource();
+
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> allChanges = setup.GetFileChanges(targetDir);
 
@@ -278,62 +298,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFileChange2 otherXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "other.xyz"));
             Assert.NotNull(otherXyzChangeInfo);
             Assert.Equal(ChangeKind.Create, otherXyzChangeInfo.ChangeKind);
-        }
-
-        private static TestTemplateSetup SetupTwoFilesWithConfigExtensionTemplate(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            // config
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, ExcludesWithIncludeModifierConfigText);
-            // content
-            templateSourceFiles.Add("core.config", null);
-            templateSourceFiles.Add("full.config", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        private static TestTemplateSetup SetupCopyOnlyWithoutCorrespondingIncludeTemplate(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithoutCorrespondingIncludeConfigText);
-            templateSourceFiles.Add("something.txt", null);
-            templateSourceFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        private static TestTemplateSetup SetupCopyOnlyWithParentInclude(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithIncludeInParentConfigText);
-            templateSourceFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        private static TestTemplateSetup SetupCopyOnlyWithWildcardAndParentInclude(IEngineEnvironmentSettings environment, string basePath)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, CopyOnlyWithWildcardAndParentIncludeConfigText);
-            templateSourceFiles.Add("copy.me", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
-        }
-
-        private static TestTemplateSetup SetupXYZFilesForModifierOverrideTestsTemplate(IEngineEnvironmentSettings environment, string basePath, string templateConfig)
-        {
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
-            templateSourceFiles.Add("other.xyz", null);
-            templateSourceFiles.Add("include.xyz", null);
-            templateSourceFiles.Add("exclude.xyz", null);
-            TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
-            setup.WriteSource();
-            return setup;
         }
     }
 }

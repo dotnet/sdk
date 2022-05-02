@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -35,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IMacroConfig macroConfig = new GuidMacroConfig(paramName, "string", string.Empty, null);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = new SimpleConfigModel(_engineEnvironmentSettings.Host.LoggerFactory);
+            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
             IParameterSet parameters = new ParameterSet(config);
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
@@ -54,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             GuidMacro guidMacro = new GuidMacro();
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = new SimpleConfigModel(_engineEnvironmentSettings.Host.LoggerFactory);
+            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
             IParameterSet parameters = new ParameterSet(config);
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
@@ -103,7 +104,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IMacroConfig macroConfigUpper = new GuidMacroConfig(paramNameUpper, "string", string.Empty, "N");
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = new SimpleConfigModel(_engineEnvironmentSettings.Host.LoggerFactory);
+            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
             IParameterSet parameters = new ParameterSet(config);
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 

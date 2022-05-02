@@ -26,11 +26,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Any input fileRenames will be applied before the parameter symbol renames.
         internal static IReadOnlyDictionary<string, string> AugmentFileRenames(
             IEngineEnvironmentSettings environmentSettings,
-            string sourceName,
+            string? sourceName,
             IFileSystemInfo configFile,
             string sourceDirectory,
             ref string targetDirectory,
-            object resolvedNameParamValue,
+            object? resolvedNameParamValue,
             IParameterSet parameterSet,
             Dictionary<string, string> fileRenames,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal static string ApplyRenameToPrimaryOutput(
             string primaryOutputPath,
             IEngineEnvironmentSettings environmentSettings,
-            string sourceName,
+            string? sourceName,
             object resolvedNameParamValue,
             IParameterSet parameterSet,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
@@ -98,14 +98,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Also sets up rename for the target directory.
         private static IProcessor SetupSymbolBasedRenameProcessor(
             IEngineEnvironmentSettings environmentSettings,
-            string sourceName,
+            string? sourceName,
             ref string targetDirectory,
-            object resolvedNameParamValue,
+            object? resolvedNameParamValue,
             IParameterSet parameterSet,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
-            SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, operations);
+            if (resolvedNameParamValue != null && sourceName != null)
+            {
+                SetupRenameForTargetDirectory(sourceName, resolvedNameParamValue, ref targetDirectory, operations);
+            }
 
             if (symbolBasedFileRenames != null)
             {
@@ -128,12 +131,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ref string targetDirectory,
             List<IOperationProvider> operations)
         {
-            if (resolvedNameParamValue != null && sourceName != null)
-            {
-                string targetName = ((string)resolvedNameParamValue).Trim();
-                targetDirectory = targetDirectory.Replace(sourceName, targetName);
-                operations.Add(new Replacement(sourceName.TokenConfig(), targetName, null, true));
-            }
+            string targetName = ((string)resolvedNameParamValue).Trim();
+            targetDirectory = targetDirectory.Replace(sourceName, targetName);
+            operations.Add(new Replacement(sourceName.TokenConfig(), targetName, null, true));
         }
 
         private static IProcessor SetupProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IOperationProvider> operations)

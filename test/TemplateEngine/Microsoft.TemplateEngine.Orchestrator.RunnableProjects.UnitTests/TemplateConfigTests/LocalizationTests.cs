@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FakeItEasy;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.TestHelper;
@@ -311,122 +313,145 @@ false,
         [Fact]
         public void CanValidatePostActionWithoutLocalization()
         {
-            string baseConfig =
-                JsonConvert.SerializeObject(new
-                {
-                    postActions = new[]
-                    {
-                        new { id = "", description = "text", actionId = Guid.NewGuid() },
-                        new { id = "pa0", description = "text", actionId = Guid.NewGuid() },
-                    }
-                });
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/description\": \"localizedDescription\" }", environmentSettings);
-            WriteFile(Path.Combine(tempFolder, DefaultConfigRelativePath), baseConfig, environmentSettings);
 
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
-            var baseModel = new SimpleConfigModel(mountPoint.FileInfo(DefaultConfigRelativePath));
-            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
-            Assert.True(baseModel.VerifyLocalizationModel(localizationModel, out _));
+            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            {
+                Identity = "Test",
+                PostActionModels = new List<PostActionModel>
+                {
+                    new PostActionModel()
+                    {
+                         Id = "",
+                         Description = "text",
+                         ActionId = Guid.NewGuid()
+                    },
+                       new PostActionModel()
+                    {
+                         Id = "pa0",
+                         Description = "text",
+                         ActionId = Guid.NewGuid()
+                    },
+                }
+            };
 
-            baseModel.Localize(localizationModel);
-            baseModel.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
-            baseModel.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
+            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
+
+            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            runnableProjectConfig.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
+            runnableProjectConfig.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
         }
 
         [Fact]
         public void CanValidatePostActionWithDefaultInstructionLocalization()
         {
-            string baseConfig =
-                JsonConvert.SerializeObject(new
+            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            {
+                Identity = "Test",
+                PostActionModels = new List<PostActionModel>
                 {
-                    postActions = new[]
+                    new PostActionModel()
                     {
-                        new { id = "pa0", description = "text", actionId = Guid.NewGuid(), manualInstructions = new [] { new { text = "my text" } } },
-                    }
-                });
+                         Id = "pa0",
+                         Description = "text",
+                         ActionId = Guid.NewGuid(),
+                         ManualInstructionInfo = new List<ManualInstructionModel>()
+                         {
+                              new ManualInstructionModel(null, "my text") 
+                         }
+                    },
+                }
+            };
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
             WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/manualInstructions/default/text\": \"localized\" }", environmentSettings);
-            WriteFile(Path.Combine(tempFolder, DefaultConfigRelativePath), baseConfig, environmentSettings);
 
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
-            var baseModel = new SimpleConfigModel(mountPoint.FileInfo(DefaultConfigRelativePath));
+            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
-            Assert.True(baseModel.VerifyLocalizationModel(localizationModel, out _));
+            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
-            baseModel.Localize(localizationModel);
-            baseModel.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
+            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            runnableProjectConfig.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
         }
 
         [Fact]
         public void CannotValidatePostActionWithExtraInstructionLocalization()
         {
-            string baseConfig =
-                JsonConvert.SerializeObject(new
+            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            {
+                Identity = "Test",
+                PostActionModels = new List<PostActionModel>
                 {
-                    postActions = new[]
+                    new PostActionModel()
                     {
-                        new
-                        {
-                            id = "pa0",
-                            description = "text",
-                            actionId = Guid.NewGuid(),
-                            manualInstructions = new []
-                            {
-                                new { text = "my text", id = "first" },
-                                new { text = "my text", id = "second" },
-                            }
-                        },
-                    }
-                });
+                         Id = "pa0",
+                         Description = "text",
+                         ActionId = Guid.NewGuid(),
+                         ManualInstructionInfo = new List<ManualInstructionModel>()
+                         {
+                              new ManualInstructionModel("first", "my text"),
+                              new ManualInstructionModel("second", "my text"),
+                         }
+                    },
+                }
+            };
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
-            string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
+            string localizationFilename = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
             WriteFile(
-                Path.Combine(tempFolder, localizationFile),
+                Path.Combine(tempFolder, localizationFilename),
                 "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa0/manualInstructions/extra/text\": \"extraLoc\" }",
                 environmentSettings);
-            WriteFile(Path.Combine(tempFolder, DefaultConfigRelativePath), baseConfig, environmentSettings);
 
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
-            var baseModel = new SimpleConfigModel(mountPoint.FileInfo(DefaultConfigRelativePath));
-            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
-            Assert.False(baseModel.VerifyLocalizationModel(localizationModel, out IEnumerable<string> errors));
-            Assert.Equal(
+            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var localizationFile = mountPoint.FileInfo(localizationFilename);
+            var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile);
+            Assert.False(templateConfig.VerifyLocalizationModel(localizationModel, localizationFile));
+
+            IReadOnlyList<(LogLevel, string)> loggedMessages = ((TestHost)environmentSettings.Host).LoggedMessages;
+
+            Assert.Single(loggedMessages);
+            Assert.Contains(
                 string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, "extra", "pa0"),
-                errors.Single());
+                loggedMessages.Single().Item2);
+            Assert.Contains(localizationFilename, loggedMessages.Single().Item2);
         }
 
         [Fact]
         public void CannotValidateExtraPostActionLocalization()
         {
-            string baseConfig =
-                JsonConvert.SerializeObject(new
+            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            {
+                Identity = "Test",
+                PostActionModels = new List<PostActionModel>
                 {
-                    postActions = new[]
+                    new PostActionModel()
                     {
-                        new
-                        {
-                            id = "pa0",
-                            description = "text",
-                            actionId = Guid.NewGuid(),
-                            manualInstructions = new []
-                            {
-                                new { text = "my text", id = "first" },
-                                new { text = "my text", id = "second" },
-                            }
-                        },
-                    }
-                });
+                         Id = "pa0",
+                         Description = "text",
+                         ActionId = Guid.NewGuid(),
+                         ManualInstructionInfo = new List<ManualInstructionModel>()
+                         {
+                              new ManualInstructionModel("first", "my text"),
+                              new ManualInstructionModel("second", "my text"),
+                         }
+                    },
+                }
+            };
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
@@ -435,16 +460,20 @@ false,
                 Path.Combine(tempFolder, localizationFile),
                 "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa1/manualInstructions/extra/text\": \"extraLoc\" }",
                 environmentSettings);
-            WriteFile(Path.Combine(tempFolder, DefaultConfigRelativePath), baseConfig, environmentSettings);
 
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
-            var baseModel = new SimpleConfigModel(mountPoint.FileInfo(DefaultConfigRelativePath));
+            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
-            Assert.False(baseModel.VerifyLocalizationModel(localizationModel, out IEnumerable<string> errors));
-            Assert.Equal(
-                string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, "pa1"),
-                errors.Single());
+            Assert.False(templateConfig.VerifyLocalizationModel(localizationModel));
+
+            IReadOnlyList<(LogLevel, string)> loggedMessages = ((TestHost)environmentSettings.Host).LoggedMessages;
+
+            Assert.Single(loggedMessages);
+
+            Assert.Contains(
+               string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, "pa1"),
+               loggedMessages.Single().Item2);
         }
 
         #endregion

@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Args { get; } = new Dictionary<string, string>();
 
-        internal static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IPostActionModel> modelList, IVariableCollection rootVariableCollection)
+        internal static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<PostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<IPostAction> actionList = new List<IPostAction>();
 
@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 rootVariableCollection = new VariableCollection();
             }
 
-            foreach (IPostActionModel model in modelList)
+            foreach (PostActionModel model in modelList)
             {
                 model.EvaluateCondition(environmentSettings, rootVariableCollection);
 

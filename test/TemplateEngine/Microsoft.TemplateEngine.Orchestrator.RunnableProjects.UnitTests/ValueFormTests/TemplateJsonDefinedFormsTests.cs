@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
@@ -39,12 +40,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = new SimpleConfigModel(_engineEnvironmentSettings, configObj);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(configObj);
             IGlobalRunConfig runConfig = null;
 
             try
             {
-                runConfig = ((IRunnableProjectConfig)configModel).OperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).OperationConfig;
             }
             catch
             {
@@ -82,12 +83,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = new SimpleConfigModel(_engineEnvironmentSettings, configObj);
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(configObj);
             IGlobalRunConfig runConfig = null;
 
             try
             {
-                runConfig = ((IRunnableProjectConfig)configModel).OperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).OperationConfig;
             }
             catch
             {

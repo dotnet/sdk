@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.TestHelper;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
@@ -70,25 +71,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData("src/content/.template.config/template.json", true)]
         public void CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson, bool shouldAllPathsBeValid)
         {
+            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(BasicTemplateConfig));
+            RunnableProjectGenerator generator = new RunnableProjectGenerator();
+
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             templateSourceFiles.Add(pathToTemplateJson, BasicTemplateConfig);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
-            RunnableProjectGenerator generator = new RunnableProjectGenerator();
-
             IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateJson);
-            SimpleConfigModel templateModel = new SimpleConfigModel(templateFile);
-            RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(generator, templateModel, null, null);
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
             if (shouldAllPathsBeValid)
             {
-                Assert.Empty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.Empty(templateModel.ValidateTemplateSourcePaths());
             }
             else
             {
-                Assert.NotEmpty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.NotEmpty(templateModel.ValidateTemplateSourcePaths());
             }    
         }
 
@@ -101,29 +102,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, "foo/")] // not valid because the path doesn't exist under the root.
         public void CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
         {
+            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
+            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            RunnableProjectGenerator generator = new RunnableProjectGenerator();
+
             const string pathToTemplateConfig = ".template.config/template.json";
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-
-            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
             templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
-
-            RunnableProjectGenerator generator = new RunnableProjectGenerator();
-
             IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
-            SimpleConfigModel templateModel = new SimpleConfigModel(templateFile);
-            RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(generator, templateModel, null, null);
+
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
             if (shouldAllPathsBeValid)
             {
-                Assert.Empty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.Empty(templateModel.ValidateTemplateSourcePaths());
             }
             else
             {
-                Assert.NotEmpty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.NotEmpty(templateModel.ValidateTemplateSourcePaths());
             }
         }
 
@@ -144,13 +144,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(true, "../../../MountRoot/Subdir")]
         public void CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source)
         {
+            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
+            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            RunnableProjectGenerator generator = new RunnableProjectGenerator();
+
             const string pathFromMountPointRootToTemplateRoot = "MountRoot/Stuff/TemplateRoot/";
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-
-            string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
@@ -160,19 +162,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
-            RunnableProjectGenerator generator = new RunnableProjectGenerator();
-
             IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
-            SimpleConfigModel templateModel = new SimpleConfigModel(templateFile);
-            RunnableProjectTemplate runnableProjectTemplate = new RunnableProjectTemplate(generator, templateModel, null, null);
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
             if (shouldAllPathsBeValid)
             {
-                Assert.Empty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.Empty(templateModel.ValidateTemplateSourcePaths());
             }
             else
             {
-                Assert.NotEmpty(generator.ValidateTemplateSourcePaths(templateModel));
+                Assert.NotEmpty(templateModel.ValidateTemplateSourcePaths());
             }
         }
     }

@@ -5,6 +5,7 @@
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json.Schema" />
+      <PackageReference Include="FakeItEasy" />
     </ItemGroup>
 
     <ItemGroup>

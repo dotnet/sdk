@@ -10,13 +10,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class PostActionModel : ConditionedConfigurationElementBase, IPostActionModel
+    internal class PostActionModel : ConditionedConfigurationElementBase
     {
         /// <summary>
         /// Default id to be used when post action contains only one manual instruction
         /// and the author has not explicitly specified an id.
         /// </summary>
         public const string DefaultIdForSingleManualInstruction = "default";
+
+        private string? _description;
 
         public PostActionModel()
             : this(new Dictionary<string, string>(), new List<ManualInstructionModel>()) { }
@@ -27,21 +29,54 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             ManualInstructionInfo = manualInstructions;
         }
 
+        /// <summary>
+        /// Gets a string that uniquely identifies this post action within a template.
+        /// </summary>
         public string? Id { get; init; }
 
-        public string? Description { get; private set; }
+        /// <summary>
+        /// Gets the description of the post action.
+        /// </summary>
+        public string? Description
+        {
+            get
+            {
+                return _description;
+            }
 
+            init
+            {
+                _description = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the identifier of the action that will be performed.
+        /// Note that this is not an identifier for the post action itself.
+        /// </summary>
         public Guid ActionId { get; init; }
 
+        /// <summary>
+        /// Gets a value indicating wheather the template instantiation should continue
+        /// in case of an error with this post action.
+        /// </summary>
         public bool ContinueOnError { get; init; }
 
+        /// <summary>
+        /// Gets the arguments for this post action.
+        /// </summary>
         public IReadOnlyDictionary<string, string> Args { get; init; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Gets the list of instructions that should be manually performed by the user.
+        /// "instruction" contains the text that explains the steps to be taken by the user.
+        /// An instruction is only considered if the "condition" evaluates to true.
+        /// </summary>
         public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; init; } = new List<ManualInstructionModel>();
 
-        public void Localize(IPostActionLocalizationModel locModel, ILogger logger)
+        public void Localize(IPostActionLocalizationModel locModel)
         {
-            Description = locModel.Description ?? Description;
+            _description = locModel.Description ?? Description;
 
             foreach (var manualInstruction in ManualInstructionInfo)
             {
@@ -56,7 +91,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray jArray, ILogger logger, string filename)
+        internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray? jArray, ILogger? logger, string? filename)
         {
             List<PostActionModel> localizedPostActions = new List<PostActionModel>();
             if (jArray == null)
@@ -77,13 +112,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (postActionId != null && !postActionIds.Add(postActionId))
                 {
                     // There is already a post action with the same id. Localization won't work properly. Let user know.
-                    logger.LogWarning(LocalizableStrings.Authoring_PostActionIdIsNotUnique, filename, postActionId, postActionIndex);
+                    logger?.LogWarning(LocalizableStrings.Authoring_PostActionIdIsNotUnique, filename, postActionId, postActionIndex);
                     postActionId = null;
                 }
 
                 if (actionId == default)
                 {
-                    logger.LogError(LocalizableStrings.Authoring_PostActionMustHaveActionId, filename, postActionIndex);
+                    logger?.LogError(LocalizableStrings.Authoring_PostActionMustHaveActionId, filename, postActionIndex);
                     continue;
                 }
 
@@ -93,7 +128,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     args.Add(argInfo.Name, argInfo.Value.ToString());
                 }
 
-                using var postActionLoggerScope = logger.BeginScope("PostAction " + (postActionId ?? postActionIndex.ToString()));
+                using var postActionLoggerScope = logger?.BeginScope("PostAction " + (postActionId ?? postActionIndex.ToString()));
                 IReadOnlyList<ManualInstructionModel> manualInstructions = LoadManualInstructionsFromJArray(action.Get<JArray>("ManualInstructions"), logger);
 
                 PostActionModel model = new PostActionModel(args, manualInstructions)
@@ -111,7 +146,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return localizedPostActions;
         }
 
-        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, ILogger logger)
+        private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, ILogger? logger)
         {
             var results = new List<ManualInstructionModel>();
             if (jArray == null)
@@ -130,7 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (id != null && !manualInstructionIds.Add(id))
                 {
                     // There is already an instruction with the same id. We won't be able to localize this. Let user know.
-                    logger.LogWarning(LocalizableStrings.Authoring_ManualInstructionIdIsNotUnique, id, i);
+                    logger?.LogWarning(LocalizableStrings.Authoring_ManualInstructionIdIsNotUnique, id, i);
                     id = null;
                 }
 

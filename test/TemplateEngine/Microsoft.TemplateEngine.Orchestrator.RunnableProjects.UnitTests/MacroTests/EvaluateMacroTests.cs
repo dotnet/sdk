@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, predicate, evaluator);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = new SimpleConfigModel(_engineEnvironmentSettings.Host.LoggerFactory);
+            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
             IParameterSet parameters = new ParameterSet(config);
             ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 

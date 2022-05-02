@@ -6,7 +6,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
@@ -69,6 +71,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string configContent = @"
 {
+  ""identity"": ""test"",
   ""symbols"": {
 	""testparam"": {
       ""type"": ""parameter"",
@@ -96,12 +99,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   }
 }
 ";
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
-            JObject configJson = JObject.Parse(configContent);
-            SimpleConfigModel config = new SimpleConfigModel(environment, configJson);
-            Assert.Equal(2, config.SymbolFilenameReplacements.Count);
-            Assert.Equal("testparamfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
-            Assert.Equal("testgeneratedfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
+            RunnableProjectConfig runnableConfig =
+                new RunnableProjectConfig(environment, A.Fake<IGenerator>(), configModel);
+
+            Assert.Equal(2, runnableConfig.SymbolFilenameReplacements.Count);
+            Assert.Equal("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
+            Assert.Equal("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
         [Fact(DisplayName = nameof(CanReadFilenameReplacementConfigWithForms))]
@@ -109,6 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string configContent = @"
 {
+  ""identity"": ""test"",
   ""symbols"": {
 	""testparam"": {
       ""type"": ""parameter"",
@@ -146,15 +152,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     }
   }
 }";
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
-            JObject configJson = JObject.Parse(configContent);
-            SimpleConfigModel config = new SimpleConfigModel(environment, configJson);
-            Assert.Equal(4, config.SymbolFilenameReplacements.Count);
-            Assert.Equal(3, config.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
-            Assert.Equal("TestParamFileReplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}identity").OriginalValue.Value);
-            Assert.Equal("TESTPARAMFILEREPLACEMENT", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}uc").OriginalValue.Value);
-            Assert.Equal("testparamfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}lc").OriginalValue.Value);
-            Assert.Equal("testgeneratedfilereplacement", config.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
+            RunnableProjectConfig runnableConfig =
+                new RunnableProjectConfig(environment, A.Fake<IGenerator>(), configModel);
+
+            Assert.Equal(4, runnableConfig.SymbolFilenameReplacements.Count);
+            Assert.Equal(3, runnableConfig.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
+            Assert.Equal("TestParamFileReplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}identity").OriginalValue.Value);
+            Assert.Equal("TESTPARAMFILEREPLACEMENT", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}uc").OriginalValue.Value);
+            Assert.Equal("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testparam{-VALUE-FORMS-}lc").OriginalValue.Value);
+            Assert.Equal("testgeneratedfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName == "testgenerated").OriginalValue.Value);
         }
 
         [Fact(DisplayName = nameof(CanGenerateFileRenamesForSymbolBasedRenames))]
@@ -178,7 +186,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -222,7 +230,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -276,7 +284,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -336,7 +344,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -388,7 +396,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -432,7 +440,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare parameters
-            ParameterSet parameters = new ParameterSet(new SimpleConfigModel(environment, JObject.Parse("{}")));
+            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
             Parameter nameParameter = new Parameter()
             {
                 Name = "name"
@@ -460,6 +468,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceConfig = @"
 {
+  ""identity"": ""test"",
+  ""name"": ""test"",
+  ""shortname"": ""test"",
   ""sources"": [
     {
       ""rename"": {
@@ -485,6 +496,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceConfig = @"
 {
+  ""identity"": ""test"",
+  ""name"": ""test"",
+  ""shortname"": ""test"",
   ""sources"": [
     {
       ""modifiers"": [

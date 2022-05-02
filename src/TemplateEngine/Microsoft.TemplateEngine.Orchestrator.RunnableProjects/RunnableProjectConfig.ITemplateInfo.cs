@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
@@ -12,46 +12,29 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class RunnableProjectTemplate : ITemplate
+    internal partial class RunnableProjectConfig : ITemplate
     {
-        private readonly SimpleConfigModel _config;
-        private readonly IGenerator _generator;
-        private readonly IFile? _localeConfigFile;
-        private readonly IFile? _hostConfigFile;
+        IDirectory? ITemplate.TemplateSourceRoot => TemplateSourceRoot;
 
-        internal RunnableProjectTemplate(
-            IGenerator generator,
-            SimpleConfigModel config,
-            IFile? localeConfigFile,
-            IFile? hostConfigFile)
-        {
-            _config = config;
-            _generator = generator;
-            _localeConfigFile = localeConfigFile;
-            _hostConfigFile = hostConfigFile;
-        }
-
-        IDirectory ITemplate.TemplateSourceRoot => _config.TemplateSourceRoot;
-
-        string ITemplateInfo.Identity => _config.Identity ?? _config.Name;
+        string ITemplateInfo.Identity => _configuration.Identity ?? _configuration.Name ?? throw new TemplateValidationException("Template configuration should have name defined");
 
         Guid ITemplateInfo.GeneratorId => _generator.Id;
 
-        string? ITemplateInfo.Author => _config.Author;
+        string? ITemplateInfo.Author => _configuration.Author;
 
-        string? ITemplateInfo.Description => _config.Description;
+        string? ITemplateInfo.Description => _configuration.Description;
 
-        IReadOnlyList<string> ITemplateInfo.Classifications => _config.Classifications;
+        IReadOnlyList<string> ITemplateInfo.Classifications => _configuration.Classifications;
 
-        string? ITemplateInfo.DefaultName => _config.DefaultName;
+        string? ITemplateInfo.DefaultName => _configuration.DefaultName;
 
         IGenerator ITemplate.Generator => _generator;
 
-        string? ITemplateInfo.GroupIdentity => _config.GroupIdentity;
+        string? ITemplateInfo.GroupIdentity => _configuration.GroupIdentity;
 
-        int ITemplateInfo.Precedence => _config.Precedence;
+        int ITemplateInfo.Precedence => _configuration.Precedence;
 
-        string ITemplateInfo.Name => _config.Name;
+        string ITemplateInfo.Name => _configuration.Name ?? throw new TemplateValidationException("Template configuration should have name defined");
 
         [Obsolete]
         string ITemplateInfo.ShortName
@@ -67,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        IReadOnlyList<string> ITemplateInfo.ShortNameList => _config.ShortNameList ?? new List<string>();
+        IReadOnlyList<string> ITemplateInfo.ShortNameList => _configuration.ShortNameList ?? new List<string>();
 
         [Obsolete]
         IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags
@@ -114,39 +97,37 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             get
             {
-                return ((IRunnableProjectConfig)_config).Parameters.Values
+                return Parameters.Values
                     .Where(param => param.Type.Equals("parameter", StringComparison.OrdinalIgnoreCase)
                         && param.Priority != TemplateParameterPriority.Implicit)
                     .ToList();
             }
         }
 
-        IFileSystemInfo ITemplate.Configuration => _config.SourceFile;
+        IFileSystemInfo ITemplate.Configuration => SourceFile;
 
-        string ITemplateInfo.MountPointUri => _config.SourceFile.MountPoint.MountPointUri;
+        string ITemplateInfo.MountPointUri => SourceFile.MountPoint.MountPointUri;
 
-        string ITemplateInfo.ConfigPlace => _config.SourceFile.FullPath;
+        string ITemplateInfo.ConfigPlace => SourceFile.FullPath;
 
         IFileSystemInfo? ITemplate.LocaleConfiguration => _localeConfigFile;
 
         string? ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
 
         //read in simple template model instead
-        bool ITemplate.IsNameAgreementWithFolderPreferred => _config.PreferNameDirectory;
+        bool ITemplate.IsNameAgreementWithFolderPreferred => _configuration.PreferNameDirectory;
 
         string? ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
 
         //read in simple template model instead
-        string? ITemplateInfo.ThirdPartyNotices => _config.ThirdPartyNotices;
+        string? ITemplateInfo.ThirdPartyNotices => _configuration.ThirdPartyNotices;
 
-        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => _config.BaselineInfo;
+        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => _configuration.BaselineInfo;
 
-        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => _config.Tags;
+        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => _configuration.Tags;
 
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
-        IReadOnlyList<Guid> ITemplateInfo.PostActions => _config.PostActionModels.Select(pam => pam.ActionId).ToArray();
-
-        internal IRunnableProjectConfig Config => _config;
+        IReadOnlyList<Guid> ITemplateInfo.PostActions => _configuration.PostActionModels.Select(pam => pam.ActionId).ToArray();
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
@@ -16,14 +17,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     /// Test class for testing file manipulation aspects of template creation without installing the templates.
     /// This does not deal with parameters or variables, it's beyond the scope of this class.
     /// </summary>
-    public class TestTemplateSetup
+    internal class TestTemplateSetup
     {
         private readonly string _configFile;
 
         private IEngineEnvironmentSettings _environmentSettings;
 
         private IDictionary<string, string> _sourceFiles;
-
+        private readonly SimpleConfigModel _configModel;
         private string _sourceBaseDir;
 
         private IMountPoint _sourceMountPoint;
@@ -48,9 +49,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             _configFile = TemplateConfigTestHelpers.DefaultConfigRelativePath;
         }
 
-        public TestTemplateSetup(IEngineEnvironmentSettings environment, string sourceBaseDir)
-            : this(environment, sourceBaseDir, new Dictionary<string, string>())
+        public TestTemplateSetup(IEngineEnvironmentSettings environment, string sourceBaseDir, IDictionary<string, string> sourceFiles, SimpleConfigModel configModel)
         {
+            _environmentSettings = environment;
+            _sourceFiles = sourceFiles;
+            _configModel = configModel;
+            _sourceBaseDir = sourceBaseDir;
+            _configFile = TemplateConfigTestHelpers.DefaultConfigRelativePath;
         }
 
         private IMountPoint SourceMountPoint
@@ -93,7 +98,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 variables = new VariableCollection();
             }
 
-            IRunnableProjectConfig runnableConfig = TemplateConfigTestHelpers.ConfigFromSource(_environmentSettings, SourceMountPoint);
+            IRunnableProjectConfig runnableConfig = GetConfig();
+
             runnableConfig.Evaluate(parameters, variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
@@ -123,7 +129,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 variables = new VariableCollection();
             }
 
-            IRunnableProjectConfig runnableConfig = TemplateConfigTestHelpers.ConfigFromSource(_environmentSettings, SourceMountPoint);
+            IRunnableProjectConfig runnableConfig = GetConfig();
             runnableConfig.Evaluate(parameters, variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
@@ -147,7 +153,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public IReadOnlyDictionary<string, string> GetRenames(string sourceDir, string targetBaseDir, IParameterSet parameters, IReadOnlyList<IReplacementTokens> symbolBasedRenames)
         {
-            IFileSystemInfo configFileInfo = TemplateConfigTestHelpers.ConfigFileSystemInfo(SourceMountPoint, _configFile);
+            IFileSystemInfo configFileInfo = SourceMountPoint.FileInfo(_configFile ?? TemplateConfigTestHelpers.DefaultConfigRelativePath);
             parameters.TryGetParameterDefinition("name", out ITemplateParameter nameParam);
             object resolvedNameValue = parameters.ResolvedValues[nameParam];
             return FileRenameGenerator.AugmentFileRenames(_environmentSettings, _sourceBaseDir, configFileInfo, sourceDir, ref targetBaseDir, resolvedNameValue, parameters, new Dictionary<string, string>(), symbolBasedRenames);
@@ -164,6 +170,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 AddFile(fileInfo.Key, fileInfo.Value);
             }
+        }
+
+        private IRunnableProjectConfig GetConfig()
+        {
+            string configPath = _configFile ?? TemplateConfigTestHelpers.DefaultConfigRelativePath;
+
+            return _configModel == null
+                ? new RunnableProjectConfig(_environmentSettings, A.Fake<IGenerator>(), SourceMountPoint.FileInfo(configPath))
+                : new RunnableProjectConfig(_environmentSettings, A.Fake<IGenerator>(), _configModel, SourceMountPoint.FileInfo(configPath));
         }
     }
 }

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -18,22 +19,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     {
         public static readonly Guid FileSystemMountPointFactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
         public static readonly string DefaultConfigRelativePath = ".template.config/template.json";
-
-        public static IFileSystemInfo ConfigFileSystemInfo(IMountPoint mountPoint, string? configFile = null)
-        {
-            if (string.IsNullOrEmpty(configFile))
-            {
-                configFile = DefaultConfigRelativePath;
-            }
-
-            return mountPoint.FileInfo(configFile);
-        }
-
-        // Note: this does not deal with configs split into multiple files.
-        internal static IRunnableProjectConfig ConfigFromSource(IEngineEnvironmentSettings environment, IMountPoint mountPoint, string? configFile = null)
-        {
-            return new SimpleConfigModel((IFile)ConfigFileSystemInfo(mountPoint, configFile));
-        }
 
         internal static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)
         {
@@ -58,7 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        internal static IMountPoint? CreateMountPoint(IEngineEnvironmentSettings environment, string sourceBasePath)
+        internal static IMountPoint CreateMountPoint(IEngineEnvironmentSettings environment, string sourceBasePath)
         {
             foreach (var factory in environment.Components.OfType<IMountPointFactory>())
             {
@@ -68,7 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             }
             Assert.True(false, "couldn't create source mount point");
-            return null;
+            throw new Exception("couldn't create source mount point");
         }
     }
 }

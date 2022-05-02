@@ -13,6 +13,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests;
 using Microsoft.TemplateEngine.TestHelper;
+using NuGet.Protocol;
 using Xunit;
 using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 
@@ -36,19 +37,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             Guid inputTestGuid = new Guid("12aa8f4e-a4aa-4ac1-927c-94cb99485ef1");
             string contentFileNamePrefix = "content - ";
-
-            string guidsConfigFormat = @"
-{{
-  ""guids"": [
-    ""{0}"" 
-  ]
-}}
-";
-            string guidsConfig = string.Format(guidsConfigFormat, inputTestGuid);
+            SimpleConfigModel config = new SimpleConfigModel()
+            {
+                Identity = "test",
+                Guids = new List<Guid>()
+                {
+                    inputTestGuid
+                }
+            };
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, guidsConfig);
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
 
             //content
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
@@ -63,11 +63,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
 
             TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
-            IRunnableProjectConfig runnableConfig = TemplateConfigTestHelpers.ConfigFromSource(environment, sourceMountPoint!);
-            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
 
