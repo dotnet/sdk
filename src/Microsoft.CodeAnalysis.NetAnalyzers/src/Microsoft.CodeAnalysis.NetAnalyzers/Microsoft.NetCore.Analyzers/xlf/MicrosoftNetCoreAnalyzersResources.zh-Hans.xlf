@@ -1709,7 +1709,7 @@
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="needs-review-translation">模块初始化表达式旨在由应用程序代码使用，以确保在应用程序代码开始执行之前初始化应用程序的组件。如果库代码声明了 “ModuleInitializer” 方法，则可能干扰应用程序初始化，还会导致限制该应用程序的剪裁功能。因此，库代码不应使用 “ModuleInitializer” 属性，而是公开可用于初始化库中任何组件的方法，并允许应用程序在应用程序初始化期间调用该方法。</target>
+        <target state="new">Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
