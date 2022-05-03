@@ -1708,8 +1708,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
-        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="translated">模組初始設定式供應用程式程式碼使用，以確保應用程式程式碼開始執行前先初始化應用程式的元件。如果程式庫程式碼宣告 'ModuleInitializer' 方法，它可能會干擾應用程式初始化，而且也會導致該應用程式的截斷功能遭到限制。程式庫程式碼不應使用 'ModuleInitializer' 屬性，而應該公開可用於初始化程式庫內任何元件的方法，並允許應用程式在應用程式初始化期間叫用方法。</target>
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="needs-review-translation">模組初始設定式供應用程式程式碼使用，以確保應用程式程式碼開始執行前先初始化應用程式的元件。如果程式庫程式碼宣告 'ModuleInitializer' 方法，它可能會干擾應用程式初始化，而且也會導致該應用程式的截斷功能遭到限制。程式庫程式碼不應使用 'ModuleInitializer' 屬性，而應該公開可用於初始化程式庫內任何元件的方法，並允許應用程式在應用程式初始化期間叫用方法。</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
