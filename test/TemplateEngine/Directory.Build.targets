@@ -8,6 +8,7 @@
     <PackageReference Update="Microsoft.DotNet.Cli.Utils" Version="6.0.100-rc.1.21423.4" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Update="xunit.abstractions" Version="2.0.3" />
+    <PackageReference Update="xunit" Version="$(XUnitVersion)" />
     <PackageReference Update="Newtonsoft.Json.Schema" Version="3.0.13" />
     <PackageReference Update="Verify.XUnit" Version="14.2.0" />
   </ItemGroup>

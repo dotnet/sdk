@@ -15,9 +15,14 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class GlobalSettingsTests : IDisposable
+    public class GlobalSettingsTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _helper = new EnvironmentSettingsHelper();
+        private readonly EnvironmentSettingsHelper _helper;
+
+        public GlobalSettingsTests(EnvironmentSettingsHelper helper)
+        {
+            _helper = helper;
+        }
 
         [Fact]
         public async Task TestLocking()
@@ -126,11 +131,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             Assert.Single(((MonitoredFileSystem)envSettings.Host.FileSystem).FilesWatched);
             Assert.Equal(settingsFile, ((MonitoredFileSystem)envSettings.Host.FileSystem).FilesWatched.Single());
-        }
-
-        public void Dispose()
-        {
-            _helper.Dispose();
         }
     }
 }

@@ -406,7 +406,10 @@ false,
                     },
                 }
             };
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFilename = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -421,8 +424,6 @@ false,
             var localizationFile = mountPoint.FileInfo(localizationFilename);
             var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel, localizationFile));
-
-            IReadOnlyList<(LogLevel, string)> loggedMessages = ((TestHost)environmentSettings.Host).LoggedMessages;
 
             Assert.Single(loggedMessages);
             Assert.Contains(
@@ -452,7 +453,9 @@ false,
                     },
                 }
             };
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -466,8 +469,6 @@ false,
             var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel));
-
-            IReadOnlyList<(LogLevel, string)> loggedMessages = ((TestHost)environmentSettings.Host).LoggedMessages;
 
             Assert.Single(loggedMessages);
 

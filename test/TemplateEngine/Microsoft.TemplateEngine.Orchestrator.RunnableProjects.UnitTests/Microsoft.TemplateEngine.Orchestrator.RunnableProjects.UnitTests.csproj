@@ -4,6 +4,14 @@
       <TargetFrameworks Condition="'$(PackSpecific)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworks>
     </PropertyGroup>
     <ItemGroup>
+      <None Remove="xunit.runner.json" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="xunit.runner.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+    <ItemGroup>
       <PackageReference Include="Newtonsoft.Json.Schema" />
       <PackageReference Include="FakeItEasy" />
     </ItemGroup>
