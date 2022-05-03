@@ -28,8 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         {
             DataType = dataType;
             VariableName = variableName;
-            Random rand = new Random();
-            int startPort = rand.Next(low, high);
+            int startPort = CryptoRandom.NextInt(low, high);
 
             for (int testPort = startPort; testPort <= high; testPort++)
             {
