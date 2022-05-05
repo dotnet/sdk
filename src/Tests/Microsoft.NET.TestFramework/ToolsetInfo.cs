@@ -375,14 +375,5 @@ namespace Microsoft.NET.TestFramework
             return !File.Exists(extensionsImportAfterPath);
         }
 
-        public static string LastRuntimeIdentifier(string OS, string architecture = null)
-        {
-            if (OS.Contains("win") && architecture != null)
-            {
-                return $"win10-{architecture}";
-            }
-            return "win10";
-        }
-
     }
 }
