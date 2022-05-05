@@ -54,6 +54,22 @@ global using global::System.Net.Http;
 global using global::System.Net.Http.Json;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
+namespace Microsoft.AspNetCore.Builder { }
+namespace Microsoft.AspNetCore.Hosting { }
+namespace Microsoft.AspNetCore.Http { }
+namespace Microsoft.AspNetCore.Routing { }
+namespace Microsoft.Extensions.Configuration { }
+namespace Microsoft.Extensions.DependencyInjection { }
+namespace Microsoft.Extensions.Hosting { }
+namespace Microsoft.Extensions.Logging { }
+namespace System { }
+namespace System.Collections.Generic { }
+namespace System.IO { }
+namespace System.Linq { }
+namespace System.Net.Http { }
+namespace System.Net.Http.Json { }
+namespace System.Threading { }
+namespace System.Threading.Tasks { }
 ");
         }
 

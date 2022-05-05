@@ -46,6 +46,13 @@ global using global::System.Linq;
 global using global::System.Net.Http;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
+namespace System { }
+namespace System.Collections.Generic { }
+namespace System.IO { }
+namespace System.Linq { }
+namespace System.Net.Http { }
+namespace System.Threading { }
+namespace System.Threading.Tasks { }
 ");
         }
 

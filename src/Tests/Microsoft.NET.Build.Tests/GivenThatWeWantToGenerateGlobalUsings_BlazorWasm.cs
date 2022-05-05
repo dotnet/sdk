@@ -47,6 +47,16 @@ global using global::System.Linq;
 global using global::System.Net.Http;
 global using global::System.Threading;
 global using global::System.Threading.Tasks;
+namespace Microsoft.Extensions.Configuration { }
+namespace Microsoft.Extensions.DependencyInjection { }
+namespace Microsoft.Extensions.Logging { }
+namespace System { }
+namespace System.Collections.Generic { }
+namespace System.IO { }
+namespace System.Linq { }
+namespace System.Net.Http { }
+namespace System.Threading { }
+namespace System.Threading.Tasks { }
 ");
         }
 
