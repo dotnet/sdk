@@ -20,6 +20,8 @@ namespace Microsoft.NET.TestFramework
         public const string CurrentTargetFramework = "net6.0";
         public const string CurrentTargetFrameworkVersion = "6.0";
 
+        public const string LastWinRuntimeIdentifier = "win10";
+
         public string DotNetRoot { get; }
         public string DotNetHostPath { get; }
 
@@ -371,6 +373,15 @@ namespace Microsoft.NET.TestFramework
             string fullMSBuildDirectory = Path.GetDirectoryName(FullFrameworkMSBuildPath);
             string extensionsImportAfterPath = Path.Combine(fullMSBuildDirectory, "..", "Microsoft.Common.targets", "ImportAfter", "Microsoft.NET.Build.Extensions.targets");
             return !File.Exists(extensionsImportAfterPath);
+        }
+
+        public static string LastRuntimeIdentifier(string OS, string architecture = null)
+        {
+            if (OS.Contains("win") && architecture != null)
+            {
+                return $"win10-{architecture}";
+            }
+            return "win10";
         }
 
     }
