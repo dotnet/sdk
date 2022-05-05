@@ -24,7 +24,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             globalOptions.TryGetValue("build_property.RazorConfiguration", out var configurationName);
             globalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace);
             globalOptions.TryGetValue("build_property.SupportLocalizedComponentNames", out var supportLocalizedComponentNames);
-            globalOptions.TryGetValue("build_property._RazorSourceGeneratorDebug", out var waitForDebugger);
             globalOptions.TryGetValue("build_property.SuppressRazorSourceGenerator", out var suppressRazorSourceGenerator);
             globalOptions.TryGetValue("build_property.GenerateRazorMetadataSourceChecksumAttributes", out var generateMetadataSourceChecksumAttributes);
 
@@ -44,7 +43,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             var razorSourceGenerationOptions = new RazorSourceGenerationOptions()
             {
                 Configuration = razorConfiguration,
-                WaitForDebugger = waitForDebugger == "true",
                 SuppressRazorSourceGenerator = suppressRazorSourceGenerator == "true",
                 GenerateMetadataSourceChecksumAttributes = generateMetadataSourceChecksumAttributes == "true",
                 RootNamespace = rootNamespace ?? "ASP",

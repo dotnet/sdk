@@ -8,6 +8,12 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
+    /// <summary>
+    /// A highly specialized comparer that allows for treating an event source as cached if the razor options are set to suppress generation.
+    /// </summary>
+    /// <remarks>
+    /// This should not be used outside of <see cref="IncrementalValuesProviderExtensions.AsCachedIfSuppressed{T}(IncrementalValueProvider{T}, IncrementalValueProvider{RazorSourceGenerationOptions})"/>
+    /// </remarks>
     internal sealed class RazorSourceGeneratorComparer<T> : IEqualityComparer<(T Left, RazorSourceGenerationOptions Right)> where T : notnull
     {
         private readonly Func<T, T, bool> _equals;
@@ -27,19 +33,25 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return _equals(x.Left, y.Left);
         }
 
-        public int GetHashCode((T Left, RazorSourceGenerationOptions Right) obj) => obj.Left.GetHashCode();
+        public int GetHashCode((T Left, RazorSourceGenerationOptions Right) obj) => throw new NotImplementedException("GetHashCode is never expected to be called");
     }
 
     internal static class IncrementalValuesProviderExtensions
     {
+        /// <summary>
+        /// Adds a comparer that will force the provider to be considered as cached if the razor options call for supression
+        /// </summary>
         internal static IncrementalValueProvider<T> AsCachedIfSuppressed<T>(this IncrementalValueProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
             where T : notnull
         {
             return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
 
+        /// <summary>
+        /// Adds a comparer that will force the provider to be considered as cached if the razor options call for supression
+        /// </summary>
         internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
-    where T : notnull
+            where T : notnull
         {
             return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
@@ -86,7 +98,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         }
     }
 
-    internal class LambdaComparer<T> : IEqualityComparer<T>
+    internal sealed class LambdaComparer<T> : IEqualityComparer<T>
     {
         private readonly Func<T, T, bool> _equal;
         private readonly Func<T, int> _getHashCode;

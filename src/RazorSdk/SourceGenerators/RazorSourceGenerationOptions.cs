@@ -8,20 +8,11 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    internal class RazorSourceGenerationOptions : IEquatable<RazorSourceGenerationOptions>
+    internal sealed class RazorSourceGenerationOptions : IEquatable<RazorSourceGenerationOptions>
     {
         public string RootNamespace { get; set; } = "ASP";
 
         public RazorConfiguration Configuration { get; set; } = RazorConfiguration.Default;
-
-        /// <summary>
-        /// Gets a flag that determines if the source generator waits for the debugger to attach.
-        /// <para>
-        /// To configure this using MSBuild, use the <c>_RazorSourceGeneratorDebug</c> property.
-        /// For instance <c>dotnet msbuild /p:_RazorSourceGeneratorDebug=true</c>
-        /// </para>
-        /// </summary>
-        public bool WaitForDebugger { get; set; } = false;
 
         /// <summary>
         /// Gets a flag that determines if generated Razor views and Pages includes the <c>RazorSourceChecksumAttribute</c>.
