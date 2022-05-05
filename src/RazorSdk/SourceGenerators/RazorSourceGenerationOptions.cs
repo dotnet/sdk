@@ -19,14 +19,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// </summary>
         public bool GenerateMetadataSourceChecksumAttributes { get; set; } = false;
 
-        /// <summary>
-        /// Gets a flag that determines if the source generator should no-op.
-        /// <para>
-        /// This flag exists to support scenarios in VS where design-time and EnC builds need
-        /// to run without invoking the source generator to avoid duplicate types being produced.
-        /// The property is set by the SDK via an editor config.
-        /// </para>
-        /// </summary>
         public bool SuppressRazorSourceGenerator { get; set; } = false;
 
         /// <summary>
@@ -40,9 +32,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public bool SupportLocalizedComponentNames { get; set; } = false;
 
         public bool Equals(RazorSourceGenerationOptions other)
-                   => SuppressRazorSourceGenerator == other.SuppressRazorSourceGenerator && EqualsIgnoringSupression(other);
-
-        public bool EqualsIgnoringSupression(RazorSourceGenerationOptions other)
         {
             return
                 RootNamespace == other.RootNamespace &&

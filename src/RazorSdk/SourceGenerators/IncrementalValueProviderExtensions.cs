@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     /// <remarks>
     /// This should not be used outside of <see cref="IncrementalValuesProviderExtensions.AsCachedIfSuppressed{T}(IncrementalValueProvider{T}, IncrementalValueProvider{RazorSourceGenerationOptions})"/>
     /// </remarks>
-    internal sealed class RazorSourceGeneratorComparer<T> : IEqualityComparer<(T Left, RazorSourceGenerationOptions Right)> where T : notnull
+    internal sealed class RazorSourceGeneratorComparer<T> : IEqualityComparer<(T Left, bool IsSuppressed)> where T : notnull
     {
         private readonly Func<T, T, bool> _equals;
         public RazorSourceGeneratorComparer(Func<T, T, bool>? equals = null)
@@ -22,9 +22,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             _equals = equals ?? EqualityComparer<T>.Default.Equals;
         }
 
-        public bool Equals((T Left, RazorSourceGenerationOptions Right) x, (T Left, RazorSourceGenerationOptions Right) y)
+        public bool Equals((T Left, bool IsSuppressed) x, (T Left, bool IsSuppressed) y)
         {
-            if (y.Right.SuppressRazorSourceGenerator)
+            if (y.IsSuppressed)
             {
                 // If source generation is suppressed, we can always use previously cached results.
                 return true;
@@ -33,7 +33,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return _equals(x.Left, y.Left);
         }
 
-        public int GetHashCode((T Left, RazorSourceGenerationOptions Right) obj) => throw new NotImplementedException("GetHashCode is never expected to be called");
+        public int GetHashCode((T Left, bool IsSuppressed) obj) => throw new NotImplementedException("GetHashCode is never expected to be called");
     }
 
     internal static class IncrementalValuesProviderExtensions
@@ -41,19 +41,19 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// <summary>
         /// Adds a comparer that will force the provider to be considered as cached if the razor options call for supression
         /// </summary>
-        internal static IncrementalValueProvider<T> AsCachedIfSuppressed<T>(this IncrementalValueProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
+        internal static IncrementalValueProvider<T> AsCachedIfSuppressed<T>(this IncrementalValueProvider<T> provider, IncrementalValueProvider<bool> isSuppressedProvider)
             where T : notnull
         {
-            return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
+            return provider.Combine(isSuppressedProvider).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
 
         /// <summary>
         /// Adds a comparer that will force the provider to be considered as cached if the razor options call for supression
         /// </summary>
-        internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<RazorSourceGenerationOptions> options)
+        internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<bool> isSuppressedProvider)
             where T : notnull
         {
-            return provider.Combine(options).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
+            return provider.Combine(isSuppressedProvider).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
 
 

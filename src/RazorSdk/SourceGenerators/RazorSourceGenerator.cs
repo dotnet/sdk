@@ -19,23 +19,23 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
-            var razorSourceGeneratorOptionsWithDiagnostics = context.AnalyzerConfigOptionsProvider
-                .Combine(context.ParseOptionsProvider)
-                .Select(ComputeRazorSourceGeneratorOptions);
-            var liveRazorSourceGeneratorOptions = razorSourceGeneratorOptionsWithDiagnostics.ReportDiagnostics(context);
+            // determine if we should suppress this run and set all the inputs to cached if so
+            var isGeneratorSuppressed = context.AnalyzerConfigOptionsProvider.Select(GetSupressionStatus);
 
-            var analyzerConfigOptions = context.AnalyzerConfigOptionsProvider.AsCachedIfSuppressed(liveRazorSourceGeneratorOptions);
-            var additionalTexts = context.AdditionalTextsProvider.AsCachedIfSuppressed(liveRazorSourceGeneratorOptions);
-            var parseOptions = context.ParseOptionsProvider.AsCachedIfSuppressed(liveRazorSourceGeneratorOptions);
-            var compilation = context.CompilationProvider.AsCachedIfSuppressed(liveRazorSourceGeneratorOptions);
-            var razorSourceGeneratorOptions = liveRazorSourceGeneratorOptions.WithLambdaComparer((l, r) => l.EqualsIgnoringSupression(r), l => l.GetHashCode());
+            var analyzerConfigOptions = context.AnalyzerConfigOptionsProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
+            var additionalTexts = context.AdditionalTextsProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
+            var parseOptions = context.ParseOptionsProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
+            var compilation = context.CompilationProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
 
-            var sourceItemsWithDiagnostics = additionalTexts
+            var razorSourceGeneratorOptions = analyzerConfigOptions
+                .Combine(parseOptions)
+                .Select(ComputeRazorSourceGeneratorOptions)
+                .ReportDiagnostics(context);
+
+            var sourceItems = additionalTexts
                 .Where(static (file) => file.Path.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) || file.Path.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
                 .Combine(analyzerConfigOptions)
-                .Select(ComputeProjectItems);
-
-            var sourceItems = sourceItemsWithDiagnostics
+                .Select(ComputeProjectItems)
                 .ReportDiagnostics(context);
 
             var hasRazorFiles = sourceItems.Collect()
