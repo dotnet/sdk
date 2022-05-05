@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
-        <id>VS.Redist.Common.NetCore.SdkPlaceholder.$ARCH$</id>
+        <id>VS.Redist.Common.NetCore.SdkPlaceholder.$ARCH$.$MAJOR_MINOR$</id>
         <version>1.0.0</version>
-        <title>VS.Redist.Common.NetCore.SdkPlaceholder.$ARCH$</title>
+        <title>VS.Redist.Common.NetCore.SdkPlaceholder.$ARCH$.$MAJOR_MINOR$</title>
         <authors>Microsoft</authors>
         <owners>Microsoft</owners>
         <licenseUrl>https://www.microsoft.com/net/dotnet_library_license.htm</licenseUrl>
