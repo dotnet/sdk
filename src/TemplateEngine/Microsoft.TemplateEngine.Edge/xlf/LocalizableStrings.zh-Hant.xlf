@@ -2,6 +2,26 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
+        <source>Argument(s) were not specified. At least one argument should be specified.</source>
+        <target state="new">Argument(s) were not specified. At least one argument should be specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Constraint_Error_ArrayHasNoObjects">
+        <source>'{0}' does not contain valid items.</source>
+        <target state="new">'{0}' does not contain valid items.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="Constraint_Error_InvalidJson">
+        <source>'{0}' is not a valid JSON.</source>
+        <target state="new">'{0}' is not a valid JSON.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="Constraint_WrongConfigurationCTA">
+        <source>Check the constraint configuration in template.json.</source>
+        <target state="new">Check the constraint configuration in template.json.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
         <target state="translated">資料夾 {0} 不存在。</target>
@@ -162,6 +182,27 @@ Details: {1}.</source>
         <target state="translated">無法檢查套件 {0} 的更新。
 詳細資料: {1}</target>
         <note />
+      </trans-unit>
+      <trans-unit id="OSConstraint_Error_InvalidJsonType">
+        <source>'{0}' is not a valid JSON string or array.</source>
+        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="OSConstraint_Error_InvalidOSName">
+        <source>'{0}' is not a valid operating system name. Allowed values are: {1}.</source>
+        <target state="new">'{0}' is not a valid operating system name. Allowed values are: {1}.</target>
+        <note>{0} - OS name in configuration
+{1} - comma-separated list of allowed operating system names</note>
+      </trans-unit>
+      <trans-unit id="OSConstraint_Message_Restricted">
+        <source>Running template on {0} is not supported, supported OS is/are: {1}.</source>
+        <target state="new">Running template on {0} is not supported, supported OS is/are: {1}.</target>
+        <note>{0} - name of the executing operating system, {1} - comma separated list of supported operating systems.</note>
+      </trans-unit>
+      <trans-unit id="OSConstraint_Name">
+        <source>Operating System</source>
+        <target state="new">Operating System</target>
+        <note>this is name of constraint that will appear in the UI</note>
       </trans-unit>
       <trans-unit id="Scanner_Error_TemplatePackageLocationIsNotSupported">
         <source>Template package location {0} is not supported, or doesn't exist.</source>

@@ -117,6 +117,20 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Constraint_Error_ArgumentsNotSpecified" xml:space="preserve">
+    <value>Argument(s) were not specified. At least one argument should be specified.</value>
+  </data>
+  <data name="Constraint_Error_ArrayHasNoObjects" xml:space="preserve">
+    <value>'{0}' does not contain valid items.</value>
+    <comment>{0} is JSON configuration for constraint</comment>
+  </data>
+  <data name="Constraint_Error_InvalidJson" xml:space="preserve">
+    <value>'{0}' is not a valid JSON.</value>
+    <comment>{0} is JSON configuration for constraint</comment>
+  </data>
+  <data name="Constraint_WrongConfigurationCTA" xml:space="preserve">
+    <value>Check the constraint configuration in template.json.</value>
+  </data>
   <data name="FolderInstaller_InstallResult_Error_FolderDoesNotExist" xml:space="preserve">
     <value>The folder {0} doesn't exist.</value>
   </data>
@@ -214,6 +228,23 @@ Details: {1}.</value>
   <data name="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric" xml:space="preserve">
     <value>Failed to check the update for the package {0}.
 Details: {1}.</value>
+  </data>
+  <data name="OSConstraint_Error_InvalidJsonType" xml:space="preserve">
+    <value>'{0}' is not a valid JSON string or array.</value>
+    <comment>{0} is JSON configuration for constraint</comment>
+  </data>
+  <data name="OSConstraint_Error_InvalidOSName" xml:space="preserve">
+    <value>'{0}' is not a valid operating system name. Allowed values are: {1}.</value>
+    <comment>{0} - OS name in configuration
+{1} - comma-separated list of allowed operating system names</comment>
+  </data>
+  <data name="OSConstraint_Message_Restricted" xml:space="preserve">
+    <value>Running template on {0} is not supported, supported OS is/are: {1}.</value>
+    <comment>{0} - name of the executing operating system, {1} - comma separated list of supported operating systems.</comment>
+  </data>
+  <data name="OSConstraint_Name" xml:space="preserve">
+    <value>Operating System</value>
+    <comment>this is name of constraint that will appear in the UI</comment>
   </data>
   <data name="Scanner_Error_TemplatePackageLocationIsNotSupported" xml:space="preserve">
     <value>Template package location {0} is not supported, or doesn't exist.</value>

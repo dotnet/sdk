@@ -61,6 +61,42 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Argument(s) were not specified. At least one argument should be specified..
+        /// </summary>
+        internal static string Constraint_Error_ArgumentsNotSpecified {
+            get {
+                return ResourceManager.GetString("Constraint_Error_ArgumentsNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; does not contain valid items..
+        /// </summary>
+        internal static string Constraint_Error_ArrayHasNoObjects {
+            get {
+                return ResourceManager.GetString("Constraint_Error_ArrayHasNoObjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON..
+        /// </summary>
+        internal static string Constraint_Error_InvalidJson {
+            get {
+                return ResourceManager.GetString("Constraint_Error_InvalidJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Check the constraint configuration in template.json..
+        /// </summary>
+        internal static string Constraint_WrongConfigurationCTA {
+            get {
+                return ResourceManager.GetString("Constraint_WrongConfigurationCTA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The folder {0} doesn&apos;t exist..
         /// </summary>
         internal static string FolderInstaller_InstallResult_Error_FolderDoesNotExist {
@@ -342,6 +378,42 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string NuGetInstaller_InstallResut_Error_UpdateCheckGeneric {
             get {
                 return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_UpdateCheckGeneric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON string or array..
+        /// </summary>
+        internal static string OSConstraint_Error_InvalidJsonType {
+            get {
+                return ResourceManager.GetString("OSConstraint_Error_InvalidJsonType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid operating system name. Allowed values are: {1}..
+        /// </summary>
+        internal static string OSConstraint_Error_InvalidOSName {
+            get {
+                return ResourceManager.GetString("OSConstraint_Error_InvalidOSName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running template on {0} is not supported, supported OS is/are: {1}..
+        /// </summary>
+        internal static string OSConstraint_Message_Restricted {
+            get {
+                return ResourceManager.GetString("OSConstraint_Message_Restricted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operating System.
+        /// </summary>
+        internal static string OSConstraint_Name {
+            get {
+                return ResourceManager.GetString("OSConstraint_Name", resourceCulture);
             }
         }
         

@@ -75,7 +75,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="cta">Call to action to fulfill the restriction (optional).</param>
 #pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static TemplateConstraintResult CreateRestricted(string type, string localizedErrorMessage, string? cta = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             if (string.IsNullOrWhiteSpace(localizedErrorMessage))
             {
@@ -96,9 +95,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="constraintInfo">Constraint that was evaluated.</param>
         /// <param name="localizedErrorMessage">The reason of the restriction.</param>
         /// <param name="cta">Call to action to fulfill the restriction (optional).</param>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static TemplateConstraintResult CreateRestricted(TemplateConstraintInfo constraintInfo, string localizedErrorMessage, string? cta = null)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             return CreateRestricted(constraintInfo.Type, localizedErrorMessage, cta);
         }
@@ -108,7 +105,8 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// </summary>
         /// <param name="type">Constraint type.</param>
         /// <param name="localizedErrorMessage">The reason of the failure.</param>
-        public static TemplateConstraintResult CreateFailure(string type, string localizedErrorMessage)
+        /// <param name="cta">Call to action to resolve the problem (optional).</param>
+        public static TemplateConstraintResult CreateFailure(string type, string localizedErrorMessage, string? cta = null)
         {
             if (string.IsNullOrWhiteSpace(localizedErrorMessage))
             {
@@ -118,7 +116,8 @@ namespace Microsoft.TemplateEngine.Abstractions
             return new TemplateConstraintResult(type)
             {
                 EvaluationStatus = Status.NotEvaluated,
-                LocalizedErrorMessage = localizedErrorMessage
+                LocalizedErrorMessage = localizedErrorMessage,
+                CallToAction = cta
             };
         }
 
@@ -127,10 +126,12 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// </summary>
         /// <param name="constraintInfo">Constraint.</param>
         /// <param name="localizedErrorMessage">The reason of the failure.</param>
-        public static TemplateConstraintResult CreateFailure(TemplateConstraintInfo constraintInfo, string localizedErrorMessage)
+        /// <param name="cta">Call to action to resolve the problem (optional).</param>
+        public static TemplateConstraintResult CreateFailure(TemplateConstraintInfo constraintInfo, string localizedErrorMessage, string? cta = null)
         {
-            return CreateFailure(constraintInfo.Type, localizedErrorMessage);
+            return CreateFailure(constraintInfo.Type, localizedErrorMessage, cta);
         }
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     }
 }
 

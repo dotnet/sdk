@@ -13,8 +13,11 @@ using FakeItEasy;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -105,8 +108,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
             TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
-            environmentSettings.Host.FileSystem.WriteObject(paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(environmentSettings.Host.FileSystem.ReadObject(paths.TemplateCacheFile), NullLogger.Instance);
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
 
             Assert.Single(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -135,8 +138,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
             TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
 
-            environmentSettings.Host.FileSystem.WriteObject(paths.TemplateCacheFile, templateCache);
-            var readCache = new TemplateCache(environmentSettings.Host.FileSystem.ReadObject(paths.TemplateCacheFile), NullLogger.Instance);
+            WriteObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile, templateCache);
+            var readCache = new TemplateCache(ReadObject(environmentSettings.Host.FileSystem, paths.TemplateCacheFile), NullLogger.Instance);
 
             Assert.Single(readCache.TemplateInfo);
             var readTemplate = readCache.TemplateInfo[0];
@@ -147,5 +150,25 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(constraintInfo2.Args, readTemplate.Constraints[1].Args);
         }
 
+        private static JObject ReadObject(IPhysicalFileSystem fileSystem, string path)
+        {
+            using (var fileStream = fileSystem.OpenRead(path))
+            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
+            using (var jsonReader = new JsonTextReader(textReader))
+            {
+                return JObject.Load(jsonReader);
+            }
+        }
+
+        private static void WriteObject(IPhysicalFileSystem fileSystem, string path, object obj)
+        {
+            using (var fileStream = fileSystem.CreateFile(path))
+            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            {
+                var serializer = new JsonSerializer();
+                serializer.Serialize(jsonWriter, obj);
+            }
+        }
     }
 }
