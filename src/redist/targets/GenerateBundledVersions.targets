@@ -228,7 +228,7 @@
 
       <Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
 
-      <ILCompilerSupportedRids Include="linux-musl-x64;linux-x64;win-x64;linux-arm;win-arm64;linux-arm64" />
+      <ILCompilerSupportedRids Include="linux-musl-x64;linux-x64;linux-arm64;win-x64;win-arm64" />
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
@@ -361,7 +361,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net7.0"
-                         ILCompilerPackNamePattern="Microsoft.NETCore.App.Crossgen2.**RID**"
+                         ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
