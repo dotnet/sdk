@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
             public string DisplayName => "Operating System";
 
-            public TemplateConstraintResult Evaluate(string args)
+            public TemplateConstraintResult Evaluate(string? args)
             {
                 IEnumerable<OSPlatform> supportedOS = ParseArgs(args);
 
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                 return new TemplateConstraintResult(TemplateConstraintResult.Status.Restricted, $"Running template on {RuntimeInformation.OSDescription} is not supported, supported OS is/are: {string.Join(", ", supportedOS)}.");
             }
 
-            private static IEnumerable<OSPlatform> ParseArgs(string args)
+            private static IEnumerable<OSPlatform> ParseArgs(string? args)
             {
                 throw new NotImplementedException();
             }

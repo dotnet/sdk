@@ -93,6 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             BaselineInfo = template.BaselineInfo;
             ShortNameList = template.ShortNameList;
             PostActions = template.PostActions;
+            Constraints = template.Constraints;
 
             LocaleConfigPlace = localizationInfo?.ConfigPlace;
 
@@ -252,8 +253,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         public IReadOnlyList<Guid> PostActions { get; private set; } = Array.Empty<Guid>();
 
-        [JsonIgnore]
-        public IReadOnlyList<TemplateConstraintInfo> Constraints => throw new NotImplementedException();
+        [JsonProperty]
+        public IReadOnlyList<TemplateConstraintInfo> Constraints { get; private set; } = Array.Empty<TemplateConstraintInfo>();
 
         public static TemplateInfo FromJObject(JObject entry)
         {

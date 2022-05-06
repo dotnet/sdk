@@ -182,6 +182,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             SpecialCustomOperations = specialCustomSetup;
+
+            List<TemplateConstraintInfo> constraints = new List<TemplateConstraintInfo>();
+            foreach (JProperty prop in source.PropertiesOf(nameof(Constraints)))
+            {
+                if (prop.Value is not JObject obj)
+                {
+                    _logger?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_InvalidSyntax, nameof(Constraints).ToLowerInvariant());
+                    continue;
+                }
+
+                string? type = obj.ToString(nameof(TemplateConstraintInfo.Type));
+                if (string.IsNullOrWhiteSpace(type))
+                {
+                    _logger?.LogWarning(LocalizableStrings.SimpleConfigModel_Error_Constraints_MissingType, obj.ToString(), nameof(TemplateConstraintInfo.Type).ToLowerInvariant());
+                    continue;
+                }
+                obj.TryGetValue(nameof(TemplateConstraintInfo.Args), StringComparison.OrdinalIgnoreCase, out JToken? args);
+                constraints.Add(new TemplateConstraintInfo(type!, args?.ToString()));
+            }
+            Constraints = constraints;
         }
 
         public string? Author

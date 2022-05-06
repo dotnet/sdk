@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Evaluates if the constraint is met based on <paramref name="args"/>.
         /// </summary>
-        TemplateConstraintResult Evaluate(string args);
+        TemplateConstraintResult Evaluate(string? args);
     }
 }
 

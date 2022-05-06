@@ -1153,6 +1153,24 @@
     "description": {
       "type": "string",
       "description": "A description of the template's purpose or contents for use in help"
+    },
+    "constraints": {
+      "description": "The constraints section defines the restrictions when the template can be run.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [ "type" ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "constraint type"
+          },
+          "args": {
+            "type": ["array", "string", "object"],
+            "description": "constraint arguments"
+          }
+        }
+      }
     }
   }
 }

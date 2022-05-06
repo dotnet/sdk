@@ -113,5 +113,39 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(new[] { postAction1, postAction2 }, readTemplate.PostActions);
         }
 
+        [Fact]
+        public void CanHandleConstraints()
+        {
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            SettingsFilePaths paths = new SettingsFilePaths(environmentSettings);
+
+            TemplateConstraintInfo constraintInfo1 = new TemplateConstraintInfo("t1", null);
+            TemplateConstraintInfo constraintInfo2 = new TemplateConstraintInfo("t1", "{[ \"one\", \"two\"]}");
+
+            ITemplate template = A.Fake<ITemplate>();
+            A.CallTo(() => template.Identity).Returns("testIdentity");
+            A.CallTo(() => template.Name).Returns("testName");
+            A.CallTo(() => template.ShortNameList).Returns(new[] { "testShort" });
+            A.CallTo(() => template.MountPointUri).Returns("testMount");
+            A.CallTo(() => template.ConfigPlace).Returns(".template.config/template.json");
+            A.CallTo(() => template.Constraints).Returns(new[] { constraintInfo1, constraintInfo2 });
+            IMountPoint mountPoint = A.Fake<IMountPoint>();
+            A.CallTo(() => mountPoint.MountPointUri).Returns("testMount");
+
+            ScanResult result = new ScanResult(mountPoint, new[] { template }, Array.Empty<ILocalizationLocator>(), Array.Empty<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)>());
+            TemplateCache templateCache = new TemplateCache(new[] { result }, new Dictionary<string, DateTime>(), NullLogger.Instance);
+
+            environmentSettings.Host.FileSystem.WriteObject(paths.TemplateCacheFile, templateCache);
+            var readCache = new TemplateCache(environmentSettings.Host.FileSystem.ReadObject(paths.TemplateCacheFile), NullLogger.Instance);
+
+            Assert.Single(readCache.TemplateInfo);
+            var readTemplate = readCache.TemplateInfo[0];
+            Assert.Equal(2, readTemplate.Constraints.Count);
+            Assert.Equal("t1", readTemplate.Constraints[0].Type);
+            Assert.Equal("t1", readTemplate.Constraints[1].Type);
+            Assert.Null( readTemplate.Constraints[0].Args);
+            Assert.Equal(constraintInfo2.Args, readTemplate.Constraints[1].Args);
+        }
+
     }
 }

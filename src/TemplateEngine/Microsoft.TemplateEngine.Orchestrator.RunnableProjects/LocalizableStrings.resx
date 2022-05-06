@@ -209,4 +209,12 @@ Details: {1}</value>
   <data name="SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName" xml:space="preserve">
     <value>Failed to load additional configuration file {0}. Additional configuration file names must end with '.{1}'.</value>
   </data>
+  <data name="SimpleConfigModel_Error_Constraints_InvalidSyntax" xml:space="preserve">
+    <value>'{0}' should contain objects.</value>
+    <comment>{0} is name of JSON property </comment>
+  </data>
+  <data name="SimpleConfigModel_Error_Constraints_MissingType" xml:space="preserve">
+    <value>Constraint definition '{0}' does not contain mandatory property '{1}'.</value>
+    <comment>{0} - JSON with constraint defintion, {1} - missing property.</comment>
+  </data>
 </root>

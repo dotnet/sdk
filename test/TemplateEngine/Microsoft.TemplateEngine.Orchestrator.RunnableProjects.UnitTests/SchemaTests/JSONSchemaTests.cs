@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
         [InlineData(@"SchemaTests/StarterWebTest.json")]
         [InlineData(@"SchemaTests/PostActionTest.json")]
         [InlineData(@"SchemaTests/SymbolsTest.json")]
+        [InlineData(@"SchemaTests/ConstraintsTest.json")]
         public void IsJSONSchemaValid(string testFile)
         {
             using (TextReader schemaFileStream = File.OpenText(@"SchemaTests/template.json"))

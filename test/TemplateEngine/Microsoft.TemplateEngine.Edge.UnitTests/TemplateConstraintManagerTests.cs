@@ -200,7 +200,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public string DisplayName => "Test Constraint";
 
-                public TemplateConstraintResult Evaluate(string args)
+                public TemplateConstraintResult Evaluate(string? args)
                 {
                     if (args == "yes")
                     {

@@ -104,6 +104,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     }
                     info.PostActions = postActions;
                 }
+
+                //read parameters
+                JArray? constraintsArray = entry.Get<JArray>(nameof(info.Constraints));
+                if (constraintsArray != null)
+                {
+                    List<TemplateConstraintInfo> constraints = new List<TemplateConstraintInfo>();
+                    foreach (JObject item in constraintsArray)
+                    {
+                        string? type = item.ToString(nameof(TemplateConstraintInfo.Type));
+                        if (string.IsNullOrWhiteSpace(type))
+                        {
+                            throw new ArgumentException($"{nameof(entry)} has {nameof(info.Constraints)} property which item doesn't have {nameof(TemplateConstraintInfo.Type)}.", nameof(entry));
+                        }
+                        constraints.Add(new TemplateConstraintInfo(type!, item.ToString(nameof(TemplateConstraintInfo.Args))));
+                    }
+                    info.Constraints = constraints;
+                }
+
                 return info;
             }
         }

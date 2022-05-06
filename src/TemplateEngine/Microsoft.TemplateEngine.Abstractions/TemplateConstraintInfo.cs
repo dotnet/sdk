@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="type">Constraint type, matches the type defined in <see cref="ITemplateConstraint"/> implementation and template.json.</param>
         /// <param name="args">Arguments for constraint evaluation.</param>
         /// <exception cref="ArgumentException">when <paramref name="type"/> is null or whitespace.</exception>
-        public TemplateConstraintInfo(string type, string args)
+        public TemplateConstraintInfo(string type, string? args)
         {
             if (string.IsNullOrWhiteSpace(type))
             {
@@ -37,6 +37,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets the constraint argumens.
         /// </summary>
-        public string Args { get; }
+        public string? Args { get; }
     }
 }

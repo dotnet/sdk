@@ -30,6 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="SchemaTests\ConstraintsTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="SchemaTests\BasicTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

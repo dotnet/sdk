@@ -1,7 +1,7 @@
 ﻿const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.DisplayName.get -> string!
-Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Evaluate(string! args) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
+Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Evaluate(string? args) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.Type.get -> string!
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.CreateTemplateConstraintAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!
@@ -9,8 +9,8 @@ Microsoft.TemplateEngine.Abstractions.ITemplateConstraintFactory.Type.get -> str
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo
-Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.Args.get -> string!
-Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.TemplateConstraintInfo(string! type, string! args) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.Args.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.TemplateConstraintInfo(string! type, string? args) -> void
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo.Type.get -> string!
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.CallToAction.get -> string?

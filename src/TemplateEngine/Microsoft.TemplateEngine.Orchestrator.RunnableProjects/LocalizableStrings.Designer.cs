@@ -285,5 +285,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
                 return ResourceManager.GetString("SimpleConfigModel_AuthoringException_MergeConfiguration_InvalidFileName", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; should contain objects..
+        /// </summary>
+        internal static string SimpleConfigModel_Error_Constraints_InvalidSyntax {
+            get {
+                return ResourceManager.GetString("SimpleConfigModel_Error_Constraints_InvalidSyntax", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Constraint definition &apos;{0}&apos; does not contain mandatory property &apos;{1}&apos;..
+        /// </summary>
+        internal static string SimpleConfigModel_Error_Constraints_MissingType {
+            get {
+                return ResourceManager.GetString("SimpleConfigModel_Error_Constraints_MissingType", resourceCulture);
+            }
+        }
     }
 }

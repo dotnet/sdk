@@ -133,6 +133,16 @@ Detalhes: {1}</target>
         <target state="translated">Falha ao carregar o arquivo de configuração adicional {0}. Nomes adicionais de arquivos de configuração devem terminar com '.{1}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SimpleConfigModel_Error_Constraints_InvalidSyntax">
+        <source>'{0}' should contain objects.</source>
+        <target state="new">'{0}' should contain objects.</target>
+        <note>{0} is name of JSON property </note>
+      </trans-unit>
+      <trans-unit id="SimpleConfigModel_Error_Constraints_MissingType">
+        <source>Constraint definition '{0}' does not contain mandatory property '{1}'.</source>
+        <target state="new">Constraint definition '{0}' does not contain mandatory property '{1}'.</target>
+        <note>{0} - JSON with constraint defintion, {1} - missing property.</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
