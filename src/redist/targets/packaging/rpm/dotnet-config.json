@@ -14,7 +14,7 @@
         "changelog_message": "Bootstrap loop package"
     },
     "control": {
-        "architecture": "amd64"
+        "architecture": "%SDK_RPM_PACKAGE_ARCHITECTURE%"
     },
     "copyright": ".NET Foundation and contributors",
     "license": {
@@ -34,10 +34,7 @@
             "package_name": "%NETCORE_APPHOST_PACK_RPM_PACKAGE_NAME%",
             "package_version": "%SHARED_FRAMEWORK_RPM_PACKAGE_VERSION%"
         },
-        {
-            "package_name": "%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_NAME%",
-            "package_version": "%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_VERSION%"
-        },
+%SDK_RPM_NETSTANDARD_TARGETINGPACK_DEPENDENCY%
         {
             "package_name": "%ASPNETCORE_SHAREDFX_RPM_PACKAGE_NAME%",
             "package_version": "%ASPNETCORE_SHAREDFX_RPM_PACKAGE_VERSION%"
