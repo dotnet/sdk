@@ -2413,15 +2413,15 @@ namespace MyApp.Pages
             driver = driver.ReplaceAdditionalText(additionalTexts.First(f => f.Path == updatedText.Path), updatedText);
 
             // now run the generator with suppression
-            var supressedOptions = optionsProvider.Clone();
-            supressedOptions.TestGlobalOptions["build_property.SuppressRazorSourceGenerator"] = "true";
-            driver = driver.WithUpdatedAnalyzerConfigOptions(supressedOptions);
+            var suppressedOptions = optionsProvider.Clone();
+            suppressedOptions.TestGlobalOptions["build_property.SuppressRazorSourceGenerator"] = "true";
+            driver = driver.WithUpdatedAnalyzerConfigOptions(suppressedOptions);
 
             // results should be the same (even though we changed text)
             result = RunGenerator(compilation!, ref driver)
                     .VerifyOutputsMatch(result);
 
-            // now unsupress and re-run
+            // now unsuppress and re-run
             driver = driver.WithUpdatedAnalyzerConfigOptions(optionsProvider);
 
             result = RunGenerator(compilation!, ref driver)
@@ -2708,20 +2708,13 @@ namespace MyApp.Pages
                 var diff = diffs.FirstOrDefault(p => p.index == i).replacement;
                 if (diff is null)
                 {
-                    try
-                    {
-                        Assert.Equal(expected.GeneratedSources[i].SourceText.ToString(), actual.GeneratedSources[i].SourceText.ToString());
-                    }
-                    catch (EqualException e)
-                    {
-                        Assert.False(true, $"No diff supplied. But index {i} was:\r\n\r\n{e.Actual.Replace("\"", "\"\"")}");
-                    }
+                    var actualText = actual.GeneratedSources[i].SourceText.ToString();
+                    Assert.True(expected.GeneratedSources[i].SourceText.ToString() == actualText, $"No diff supplied. But index {i} was:\r\n\r\n{actualText.Replace("\"", "\"\"")}");
                 }
                 else
                 {
                     Assert.Equal(diff, actual.GeneratedSources[i].SourceText.ToString());
                 }
-
             }
 
             return actual;

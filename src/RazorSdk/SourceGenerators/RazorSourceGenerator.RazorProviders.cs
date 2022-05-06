@@ -22,7 +22,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// The property is set by the SDK via an editor config.
         /// </para>
         /// </summary>
-        private static bool GetSupressionStatus(AnalyzerConfigOptionsProvider optionsProvider, CancellationToken _)
+        private static bool GetSuppressionStatus(AnalyzerConfigOptionsProvider optionsProvider, CancellationToken _)
         {
             return optionsProvider.GlobalOptions.TryGetValue("build_property.SuppressRazorSourceGenerator", out var suppressRazorSourceGenerator)
                 && suppressRazorSourceGenerator == "true";

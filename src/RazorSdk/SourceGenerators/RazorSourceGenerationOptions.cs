@@ -19,8 +19,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// </summary>
         public bool GenerateMetadataSourceChecksumAttributes { get; set; } = false;
 
-        public bool SuppressRazorSourceGenerator { get; set; } = false;
-
         /// <summary>
         /// Gets the CSharp language version currently used by the compilation.
         /// </summary>

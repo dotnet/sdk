@@ -20,7 +20,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
             // determine if we should suppress this run and set all the inputs to cached if so
-            var isGeneratorSuppressed = context.AnalyzerConfigOptionsProvider.Select(GetSupressionStatus);
+            var isGeneratorSuppressed = context.AnalyzerConfigOptionsProvider.Select(GetSuppressionStatus);
 
             var analyzerConfigOptions = context.AnalyzerConfigOptionsProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
             var additionalTexts = context.AdditionalTextsProvider.AsCachedIfSuppressed(isGeneratorSuppressed);
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     return CSharpSyntaxTree.ParseText(generatedDeclarationCode, (CSharpParseOptions)parseOptions);
                 });
 
-            var tagHelpersFromCompilation = context.CompilationProvider
+            var tagHelpersFromCompilation = compilation
                 .Combine(generatedDeclarationSyntaxTrees.Collect())
                 .Combine(razorSourceGeneratorOptions)
                 .Select(static (pair, _) =>
@@ -96,12 +96,6 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromCompilationStart();
 
                     var ((compilation, generatedDeclarationSyntaxTrees), razorSourceGeneratorOptions) = pair;
-
-                    if (razorSourceGeneratorOptions.SuppressRazorSourceGenerator)
-                    {
-                        RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromCompilationStop();
-                        return ImmutableArray<TagHelperDescriptor>.Empty;
-                    }
 
                     var tagHelperFeature = new StaticCompilationTagHelperFeature();
                     var discoveryProjectEngine = GetDiscoveryProjectEngine(compilation.References.ToImmutableArray(), tagHelperFeature);
