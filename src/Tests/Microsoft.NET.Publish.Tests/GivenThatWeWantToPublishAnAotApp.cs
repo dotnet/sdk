@@ -35,7 +35,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_aot_analyzer_warnings_are_produced(string targetFramework)
         {
             var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
                 .And.HaveStdOutContaining("(9,9): warning IL3050")
-                .And.HaveStdOutContaining("(20,12): warning IL3052");
+                .And.HaveStdOutContaining("(21,12): warning IL3052");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
         public void ILLink_linker_warnings_not_produced_if_not_set(string targetFramework)
         {
             var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             // Inactive linker settings should have no effect on the aot analyzer,
             // unless PublishTrimmed is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
@@ -75,8 +75,8 @@ namespace Microsoft.NET.Publish.Tests
                 var projectName = "AotPublishWithWarnings";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                // PublishAot should enable the EnableAotAnalyzer
-                var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
+                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
                 testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -85,7 +85,10 @@ namespace Microsoft.NET.Publish.Tests
                 publishCommand
                     .Execute()
                     .Should().Pass()
-                    .And.HaveStdOutContaining("warning IL3050");
+                    .And.HaveStdOutContaining("warning IL3050")
+                    .And.HaveStdOutContaining("warning IL3052")
+                    .And.HaveStdOutContaining("warning IL2026")
+                    .And.HaveStdOutContaining("warning IL3003");
 
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
 
@@ -163,7 +166,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        private TestProject CreateTestProjectWithAotAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
+        private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()
             {
@@ -181,7 +184,8 @@ class C
     static void Main()
     {
         ProduceAotAnalysisWarning();
-        ProduceLinkerAnalysisWarning();
+        ProduceTrimAnalysisWarning();
+        ProduceSingleFileAnalysisWarning();
         Console.WriteLine(""Hello world"");
     }
 
@@ -195,8 +199,13 @@ class C
     {
     }
 
-    [RequiresUnreferencedCode(""Linker analysis warning"")]
-    static void ProduceLinkerAnalysisWarning()
+    [RequiresUnreferencedCode(""Trim analysis warning"")]
+    static void ProduceTrimAnalysisWarning()
+    {
+    }
+
+    [RequiresAssemblyFiles(""Single File analysis warning"")]
+    static void ProduceSingleFileAnalysisWarning()
     {
     }
 }";
