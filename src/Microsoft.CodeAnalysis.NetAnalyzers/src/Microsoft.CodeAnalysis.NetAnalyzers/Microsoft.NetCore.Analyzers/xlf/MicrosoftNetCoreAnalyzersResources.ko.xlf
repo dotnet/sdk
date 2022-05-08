@@ -2422,6 +2422,11 @@
         <target state="translated">'{0}'의 동작은 현재 사용자의 로캘 설정에 따라 다를 수 있습니다. '{1}'에서 이 호출을 '{2}'에 대한 호출로 바꾸세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">'{0}'에서는 '{1}'을(를) 'IFormatProvider' 매개 변수로 '{2}'에 전달합니다. 이 속성이 서식 지정 메서드에 적합하지 않은 문화권을 반환합니다.</target>

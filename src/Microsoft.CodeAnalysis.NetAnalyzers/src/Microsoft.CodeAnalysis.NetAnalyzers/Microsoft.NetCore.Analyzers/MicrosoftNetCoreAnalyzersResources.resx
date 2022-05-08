@@ -1945,4 +1945,7 @@
   <data name="PreferDictionaryTryGetValueDescription" xml:space="preserve">
     <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</value>
   </data>
+  <data name="SpecifyIFormatProviderMessageIFormatProviderOptional" xml:space="preserve">
+    <value>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</value>
+  </data>
 </root>
