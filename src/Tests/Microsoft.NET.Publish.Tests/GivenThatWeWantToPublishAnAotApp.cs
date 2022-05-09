@@ -54,7 +54,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(LatestTfm)]
-        public void Run_requires_analyzers_without_PublishAot(string targetFramework)
+        public void Requires_analyzers_produce_warnings_without_PublishAot_being_set(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
