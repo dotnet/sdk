@@ -32,27 +32,10 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(LatestTfm)]
-        public void ILLink_aot_analyzer_warnings_are_produced(string targetFramework)
+        public void Trimming_warnings_not_produced_if_only_EnableAotAnalyzer_is_set(string targetFramework)
         {
             var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
-            testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand
-                .Execute(RuntimeIdentifier)
-                .Should().Pass()
-                .And.HaveStdOutContaining("(9,9): warning IL3050")
-                .And.HaveStdOutContaining("(20,12): warning IL3052");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
-        public void ILLink_linker_warnings_not_produced_if_not_set(string targetFramework)
-        {
-            var projectName = "ILLinkAotAnalyzerWarningsApp";
-            var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
+            var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             // Inactive linker settings should have no effect on the aot analyzer,
             // unless PublishTrimmed is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
@@ -63,21 +46,26 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand
                 .Execute(RuntimeIdentifier)
                 .Should().Pass()
-                .And.NotHaveStdOutContaining("IL2026");
+                .And.HaveStdOutContaining("warning IL3050")
+                .And.HaveStdOutContaining("warning IL3052")
+                .And.NotHaveStdOutContaining("warning IL2026");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(LatestTfm)]
-        public void NativeAot_only_runs_when_switch_is_enabled(string targetFramework)
+        public void Run_requires_analyzers_without_PublishAot(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 var projectName = "AotPublishWithWarnings";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                // PublishAot should enable the EnableAotAnalyzer
-                var testProject = CreateTestProjectWithAotAnalyzerWarnings(targetFramework, projectName, true);
-                testProject.AdditionalProperties["PublishAot"] = "true";
+                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+                testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
+                testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
+                testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+                testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
                 testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -85,7 +73,37 @@ namespace Microsoft.NET.Publish.Tests
                 publishCommand
                     .Execute()
                     .Should().Pass()
-                    .And.HaveStdOutContaining("warning IL3050");
+                    .And.HaveStdOutContaining("warning IL3050")
+                    .And.HaveStdOutContaining("warning IL3052")
+                    .And.HaveStdOutContaining("warning IL2026")
+                    .And.HaveStdOutContaining("warning IL3002");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(LatestTfm)]
+        public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var projectName = "AotPublishWithWarnings";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+                testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute()
+                    .Should().Pass()
+                    .And.HaveStdOutContaining("warning IL3050")
+                    .And.HaveStdOutContaining("warning IL3052")
+                    .And.HaveStdOutContaining("warning IL2026")
+                    .And.HaveStdOutContaining("warning IL3002");
 
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
 
@@ -97,7 +115,47 @@ namespace Microsoft.NET.Publish.Tests
 
                 var command = new RunExeCommand(Log, publishedExe)
                     .Execute().Should().Pass()
-                    .And.HaveStdOutContaining("Hello world");                
+                    .And.HaveStdOutContaining("Hello world");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(LatestTfm)]
+        public void Warnings_are_generated_even_with_analyzers_disabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var projectName = "AotPublishWithWarnings";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+                testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
+                testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
+                testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
+                testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute()
+                    .Should().Pass()
+                    .And.HaveStdOutContaining("warning IL3050")
+                    .And.HaveStdOutContaining("warning IL2026");
+
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+
+                var publishedExe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
+
+                // The exe exist and should be native
+                File.Exists(publishedExe).Should().BeTrue();
+                IsNativeImage(publishedExe).Should().BeTrue();
+
+                var command = new RunExeCommand(Log, publishedExe)
+                    .Execute().Should().Pass()
+                    .And.HaveStdOutContaining("Hello world");
             }
         }
 
@@ -163,7 +221,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        private TestProject CreateTestProjectWithAotAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
+        private TestProject CreateTestProjectWithAnalysisWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()
             {
@@ -181,7 +239,8 @@ class C
     static void Main()
     {
         ProduceAotAnalysisWarning();
-        ProduceLinkerAnalysisWarning();
+        ProduceTrimAnalysisWarning();
+        ProduceSingleFileAnalysisWarning();
         Console.WriteLine(""Hello world"");
     }
 
@@ -195,8 +254,13 @@ class C
     {
     }
 
-    [RequiresUnreferencedCode(""Linker analysis warning"")]
-    static void ProduceLinkerAnalysisWarning()
+    [RequiresUnreferencedCode(""Trim analysis warning"")]
+    static void ProduceTrimAnalysisWarning()
+    {
+    }
+
+    [RequiresAssemblyFiles(""Single File analysis warning"")]
+    static void ProduceSingleFileAnalysisWarning()
     {
     }
 }";
