@@ -32,12 +32,12 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(LatestTfm)]
-        public void Trimming_warnings_not_produced_if_only_EnableAotAnalyzer_is_set(string targetFramework)
+        public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
         {
-            var projectName = "ILLinkAotAnalyzerWarningsApp";
+            var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
-            // Inactive linker settings should have no effect on the aot analyzer,
-            // unless PublishTrimmed is also set.
+            // Inactive linker/single-file analyzers should have no effect on the aot analyzer,
+            // unless PublishAot is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -48,7 +48,8 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass()
                 .And.HaveStdOutContaining("warning IL3050")
                 .And.HaveStdOutContaining("warning IL3052")
-                .And.NotHaveStdOutContaining("warning IL2026");
+                .And.NotHaveStdOutContaining("warning IL2026")
+                .And.NotHaveStdOutContaining("warning IL3002");
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -57,10 +58,11 @@ namespace Microsoft.NET.Publish.Tests
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var projectName = "AotPublishWithWarnings";
+                var projectName = "WarningAppWithRequiresAnalyzers";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                // Enable the different requires analyzers (EnableAotAnalyzer, EnableTrimAnalyzer
+                // and EnableSingleFileAnalyzer) without setting PublishAot
                 var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
                 testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
                 testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
@@ -86,7 +88,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var projectName = "AotPublishWithWarnings";
+                var projectName = "WarningAppWithPublishAot";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
                 // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
@@ -125,10 +127,11 @@ namespace Microsoft.NET.Publish.Tests
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                var projectName = "AotPublishWithWarnings";
+                var projectName = "WarningAppWithPublishAotAnalyzersDisabled";
                 var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-                // PublishAot should enable the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                // PublishAot enables the EnableAotAnalyzer, EnableTrimAnalyzer and EnableSingleFileAnalyzer
+                // only if they don't have a predefined value
                 var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
                 testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
