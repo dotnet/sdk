@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 3 May 2022 18:50:25 +0000
+Subject: [PATCH] Upgrade Microsoft.Win32.Registry reference to 5.0.0
+
+Backport: https://github.com/dotnet/fsharp/pull/13091
+---
+ eng/Versions.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index afefd9501..ff4d8ac89 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -208,7 +208,7 @@
+     <MicrosoftNETCoreILDAsmVersion>5.0.0-preview.7.20364.11</MicrosoftNETCoreILDAsmVersion>
+     <MicrosoftNETCoreILAsmVersion>5.0.0-preview.7.20364.11</MicrosoftNETCoreILAsmVersion>
+     <MicrosoftNETTestSdkVersion>16.11.0</MicrosoftNETTestSdkVersion>
+-    <MicrosoftWin32RegistryVersion>4.3.0</MicrosoftWin32RegistryVersion>
++    <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
+     <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+     <NUnitVersion>3.13.2</NUnitVersion>
+     <NUnit3TestAdapterVersion>4.1.0</NUnit3TestAdapterVersion>
