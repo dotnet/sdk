@@ -163,9 +163,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (IFile file in folder.EnumerateFiles(TemplateConfigFileName, SearchOption.AllDirectories))
             {
+                logger.LogDebug($"Found {TemplateConfigFileName} at {file.GetDisplayPath()}.");
                 try
                 {
                     IFile? hostConfigFile = FindBestHostTemplateConfigFile(source.EnvironmentSettings, file);
+                    logger.LogDebug($"Found *{HostTemplateFileConfigBaseName} at {hostConfigFile?.GetDisplayPath()}.");
 
                     // issue here: we need to pass locale as parameter
                     // consider passing current locale file here if exists

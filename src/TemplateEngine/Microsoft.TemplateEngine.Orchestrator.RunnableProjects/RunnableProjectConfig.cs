@@ -521,6 +521,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (errorMessages.Any())
             {
+                _logger.LogDebug($"Localization file {localeFile?.GetDisplayPath()} is not compatible with base configuration {_sourceFile?.GetDisplayPath()}");
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.AppendLine(string.Format(LocalizableStrings.RunnableProjectGenerator_Warning_LocFileSkipped, localeFile?.GetDisplayPath(), _sourceFile?.GetDisplayPath()));
                 foreach (string errorMessage in errorMessages)

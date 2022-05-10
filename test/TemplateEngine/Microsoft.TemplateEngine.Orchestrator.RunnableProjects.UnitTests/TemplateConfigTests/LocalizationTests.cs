@@ -425,11 +425,12 @@ false,
             var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel, localizationFile));
 
-            Assert.Single(loggedMessages);
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.Single(warningMessages);
             Assert.Contains(
                 string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, "extra", "pa0"),
-                loggedMessages.Single().Item2);
-            Assert.Contains(localizationFilename, loggedMessages.Single().Item2);
+                warningMessages.Single().Item2);
+            Assert.Contains(localizationFilename, warningMessages.Single().Item2);
         }
 
         [Fact]
@@ -470,11 +471,12 @@ false,
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel));
 
-            Assert.Single(loggedMessages);
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
+            Assert.Single(warningMessages);
 
             Assert.Contains(
                string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, "pa1"),
-               loggedMessages.Single().Item2);
+               warningMessages.Single().Item2);
         }
 
         #endregion

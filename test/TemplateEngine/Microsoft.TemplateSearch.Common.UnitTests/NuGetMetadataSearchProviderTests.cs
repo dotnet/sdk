@@ -34,7 +34,21 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            Func<Task<IReadOnlyList<SearchResult>>> search = async () =>
+            {
+                var result = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+                if (result != null && result.Count > 0 && !string.IsNullOrWhiteSpace(result[0].ErrorMessage))
+                {
+                    var errorMessage = result[0].ErrorMessage;
+                    if (errorMessage!.Contains("The SSL connection could not be established"))
+                    {
+                        throw new HttpRequestException(errorMessage);
+                    }
+                }
+                return result!;
+            };
+            
+            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -121,7 +135,20 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            Func<Task<IReadOnlyList<SearchResult>>> search = async () =>
+            {
+                var result = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+                if (result != null && result.Count > 0 && !string.IsNullOrWhiteSpace(result[0].ErrorMessage))
+                {
+                    var errorMessage = result[0].ErrorMessage;
+                    if (errorMessage!.Contains("The SSL connection could not be established"))
+                    {
+                        throw new HttpRequestException(errorMessage);
+                    }
+                }
+                return result!;
+            };
+            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -131,7 +158,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal($"Local search cache '{Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")}' does not exist.", searchResult[0].ErrorMessage);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", null);
-            searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -140,7 +167,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.True(searchResult[0].SearchHits.Count > 0);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", "true");
-            searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);

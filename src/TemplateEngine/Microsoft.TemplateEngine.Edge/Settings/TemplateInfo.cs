@@ -104,6 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             if (template.GeneratorId == RunnableProjectGeneratorId && HostConfigPlace != null)
             {
+                logger.LogDebug($"Start loading host config {HostConfigPlace}");
                 try
                 {
                     using (var sr = new StreamReader(template.TemplateSourceRoot.FileInfo(HostConfigPlace).OpenRead()))
@@ -120,6 +121,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         template.MountPointUri,
                         template.HostConfigPlace);
                 }
+                logger.LogDebug($"End loading host config {HostConfigPlace}");
             }
         }
 
