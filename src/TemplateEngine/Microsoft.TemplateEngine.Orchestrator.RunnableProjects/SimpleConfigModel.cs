@@ -199,7 +199,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
                 obj.TryGetValue(nameof(TemplateConstraintInfo.Args), StringComparison.OrdinalIgnoreCase, out JToken? args);
-                constraints.Add(new TemplateConstraintInfo(type!, args?.ToString()));
+                constraints.Add(new TemplateConstraintInfo(type!, args.ToJSONString()));
             }
             Constraints = constraints;
         }

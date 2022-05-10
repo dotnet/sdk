@@ -344,5 +344,23 @@ namespace Microsoft.TemplateEngine
             return token.ArrayAsStrings();
         }
 
+        /// <summary>
+        /// Converts <paramref name="token"/> to valid JSON string.
+        /// JToken.ToString() doesn't provide a valid JSON string for JTokenType == String.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        internal static string? ToJSONString(this JToken? token)
+        {
+            if (token == null)
+            {
+                return null;
+            }
+            using StringWriter stringWriter = new StringWriter();
+            using JsonWriter jsonWriter = new JsonTextWriter(stringWriter);
+            token.WriteTo(jsonWriter);
+            return stringWriter.ToString();
+        }
+
     }
 }

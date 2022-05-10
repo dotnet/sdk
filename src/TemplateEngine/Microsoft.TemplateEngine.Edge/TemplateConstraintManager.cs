@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// <exception cref="UnknownConstraintException">when the constraint of type <paramref name="type"/> is unknown.</exception>
         /// <exception cref="ConstraintInitializationException">when the constraint of type <paramref name="type"/> failed to initialize.</exception>
         /// <exception cref="ConstraintEvaluationException">when the constraint of type <paramref name="type"/> failed to evaluate for <paramref name="args"/>.</exception>
-        public async Task<TemplateConstraintResult> EvaluateConstraintAsync(string type, string args, CancellationToken cancellationToken)
+        public async Task<TemplateConstraintResult> EvaluateConstraintAsync(string type, string? args, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!_templateConstrains.TryGetValue(type, out Task<ITemplateConstraint> task))
