@@ -119,7 +119,7 @@
 
     <Message Text="--> Start Cloning Repo $(SourceBuildRepoName)" Importance="High" />
     <PropertyGroup>
-      <SourceDir>$(SourceBuildRepoName).$(RepoSha)/</SourceDir>
+      <SourceDir>$(SourceBuildRepoName)/</SourceDir>
       <TarballRepoSourceDir>$(TarballSourceDir)$(SourceDir)</TarballRepoSourceDir>
       <TarballRepoSourceEngDir>$(TarballSourceDir)$(SourceDir)eng/</TarballRepoSourceEngDir>
       <TarballVersionDetailsFile>$(TarballRepoSourceEngDir)Version.Details.xml</TarballVersionDetailsFile>
