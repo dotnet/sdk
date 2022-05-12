@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Edge
         /// <param name="templates">if given, only returns the list of constraints defined in the templates.</param>
         /// <param name="cancellationToken"></param>
         /// <returns>The list of successfully initialized <see cref="ITemplateConstraint"/>s.</returns>
-        public async Task<IReadOnlyList<ITemplateConstraint>> GetConstraintsAsync(IReadOnlyList<ITemplateInfo>? templates = null, CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<ITemplateConstraint>> GetConstraintsAsync(IEnumerable<ITemplateInfo>? templates = null, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             IEnumerable<(string Type, Task<ITemplateConstraint> Task)> constraintsToInitialize;
