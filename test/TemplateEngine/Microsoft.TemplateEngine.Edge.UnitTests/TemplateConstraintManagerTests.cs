@@ -172,6 +172,25 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal("test-2", constraints?.Single().Type);
         }
 
+        [Fact]
+        public async Task CanEvaluateConstraints_Success()
+        {
+            var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-1"));
+            engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateConstraintFactory), new TestConstraintFactory("test-2"));
+
+            var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
+            ITemplateInfo template = A.Fake<ITemplateInfo>();
+            A.CallTo(() => template.Constraints).Returns(new[] { new TemplateConstraintInfo("test-1", "yes"), new TemplateConstraintInfo("test-2", "no") });
+
+            var result = await constraintManager.EvaluateConstraintsAsync(new [] { template }, default).ConfigureAwait(false);
+
+            Assert.Equal(2, result.Single().Result.Count);
+            Assert.Equal(template, result.Single().Template);
+            Assert.Equal(TemplateConstraintResult.Status.Allowed, result.Single().Result.Single(r => r.ConstraintType == "test-1").EvaluationStatus);
+            Assert.Equal(TemplateConstraintResult.Status.Restricted, result.Single().Result.Single(r => r.ConstraintType == "test-2").EvaluationStatus);
+        }
+
         private class TestConstraintFactory : ITemplateConstraintFactory
         {
             public TestConstraintFactory(string type)
@@ -204,13 +223,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 {
                     if (args == "yes")
                     {
-                        return new TemplateConstraintResult(TemplateConstraintResult.Status.Allowed);
+                        return TemplateConstraintResult.CreateAllowed(Type);
                     }
                     else if (args == "no")
                     {
-                        return new TemplateConstraintResult(TemplateConstraintResult.Status.Restricted, "cannot run", "do smth");
+                        return TemplateConstraintResult.CreateRestricted(Type, "cannot run", "do smth");
                     }
-                    return new TemplateConstraintResult(TemplateConstraintResult.Status.NotEvaluated, "bad params");
+                    return TemplateConstraintResult.CreateFailure(Type, "bad params");
                 }
             }
         }

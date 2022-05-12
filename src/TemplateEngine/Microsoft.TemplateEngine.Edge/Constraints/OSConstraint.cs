@@ -49,11 +49,11 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                 {
                     if (RuntimeInformation.IsOSPlatform(platform))
                     {
-                        return new TemplateConstraintResult(TemplateConstraintResult.Status.Allowed);
+                        return TemplateConstraintResult.CreateAllowed(Type);
                     }
                 }
                 //TODO: localize
-                return new TemplateConstraintResult(TemplateConstraintResult.Status.Restricted, $"Running template on {RuntimeInformation.OSDescription} is not supported, supported OS is/are: {string.Join(", ", supportedOS)}.");
+                return TemplateConstraintResult.CreateRestricted(Type, $"Running template on {RuntimeInformation.OSDescription} is not supported, supported OS is/are: {string.Join(", ", supportedOS)}.");
             }
 
             private static IEnumerable<OSPlatform> ParseArgs(string? args)

@@ -145,6 +145,84 @@ namespace Microsoft.TemplateEngine.Edge
 
         }
 
+        /// <summary>
+        /// Evaluates the constraints with given <paramref name="templates"/>.
+        /// The method doesn't throw when the constraint is failed to be evaluated, returns <see cref="TemplateConstraintResult"/> with status <see cref="TemplateConstraintResult.Status.NotEvaluated"/> instead.
+        /// </summary>
+        /// <param name="templates">the list of templates to evaluate constraints for given templates.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns><see cref="TemplateConstraintResult"/> indicating if constraint is met, or details why the constraint is not met.</returns>
+        public async Task<IReadOnlyList<(ITemplateInfo Template, IReadOnlyList<TemplateConstraintResult> Result)>> EvaluateConstraintsAsync(IReadOnlyList<ITemplateInfo> templates, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var requiredConstraints = templates.SelectMany(t => t.Constraints).Select(c => c.Type).Distinct();
+            var tasksToWait = new List<Task>();
+            foreach (var constraintType in requiredConstraints)
+            {
+                if (!_templateConstrains.TryGetValue(constraintType, out Task<ITemplateConstraint> task))
+                {
+                    //handled below
+                    continue;
+                }
+                tasksToWait.Add(task);
+            }
+
+            if (tasksToWait.Any(t => !t.IsCompleted))
+            {
+                try
+                {
+                    var notCompletedTasks = tasksToWait.Where(t => !t.IsCompleted);
+                    _logger.LogDebug($"The constraint(s) are not initialized, waiting for initialization.");
+                    await CancellableWhenAll(notCompletedTasks, cancellationToken).ConfigureAwait(false);
+                    _logger.LogDebug($"The constraint(s) are initialized successfully.");
+                }
+                catch (TaskCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception)
+                {
+                    //handled below
+                }
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            List<(ITemplateInfo, IReadOnlyList<TemplateConstraintResult>)> evaluationResult = new();
+            foreach (ITemplateInfo template in templates)
+            {
+                List<TemplateConstraintResult> constraintResults = new();
+                foreach (var constraint in template.Constraints)
+                {
+                    if (!_templateConstrains.TryGetValue(constraint.Type, out Task<ITemplateConstraint> task))
+                    {
+                        _logger.LogDebug($"The constraint '{constraint.Type}' is unknown.");
+                        constraintResults.Add(TemplateConstraintResult.CreateFailure(constraint, $"The constraint '{constraint.Type}' is unknown."));
+                        continue;
+                    }
+
+                    if (task.IsFaulted || task.IsCanceled)
+                    {
+                        _logger.LogDebug($"The constraint '{constraint.Type}' failed to be initialized, details: {task.Exception}.");
+                        constraintResults.Add(TemplateConstraintResult.CreateFailure(constraint, $"The constraint '{constraint.Type}' failed to be initialized, details: {task.Exception.Message}."));
+                        continue;
+                    }
+
+                    try
+                    {
+                        constraintResults.Add(task.Result.Evaluate(constraint.Args));
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogDebug($"The constraint '{constraint.Type}' failed to be evaluated for the args '{constraint.Args}', details: {e}.");
+                        constraintResults.Add(TemplateConstraintResult.CreateFailure(constraint, $"The constraint '{constraint.Type}' failed to be evaluated for the args '{constraint.Args}', details: {e.Message}."));
+                    }
+                }
+                evaluationResult.Add((template, constraintResults));
+            }
+            return evaluationResult;
+        }
+
         /// <inheritdoc/>
         public void Dispose()
         {
