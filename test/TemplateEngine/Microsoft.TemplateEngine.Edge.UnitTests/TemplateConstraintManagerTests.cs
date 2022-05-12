@@ -198,49 +198,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(TemplateConstraintResult.Status.Restricted, result.Single().Result.Single(r => r.ConstraintType == "test-2").EvaluationStatus);
         }
 
-        private class TestConstraintFactory : ITemplateConstraintFactory
-        {
-            public TestConstraintFactory(string type)
-            {
-                Type = type;
-                Id = Guid.NewGuid();
-            }
-
-            public string Type { get; } 
-
-            public Guid Id { get; }
-
-            public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
-            {
-                return Task.FromResult((ITemplateConstraint)new TestConstraint(this));
-            }
-
-            private class TestConstraint : ITemplateConstraint
-            {
-                public TestConstraint(ITemplateConstraintFactory factory)
-                {
-                    Type = factory.Type;
-                }
-
-                public string Type { get; }
-
-                public string DisplayName => "Test Constraint";
-
-                public TemplateConstraintResult Evaluate(string? args)
-                {
-                    if (args == "yes")
-                    {
-                        return TemplateConstraintResult.CreateAllowed(Type);
-                    }
-                    else if (args == "no")
-                    {
-                        return TemplateConstraintResult.CreateRestricted(Type, "cannot run", "do smth");
-                    }
-                    return TemplateConstraintResult.CreateFailure(Type, "bad params");
-                }
-            }
-        }
-
         private class FailingTestConstraintFactory : ITemplateConstraintFactory
         {
             public FailingTestConstraintFactory(string type)
