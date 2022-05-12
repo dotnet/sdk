@@ -2497,6 +2497,7 @@ namespace MyApp.Pages
             optionsProvider.TestGlobalOptions["build_property.RazorConfiguration"] = "Default";
             optionsProvider.TestGlobalOptions["build_property.RootNamespace"] = "MyApp";
             optionsProvider.TestGlobalOptions["build_property.RazorLangVersion"] = "Latest";
+            optionsProvider.TestGlobalOptions["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = "false";
 
             configureGlobalOptions?.Invoke(optionsProvider);
 
@@ -2678,8 +2679,8 @@ namespace MyApp.Pages
                 Assert.Equal(expectedOutput.Length, result.GeneratedSources.Length);
                 for (int i = 0; i < result.GeneratedSources.Length; i++)
                 {
-                    var text = result.GeneratedSources[i].SourceText.ToString();
-                    Assert.Equal(text.Trim('\r', '\n'), expectedOutput[i].Trim('\r', '\n'), ignoreWhiteSpaceDifferences: true);
+                    var text = TrimChecksum(result.GeneratedSources[i].SourceText.ToString());
+                    Assert.Equal(text, TrimChecksum(expectedOutput[i]), ignoreWhiteSpaceDifferences: true);
                 }
             }
 
@@ -2713,11 +2714,18 @@ namespace MyApp.Pages
                 }
                 else
                 {
-                    Assert.Equal(diff, actual.GeneratedSources[i].SourceText.ToString());
+                    Assert.Equal(TrimChecksum(diff), TrimChecksum(actual.GeneratedSources[i].SourceText.ToString()));
                 }
             }
 
             return actual;
+        }
+
+        private static string TrimChecksum(string text)
+        {
+            var trimmed = text.Trim('\r', '\n');
+            Assert.StartsWith("#pragma", trimmed);
+            return trimmed.Substring(trimmed.IndexOf('\n') + 1);
         }
     }
 
