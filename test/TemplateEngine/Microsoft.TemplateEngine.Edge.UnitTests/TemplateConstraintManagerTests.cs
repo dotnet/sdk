@@ -108,7 +108,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            await Assert.ThrowsAsync<TemplateConstraintManager.ConstraintInitializationException>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
+            var result = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
+            Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result.EvaluationStatus);
+            Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result.LocalizedErrorMessage);
+            Assert.Null(result.CallToAction);
         }
 
         [Fact]
@@ -120,7 +123,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
 
-            await Assert.ThrowsAsync<TemplateConstraintManager.ConstraintInitializationException>(() => constraintManager.EvaluateConstraintAsync("test-1", "yes", default));
+            var result1 = await constraintManager.EvaluateConstraintAsync("test-1", "yes", default);
+            Assert.Equal(TemplateConstraintResult.Status.NotEvaluated, result1.EvaluationStatus);
+            Assert.Equal("The constraint 'test-1' failed to initialize: creation failed", result1.LocalizedErrorMessage);
+            Assert.Null(result1.CallToAction);
 
             var success2 = await constraintManager.EvaluateConstraintAsync("test-2", "yes", default).ConfigureAwait(false);
 

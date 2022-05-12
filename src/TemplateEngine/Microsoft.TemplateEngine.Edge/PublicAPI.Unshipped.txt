@@ -1,15 +1,6 @@
 ﻿Microsoft.TemplateEngine.Edge.TemplateConstraintManager
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintEvaluationException
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintEvaluationException.Constraint.get -> Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintEvaluationException.ConstraintEvaluationException(Microsoft.TemplateEngine.Abstractions.ITemplateConstraint! constraint, System.Exception? innerException = null) -> void
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintInitializationException
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintInitializationException.ConstraintInitializationException(string! type, System.Exception? innerException = null) -> void
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.ConstraintInitializationException.Type.get -> string!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.Dispose() -> void
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string? args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templates, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! Template, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>! Result)>!>!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.GetConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>? templates = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!>!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.TemplateConstraintManager(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironmentSettings) -> void
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.UnknownConstraintException
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.UnknownConstraintException.Type.get -> string!
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.UnknownConstraintException.UnknownConstraintException(string! type) -> void

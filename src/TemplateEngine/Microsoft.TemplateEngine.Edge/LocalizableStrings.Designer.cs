@@ -355,6 +355,33 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The constraint &apos;{0}&apos; failed to be evaluated for the args &apos;{1}&apos;, details: {2}.
+        /// </summary>
+        internal static string TemplateConstraintManager_Error_FailedToEvaluate {
+            get {
+                return ResourceManager.GetString("TemplateConstraintManager_Error_FailedToEvaluate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The constraint &apos;{0}&apos; failed to initialize: {1}.
+        /// </summary>
+        internal static string TemplateConstraintManager_Error_FailedToInitialize {
+            get {
+                return ResourceManager.GetString("TemplateConstraintManager_Error_FailedToInitialize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The constraint &apos;{0}&apos; is unknown..
+        /// </summary>
+        internal static string TemplateConstraintManager_Error_UnknownType {
+            get {
+                return ResourceManager.GetString("TemplateConstraintManager_Error_UnknownType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not load template..
         /// </summary>
         internal static string TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate {

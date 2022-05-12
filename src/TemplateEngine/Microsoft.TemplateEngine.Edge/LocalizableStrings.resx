@@ -218,6 +218,21 @@ Details: {1}.</value>
   <data name="Scanner_Error_TemplatePackageLocationIsNotSupported" xml:space="preserve">
     <value>Template package location {0} is not supported, or doesn't exist.</value>
   </data>
+  <data name="TemplateConstraintManager_Error_FailedToEvaluate" xml:space="preserve">
+    <value>The constraint '{0}' failed to be evaluated for the args '{1}', details: {2}</value>
+    <comment>{0} - constraint type
+{1} - arguments (in JSON format)
+{2} - reason of failure (has the period).</comment>
+  </data>
+  <data name="TemplateConstraintManager_Error_FailedToInitialize" xml:space="preserve">
+    <value>The constraint '{0}' failed to initialize: {1}</value>
+    <comment>{0} is constraint type
+{1} - reason of failure (has the period).</comment>
+  </data>
+  <data name="TemplateConstraintManager_Error_UnknownType" xml:space="preserve">
+    <value>The constraint '{0}' is unknown.</value>
+    <comment>{0} is constraint type</comment>
+  </data>
   <data name="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate" xml:space="preserve">
     <value>Could not load template.</value>
   </data>
