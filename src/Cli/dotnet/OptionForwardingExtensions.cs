@@ -51,6 +51,12 @@ namespace Microsoft.DotNet.Cli
             return option;
         }
 
+        public static Option<T> Required<T>(this Option<T> option)
+        {
+            option.IsRequired = true;
+            return option;
+        }
+
         public static Option<T> WithHelpDescription<T>(this Option<T> option, Command command, string helpText)
         {
             if (Parser.HelpDescriptionCustomizations.ContainsKey(option))
