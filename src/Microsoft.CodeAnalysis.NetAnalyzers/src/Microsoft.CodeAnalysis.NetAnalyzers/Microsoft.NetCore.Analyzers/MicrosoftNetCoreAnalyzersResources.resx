@@ -1930,4 +1930,7 @@
   <data name="SealInternalTypesCodeFixTitle" xml:space="preserve">
     <value>Seal class</value>
   </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
+    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
+  </data>
 </root>
