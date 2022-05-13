@@ -50,11 +50,11 @@ public class TestScenario
         {
             dotNetHelper.ExecutePublish(projectName, selfContained: false);
             dotNetHelper.ExecutePublish(projectName, selfContained: true, Config.TargetRid);
-            dotNetHelper.ExecutePublish(projectName, selfContained: true, "linux-x64");
+            dotNetHelper.ExecutePublish(projectName, selfContained: true, $"linux-{Config.TargetArchitecture}");
         }
         if (Commands.HasFlag(DotNetActions.PublishR2R))
         {
-            dotNetHelper.ExecutePublish(projectName, selfContained: true, "linux-x64", trimmed: true, readyToRun: true);
+            dotNetHelper.ExecutePublish(projectName, selfContained: true, $"linux-{Config.TargetArchitecture}", trimmed: true, readyToRun: true);
         }
         if (Commands.HasFlag(DotNetActions.Test))
         {
