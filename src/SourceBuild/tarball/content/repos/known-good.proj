@@ -33,7 +33,7 @@
         <!-- Tier 1 -->
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
-        <RepositoryReference Include="razor-compiler" />
+        <!-- <RepositoryReference Include="razor-compiler" /> -->
         <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build-externals" />
         <RepositoryReference Include="symreader" />
@@ -47,10 +47,10 @@
         <RepositoryReference Include="runtime" />
 
         <!-- Tier 3 -->
-        <!-- <RepositoryReference Include="roslyn-analyzers" /> -->
+        <RepositoryReference Include="roslyn-analyzers" />
 
         <!-- Tier 4 -->
-        <!-- <RepositoryReference Include="aspnetcore" /> -->
+        <RepositoryReference Include="aspnetcore" />
         <RepositoryReference Include="deployment-tools" />
         <!-- <RepositoryReference Include="format" /> -->
         <RepositoryReference Include="nuget-client" />
