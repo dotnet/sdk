@@ -12,7 +12,5 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
 
         IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations);
-
-        IVariableCollection ProduceCollection(IVariableCollection parent);
     }
 }

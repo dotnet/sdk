@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -37,7 +38,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 switch (symbol.Key)
                 {
                     case "ref":
-                        string value;
                         if (!vars.TryGetValue(symbol.Value, out object working))
                         {
                             if (parameters.TryGetRuntimeValue(
@@ -46,19 +46,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                                 out object resolvedValue,
                                 true))
                             {
-                                value = resolvedValue.ToString();
+                                values.Add(resolvedValue.ToString());
                             }
                             else
                             {
-                                value = string.Empty;
+                                values.Add(string.Empty);
                             }
+                        }
+                        else if (working != null && working is MultiValueParameter multiValue)
+                        {
+                            values.AddRange(multiValue.Values);
                         }
                         else
                         {
-                            value = working?.ToString() ?? "";
+                            values.Add(working?.ToString() ?? string.Empty);
                         }
 
-                        values.Add(value);
                         break;
                     case "const":
                         values.Add(symbol.Value);
@@ -69,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
             }
 
-            string result = string.Join(config.Separator, values);
+            string result = string.Join(config.Separator, values.Where(v => !config.RemoveEmptyValues || !string.IsNullOrEmpty(v)));
             Parameter p;
             if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
             {
@@ -110,6 +113,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 separator = separatorToken?.ToString();
             }
 
+            bool removeEmptyValues =
+                deferredConfig.Parameters.TryGetValue("removeEmptyValues", out JToken removeEmptyValuesToken) &&
+                removeEmptyValuesToken != null &&
+                removeEmptyValuesToken.ToBool();
+
             List<KeyValuePair<string, string>> symbolsList = new List<KeyValuePair<string, string>>();
             if (deferredConfig.Parameters.TryGetValue("symbols", out JToken symbolsToken))
             {
@@ -123,7 +131,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
             }
 
-            return new JoinMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, symbolsList, separator);
+            return new JoinMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, symbolsList, separator, removeEmptyValues);
         }
     }
 }

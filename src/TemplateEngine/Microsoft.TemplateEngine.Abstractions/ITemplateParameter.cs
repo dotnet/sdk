@@ -65,6 +65,11 @@ namespace Microsoft.TemplateEngine.Abstractions
         string? DisplayName { get; }
 
         /// <summary>
+        /// Indicates whether parameter arity is allowed to be > 1.
+        /// </summary>
+        bool AllowMultipleValues { get; }
+
+        /// <summary>
         /// Gets the default value to be used if the parameter is passed without value for template instantiation.
         /// </summary>
         string? DefaultIfOptionWithoutValue { get; }

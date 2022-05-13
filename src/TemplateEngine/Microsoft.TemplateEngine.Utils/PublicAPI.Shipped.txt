@@ -123,7 +123,6 @@ Microsoft.TemplateEngine.Utils.TemplateParameter.IsName.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.Name.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameter.Priority.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
 Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(Newtonsoft.Json.Linq.JObject! jObject) -> void
-Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.Type.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameterExtensions
 Microsoft.TemplateEngine.Utils.Timing

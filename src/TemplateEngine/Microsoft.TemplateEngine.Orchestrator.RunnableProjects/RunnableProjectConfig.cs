@@ -60,7 +60,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IGlobalRunConfig? _operationConfig;
         private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>>? _specialOperationConfig;
         private IReadOnlyList<IReplacementTokens>? _symbolFilenameReplacements;
-        private IReadOnlyDictionary<string, Parameter>? _parameters;
 
         internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, IFile templateFile, IFile? hostConfigFile = null, IFile? localeConfigFile = null, string? baselineName = null)
         {
@@ -85,6 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             CheckGeneratorVersionRequiredByTemplate();
             PerformTemplateValidation();
             Identity = _configuration.Identity!;
+            Parameters = ExtractParameters(_configuration);
 
             if (_localeConfigFile != null)
             {
@@ -94,6 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (VerifyLocalizationModel(locModel))
                     {
                         _configuration.Localize(locModel);
+                        Parameters = LocalizeParameters(locModel, Parameters);
                     }
                 }
                 catch (Exception ex)
@@ -115,6 +116,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _configuration = configuration;
             Identity = configuration.Identity ?? throw new ArgumentException($"{nameof(configuration)} should have identity set.");
             _sourceFile = configurationFile;
+            Parameters = ExtractParameters(configuration);
         }
 
         public string Identity { get; }
@@ -335,54 +337,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyDictionary<string, Parameter> Parameters
-        {
-            get
-            {
-                if (_parameters == null)
-                {
-                    Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
-                    foreach (KeyValuePair<string, ISymbolModel> symbol in _configuration.Symbols)
-                    {
-                        if (!string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
-                                !string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal) ||
-                                !(symbol.Value is BaseValueSymbol baseSymbol))
-                        {
-                            // Symbol is of wrong type. Skip.
-                            continue;
-                        }
-
-                        bool isName = baseSymbol == _configuration.NameSymbol;
-
-                        Parameter parameter = new Parameter
-                        {
-                            DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
-                            IsName = isName,
-                            IsVariable = true,
-                            Name = symbol.Key,
-                            Priority = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                            Type = baseSymbol.Type,
-                            DataType = baseSymbol.DataType
-                        };
-
-                        if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
-                                symbol.Value is ParameterSymbol parameterSymbol)
-                        {
-                            parameter.Priority = parameterSymbol.IsTag ? TemplateParameterPriority.Implicit : parameter.Priority;
-                            parameter.Description = parameterSymbol.Description;
-                            parameter.Choices = parameterSymbol.Choices;
-                            parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
-                            parameter.DisplayName = parameterSymbol.DisplayName;
-                        }
-
-                        parameters[symbol.Key] = parameter;
-                    }
-
-                    _parameters = parameters;
-                }
-                return _parameters;
-            }
-        }
+        public IReadOnlyDictionary<string, Parameter> Parameters { get; private init; }
 
         internal Parameter NameParameter => Parameters.Values.First(p => p.IsName);
 
@@ -531,6 +486,104 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _logger.LogWarning(stringBuilder.ToString());
             }
             return validModel;
+        }
+
+        private static IReadOnlyDictionary<string, Parameter> ExtractParameters(SimpleConfigModel configuration)
+        {
+            Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
+            foreach (KeyValuePair<string, ISymbolModel> symbol in configuration.Symbols)
+            {
+                if (!string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
+                        !string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal) ||
+                        !(symbol.Value is BaseValueSymbol baseSymbol))
+                {
+                    // Symbol is of wrong type. Skip.
+                    continue;
+                }
+
+                bool isName = baseSymbol == configuration.NameSymbol;
+
+                Parameter parameter = new Parameter
+                {
+                    DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
+                    IsName = isName,
+                    IsVariable = true,
+                    Name = symbol.Key,
+                    Priority = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
+                    Type = baseSymbol.Type,
+                    DataType = baseSymbol.DataType
+                };
+
+                if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
+                        symbol.Value is ParameterSymbol parameterSymbol)
+                {
+                    parameter.Priority = parameterSymbol.IsTag ? TemplateParameterPriority.Implicit : parameter.Priority;
+                    parameter.Description = parameterSymbol.Description;
+                    parameter.Choices = parameterSymbol.Choices;
+                    parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
+                    parameter.DisplayName = parameterSymbol.DisplayName;
+                    parameter.EnableQuotelessLiterals = parameterSymbol.EnableQuotelessLiterals;
+                    parameter.AllowMultipleValues = parameterSymbol.AllowMultipleValues;
+                }
+
+                parameters[symbol.Key] = parameter;
+            }
+
+            return parameters;
+        }
+
+        private static IReadOnlyDictionary<string, Parameter> LocalizeParameters(ILocalizationModel localizationModel, IReadOnlyDictionary<string, Parameter> parameters)
+        {
+            Dictionary<string, Parameter> localizedParameters = new();
+
+            foreach (var parameterPair in parameters)
+            {
+                IParameterSymbolLocalizationModel? localization;
+                Dictionary<string, ParameterChoice>? localizedChoices = null;
+
+                Parameter parameter = parameterPair.Value;
+                if (!localizationModel.ParameterSymbols.TryGetValue(parameter.Name, out localization))
+                {
+                    // There is no localization for this parameter. Use the parameter as is.
+                    localizedParameters.Add(parameterPair.Key, parameter);
+                    continue;
+                }
+                if (parameter.IsChoice() && parameter.Choices != null)
+                {
+                    localizedChoices = new Dictionary<string, ParameterChoice>();
+                    foreach (KeyValuePair<string, ParameterChoice> templateChoice in parameter.Choices)
+                    {
+                        ParameterChoice localizedChoice = new ParameterChoice(
+                            templateChoice.Value.DisplayName,
+                            templateChoice.Value.Description);
+
+                        if (localization.Choices.TryGetValue(templateChoice.Key, out ParameterChoiceLocalizationModel locModel))
+                        {
+                            localizedChoice.Localize(locModel);
+                        }
+                        localizedChoices.Add(templateChoice.Key, localizedChoice);
+                    }
+                }
+
+                Parameter localizedParameter = new Parameter()
+                {
+                    Name = parameter.Name,
+                    DisplayName = localization?.DisplayName ?? parameter.DisplayName,
+                    Description = localization?.Description ?? parameter.Description,
+                    DefaultValue = parameter.DefaultValue,
+                    DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
+                    DataType = parameter.DataType,
+                    Priority = parameter.Priority,
+                    Type = parameter.Type,
+                    AllowMultipleValues = parameter.AllowMultipleValues,
+                    EnableQuotelessLiterals = parameter.EnableQuotelessLiterals,
+                    Choices = localizedChoices ?? parameter.Choices
+                };
+
+                localizedParameters.Add(parameterPair.Key, localizedParameter);
+            }
+
+            return localizedParameters;
         }
 
         /// <summary>
@@ -983,7 +1036,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// https://github.com/dotnet/templating/issues/2623.
         /// </summary>
         /// <exception cref="TemplateValidationException">in case of validation fails.</exception>
-        private void PerformTemplateValidation()
+#pragma warning disable SA1202 // Elements should be ordered by access
+        internal void PerformTemplateValidation()
+#pragma warning restore SA1202 // Elements should be ordered by access
         {
             //Do some basic checks...
             List<string> errorMessages = new List<string>();
@@ -1004,6 +1059,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 errorMessages.Add(string.Format(LocalizableStrings.Authoring_MissingValue, "shortName"));
             }
+
+            var invalidMultichoices =
+                _configuration.Symbols.Values
+                    .OfType<ParameterSymbol>()
+                    .Where(p => p.AllowMultipleValues)
+                    .Where(p => p.Choices.Any(c => !c.Key.IsValidMultiValueParameterValue()));
+            errorMessages.AddRange(
+                invalidMultichoices.Select(p =>
+                    string.Format(
+                        LocalizableStrings.Authoring_InvalidMultichoiceSymbol,
+                        p.DisplayName,
+                        string.Join(", ", MultiValueParameter.MultiValueSeparators.Select(c => $"'{c}'")),
+                        string.Join(
+                            ", ",
+                            p.Choices.Where(c => !c.Key.IsValidMultiValueParameterValue())
+                                .Select(c => $"{{{c.Key}}}"))))
+            );
+
             errorMessages.AddRange(ValidateTemplateSourcePaths());
             #endregion
 

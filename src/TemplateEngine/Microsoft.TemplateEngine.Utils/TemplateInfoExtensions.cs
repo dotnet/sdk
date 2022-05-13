@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             return template.Parameters.FirstOrDefault(
  param => param.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase)
-                                  && param.DataType.Equals("choice", StringComparison.OrdinalIgnoreCase));
+                                  && param.IsChoice());
         }
     }
 }

@@ -113,6 +113,31 @@ There";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
+        [Fact(DisplayName = nameof(VerifyIfElseEndifTrueConditionQuotedString))]
+        public void VerifyIfElseEndifTrueConditionUnquotedString()
+        {
+            string value = @"Hello
+    #if (Foo == VALUE)
+value
+    #else
+other
+    #endif
+There";
+            string expected = @"Hello
+value
+There";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+            VariableCollection vc = new VariableCollection { ["VALUE"] = "Foo", ["Foo"] = "Foo" };
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 28);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
         [Fact(DisplayName = nameof(VerifyIfElseEndifTrueConditionLiteralFirst))]
         public void VerifyIfElseEndifTrueConditionLiteralFirst()
         {

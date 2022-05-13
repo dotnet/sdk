@@ -44,15 +44,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 foreach (KeyValuePair<string, IGlobalRunConfig> specialEntry in fileGlobConfigs)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = null;
-                    IVariableCollection specialVariables = variables;
 
                     if (specialEntry.Value != null)
                     {
                         specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables, parameters);
-                        specialVariables = VariableCollection.SetupVariables(templateRoot.MountPoint.EnvironmentSettings, parameters, specialEntry.Value.VariableSetup);
                     }
 
-                    RunSpec spec = new RunSpec(specialOps, specialVariables ?? variables, specialEntry.Value.VariableSetup.FallbackFormat);
+                    RunSpec spec = new RunSpec(specialOps, specialEntry.Value.VariableSetup.FallbackFormat);
                     specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(specialEntry.Key), spec));
                 }
             }

@@ -13,7 +13,8 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests;
 using Microsoft.TemplateEngine.TestHelper;
-using NuGet.Protocol;
+using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 
@@ -100,6 +101,332 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
             }
             Assert.NotEqual(inputTestGuid, expectedResultGuid);
+        }
+
+        private const string TemplateConfigQuotelessLiteralsNotEnabled = @"
+{
+    ""identity"": ""test.template"",
+    ""symbols"": {
+	    ""ChoiceParam"": {
+	      ""type"": ""parameter"",
+	      ""description"": ""sample switch"",
+	      ""datatype"": ""choice"",
+	      ""choices"": [
+		    {
+		      ""choice"": ""FirstChoice"",
+		      ""description"": ""First Sample Choice""
+		    },
+		    {
+		      ""choice"": ""SecondChoice"",
+		      ""description"": ""Second Sample Choice""
+		    },
+		    {
+		      ""choice"": ""ThirdChoice"",
+		      ""description"": ""Third Sample Choice""
+		    }
+	      ],
+          ""defaultValue"": ""ThirdChoice"",
+	    }
+    }
+}
+";
+
+        private const string TemplateConfigQuotelessLiteralsEnabled = @"
+{
+    ""identity"": ""test.template"",
+    ""symbols"": {
+	    ""ChoiceParam"": {
+	      ""type"": ""parameter"",
+	      ""description"": ""sample switch"",
+	      ""datatype"": ""choice"",
+          ""enableQuotelessLiterals"": true,
+	      ""choices"": [
+		    {
+		      ""choice"": ""FirstChoice"",
+		      ""description"": ""First Sample Choice""
+		    },
+		    {
+		      ""choice"": ""SecondChoice"",
+		      ""description"": ""Second Sample Choice""
+		    },
+		    {
+		      ""choice"": ""ThirdChoice"",
+		      ""description"": ""Third Sample Choice""
+		    }
+	      ],
+          ""defaultValue"": ""ThirdChoice"",
+	    }
+    }
+}
+";
+
+        [Theory]
+        [InlineData(TemplateConfigQuotelessLiteralsNotEnabled, "UNKNOWN")]
+        [InlineData(TemplateConfigQuotelessLiteralsEnabled, "SECOND")]
+        public async void CreateAsyncTest_ConditionWithUnquotedChoiceLiteral(string templateConfig, string expectedResult)
+        {
+            //
+            // Template content preparation
+            //
+
+            string sourceSnippet = @"
+//#if( ChoiceParam == FirstChoice )
+FIRST
+//#elseif (ChoiceParam == SecondChoice )
+SECOND
+//#elseif (ChoiceParam == ThirdChoice )
+THIRD
+//#else
+UNKNOWN
+//#endif
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+
+            //content
+            templateSourceFiles.Add("sourcFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            ITemplateParameter choiceParameter;
+            Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
+            parameters.ResolvedValues[choiceParameter] = "SecondChoice";
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(environment, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile")).Trim();
+            Assert.Equal(expectedResult, resultContent);
+        }
+
+        [Fact]
+        public async void CreateAsyncTest_MultiChoiceParamReplacingAndCondition()
+        {
+            //
+            // Template content preparation
+            //
+
+            string templateConfig = @"
+{
+    ""identity"": ""test.template"",
+    ""symbols"": {	
+	    ""ChoiceParam"": {
+	      ""type"": ""parameter"",
+	      ""description"": ""sample switch"",
+	      ""datatype"": ""choice"",
+          ""allowMultipleValues"": true,
+          ""enableQuotelessLiterals"": true,
+	      ""choices"": [
+		    {
+		      ""choice"": ""FirstChoice"",
+		      ""description"": ""First Sample Choice""
+		    },
+		    {
+		      ""choice"": ""SecondChoice"",
+		      ""description"": ""Second Sample Choice""
+		    },
+		    {
+		      ""choice"": ""ThirdChoice"",
+		      ""description"": ""Third Sample Choice""
+		    }
+	      ],
+          ""defaultValue"": ""ThirdChoice"",
+          ""replaces"": ""REPLACE_VALUE""
+        }
+    }
+}
+";
+
+            string sourceSnippet = @"
+MultiChoiceValue: REPLACE_VALUE
+//#if( ChoiceParam == FirstChoice )
+FIRST
+//#endif
+//#if (ChoiceParam == SecondChoice )
+SECOND
+//#endif
+//#if (ChoiceParam == ThirdChoice )
+THIRD
+//#endif
+";
+
+            string expectedSnippet = @"
+MultiChoiceValue: SecondChoice|ThirdChoice
+SECOND
+THIRD
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+
+            //content
+            templateSourceFiles.Add("sourcFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            ITemplateParameter choiceParameter;
+            Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
+            parameters.ResolvedValues[choiceParameter] = new MultiValueParameter(new[] { "SecondChoice", "ThirdChoice" });
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(environment, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
+
+        [Fact]
+        public async void CreateAsyncTest_MultiChoiceParamJoining()
+        {
+            //
+            // Template content preparation
+            //
+
+            string templateConfig = @"
+{
+  ""identity"": ""test.template"",
+  ""symbols"": {
+    ""Platform"": {
+      ""type"": ""parameter"",
+      ""description"": ""The target framework for the project."",
+      ""datatype"": ""choice"",
+      ""allowMultipleValues"": true,
+      ""choices"": [
+        {
+          ""choice"": ""Windows"",
+          ""description"": ""Windows Desktop""
+        },
+        {
+          ""choice"": ""WindowsPhone"",
+          ""description"": ""Windows Phone""
+        },
+        {
+          ""choice"": ""MacOS"",
+          ""description"": ""Macintosh computers""
+        },
+        {
+          ""choice"": ""iOS"",
+          ""description"": ""iOS mobile""
+        },
+        {
+          ""choice"": ""android"",
+          ""description"": ""android mobile""
+        },
+        {
+          ""choice"": ""nix"",
+          ""description"": ""Linux distributions""
+        }
+      ],
+      ""defaultValue"": ""MacOS|iOS""
+    },
+    ""joinedRename"": {
+      ""type"": ""generated"",
+      ""generator"": ""join"",
+      ""replaces"": ""SupportedPlatforms"",
+      ""parameters"": {
+        ""symbols"": [
+          {
+            ""type"": ""ref"",
+            ""value"": ""Platform""
+          }
+        ],
+        ""separator"": "", "",
+        ""removeEmptyValues"": true,
+      }
+    }
+  }
+}
+";
+
+            string sourceSnippet = @"
+// This file is generated for platfrom: SupportedPlatforms
+";
+
+            string expectedSnippet = @"
+// This file is generated for platfrom: MacOS, iOS
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+
+            //content
+            templateSourceFiles.Add("sourcFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            ITemplateParameter choiceParameter;
+            Assert.True(parameters.TryGetParameterDefinition("Platform", out choiceParameter), "ChoiceParam expected to be extracted from template config");
+            parameters.ResolvedValues[choiceParameter] = new MultiValueParameter(new[] { "MacOS", "iOS" });
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(environment, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
+            Assert.Equal(expectedSnippet, resultContent);
         }
     }
 }

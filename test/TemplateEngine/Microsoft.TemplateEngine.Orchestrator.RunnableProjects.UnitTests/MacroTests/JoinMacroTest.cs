@@ -25,23 +25,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         }
 
         [Theory(DisplayName = nameof(TestJoinConstantAndReferenceSymbolConfig))]
-        [InlineData(",")]
-        [InlineData("")]
-        [InlineData(null)]
-        public void TestJoinConstantAndReferenceSymbolConfig(string separator)
+        [InlineData(",", true)]
+        [InlineData("", true)]
+        [InlineData(null, true)]
+        [InlineData(",", false)]
+        [InlineData("", false)]
+        [InlineData(null, false)]
+        public void TestJoinConstantAndReferenceSymbolConfig(string separator, bool removeEmptyValues)
         {
             string variableName = "joinedParameter";
             string referenceSymbolName = "referenceSymbol";
             string referenceSymbolValue = "referenceValue";
+            string referenceEmptySymbolName = "referenceEmptySymbol";
             string constantValue = "constantValue";
 
             List<KeyValuePair<string, string>> definitions = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("const", constantValue),
+                new KeyValuePair<string, string>("ref", referenceEmptySymbolName),
                 new KeyValuePair<string, string>("ref", referenceSymbolName)
             };
 
-            JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator);
+            JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator, removeEmptyValues);
 
             IVariableCollection variables = new VariableCollection();
             IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
@@ -63,7 +68,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
 
             string convertedValue = (string)parameters.ResolvedValues[convertedParam];
-            string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
+            string expectedValue =
+                removeEmptyValues ?
+                string.Join(separator, constantValue, referenceSymbolValue) :
+                string.Join(separator, constantValue, null, referenceSymbolValue);
             Assert.Equal(convertedValue, expectedValue);
         }
 

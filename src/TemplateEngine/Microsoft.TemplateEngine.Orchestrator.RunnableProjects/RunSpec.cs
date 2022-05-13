@@ -10,12 +10,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal class RunSpec : IRunSpec
     {
         private readonly IReadOnlyList<IOperationProvider> _overrides;
-        private readonly IVariableCollection _vars;
 
-        internal RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, IVariableCollection vars, string variableFormatString)
+        internal RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, string variableFormatString)
         {
             _overrides = operationOverrides;
-            _vars = vars ?? new VariableCollection();
             VariableFormatString = variableFormatString ?? "{0}";
         }
 
@@ -30,11 +28,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations)
         {
             return _overrides ?? sourceOperations;
-        }
-
-        public IVariableCollection ProduceCollection(IVariableCollection parent)
-        {
-            return _vars;
         }
     }
 }

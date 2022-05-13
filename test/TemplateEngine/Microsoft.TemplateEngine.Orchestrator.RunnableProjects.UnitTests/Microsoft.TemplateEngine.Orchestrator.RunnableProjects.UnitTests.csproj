@@ -39,6 +39,9 @@
       <None Update="SchemaTests\GeneratorTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
+      <None Update="SchemaTests\MultiValueChoice.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="SchemaTests\PostActionTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

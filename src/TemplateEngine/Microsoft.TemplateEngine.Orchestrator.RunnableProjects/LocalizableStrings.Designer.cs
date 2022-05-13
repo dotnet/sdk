@@ -79,6 +79,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Choice parameter {0} is invalid. It allows multiple values (&apos;AllowMultipleValues=true&apos;), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}.
+        /// </summary>
+        internal static string Authoring_InvalidMultichoiceSymbol {
+            get {
+                return ResourceManager.GetString("Authoring_InvalidMultichoiceSymbol", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Post action(s) with id(s) &apos;{0}&apos; specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file..
         /// </summary>
         internal static string Authoring_InvalidPostActionLocalizationIndex {
@@ -220,6 +229,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string LocalizationModelDeserializer_Error_FailedToParse {
             get {
                 return ResourceManager.GetString("LocalizationModelDeserializer_Error_FailedToParse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self..
+        /// </summary>
+        internal static string RunnableProjectGenerator_CannotAddImplicitChoice {
+            get {
+                return ResourceManager.GetString("RunnableProjectGenerator_CannotAddImplicitChoice", resourceCulture);
             }
         }
         

@@ -58,6 +58,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             }
 
             Choices = choicesAndDescriptions;
+            AllowMultipleValues = jObject.ToBool(nameof(AllowMultipleValues));
+            EnableQuotelessLiterals = jObject.ToBool(nameof(EnableQuotelessLiterals));
         }
 
         /// <summary>
@@ -83,6 +85,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             ReplacementContexts = cloneFrom.ReplacementContexts;
             Binding = string.IsNullOrEmpty(cloneFrom.Binding) ? bindingFallback : cloneFrom.Binding;
             Forms = cloneFrom.Forms.GlobalForms.Count != 0 ? cloneFrom.Forms : formsFallback;
+            AllowMultipleValues = cloneFrom.AllowMultipleValues;
+            EnableQuotelessLiterals = cloneFrom.EnableQuotelessLiterals;
         }
 
         /// <summary>
@@ -100,6 +104,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
         // If this is set, the option can be provided without a value. It will be given this value.
         internal string DefaultIfOptionWithoutValue { get; init; }
+
+        // If this is set, it's allowed to sepcify multiple values of that parameter
+        internal bool AllowMultipleValues { get; init; }
+
+        // If this is set, it's allowed to sepcify choice literals without quotation within conditions.
+        internal bool EnableQuotelessLiterals { get; init; }
 
         internal IReadOnlyDictionary<string, ParameterChoice> Choices
         {

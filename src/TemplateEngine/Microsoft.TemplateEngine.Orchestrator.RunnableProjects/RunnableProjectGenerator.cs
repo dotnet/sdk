@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             cancellationToken.ThrowIfCancellationRequested();
             ProcessMacros(environmentSettings, runnableProjectConfig.OperationConfig, parameters);
 
-            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, runnableProjectConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(environmentSettings, parameters, runnableProjectConfig.OperationConfig.VariableSetup);
             runnableProjectConfig.Evaluate(parameters, variables);
 
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             RunnableProjectConfig templateConfig = (RunnableProjectConfig)templateData;
             ProcessMacros(environmentSettings, templateConfig.OperationConfig, parameters);
 
-            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
             templateConfig.Evaluate(parameters, variables);
 
             IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
@@ -327,28 +327,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     return boolVal;
                 }
             }
-            else if (string.Equals(param.DataType, "choice", StringComparison.OrdinalIgnoreCase))
+            else if (param.IsChoice())
             {
-                if (TryResolveChoiceValue(literal, param, out string? match))
+                if (param.AllowMultipleValues)
                 {
-                    return match;
-                }
+                    List<string> val =
+                        literal
+                            .TokenizeMultiValueParameter()
+                            .Select(t => ResolveChoice(environmentSettings, t, param))
+                            .Where(r => !string.IsNullOrEmpty(r))
+                            .Select(r => r!)
+                            .ToList();
+                    if (val.Count <= 1)
+                    {
+                        return val.Count == 0 ? string.Empty : val[0];
+                    }
 
-                if (literal == null && param.Priority != TemplateParameterPriority.Required)
+                    return new MultiValueParameter(val);
+                }
+                else
                 {
-                    return param.DefaultValue;
+                    string? val = ResolveChoice(environmentSettings, literal, param);
+                    valueResolutionError = val == null;
+                    return val;
                 }
-
-                string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out val)
-#pragma warning restore CS0618 // Type or member is obsolete
-                        && !TryResolveChoiceValue(literal, param, out val))
-                {
-                }
-
-                valueResolutionError = val == null;
-                return val;
             }
             else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
             {
@@ -486,6 +488,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
+        private static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
+        {
+            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, variableConfig);
+
+            foreach (Parameter param in parameters.ParameterDefinitions.OfType<Parameter>())
+            {
+                // Add choice values to variables - to allow them to be recognizable unquoted
+                if (param.EnableQuotelessLiterals && param.IsChoice())
+                {
+                    foreach (string choiceKey in param.Choices.Keys)
+                    {
+                        if (
+                            variables.TryGetValue(choiceKey, out object existingValueObj) &&
+                            existingValueObj is string existingValue &&
+                            !string.Equals(choiceKey, existingValue, StringComparison.CurrentCulture)
+                        )
+                        {
+                            throw new InvalidOperationException(string.Format(LocalizableStrings.RunnableProjectGenerator_CannotAddImplicitChoice, choiceKey, existingValue));
+                        }
+                        variables[choiceKey] = choiceKey;
+                    }
+                }
+            }
+
+            return variables;
+        }
+
         // Note the deferred-config macros (generated) are part of the runConfig.Macros
         //      and not in the ComputedMacros.
         //  Possibly make a separate property for the deferred-config macros
@@ -493,14 +522,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             if (runConfig.Macros != null)
             {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
+                IVariableCollection varsForMacros = SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
                 macroProcessor.ProcessMacros(environmentSettings, runConfig.Macros, varsForMacros, parameters);
             }
 
             if (runConfig.ComputedMacros != null)
             {
-                IVariableCollection varsForMacros = VariableCollection.SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
+                IVariableCollection varsForMacros = SetupVariables(environmentSettings, parameters, runConfig.VariableSetup);
                 MacrosOperationConfig macroProcessor = new MacrosOperationConfig();
                 macroProcessor.ProcessMacros(environmentSettings, runConfig.ComputedMacros, varsForMacros, parameters);
             }
@@ -511,6 +540,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new CreationResult(
                 postActions: PostAction.ListFromModel(environmentSettings, runnableProjectConfig.PostActionModels, variables),
                 primaryOutputs: CreationPath.ListFromModel(environmentSettings, runnableProjectConfig.PrimaryOutputs, variables));
+        }
+
+        private static string? ResolveChoice(IEngineEnvironmentSettings environmentSettings, string? literal, ITemplateParameter param)
+        {
+            if (TryResolveChoiceValue(literal, param, out string? match))
+            {
+                return match;
+            }
+
+            if (literal == null && param.Priority != TemplateParameterPriority.Required)
+            {
+                return param.DefaultValue;
+            }
+
+            string? val;
+#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
+            environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out val);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            return val;
         }
 
         private static bool TryResolveChoiceValue(string? literal, ITemplateParameter param, out string? match)

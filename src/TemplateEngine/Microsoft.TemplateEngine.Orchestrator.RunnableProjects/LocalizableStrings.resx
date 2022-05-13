@@ -125,6 +125,10 @@
     <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".
 {1} is a single-word identifier string. Such as "myPostAction".</comment>
   </data>
+  <data name="Authoring_InvalidMultichoiceSymbol" xml:space="preserve">
+    <value>Choice parameter {0} is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</value>
+    <comment>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</comment>
+  </data>
   <data name="Authoring_InvalidPostActionLocalizationIndex" xml:space="preserve">
     <value>Post action(s) with id(s) '{0}' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.</value>
     <comment>{0} is a list of single-word identifier strings separated by comma. Such as "myManualInstruction, someUserPickedText, instruction3".</comment>
@@ -183,6 +187,10 @@ Details: {1}</value>
   </data>
   <data name="LocalizationModelDeserializer_Error_FailedToParse" xml:space="preserve">
     <value>Failed to read parse localization file {0}, it will be skipped from further processing.</value>
+  </data>
+  <data name="RunnableProjectGenerator_CannotAddImplicitChoice" xml:space="preserve">
+    <value>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</value>
+    <comment>{0} is the choiceKey, {1} is the existing conflict value</comment>
   </data>
   <data name="RunnableProjectGenerator_Exception_ConfigShouldBeFile" xml:space="preserve">
     <value>Template configuration must be a file, but {0} is not a file.</value>

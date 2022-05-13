@@ -116,7 +116,6 @@ Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.OriginalValue.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.VariableName.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.GetOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> sourceOperations) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider>
-~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.ProduceCollection(Microsoft.TemplateEngine.Core.Contracts.IVariableCollection parent) -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.TryGetTargetRelPath(string sourceRelPath, out string targetRelPath) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IRunSpec.VariableFormatString.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IToken.Value.get -> byte[]
