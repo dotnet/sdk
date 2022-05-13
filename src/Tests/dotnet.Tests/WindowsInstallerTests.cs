@@ -11,6 +11,7 @@ using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Installer.Windows.Security;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.TestFramework;
 using Xunit;
 
