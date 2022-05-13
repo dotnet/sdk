@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Larry Ewing <lewing@microsoft.com>
+Date: Fri, 8 Apr 2022 17:26:16 -0500
+Subject: [PATCH] Move tools and apps to net7.0
+
+Original PR: https://github.com/dotnet/runtime/pull/67771
+---
+ Directory.Build.props                                        | 4 ++--
+ .../ILStrip/AssemblyStripper/AssemblyStripper.csproj         | 5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 2ec01ea57e6..2e6a7b6c0f5 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -53,7 +53,7 @@
+     <NetCoreAppCurrent>net$(NetCoreAppCurrentVersion)</NetCoreAppCurrent>
+     <NetCoreAppMinimum>net6.0</NetCoreAppMinimum>
+ 
+-    <NetCoreAppToolCurrentVersion>6.0</NetCoreAppToolCurrentVersion>
++    <NetCoreAppToolCurrentVersion>7.0</NetCoreAppToolCurrentVersion>
+     <NetCoreAppToolCurrent>net$(NetCoreAppToolCurrentVersion)</NetCoreAppToolCurrent>
+     <NetCoreAppCurrentToolTargetFrameworkMoniker>$(NetCoreAppCurrentIdentifier),Version=v$(NetCoreAppToolCurrentVersion)</NetCoreAppCurrentToolTargetFrameworkMoniker>
+ 
+@@ -61,7 +61,7 @@
+     <NetCoreAppLatestStablePackageBaselineVersion>$(NetCoreAppLatestStableVersion).0</NetCoreAppLatestStablePackageBaselineVersion>
+     <NetCoreAppLatestStable>net$(NetCoreAppLatestStableVersion)</NetCoreAppLatestStable>
+ 
+-    <AspNetCoreAppCurrentVersion>6.0</AspNetCoreAppCurrentVersion>
++    <AspNetCoreAppCurrentVersion>7.0</AspNetCoreAppCurrentVersion>
+     <AspNetCoreAppCurrent>net$(AspNetCoreAppCurrentVersion)</AspNetCoreAppCurrent>
+ 
+     <NetFrameworkMinimum>net462</NetFrameworkMinimum>
+diff --git a/src/tasks/MonoTargetsTasks/ILStrip/AssemblyStripper/AssemblyStripper.csproj b/src/tasks/MonoTargetsTasks/ILStrip/AssemblyStripper/AssemblyStripper.csproj
+index 439b5b8b21b..2eb8a61b633 100644
+--- a/src/tasks/MonoTargetsTasks/ILStrip/AssemblyStripper/AssemblyStripper.csproj
++++ b/src/tasks/MonoTargetsTasks/ILStrip/AssemblyStripper/AssemblyStripper.csproj
+@@ -4,11 +4,10 @@
+     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+     <!--  CilStrip.Sources doesn't play nicely with nullability -->
+     <Nullable>disable</Nullable>
+-    <!-- SYSLIB0003: Mono.Cecil uses Code Access Security types
+-         CS0618: Mono.Cecil uses a number of other obsolete types
++    <!-- CS0618,SYSLIB0003,SYSLIB0037: Mono.Cecil uses a number of other obsolete types
+          CS0649: Mono.Cecil.Binary.ExportTable has some unused fields
+     -->
+-    <NoWarn>$(NoWarn),CS0618,CS0649,SYSLIB0003</NoWarn>
++    <NoWarn>$(NoWarn),CS0618,CS0649,SYSLIB0003,SYSLIB0037</NoWarn>
+     <!-- the analyzers don't like Mono.Cecil either -->
+     <RunAnalyzers>false</RunAnalyzers>
+   </PropertyGroup>
