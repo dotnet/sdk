@@ -322,7 +322,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (guidType != null && targetMethod.ContainingType.Equals(guidType))
             {
-                return false;
+                return true;
             }
 
             return false;
