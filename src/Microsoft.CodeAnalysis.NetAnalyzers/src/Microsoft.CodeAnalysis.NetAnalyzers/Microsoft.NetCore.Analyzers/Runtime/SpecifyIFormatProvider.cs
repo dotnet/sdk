@@ -320,7 +320,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return false;
             }
 
-            if (guidType != null && targetMethod.ContainingType.Equals(guidType))
+            if (targetMethod.ContainingType.Equals(guidType))
             {
                 return true;
             }
