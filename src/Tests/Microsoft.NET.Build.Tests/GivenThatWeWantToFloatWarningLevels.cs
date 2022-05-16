@@ -166,5 +166,97 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
+        [InlineData(targetFrameworkNet7, "8.0")]
+        [RequiresMSBuildVersionTheory("16.8")]
+        public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFM)
+        {
+            var testProject = new TestProject
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = currentTFM,
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = @"
+                        using System;
+
+                        namespace ConsoleCore
+                        {
+                            class Program
+                            {
+                                static void Main()
+                                {
+                                }
+                            }
+                        }
+                    ",
+                },
+            };
+            testProject.AdditionalProperties.Add("AnalysisLevel", "preview");
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp"+currentTFM, targetExtension: ".csproj");
+
+            var buildCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.TestRoot, testProject.Name),
+                currentTFM, "EffectiveAnalysisLevel")
+            {
+                DependsOnTargets = "Build"
+            };
+            var buildResult = buildCommand.Execute();
+
+            buildResult.StdErr.Should().Be(string.Empty);
+            var computedEffectiveAnalysisLevel = buildCommand.GetValues()[0];
+            computedEffectiveAnalysisLevel.Should().Be(nextTFM.ToString());
+        }
+
+        [InlineData("preview")]
+        [InlineData("latest")]
+        [InlineData("none")]
+        [RequiresMSBuildVersionTheory("16.8")]
+        public void It_resolves_all_nonnumeric_AnalysisLevel_strings(string analysisLevel)
+        {
+            var testProject = new TestProject
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = targetFrameworkNet7,
+                IsExe = true,
+                SourceFiles =
+                {
+                    ["Program.cs"] = @"
+                        using System;
+
+                        namespace ConsoleCore
+                        {
+                            class Program
+                            {
+                                static void Main()
+                                {
+                                }
+                            }
+                        }
+                    ",
+                },
+            };
+            testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp"+targetFrameworkNet7, targetExtension: ".csproj");
+
+            var buildCommand = new GetValuesCommand(
+                Log,
+                Path.Combine(testAsset.TestRoot, testProject.Name),
+                targetFrameworkNet7, "EffectiveAnalysisLevel")
+            {
+                DependsOnTargets = "Build"
+            };
+            var buildResult = buildCommand.Execute();
+
+            buildResult.StdErr.Should().Be(string.Empty);
+            var computedEffectiveAnalysisLevel = buildCommand.GetValues()[0];
+            computedEffectiveAnalysisLevel.Should().NotBe(analysisLevel);
+        }
+
     }
 }
