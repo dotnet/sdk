@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             }
             catch (Exception ex)
             {
-                logger.LogWarning(Resources.Failed_to_apply_code_fix_0_for_1_2, codeFix?.GetType().Name, diagnosticId, ex.Message);
+                logger.LogWarning(Resources.Failed_to_apply_code_fix_0_for_1_2, codeFix.GetType().Name, diagnosticId, ex.Message);
                 return solution;
             }
         }

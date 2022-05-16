@@ -45,6 +45,8 @@ stages:
                 /p:DotnetPublishUsingPipelines=true
       displayName: Build
 
+    - template: eng\common\templates\steps\generate-sbom.yml
+
     - task: PublishTestResults@2
       displayName: Publish XUnit Test Results
       inputs:
