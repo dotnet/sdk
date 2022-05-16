@@ -4,10 +4,12 @@ Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueParameter(System.Co
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, bool allowMultipleValues = false, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
+override Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ToString() -> string!
 override Microsoft.TemplateEngine.Utils.MultiValueParameter.ToString() -> string!
 static Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparators.get -> char[]!
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsValidMultiValueParameterValue(this string! value) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.TokenizeMultiValueParameter(this string! literal) -> System.Collections.Generic.IReadOnlyList<string!>!
+override Microsoft.TemplateEngine.Utils.RangeVersionSpecification.ToString() -> string!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string? author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string? baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string? classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!

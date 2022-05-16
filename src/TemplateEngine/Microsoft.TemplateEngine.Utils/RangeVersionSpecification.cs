@@ -3,6 +3,8 @@
 
 #nullable enable
 
+using System.Text;
+
 namespace Microsoft.TemplateEngine.Utils
 {
     public class RangeVersionSpecification : IVersionSpecification
@@ -130,6 +132,12 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             return isStartValid && isEndValid;
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return $"{(IsStartInclusive ? "[" : "(")}{MinVersion}-{MaxVersion}{(IsEndInclusive ? "]" : ")")}";
         }
 
         private static bool IsWildcardVersion(string version)

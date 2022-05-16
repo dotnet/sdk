@@ -21,5 +21,4 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
         {
         }
     }
-
 }

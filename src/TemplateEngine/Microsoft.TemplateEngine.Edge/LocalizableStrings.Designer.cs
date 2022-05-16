@@ -106,6 +106,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Check the constraint configuration in template.json..
+        /// </summary>
+        internal static string Generic_Constraint_WrongConfigurationCTA {
+            get {
+                return ResourceManager.GetString("Generic_Constraint_WrongConfigurationCTA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to latest version.
         /// </summary>
         internal static string Generic_LatestVersion {
@@ -168,6 +177,78 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled {
             get {
                 return ResourceManager.GetString("GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Argument(s) were not specified. At least one argument should be specified..
+        /// </summary>
+        internal static string HostConstraint_Error_ArgumentsNotSpecified {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_ArgumentsNotSpecified", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; does not contain valid host configurations..
+        /// </summary>
+        internal static string HostConstraint_Error_ArrayHasNoObjects {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_ArrayHasNoObjects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON.
+        /// </summary>
+        internal static string HostConstraint_Error_InvalidJson {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_InvalidJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON array..
+        /// </summary>
+        internal static string HostConstraint_Error_InvalidJsonArray {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_InvalidJsonArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; should be an array of objects..
+        /// </summary>
+        internal static string HostConstraint_Error_InvalidJsonArray_Objects {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_InvalidJsonArray_Objects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid version or version range..
+        /// </summary>
+        internal static string HostConstraint_Error_InvalidVersion {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_InvalidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; does not have mandatory property &apos;{1}&apos;..
+        /// </summary>
+        internal static string HostConstraint_Error_MissingMandatoryProperty {
+            get {
+                return ResourceManager.GetString("HostConstraint_Error_MissingMandatoryProperty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running template on {0} (version: {1}) is not supported, supported hosts is/are: {2}..
+        /// </summary>
+        internal static string HostConstraint_Message_Restricted {
+            get {
+                return ResourceManager.GetString("HostConstraint_Message_Restricted", resourceCulture);
             }
         }
         

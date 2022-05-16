@@ -31,5 +31,8 @@ namespace Microsoft.TemplateEngine.Utils
             int? result = VersionStringHelpers.CompareVersions(RequiredVersion, versionToCheck);
             return result.HasValue && result.Value == 0;
         }
+
+        /// <inheritdoc/>
+        public override string ToString() => RequiredVersion;
     }
 }

@@ -27,6 +27,11 @@
         <target state="translated">A pasta {0} não existe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Generic_Constraint_WrongConfigurationCTA">
+        <source>Check the constraint configuration in template.json.</source>
+        <target state="new">Check the constraint configuration in template.json.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Generic_LatestVersion">
         <source>latest version</source>
         <target state="translated">versão mais recente</target>
@@ -61,6 +66,48 @@
         <source>{0} was successfully uninstalled.</source>
         <target state="translated">{0} foi desinstalado com sucesso.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_ArgumentsNotSpecified">
+        <source>Argument(s) were not specified. At least one argument should be specified.</source>
+        <target state="new">Argument(s) were not specified. At least one argument should be specified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_ArrayHasNoObjects">
+        <source>'{0}' does not contain valid host configurations.</source>
+        <target state="new">'{0}' does not contain valid host configurations.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_InvalidJson">
+        <source>'{0}' is not a valid JSON</source>
+        <target state="new">'{0}' is not a valid JSON</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_InvalidJsonArray">
+        <source>'{0}' is not a valid JSON array.</source>
+        <target state="new">'{0}' is not a valid JSON array.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_InvalidJsonArray_Objects">
+        <source>'{0}' should be an array of objects.</source>
+        <target state="new">'{0}' should be an array of objects.</target>
+        <note>{0} is JSON configuration for constraint</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_InvalidVersion">
+        <source>'{0}' is not a valid version or version range.</source>
+        <target state="new">'{0}' is not a valid version or version range.</target>
+        <note>{0} is version range specified in JSON configuration</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Error_MissingMandatoryProperty">
+        <source>'{0}' does not have mandatory property '{1}'.</source>
+        <target state="new">'{0}' does not have mandatory property '{1}'.</target>
+        <note>{0} is JSON configuration, {1} mandatory JSON property name</note>
+      </trans-unit>
+      <trans-unit id="HostConstraint_Message_Restricted">
+        <source>Running template on {0} (version: {1}) is not supported, supported hosts is/are: {2}.</source>
+        <target state="new">Running template on {0} (version: {1}) is not supported, supported hosts is/are: {2}.</target>
+        <note>{0} - host name ("dotnetcli", "ide"..)
+{1} - host version (usually matches VS or SDK version)
+{2} - comma-separated list of supported hosts and their versions (example: host1, host2(1.0.0), host3([1.0.0-*]))</note>
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>

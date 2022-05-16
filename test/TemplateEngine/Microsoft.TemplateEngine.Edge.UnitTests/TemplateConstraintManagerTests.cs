@@ -61,8 +61,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraints = await constraintManager.GetConstraintsAsync().ConfigureAwait(false);
 
-            Assert.Equal(3, constraints.Count);
-            Assert.Equal(new[] { "os", "test-1", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
+            Assert.Equal(4, constraints.Count);
+            Assert.Equal(new[] { "host", "os", "test-1", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
         }
 
         [Fact]
@@ -96,8 +96,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
             var constraints = await constraintManager.GetConstraintsAsync().ConfigureAwait(false);
 
-            Assert.Equal(2, constraints.Count);
-            Assert.Equal(new[] { "os", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
+            Assert.Equal(3, constraints.Count);
+            Assert.Equal(new[] { "host", "os", "test-2" }, constraints.Select(c => c.Type).OrderBy(t => t));
         }
 
         [Fact]
