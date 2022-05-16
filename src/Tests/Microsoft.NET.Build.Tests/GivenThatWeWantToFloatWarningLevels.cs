@@ -242,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.AdditionalProperties.Add("AnalysisLevel", analysisLevel);
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp"+targetFrameworkNet7, targetExtension: ".csproj");
+                .CreateTestProject(testProject, identifier: "analysisLevelPreviewConsoleApp"+targetFrameworkNet7+analysisLevel, targetExtension: ".csproj");
 
             var buildCommand = new GetValuesCommand(
                 Log,
