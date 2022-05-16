@@ -258,20 +258,20 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToEvaluate">
         <source>The constraint '{0}' failed to be evaluated for the args '{1}', details: {2}</source>
-        <target state="new">The constraint '{0}' failed to be evaluated for the args '{1}', details: {2}</target>
+        <target state="translated">引数 `{1}` の `{0}` を評価できませんでした。詳細: {2}</target>
         <note>{0} - constraint type
 {1} - arguments (in JSON format)
 {2} - reason of failure (has the period).</note>
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToInitialize">
         <source>The constraint '{0}' failed to initialize: {1}</source>
-        <target state="new">The constraint '{0}' failed to initialize: {1}</target>
+        <target state="translated">制約 '{0}' を初期化できませんでした: {1}</target>
         <note>{0} is constraint type
 {1} - reason of failure (has the period).</note>
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_UnknownType">
         <source>The constraint '{0}' is unknown.</source>
-        <target state="new">The constraint '{0}' is unknown.</target>
+        <target state="translated">制約 '{0}' が不明です。</target>
         <note>{0} is constraint type</note>
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CouldNotLoadTemplate">

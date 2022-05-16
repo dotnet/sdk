@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="variableCollection_cannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>
-        <target state="new">Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</target>
+        <target state="translated">已使用值 [{1}] 加入變數 [{0}]。無法將它新增為具有本身值的隱含變數。</target>
         <note>{0} is the choiceKey, {1} is the existing conflict value</note>
       </trans-unit>
     </body>

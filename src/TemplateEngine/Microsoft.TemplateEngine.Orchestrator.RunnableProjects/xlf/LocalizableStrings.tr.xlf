@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="Authoring_InvalidMultichoiceSymbol">
         <source>Choice parameter {0} is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</source>
-        <target state="new">Choice parameter {0} is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ({1}). Invalid choices: {2}</target>
+        <target state="translated">{0} seçim parametresi geçersiz. Birden çok değere izin verirken ('AllowMultipleValues=true') yapılandırılan seçimlerin bazıları ayırıcı karakterler ({1}) içeriyor. Geçersiz seçimler: {2}</target>
         <note>{0} is the offending symbol name, {1} is a set of separator characters, {2} is a csv list of offending choice values</note>
       </trans-unit>
       <trans-unit id="Authoring_InvalidPostActionLocalizationIndex">
@@ -105,7 +105,7 @@ Ayrıntılar: {1}</target>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>
-        <target state="new">Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</target>
+        <target state="translated">[{0}] değişkeni [{1}] değeriyle zaten eklendi. Kendi değeriyle örtük bir değişken olarak eklenemez.</target>
         <note>{0} is the choiceKey, {1} is the existing conflict value</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_Exception_ConfigShouldBeFile">
@@ -145,12 +145,12 @@ Ayrıntılar: {1}</target>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_Error_Constraints_InvalidSyntax">
         <source>'{0}' should contain objects.</source>
-        <target state="new">'{0}' should contain objects.</target>
+        <target state="translated">'{0}', nesne içermeli.</target>
         <note>{0} is name of JSON property </note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_Error_Constraints_MissingType">
         <source>Constraint definition '{0}' does not contain mandatory property '{1}'.</source>
-        <target state="new">Constraint definition '{0}' does not contain mandatory property '{1}'.</target>
+        <target state="translated">Kısıtlama tanımı '{0}', zorunlu özellik türü '{1}' içermiyor.</target>
         <note>{0} - JSON with constraint defintion, {1} - missing property.</note>
       </trans-unit>
     </body>
