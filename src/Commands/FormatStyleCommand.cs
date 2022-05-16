@@ -19,6 +19,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             var command = new Command("style", Resources.Run_code_style_analyzers_and_apply_fixes)
             {
                 DiagnosticsOption,
+                ExcludeDiagnosticsOption,
                 SeverityOption,
             };
             command.AddCommonOptions();
@@ -37,15 +38,21 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
                 if (parseResult.HasOption(SeverityOption) &&
-                    parseResult.GetValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
+                    parseResult.ValueForOption(SeverityOption) is string { Length: > 0 } styleSeverity)
                 {
                     formatOptions = formatOptions with { CodeStyleSeverity = GetSeverity(styleSeverity) };
                 }
 
                 if (parseResult.HasOption(DiagnosticsOption) &&
-                    parseResult.GetValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
+                    parseResult.ValueForOption(DiagnosticsOption) is string[] { Length: > 0 } diagnostics)
                 {
                     formatOptions = formatOptions with { Diagnostics = diagnostics.ToImmutableHashSet() };
+                }
+
+                if (parseResult.HasOption(ExcludeDiagnosticsOption) &&
+                    parseResult.ValueForOption(ExcludeDiagnosticsOption) is string[] { Length: > 0 } excludeDiagnostics)
+                {
+                    formatOptions = formatOptions with { ExcludeDiagnostics = excludeDiagnostics.ToImmutableHashSet() };
                 }
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.CodeStyle };

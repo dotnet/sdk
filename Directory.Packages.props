@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.0.0-rc.278</NuGetVersion>
+    <NuGetVersion>6.0.0</NuGetVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,16 +14,16 @@
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.1-beta1.21413.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNETCoreCompilersPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />

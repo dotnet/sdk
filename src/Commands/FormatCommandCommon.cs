@@ -41,6 +41,10 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             AllowMultipleArgumentsPerToken = true
         };
+        internal static readonly Option<string[]> ExcludeDiagnosticsOption = new(new[] { "--exclude-diagnostics" }, () => Array.Empty<string>(), Resources.A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues)
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
         internal static readonly Option<string> SeverityOption = new Option<string>("--severity", Resources.The_severity_of_diagnostics_to_fix_Allowed_values_are_info_warn_and_error).FromAmong(SeverityLevels);
         internal static readonly Option<string[]> IncludeOption = new(new[] { "--include" }, () => Array.Empty<string>(), Resources.A_list_of_relative_file_or_folder_paths_to_include_in_formatting_All_files_are_formatted_if_empty)
         {
@@ -137,7 +141,7 @@ namespace Microsoft.CodeAnalysis.Tools
         public static FormatOptions ParseVerbosityOption(this ParseResult parseResult, FormatOptions formatOptions)
         {
             if (parseResult.HasOption(VerbosityOption) &&
-                parseResult.GetValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
+                parseResult.ValueForOption(VerbosityOption) is string { Length: > 0 } verbosity)
             {
                 formatOptions = formatOptions with { LogLevel = GetLogLevel(verbosity) };
             }
@@ -169,8 +173,8 @@ namespace Microsoft.CodeAnalysis.Tools
 
             if (parseResult.HasOption(IncludeOption) || parseResult.HasOption(ExcludeOption))
             {
-                var fileToInclude = parseResult.GetValueForOption(IncludeOption) ?? Array.Empty<string>();
-                var fileToExclude = parseResult.GetValueForOption(ExcludeOption) ?? Array.Empty<string>();
+                var fileToInclude = parseResult.ValueForOption(IncludeOption) ?? Array.Empty<string>();
+                var fileToExclude = parseResult.ValueForOption(ExcludeOption) ?? Array.Empty<string>();
                 HandleStandardInput(logger, ref fileToInclude, ref fileToExclude);
                 formatOptions = formatOptions with { FileMatcher = SourceFileMatcher.CreateMatcher(fileToInclude, fileToExclude) };
             }
@@ -179,7 +183,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { ReportPath = string.Empty };
 
-                if (parseResult.GetValueForOption(ReportOption) is string { Length: > 0 } reportPath)
+                if (parseResult.ValueForOption(ReportOption) is string { Length: > 0 } reportPath)
                 {
                     formatOptions = formatOptions with { ReportPath = reportPath };
                 }
@@ -189,7 +193,7 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 formatOptions = formatOptions with { BinaryLogPath = "format.binlog" };
 
-                if (parseResult.GetValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
+                if (parseResult.ValueForOption(BinarylogOption) is string { Length: > 0 } binaryLogPath)
                 {
                     formatOptions = Path.GetExtension(binaryLogPath)?.Equals(".binlog") == false
                         ? (formatOptions with { BinaryLogPath = Path.ChangeExtension(binaryLogPath, ".binlog") })

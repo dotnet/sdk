@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MajorVersion>6</MajorVersion>
-    <MinorVersion>0</MinorVersion>
+    <MinorVersion>4</MinorVersion>
     <!-- Build release-only package. -->
     <PreReleaseVersionLabel>
     </PreReleaseVersionLabel>
@@ -14,10 +14,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <MicrosoftBuildVersion>16.11.0</MicrosoftBuildVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.2</MicrosoftCodeAnalysisAnalyzersVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>5.0.0</MicrosoftExtensionsDependencyInjectionVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNETCoreCompilersPackageVersion>4.0.1-1.21573.5</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.3.0-1.22253.12</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
     <SystemCommandLineVersion>2.0.0-beta3.22260.1</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.22260.1</SystemCommandLineRenderingVersion>

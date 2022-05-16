@@ -17,6 +17,11 @@
         <target state="translated">指向解决方案文件、项目文件或包含解决方案或项目文件的文件夹的路径。如果未指定路径，则使用当前目录。</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
         <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
         <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>

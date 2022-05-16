@@ -679,6 +679,7 @@ Greeter.Greeter() -> void";
                 codeStyleSeverity,
                 analyzerSeverity,
                 diagnostics?.ToImmutableHashSet() ?? ImmutableHashSet<string>.Empty,
+                ExcludeDiagnostics: ImmutableHashSet<string>.Empty,
                 saveFormattedFiles,
                 ChangesAreErrors: false,
                 fileMatcher,

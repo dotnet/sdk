@@ -17,6 +17,11 @@
         <target state="translated">솔루션 파일, 프로젝트 파일이나 솔루션 또는 프로젝트 파일이 포함된 폴더의 경로입니다. 경로를 지정하지 않으면 현재 디렉터리가 사용됩니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_ignore_when_fixing_code_style_or_3rd_party_issues">
+        <source>A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</source>
+        <target state="new">A space separated list of diagnostic ids to ignore when fixing code style or 3rd party issues.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="A_space_separated_list_of_diagnostic_ids_to_use_as_a_filter_when_fixing_code_style_or_3rd_party_issues">
         <source>A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</source>
         <target state="new">A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.</target>

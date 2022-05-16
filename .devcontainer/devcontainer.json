@@ -1,25 +1,55 @@
 // For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
 // https://github.com/microsoft/vscode-dev-containers/tree/v0.126.0/containers/dotnetcore
 {
-  "name": "C# (.NET Core)",
+  "name": "C# (.NET 6)",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      // Update 'VARIANT' to pick a .NET Core version. Rebuild the container if
-      // it already exists to update. Example variants: 3.1, 5.0, 6.0
+      // Update 'VARIANT' to pick a .NET SDK version: 3.1, 5.0, 6.0
+      // Append -bullseye or -focal to pin to an OS version.
       "VARIANT": "6.0",
-      // Options
-      "INSTALL_NODE": "false",
-      "NODE_VERSION": "lts/*",
-      "INSTALL_ZSH": "false",
-      "INSTALL_AZURE_CLI": "false",
-      "UPGRADE_PACKAGES": "false",
-      "INSTALL_POSHGIT": "true"
     }
   },
   // Set *default* container specific settings.json values on container create.
   "settings": {
-    "terminal.integrated.shell.linux": "/usr/bin/pwsh"
+    "files.associations": {
+      "*.csproj": "msbuild",
+      "*.fsproj": "msbuild",
+      "*.globalconfig": "ini",
+      "*.manifest": "xml",
+      "*.nuspec": "xml",
+      "*.pkgdef": "ini",
+      "*.projitems": "msbuild",
+      "*.props": "msbuild",
+      "*.resx": "xml",
+      "*.rsp": "Powershell",
+      "*.ruleset": "xml",
+      "*.settings": "xml",
+      "*.shproj": "msbuild",
+      "*.slnf": "json",
+      "*.targets": "msbuild",
+      "*.vbproj": "msbuild",
+      "*.vsixmanifest": "xml",
+      "*.vstemplate": "xml",
+      "*.xlf": "xml",
+      "*.yml": "azure-pipelines"
+    },
+    "terminal.integrated.defaultProfile.linux": "pwsh",
+    // ms-dotnettools.csharp settings
+    "omnisharp.defaultLaunchSolution": "format.sln",
+    "omnisharp.disableMSBuildDiagnosticWarning": true,
+    "omnisharp.useModernNet": true,
+    "omnisharp.enableAsyncCompletion": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.enableImportCompletion": true,
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.organizeImportsOnFormat": true,
+    // ms-vscode.powershell settings
+    "powershell.promptToUpdatePowerShell": false,
+    "powershell.integratedConsole.showOnStartup": false,
+    "powershell.startAutomatically": false,
+    // ms-azure-devops.azure-pipelines settings
+    "azure-pipelines.customSchemaFile": ".vscode/dnceng-schema.json"
   },
   // Add the IDs of extensions you want installed when the container is created.
   "extensions": [
@@ -27,28 +57,9 @@
     "editorconfig.editorconfig",
     "formulahendry.dotnet-test-explorer",
     "tintoy.msbuild-project-tools",
-    "ms-vscode.powershell"
+    "ms-vscode.powershell",
+    "ms-azure-devops.azure-pipelines"
   ],
-  // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  // "forwardPorts": [5000, 5001],
-  // [Optional] To reuse of your local HTTPS dev cert, first export it locally using this command:
-  //  * Windows PowerShell:
-  //     dotnet dev-certs https --trust; dotnet dev-certs https -ep "$env:USERPROFILE/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
-  //  * macOS/Linux terminal:
-  //     dotnet dev-certs https --trust; dotnet dev-certs https -ep "${HOME}/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
-  //
-  // Next, after running the command above, uncomment lines in the 'mounts' and 'remoteEnv' lines below,
-  // and open / rebuild the container so the settings take effect.
-  //
-  "mounts": [
-    // "source=${env:HOME}${env:USERPROFILE}/.aspnet/https,target=/home/vscode/.aspnet/https,type=bind"
-  ],
-  "remoteEnv": {
-    // "ASPNETCORE_Kestrel__Certificates__Default__Password": "SecurePwdGoesHere",
-    // "ASPNETCORE_Kestrel__Certificates__Default__Path": "/home/vscode/.aspnet/https/aspnetapp.pfx",
-  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "./restore.sh",
-  // Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-  // "remoteUser": "vscode"
 }

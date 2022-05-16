@@ -83,7 +83,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
         private protected string ToEditorConfig(IReadOnlyDictionary<string, string> editorConfig) => $@"root = true
 
 [*.{DefaultFileExt}]
-{ string.Join(Environment.NewLine, editorConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}")) }
+{string.Join(Environment.NewLine, editorConfig.Select(kvp => $"{kvp.Key} = {kvp.Value}"))}
 ";
 
         private protected Task<SourceText> AssertNoReportedFileChangesAsync(
@@ -234,6 +234,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 codeStyleSeverity,
                 analyzerSeverity,
                 (diagnostics ?? Array.Empty<string>()).ToImmutableHashSet(),
+                ExcludeDiagnostics: ImmutableHashSet<string>.Empty,
                 SaveFormattedFiles: true,
                 ChangesAreErrors: false,
                 fileMatcher,

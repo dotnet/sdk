@@ -1,11 +1,12 @@
 {
   "tools": {
-    "dotnet": "6.0.100"
+    "dotnet": "6.0.105"
   },
   "sdk": {
-    "version": "6.0.100"
+    "version": "6.0.105",
+    "rollForward": "major"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21614.2"
+    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.22261.7"
   }
 }
