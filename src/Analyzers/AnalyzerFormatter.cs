@@ -268,8 +268,19 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return diagnosticIds.ToImmutableDictionary(
                     id => id,
                     id => fixers
-                        .Where(fixer => fixer.FixableDiagnosticIds.Contains(id))
+                        .Where(fixer => ContainsFixableId(fixer, id))
                         .ToImmutableArray());
+            }
+
+            static bool ContainsFixableId(CodeFixProvider fixer, string id)
+            {
+                // The unnecessary imports diagnostic and fixer use a special diagnostic id.
+                if (id == "IDE0005" && fixer.FixableDiagnosticIds.Contains("RemoveUnnecessaryImportsFixable"))
+                {
+                    return true;
+                }
+
+                return fixer.FixableDiagnosticIds.Contains(id);
             }
         }
 

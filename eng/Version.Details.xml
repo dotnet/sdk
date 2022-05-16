@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.3.0-1.22218.9">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.3.0-2.22264.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>423e92823d0e0f2c93ff0e72e68e08333fedce5a</Sha>
+      <Sha>a61e6b243d51f6a0f49bd689a2aa67b97f6eb5dc</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine" Version="2.0.0-beta1.21473.1">
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta3.22260.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
+      <Sha>4dcee4d8a84a5aec7bbee0e9e112a2432e19a411</Sha>
     </Dependency>
-    <Dependency Name="System.CommandLine.Rendering" Version="0.3.0-alpha.21473.1">
+    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.22260.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>82273cb56c83b589e8e5b63da0ac9745ffc6e105</Sha>
+      <Sha>4dcee4d8a84a5aec7bbee0e9e112a2432e19a411</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
