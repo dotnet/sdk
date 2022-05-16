@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,12 +12,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
     public class UnnecessaryImportsFormatterTests : CSharpFormatterTests
     {
-        private const string RemoveUnnecessaryImportDiagnosticKey =
-            AnalyzerOptionsExtensions.DotnetDiagnosticPrefix + "." + UnnecessaryImportsFormatter.IDE0005 + "." + AnalyzerOptionsExtensions.SeveritySuffix;
-        private const string RemoveUnnecessaryImportCategoryKey =
-            AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticPrefix + "." + AnalyzerOptionsExtensions.CategoryPrefix + "-" + UnnecessaryImportsFormatter.Style + "." + AnalyzerOptionsExtensions.SeveritySuffix;
+        internal const string IDE0005 = nameof(IDE0005);
+        internal const string Style = nameof(Style);
 
-        private protected override ICodeFormatter Formatter => new UnnecessaryImportsFormatter();
+        private const string RemoveUnnecessaryImportDiagnosticKey =
+            AnalyzerOptionsExtensions.DotnetDiagnosticPrefix + "." + IDE0005 + "." + AnalyzerOptionsExtensions.SeveritySuffix;
+        private const string RemoveUnnecessaryImportCategoryKey =
+            AnalyzerOptionsExtensions.DotnetAnalyzerDiagnosticPrefix + "." + AnalyzerOptionsExtensions.CategoryPrefix + "-" + Style + "." + AnalyzerOptionsExtensions.SeveritySuffix;
+
+        private protected override ICodeFormatter Formatter => AnalyzerFormatter.CodeStyleFormatter;
 
         public UnnecessaryImportsFormatterTests(ITestOutputHelper output)
         {
@@ -29,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var code =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
@@ -44,7 +48,7 @@ class C
             var code =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
@@ -65,7 +69,7 @@ class C
             var code =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
@@ -89,12 +93,12 @@ class C
             var testCode =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
             var expectedCode =
-@"class C
+@"internal class C
 {
 }";
 
@@ -118,12 +122,12 @@ class C
             var testCode =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
             var expectedCode =
-@"class C
+@"internal class C
 {
 }";
 
@@ -132,7 +136,7 @@ class C
                 [key] = severity
             };
 
-            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning, diagnostics: new[] { UnnecessaryImportsFormatter.IDE0005 });
+            await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.Whitespace | FixCategory.CodeStyle, codeStyleSeverity: DiagnosticSeverity.Warning, diagnostics: new[] { IDE0005 });
         }
 
         [Theory]
@@ -147,7 +151,7 @@ class C
             var testCode =
 @"using System;
 
-class C
+internal class C
 {
 }";
 
