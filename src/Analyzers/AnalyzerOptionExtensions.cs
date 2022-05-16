@@ -36,15 +36,23 @@ namespace Microsoft.CodeAnalysis.Diagnostics
             DiagnosticDescriptor descriptor,
             out ReportDiagnostic severity)
         {
+            var diagnosticId = descriptor.Id;
+
+            // The unnecessary imports diagnostic and fixer use a special diagnostic id.
+            if (diagnosticId == "RemoveUnnecessaryImportsFixable")
+            {
+                diagnosticId = "IDE0005";
+            }
+
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
-            if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(descriptor.Id, out severity))
+            if (compilation.Options.SpecificDiagnosticOptions.TryGetValue(diagnosticId, out severity))
             {
                 return true;
             }
 
             // If user has explicitly configured severity for this diagnostic ID, that should be respected.
             // For example, 'dotnet_diagnostic.CA1000.severity = error'
-            if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, descriptor.Id, CancellationToken.None, out severity) == true)
+            if (compilation.Options.SyntaxTreeOptionsProvider?.TryGetDiagnosticValue(tree, diagnosticId, CancellationToken.None, out severity) == true)
             {
                 return true;
             }
