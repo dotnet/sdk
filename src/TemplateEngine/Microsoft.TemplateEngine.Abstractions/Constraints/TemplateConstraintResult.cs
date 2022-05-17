@@ -12,9 +12,17 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
     /// </summary>
     public class TemplateConstraintResult
     {
-        private TemplateConstraintResult(string type)
+        private string _constraintType;
+
+        private TemplateConstraintResult(ITemplateConstraint constraint)
         {
-            ConstraintType = type;
+            Constraint = constraint;
+            _constraintType = constraint.Type;
+        }
+
+        private TemplateConstraintResult(string constraintType)
+        {
+            _constraintType = constraintType;
         }
 
         public enum Status
@@ -24,7 +32,15 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
             Restricted
         }
 
-        public string ConstraintType { get; }
+        /// <summary>
+        /// Gets the executed <see cref="ITemplateConstraint"/>.
+        /// </summary>
+        public ITemplateConstraint? Constraint { get; }
+
+        /// <summary>
+        /// Gets the executed constraint type.
+        /// </summary>
+        public string ConstraintType => Constraint?.Type ?? _constraintType;
 
         /// <summary>
         /// Determines if the conditions are met.
@@ -44,44 +60,29 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
         /// <summary>
         /// Creates <see cref="TemplateConstraintResult"/> for allowed evaluation result.
         /// </summary>
-        /// <param name="type">Constraint type.</param>
-        public static TemplateConstraintResult CreateAllowed(string type)
+        /// <param name="constraint">The executed constraint.</param>
+        public static TemplateConstraintResult CreateAllowed(ITemplateConstraint constraint)
         {
-            if (string.IsNullOrWhiteSpace(type))
-            {
-                throw new ArgumentException($"'{nameof(type)}' cannot be null or whitespace.", nameof(type));
-            }
-
-            return new TemplateConstraintResult(type)
+            return new TemplateConstraintResult(constraint)
             {
                 EvaluationStatus = Status.Allowed
             };
         }
 
         /// <summary>
-        /// Creates <see cref="TemplateConstraintResult"/> for allowed evaluation result.
-        /// </summary>
-        /// <param name="constraintInfo">Constraint defintion.</param>
-        public static TemplateConstraintResult CreateAllowed(TemplateConstraintInfo constraintInfo)
-        {
-            return CreateAllowed(constraintInfo.Type);
-        }
-
-        /// <summary>
         /// Creates <see cref="TemplateConstraintResult"/> for restricted evaluation result.
         /// </summary>
-        /// <param name="type">Constraint type.</param>
+        /// <param name="constraint">The executed constraint.</param>
         /// <param name="localizedErrorMessage">The reason of the restriction.</param>
         /// <param name="cta">Call to action to fulfill the restriction (optional).</param>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public static TemplateConstraintResult CreateRestricted(string type, string localizedErrorMessage, string? cta = null)
+        public static TemplateConstraintResult CreateRestricted(ITemplateConstraint constraint, string localizedErrorMessage, string? cta = null)
         {
             if (string.IsNullOrWhiteSpace(localizedErrorMessage))
             {
-                throw new ArgumentException($"'{nameof(localizedErrorMessage)}' cannot be null or whitespace.", nameof(type));
+                throw new ArgumentException($"'{nameof(localizedErrorMessage)}' cannot be null or whitespace.", nameof(localizedErrorMessage));
             }
 
-            return new TemplateConstraintResult(type)
+            return new TemplateConstraintResult(constraint)
             {
                 EvaluationStatus = Status.Restricted,
                 LocalizedErrorMessage = localizedErrorMessage,
@@ -90,27 +91,43 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
         }
 
         /// <summary>
-        /// Creates <see cref="TemplateConstraintResult"/> for restricted evaluation result.
-        /// </summary>
-        /// <param name="constraintInfo">Constraint that was evaluated.</param>
-        /// <param name="localizedErrorMessage">The reason of the restriction.</param>
-        /// <param name="cta">Call to action to fulfill the restriction (optional).</param>
-        public static TemplateConstraintResult CreateRestricted(TemplateConstraintInfo constraintInfo, string localizedErrorMessage, string? cta = null)
-        {
-            return CreateRestricted(constraintInfo.Type, localizedErrorMessage, cta);
-        }
-
-        /// <summary>
         /// Creates <see cref="TemplateConstraintResult"/> for the case when the evaluation has failed.
         /// </summary>
-        /// <param name="type">Constraint type.</param>
+        /// <param name="constraint">The executed constraint.</param>
         /// <param name="localizedErrorMessage">The reason of the failure.</param>
         /// <param name="cta">Call to action to resolve the problem (optional).</param>
-        public static TemplateConstraintResult CreateFailure(string type, string localizedErrorMessage, string? cta = null)
+        public static TemplateConstraintResult CreateEvaluationFailure(ITemplateConstraint constraint, string localizedErrorMessage, string? cta = null)
         {
             if (string.IsNullOrWhiteSpace(localizedErrorMessage))
             {
-                throw new ArgumentException($"'{nameof(localizedErrorMessage)}' cannot be null or whitespace.", nameof(type));
+                throw new ArgumentException($"'{nameof(localizedErrorMessage)}' cannot be null or whitespace.", nameof(localizedErrorMessage));
+            }
+
+            return new TemplateConstraintResult(constraint)
+            {
+                EvaluationStatus = Status.NotEvaluated,
+                LocalizedErrorMessage = localizedErrorMessage,
+                CallToAction = cta
+            };
+        }
+
+        /// <summary>
+        /// Creates <see cref="TemplateConstraintResult"/> for the case when the constraint initialization has failed.
+        /// If constraint was intiialized, use <see cref="CreateEvaluationFailure(ITemplateConstraint, string, string?)"/> instead.
+        /// </summary>
+        /// <param name="type">The executed constraint type.</param>
+        /// <param name="localizedErrorMessage">The reason of the failure.</param>
+        /// <param name="cta">Call to action to resolve the problem (optional).</param>
+        public static TemplateConstraintResult CreateInitializationFailure(string type, string localizedErrorMessage, string? cta = null)
+        {
+            if (string.IsNullOrWhiteSpace(type))
+            {
+                throw new ArgumentException($"'{nameof(type)}' cannot be null or whitespace.", nameof(type));
+            }
+
+            if (string.IsNullOrWhiteSpace(localizedErrorMessage))
+            {
+                throw new ArgumentException($"'{nameof(localizedErrorMessage)}' cannot be null or whitespace.", nameof(localizedErrorMessage));
             }
 
             return new TemplateConstraintResult(type)
@@ -120,18 +137,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
                 CallToAction = cta
             };
         }
-
-        /// <summary>
-        /// Creates <see cref="TemplateConstraintResult"/> for the case when the evaluation has failed.
-        /// </summary>
-        /// <param name="constraintInfo">Constraint.</param>
-        /// <param name="localizedErrorMessage">The reason of the failure.</param>
-        /// <param name="cta">Call to action to resolve the problem (optional).</param>
-        public static TemplateConstraintResult CreateFailure(TemplateConstraintInfo constraintInfo, string localizedErrorMessage, string? cta = null)
-        {
-            return CreateFailure(constraintInfo.Type, localizedErrorMessage, cta);
-        }
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
     }
 }
 

@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                 {
                     if (supportedSdk.CheckIfVersionIsValid(_currentSdkVersion.ToString()))
                     {
-                        return TemplateConstraintResult.CreateAllowed(Type);
+                        return TemplateConstraintResult.CreateAllowed(this);
                     }
                 }
 
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                         supportedSdks.Any(supported => supported.CheckIfVersionIsValid(installed.ToString())))));
 
                 return TemplateConstraintResult.CreateRestricted(
-                    Type,
+                    this,
                     string.Format(LocalizableStrings.SdkConstraint_Message_Restricted, _currentSdkVersion.ToString(), supportedSdks.ToCsvString()),
                     cta);
             }

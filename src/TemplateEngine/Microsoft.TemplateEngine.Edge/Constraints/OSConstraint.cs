@@ -51,10 +51,10 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                 {
                     if (RuntimeInformation.IsOSPlatform(platform))
                     {
-                        return TemplateConstraintResult.CreateAllowed(Type);
+                        return TemplateConstraintResult.CreateAllowed(this);
                     }
                 }
-                return TemplateConstraintResult.CreateRestricted(Type, string.Format(LocalizableStrings.OSConstraint_Message_Restricted, RuntimeInformation.OSDescription, string.Join(", ", supportedOS)));
+                return TemplateConstraintResult.CreateRestricted(this, string.Format(LocalizableStrings.OSConstraint_Message_Restricted, RuntimeInformation.OSDescription, string.Join(", ", supportedOS)));
             }
 
             //supported configuration:

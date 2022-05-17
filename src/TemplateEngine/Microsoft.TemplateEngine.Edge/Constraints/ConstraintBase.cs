@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             }
             catch (ConfigurationException ce)
             {
-                return TemplateConstraintResult.CreateFailure(Type, ce.Message, LocalizableStrings.Generic_Constraint_WrongConfigurationCTA);
+                return TemplateConstraintResult.CreateEvaluationFailure(this, ce.Message, LocalizableStrings.Generic_Constraint_WrongConfigurationCTA);
             }
         }
 

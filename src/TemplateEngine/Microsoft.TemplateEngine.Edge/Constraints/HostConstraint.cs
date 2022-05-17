@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                     primaryHostNameMatch = true;
                     if (hostInfo.Version == null || hostInfo.Version.CheckIfVersionIsValid(EnvironmentSettings.Host.Version))
                     {
-                        return TemplateConstraintResult.CreateAllowed(Type);
+                        return TemplateConstraintResult.CreateAllowed(this);
                     }
                 }
                 if (!primaryHostNameMatch)
@@ -58,12 +58,12 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                     {
                         if (hostInfo.Version == null || hostInfo.Version.CheckIfVersionIsValid(EnvironmentSettings.Host.Version))
                         {
-                            return TemplateConstraintResult.CreateAllowed(Type);
+                            return TemplateConstraintResult.CreateAllowed(this);
                         }
                     }
                 }
                 string errorMessage = string.Format(LocalizableStrings.HostConstraint_Message_Restricted, EnvironmentSettings.Host.HostIdentifier, EnvironmentSettings.Host.Version, supportedHosts.ToCsvString());
-                return TemplateConstraintResult.CreateRestricted(Type, errorMessage);
+                return TemplateConstraintResult.CreateRestricted(this, errorMessage);
             }
 
             // configuration examples

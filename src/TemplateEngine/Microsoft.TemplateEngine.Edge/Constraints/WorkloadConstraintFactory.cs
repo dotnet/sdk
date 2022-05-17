@@ -69,11 +69,11 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
                 if (isSupportedWorkload)
                 {
-                    return TemplateConstraintResult.CreateAllowed(Type);
+                    return TemplateConstraintResult.CreateAllowed(this);
                 }
 
                 return TemplateConstraintResult.CreateRestricted(
-                    Type,
+                    this,
                     string.Format(
                         LocalizableStrings.WorkloadConstraint_Message_Restricted,
                         string.Join(", ", supportedWorkloads),
