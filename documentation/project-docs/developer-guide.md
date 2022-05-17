@@ -29,7 +29,7 @@ build.cmd
 
 The build script will output a `dotnet` installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
 
-If you encounter a build failure with an error message like **Resource file [filename].resx cannot be found.**, [enable long paths](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and try again.
+If you encounter a build failure with an error message like `Resource file [filename].resx cannot be found.`, [enable long paths](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and try again.
 
 To open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using powershell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.sln`.
 
