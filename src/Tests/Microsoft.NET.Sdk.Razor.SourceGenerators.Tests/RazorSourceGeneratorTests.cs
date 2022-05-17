@@ -2723,7 +2723,9 @@ namespace MyApp.Pages
 
         private static string TrimChecksum(string text)
         {
-            var trimmed = text.Trim('\r', '\n').Replace("\r\n", "\r").Replace('\r', '\n');
+            var trimmed = text.Trim('\r', '\n')                                // start and end
+                .Replace("\r\n", "\r").Replace('\n', '\r').Replace('\r', '\n') // regular new-lines
+                .Replace("\\r\\n", "\\n");                                     // embedded new-lines
             Assert.StartsWith("#pragma", trimmed);
             return trimmed.Substring(trimmed.IndexOf('\n') + 1);
         }
