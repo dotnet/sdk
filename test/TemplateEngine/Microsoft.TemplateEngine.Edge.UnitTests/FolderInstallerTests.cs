@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
-            FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName());
+            FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
             IReadOnlyList<CheckUpdateResult> results = await folderInstaller.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None).ConfigureAwait(false);
 
             Assert.Single(results);
@@ -141,14 +141,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
-            FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName());
+            FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.0");
             UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
 
             Assert.True(result.Success);
             Assert.Equal(updateRequest, result.UpdateRequest);
             Assert.Equal(InstallerErrorCode.Success, result.Error);
-            Assert.Equal(source, result.TemplatePackage);
+            Assert.Equal(source.MountPointUri, result.TemplatePackage.MountPointUri);
+            Assert.NotEqual(source.LastChangeTime, result.TemplatePackage.LastChangeTime);
         }
 
         [Fact]

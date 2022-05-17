@@ -17,14 +17,16 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger _logger;
+        private DateTime _currentLastChangedDateTime;
 
-        public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri)
+        public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri, DateTime lastChangeTime)
         {
             if (string.IsNullOrWhiteSpace(mountPointUri))
             {
                 throw new ArgumentException($"{nameof(mountPointUri)} cannot be null or empty", nameof(mountPointUri));
             }
             MountPointUri = mountPointUri;
+            _currentLastChangedDateTime = lastChangeTime;
             Installer = installer ?? throw new ArgumentNullException(nameof(installer));
             ManagedProvider = provider ?? throw new ArgumentNullException(nameof(provider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -43,7 +45,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             {
                 try
                 {
-                    return _settings.Host.FileSystem.GetLastWriteTimeUtc(MountPointUri);
+                    //installation or last modification date time: whatever is later.
+                    DateTime physicalWriteTimeUtc = _settings.Host.FileSystem.GetLastWriteTimeUtc(MountPointUri);
+                    return physicalWriteTimeUtc > _currentLastChangedDateTime ? physicalWriteTimeUtc : _currentLastChangedDateTime;
                 }
                 catch (Exception e)
                 {

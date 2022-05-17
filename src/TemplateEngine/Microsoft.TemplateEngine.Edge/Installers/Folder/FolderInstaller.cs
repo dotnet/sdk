@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         {
             _ = installationRequest ?? throw new ArgumentNullException(nameof(installationRequest));
 
-            return Task.FromResult(Directory.Exists(installationRequest.PackageIdentifier));
+            return Task.FromResult(_settings.Host.FileSystem.DirectoryExists(installationRequest.PackageIdentifier));
         }
 
         public IManagedTemplatePackage Deserialize(IManagedTemplatePackageProvider provider, TemplatePackageData data)
@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
                 throw new ArgumentException($"{nameof(FolderInstaller)} can only deserialize packages with {nameof(data.InstallerId)} {Factory.Id}", nameof(data));
             }
 
-            return new FolderManagedTemplatePackage(_settings, this, provider, data.MountPointUri);
+            return new FolderManagedTemplatePackage(_settings, this, provider, data.MountPointUri, data.LastChangeTime);
         }
 
         public Task<IReadOnlyList<CheckUpdateResult>> GetLatestVersionAsync(IEnumerable<IManagedTemplatePackage> packages, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
@@ -57,9 +57,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
             _ = provider ?? throw new ArgumentNullException(nameof(provider));
 
-            if (Directory.Exists(installRequest.PackageIdentifier))
+            if (_settings.Host.FileSystem.DirectoryExists(installRequest.PackageIdentifier))
             {
-                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.PackageIdentifier)));
+                //on installation we update last modification date to trigger package rebuild.
+                //on folder package update the date may not change.
+                return Task.FromResult(InstallResult.CreateSuccess(installRequest, new FolderManagedTemplatePackage(_settings, this, provider, installRequest.PackageIdentifier, DateTime.UtcNow)));
             }
             else
             {
@@ -95,7 +97,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         {
             _ = updateRequest ?? throw new ArgumentNullException(nameof(updateRequest));
 
-            return Task.FromResult(UpdateResult.CreateSuccess(updateRequest, updateRequest.TemplatePackage));
+            // update installation date
+            return Task.FromResult(UpdateResult.CreateSuccess(updateRequest, new FolderManagedTemplatePackage(_settings, this, provider, updateRequest.TemplatePackage.Identifier, DateTime.UtcNow)));
         }
     }
 }
