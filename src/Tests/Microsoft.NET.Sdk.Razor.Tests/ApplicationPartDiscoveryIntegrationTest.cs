@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class ApplicationPartDiscoveryIntegrationTest : AspNetSdkTest
     {
-        public ApplicationPartDiscoveryIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public ApplicationPartDiscoveryIntegrationTest(ITestOutputHelper log) : base(log, typeof(ApplicationPartDiscoveryIntegrationTest).Assembly) {}
 
         [CoreMSBuildOnlyFact]
         public void Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDotnetMsbuild()

@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmBuildLazyLoadTest : AspNetSdkTest
     {
-        public WasmBuildLazyLoadTest(ITestOutputHelper log) : base(log) {}
+        public WasmBuildLazyLoadTest(ITestOutputHelper log) : base(log, typeof(WasmBuildLazyLoadTest).Assembly) {}
 
         [Fact]
         public void Build_LazyLoadExplicitAssembly_Debug_Works()

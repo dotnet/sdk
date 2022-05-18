@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmCompressionTests : AspNetSdkTest
     {
-        public WasmCompressionTests(ITestOutputHelper log) : base(log) {}
+        public WasmCompressionTests(ITestOutputHelper log) : base(log, typeof(WasmCompressionTests).Assembly) {}
 
         [Fact]
         public void Publish_UpdatesFilesWhenSourcesChange()

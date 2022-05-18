@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         // Remove Razor prefix from assembly name
         public virtual string OutputFileName => $"{TestProjectName}.dll";
 
-        public MvcBuildIntegrationTestLegacy(ITestOutputHelper log) : base(log) { }
+        public MvcBuildIntegrationTestLegacy(ITestOutputHelper log) : base(log, typeof(MvcBuildIntegrationTestLegacy).Assembly) { }
 
         [CoreMSBuildOnlyFact]
         public virtual void Building_Project()

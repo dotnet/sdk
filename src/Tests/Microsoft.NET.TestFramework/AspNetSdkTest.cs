@@ -18,10 +18,9 @@ namespace Microsoft.NET.TestFramework
     {
         public readonly string DefaultTfm;
 
-        protected AspNetSdkTest(ITestOutputHelper log) : base(log)
+        protected AspNetSdkTest(ITestOutputHelper log, Assembly testAssembly) : base(log)
         {
-            var assembly = Assembly.GetCallingAssembly();
-            var testAssemblyMetadata = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
+            var testAssemblyMetadata = testAssembly.GetCustomAttributes<AssemblyMetadataAttribute>();
             DefaultTfm = testAssemblyMetadata.SingleOrDefault(a => a.Key == "AspNetTestTfm").Value;
         }
 

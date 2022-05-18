@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class DesignTimeBuildIntegrationTest : AspNetSdkTest
     {
-        public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log, typeof(DesignTimeBuildIntegrationTest).Assembly) {}
 
         [Fact]
         public void DesignTimeBuild_DoesNotRunRazorTargets()

@@ -20,7 +20,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmPwaManifestTests : AspNetSdkTest
     {
-        public WasmPwaManifestTests(ITestOutputHelper log) : base(log) {}
+        public WasmPwaManifestTests(ITestOutputHelper log) : base(log, typeof(WasmPwaManifestTests).Assembly) {}
 
         [Fact]
         public void Build_ServiceWorkerAssetsManifest_Works()

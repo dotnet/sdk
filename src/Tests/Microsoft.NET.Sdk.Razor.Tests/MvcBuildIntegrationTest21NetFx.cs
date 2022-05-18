@@ -18,7 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         private const string TestProjectName ="SimpleMvc21NetFx";
         private const string TargetFramework = "net462";
         public const string OutputFileName = TestProjectName + ".exe";
-        public MvcBuildIntegrationTest21NetFx(ITestOutputHelper log) : base(log) { }
+        public MvcBuildIntegrationTest21NetFx(ITestOutputHelper log) : base(log, typeof(MvcBuildIntegrationTest21NetFx).Assembly) { }
 
         [Fact]
         public virtual void Building_Project()

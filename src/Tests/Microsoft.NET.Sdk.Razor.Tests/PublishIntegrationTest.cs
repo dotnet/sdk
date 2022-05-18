@@ -18,7 +18,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class PublishIntegrationTest : AspNetSdkTest
     {
-        public PublishIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public PublishIntegrationTest(ITestOutputHelper log) : base(log, typeof(PublishIntegrationTest).Assembly) {}
 
         [Fact]
         public void Publish_RazorCompileOnPublish_IsDefault()

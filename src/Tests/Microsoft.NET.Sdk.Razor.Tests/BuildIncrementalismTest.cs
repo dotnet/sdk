@@ -21,7 +21,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildIncrementalismTest : AspNetSdkTest
     {
-        public BuildIncrementalismTest(ITestOutputHelper log) : base(log) {}
+        public BuildIncrementalismTest(ITestOutputHelper log) : base(log, typeof(BuildIncrementalismTest).Assembly) {}
 
 
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]

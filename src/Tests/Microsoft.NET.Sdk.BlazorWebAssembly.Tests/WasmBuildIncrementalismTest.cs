@@ -16,7 +16,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class WasmBuildIncrementalismTest : AspNetSdkTest
     {
-        public WasmBuildIncrementalismTest(ITestOutputHelper log) : base(log) { }
+        public WasmBuildIncrementalismTest(ITestOutputHelper log) : base(log, typeof(WasmBuildIncrementalismTest).Assembly) { }
 
         [Fact]
         public void Build_IsIncremental()

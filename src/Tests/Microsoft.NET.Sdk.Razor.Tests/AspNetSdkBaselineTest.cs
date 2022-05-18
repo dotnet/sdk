@@ -39,15 +39,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         // path. Returning null avoids any transformation
         protected Func<StaticWebAsset, string, StaticWebAsset, string> PathTemplatizer { get; set; } = (asset, originalValue, related) => null;
 
-        public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
+        public AspNetSdkBaselineTest(ITestOutputHelper log, Assembly testAssembly) : base(log, typeof(AspNetSdkBaselineTest).Assembly)
         {
-            TestAssembly = Assembly.GetCallingAssembly();
+            TestAssembly = testAssembly;
             var testAssemblyMetadata = TestAssembly.GetCustomAttributes<AssemblyMetadataAttribute>();
             RuntimeVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "NetCoreAppRuntimePackageVersion").Value;
             DefaultPackageVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "DefaultTestBaselinePackageVersion").Value;
         }
 
-        public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log)
+        public AspNetSdkBaselineTest(ITestOutputHelper log, bool generateBaselines) : this(log, typeof(AspNetSdkBaselineTest).Assembly)
         {
             _generateBaselines = generateBaselines;
         }

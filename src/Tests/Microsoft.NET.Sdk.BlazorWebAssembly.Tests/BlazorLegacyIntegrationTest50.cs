@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorLegacyIntegrationTest50 : AspNetSdkBaselineTest
     {
-        public BlazorLegacyIntegrationTest50(ITestOutputHelper log) : base(log)
+        public BlazorLegacyIntegrationTest50(ITestOutputHelper log) : base(log, typeof(BlazorLegacyIntegrationTest50).Assembly)
         {
         }
 

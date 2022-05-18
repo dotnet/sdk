@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public abstract class WasmPublishIntegrationTestBase : AspNetSdkTest
     {
-        public WasmPublishIntegrationTestBase(ITestOutputHelper log) : base(log) { }
+        public WasmPublishIntegrationTestBase(ITestOutputHelper log) : base(log, typeof(WasmPublishIntegrationTestBase).Assembly) { }
 
         protected static void VerifyBootManifestHashes(TestAsset testAsset, string blazorPublishDirectory)
         {

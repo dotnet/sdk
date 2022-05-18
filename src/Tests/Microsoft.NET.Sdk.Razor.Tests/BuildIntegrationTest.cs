@@ -21,7 +21,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildIntegrationTest : AspNetSdkTest
     {
-        public BuildIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public BuildIntegrationTest(ITestOutputHelper log) : base(log, typeof(BuildIntegrationTest).Assembly) {}
 
         [CoreMSBuildOnlyFact]
         public void Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()

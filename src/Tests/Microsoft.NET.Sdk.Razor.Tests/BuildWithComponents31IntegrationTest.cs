@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildWithComponents31IntegrationTest : AspNetSdkTest
     {
-        public BuildWithComponents31IntegrationTest(ITestOutputHelper log) : base(log) {}
+        public BuildWithComponents31IntegrationTest(ITestOutputHelper log) : base(log, typeof(BuildWithComponents31IntegrationTest).Assembly) {}
 
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works()

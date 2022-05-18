@@ -16,7 +16,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildIntrospectionTest : AspNetSdkTest
     {
-        public BuildIntrospectionTest(ITestOutputHelper log) : base(log) {}
+        public BuildIntrospectionTest(ITestOutputHelper log) : base(log, typeof(BuildIntrospectionTest).Assembly) {}
 
         [Fact]
         public void RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
