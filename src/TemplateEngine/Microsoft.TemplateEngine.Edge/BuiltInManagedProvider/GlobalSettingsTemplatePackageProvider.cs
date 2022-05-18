@@ -227,7 +227,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             return updateResult;
         }
 
-        private async Task<(InstallerErrorCode, string)> EnsureInstallPrerequisites(List<TemplatePackageData> packagesInSettings, string identifier, string version, IInstaller installer, CancellationToken cancellationToken, bool update = false)
+        private async Task<(InstallerErrorCode, string)> EnsureInstallPrerequisites(List<TemplatePackageData> packagesInSettings, string identifier, string? version, IInstaller installer, CancellationToken cancellationToken, bool update = false, bool forceUpdate = false)
         {
             var packages = await GetAllTemplatePackagesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -235,7 +235,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             if (packages.OfType<IManagedTemplatePackage>().FirstOrDefault(s => s.Identifier == identifier && s.Installer == installer) is IManagedTemplatePackage packageToBeUpdated)
             {
                 //if same version is already installed - return
-                if (packageToBeUpdated.Version == version)
+                if (!forceUpdate && packageToBeUpdated.Version == version)
                 {
                     return (InstallerErrorCode.AlreadyInstalled, string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled, packageToBeUpdated.DisplayName));
                 }
@@ -244,13 +244,14 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     _logger.LogInformation(
                         string.Format(
                             LocalizableStrings.GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled,
-                            packageToBeUpdated.Identifier,
-                            packageToBeUpdated.Version,
-                            string.IsNullOrWhiteSpace(identifier) ?
+                            string.IsNullOrWhiteSpace(packageToBeUpdated.Version)
+                                ? packageToBeUpdated.Identifier
+                                : $"{packageToBeUpdated.Identifier} ({string.Format(LocalizableStrings.Generic_Version, packageToBeUpdated.Version)})",
+                            string.IsNullOrWhiteSpace(version) ?
                                 LocalizableStrings.Generic_LatestVersion :
                                 string.Format(LocalizableStrings.Generic_Version, version)));
                 }
-                //if different version is installed - uninstall previous version first
+                //uninstall previous version first
                 UninstallResult uninstallResult = await installer.UninstallAsync(packageToBeUpdated, this, cancellationToken).ConfigureAwait(false);
                 if (!uninstallResult.Success)
                 {
@@ -274,7 +275,13 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             _ = installRequest ?? throw new ArgumentNullException(nameof(installRequest));
             _ = installer ?? throw new ArgumentNullException(nameof(installer));
 
-            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(packages, installRequest.PackageIdentifier, installRequest.Version, installer, cancellationToken).ConfigureAwait(false);
+            (InstallerErrorCode result, string message) = await EnsureInstallPrerequisites(
+                packages,
+                installRequest.PackageIdentifier,
+                installRequest.Version,
+                installer,
+                cancellationToken,
+                forceUpdate: installRequest.Force).ConfigureAwait(false);
             if (result != InstallerErrorCode.Success)
             {
                 return InstallResult.CreateFailure(installRequest, result, message);

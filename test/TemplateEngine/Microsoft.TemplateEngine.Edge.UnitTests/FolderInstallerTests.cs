@@ -142,6 +142,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
             FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
+            //add a delay so update updates last changed time
+            await Task.Delay(100).ConfigureAwait(false);
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.0");
             UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
 

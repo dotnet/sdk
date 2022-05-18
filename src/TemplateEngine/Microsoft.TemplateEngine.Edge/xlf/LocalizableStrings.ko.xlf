@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
-        <source>{0} is already installed, version: {1}, it will be replaced with {2}.</source>
-        <target state="translated">{0}이(가) 이미 설치되어 있습니다. 버전: {1}이(가) {2}(으)로 대체됩니다.</target>
+        <source>{0} is already installed, it will be replaced with {1}.</source>
+        <target state="new">{0} is already installed, it will be replaced with {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">

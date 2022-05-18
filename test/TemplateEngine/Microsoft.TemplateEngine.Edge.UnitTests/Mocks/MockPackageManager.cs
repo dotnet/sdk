@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
     internal class MockPackageManager : IDownloader, IUpdateChecker
     {
         internal const string DefaultFeed = "test_feed";
-        private PackageManager _packageManager;
+        private PackageManager? _packageManager;
 
         internal MockPackageManager()
         {
@@ -25,7 +27,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             _packageManager = packageManager;
         }
 
-        public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string version = null, IEnumerable<string> additionalSources = null, CancellationToken cancellationToken = default)
+        public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default)
         {
             // names of exceptions throw them for test purposes
             switch (identifier)
@@ -36,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                 case nameof(Exception): throw new Exception("Generic error");
             }
 
-            string testPackageLocation = _packageManager.PackTestTemplatesNuGetPackage();
+            string testPackageLocation = _packageManager?.PackTestTemplatesNuGetPackage() ?? throw new Exception("Package Manager was not initialized");
             string targetFileName;
             if (string.IsNullOrWhiteSpace(version))
             {
@@ -47,10 +49,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                 targetFileName = $"{Path.GetFileNameWithoutExtension(testPackageLocation)}.{version}.nupkg";
             }
             File.Copy(testPackageLocation, Path.Combine(downloadPath, targetFileName));
-            return Task.FromResult(new NuGetPackageInfo("Microsoft", Path.Combine(downloadPath, targetFileName), DefaultFeed, identifier, version));
+            return Task.FromResult(new NuGetPackageInfo("Microsoft", Path.Combine(downloadPath, targetFileName), DefaultFeed, identifier, version ?? string.Empty));
         }
 
-        public Task<(string LatestVersion, bool IsLatestVersion)> GetLatestVersionAsync(string identifier, string version = null, string additionalNuGetSource = null, CancellationToken cancellationToken = default)
+        public Task<(string LatestVersion, bool IsLatestVersion)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalNuGetSource = null, CancellationToken cancellationToken = default)
         {
             // names of exceptions throw them for test purposes
             switch (identifier)

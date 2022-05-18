@@ -163,7 +163,7 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} is already installed, version: {1}, it will be replaced with {2}..
+        ///   Looks up a localized string similar to {0} is already installed, it will be replaced with {1}..
         /// </summary>
         internal static string GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled {
             get {

@@ -1,4 +1,11 @@
 ﻿const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Details.get -> System.Collections.Generic.Dictionary<string!, string!>!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.DisplayName.get -> string!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Force.get -> bool
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallerName.get -> string?
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallRequest(string! identifier, string? version = null, string? installerName = null, System.Collections.Generic.Dictionary<string!, string!>? details = null, bool force = false) -> void
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.PackageIdentifier.get -> string!
+Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Version.get -> string?
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint
 Microsoft.TemplateEngine.Abstractions.ITemplateConstraint.DisplayName.get -> string!
@@ -23,6 +30,7 @@ Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.Allowed = 
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.NotEvaluated = 0 -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
 Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status.Restricted = 2 -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.Status
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.IsLocalPackage.get -> bool
+override Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.ToString() -> string!
 static Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.CreateAllowed(Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo! constraintInfo) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
 static Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.CreateAllowed(string! type) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!
 static Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplateConstraintInfo! constraintInfo, string! localizedErrorMessage, string? cta = null) -> Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!

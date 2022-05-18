@@ -283,5 +283,108 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             Directory.Exists(templateLocation);
         }
+
+        [Fact]
+        internal async Task CanReInstallPackage_WhenForceIsSpecified()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            string packageLocation = await _packageManager.GetNuGetPackage("Microsoft.DotNet.Common.ProjectTemplates.5.0").ConfigureAwait(false);
+
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(packageLocation));
+
+            IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(installRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequest = new InstallRequest(Path.GetFullPath(packageLocation), force: true);
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(repeatedInstallRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequestWithoutForce = new InstallRequest(Path.GetFullPath(packageLocation));
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequestWithoutForce }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.False(result[0].Success);
+            Assert.Equal(InstallerErrorCode.DownloadFailed, result[0].Error);
+        }
+
+        [Fact]
+        internal async Task CanReInstallRemotePackage_WhenForceIsSpecified()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", version: "5.0.0");
+
+            IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            Assert.True(string.IsNullOrEmpty(result[0].ErrorMessage));
+            Assert.Equal(installRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequest = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", version: "5.0.0", force: true);
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(repeatedInstallRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequestWithoutForce = new InstallRequest("Microsoft.DotNet.Common.ProjectTemplates.5.0", version: "5.0.0");
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequestWithoutForce }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.False(result[0].Success);
+            Assert.Equal(InstallerErrorCode.AlreadyInstalled, result[0].Error);
+        }
+
+        [Fact]
+        internal async Task CanReInstallFolder_WhenForceIsSpecified()
+        {
+            using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
+            string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithSourceName");
+
+            InstallRequest installRequest = new InstallRequest(Path.GetFullPath(templateLocation));
+
+            IReadOnlyList<InstallResult> result = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(installRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequest = new InstallRequest(Path.GetFullPath(templateLocation), force: true);
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequest }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.True(result[0].Success);
+            Assert.Equal(InstallerErrorCode.Success, result[0].Error);
+            result[0].ErrorMessage.Should().BeNullOrEmpty();
+            Assert.Equal(repeatedInstallRequest, result[0].InstallRequest);
+
+            InstallRequest repeatedInstallRequestWithoutForce = new InstallRequest(Path.GetFullPath(templateLocation));
+
+            result = await bootstrapper.InstallTemplatePackagesAsync(new[] { repeatedInstallRequestWithoutForce }, InstallationScope.Global, CancellationToken.None).ConfigureAwait(false);
+
+            Assert.Equal(1, result.Count);
+            Assert.False(result[0].Success);
+            Assert.Equal(InstallerErrorCode.AlreadyInstalled, result[0].Error);
+        }
     }
 }

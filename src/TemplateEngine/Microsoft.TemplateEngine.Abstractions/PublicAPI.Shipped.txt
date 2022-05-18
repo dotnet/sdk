@@ -284,12 +284,6 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.ErrorMessage.set -> void
 ~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
 ~Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.TemplatePackage.set -> void
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Details.get -> System.Collections.Generic.Dictionary<string, string>
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.DisplayName.get -> string
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallerName.get -> string
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.InstallRequest(string identifier, string version = null, string installerName = null, System.Collections.Generic.Dictionary<string, string> details = null) -> void
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.PackageIdentifier.get -> string
-~Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Version.get -> string
 ~Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.InstallRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest
 ~Microsoft.TemplateEngine.Abstractions.Installer.ISerializableInstaller.Deserialize(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackageProvider provider, Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData data) -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage
 ~Microsoft.TemplateEngine.Abstractions.Installer.ISerializableInstaller.Serialize(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.TemplatePackageData
@@ -361,7 +355,6 @@ Microsoft.TemplateEngine.Abstractions.IComponentManager.TryGetComponent<T>(Syste
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.MountPointUri.get -> string
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.Provider.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider
 ~Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.TemplatePackage(Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider provider, string mountPointUri, System.DateTime lastChangeTime) -> void
-~override Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.ToString() -> string
 ~static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
 ~static Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage templatePackage, string version, bool isLatest) -> Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult
 ~static Microsoft.TemplateEngine.Abstractions.Installer.InstallResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.InstallResult

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 
@@ -11,7 +13,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class InstallRequest
     {
-        public InstallRequest(string identifier, string version = null, string installerName = null, Dictionary<string, string> details = null)
+        public InstallRequest(string identifier, string? version = null, string? installerName = null, Dictionary<string, string>? details = null, bool force = false)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -20,6 +22,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
             PackageIdentifier = identifier;
             Version = version;
             InstallerName = installerName;
+            Force = force;
             Details = details ?? new Dictionary<string, string>();
         }
 
@@ -35,7 +38,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// This can be null, but if multiple installers return <c>true</c> from <see cref="IInstaller.CanInstallAsync"/>
         /// installation will fail. The application should select the installer to be used in this case.
         /// </remarks>
-        public string InstallerName { get; private set; }
+        public string? InstallerName { get; private set; }
 
         /// <summary>
         /// The identifier for template package to be installed. The format of identifier is defined by <see cref="IInstaller"/> implementation.
@@ -48,13 +51,19 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <summary>
         /// Specific version to be installed or null to install latest.
         /// </summary>
-        public string Version { get; private set; }
+        public string? Version { get; private set; }
 
         /// <summary>
         /// Additional details, like NuGet Server(Source), that specific installer uses.
         /// </summary>
         /// <remarks>The keys supported by default installers are defined in <see cref="InstallerConstants"/>.</remarks>
         public Dictionary<string, string> Details { get; private set; }
+
+        /// <summary>
+        /// Allows installation even if the package with same version is already installed.
+        /// Such package will be re-installed.
+        /// </summary>
+        public bool Force { get; }
 
         public override string ToString() => DisplayName;
     }

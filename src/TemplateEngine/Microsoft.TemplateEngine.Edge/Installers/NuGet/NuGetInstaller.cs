@@ -202,6 +202,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         installRequest.PackageIdentifier,
                         installRequest.Version,
                         additionalNuGetSources,
+                        force: installRequest.Force,
                         cancellationToken)
                         .ConfigureAwait(false);
                 }
@@ -360,16 +361,15 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new InvalidNuGetPackageException(installRequest.PackageIdentifier, ex);
             }
             string targetPackageLocation = Path.Combine(_installPath, packageInfo.PackageIdentifier + "." + packageInfo.PackageVersion + ".nupkg");
-            if (_environmentSettings.Host.FileSystem.FileExists(targetPackageLocation))
+            if (!installRequest.Force && _environmentSettings.Host.FileSystem.FileExists(targetPackageLocation))
             {
                 _logger.LogError(string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.PackageIdentifier, targetPackageLocation));
                 _logger.LogError(string.Format(LocalizableStrings.NuGetInstaller_Error_FileAlreadyExists, targetPackageLocation));
                 throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.PackageIdentifier);
             }
-
             try
             {
-                _environmentSettings.Host.FileSystem.FileCopy(installRequest.PackageIdentifier, targetPackageLocation, overwrite: false);
+                _environmentSettings.Host.FileSystem.FileCopy(installRequest.PackageIdentifier, targetPackageLocation, overwrite: installRequest.Force);
                 packageInfo = packageInfo.WithFullPath(targetPackageLocation);
             }
             catch (Exception ex)

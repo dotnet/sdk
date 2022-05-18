@@ -42,12 +42,13 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// <param name="identifier">NuGet package identifier.</param>
         /// <param name="version">The version to download. If empty, the latest stable version will be downloaded. If stable version is not available, the latest preview will be downloaded.</param>
         /// <param name="additionalSources">Additional NuGet feeds to use (in addition to default feeds configured for current directory).</param>
+        /// <param name="force">If true, overwriting existing package is allowed.</param>
         /// <param name="cancellationToken"></param>
         /// <returns><see cref="NuGetPackageInfo"/>containing full path to downloaded package and package details.</returns>
         /// <exception cref="InvalidNuGetSourceException">when sources passed to install request are not valid NuGet sources or failed to read default NuGet configuration.</exception>
         /// <exception cref="DownloadException">when the download of the package failed.</exception>
         /// <exception cref="PackageNotFoundException">when the package cannot be find in default or passed to install request NuGet feeds.</exception>
-        public async Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, CancellationToken cancellationToken = default)
+        public async Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(identifier))
             {
@@ -93,7 +94,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             string filePath = Path.Combine(downloadPath, packageMetadata.Identity.Id + "." + packageMetadata.Identity.Version + ".nupkg");
-            if (_environmentSettings.Host.FileSystem.FileExists(filePath))
+            if (!force && _environmentSettings.Host.FileSystem.FileExists(filePath))
             {
                 _nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FileAlreadyExists, filePath));
                 throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source });
