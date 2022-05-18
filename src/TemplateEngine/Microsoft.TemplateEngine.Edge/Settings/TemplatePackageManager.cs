@@ -304,7 +304,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             cancellationToken.ThrowIfCancellationRequested();
 
             // Check that some mountpoint wasn't removed...
-            if (!needsRebuild && mountPoints.Keys.Count != cache.MountPointsInfo.Count)
+            if (!needsRebuild && !mountPoints.Keys.OrderBy(mp => mp).SequenceEqual(cache.MountPointsInfo.Keys.OrderBy(mp => mp)))
             {
                 needsRebuild = true;
             }
