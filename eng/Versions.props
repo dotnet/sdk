@@ -30,10 +30,9 @@
     <NewtonsoftJsonPackageVersion>13.0.1</NewtonsoftJsonPackageVersion>
     <NewtonsoftJsonVersion>$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersion>
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
-    <SystemReflectionMetadataVersion>5.0.0</SystemReflectionMetadataVersion>
+    <SystemReflectionMetadataVersion>.0.0</SystemReflectionMetadataVersion>
     <MicrosoftDotNetSignToolVersion>7.0.0-beta.22273.1</MicrosoftDotNetSignToolVersion>
     <MicrosoftWebXdtPackageVersion>3.1.0</MicrosoftWebXdtPackageVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>7.0.0-preview.5.22273.4</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
     <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
@@ -89,6 +88,7 @@
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <SystemCodeDomPackageVersion>7.0.0-preview.5.22273.4</SystemCodeDomPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>7.0.0-preview.5.22273.4</SystemTextEncodingCodePagesPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>7.0.0-preview.5.22273.4</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemResourcesExtensionsPackageVersion>7.0.0-preview.5.22273.4</SystemResourcesExtensionsPackageVersion>
     <MicrosoftDotNetILCompilerPackageVersion>7.0.0-preview.5.22273.4</MicrosoftDotNetILCompilerPackageVersion>
   </PropertyGroup>
