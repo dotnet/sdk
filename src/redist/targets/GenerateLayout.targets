@@ -46,11 +46,13 @@
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
       <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
-      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(Architecture)</SharedFrameworkInstallerFileRid>
+      <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 
       <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
       <RuntimeDepsInstallerFileRid>$(CoreSetupRid)</RuntimeDepsInstallerFileRid>
       <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(CoreSetupRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
 
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>

@@ -91,9 +91,6 @@
       <SDKTokenValue Include="%NETCOREAPP_TARGETING_PACK_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(MicrosoftNETCoreAppRefMajorMinorPatchVersion)</ReplacementString>
       </SDKTokenValue>
-      <SDKTokenValue Include="%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_VERSION%">
-        <ReplacementString>$(NetStandardTargetingPackMajorMinorPatchVersion)</ReplacementString>
-      </SDKTokenValue>
       <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_VERSION%">
         <ReplacementString>$(AspNetCoreRuntimeMajorMinorPatchVersion)</ReplacementString>
       </SDKTokenValue>
@@ -109,9 +106,6 @@
       <SDKTokenValue Include="%NETCORE_APPHOST_PACK_RPM_PACKAGE_NAME%">
         <ReplacementString>$(NetCoreAppHostPackRpmPackageName)</ReplacementString>
       </SDKTokenValue>
-      <SDKTokenValue Include="%NETSTANDARD_TARGETING_PACK_RPM_PACKAGE_NAME%">
-        <ReplacementString>$(NetStandardTargetingPackRpmPackageName)</ReplacementString>
-      </SDKTokenValue>
       <SDKTokenValue Include="%ASPNETCORE_SHAREDFX_RPM_PACKAGE_NAME%">
         <ReplacementString>$(AspNetCoreSharedFxRpmPackageName)</ReplacementString>
       </SDKTokenValue>
@@ -120,6 +114,10 @@
       </SDKTokenValue>
       <SDKTokenValue Include="%SDK_NUGET_VERSION%">
         <ReplacementString>$(Version)</ReplacementString>
+      </SDKTokenValue>
+      <SDKTokenValue Include="%SDK_RPM_PACKAGE_ARCHITECTURE%">
+        <ReplacementString>amd64</ReplacementString>
+        <ReplacementString Condition="'$(Architecture)' == 'Arm64'">aarch64</ReplacementString>
       </SDKTokenValue>
       <SDKTokenValue Include="%CLI_SDK_BRAND_NAME%">
         <ReplacementString>$(SdkBrandName)</ReplacementString>
@@ -131,6 +129,27 @@
       <AfterInstallHostTokenValue  Include="%SDK_VERSION%">
         <ReplacementString>$(Version)</ReplacementString>
       </AfterInstallHostTokenValue>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(Architecture)' != 'Arm64'">
+      <SDKTokenValue Include="%SDK_RPM_NETSTANDARD_TARGETINGPACK_DEPENDENCY%">
+        <ReplacementString>
+          <![CDATA[
+        {
+            "package_name": "$(NetStandardTargetingPackRpmPackageName)",
+            "package_version": "$(NetStandardTargetingPackMajorMinorPatchVersion)"
+        },
+]]>
+        </ReplacementString>
+      </SDKTokenValue>
+    </ItemGroup>
+
+    <!-- .NET Standard targeting pack package hasn't been created for Arm64, so don't include it as a dependency -->
+    <ItemGroup Condition="'$(Architecture)' == 'Arm64'">
+      <SDKTokenValue Include="%SDK_RPM_NETSTANDARD_TARGETINGPACK_DEPENDENCY%">
+        <ReplacementString></ReplacementString>
+      </SDKTokenValue>
+
     </ItemGroup>
 
     <ItemGroup>
@@ -186,6 +205,12 @@
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False"/>
 
+    <Copy SourceFiles="@(GeneratedRpmFiles)"
+      DestinationFiles="$(Mariner2RpmFile)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False"/>
+
   </Target>
 
   <Target Name="SetupRpmProps"
@@ -199,6 +224,7 @@
       <SdkRPMInstallerFile>$(ArtifactsShippingPackagesDir)$(DistroSpecificArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</SdkRPMInstallerFile>
       <RpmFile>$(SdkRPMInstallerFile)</RpmFile>
       <MarinerRpmFile>$(ArtifactsShippingPackagesDir)$(MarinerArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</MarinerRpmFile>
+      <Mariner2RpmFile>$(ArtifactsShippingPackagesDir)$(Mariner2ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(InstallerExtension)</Mariner2RpmFile>
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
       <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
