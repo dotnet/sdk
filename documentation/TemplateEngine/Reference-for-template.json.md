@@ -472,3 +472,30 @@ Primary outputs define the list of template files for further processing.
 |condition|if the condition evaluates to `true`, the corresponding path will be added to primary outputs, if `false`, the path is ignored. If no condition is provided for a path, the condition defaults to `true`.|
 
 For more information on primary outputs, refer to [the article](https://github.com/dotnet/templating/wiki/Using-Primary-Outputs-for-Post-Actions).
+
+
+### Template constraints
+
+Available since .NET SDK 7.0.100.
+The template may define the constraints all of which must be met in order for the template to be used. 
+In case constraints are not met, the template will be installed, however will not be visible by default. 
+For the details on available constraints, refer to [the article](link).
+The constraints are defined under `constraints` property. `constraints` contains objects (constraint definition). Each constraint should have a unique name, `type` and optional arguments (`args`). Argument syntax depends on the constraint implementation.
+
+```json
+   "constraints": {
+       "unix-only": {
+           "type": "os",
+           "args": "Unix"
+       },
+       "sdk-only": {
+           "type": "host",
+           "args": [
+               {
+                   "hostname": "dotnetcli",
+                   "version": "[6.0.100, )"
+               }
+           ]
+       }
+   }
+```  

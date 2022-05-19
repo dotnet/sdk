@@ -358,6 +358,9 @@ CopyOnly configuration specific to this sources.modifiers instance, contingent o
 ### symbols (optional)
 The `symbols` section defines variables and their values, the values may be the defined in terms of other symbols. See more information on symbols in [this](https://github.com/dotnet/templating/wiki/Reference-for-template.json#symbols) article.
 
+### constraints (optional)
+The `constraints` section defines the conditions under which the template is visible and can be instantiated. See more information on constraints in [this](https://github.com/dotnet/templating/wiki/Reference-for-template.json#constraints) article.
+
 ### CustomOperations (optional) and SpecialCustomOperations (optional)
 This configuration allows the template author to define custom actions for the template creation process. CustomOperations are scoped globally unless overridden by a more restrictive custom configuration.
 SpecialCustomOperations are scoped to the files matched by their fileglob pattern.

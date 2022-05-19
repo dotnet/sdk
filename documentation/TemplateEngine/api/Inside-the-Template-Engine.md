@@ -97,7 +97,7 @@ The default locations are:
 The class responsible for managing templates and templates packages.
 
 -   Gets available providers to install/update/uninstall template packages
-    avaliable via IComponentManager
+    available via IComponentManager
 
 -   Gets available template packages
 
@@ -116,6 +116,11 @@ application.
 
 The class responsible for template creation, including dry run. The host need to
 instantiate the class when needed.
+
+
+## [TemplateConstraintManager](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Edge/Constraints/TemplateConstraintManager.cs) class
+
+The class responsible for loading available constraint components and evaluating the constraints for given template.
 
 # Template Engine packages
 
@@ -149,6 +154,8 @@ be split into two main categories:
     -   post actions (TBD)
 
     -   generators
+
+    -   constraints
 
 -   the components required by the host:
 
@@ -239,6 +246,12 @@ They are available from IComponentManager.
 It is possible to get mount point using bool TryGetMountPoint(string
 mountPointUri, out IMountPoint mountPoint) method of IEngineEnvironmentSettings.
 
+## [Constraint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
+
+The template may define certain constraint(s) under which it can be used. The constraint implementation evaluates those restrictions and whether such template is allowed to be used or is restricted.
+Template engine host works with constraint using `TemplateConstraintManager` class.
+
+
 ## Registering the components
 
 When creating template engine host, all built in components will be registered.
@@ -264,6 +277,10 @@ You can implement the following own components and register them:
 -   [IInstaller](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Installer/IInstaller.cs)
     – template package installer, via
     [IInstallerFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Installer/IInstallerFactory.cs)
+
+-   [ITemplateConstraint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
+    – constraint implementation, via
+    [ITemplateConstraintFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraintFactory.cs)
 
 It is possible to register additional components to in the following way:
 
