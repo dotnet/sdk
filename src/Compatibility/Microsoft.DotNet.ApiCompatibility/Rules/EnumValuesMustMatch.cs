@@ -16,12 +16,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         public override void Initialize(RuleRunnerContext context)
         {
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
-            context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
-        }
-
-        private void RunOnMemberSymbol(ISymbol left, ISymbol right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, string leftName, string rightName, IList<CompatDifference> differences)
-        {
-
         }
 
         private static bool isEnum(ITypeSymbol type)
