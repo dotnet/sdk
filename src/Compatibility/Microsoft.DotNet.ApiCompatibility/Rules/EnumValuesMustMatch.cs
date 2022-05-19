@@ -30,7 +30,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
             var leftMembers = left.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name, a => a.ConstantValue);
             var rightMembers = right.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name, a => a.ConstantValue);
-            // var foo = leftMembers.SequenceEqual(rightMembers, new FieldComparer());
             foreach (var entry in leftMembers)
             {
                 Object val;
