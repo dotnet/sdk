@@ -28,14 +28,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 return;
             }
-            var leftMembers = left.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name, a => a.ConstantValue);
-            var rightMembers = right.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name, a => a.ConstantValue);
+            var leftMembers = left.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name);
+            var rightMembers = right.GetMembers().Where(a => a.Kind == SymbolKind.Field).Select(a => ((IFieldSymbol)a)).ToDictionary(a => a.Name);
             foreach (var entry in leftMembers)
             {
-                Object val;
-                if (rightMembers.TryGetValue(entry.Key, out val) && !entry.Value.Equals(val))
+                IFieldSymbol rField;
+                if (rightMembers.TryGetValue(entry.Key, out rField) && !entry.Value.ConstantValue.Equals(rField.ConstantValue))
                 {
-                    differences.Add(new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, right));
+                    var msg = string.Format(Resources.EnumValuesMustMatch, left.Name, entry.Key, entry.Value.ConstantValue, rField.ConstantValue);
+                    differences.Add(new CompatDifference(DiagnosticIds.EnumValuesMustMatch, msg, DifferenceType.Changed, rField));
                 }
             }
         }

@@ -67,6 +67,11 @@
         <target state="translated">Element nie może mieć wartości null. Znaleziono wartość null w indeksie: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnumValuesMustMatch">
+        <source>Field '{0}.{1}' changed from '{2}' to '{3}'.</source>
+        <target state="new">Field '{0}.{1}' changed from '{2}' to '{3}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
         <target state="translated">Plik „{0}” nie istnieje.</target>

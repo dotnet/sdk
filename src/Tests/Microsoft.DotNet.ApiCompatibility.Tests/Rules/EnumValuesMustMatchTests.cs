@@ -45,8 +45,11 @@ namespace CompatTests
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
-            var diffCount = differences.Count();
-            Assert.NotEqual(0, diffCount);
+            CompatDifference[] expected = new[]
+{
+                new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.A"),
+            };
+            Assert.Equal(expected, differences);
         }
     }
 }

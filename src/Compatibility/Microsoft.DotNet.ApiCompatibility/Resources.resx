@@ -207,4 +207,7 @@
   <data name="TypeIsEffectivelySealed" xml:space="preserve">
     <value>Type '{0}' is sealed because it has no visible constructor on {1} but it does on {2}</value>
   </data>
+  <data name="EnumValuesMustMatch" xml:space="preserve">
+    <value>Field '{0}.{1}' changed from '{2}' to '{3}'.</value>
+  </data>
 </root>

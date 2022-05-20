@@ -67,6 +67,11 @@
         <target state="translated">元素不應為 Null。在索引找到 Null: {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnumValuesMustMatch">
+        <source>Field '{0}.{1}' changed from '{2}' to '{3}'.</source>
+        <target state="new">Field '{0}.{1}' changed from '{2}' to '{3}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
         <target state="translated">檔案 '{0}' 不存在。</target>

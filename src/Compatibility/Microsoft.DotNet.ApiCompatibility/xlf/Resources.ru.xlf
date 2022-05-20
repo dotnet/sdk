@@ -67,6 +67,11 @@
         <target state="translated">Элемент не должен иметь значение NULL. Обнаружено значение NULL в индексе: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnumValuesMustMatch">
+        <source>Field '{0}.{1}' changed from '{2}' to '{3}'.</source>
+        <target state="new">Field '{0}.{1}' changed from '{2}' to '{3}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
         <target state="translated">Файл "{0}" не существует.</target>
