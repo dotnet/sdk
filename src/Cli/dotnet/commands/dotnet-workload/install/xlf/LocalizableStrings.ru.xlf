@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AdManifestPackageDoesNotExist">
         <source>Advertising manifest not updated. Manifest package for {0} doesn't exist.</source>
-        <target state="new">Advertising manifest not updated. Manifest package for {0} doesn't exist.</target>
+        <target state="translated">Манифест рекламы не обновлен. Не существует пакета манифеста для следующего: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdManifestUpdated">
