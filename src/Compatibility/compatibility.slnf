@@ -9,7 +9,6 @@
       "src\\Compatibility\\Microsoft.DotNet.PackageValidation\\Microsoft.DotNet.PackageValidation.csproj",
       "src\\Layout\\toolset-tasks\\toolset-tasks.csproj",
       "src\\Tests\\Microsoft.DotNet.ApiCompatibility.Tests\\Microsoft.DotNet.ApiCompatibility.Tests.csproj",
-      "src\\Tests\\Microsoft.DotNet.PackageValidation.Tests\\Microsoft.DotNet.PackageValidation.Tests.csproj",
       "src\\Tests\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"
     ]
   }
