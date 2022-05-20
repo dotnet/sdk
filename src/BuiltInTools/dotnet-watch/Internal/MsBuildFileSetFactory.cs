@@ -27,14 +27,16 @@ namespace Microsoft.DotNet.Watcher.Internal
         private readonly ProcessRunner _processRunner;
         private readonly bool _waitOnError;
         private readonly IReadOnlyList<string> _buildFlags;
+        private readonly bool _useAppHostIfAvailable;
 
         public MsBuildFileSetFactory(
             IReporter reporter,
             DotNetWatchOptions dotNetWatchOptions,
             string projectFile,
             bool waitOnError,
-            bool trace)
-            : this(dotNetWatchOptions, reporter, projectFile, new OutputSink(), waitOnError, trace)
+            bool trace,
+            bool useAppHostIfAvailable)
+            : this(dotNetWatchOptions, reporter, projectFile, new OutputSink(), waitOnError, trace, useAppHostIfAvailable)
         {
         }
 
@@ -45,7 +47,8 @@ namespace Microsoft.DotNet.Watcher.Internal
             string projectFile,
             OutputSink outputSink,
             bool waitOnError,
-            bool trace)
+            bool trace,
+            bool useAppHostIfAvailable)
         {
             Ensure.NotNull(reporter, nameof(reporter));
             Ensure.NotNullOrEmpty(projectFile, nameof(projectFile));
@@ -57,6 +60,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _outputSink = outputSink;
             _processRunner = new ProcessRunner(reporter);
             _buildFlags = InitializeArgs(FindTargetsFile(), trace);
+            _useAppHostIfAvailable = useAppHostIfAvailable;
 
             _waitOnError = waitOnError;
         }
@@ -81,9 +85,15 @@ namespace Microsoft.DotNet.Watcher.Internal
                         $"/p:_DotNetWatchListFile={watchList}",
                     };
 
+
                     if (_dotNetWatchOptions.SuppressHandlingStaticContentFiles)
                     {
                         arguments.Add("/p:DotNetWatchContentFiles=false");
+                    }
+
+                    if (!_useAppHostIfAvailable)
+                    {
+                        arguments.Add("/p:UseAppHost=false");
                     }
 
                     arguments.AddRange(_buildFlags);

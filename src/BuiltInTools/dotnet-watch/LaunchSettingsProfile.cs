@@ -24,6 +24,12 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public IDictionary<string, string>? EnvironmentVariables { get; set; }
 
+        ///<summary>
+        /// If set, the project will be executed using the generated AppHost if one is available.
+        /// This means the project will be run like `./myapp.exe &lt;args&gt;` instead of like `dotnet myapp.dll &lt;args&gt;`.
+        ///</summary>
+        public bool UseAppHostIfAvailable {get; set;} = true;
+
         internal static LaunchSettingsProfile? ReadDefaultProfile(string projectDirectory, IReporter reporter)
         {
             var launchSettingsPath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");

@@ -250,11 +250,6 @@ Examples:
             var watchOptions = DotNetWatchOptions.Default;
             watchOptions.NonInteractive = options.NonInteractive;
 
-            var fileSetFactory = new MsBuildFileSetFactory(_reporter,
-                watchOptions,
-                projectFile,
-                waitOnError: true,
-                trace: false);
             var processInfo = new ProcessSpec
             {
                 Executable = DotnetMuxer.MuxerPath,
@@ -266,12 +261,22 @@ Examples:
                 },
             };
 
+            var defaultProfile = LaunchSettingsProfile.ReadDefaultProfile(processInfo.WorkingDirectory, _reporter) ?? new();
+
+            var fileSetFactory = new MsBuildFileSetFactory(_reporter,
+                watchOptions,
+                projectFile,
+                waitOnError: true,
+                trace: false,
+                useAppHostIfAvailable: defaultProfile.UseAppHostIfAvailable);
+            
+
             if (CommandLineOptions.IsPollingEnabled)
             {
                 _reporter.Output("Polling file watcher is enabled");
             }
 
-            var defaultProfile = LaunchSettingsProfile.ReadDefaultProfile(processInfo.WorkingDirectory, _reporter) ?? new();
+            
 
             var context = new DotNetWatchContext
             {
@@ -281,7 +286,7 @@ Examples:
                 DefaultLaunchSettingsProfile = defaultProfile,
             };
 
-            context.ProjectGraph = TryReadProject(projectFile);
+            context.ProjectGraph = TryReadProject(projectFile, defaultProfile.UseAppHostIfAvailable);
 
             if (!options.NoHotReload && isDefaultRunCommand && context.ProjectGraph is not null && IsHotReloadSupported(context.ProjectGraph))
             {
@@ -307,11 +312,18 @@ Examples:
             return 0;
         }
 
-        private ProjectGraph TryReadProject(string project)
+        private ProjectGraph TryReadProject(string project, bool useAppHostIfAvailable)
         {
             try
             {
-                return new ProjectGraph(project);
+                if (useAppHostIfAvailable)
+                {
+                    return new ProjectGraph(project);
+                }
+                else
+                {
+                    return new ProjectGraph(project, new Dictionary<string, string> { ["UseAppHost"] = "false" });
+                }
             }
             catch (Exception ex)
             {
@@ -363,7 +375,8 @@ Examples:
                 DotNetWatchOptions.Default,
                 projectFile,
                 waitOnError: false,
-                trace: false);
+                trace: false,
+                useAppHostIfAvailable: true);
             var files = await fileSetFactory.CreateAsync(cancellationToken);
 
             if (files == null)

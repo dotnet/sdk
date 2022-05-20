@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tools.Run
 
             try
             {
-                ICommand targetCommand = GetTargetCommand();
+                ICommand targetCommand = GetTargetCommand(launchSettings.UseAppHostIfAvailable);
                 if (launchSettings != null)
                 {
                     if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Tools.Run
             return args;
         }
 
-        private ICommand GetTargetCommand()
+        private ICommand GetTargetCommand(bool useAppHostIfAvailable)
         {
             var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -238,6 +238,13 @@ namespace Microsoft.DotNet.Tools.Run
             if (!string.IsNullOrWhiteSpace(Runtime))
             {
                 globalProperties.Add("RuntimeIdentifier", Runtime);
+            }
+
+            // if the user doesn't want us to use an apphost, then we must force the evaluation to not use one, 
+            // regardless of what the user has set in the project.
+            if(!useAppHostIfAvailable)
+            {
+                globalProperties.Add("UseAppHost", "false");
             }
 
             var project = new ProjectInstance(Project, globalProperties, null);

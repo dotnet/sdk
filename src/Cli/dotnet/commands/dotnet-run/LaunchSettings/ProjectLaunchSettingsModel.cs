@@ -19,5 +19,11 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
         public string DotNetRunMessages { get; set; }
 
         public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        ///<summary>
+        /// If set, the project will be executed using the generated AppHost if one is available.
+        /// This means the project will be run like `./myapp.exe &lt;args&gt;` instead of like `dotnet myapp.dll &lt;args&gt;`.
+        ///</summary>
+        public bool UseAppHostIfAvailable {get; set;} = true;
     }
 }
