@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Cli
 
         public static System.CommandLine.Parsing.Parser Instance { get; } = new CommandLineBuilder(ConfigureCommandLine(RootCommand))
             .UseExceptionHandler(ExceptionHandler)
-            // TODO:CH - we want this for dotnet-new argument reporting, but 
+            // TODO:CH - we want this for dotnet-new argument reporting, but
             //           adding this makes forwarding commands (which can't know
             //           all of the parameters of their wrapped command by design)
             //           error. so `dotnet msbuild /t:thing` throws a parse error.
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Cli
                     //different command was launched or no errors
                     await next(context).ConfigureAwait(false);
                 }
-                else 
+                else
                 {
                     context.ExitCode = 127; //parse error
                     //TODO: discuss to make coloring extensions public
@@ -276,6 +276,10 @@ namespace Microsoft.DotNet.Cli
                     {
                         block(context);
                     }
+                }
+                else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
+                {
+                    new DotnetFormatForwardingApp(helpArgs).Execute();
                 }
                 else
                 {
