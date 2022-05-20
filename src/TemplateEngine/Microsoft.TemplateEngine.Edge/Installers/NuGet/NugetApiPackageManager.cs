@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal class NuGetApiPackageManager : IDownloader, IUpdateChecker
     {
+        private static readonly ConcurrentDictionary<PackageSource, SourceRepository> _sourcesCache = new ConcurrentDictionary<PackageSource, SourceRepository>();
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _nugetLogger;
 
@@ -81,7 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             FindPackageByIdResource resource;
-            SourceRepository repository = Repository.Factory.GetCoreV3(source);
+            SourceRepository repository = _sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
             try
             {
                 resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
@@ -305,7 +307,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _nugetLogger.LogDebug($"Searching for {packageIdentifier} in {source.Source}.");
             try
             {
-                SourceRepository repository = Repository.Factory.GetCoreV3(source);
+                SourceRepository repository = _sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
                 PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
                 IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
                     packageIdentifier,
