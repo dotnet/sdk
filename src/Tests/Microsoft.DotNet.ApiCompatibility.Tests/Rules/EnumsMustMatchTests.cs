@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests
 {
-    public class EnumValuesMustMatchTests
+    public class EnumsMustMatchTests
     {
         [Fact]
         public static void DifferencesReported()
@@ -33,10 +33,11 @@ namespace CompatTests
 namespace CompatTests
 {
   public enum First {
-    A = 1,
-    B = 1,
-    C = 2,
+    E = 4,
     D = 3,
+    C = 2,
+    B = 1,
+    A = 1,
   }
 }
 ";
@@ -71,10 +72,10 @@ namespace CompatTests
 namespace CompatTests
 {
   public enum First {
-    A = 0,
-    B = 1,
-    C = 2,
     D = 3,
+    C = 2,
+    B = 1,
+    A = 0,
   }
 }
 ";
@@ -104,10 +105,10 @@ namespace CompatTests
 namespace CompatTests
 {
   public enum First {
-    A = 1,
-    B = 1,
-    C = 2,
     D = 3,
+    C = 2,
+    B = 1,
+    A = 0,
   }
   public enum Second {}
 }
@@ -116,7 +117,7 @@ namespace CompatTests
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new();
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
-            Assert.NotEmpty(differences);
+            Assert.Empty(differences);
         }
 
         [Fact]
@@ -138,10 +139,10 @@ namespace CompatTests
 namespace CompatTests
 {
   public enum First: int {
-    A = 0,
-    B = 1,
-    C = 2,
     D = 3,
+    C = 2,
+    B = 1,
+    A = 0,
   }
 }
 ";
@@ -151,10 +152,7 @@ namespace CompatTests
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
             CompatDifference[] expected = new[]
             {
-                new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.A"),
-                new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.B"),
-                new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.C"),
-                new CompatDifference(DiagnosticIds.EnumValuesMustMatch, string.Empty, DifferenceType.Changed, "F:CompatTests.First.D"),
+                new CompatDifference(DiagnosticIds.EnumTypesMustMatch, string.Empty, DifferenceType.Changed, "T:CompatTests.First"),
             };
             Assert.Equal(expected, differences);
         }
