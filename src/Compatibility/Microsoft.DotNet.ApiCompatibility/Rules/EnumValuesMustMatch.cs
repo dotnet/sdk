@@ -17,12 +17,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     {
         public override void Initialize(RuleRunnerContext context) => context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
 
-        private bool isEnum(ITypeSymbol sym) => sym is not null && sym.TypeKind == TypeKind.Enum;
+        private bool IsEnum(ITypeSymbol sym) => sym is not null && sym.TypeKind == TypeKind.Enum;
 
         private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             // Ensure that this rule only runs on enums.
-            if (isEnum(left) && isEnum(right))
+            if (IsEnum(left) && IsEnum(right))
             {
                 // Get the underlying value types.
                 INamedTypeSymbol leftType = ((INamedTypeSymbol)left).EnumUnderlyingType;
