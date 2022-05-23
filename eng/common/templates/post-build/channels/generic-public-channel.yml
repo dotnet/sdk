@@ -141,6 +141,7 @@ stages:
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:CheckEolTargetFramework=false
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml
