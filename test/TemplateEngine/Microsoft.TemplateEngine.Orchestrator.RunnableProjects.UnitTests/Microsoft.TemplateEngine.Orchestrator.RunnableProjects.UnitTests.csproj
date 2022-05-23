@@ -60,4 +60,6 @@
     <Target Name="PostBuildUnix" AfterTargets="PostBuildEvent" Condition="'$(OS)' == 'Unix' ">
         <Exec Command="cp $(SolutionDir)src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json $(TargetDir)SchemaTests" />
     </Target>
+
+    <ProjectExtensions><VisualStudio><UserProperties schematests_4constraintstest_1json__JsonSchema="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Schemas\JSON\template.json" /></VisualStudio></ProjectExtensions>
 </Project>

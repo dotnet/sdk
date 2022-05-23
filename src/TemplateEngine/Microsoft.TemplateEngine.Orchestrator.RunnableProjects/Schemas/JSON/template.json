@@ -1168,7 +1168,7 @@
       "description": "A description of the template's purpose or contents for use in help"
     },
     "constraints": {
-      "description": "The constraints section defines the restrictions when the template can be run.",
+      "description": "The constraints section defines the restrictions when the template can be run. Available since .NET SDK 7.0.100.",
       "type": "object",
       "additionalProperties": {
         "type": "object",
@@ -1176,13 +1176,90 @@
         "properties": {
           "type": {
             "type": "string",
-            "description": "constraint type"
+            "description": "Constraint type."
           },
           "args": {
-            "type": [ "array", "string", "object" ],
-            "description": "constraint arguments"
+            "description": "Constraints arguments."
           }
-        }
+        },
+        "oneOf": [
+          {
+            "not": {
+              "required": [ "type" ],
+              "properties": {
+                "type": {
+                  "enum": [
+                    "os",
+                    "host"
+                  ]
+                }
+              }
+            },
+            "properties": {
+              "args": {
+                "type": [ "array", "object", "string" ]
+              }
+            }
+          },
+          {
+            "description": "Operating system constraint. Allows to restrict the template to be run only on specific operating systems.",
+            "properties": {
+              "type": {
+                "enum": [ "os" ]
+              },
+              "args": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "enum": [ "Windows", "Unix", "OSX" ]
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [ "Windows", "Unix", "OSX" ]
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "description": "Host constraint. Allows to restrict the template to be run only on specific applications using template engine.",
+            "properties": {
+              "type": {
+                "enum": [ "host" ]
+              },
+              "args": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [ "hostname" ],
+                  "properties": {
+                    "hostname": {
+                      "type": "string",
+                      "description": "The identifier of supported host. Commonly used identifiers are: 'dotnetcli'' - .NET SDK, 'vs' - Visual Studio, 'vs-mac' - Visual Studio for Mac, 'ide' - Visual Studio (any platform).",
+                      "oneOf": [
+                        {
+                          "not": {
+                            "enum": [ "dotnetcli", "vs", "vs-mac", "ide" ]
+                          }
+                        },
+                        {
+                          "enum": [ "dotnetcli", "vs", "vs-mac", "ide" ]
+                        }
+                      ]
+                    },
+                    "version": {
+                      "type": "string",
+                      "description": "The supported version of the host. May be an exact version, float version or version range. Refer to https://docs.microsoft.com/en-us/nuget/concepts/package-versioning for more info."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   }

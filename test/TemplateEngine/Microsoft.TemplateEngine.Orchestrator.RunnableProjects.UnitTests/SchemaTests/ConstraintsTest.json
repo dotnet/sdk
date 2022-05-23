@@ -57,6 +57,31 @@
     },
     "four": {
       "type": "t4"
+    },
+    "only-win": {
+      "type": "os",
+      "args": "Windows"
+    },
+    "unix-and-osx": {
+      "type": "os",
+      "args": [ "OSX", "Windows" ]
+    },
+    "VS": {
+      "type": "host",
+      "args": [
+        {
+          "hostname": "vs"
+        }
+      ]
+    },
+    "dotnet": {
+      "type": "host",
+      "args": [
+        {
+          "hostname": "dotnetcli",
+          "version": "6.0.*"
+        }
+      ]
     }
   }
 }
