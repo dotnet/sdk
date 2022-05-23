@@ -125,8 +125,9 @@ stages:
         publishUsingPipelines: true
         dependsOn:
           - Windows_NT
-        queue:
-          name: Hosted VS2017
+        pool:
+          name: NetCore1ESPool-Svc-Internal
+          demands: ImageOverride -equals build.windows.10.amd64.vs2017
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: /eng/common/templates/post-build/post-build.yml
     parameters:
