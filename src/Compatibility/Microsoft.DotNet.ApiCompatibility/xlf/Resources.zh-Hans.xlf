@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="EnumValuesMustMatch">
-        <source>Field '{1}' of enum '{0}' changed its value from '{2}' to '{3}'.</source>
-        <target state="new">Field '{1}' of enum '{0}' changed its value from '{2}' to '{3}'.</target>
+        <source>Field '{1}' of enum '{0}' changed its value from '({2}){3}' to '({4}){5}'.</source>
+        <target state="new">Field '{1}' of enum '{0}' changed its value from '({2}){3}' to '({4}){5}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="FileDoesNotExist">
