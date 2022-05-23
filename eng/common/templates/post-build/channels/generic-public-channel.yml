@@ -62,6 +62,7 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
+            /p:CheckEolTargetFramework=false
             ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job: publish_assets
