@@ -158,8 +158,6 @@ jobs:
       fi
 
       docker run --rm $dockerVolumeArgs -w /tarball $dockerEnvArgs $(_Container) ./build.sh $poisonArg --run-smoke-test $(additionalBuildArgs) -- /p:SmokeTestConsoleVerbosity=detailed
-    # Disable smoke tests until more repos are building.
-    condition: false
     displayName: Run Tests
 
   # Don't use CopyFiles@2 as it encounters permissions issues because it indexes all files in the source directory graph.
