@@ -126,7 +126,7 @@ namespace CompatTests
             string leftSyntax = @"
 namespace CompatTests
 {
-  public enum First: short {
+  public enum First : short {
     A = 0,
     B = 1,
     C = 2,
@@ -138,7 +138,7 @@ namespace CompatTests
             string rightSyntax = @"
 namespace CompatTests
 {
-  public enum First: int {
+  public enum First : int {
     D = 3,
     C = 2,
     B = 1,
