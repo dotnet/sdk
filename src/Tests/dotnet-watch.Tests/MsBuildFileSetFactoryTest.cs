@@ -240,6 +240,52 @@ namespace Microsoft.DotNet.Watcher.Tools
             );
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task FileSetChangesAppHostDetectionBasedOnFlag(bool useAppHost) {
+            (string expectedRunner, string expectedArgs) GetArgsFor(string projectName, bool useAppHost)
+            {
+                if (System.OperatingSystem.IsWindows()) {
+                    if (useAppHost)
+                    {
+                        return ($"{projectName}.exe", "");
+                    } 
+                    else 
+                    {
+                        return ("dotnet.exe", projectName);
+                    }
+                } 
+                else 
+                {
+                    if (useAppHost)
+                    {
+                        return ($"{projectName}", "");
+                    } 
+                    else 
+                    {
+                        return ("dotnet", projectName);
+                    }
+                }
+            }
+            
+            var projectName = $"AppHost-{useAppHost}";
+            var project = _testAssets.CreateTestProject(new TestProject(projectName)
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            });
+
+
+            var fileset = await GetFileSet(project);
+            var projectInfo = fileset.Project;
+            var command = projectInfo.RunCommand;
+            var args = projectInfo.RunArguments;
+            var (expectedRunner, expectedArgs) = GetArgsFor(projectName, useAppHost);
+            Assert.Equal(command, expectedRunner);
+            Assert.Equal(args, expectedArgs);
+               
+        }
+
         [Fact]
         public async Task ProjectReferences_OneLevel()
         {
