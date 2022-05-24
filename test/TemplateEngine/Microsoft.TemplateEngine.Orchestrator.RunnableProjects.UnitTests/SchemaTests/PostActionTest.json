@@ -61,7 +61,8 @@
       "args": {
         "executable": "setup.cmd",
         "args": "",
-        "redirectStandardOutput": "false"
+        "redirectStandardOutput": false,
+        "redirectStandardError": true
       },
       "manualInstructions": [
         {

@@ -541,15 +541,13 @@
                     "properties": {
                       "redirectStandardOutput": {
                         "description": "Whether or not to redirect stdout for the process (prevents output from being displayed if true)",
-                        "type": "string",
-                        "enum": [ "true", "false" ],
-                        "default": "true"
+                        "type": "boolean",
+                        "default": true
                       },
                       "redirectStandardError": {
                         "description": "Defines whether or not the stderr should be redirected. If the output is redirected, it prevents it from being displayed.",
-                        "type": "string",
-                        "enum": [ "true", "false" ],
-                        "default": "true"
+                        "type": "boolean",
+                        "default": true
                       },
                       "executable": {
                         "description": "The executable to run",
@@ -1181,7 +1179,7 @@
             "description": "constraint type"
           },
           "args": {
-            "type": ["array", "string", "object"],
+            "type": [ "array", "string", "object" ],
             "description": "constraint arguments"
           }
         }
