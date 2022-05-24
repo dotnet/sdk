@@ -684,17 +684,17 @@
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
         <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
-        <target state="new">Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</target>
+        <target state="translated">Não proteger 'Dictionary.Remove(key)' com 'Dictionary.ContainsKey(key)'. O primeiro já verifica se a chave existe e não lançará se não existir.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
         <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
-        <target state="new">Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</target>
+        <target state="translated">Não proteger 'Dictionary.Remove(key)' com 'Dictionary.ContainsKey(key)'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
         <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
-        <target state="new">Unnecessary call to 'Dictionary.ContainsKey(key)'</target>
+        <target state="translated">Chamada desnecessária para 'Dictionary.ContainsKey(key)'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -729,7 +729,7 @@
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
         <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="new">By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</target>
+        <target state="translated">Por padrão, o repositório de certificados de Autoridades de Certificação Raiz Confiáveis é configurado com um conjunto de CAs públicas que atendem aos requisitos do Programa de Certificação Raiz da Microsoft. Como todas as CAs raiz confiáveis podem emitir certificados para qualquer domínio, um invasor pode escolher uma CA fraca ou coercível que você mesmo instala para atacar - e uma única CA vulnerável, maliciosa ou coercível prejudica a segurança de todo o sistema. Para piorar a situação, esses ataques podem passar despercebidos com bastante facilidade.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -1709,7 +1709,7 @@
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="new">Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</target>
+        <target state="translated">Os inicializadores de módulo devem ser usados pelo código do aplicativo para garantir que os componentes de um aplicativo sejam inicializados antes que o código do aplicativo comece a ser executado. Se o código da biblioteca declara um método com o 'ModuleInitializerAttribute', ele pode interferir na inicialização do aplicativo e também levar a limitações nas habilidades de corte do aplicativo. Ao invés de usar métodos marcados com 'ModuleInitializerAttribute', a biblioteca deve expor os métodos que podem ser usados para inicializar quaisquer componentes dentro da biblioteca e permitir que o aplicativo invoque o método durante a inicialização do aplicativo.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
@@ -2159,7 +2159,7 @@
       </trans-unit>
       <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
         <source>Remove unnecessary call</source>
-        <target state="new">Remove unnecessary call</target>
+        <target state="translated">Remover chamada desnecessária</target>
         <note />
       </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
@@ -2809,7 +2809,7 @@
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
         <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="new">Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</target>
+        <target state="translated">Use o algoritmo Rivest-Shamir-Adleman (RSA) com tamanho de chave suficiente</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
