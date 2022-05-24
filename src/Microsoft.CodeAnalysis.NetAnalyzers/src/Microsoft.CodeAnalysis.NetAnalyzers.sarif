@@ -649,7 +649,6 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
               "CompilationEnd"
             ]
           }
