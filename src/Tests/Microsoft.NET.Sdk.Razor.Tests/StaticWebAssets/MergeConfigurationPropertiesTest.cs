@@ -164,7 +164,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     CreateProjectReference(
                         project: Path.Combine("..", "myRcl", "myRcl.csproj"),
                         msBuildSourceProjectFile: Path.GetFullPath(referenceProjectFile),
-                        setPlatform: "RuntimeIdentifier=win-x64")
+                        setPlatform: $"RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
                 }
             };
 
@@ -180,9 +180,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             config.GetMetadata("GetPublishAssetsTargets").Should()
                 .Be("ComputeReferencedStaticWebAssetsPublishManifest;GetCurrentProjectPublishStaticWebAssetItems");
             config.GetMetadata("Version").Should().Be("2");
-            config.GetMetadata("AdditionalBuildProperties").Should().Be("RuntimeIdentifier=win-x64");
+            config.GetMetadata("AdditionalBuildProperties").Should().Be($"RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64");
             config.GetMetadata("AdditionalBuildPropertiesToRemove").Should().Be("");
-            config.GetMetadata("AdditionalPublishProperties").Should().Be("RuntimeIdentifier=win-x64");
+            config.GetMetadata("AdditionalPublishProperties").Should().Be($"RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64");
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("");
         }
 

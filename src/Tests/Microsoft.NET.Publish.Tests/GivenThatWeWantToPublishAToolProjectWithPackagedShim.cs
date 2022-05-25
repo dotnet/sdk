@@ -35,7 +35,7 @@ namespace Microsoft.NET.Publish.Tests
                 {
                     XNamespace ns = project.Root.Name.Namespace;
                     XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement(ns + "PackAsToolShimRuntimeIdentifiers", "win-x64;osx.10.12-x64"));
+                    propertyGroup.Add(new XElement(ns + "PackAsToolShimRuntimeIdentifiers", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64;osx.10.12-x64"));
                     propertyGroup.Add(new XElement(ns + "ToolCommandName", _customToolCommandName));
                 });
 
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
 
             publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework)
                 .Sub("shims")
-                .Sub("win-x64")
+                .Sub($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
                 .EnumerateFiles().Should().Contain(f => f.Name == _customToolCommandName + ".exe");
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Publish.Tests
 
             publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework)
                 .Sub("shims")
-                .Sub("win-x64")
+                .Sub($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
                 .EnumerateFiles().Should().Contain(f => f.Name == _customToolCommandName + ".exe");
         }
     }

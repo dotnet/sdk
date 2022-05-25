@@ -38,7 +38,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var runtimeIdentifiers = new[]
             {
-                "win-x64",
+                $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64",
                 "linux-x64",
                 compatibleRid
             };
@@ -141,7 +141,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var runtimeIdentifiers = new[]
             {
-                "win-x64",
+                $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64",
                 "linux-x64",
                 compatibleRid
             };

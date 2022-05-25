@@ -78,7 +78,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["UseWindowsForms"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -102,7 +102,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["UseWindowsForms"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             testProject.AdditionalProperties["_SuppressWinFormsTrimError"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
@@ -175,7 +175,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["UseWPF"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -199,7 +199,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["UseWPF"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             testProject.AdditionalProperties["_SuppressWpfTrimError"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["PublishTrimmed"] = "true";

@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
-                .Execute("/p:RuntimeIdentifier=win-x86;DesignTimeBuild=true", "/t:PublishItemsOutputGroup")
+                .Execute($"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x86;DesignTimeBuild=true", "/t:PublishItemsOutputGroup")
                 .Should()
                 .Pass();
 
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = "win-x86";
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86";
 
             // Use a test-specific packages folder
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Publish.Tests
 
             if (specifyRid)
             {
-                testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x86";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86";
             }
 
             if (singleFile)

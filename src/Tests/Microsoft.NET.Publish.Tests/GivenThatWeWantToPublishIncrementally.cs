@@ -28,7 +28,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "RegularPublishToSingleExe",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishSingleFile1",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -101,7 +101,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishSingleExe",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "RegularPublishToTrimmedSingleExe",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
@@ -167,7 +167,7 @@ namespace Microsoft.NET.Publish.Tests
             // Create new mvc app from template
             var testDir = _testAssetsManager.CreateTestDirectory();
             var assetName = "MVCPublishProject";
-            var runtimeId = "win-x86";
+            var runtimeId = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86";
             var newCommand = new DotnetCommand(Log);
             newCommand.WorkingDirectory = testDir.Path;
             newCommand.Execute("new", "mvc", "-n", assetName).Should().Pass();
@@ -190,7 +190,7 @@ namespace Microsoft.NET.Publish.Tests
 
             // Publish as a single file
             new PublishCommand(Log, Path.Combine(testDir.Path, assetName))
-                .Execute(@"/p:RuntimeIdentifier=win-x86;PublishSingleFile=true")
+                .Execute($@"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x86;PublishSingleFile=true")
                 .Should()
                 .Pass();
             CheckPublishOutput(publishDir, expectedSingleFiles.Append("UserData.txt"), expectedRegularFiles);
@@ -205,7 +205,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishToCustomDir",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -240,7 +240,7 @@ namespace Microsoft.NET.Publish.Tests
                 Name = "PublishToMultipleDirs",
                 TargetFrameworks = "netcoreapp3.0",
                 IsExe = true,
-                RuntimeIdentifier = "win-x86"
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86"
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 

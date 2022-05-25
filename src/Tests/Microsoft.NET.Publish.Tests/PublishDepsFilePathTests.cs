@@ -84,7 +84,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = "win-x64";
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
 
             if (singleFile)

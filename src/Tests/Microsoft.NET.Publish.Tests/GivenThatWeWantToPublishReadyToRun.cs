@@ -149,7 +149,7 @@ namespace Microsoft.NET.Publish.Tests
             }
             else if (platform.Contains("osx"))
             {
-                testProject.RuntimeIdentifier = $"win-{architectureStr}";
+                testProject.RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-{architectureStr}";
             }
             else if (platform.Contains("rhel.6"))
             {
@@ -269,10 +269,10 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "_", "_")]
         [InlineData("net6.0", "linux-x64", "windows,linux,osx", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
         // In .NET 6.0 building targetting Windows on linux or osx doesn't support emitting native symbols.
-        [InlineData("net6.0", "win-x64", "windows", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
+        [InlineData("net6.0", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64", "windows", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
         [InlineData("net6.0", "osx-arm64", "windows,linux,osx", "X64,Arm64", "_", "_")]
         // In .NET 6.0 building targetting Windows on linux or osx doesn't support emitting native symbols.
-        [InlineData("net6.0", "win-x86", "windows", "X86,X64,Arm64,Arm", "_", "_")]
+        [InlineData("net6.0", $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86", "windows", "X86,X64,Arm64,Arm", "_", "_")]
         public void It_supports_crossos_arch_compilation(string targetFramework, string runtimeIdentifier, string sdkSupportedOs, string sdkSupportedArch, string composite, string selfcontained)
         {
             var projectName = $"CrossArchOs{targetFramework}{runtimeIdentifier.Replace("-",".")}{composite}{selfcontained}";

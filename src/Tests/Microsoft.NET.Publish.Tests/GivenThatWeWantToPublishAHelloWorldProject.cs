@@ -511,7 +511,7 @@ public static class Program
             {
                 Name = "NoDuplicatesInResolvedPublishAssets",
                 TargetFrameworks = "netcoreapp3.0",
-                RuntimeIdentifier = "win-x64",
+                RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64",
                 IsExe = true
             };
 

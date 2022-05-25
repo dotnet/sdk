@@ -43,11 +43,11 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true
             };
 
-            testProject.AdditionalProperties["RuntimeIdentifiers"] = "win-x86";
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86";
             testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\..\pkg";
             if (specifyRid)
             {
-                testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x86";
+                testProject.AdditionalProperties["RuntimeIdentifier"] = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86";
             }
 
             if (singleFile)
