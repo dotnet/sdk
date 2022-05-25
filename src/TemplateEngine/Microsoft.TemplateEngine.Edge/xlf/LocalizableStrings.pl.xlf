@@ -4,22 +4,22 @@
     <body>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
         <source>Argument(s) were not specified. At least one argument should be specified.</source>
-        <target state="new">Argument(s) were not specified. At least one argument should be specified.</target>
+        <target state="translated">Nie określono argumentów. Należy określić co najmniej jeden argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="Constraint_Error_ArrayHasNoObjects">
         <source>'{0}' does not contain valid items.</source>
-        <target state="new">'{0}' does not contain valid items.</target>
+        <target state="translated">Element „{0}” nie zawiera prawidłowych elementów.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJson">
         <source>'{0}' is not a valid JSON.</source>
-        <target state="new">'{0}' is not a valid JSON.</target>
+        <target state="translated">Element „{0}” nie jest prawidłowym kodem JSON.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_WrongConfigurationCTA">
         <source>Check the constraint configuration in template.json.</source>
-        <target state="new">Check the constraint configuration in template.json.</target>
+        <target state="translated">Sprawdź konfigurację ograniczenia w pliku template.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="Generic_Constraint_WrongConfigurationCTA">
         <source>Check the constraint configuration in template.json.</source>
-        <target state="new">Check the constraint configuration in template.json.</target>
+        <target state="translated">Sprawdź konfigurację ograniczenia w pliku template.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_LatestVersion">
@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
         <source>{0} is already installed, it will be replaced with {1}.</source>
-        <target state="new">{0} is already installed, it will be replaced with {1}.</target>
+        <target state="translated">Pakiet {0} jest już zainstalowany. Zostanie on zastąpiony pakietem {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
@@ -69,42 +69,42 @@
       </trans-unit>
       <trans-unit id="HostConstraint_Error_ArgumentsNotSpecified">
         <source>Argument(s) were not specified. At least one argument should be specified.</source>
-        <target state="new">Argument(s) were not specified. At least one argument should be specified.</target>
+        <target state="translated">Nie określono argumentów. Należy określić co najmniej jeden argument.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostConstraint_Error_ArrayHasNoObjects">
         <source>'{0}' does not contain valid host configurations.</source>
-        <target state="new">'{0}' does not contain valid host configurations.</target>
+        <target state="translated">Element „{0}” nie zawiera prawidłowych konfiguracji hosta.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Error_InvalidJson">
         <source>'{0}' is not a valid JSON</source>
-        <target state="new">'{0}' is not a valid JSON</target>
+        <target state="translated">Element „{0}” nie jest prawidłowym kodem JSON</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Error_InvalidJsonArray">
         <source>'{0}' is not a valid JSON array.</source>
-        <target state="new">'{0}' is not a valid JSON array.</target>
+        <target state="translated">Element „{0}” nie jest prawidłową tablicą JSON.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Error_InvalidJsonArray_Objects">
         <source>'{0}' should be an array of objects.</source>
-        <target state="new">'{0}' should be an array of objects.</target>
+        <target state="translated">Element „{0}” powinien być tablicą obiektów.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid version or version range.</source>
-        <target state="new">'{0}' is not a valid version or version range.</target>
+        <target state="translated">„{0}” nie jest prawidłową wersją lub zakresem wersji.</target>
         <note>{0} is version range specified in JSON configuration</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Error_MissingMandatoryProperty">
         <source>'{0}' does not have mandatory property '{1}'.</source>
-        <target state="new">'{0}' does not have mandatory property '{1}'.</target>
+        <target state="translated">Element „{0}” nie ma obowiązkowej właściwości „{1}”.</target>
         <note>{0} is JSON configuration, {1} mandatory JSON property name</note>
       </trans-unit>
       <trans-unit id="HostConstraint_Message_Restricted">
         <source>Running template on {0} (version: {1}) is not supported, supported hosts is/are: {2}.</source>
-        <target state="new">Running template on {0} (version: {1}) is not supported, supported hosts is/are: {2}.</target>
+        <target state="translated">Uruchamianie szablonu w {0} (wersja: {1}) nie jest obsługiwane, obsługiwane hosty to:{2}.</target>
         <note>{0} - host name ("dotnetcli", "ide"..)
 {1} - host version (usually matches VS or SDK version)
 {2} - comma-separated list of supported hosts and their versions (example: host1, host2(1.0.0), host3([1.0.0-*]))</note>
@@ -232,23 +232,23 @@ Szczegóły: {1}.</target>
       </trans-unit>
       <trans-unit id="OSConstraint_Error_InvalidJsonType">
         <source>'{0}' is not a valid JSON string or array.</source>
-        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <target state="translated">Element „{0}” nie jest prawidłowym ciągiem lub tablicą JSON.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="OSConstraint_Error_InvalidOSName">
         <source>'{0}' is not a valid operating system name. Allowed values are: {1}.</source>
-        <target state="new">'{0}' is not a valid operating system name. Allowed values are: {1}.</target>
+        <target state="translated">„{0}” nie jest prawidłową nazwą systemu operacyjnego. Dozwolone wartości to: {1}.</target>
         <note>{0} - OS name in configuration
 {1} - comma-separated list of allowed operating system names</note>
       </trans-unit>
       <trans-unit id="OSConstraint_Message_Restricted">
         <source>Running template on {0} is not supported, supported OS is/are: {1}.</source>
-        <target state="new">Running template on {0} is not supported, supported OS is/are: {1}.</target>
+        <target state="translated">Uruchamianie szablonu w {0} nie jest obsługiwane. Obsługiwany system operacyjny to: {1}.</target>
         <note>{0} - name of the executing operating system, {1} - comma separated list of supported operating systems.</note>
       </trans-unit>
       <trans-unit id="OSConstraint_Name">
         <source>Operating System</source>
-        <target state="new">Operating System</target>
+        <target state="translated">System operacyjny</target>
         <note>this is name of constraint that will appear in the UI</note>
       </trans-unit>
       <trans-unit id="Scanner_Error_TemplatePackageLocationIsNotSupported">

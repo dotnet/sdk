@@ -145,12 +145,12 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_Error_Constraints_InvalidSyntax">
         <source>'{0}' should contain objects.</source>
-        <target state="new">'{0}' should contain objects.</target>
+        <target state="translated">\"{0}\" 应包含对象。</target>
         <note>{0} is name of JSON property </note>
       </trans-unit>
       <trans-unit id="SimpleConfigModel_Error_Constraints_MissingType">
         <source>Constraint definition '{0}' does not contain mandatory property '{1}'.</source>
-        <target state="new">Constraint definition '{0}' does not contain mandatory property '{1}'.</target>
+        <target state="translated">约束定义 \"{0}\" 不包含必需属性 \"{1}\"。</target>
         <note>{0} - JSON with constraint defintion, {1} - missing property.</note>
       </trans-unit>
     </body>
