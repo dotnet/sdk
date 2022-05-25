@@ -7,7 +7,7 @@ using Microsoft.TemplateSearch.Common;
 
 namespace Microsoft.TemplateSearch.ScraperOutputComparison
 {
-    internal class ScrapeComparer
+    internal class ScrapeComparer : IDisposable
     {
         private readonly ComparisonConfig _config;
 
@@ -43,6 +43,11 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
 
             result = new ScrapeComparisonResult(_config.ScraperOutputOneFile, _config.ScraperOutputTwoFile, scraperOnePacks.ToList(), scraperTwoPacks.ToList());
             return true;
+        }
+
+        public void Dispose()
+        {
+            _environmentSettings.Dispose();
         }
 
 #pragma warning disable CS0618, CS0612 // Type or member is obsolete

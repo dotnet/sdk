@@ -1,4 +1,5 @@
 ﻿const Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparator = '|' -> char
+Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Dispose() -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter
 Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueParameter(System.Collections.Generic.IReadOnlyList<string!>! values) -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collections.Generic.IReadOnlyList<string!>!

@@ -1,4 +1,6 @@
-﻿Microsoft.TemplateEngine.Edge.TemplateConstraintManager
+﻿Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Dispose() -> void
+Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Dispose() -> void
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.Dispose() -> void
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string? args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templates, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! Template, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>! Result)>!>!

@@ -366,7 +366,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         private IEnumerable<TemplateSearchData> TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers)
         {
             ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(HostIdentifierBase + packInfo.Name);
-            EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             Scanner scanner = new Scanner(environmentSettings);
             try
             {

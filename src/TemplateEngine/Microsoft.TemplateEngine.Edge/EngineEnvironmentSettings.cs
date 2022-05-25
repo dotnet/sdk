@@ -74,5 +74,11 @@ namespace Microsoft.TemplateEngine.Edge
         public IPathInfo Paths { get;  }
 
         public IComponentManager Components { get; }
+
+        public void Dispose()
+        {
+            Host?.Dispose();
+        }
+
     }
 }

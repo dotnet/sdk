@@ -139,5 +139,10 @@ namespace Microsoft.TemplateEngine.Utils
         {
             OnLogTiming?.Invoke(label, duration, depth);
         }
+
+        public void Dispose()
+        {
+            _loggerFactory?.Dispose();
+        }
     }
 }

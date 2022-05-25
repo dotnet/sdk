@@ -78,6 +78,11 @@ namespace Microsoft.TemplateEngine.Edge
             FileSystem = new InMemoryFileSystem(path, FileSystem);
         }
 
+        public void Dispose()
+        {
+            _loggerFactory?.Dispose();
+        }
+
         #region Obsolete
 
 #pragma warning disable SA1201 // Elements should appear in the correct order

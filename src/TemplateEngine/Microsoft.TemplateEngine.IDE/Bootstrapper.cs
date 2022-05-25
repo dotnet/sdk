@@ -315,7 +315,11 @@ namespace Microsoft.TemplateEngine.IDE
 
         #endregion Template Package Management
 
-        public void Dispose() => _templatePackagesManager.Dispose();
+        public void Dispose()
+        {
+            _templatePackagesManager.Dispose();
+            _engineEnvironmentSettings?.Dispose();
+        }
 
         #region Obsolete
 

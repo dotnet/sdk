@@ -25,7 +25,7 @@ internal class FilterNonMicrosoftAuthors
             {
                 return new PreFilterResult(_FilterId, isFiltered: false);
             }
-            EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
+            using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
             foreach (IMountPointFactory factory in environmentSettings.Components.OfType<IMountPointFactory>())
             {
                 if (factory.TryMount(environmentSettings, null, packInfo.Path, out IMountPoint mountPoint))

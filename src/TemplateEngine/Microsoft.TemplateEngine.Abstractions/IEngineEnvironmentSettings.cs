@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Represents template engine environment settings.
     /// </summary>
-    public interface IEngineEnvironmentSettings
+    public interface IEngineEnvironmentSettings : IDisposable
     {
         /// <summary>
         /// Manages template cache and template engine settings.

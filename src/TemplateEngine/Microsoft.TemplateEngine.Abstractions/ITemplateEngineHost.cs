@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Gets host-specific properties, loggers and provides access to file system.
     /// </summary>
-    public interface ITemplateEngineHost
+    public interface ITemplateEngineHost : IDisposable
     {
         /// <summary>
         /// Gets the list of built-in components provided by the host.
