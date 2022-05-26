@@ -501,6 +501,7 @@ Concatenates multiple symbols or constants with the defined separator into a new
 |----------|---------|----------|-----|    
 |symbols   |array    |no     |all values to concatenate|
 |separator |string   |yes      |the value used as the separator between the values to be concatenated, notice that you can use `/` as folder separator also on Windows since File API will convert it into `\` |
+|removeEmptyValues |bool   |yes      |indicates whether empty values should be skiped or honored. By default this switch is off - leading to multiple consecutive separators in output string in case that same input values are null or empty|
 
 Symbols definition
 
@@ -548,12 +549,81 @@ This sample shows how to change the replacement value based on evaluating condit
             "value": "product"
           }
         ],
-        "separator": "/"
+        "separator": "/",
+        "removeEmptyValues": true
       }
     }
   }
 ```
 This sample will rename folder called `Api` into `Source/Api/Microsoft/Visual Studio`. Notice that File API will automatically change `/` into `\` on Windows.
+
+<a id="multichoice-join-sample"></a>Joining [multi-choice symbol](Reference-for-template.json.md#multichoice-symbols-specifics) values:
+
+`template.json`:
+```
+  "symbols": {
+    "Platform": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "allowMultipleValues": true,
+      "choices": [
+        {
+          "choice": "Windows",
+          "description": "Windows Desktop"
+        },
+        {
+          "choice": "WindowsPhone",
+          "description": "Windows Phone"
+        },
+        {
+          "choice": "MacOS",
+          "description": "Macintosh computers"
+        },
+        {
+          "choice": "iOS",
+          "description": "iOS mobile"
+        },
+        {
+          "choice": "android",
+          "description": "android mobile"
+        },
+        {
+          "choice": "nix",
+          "description": "Linux distributions"
+        }
+      ],
+      "defaultValue": "MacOS|iOS"
+    },
+    "joinedRename": {
+      "type": "generated",
+      "generator": "join",
+      "replaces": "SupportedPlatforms",
+      "parameters": {
+        "symbols": [
+          {
+            "type": "ref",
+            "value": "Platform"
+          }
+        ],
+        "separator": ", ",
+        "removeEmptyValues": true,
+      }
+    }
+  }
+```
+
+`Program.cs`:
+```C#
+// This file is generated for platfrom: SupportedPlatforms
+```
+
+This sample will expand and join values of `Platform` argument and replace `SupportedPlatforms` string with `MacOS, iOS`:
+
+`Program.cs`:
+```C#
+// This file is generated for platfrom: MacOS, iOS
+```
 
 ### Related
 [`Implementation class`](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/JoinMacro.cs)

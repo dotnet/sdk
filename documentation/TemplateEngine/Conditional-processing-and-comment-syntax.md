@@ -1,5 +1,8 @@
 To add conditional, or dynamic, content you can add Template Enging expressions in your source files. The conditional expression let you to include or exclude part of the file according to a specified condition, and to do this you can use the familiar conditional expressions like **#if**, **#else**, **#elseif**, **#endif**.
 
+To learn more about conditional expressions evaluation go to [Conditions](Conditions.md) description.
+
+
 | Name     | Description   |   
 |----------|---------------|    
 |[Language files](#language-source-files)| Common Dotnet language source files.|
