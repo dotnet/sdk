@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Castle.Core.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -11,13 +12,13 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class PostActionTests : IClassFixture<EnvironmentSettingsHelper>
+    public class PostActionTests : IClassFixture<TestLoggerFactory>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private Microsoft.Extensions.Logging.ILogger _logger;
 
-        public PostActionTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public PostActionTests(TestLoggerFactory testLoggerFactory)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _logger = testLoggerFactory.CreateLogger();
         }
 
         private static JObject TestTemplateJson
@@ -107,7 +108,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 ["ActionOneCondition"] = condition1,
                 ["ActionTwoCondition"] = condition2
             };
-            List<IPostAction> postActions = PostAction.ListFromModel(_engineEnvironmentSettings, configModel.PostActionModels, vc);
+            List<IPostAction> postActions = PostAction.ListFromModel(_logger, configModel.PostActionModels, vc);
 
             Assert.Equal(expectedActionCount, postActions.Count);
             if (firstResult != null && firstResult.Length > 0)
@@ -146,7 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 ["OperatingSystemKind"] = operatingSystemValue
             };
 
-            List<IPostAction> postActions = PostAction.ListFromModel(_engineEnvironmentSettings, configModel.PostActionModels, vc);
+            List<IPostAction> postActions = PostAction.ListFromModel(_logger, configModel.PostActionModels, vc);
             Assert.Equal(expectedActionCount, postActions.Count);
 
             if (!string.IsNullOrEmpty(firstInstruction))

@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
@@ -43,10 +44,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <inheritdoc/>
-        public bool EvaluateCondition(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables)
+        public bool EvaluateCondition(ILogger logger, IVariableCollection variables)
         {
             return ConditionResult = string.IsNullOrEmpty(Condition) ||
-                Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, Condition, variables);
+                Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, Condition, variables);
         }
     }
 }

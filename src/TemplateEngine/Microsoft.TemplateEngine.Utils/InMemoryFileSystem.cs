@@ -705,6 +705,20 @@ namespace Microsoft.TemplateEngine.Utils
             targetFile.LastWriteTimeUtc = lastWriteTimeUtc;
         }
 
+        /// <inheritdoc/>
+        public string PathRelativeTo(string target, string relativeTo)
+        {
+            if (
+                !IsPathInCone(target, out string targetProcessed)
+                ||
+                !IsPathInCone(relativeTo, out string relativeToProcessed))
+            {
+                return _basis.PathRelativeTo(target, relativeTo);
+            }
+
+            return PhysicalFileSystem.PathRelativeToInternal(targetProcessed, relativeToProcessed);
+        }
+
         /// <summary>
         /// Currently not implemented in <see cref="InMemoryFileSystem"/>.
         /// Just returns <see cref="IDisposable"/> object, but never calls callback.

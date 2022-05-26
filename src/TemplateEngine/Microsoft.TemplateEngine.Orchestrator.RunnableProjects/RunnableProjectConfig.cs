@@ -368,7 +368,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
                     {
                         ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings, sym.Value, rootVariableCollection);
+                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings.Host.Logger, sym.Value, rootVariableCollection);
                         stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
@@ -387,7 +387,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // the result is needed for SpecialOperationConfig
             foreach (ICustomFileGlobModel fileGlobModel in _configuration.SpecialCustomOperations)
             {
-                fileGlobModel.EvaluateCondition(_settings, rootVariableCollection);
+                fileGlobModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
             }
 
             parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
@@ -397,7 +397,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in _configuration.PrimaryOutputs)
             {
-                pathModel.EvaluateCondition(_settings, rootVariableCollection);
+                pathModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
 
                 if (pathModel.ConditionResult)
                 {
@@ -938,7 +938,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (ExtendedFileSource source in _configuration.Sources)
             {
-                if (!string.IsNullOrEmpty(source.Condition) && !Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings, source.Condition, rootVariableCollection))
+                if (!string.IsNullOrEmpty(source.Condition) && !Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings.Host.Logger, source.Condition, rootVariableCollection))
                 {
                     continue;
                 }
@@ -955,7 +955,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     foreach (SourceModifier modifier in source.Modifiers)
                     {
-                        if (string.IsNullOrEmpty(modifier.Condition) || Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings, modifier.Condition, rootVariableCollection))
+                        if (string.IsNullOrEmpty(modifier.Condition) || Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings.Host.Logger, modifier.Condition, rootVariableCollection))
                         {
                             IReadOnlyList<string> modifierIncludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Include, SourceFile, Array.Empty<string>());
                             IReadOnlyList<string> modifierExcludes = JTokenAsFilenameToReadOrArrayToCollection(modifier.Exclude, SourceFile, Array.Empty<string>());

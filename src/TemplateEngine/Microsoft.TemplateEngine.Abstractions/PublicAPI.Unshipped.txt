@@ -1,4 +1,5 @@
-﻿const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
+const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.Constraint = "Constraint" -> string!
+Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
 Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Details.get -> System.Collections.Generic.Dictionary<string!, string!>!
 Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.DisplayName.get -> string!
 Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.Force.get -> bool

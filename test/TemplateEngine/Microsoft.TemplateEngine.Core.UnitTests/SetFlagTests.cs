@@ -146,7 +146,7 @@ End";
 
             VariableCollection vc = new VariableCollection();
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            EngineConfig engineConfig = new EngineConfig(environmentSettings, vc);
+            EngineConfig engineConfig = new EngineConfig(environmentSettings.Host.Logger, vc);
 
             string on = "//+:cnd";
             string onNoEmit = on + ":noEmit";
@@ -178,7 +178,7 @@ using System;
 
             VariableCollection vc = new();
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            EngineConfig engineConfig = new(environmentSettings, vc);
+            EngineConfig engineConfig = new(environmentSettings.Host.Logger, vc);
 
             ConditionalTokens tokens = new()
             {

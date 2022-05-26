@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string condition = opModel.Condition;
 
                 if (string.IsNullOrEmpty(condition)
-                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(templateRoot.MountPoint.EnvironmentSettings, condition, variables))
+                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(host.Logger, condition, variables))
                 {
                     IOperationConfig realConfigObject;
                     if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             internal ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)
             {
-                Config = new EngineConfig(environmentSettings, vars);
+                Config = new EngineConfig(environmentSettings.Host.Logger, vars);
                 CurrentBuffer = buffer;
                 CurrentBufferPosition = 0;
                 Encoding = encoding;

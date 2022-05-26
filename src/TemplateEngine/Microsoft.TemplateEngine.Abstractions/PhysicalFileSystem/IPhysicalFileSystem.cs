@@ -126,5 +126,13 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         /// <param name="file">The file to set last write time for.</param>
         /// <param name="lastWriteTimeUtc">the time to set.</param>
         void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc);
+
+        /// <summary>
+        /// If target is a subpath of relativeTo a relative bath from relativeTo to subpath will be returned.
+        /// </summary>
+        /// <param name="target">Path to be converted to relative if possible.</param>
+        /// <param name="relativeTo">Base of the relative path to be returned.</param>
+        /// <returns></returns>
+        string PathRelativeTo(string target, string relativeTo);
     }
 }

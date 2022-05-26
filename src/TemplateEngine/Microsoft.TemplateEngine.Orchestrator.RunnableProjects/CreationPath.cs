@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -25,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string Path { get; }
 
-        internal static IReadOnlyList<ICreationPath> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
+        internal static IReadOnlyList<ICreationPath> ListFromModel(ILogger logger, IReadOnlyList<ICreationPathModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<ICreationPath> pathList = new List<ICreationPath>();
 
@@ -39,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 // Note: this check is probably superfluous. The Model has evaluation info.
                 // OTOH: this is probaby a cleaner way to do it.
                 if (string.IsNullOrEmpty(model.Condition)
-                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(environmentSettings, model.Condition, rootVariableCollection))
+                    || Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, model.Condition, rootVariableCollection))
                 {
                     ICreationPath path = new CreationPath(model.PathResolved);
                     pathList.Add(path);

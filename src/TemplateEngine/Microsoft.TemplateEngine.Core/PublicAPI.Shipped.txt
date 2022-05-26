@@ -228,7 +228,6 @@ Microsoft.TemplateEngine.Core.Util.EncodingConfig
 Microsoft.TemplateEngine.Core.Util.EncodingUtil
 Microsoft.TemplateEngine.Core.Util.EngineConfig
 Microsoft.TemplateEngine.Core.Util.Orchestrator
-Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator() -> void
 Microsoft.TemplateEngine.Core.Util.Processor
 Microsoft.TemplateEngine.Core.Util.ProcessorState
 Microsoft.TemplateEngine.Core.Util.ProcessorState.AdvanceBuffer(int bufferPosition) -> bool
@@ -458,19 +457,11 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.VariableValues.get -> System.Collections.Generic.IReadOnlyList<System.Func<object>>
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> void
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, string variableFormatString) -> void
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, System.Collections.Generic.IReadOnlyList<string> whitespaces, System.Collections.Generic.IReadOnlyList<string> lineEndings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, string variableFormatString = "{0}") -> void
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
 ~Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string, bool>
 ~Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string
 ~Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
-~Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
-~Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
-~Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-~Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
 ~Microsoft.TemplateEngine.Core.Util.Processor.CloneAndAppendOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> tempOperations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~Microsoft.TemplateEngine.Core.Util.Processor.Config.get -> Microsoft.TemplateEngine.Core.Util.EngineConfig
 ~Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target) -> bool
@@ -541,7 +532,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static Microsoft.TemplateEngine.Core.CommonOperations.WhitespaceHandler(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, bool wholeLine = false, bool trim = false, bool trimForward = false, bool trimBackward = false) -> void
 ~static Microsoft.TemplateEngine.Core.Expressions.Converter.TryConvert<T>(object source, out T result) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
-~static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.EvaluateFromString(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.ScopeBuilderHelper.ScopeBuilder<TOperator, TToken>(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals = false) -> Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.CoreConverters.TryHexConvert(string prefix, Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj, object source, out int result) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.CoreConverters.TryHexConvert(string prefix, Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj, object source, out long result) -> bool
@@ -550,7 +540,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.Encode(string arg) -> string
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Compare(object left, object right) -> int
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
-~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.VisualBasicStyleConverters.ConfigureConverters(Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj) -> void
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlDecode(string arg) -> string
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlEncode(string arg) -> string
@@ -564,9 +553,7 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static Microsoft.TemplateEngine.Core.TokenConfigExtensions.TokenConfigs(this System.Collections.Generic.IEnumerable<string> s) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ITokenConfig>
 ~static Microsoft.TemplateEngine.Core.Util.EncodingUtil.Detect(byte[] buffer, int currentBufferLength, out byte[] bom) -> System.Text.Encoding
 ~static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
-~static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.set -> void
 ~static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
-~static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.set -> void
 ~static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, params Microsoft.TemplateEngine.Core.Contracts.IOperationProvider[] operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> Microsoft.TemplateEngine.Core.VariableCollection
@@ -588,6 +575,3 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static readonly Microsoft.TemplateEngine.Core.Operations.Replacement.OperationName -> string
 ~static readonly Microsoft.TemplateEngine.Core.Operations.SetFlag.OperationName -> string
 ~virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
-~virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetBufferSize(Microsoft.TemplateEngine.Abstractions.Mount.IFile sourceFile, out int bufferSize) -> bool
-~virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Microsoft.TemplateEngine.Abstractions.Mount.IFile sourceFile, out int threshold) -> bool
-

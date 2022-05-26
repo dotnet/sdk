@@ -387,7 +387,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         /// </summary>
         private IProcessor SetupTestProcessor(IOperationProvider[] operations, VariableCollection vc)
         {
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, vc);
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, vc);
             return Processor.Create(cfg, operations);
         }
     }

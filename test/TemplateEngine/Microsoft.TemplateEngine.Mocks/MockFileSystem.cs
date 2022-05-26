@@ -222,6 +222,8 @@ namespace Microsoft.TemplateEngine.Mocks
             _files[file].LastWriteTimeUtc = lastWriteTimeUtc;
         }
 
+        public string PathRelativeTo(string target, string relativeTo) => throw new NotImplementedException();
+
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged) => throw new NotImplementedException();
 
         private void RecordDirectoryScan(string directoryName, string pattern, SearchOption searchOption)

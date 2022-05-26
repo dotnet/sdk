@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
@@ -12,13 +13,13 @@ using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
-    public class CommonOperationsTests : IClassFixture<EnvironmentSettingsHelper>
+    public class CommonOperationsTests : IClassFixture<TestLoggerFactory>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private ILogger _logger;
 
-        public CommonOperationsTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public CommonOperationsTests(TestLoggerFactory testLoggerFactory)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _logger = testLoggerFactory.CreateLogger();
         }
 
         [Fact(DisplayName = nameof(VerifyTrimWhitespaceForward))]
@@ -34,7 +35,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("Hello"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
             Stream d = new MemoryStream(data);
@@ -59,7 +60,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There");
             Stream d = new MemoryStream(data);
@@ -84,7 +85,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
@@ -109,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
@@ -134,7 +135,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
@@ -167,7 +168,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
@@ -196,7 +197,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream d = new MemoryStream(data);
@@ -222,7 +223,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);
@@ -247,7 +248,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);
@@ -272,7 +273,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There     \r\n    You");
             Stream d = new MemoryStream(data);

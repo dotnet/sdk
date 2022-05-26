@@ -111,6 +111,23 @@ namespace Microsoft.TemplateEngine.Utils
             File.SetLastWriteTimeUtc(file, lastWriteTimeUtc);
         }
 
+        public string PathRelativeTo(string target, string relativeTo)
+        {
+            string resultPath;
+            try
+            {
+                string basePath = Path.GetFullPath(relativeTo);
+                string sourceFullPath = Path.GetFullPath(target);
+                resultPath = PathRelativeToInternal(sourceFullPath, basePath);
+            }
+            catch (Exception)
+            {
+                resultPath = NormalizePath(target);
+            }
+
+            return resultPath;
+        }
+
         public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
         {
             FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filepath), Path.GetFileName(filepath));
@@ -118,6 +135,38 @@ namespace Microsoft.TemplateEngine.Utils
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;
             return watcher;
+        }
+
+        internal static string PathRelativeToInternal(string target, string relativeTo)
+        {
+            string resultPath = target;
+            relativeTo = relativeTo.TrimEnd('/', '\\');
+            if (target.StartsWith(relativeTo, StringComparison.CurrentCulture))
+            {
+                resultPath = target.Substring(relativeTo.Length + 1);
+            }
+
+            return NormalizePath(resultPath);
+        }
+
+        private static string NormalizePath(string path)
+        {
+            char desiredDirectorySeparator = Path.DirectorySeparatorChar;
+            char undesiredSeparatorChar;
+            switch (desiredDirectorySeparator)
+            {
+                case '/':
+                    undesiredSeparatorChar = '\\';
+                    break;
+                case '\\':
+                    undesiredSeparatorChar = '/';
+                    break;
+                default:
+                    undesiredSeparatorChar = desiredDirectorySeparator;
+                    break;
+            }
+
+            return path.Replace(undesiredSeparatorChar, desiredDirectorySeparator);
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿const Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparator = '|' -> char
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Dispose() -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter
 Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueParameter(System.Collections.Generic.IReadOnlyList<string!>! values) -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
 Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, bool allowMultipleValues = false, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
 override Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ToString() -> string!

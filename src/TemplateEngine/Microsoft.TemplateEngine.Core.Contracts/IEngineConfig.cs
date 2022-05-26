@@ -1,14 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface IEngineConfig
     {
-        IEngineEnvironmentSettings EnvironmentSettings { get; }
+        ILogger Logger { get; }
 
         IReadOnlyList<string> LineEndings { get; }
 

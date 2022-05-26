@@ -1,1 +1,11 @@
-﻿
+﻿Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.EvaluateCondition(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.VariableFormatString.get -> string!
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
+Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void

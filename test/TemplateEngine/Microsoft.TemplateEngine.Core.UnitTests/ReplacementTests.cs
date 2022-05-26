@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value2".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

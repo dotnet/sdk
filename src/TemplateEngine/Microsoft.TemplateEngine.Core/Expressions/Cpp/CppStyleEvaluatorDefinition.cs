@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,7 +10,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Utils;
@@ -22,12 +24,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
         private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
         private static readonly char[] SupportedQuotes = { '"', '\'' };
 
-        public static bool EvaluateFromString(IEngineEnvironmentSettings environmentSettings, string text, IVariableCollection variables)
+        public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
             using (MemoryStream res = new MemoryStream())
             {
-                EngineConfig cfg = new EngineConfig(environmentSettings, variables);
+                EngineConfig cfg = new EngineConfig(logger, variables);
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
@@ -539,7 +541,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             return (bool)Convert.ChangeType(current.Evaluate() ?? "false", typeof(bool));
         }
 
-        private static object InferTypeAndConvertLiteral(string literal)
+        private static object? InferTypeAndConvertLiteral(string literal)
         {
             //A propertly quoted string must be...
             //  At least two characters long

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
 
@@ -51,12 +51,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             }
         }
 
-        public static bool EvaluateFromString(IEngineEnvironmentSettings environmentSettings, string text, IVariableCollection variables)
+        public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
             using (MemoryStream res = new MemoryStream())
             {
-                EngineConfig cfg = new EngineConfig(environmentSettings, variables);
+                EngineConfig cfg = new EngineConfig(logger, variables);
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;

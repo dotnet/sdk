@@ -1,1 +1,24 @@
-﻿
+﻿Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, System.Collections.Generic.IReadOnlyList<string!>! whitespaces, System.Collections.Generic.IReadOnlyList<string!>! lineEndings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString = "{0}") -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
+Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! fileSystem) -> void
+Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.EvaluateFromString(Microsoft.Extensions.Logging.ILogger! logger, string! text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
+static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.set -> void
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
+static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.set -> void
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream! runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec!
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetBufferSize(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int bufferSize) -> bool
+virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int threshold) -> bool
+~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool

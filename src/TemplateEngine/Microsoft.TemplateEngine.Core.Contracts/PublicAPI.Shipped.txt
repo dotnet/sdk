@@ -2,7 +2,6 @@
 Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement
 Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.Condition.get -> string?
 Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.ConditionResult.get -> bool
-Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.EvaluateCondition(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
 Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel
 Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel
 Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
@@ -16,7 +15,6 @@ Microsoft.TemplateEngine.Core.Contracts.IOperation
 Microsoft.TemplateEngine.Core.Contracts.IOperation.IsInitialStateOn.get -> bool
 Microsoft.TemplateEngine.Core.Contracts.IOperationProvider
 Microsoft.TemplateEngine.Core.Contracts.IOrchestrator
-Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2
 Microsoft.TemplateEngine.Core.Contracts.IPathMatcher
 Microsoft.TemplateEngine.Core.Contracts.IProcessor
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState
@@ -61,7 +59,6 @@ Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.VariableValues.get -> System.Collections.Generic.IReadOnlyList<System.Func<object>>
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
-~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string, bool>
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.VariableFormatString.get -> string
@@ -88,14 +85,6 @@ Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
 ~Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
 ~Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.Id.get -> string
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange>
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange>
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.GetFileChanges(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2>
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
-~Microsoft.TemplateEngine.Core.Contracts.IOrchestrator2.Run(string runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory sourceDir, string targetDir) -> void
 ~Microsoft.TemplateEngine.Core.Contracts.IPathMatcher.IsMatch(string path) -> bool
 ~Microsoft.TemplateEngine.Core.Contracts.IPathMatcher.Pattern.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IProcessor.CloneAndAppendOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> tempOperations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor

@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = SetupVariables(environmentSettings, parameters, runnableProjectConfig.OperationConfig.VariableSetup);
             runnableProjectConfig.Evaluate(parameters, variables);
 
-            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
+            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
             GlobalRunSpec runSpec = new GlobalRunSpec(templateSourceRoot, environmentSettings.Components, parameters, variables, runnableProjectConfig.OperationConfig, runnableProjectConfig.SpecialOperationConfig, runnableProjectConfig.IgnoreFileNames);
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 orchestrator.Run(runSpec, templateSourceRoot.DirectoryInfo(source.Source), target);
             }
 
-            return Task.FromResult(GetCreationResult(environmentSettings, runnableProjectConfig, variables));
+            return Task.FromResult(GetCreationResult(environmentSettings.Host.Logger, runnableProjectConfig, variables));
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
             templateConfig.Evaluate(parameters, variables);
 
-            IOrchestrator2 basicOrchestrator = new Core.Util.Orchestrator();
+            IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
             GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, parameters, variables, templateConfig.OperationConfig, templateConfig.SpecialOperationConfig, templateConfig.IgnoreFileNames);
@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 #pragma warning restore CS0618 // Type or member is obsolete
             }
 
-            return Task.FromResult((ICreationEffects)new CreationEffects2(changes, GetCreationResult(environmentSettings, templateConfig, variables)));
+            return Task.FromResult((ICreationEffects)new CreationEffects2(changes, GetCreationResult(environmentSettings.Host.Logger, templateConfig, variables)));
         }
 
         public IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
@@ -535,11 +535,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private static ICreationResult GetCreationResult(IEngineEnvironmentSettings environmentSettings, IRunnableProjectConfig runnableProjectConfig, IVariableCollection variables)
+        private static ICreationResult GetCreationResult(ILogger logger, IRunnableProjectConfig runnableProjectConfig, IVariableCollection variables)
         {
             return new CreationResult(
-                postActions: PostAction.ListFromModel(environmentSettings, runnableProjectConfig.PostActionModels, variables),
-                primaryOutputs: CreationPath.ListFromModel(environmentSettings, runnableProjectConfig.PrimaryOutputs, variables));
+                postActions: PostAction.ListFromModel(logger, runnableProjectConfig.PostActionModels, variables),
+                primaryOutputs: CreationPath.ListFromModel(logger, runnableProjectConfig.PrimaryOutputs, variables));
         }
 
         private static string? ResolveChoice(IEngineEnvironmentSettings environmentSettings, string? literal, ITemplateParameter param)

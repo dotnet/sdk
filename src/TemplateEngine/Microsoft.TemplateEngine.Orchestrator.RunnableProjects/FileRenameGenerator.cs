@@ -139,7 +139,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static IProcessor SetupProcessor(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IOperationProvider> operations)
         {
             IVariableCollection variables = new VariableCollection();
-            EngineConfig config = new EngineConfig(environmentSettings, variables);
+            EngineConfig config = new EngineConfig(environmentSettings.Host.Logger, variables);
             IProcessor processor = Processor.Create(config, operations);
             return processor;
         }

@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             MemoryStream output = new MemoryStream();
 
             IOperationProvider[] operations = { new ExpandVariables(null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "%{0}%");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             {
                 ["NULL"] = null
             };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, vc, "%{0}%");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, vc, "%{0}%");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

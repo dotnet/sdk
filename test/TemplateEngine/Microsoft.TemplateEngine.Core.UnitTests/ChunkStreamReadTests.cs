@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             ChunkMemoryStream output = new ChunkMemoryStream(1024);
 
             IOperationProvider[] operations = Array.Empty<IOperationProvider>();
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             processor.Run(input, output, 1024);
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             ChunkMemoryStream output = new ChunkMemoryStream(10);
 
             IOperationProvider[] operations = { new Replacement("value".TokenConfig(), "foo", null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new Replacement("valueA".TokenConfigBuilder().OnlyIfBefore(" before"), "foo", null, true),
                     new Replacement("valueB".TokenConfigBuilder().OnlyIfAfter("after "), "bar", null, true),
                 };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "${0}$");
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made
@@ -129,7 +129,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 true,
                 Encoding.UTF8.GetBytes("There"));
 
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings, new VariableCollection());
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, new VariableCollection());
             IProcessor processor = Processor.Create(cfg, o.Provider);
             byte[] data = Encoding.UTF8.GetBytes("Hello    \r\n    There    \r\n    You");
             Stream input = new ChunkMemoryStream(data, 1);

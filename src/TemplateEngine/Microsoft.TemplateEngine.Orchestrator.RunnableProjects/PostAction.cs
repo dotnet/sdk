@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Args { get; } = new Dictionary<string, string>();
 
-        internal static List<IPostAction> ListFromModel(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<PostActionModel> modelList, IVariableCollection rootVariableCollection)
+        internal static List<IPostAction> ListFromModel(ILogger logger, IReadOnlyList<PostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
             List<IPostAction> actionList = new List<IPostAction>();
 
@@ -43,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (PostActionModel model in modelList)
             {
-                model.EvaluateCondition(environmentSettings, rootVariableCollection);
+                model.EvaluateCondition(logger, rootVariableCollection);
 
                 if (!model.ConditionResult)
                 {
@@ -67,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 chosenInstruction = modelInstruction.Text;
                             }
                         }
-                        else if (modelInstruction.EvaluateCondition(environmentSettings, rootVariableCollection))
+                        else if (modelInstruction.EvaluateCondition(logger, rootVariableCollection))
                         {
                             // condition is not blank and true, take this one. This results in a last-in-wins behaviour for conditions that are true.
                             chosenInstruction = modelInstruction.Text;

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
@@ -24,10 +25,10 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         /// <summary>
         /// Evaluates the condition and returns the result.
         /// </summary>
-        /// <param name="environmentSettings">Settings to be used for evaluation.</param>
+        /// <param name="logger">logger to be used for evaluation.</param>
         /// <param name="variables">Defined variables that may be referenced from the condition.</param>
         /// <returns>True if the condition has evaluated to true or the condition string is null/empty.
         /// False, otherwise.</returns>
-        bool EvaluateCondition(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables);
+        bool EvaluateCondition(ILogger logger, IVariableCollection variables);
     }
 }

@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     // The reset operation should limit the scope of the problem.
                     // The depth-zero pseudo-comment is the only one that will be "fixed".
                     // But this could be changed to also fix any where depth < 0.
-                    processor.Config.EnvironmentSettings.Host.Logger.LogInformation($"Balanced nesting depth < 0. CurrentBufferPosition = {currentBufferPosition}");
+                    processor.Config.Logger.LogInformation($"Balanced nesting depth < 0. CurrentBufferPosition = {currentBufferPosition}");
                 }
 
                 if (_depth == 0 && token == PseudoEndTokenIndex)
