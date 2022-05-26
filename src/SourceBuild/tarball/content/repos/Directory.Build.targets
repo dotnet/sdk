@@ -127,11 +127,11 @@
          See https://github.com/dotnet/source-build/issues/1914 for details. -->
     <PropertyGroup>
       <ArcadeSdkReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net6.0.*&apos; \) )
+      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
       </ArcadeSdkReplacementText>
 
       <ArcadeLoggingReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net6.0.*&apos; \) )
+      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
       </ArcadeLoggingReplacementText>
 
       <LoggerPathReplacementText>

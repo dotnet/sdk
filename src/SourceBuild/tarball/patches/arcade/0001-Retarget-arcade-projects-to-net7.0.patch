@@ -1,0 +1,1139 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Logan Bussell <loganbussell@microsoft.com>
+Date: Tue, 19 Apr 2022 14:29:27 -0700
+Subject: [PATCH] Retarget arcade projects to net7.0
+
+Backport PR: https://github.com/dotnet/arcade/pull/9127 
+---
+ eng/SourceBuild.props                         | 35 -------------------
+ eng/TargetFrameworkDefaults.props             |  7 +---
+ eng/common/tools.ps1                          |  2 +-
+ eng/common/tools.sh                           |  2 +-
+ .../Microsoft.Arcade.Common.Tests.csproj      |  2 +-
+ .../Microsoft.Arcade.Common.csproj            |  1 -
+ .../Microsoft.Arcade.Test.Common.csproj       |  2 +-
+ .../Microsoft.DotNet.ApiCompat.Core.csproj    |  2 +-
+ .../src/Microsoft.DotNet.ApiCompat.csproj     |  4 +--
+ .../build/Microsoft.DotNet.ApiCompat.targets  |  2 +-
+ .../Microsoft.DotNet.ApiCompat.Tests.csproj   |  2 +-
+ .../Microsoft.DotNet.Arcade.Sdk.Tests.csproj  |  2 +-
+ .../Microsoft.DotNet.Arcade.Sdk.csproj        |  1 -
+ .../tools/BuildReleasePackages.targets        |  2 +-
+ .../tools/BuildTasks.props                    |  2 +-
+ .../SdkTasks/PublishArtifactsInManifest.proj  |  2 +-
+ .../tools/SdkTasks/PublishBuildAssets.proj    |  2 +-
+ .../tools/SdkTasks/PublishSignedAssets.proj   |  2 +-
+ .../SdkTasks/PublishToSymbolServers.proj      |  2 +-
+ .../tools/SdkTasks/SigningValidation.proj     |  2 +-
+ .../Microsoft.DotNet.AsmDiff.csproj           |  2 +-
+ ...crosoft.DotNet.Build.Tasks.Archives.csproj |  2 +-
+ ...osoft.DotNet.Build.Tasks.Feed.Tests.csproj |  2 +-
+ .../Microsoft.DotNet.Build.Tasks.Feed.csproj  |  4 +--
+ .../Microsoft.DotNet.Build.Tasks.Feed.targets |  2 +-
+ ...osoft.DotNet.Build.Tasks.Installers.csproj |  1 -
+ ...rosoft.DotNet.Build.Tasks.Installers.props |  2 +-
+ ...rosoft.DotNet.Build.Tasks.Packaging.csproj |  3 +-
+ .../src/build/Packaging.common.targets        |  2 +-
+ .../src/build/Packaging.targets               |  4 +++
+ ....DotNet.Build.Tasks.Packaging.Tests.csproj |  2 +-
+ ....DotNet.Build.Tasks.TargetFramework.csproj |  3 +-
+ ...t.DotNet.Build.Tasks.TargetFramework.props |  2 +-
+ ...DotNet.Build.Tasks.Templating.Tests.csproj |  2 +-
+ ....DotNet.Build.Tasks.Workloads.Tests.csproj |  2 +-
+ ...rosoft.DotNet.Build.Tasks.Workloads.csproj |  9 +++--
+ ...osoft.DotNet.Deployment.Tasks.Links.csproj |  3 +-
+ ...rosoft.DotNet.Deployment.Tasks.Links.props |  2 +-
+ .../Microsoft.DotNet.GenAPI.csproj            |  2 +-
+ .../build/Microsoft.DotNet.GenAPI.targets     |  2 +-
+ .../Microsoft.DotNet.GenFacades.csproj        |  1 -
+ .../build/Microsoft.DotNet.GenFacades.targets |  2 +-
+ .../Microsoft.DotNet.Git.IssueManager.csproj  |  2 +-
+ ...rosoft.DotNet.GitSync.CommitManager.csproj |  2 +-
+ ...rosoft.DotNet.Helix.JobSender.Tests.csproj |  2 +-
+ .../Microsoft.DotNet.Helix.Sdk.Tests.csproj   |  2 +-
+ .../Sdk/Microsoft.DotNet.Helix.Sdk.csproj     |  2 +-
+ .../tools/Microsoft.DotNet.Helix.Sdk.props    |  2 +-
+ .../tools/xunit-runner/XUnitRunner.targets    |  2 +-
+ ...nternal.DependencyInjection.Testing.csproj |  2 +-
+ .../Microsoft.DotNet.NuGetRepack.Tasks.csproj |  3 +-
+ .../Microsoft.DotNet.NuGetRepack.Tests.csproj |  2 +-
+ ...crosoft.DotNet.PackageTesting.Tests.csproj |  2 +-
+ .../Microsoft.DotNet.PackageTesting.csproj    |  3 +-
+ .../Microsoft.DotNet.PackageTesting.props     |  2 +-
+ .../Microsoft.DotNet.RemoteExecutor.csproj    |  2 +-
+ ...crosoft.DotNet.RemoteExecutor.Tests.csproj |  2 +-
+ ...icrosoft.DotNet.SharedFramework.Sdk.csproj |  3 +-
+ .../sdk/Sdk.props                             |  4 +--
+ .../Microsoft.DotNet.SignTool.Tests.csproj    |  2 +-
+ .../Microsoft.DotNet.SignTool.csproj          |  3 +-
+ .../build/Microsoft.DotNet.SignTool.props     |  2 +-
+ .../Microsoft.DotNet.SourceBuild.Tasks.csproj |  1 -
+ .../Microsoft.DotNet.SourceBuild.Tasks.props  |  2 +-
+ ...soft.DotNet.SourceBuild.Tasks.Tests.csproj |  2 +-
+ ...oft.DotNet.SwaggerGenerator.CmdLine.csproj |  2 +-
+ ...oft.DotNet.SwaggerGenerator.MSBuild.csproj |  2 +-
+ ...soft.DotNet.SwaggerGenerator.MSBuild.props |  2 +-
+ ...oft.DotNet.VersionTools.Tasks.Tests.csproj |  2 +-
+ ...Microsoft.DotNet.VersionTools.Tasks.csproj |  3 +-
+ .../Microsoft.DotNet.VersionTools.Tasks.props |  2 +-
+ ...Microsoft.DotNet.VersionTools.Tests.csproj |  2 +-
+ ...Microsoft.DotNet.XUnitConsoleRunner.csproj |  2 +-
+ .../Microsoft.DotNet.XUnitConsoleRunner.props |  2 +-
+ ...rosoft.DotNet.XUnitExtensions.Tests.csproj |  2 +-
+ tests/UnitTests.proj                          |  2 +-
+ tests/XHarness.Tests.Common.props             |  2 +-
+ 77 files changed, 82 insertions(+), 128 deletions(-)
+
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index ace72e8e..2058dc05 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -5,39 +5,4 @@
+     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
+   </PropertyGroup>
+ 
+-  <Import Project="TargetFrameworkDefaults.props" />
+-
+-  <!--
+-    Some MSBuild files in this repo are copied as-is into the outputs, and contain hard-coded target
+-    framework names. For the Microsoft build, the target framework rarely (never?) changes, so it
+-    hasn't been a maintenance problem. However, it is a problem for source-build, where the TFM
+-    needs to match the target/latest SDK (5.0, 6.0, ...). This target simply replaces the content of
+-    the files. This is similar to a patch, but a little more resistant to merge conflicts.
+-
+-    This target should be removed, and the files should be generated by a template instead. Source
+-    files should not be made dirty (according to Git) by running a build. This is partially
+-    mitigated by the arcade-powered source-build tooling running the build in an isolated clone of
+-    the repo rather than in the dev's copy.
+-  -->
+-  <Target Name="ModifyHardCodedTargetFrameworkReferencesInToolMSBuildFiles"
+-          Condition="
+-            '$(ArcadeBuildFromSource)' == 'true' and
+-            '$(ArcadeInnerBuildFromSource)' == 'true'"
+-          BeforeTargets="Execute">
+-    <ItemGroup>
+-      <ToolMSBuildFileUsingTargetFramework Include="
+-        $(RepoRoot)src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props;
+-        $(RepoRoot)src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props;
+-        $(RepoRoot)src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets;
+-        $(RepoRoot)src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props;
+-        $(RepoRoot)src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets;
+-        $(RepoRoot)src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props" />
+-    </ItemGroup>
+-
+-    <Exec
+-      Command="sed -i 's/netcoreapp3.1/$(TargetFrameworkForNETSDK)/g' '%(ToolMSBuildFileUsingTargetFramework.FullPath)'"
+-      WorkingDirectory="$(RepoRoot)"
+-      Condition="'@(ToolMSBuildFileUsingTargetFramework)' != ''" />
+-  </Target>
+-
+ </Project>
+diff --git a/eng/TargetFrameworkDefaults.props b/eng/TargetFrameworkDefaults.props
+index ca3546e8..37172165 100644
+--- a/eng/TargetFrameworkDefaults.props
++++ b/eng/TargetFrameworkDefaults.props
+@@ -1,12 +1,7 @@
+ <Project>
+ 
+-  <!--
+-    By default, build for an old TFM for wide applicability. When running source-build, target the
+-    current .NET SDK framework version to avoid dependency challenges.
+-  -->
+   <PropertyGroup>
+-    <TargetFrameworkForNETSDK>netcoreapp3.1</TargetFrameworkForNETSDK>
+-    <TargetFrameworkForNETSDK Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworkForNETSDK>
++    <TargetFrameworkForNETSDK>net7.0</TargetFrameworkForNETSDK>
+   </PropertyGroup>
+ 
+ </Project>
+diff --git a/eng/common/tools.ps1 b/eng/common/tools.ps1
+index 423bd962..395b43ee 100644
+--- a/eng/common/tools.ps1
++++ b/eng/common/tools.ps1
+@@ -573,7 +573,7 @@ function InitializeBuildTool() {
+       ExitWithExitCode 1
+     }
+     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp3.1' }
++    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net7.0' }
+   } elseif ($msbuildEngine -eq "vs") {
+     try {
+       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
+diff --git a/eng/common/tools.sh b/eng/common/tools.sh
+index 17f0a365..c110d0ed 100755
+--- a/eng/common/tools.sh
++++ b/eng/common/tools.sh
+@@ -312,7 +312,7 @@ function InitializeBuildTool {
+   # return values
+   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
+   _InitializeBuildToolCommand="msbuild"
+-  _InitializeBuildToolFramework="netcoreapp3.1"
++  _InitializeBuildToolFramework="net7.0"
+ }
+ 
+ # Set RestoreNoCache as a workaround for https://github.com/NuGet/Home/issues/3116
+diff --git a/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj b/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
+index 98b20958..d1450847 100644
+--- a/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
++++ b/src/Common/Microsoft.Arcade.Common.Tests/Microsoft.Arcade.Common.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <Nullable>enable</Nullable>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+diff --git a/src/Common/Microsoft.Arcade.Common/Microsoft.Arcade.Common.csproj b/src/Common/Microsoft.Arcade.Common/Microsoft.Arcade.Common.csproj
+index 9d2a939d..5c38d0c9 100644
+--- a/src/Common/Microsoft.Arcade.Common/Microsoft.Arcade.Common.csproj
++++ b/src/Common/Microsoft.Arcade.Common/Microsoft.Arcade.Common.csproj
+@@ -2,7 +2,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">netstandard2.0</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+   </PropertyGroup>
+ 
+diff --git a/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj b/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
+index bcc3d717..53b29706 100644
+--- a/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
++++ b/src/Common/Microsoft.Arcade.Test.Common/Microsoft.Arcade.Test.Common.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <IsTestProject>true</IsTestProject>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.Core/Microsoft.DotNet.ApiCompat.Core.csproj b/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.Core/Microsoft.DotNet.ApiCompat.Core.csproj
+index cf860a80..552ab4b9 100644
+--- a/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.Core/Microsoft.DotNet.ApiCompat.Core.csproj
++++ b/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.Core/Microsoft.DotNet.ApiCompat.Core.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.csproj b/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.csproj
+index 816d9f71..320db7ef 100644
+--- a/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.csproj
++++ b/src/Microsoft.DotNet.ApiCompat/src/Microsoft.DotNet.ApiCompat.csproj
+@@ -2,8 +2,8 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)' == 'netcoreapp3.1'">true</CopyLocalLockFileAssemblies>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
++    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)' == '$(TargetFrameworkForNETSDK)'">true</CopyLocalLockFileAssemblies>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <PackageType>MSBuildSdk</PackageType>
+diff --git a/src/Microsoft.DotNet.ApiCompat/src/build/Microsoft.DotNet.ApiCompat.targets b/src/Microsoft.DotNet.ApiCompat/src/build/Microsoft.DotNet.ApiCompat.targets
+index 995a91be..c04dc48a 100644
+--- a/src/Microsoft.DotNet.ApiCompat/src/build/Microsoft.DotNet.ApiCompat.targets
++++ b/src/Microsoft.DotNet.ApiCompat/src/build/Microsoft.DotNet.ApiCompat.targets
+@@ -1,7 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the LICENSE file in the project root for more information. -->
+ <Project>
+   <PropertyGroup>
+-    <ApiCompatAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\Microsoft.DotNet.ApiCompat.dll</ApiCompatAssembly>
++    <ApiCompatAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\net7.0\Microsoft.DotNet.ApiCompat.dll</ApiCompatAssembly>
+     <ApiCompatAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.ApiCompat.exe</ApiCompatAssembly>
+ 
+     <!-- By default, run API Compat if this package is referenced. -->
+diff --git a/src/Microsoft.DotNet.ApiCompat/tests/Microsoft.DotNet.ApiCompat.Tests.csproj b/src/Microsoft.DotNet.ApiCompat/tests/Microsoft.DotNet.ApiCompat.Tests.csproj
+index 2ad82dac..8f2516f8 100644
+--- a/src/Microsoft.DotNet.ApiCompat/tests/Microsoft.DotNet.ApiCompat.Tests.csproj
++++ b/src/Microsoft.DotNet.ApiCompat/tests/Microsoft.DotNet.ApiCompat.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <LangVersion>Latest</LangVersion>
+     <SignAssembly>false</SignAssembly>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk.Tests/Microsoft.DotNet.Arcade.Sdk.Tests.csproj b/src/Microsoft.DotNet.Arcade.Sdk.Tests/Microsoft.DotNet.Arcade.Sdk.Tests.csproj
+index 2f24126a..fec8a74d 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk.Tests/Microsoft.DotNet.Arcade.Sdk.Tests.csproj
++++ b/src/Microsoft.DotNet.Arcade.Sdk.Tests/Microsoft.DotNet.Arcade.Sdk.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <DefaultItemExcludes>$(DefaultItemExcludes);testassets\**\*</DefaultItemExcludes>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/Microsoft.DotNet.Arcade.Sdk.csproj b/src/Microsoft.DotNet.Arcade.Sdk/Microsoft.DotNet.Arcade.Sdk.csproj
+index 4cd7d4b2..0c0d467a 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/Microsoft.DotNet.Arcade.Sdk.csproj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/Microsoft.DotNet.Arcade.Sdk.csproj
+@@ -2,7 +2,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <LangVersion>preview</LangVersion>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
+index f6edc662..3874a091 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
+@@ -2,7 +2,7 @@
+ <Project>
+   <PropertyGroup>
+     <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\net472\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
+-    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\netcoreapp3.1\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
++    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\net7.0\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
+   </PropertyGroup>
+ 
+   <UsingTask TaskName="Microsoft.DotNet.Tools.UpdatePackageVersionTask" AssemblyFile="$(_NuGetRepackAssembly)" />
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
+index 4e94d2f2..14916241 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
+@@ -3,6 +3,6 @@
+ <Project>
+   <PropertyGroup>
+     <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)net472\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
+-    <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)netcoreapp3.1\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
++    <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net7.0\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
+   </PropertyGroup>
+ </Project>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishArtifactsInManifest.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishArtifactsInManifest.proj
+index 01180a60..ee6e08c4 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishArtifactsInManifest.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishArtifactsInManifest.proj
+@@ -74,7 +74,7 @@
+   -->
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>net7.0</TargetFramework>
+     <NETCORE_ENGINEERING_TELEMETRY>Publish</NETCORE_ENGINEERING_TELEMETRY>
+ 
+     <!-- Default publishing infra target is 3. -->
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishBuildAssets.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishBuildAssets.proj
+index 674a6086..23b7c797 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishBuildAssets.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishBuildAssets.proj
+@@ -30,7 +30,7 @@
+   <PropertyGroup>
+     <_MicrosoftDotNetMaestroTasksBaseDir>$(NuGetPackageRoot)microsoft.dotnet.maestro.tasks\$(MicrosoftDotNetMaestroTasksVersion)\tools\</_MicrosoftDotNetMaestroTasksBaseDir>
+     <_MicrosoftDotNetMaestroTasksDir>$(_MicrosoftDotNetMaestroTasksBaseDir)net472</_MicrosoftDotNetMaestroTasksDir>
+-    <_MicrosoftDotNetMaestroTasksDir Condition="'$(MSBuildRuntimeType)' == 'Core'">$(_MicrosoftDotNetMaestroTasksBaseDir)netcoreapp3.1</_MicrosoftDotNetMaestroTasksDir>
++    <_MicrosoftDotNetMaestroTasksDir Condition="'$(MSBuildRuntimeType)' == 'Core'">$(_MicrosoftDotNetMaestroTasksBaseDir)net7.0</_MicrosoftDotNetMaestroTasksDir>
+   </PropertyGroup>
+   
+   <UsingTask TaskName="PushMetadataToBuildAssetRegistry" AssemblyFile="$(_MicrosoftDotNetMaestroTasksDir)\Microsoft.DotNet.Maestro.Tasks.dll"/>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishSignedAssets.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishSignedAssets.proj
+index 3f880d46..d9a8e411 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishSignedAssets.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishSignedAssets.proj
+@@ -3,7 +3,7 @@
+ 
+   <PropertyGroup>
+     <NETCORE_ENGINEERING_TELEMETRY>Publish</NETCORE_ENGINEERING_TELEMETRY>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>net7.0</TargetFramework>
+   </PropertyGroup>
+   
+   <!--
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishToSymbolServers.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishToSymbolServers.proj
+index 872ec868..da9c4a8b 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishToSymbolServers.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/PublishToSymbolServers.proj
+@@ -17,7 +17,7 @@
+   -->
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>net7.0</TargetFramework>
+     <NETCORE_ENGINEERING_TELEMETRY>Publish</NETCORE_ENGINEERING_TELEMETRY>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/SigningValidation.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/SigningValidation.proj
+index ddcf2292..f4b8e8b4 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/SigningValidation.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SdkTasks/SigningValidation.proj
+@@ -18,7 +18,7 @@
+   <Import Condition="Exists('$(BuildManifestFile)')" Project="$(BuildManifestFile)" />
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>net7.0</TargetFramework>
+     <NETCORE_ENGINEERING_TELEMETRY>Build</NETCORE_ENGINEERING_TELEMETRY>
+     <SignCheckTaskAssembly>$(NuGetPackageRoot)Microsoft.DotNet.SignCheck\$(MicrosoftDotNetSignCheckVersion)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckTaskAssembly>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.AsmDiff/Microsoft.DotNet.AsmDiff.csproj b/src/Microsoft.DotNet.AsmDiff/Microsoft.DotNet.AsmDiff.csproj
+index 84cc31bf..2653ea7e 100644
+--- a/src/Microsoft.DotNet.AsmDiff/Microsoft.DotNet.AsmDiff.csproj
++++ b/src/Microsoft.DotNet.AsmDiff/Microsoft.DotNet.AsmDiff.csproj
+@@ -4,7 +4,7 @@
+   <!-- Most of the code has been ported from https://devdiv.visualstudio.com/DevDiv/_git/CoreFxTools repo.-->
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <IsPackable>true</IsPackable>
+     <PackAsTool>true</PackAsTool>
+     <ToolCommandName>dotnet-asmdiff</ToolCommandName>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Archives/Microsoft.DotNet.Build.Tasks.Archives.csproj b/src/Microsoft.DotNet.Build.Tasks.Archives/Microsoft.DotNet.Build.Tasks.Archives.csproj
+index c09d7762..8dce0a84 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Archives/Microsoft.DotNet.Build.Tasks.Archives.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Archives/Microsoft.DotNet.Build.Tasks.Archives.csproj
+@@ -1,7 +1,7 @@
+ ﻿<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+ 
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
+index d782557c..c87e22e8 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/Microsoft.DotNet.Build.Tasks.Feed.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj b/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
+index 0c344554..29c0b3b0 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
+@@ -2,14 +2,14 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <SignAssembly>true</SignAssembly>
+ 
+     <Description>This package provides support for publishing assets to a NuGet protocol based feed.</Description>
+     <DevelopmentDependency>true</DevelopmentDependency>
+     <PackageType>MSBuildSdk</PackageType>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+-    <_ExcludeNuGetAssembliesTargetFramework>netcoreapp3.1</_ExcludeNuGetAssembliesTargetFramework>
++    <_ExcludeNuGetAssembliesTargetFramework>$(TargetFrameworkForNETSDK)</_ExcludeNuGetAssembliesTargetFramework>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets b/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
+index 70f60526..9b2a41ee 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
+@@ -43,7 +43,7 @@
+   
+   <PropertyGroup>
+     <_MicrosoftDotNetBuildTasksFeedTaskDir>$(MSBuildThisFileDirectory)../tools/net472/</_MicrosoftDotNetBuildTasksFeedTaskDir>
+-    <_MicrosoftDotNetBuildTasksFeedTaskDir Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/netcoreapp3.1/</_MicrosoftDotNetBuildTasksFeedTaskDir>
++    <_MicrosoftDotNetBuildTasksFeedTaskDir Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net7.0/</_MicrosoftDotNetBuildTasksFeedTaskDir>
+   </PropertyGroup>
+   <UsingTask TaskName="ConfigureInputFeeds" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
+   <UsingTask TaskName="CopyBlobDirectory" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Installers/Microsoft.DotNet.Build.Tasks.Installers.csproj b/src/Microsoft.DotNet.Build.Tasks.Installers/Microsoft.DotNet.Build.Tasks.Installers.csproj
+index 45eb895e..65df12fe 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Installers/Microsoft.DotNet.Build.Tasks.Installers.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Installers/Microsoft.DotNet.Build.Tasks.Installers.csproj
+@@ -2,7 +2,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <LangVersion>Latest</LangVersion>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props b/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
+index ee0dd7fe..8bbe982a 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
++++ b/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
+@@ -1,6 +1,6 @@
+ <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <PropertyGroup>
+-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
++    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net7.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+     <MicrosoftDotNetBuildTasksInstallersMSBuildDir Condition="'$(MicrosoftDotNetBuildTasksInstallersMSBuildDir)' == ''">$(MSBuildThisFileDirectory)</MicrosoftDotNetBuildTasksInstallersMSBuildDir>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/Microsoft.DotNet.Build.Tasks.Packaging.csproj b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/Microsoft.DotNet.Build.Tasks.Packaging.csproj
+index 57f5cfb9..fcb773c8 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/Microsoft.DotNet.Build.Tasks.Packaging.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/Microsoft.DotNet.Build.Tasks.Packaging.csproj
+@@ -2,8 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <CopyLocalLockFileAssemblies Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))">true</CopyLocalLockFileAssemblies>
++    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)' == '$(TargetFrameworkForNETSDK)'">true</CopyLocalLockFileAssemblies>
+     <PackageType>MSBuildSdk</PackageType>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
+index c9a95a0a..7f864d4e 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
+@@ -5,7 +5,7 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/netcoreapp3.1/</PackagingTaskDir>
++    <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net7.0/</PackagingTaskDir>
+     <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)../tools/net472/</PackagingTaskDir>
+     <RuntimeIdGraphDefinitionFile Condition="'$(RuntimeIdGraphDefinitionFile)' == ''">$(MSBuildThisFileDirectory)runtime.json</RuntimeIdGraphDefinitionFile>
+ 
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
+index 8d8af6a6..d79e49bf 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.targets
+@@ -941,6 +941,10 @@
+     <DefaultValidateFramework Include="net6.0">
+       <RuntimeIDs>@(NETCoreApp60RIDs)</RuntimeIDs>
+     </DefaultValidateFramework>
++    <NETCoreApp70RIDs Condition="'@(NETCoreApp70RIDs)' == ''" Include="@(NETCoreApp60RIDs)" />
++    <DefaultValidateFramework Include="net7.0">
++      <RuntimeIDs>@(NETCoreApp70RIDs)</RuntimeIDs>
++    </DefaultValidateFramework>
+ 
+     <NETCore50RIDs Condition="'@(NETCore50RIDs)' == ''" Include="win10-x86;win10-x86-aot;win10-x64;win10-x64-aot;win10-arm;win10-arm-aot" />
+     <DefaultValidateFramework Include="netcore50">
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/tests/Microsoft.DotNet.Build.Tasks.Packaging.Tests.csproj b/src/Microsoft.DotNet.Build.Tasks.Packaging/tests/Microsoft.DotNet.Build.Tasks.Packaging.Tests.csproj
+index 59733ff3..185c1e52 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/tests/Microsoft.DotNet.Build.Tasks.Packaging.Tests.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/tests/Microsoft.DotNet.Build.Tasks.Packaging.Tests.csproj
+@@ -1,6 +1,6 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <LangVersion>Latest</LangVersion>
+     <SignAssembly>false</SignAssembly>
+     <NoWarn>xUnit2013</NoWarn>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/Microsoft.DotNet.Build.Tasks.TargetFramework.csproj b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/Microsoft.DotNet.Build.Tasks.TargetFramework.csproj
+index 6c1a34e1..5f4eb837 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/Microsoft.DotNet.Build.Tasks.TargetFramework.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/Microsoft.DotNet.Build.Tasks.TargetFramework.csproj
+@@ -2,8 +2,7 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <CopyLocalLockFileAssemblies Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp3.1'))">true</CopyLocalLockFileAssemblies>
++    <CopyLocalLockFileAssemblies Condition="'$(TargetFramework)' == '$(TargetFrameworkForNETSDK)'">true</CopyLocalLockFileAssemblies>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
+     <Title>Configuration system for cross-targeting projects.</Title>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
+index 9c24e29b..5e8b8680 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
++++ b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
+@@ -1,7 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project>
+   <PropertyGroup>
+-    <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">..\tools\netcoreapp3.1\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
++    <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">..\tools\net7.0\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
+     <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">..\tools\net472\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
+   </PropertyGroup>
+ </Project>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Templating/test/Microsoft.DotNet.Build.Tasks.Templating.Tests.csproj b/src/Microsoft.DotNet.Build.Tasks.Templating/test/Microsoft.DotNet.Build.Tasks.Templating.Tests.csproj
+index 6d74739e..b2efa392 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Templating/test/Microsoft.DotNet.Build.Tasks.Templating.Tests.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Templating/test/Microsoft.DotNet.Build.Tasks.Templating.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Workloads.Tests/Microsoft.DotNet.Build.Tasks.Workloads.Tests.csproj b/src/Microsoft.DotNet.Build.Tasks.Workloads.Tests/Microsoft.DotNet.Build.Tasks.Workloads.Tests.csproj
+index 7126eb86..5fe0d0a0 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Workloads.Tests/Microsoft.DotNet.Build.Tasks.Workloads.Tests.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Workloads.Tests/Microsoft.DotNet.Build.Tasks.Workloads.Tests.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk"> 
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj
+index 205b66bf..4a25c6a4 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Microsoft.DotNet.Build.Tasks.Workloads.csproj
+@@ -1,8 +1,13 @@
+ ﻿<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
++    <!--
++      We can't build Microsoft.DotNet.Build.Tasks.Workloads for net472 in source build, since it
++      depends on Microsoft.NET.Sdk.WorkloadManifestReader, and the previously source built
++      version of that package is incompatible with the net472 TFM.
++    -->
++    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <IsPackable>true</IsPackable>
+     <Description>Workload pack installer generation task package</Description>
+diff --git a/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj b/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
+index 84b29562..e1a84b2f 100644
+--- a/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
++++ b/src/Microsoft.DotNet.Deployment.Tasks.Links/Microsoft.DotNet.Deployment.Tasks.Links.csproj
+@@ -2,8 +2,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+ 
+     <IsPackable>true</IsPackable>
+     <Description>Aka.ms link manager</Description>
+diff --git a/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props b/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
+index df3b1fab..90c26a97 100644
+--- a/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
++++ b/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
+@@ -1,6 +1,6 @@
+ <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <PropertyGroup>
+-    <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)netcoreapp3.1\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
++    <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)net7.0\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
+     <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)net472\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj b/src/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj
+index f1c5c0e5..480d88cf 100644
+--- a/src/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj
++++ b/src/Microsoft.DotNet.GenAPI/Microsoft.DotNet.GenAPI.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+     <PackageType>MSBuildSdk</PackageType>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.GenAPI/build/Microsoft.DotNet.GenAPI.targets b/src/Microsoft.DotNet.GenAPI/build/Microsoft.DotNet.GenAPI.targets
+index 65ef0192..48d329cc 100644
+--- a/src/Microsoft.DotNet.GenAPI/build/Microsoft.DotNet.GenAPI.targets
++++ b/src/Microsoft.DotNet.GenAPI/build/Microsoft.DotNet.GenAPI.targets
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <GenAPIAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\..\tools\netcoreapp3.1\Microsoft.DotNet.GenAPI.dll</GenAPIAssembly>
++    <GenAPIAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\..\tools\net7.0\Microsoft.DotNet.GenAPI.dll</GenAPIAssembly>
+     <GenAPIAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)\..\tools\net472\Microsoft.DotNet.GenAPI.exe</GenAPIAssembly>
+ 
+     <!-- Hook onto the TargetsTriggeredByCompilation target which only runs when the compiler is invoked. -->
+diff --git a/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj b/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
+index bca9958d..db51ae17 100644
+--- a/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
++++ b/src/Microsoft.DotNet.GenFacades/Microsoft.DotNet.GenFacades.csproj
+@@ -2,7 +2,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets b/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
+index 9a6f0fee..482f1c6f 100644
+--- a/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
++++ b/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
++    <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net7.0\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
+     <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Git.IssueManager/src/Microsoft.DotNet.Git.IssueManager.csproj b/src/Microsoft.DotNet.Git.IssueManager/src/Microsoft.DotNet.Git.IssueManager.csproj
+index e7f51186..10bdd3b3 100644
+--- a/src/Microsoft.DotNet.Git.IssueManager/src/Microsoft.DotNet.Git.IssueManager.csproj
++++ b/src/Microsoft.DotNet.Git.IssueManager/src/Microsoft.DotNet.Git.IssueManager.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <SignAssembly>false</SignAssembly>
+     <IsPackable>true</IsPackable>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+diff --git a/src/Microsoft.DotNet.GitSync.CommitManager/Microsoft.DotNet.GitSync.CommitManager.csproj b/src/Microsoft.DotNet.GitSync.CommitManager/Microsoft.DotNet.GitSync.CommitManager.csproj
+index f7ffd938..b23966b4 100644
+--- a/src/Microsoft.DotNet.GitSync.CommitManager/Microsoft.DotNet.GitSync.CommitManager.csproj
++++ b/src/Microsoft.DotNet.GitSync.CommitManager/Microsoft.DotNet.GitSync.CommitManager.csproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <LangVersion>latest</LangVersion>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.Helix/JobSender.Tests/Microsoft.DotNet.Helix.JobSender.Tests.csproj b/src/Microsoft.DotNet.Helix/JobSender.Tests/Microsoft.DotNet.Helix.JobSender.Tests.csproj
+index a1d83530..a47be434 100644
+--- a/src/Microsoft.DotNet.Helix/JobSender.Tests/Microsoft.DotNet.Helix.JobSender.Tests.csproj
++++ b/src/Microsoft.DotNet.Helix/JobSender.Tests/Microsoft.DotNet.Helix.JobSender.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj b/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
+index 269bfc77..a84f46cb 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
++++ b/src/Microsoft.DotNet.Helix/Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests/Microsoft.DotNet.Helix.Sdk.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/Microsoft.DotNet.Helix.Sdk.csproj b/src/Microsoft.DotNet.Helix/Sdk/Microsoft.DotNet.Helix.Sdk.csproj
+index 8f8e8303..4382966a 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/Microsoft.DotNet.Helix.Sdk.csproj
++++ b/src/Microsoft.DotNet.Helix/Sdk/Microsoft.DotNet.Helix.Sdk.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+     <LangVersion>latest</LangVersion>
+     <DefaultItemExcludes Condition="'$(TargetFramework)' != 'net472'">**/*.Desktop.*</DefaultItemExcludes>
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props b/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
+index 902a74f8..441fcc7d 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
+@@ -4,7 +4,7 @@
+   <Import Project="$(MSBuildToolsPath)\Microsoft.NETCoreSdk.BundledVersions.props" Condition="Exists('$(MSBuildToolsPath)\Microsoft.NETCoreSdk.BundledVersions.props')" />
+ 
+   <PropertyGroup Condition="'$(MicrosoftDotNetHelixSdkTasksAssembly)' == ''">
+-    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)netcoreapp3.1/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
++    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net7.0/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+     <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)net472/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
+index c188051b..b0525e08 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/xunit-runner/XUnitRunner.targets
+@@ -1,6 +1,6 @@
+ <Project>
+   <PropertyGroup>
+-    <XUnitPublishTargetFramework Condition="'$(XUnitPublishTargetFramework)' == ''">netcoreapp3.1</XUnitPublishTargetFramework>
++    <XUnitPublishTargetFramework Condition="'$(XUnitPublishTargetFramework)' == ''">net7.0</XUnitPublishTargetFramework>
+     <XUnitRuntimeTargetFramework Condition="'$(XUnitRuntimeTargetFramework)' == ''">netcoreapp2.0</XUnitRuntimeTargetFramework>
+ 
+     <XUnitRunnerVersion Condition="'$(XUnitRunnerVersion)' == ''">2.4.2-pre.9</XUnitRunnerVersion>
+diff --git a/src/Microsoft.DotNet.Internal.DependencyInjection.Testing/Microsoft.DotNet.Internal.DependencyInjection.Testing.csproj b/src/Microsoft.DotNet.Internal.DependencyInjection.Testing/Microsoft.DotNet.Internal.DependencyInjection.Testing.csproj
+index b7b9c46b..341f28fb 100644
+--- a/src/Microsoft.DotNet.Internal.DependencyInjection.Testing/Microsoft.DotNet.Internal.DependencyInjection.Testing.csproj
++++ b/src/Microsoft.DotNet.Internal.DependencyInjection.Testing/Microsoft.DotNet.Internal.DependencyInjection.Testing.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj b/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
+index d00c49a4..06bdd87a 100644
+--- a/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
++++ b/src/Microsoft.DotNet.NuGetRepack/tasks/Microsoft.DotNet.NuGetRepack.Tasks.csproj
+@@ -1,8 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+ 
+     <IsPackable>true</IsPackable>
+     <PackageType>MSBuildSdk</PackageType>
+diff --git a/src/Microsoft.DotNet.NuGetRepack/tests/Microsoft.DotNet.NuGetRepack.Tests.csproj b/src/Microsoft.DotNet.NuGetRepack/tests/Microsoft.DotNet.NuGetRepack.Tests.csproj
+index ad1d93e7..a79696bd 100644
+--- a/src/Microsoft.DotNet.NuGetRepack/tests/Microsoft.DotNet.NuGetRepack.Tests.csproj
++++ b/src/Microsoft.DotNet.NuGetRepack/tests/Microsoft.DotNet.NuGetRepack.Tests.csproj
+@@ -1,7 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+   </PropertyGroup>
+   <ItemGroup>
+     <Compile Remove="Resources\*.cs" />
+diff --git a/src/Microsoft.DotNet.PackageTesting.Tests/Microsoft.DotNet.PackageTesting.Tests.csproj b/src/Microsoft.DotNet.PackageTesting.Tests/Microsoft.DotNet.PackageTesting.Tests.csproj
+index 6fde42f0..2030f2df 100644
+--- a/src/Microsoft.DotNet.PackageTesting.Tests/Microsoft.DotNet.PackageTesting.Tests.csproj
++++ b/src/Microsoft.DotNet.PackageTesting.Tests/Microsoft.DotNet.PackageTesting.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj b/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
+index 824dc8b6..39e78efa 100644
+--- a/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
++++ b/src/Microsoft.DotNet.PackageTesting/Microsoft.DotNet.PackageTesting.csproj
+@@ -1,8 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+     <IncludeBuildOutput>false</IncludeBuildOutput>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props b/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
+index 95155e2c..b031565c 100644
+--- a/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
++++ b/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
+@@ -1,7 +1,7 @@
+ <Project>
+   <PropertyGroup>
+     <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
+-    <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
++    <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net7.0\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
+   </PropertyGroup>
+ 
+   <UsingTask TaskName="GetCompatiblePackageTargetFrameworks" AssemblyFile="$(DotNetPackageTestingAssembly)" />
+diff --git a/src/Microsoft.DotNet.RemoteExecutor/src/Microsoft.DotNet.RemoteExecutor.csproj b/src/Microsoft.DotNet.RemoteExecutor/src/Microsoft.DotNet.RemoteExecutor.csproj
+index 8da0c48f..9f2d2c9c 100644
+--- a/src/Microsoft.DotNet.RemoteExecutor/src/Microsoft.DotNet.RemoteExecutor.csproj
++++ b/src/Microsoft.DotNet.RemoteExecutor/src/Microsoft.DotNet.RemoteExecutor.csproj
+@@ -4,7 +4,7 @@
+     <!-- On .NET Framework and .NET Core we use this assembly as both a library and as an executable. -->
+     <OutputType>Exe</OutputType>
+     <!-- Since RemoteExecutor is a standalone library, we can target a lower version of .NET than the rest of arcade. -->
+-    <TargetFrameworks>netcoreapp3.1;net461</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net461</TargetFrameworks>
+     <Description>This package provides support for running tests out-of-process.</Description>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.RemoteExecutor/tests/Microsoft.DotNet.RemoteExecutor.Tests.csproj b/src/Microsoft.DotNet.RemoteExecutor/tests/Microsoft.DotNet.RemoteExecutor.Tests.csproj
+index 207a4635..443f35db 100644
+--- a/src/Microsoft.DotNet.RemoteExecutor/tests/Microsoft.DotNet.RemoteExecutor.Tests.csproj
++++ b/src/Microsoft.DotNet.RemoteExecutor/tests/Microsoft.DotNet.RemoteExecutor.Tests.csproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <LangVersion>Latest</LangVersion>
+     <SignAssembly>false</SignAssembly>
+     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj b/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
+index 9627a033..185c968f 100644
+--- a/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
++++ b/src/Microsoft.DotNet.SharedFramework.Sdk/Microsoft.DotNet.SharedFramework.Sdk.csproj
+@@ -1,8 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <LangVersion>preview</LangVersion>
+     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+ 
+diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+index deee11c0..0b1ef5fe 100644
+--- a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
++++ b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+@@ -8,9 +8,7 @@
+   -->
+ 
+   <PropertyGroup Condition="'$(DotNetSharedFrameworkTaskDir)' == ''">
+-    <!-- Workaround for https://github.com/dotnet/arcade/issues/7413 -->
+-    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core' and Exists('$(MSBuildThisFileDirectory)../tools/net6.0/')">$(MSBuildThisFileDirectory)../tools/net6.0/</DotNetSharedFrameworkTaskDir>
+-    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core' and '$(DotNetSharedFrameworkTaskDir)' == ''">$(MSBuildThisFileDirectory)../tools/netcoreapp3.1/</DotNetSharedFrameworkTaskDir>
++    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net7.0/</DotNetSharedFrameworkTaskDir>
+     <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)../tools/net472/</DotNetSharedFrameworkTaskDir>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SignTool.Tests/Microsoft.DotNet.SignTool.Tests.csproj b/src/Microsoft.DotNet.SignTool.Tests/Microsoft.DotNet.SignTool.Tests.csproj
+index 5892d29c..fa510120 100644
+--- a/src/Microsoft.DotNet.SignTool.Tests/Microsoft.DotNet.SignTool.Tests.csproj
++++ b/src/Microsoft.DotNet.SignTool.Tests/Microsoft.DotNet.SignTool.Tests.csproj
+@@ -1,7 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <LangVersion>Latest</LangVersion>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj b/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
+index 7a89dfe9..4ca226fa 100644
+--- a/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
++++ b/src/Microsoft.DotNet.SignTool/Microsoft.DotNet.SignTool.csproj
+@@ -1,8 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <LangVersion>Latest</LangVersion>
+     <IsPackable>true</IsPackable>
+diff --git a/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props b/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
+index e2fa1875..c24ab6a4 100644
+--- a/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
++++ b/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
+@@ -1,6 +1,6 @@
+ <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+   <PropertyGroup>
+-    <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
++    <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net7.0\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
+     <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SourceBuild/tasks/Microsoft.DotNet.SourceBuild.Tasks.csproj b/src/Microsoft.DotNet.SourceBuild/tasks/Microsoft.DotNet.SourceBuild.Tasks.csproj
+index 19338cd0..3b902162 100644
+--- a/src/Microsoft.DotNet.SourceBuild/tasks/Microsoft.DotNet.SourceBuild.Tasks.csproj
++++ b/src/Microsoft.DotNet.SourceBuild/tasks/Microsoft.DotNet.SourceBuild.Tasks.csproj
+@@ -2,7 +2,6 @@
+ 
+   <PropertyGroup>
+     <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props b/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
+index 388b641b..ac8d88cb 100644
+--- a/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
++++ b/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
+@@ -1,7 +1,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
++    <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\net7.0\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
+     <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)..\tools\net472\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SourceBuild/tests/Microsoft.DotNet.SourceBuild.Tasks.Tests.csproj b/src/Microsoft.DotNet.SourceBuild/tests/Microsoft.DotNet.SourceBuild.Tasks.Tests.csproj
+index 585f9b6c..73b4bc7a 100644
+--- a/src/Microsoft.DotNet.SourceBuild/tests/Microsoft.DotNet.SourceBuild.Tasks.Tests.csproj
++++ b/src/Microsoft.DotNet.SourceBuild/tests/Microsoft.DotNet.SourceBuild.Tasks.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <LangVersion>Latest</LangVersion>
+     <SignAssembly>false</SignAssembly>
+     <!-- Allow these tests to run on a later (e.g. 5.0) runtime if an exact match isn't present. -->
+diff --git a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.CmdLine/Microsoft.DotNet.SwaggerGenerator.CmdLine.csproj b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.CmdLine/Microsoft.DotNet.SwaggerGenerator.CmdLine.csproj
+index 040681f0..6e2dfb91 100644
+--- a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.CmdLine/Microsoft.DotNet.SwaggerGenerator.CmdLine.csproj
++++ b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.CmdLine/Microsoft.DotNet.SwaggerGenerator.CmdLine.csproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <LangVersion>latest</LangVersion>
+     <IsPackable>true</IsPackable>
+     <PackAsTool>true</PackAsTool>
+diff --git a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/Microsoft.DotNet.SwaggerGenerator.MSBuild.csproj b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/Microsoft.DotNet.SwaggerGenerator.MSBuild.csproj
+index d9c92072..0fd303ac 100644
+--- a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/Microsoft.DotNet.SwaggerGenerator.MSBuild.csproj
++++ b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/Microsoft.DotNet.SwaggerGenerator.MSBuild.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+ 
+     <IsPackable>true</IsPackable>
+     <Description>This package provides support for generating client library code from a swagger document.</Description>
+diff --git a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
+index 07c403ff..6242369f 100644
+--- a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
++++ b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
+@@ -1,6 +1,6 @@
+ <Project>
+   <PropertyGroup Condition="'$(MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly)' == ''">
+-    <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/netcoreapp3.1/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
++    <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net7.0/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
+     <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../tools/net472/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj b/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
+index 8486e254..df3652e6 100644
+--- a/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
++++ b/src/Microsoft.DotNet.VersionTools.Tasks.Tests/Microsoft.DotNet.VersionTools.Tasks.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK)</TargetFrameworks>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+index 2dfa124f..0834f939 100644
+--- a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
++++ b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+@@ -1,8 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;netcoreapp3.1</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0</TargetFrameworks>
++    <TargetFrameworks>net472;$(TargetFrameworkForNETSDK)</TargetFrameworks>
+     <PackageType>MSBuildSdk</PackageType>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.VersionTools/tasks/build/Microsoft.DotNet.VersionTools.Tasks.props b/src/Microsoft.DotNet.VersionTools/tasks/build/Microsoft.DotNet.VersionTools.Tasks.props
+index 02b8ca19..80b27d2a 100644
+--- a/src/Microsoft.DotNet.VersionTools/tasks/build/Microsoft.DotNet.VersionTools.Tasks.props
++++ b/src/Microsoft.DotNet.VersionTools/tasks/build/Microsoft.DotNet.VersionTools.Tasks.props
+@@ -2,7 +2,7 @@
+ <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetVersionToolsTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\$(MSBuildThisFileName).dll</MicrosoftDotNetVersionToolsTasksAssembly>
++    <MicrosoftDotNetVersionToolsTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\net7.0\$(MSBuildThisFileName).dll</MicrosoftDotNetVersionToolsTasksAssembly>
+     <MicrosoftDotNetVersionToolsTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)..\tools\net472\$(MSBuildThisFileName).dll</MicrosoftDotNetVersionToolsTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.VersionTools/tests/Microsoft.DotNet.VersionTools.Tests.csproj b/src/Microsoft.DotNet.VersionTools/tests/Microsoft.DotNet.VersionTools.Tests.csproj
+index 98a49f74..9163fe16 100644
+--- a/src/Microsoft.DotNet.VersionTools/tests/Microsoft.DotNet.VersionTools.Tests.csproj
++++ b/src/Microsoft.DotNet.VersionTools/tests/Microsoft.DotNet.VersionTools.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Microsoft.DotNet.XUnitConsoleRunner/src/Microsoft.DotNet.XUnitConsoleRunner.csproj b/src/Microsoft.DotNet.XUnitConsoleRunner/src/Microsoft.DotNet.XUnitConsoleRunner.csproj
+index 78a8ff69..b06bf3de 100644
+--- a/src/Microsoft.DotNet.XUnitConsoleRunner/src/Microsoft.DotNet.XUnitConsoleRunner.csproj
++++ b/src/Microsoft.DotNet.XUnitConsoleRunner/src/Microsoft.DotNet.XUnitConsoleRunner.csproj
+@@ -6,7 +6,7 @@
+     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+     <OutputType>Exe</OutputType>
+     <RootNamespace>Xunit.ConsoleClient</RootNamespace>
+-    <TargetFramework>netcoreapp3.1</TargetFramework>
++    <TargetFramework>$(TargetFrameworkForNETSDK)</TargetFramework>
+     <IsPackable>true</IsPackable>
+     <VersionPrefix>2.5.1</VersionPrefix>
+     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+diff --git a/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props b/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
+index 323fc650..ff3eb99a 100644
+--- a/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
++++ b/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
+@@ -1,7 +1,7 @@
+ <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+ 
+   <PropertyGroup>
+-    <XunitConsoleNetCore21AppPath>$(MSBuildThisFileDirectory)..\tools\netcoreapp3.1\xunit.console.dll</XunitConsoleNetCore21AppPath>
++    <XunitConsoleNetCore21AppPath>$(MSBuildThisFileDirectory)..\tools\net7.0\xunit.console.dll</XunitConsoleNetCore21AppPath>
+   </PropertyGroup>
+ 
+ </Project>
+diff --git a/src/Microsoft.DotNet.XUnitExtensions/tests/Microsoft.DotNet.XUnitExtensions.Tests.csproj b/src/Microsoft.DotNet.XUnitExtensions/tests/Microsoft.DotNet.XUnitExtensions.Tests.csproj
+index 6e75bc52..65e4fcc9 100644
+--- a/src/Microsoft.DotNet.XUnitExtensions/tests/Microsoft.DotNet.XUnitExtensions.Tests.csproj
++++ b/src/Microsoft.DotNet.XUnitExtensions/tests/Microsoft.DotNet.XUnitExtensions.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>netcoreapp3.1;net472</TargetFrameworks>
++    <TargetFrameworks>$(TargetFrameworkForNETSDK);net472</TargetFrameworks>
+     <IsPackable>false</IsPackable>
+   </PropertyGroup>
+ 
+diff --git a/tests/UnitTests.proj b/tests/UnitTests.proj
+index b200bcfd..4309c560 100644
+--- a/tests/UnitTests.proj
++++ b/tests/UnitTests.proj
+@@ -3,7 +3,7 @@
+   <!-- Using locally built version of the helix sdk, normal projects replace the below Import and PropertyGroup with the SDK import above-->
+   <Import Project="$(MSBuildThisFileDirectory)\..\src\Microsoft.DotNet.Helix\Sdk\sdk\Sdk.props"/>
+   <PropertyGroup>
+-    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/netcoreapp3.1/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
++    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/net7.0/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+     <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/net472/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/tests/XHarness.Tests.Common.props b/tests/XHarness.Tests.Common.props
+index 616bc559..77fcf978 100644
+--- a/tests/XHarness.Tests.Common.props
++++ b/tests/XHarness.Tests.Common.props
+@@ -7,7 +7,7 @@
+    -->
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/netcoreapp3.1/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
++    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/net7.0/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+     <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../artifacts/bin/Microsoft.DotNet.Helix.Sdk/$(Configuration)/net472/publish/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+   </PropertyGroup>
+ 
