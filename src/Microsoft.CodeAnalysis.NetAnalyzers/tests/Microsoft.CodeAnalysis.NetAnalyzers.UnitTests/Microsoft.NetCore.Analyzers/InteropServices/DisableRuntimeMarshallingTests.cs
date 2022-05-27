@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DisableRuntimeMarshallingAnalyzer,
@@ -736,6 +737,70 @@ class C
 }
 ";
             await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        [WorkItem(5995, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
+        public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_MarshalAPIUsage_Emits_Diagnostic()
+        {
+            string delegateDefinition = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+public delegate string DelegateType();
+";
+
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+
+class C
+{
+    public static void M(DelegateType d, IntPtr i)
+    {
+        _ = Marshal.GetFunctionPointerForDelegate((Delegate){|CA1420:d|});
+        _ = Marshal.GetFunctionPointerForDelegate({|CA1420:d|});
+        _ = Marshal.GetDelegateForFunctionPointer(i, {|CA1420:typeof(DelegateType)|});
+        _ = {|CA1420:Marshal.GetDelegateForFunctionPointer<DelegateType>(i)|};
+    }
+}
+";
+            await VerifyCSAnalyzerWithAdditionalSourceAsync(source, delegateDefinition);
+            await VerifyCSAnalyzerWithAdditionalAssemblyAsync(source, delegateDefinition);
+        }
+
+        [Fact]
+        [WorkItem(5995, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
+        public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_PInvokeUsage_Emits_Diagnostic()
+        {
+            string delegateDefinition = @"
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+public delegate string DelegateType();
+";
+
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+
+class C
+{
+    [DllImport(""Native"")]
+    public static extern void PInvoke(DelegateType {|CA1420:d|});
+    [DllImport(""Native"")]
+    public static extern DelegateType {|CA1420:PInvoke|}();
+    [DllImport(""Native"")]
+    public static extern void PInvokeArray(DelegateType[] {|CA1420:d|});
+    [DllImport(""Native"")]
+    public static extern DelegateType[] {|CA1420:PInvokeArray|}();
+}
+";
+            await VerifyCSAnalyzerWithAdditionalAssemblyAsync(source, delegateDefinition);
         }
 
         [Fact]
@@ -1492,6 +1557,44 @@ Structure S
 End Structure
 ";
             await VerifyVBAnalyzerAsync(source);
+        }
+
+        private static async Task VerifyCSAnalyzerWithAdditionalSourceAsync(string source, string additionalSourceFile)
+        {
+            var test = new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp9,
+                ReferenceAssemblies = new ReferenceAssemblies("net7.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "7.0.0-preview.1.22075.6"), Path.Combine("ref", "net7.0"))
+                    .WithNuGetConfigFilePath(Path.Combine(Path.GetDirectoryName(typeof(DisableRuntimeMarshallingTests).Assembly.Location), "NuGet.config")),
+                TestCode = source,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor
+            };
+
+            test.TestState.Sources.Add(additionalSourceFile);
+
+            await test.RunAsync();
+        }
+        private static async Task VerifyCSAnalyzerWithAdditionalAssemblyAsync(string source, string additionalReferencedAssemblySource)
+        {
+            var test = new VerifyCS.Test
+            {
+                LanguageVersion = LanguageVersion.CSharp9,
+                ReferenceAssemblies = new ReferenceAssemblies("net7.0", new PackageIdentity("Microsoft.NETCore.App.Ref", "7.0.0-preview.1.22075.6"), Path.Combine("ref", "net7.0"))
+                    .WithNuGetConfigFilePath(Path.Combine(Path.GetDirectoryName(typeof(DisableRuntimeMarshallingTests).Assembly.Location), "NuGet.config")),
+                TestCode = source,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor
+            };
+
+            const string AdditionalAssemblyName = "AdditionalAssembly";
+
+            var additionalProject = new ProjectState(AdditionalAssemblyName, LanguageNames.CSharp, "Additional_", ".cs");
+
+            additionalProject.Sources.Add(additionalReferencedAssemblySource);
+
+            test.TestState.AdditionalProjects.Add(AdditionalAssemblyName, additionalProject);
+            test.TestState.AdditionalProjectReferences.Add(AdditionalAssemblyName);
+
+            await test.RunAsync();
         }
 
         private static Task VerifyCSAnalyzerAsync(string source, bool allowUnsafeBlocks = false)
