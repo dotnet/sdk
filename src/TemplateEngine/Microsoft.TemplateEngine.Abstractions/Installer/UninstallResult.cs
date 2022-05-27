@@ -10,7 +10,20 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class UninstallResult : InstallerOperationResult
     {
-        private UninstallResult() { }
+        private UninstallResult(IManagedTemplatePackage templatePackage)
+            : base(templatePackage)
+        {
+            TemplatePackage = templatePackage;
+        }
+
+        private UninstallResult(InstallerErrorCode error, string errorMessage, IManagedTemplatePackage templatePackage)
+             : base(error, errorMessage, templatePackage)
+        {
+            TemplatePackage = templatePackage;
+        }
+
+        /// <inheritdoc/>
+        public override IManagedTemplatePackage TemplatePackage { get; }
 
         /// <summary>
         /// Creates successful result for the operation.
@@ -19,11 +32,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static UninstallResult CreateSuccess(IManagedTemplatePackage templatePackage)
         {
-            return new UninstallResult()
-            {
-                Error = InstallerErrorCode.Success,
-                TemplatePackage = templatePackage
-            };
+            return new UninstallResult(templatePackage);
         }
 
         /// <summary>
@@ -35,12 +44,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static UninstallResult CreateFailure(IManagedTemplatePackage templatePackage, InstallerErrorCode error, string localizedFailureMessage)
         {
-            return new UninstallResult()
-            {
-                TemplatePackage = templatePackage,
-                Error = error,
-                ErrorMessage = localizedFailureMessage
-            };
+            return new UninstallResult(error, localizedFailureMessage, templatePackage);
         }
     }
 }

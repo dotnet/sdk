@@ -18,6 +18,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
         /// <param name="mountPointUri">Valid <see cref="System.Uri"/> that represents mount point.</param>
         /// <param name="mountPoint">Resulting mount point.</param>
         /// <returns><c>true</c> if mount point was successfully mounted.</returns>
-        bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint);
+        bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint? parent, string mountPointUri, out IMountPoint mountPoint);
     }
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Template
@@ -89,6 +90,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     //resultIfParameterCreationFailed is not null when TryCreateParameterSet is false
                     return resultIfParameterCreationFailed!;
                 }
+                if (effectParams is null)
+                {
+                    throw new InvalidOperationException($"{nameof(effectParams)} cannot be null when {nameof(TryCreateParameterSet)} returns 'true'");
+                }
 
                 ICreationEffects creationEffects = await template.Generator.GetCreationEffectsAsync(
                     _environmentSettings,
@@ -118,6 +123,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 if (!TryCreateParameterSet(template, realName!, inputParameters, out IParameterSet? creationParams, out resultIfParameterCreationFailed))
                 {
                     return resultIfParameterCreationFailed!;
+                }
+
+                if (creationParams is null)
+                {
+                    throw new InvalidOperationException($"{nameof(creationParams)} cannot be null when {nameof(TryCreateParameterSet)} returns 'true'");
                 }
 
                 if (!dryRun)
@@ -211,9 +221,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (host.TryGetHostParamDefault(param.Name, out string? hostParamValue) && hostParamValue != null)
                 {
-                    object resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, hostParamValue, out bool valueResolutionError);
+                    object? resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, hostParamValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
+                        if (resolvedValue is null)
+                        {
+                            throw new InvalidOperationException($"{nameof(resolvedValue)} cannot be null when {nameof(valueResolutionError)} is 'false'.");
+                        }
                         templateParams.ResolvedValues[param] = resolvedValue;
                     }
                     else
@@ -223,9 +237,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 }
                 else if (param.Priority != TemplateParameterPriority.Required && param.DefaultValue != null)
                 {
-                    object resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, param.DefaultValue, out bool valueResolutionError);
+                    object? resolvedValue = templateInfo.Generator.ConvertParameterValueToType(_environmentSettings, param, param.DefaultValue, out bool valueResolutionError);
                     if (!valueResolutionError)
                     {
+                        if (resolvedValue is null)
+                        {
+                            throw new InvalidOperationException($"{nameof(resolvedValue)} cannot be null when {nameof(valueResolutionError)} is 'false'.");
+                        }
                         templateParams.ResolvedValues[param] = resolvedValue;
                     }
                     else
@@ -261,10 +279,18 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     if (inputParam.Value == null)
                     {
                         if (!string.IsNullOrEmpty(paramFromTemplate.DefaultIfOptionWithoutValue))
-                        {
-                            templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, paramFromTemplate.DefaultIfOptionWithoutValue, out bool valueResolutionError);
+{
+                            object? resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, paramFromTemplate.DefaultIfOptionWithoutValue!, out bool valueResolutionError);
+                            if (!valueResolutionError)
+                            {
+                                if (resolvedValue is null)
+                                {
+                                    throw new InvalidOperationException($"{nameof(resolvedValue)} cannot be null when {nameof(valueResolutionError)} is 'false'.");
+                                }
+                                templateParams.ResolvedValues[paramFromTemplate] = resolvedValue;
+                            }
                             // don't fail on value resolution errors, but report them as authoring problems.
-                            if (valueResolutionError)
+                            else
                             {
                                 _logger.LogDebug($"Template {template.Identity} has an invalid DefaultIfOptionWithoutValue value for parameter {inputParam.Key}");
                             }
@@ -276,8 +302,16 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     }
                     else
                     {
-                        templateParams.ResolvedValues[paramFromTemplate] = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, inputParam.Value, out bool valueResolutionError);
-                        if (valueResolutionError)
+                        object? resolvedValue = template.Generator.ConvertParameterValueToType(_environmentSettings, paramFromTemplate, inputParam.Value, out bool valueResolutionError);
+                        if (!valueResolutionError)
+                        {
+                            if (resolvedValue is null)
+                            {
+                                throw new InvalidOperationException($"{nameof(resolvedValue)} cannot be null when {nameof(valueResolutionError)} is 'false'.");
+                            }
+                            templateParams.ResolvedValues[paramFromTemplate] = resolvedValue;
+                        }
+                        else
                         {
                             tmpParamsWithInvalidValues.Add(paramFromTemplate.Name);
                         }
@@ -307,9 +341,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return null;
             }
             IFile config = mountPoint!.FileInfo(info.ConfigPlace);
-            IFile? localeConfig = string.IsNullOrEmpty(info.LocaleConfigPlace) ? null : mountPoint.FileInfo(info.LocaleConfigPlace);
-            IFile? hostTemplateConfigFile = string.IsNullOrEmpty(info.HostConfigPlace) ? null : mountPoint.FileInfo(info.HostConfigPlace);
-            ITemplate template;
+            IFile? localeConfig = string.IsNullOrEmpty(info.LocaleConfigPlace) ? null : mountPoint.FileInfo(info.LocaleConfigPlace!);
+            IFile? hostTemplateConfigFile = string.IsNullOrEmpty(info.HostConfigPlace) ? null : mountPoint.FileInfo(info.HostConfigPlace!);
+            ITemplate? template;
             using (Timing.Over(_environmentSettings.Host.Logger, $"Template from config {config.MountPoint.MountPointUri}{config.FullPath}"))
             {
                 if (generator!.TryGetTemplateFromConfigInfo(config, out template, localeConfig, hostTemplateConfigFile, baselineName))

@@ -50,6 +50,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             CancellationToken cancellationToken)
         {
             RunnableProjectConfig templateConfig = (RunnableProjectConfig)templateData;
+
+            if (templateData.TemplateSourceRoot is null)
+            {
+                throw new Exception($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
+            }
             return CreateAsync(
                 environmentSettings,
                 templateConfig,

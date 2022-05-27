@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="hostTemplateConfigFile">host template configuration file.</param>
         /// <param name="baselineName">baseline to load.</param>
         /// <returns>true if <paramref name="template"/> can be read, false otherwise.</returns>
-        bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate template, IFileSystemInfo localeConfig, IFile hostTemplateConfigFile, string baselineName = null);
+        bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate? template, IFileSystemInfo? localeConfig, IFile? hostTemplateConfigFile, string? baselineName = null);
 
         /// <summary>
         /// Scans the given mount point <paramref name="source"/> for templates and returns the list of <see cref="ITemplate"/>s that are found.
@@ -84,6 +84,6 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="untypedValue">the value to be converted to parameter type.</param>
         /// <param name="valueResolutionError">true if value could not be converted, false otherwise.</param>
         /// <returns>the converted <paramref name="untypedValue"/> value to the type of <paramref name="parameter"/> or null if the value cannot be converted.</returns>
-        object ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
+        object? ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
     }
 }

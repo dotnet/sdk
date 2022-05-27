@@ -10,21 +10,34 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public abstract class InstallerOperationResult
     {
+        protected InstallerOperationResult(InstallerErrorCode error, string? errorMessage, IManagedTemplatePackage? templatePackage = null)
+        {
+            Error = error;
+            ErrorMessage = errorMessage;
+            TemplatePackage = templatePackage;
+        }
+
+        protected InstallerOperationResult(IManagedTemplatePackage managedTemplatePackage)
+        {
+            Error = InstallerErrorCode.Success;
+            TemplatePackage = managedTemplatePackage;
+        }
+
         /// <summary>
         /// Error code, <seealso cref="InstallerErrorCode"/>.
         /// <see cref="InstallerErrorCode.Success"/> if the operation completed successfully.
         /// </summary>
-        public InstallerErrorCode Error { get; protected set; }
+        public InstallerErrorCode Error { get; }
 
         /// <summary>
         /// Error message for failed operation. Not set if the operation completed successfully.
         /// </summary>
-        public string ErrorMessage { get; protected set; }
+        public string? ErrorMessage { get; }
 
         /// <summary>
         /// <see cref="IManagedTemplatePackage"/> processed by the operation.
         /// </summary>
-        public IManagedTemplatePackage TemplatePackage { get; protected set; }
+        public virtual IManagedTemplatePackage? TemplatePackage { get; }
 
         /// <summary>
         /// Indicates if the operation completed successfully.

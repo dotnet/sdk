@@ -220,6 +220,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 return updateResult;
             }
+
+            if (updateResult.TemplatePackage is null)
+            {
+                throw new InvalidOperationException($"{nameof(updateResult.TemplatePackage)} cannot be null when {nameof(updateResult.Success)} is 'true'");
+            }
+
             lock (packages)
             {
                 packages.Add(((ISerializableInstaller)updateRequest.TemplatePackage.Installer).Serialize(updateResult.TemplatePackage));
@@ -255,6 +261,10 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 UninstallResult uninstallResult = await installer.UninstallAsync(packageToBeUpdated, this, cancellationToken).ConfigureAwait(false);
                 if (!uninstallResult.Success)
                 {
+                    if (uninstallResult.ErrorMessage is null)
+                    {
+                        throw new InvalidOperationException($"{nameof(uninstallResult.ErrorMessage)} cannot be null when {nameof(uninstallResult.Success)} is 'true'");
+                    }
                     return (InstallerErrorCode.UpdateUninstallFailed, uninstallResult.ErrorMessage);
                 }
                 _logger.LogInformation(
@@ -292,6 +302,11 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
             {
                 return installResult;
             }
+            if (installResult.TemplatePackage is null)
+            {
+                throw new InvalidOperationException($"{nameof(installResult.TemplatePackage)} cannot be null when {nameof(installResult.Success)} is 'true'");
+            }
+
             lock (packages)
             {
                 packages.Add(((ISerializableInstaller)installer).Serialize(installResult.TemplatePackage));

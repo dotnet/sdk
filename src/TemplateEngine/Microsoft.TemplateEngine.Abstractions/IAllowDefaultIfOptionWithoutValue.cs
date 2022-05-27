@@ -8,6 +8,6 @@ namespace Microsoft.TemplateEngine.Abstractions
     [Obsolete("Use DefaultIfOptionWithoutValue property of ITemplateParameter interface instead.")]
     public interface IAllowDefaultIfOptionWithoutValue
     {
-        string DefaultIfOptionWithoutValue { get; set; }
+        string? DefaultIfOptionWithoutValue { get; set; }
     }
 }

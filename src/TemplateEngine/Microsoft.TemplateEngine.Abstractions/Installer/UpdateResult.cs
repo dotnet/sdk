@@ -10,7 +10,23 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class UpdateResult : InstallerOperationResult
     {
-        private UpdateResult() { }
+        private UpdateResult(UpdateRequest request, IManagedTemplatePackage templatePackage)
+            : base(templatePackage)
+        {
+            UpdateRequest = request;
+        }
+
+        private UpdateResult(UpdateRequest request, InstallerErrorCode error, string errorMessage)
+             : base(error, errorMessage)
+        {
+            UpdateRequest = request;
+        }
+
+        private UpdateResult(UpdateRequest request, InstallResult installResult)
+            : base(installResult.Error, installResult.ErrorMessage, installResult.TemplatePackage)
+        {
+            UpdateRequest = request;
+        }
 
         /// <summary>
         /// <see cref="UpdateRequest"/> processed by <see cref="IInstaller.UpdateAsync"/> operation.
@@ -25,12 +41,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static UpdateResult CreateSuccess(UpdateRequest request, IManagedTemplatePackage templatePackage)
         {
-            return new UpdateResult()
-            {
-                UpdateRequest = request,
-                Error = InstallerErrorCode.Success,
-                TemplatePackage = templatePackage
-            };
+            return new UpdateResult(request, templatePackage);
         }
 
         /// <summary>
@@ -42,12 +53,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static UpdateResult CreateFailure(UpdateRequest request, InstallerErrorCode error, string localizedFailureMessage)
         {
-            return new UpdateResult()
-            {
-                UpdateRequest = request,
-                Error = error,
-                ErrorMessage = localizedFailureMessage
-            };
+            return new UpdateResult(request, error, localizedFailureMessage);
         }
 
         /// <summary>
@@ -58,13 +64,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static UpdateResult FromInstallResult(UpdateRequest request, InstallResult installResult)
         {
-            return new UpdateResult()
-            {
-                UpdateRequest = request,
-                TemplatePackage = installResult.TemplatePackage,
-                Error = installResult.Error,
-                ErrorMessage = installResult.ErrorMessage
-            };
+            return new UpdateResult(request, installResult);
         }
     }
 }

@@ -10,7 +10,17 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class InstallResult : InstallerOperationResult
     {
-        private InstallResult() { }
+        private InstallResult(InstallRequest request, IManagedTemplatePackage templatePackage)
+            : base(templatePackage)
+        {
+            InstallRequest = request;
+        }
+
+        private InstallResult(InstallRequest request, InstallerErrorCode error, string errorMessage)
+             : base(error, errorMessage)
+        {
+            InstallRequest = request;
+        }
 
         /// <summary>
         /// <see cref="InstallRequest"/> processed by <see cref="IInstaller.InstallAsync"/> operation.
@@ -25,12 +35,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static InstallResult CreateSuccess(InstallRequest request, IManagedTemplatePackage templatePackage)
         {
-            return new InstallResult()
-            {
-                InstallRequest = request,
-                Error = InstallerErrorCode.Success,
-                TemplatePackage = templatePackage
-            };
+            return new InstallResult(request, templatePackage);
         }
 
         /// <summary>
@@ -42,12 +47,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static InstallResult CreateFailure(InstallRequest request, InstallerErrorCode error, string localizedFailureMessage)
         {
-            return new InstallResult()
-            {
-                InstallRequest = request,
-                Error = error,
-                ErrorMessage = localizedFailureMessage
-            };
+            return new InstallResult(request, error, localizedFailureMessage);
         }
     }
 }

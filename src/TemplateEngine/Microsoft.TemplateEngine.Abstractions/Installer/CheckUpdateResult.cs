@@ -10,18 +10,33 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
     /// </summary>
     public sealed class CheckUpdateResult : InstallerOperationResult
     {
-        private CheckUpdateResult() { }
+        private CheckUpdateResult(string? latestVersion, bool isLatest, IManagedTemplatePackage templatePackage)
+            : base(templatePackage)
+        {
+            TemplatePackage = templatePackage;
+            LatestVersion = latestVersion;
+            IsLatestVersion = isLatest;
+        }
+
+        private CheckUpdateResult(InstallerErrorCode error, string errorMessage, IManagedTemplatePackage templatePackage)
+             : base(error, errorMessage, templatePackage)
+        {
+            TemplatePackage = templatePackage;
+        }
 
         /// <summary>
         /// The latest version for the template package identified as the result of update check.
         /// </summary>
-        public string LatestVersion { get; private set; }
+        public string? LatestVersion { get; private set; }
 
         /// <summary>
         /// True when the template package is already at the latest version.
         /// </summary>
         /// <remarks>In some cases the version installed can be higher then identified during update check. Since only installer can correctly compare the versions, the installer returns the result if the version is latest rather than letting the caller determine it using string comparison.</remarks>
         public bool IsLatestVersion { get; private set; }
+
+        /// <inheritdoc/>
+        public override IManagedTemplatePackage TemplatePackage { get; }
 
         /// <summary>
         /// Creates successful result for the operation.
@@ -30,15 +45,9 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <param name="version">the latest version of the package.</param>
         /// <param name="isLatest">indication if installed version is latest or higher.</param>
         /// <returns></returns>
-        public static CheckUpdateResult CreateSuccess(IManagedTemplatePackage templatePackage, string version, bool isLatest)
+        public static CheckUpdateResult CreateSuccess(IManagedTemplatePackage templatePackage, string? version, bool isLatest)
         {
-            return new CheckUpdateResult()
-            {
-                Error = InstallerErrorCode.Success,
-                TemplatePackage = templatePackage,
-                LatestVersion = version,
-                IsLatestVersion = isLatest,
-            };
+            return new CheckUpdateResult(version, isLatest, templatePackage);
         }
 
         /// <summary>
@@ -50,12 +59,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Installer
         /// <returns></returns>
         public static CheckUpdateResult CreateFailure(IManagedTemplatePackage templatePackage, InstallerErrorCode error, string localizedFailureMessage)
         {
-            return new CheckUpdateResult()
-            {
-                Error = error,
-                ErrorMessage = localizedFailureMessage,
-                TemplatePackage = templatePackage
-            };
+            return new CheckUpdateResult(error, localizedFailureMessage, templatePackage);
         }
     }
 }

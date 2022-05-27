@@ -327,6 +327,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             UninstallResult uninstallResult = await UninstallAsync(updateRequest.TemplatePackage, provider, cancellationToken).ConfigureAwait(false);
             if (!uninstallResult.Success)
             {
+                if (uninstallResult.ErrorMessage is null)
+                {
+                    throw new InvalidOperationException($"{nameof(uninstallResult.ErrorMessage)} cannot be null when {nameof(uninstallResult.Success)} is 'true'");
+                }
                 return UpdateResult.CreateFailure(updateRequest, uninstallResult.Error, uninstallResult.ErrorMessage);
             }
 

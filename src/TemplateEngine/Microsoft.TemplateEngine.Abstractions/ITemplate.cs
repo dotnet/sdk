@@ -23,12 +23,12 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets localization file system entry.
         /// </summary>
-        IFileSystemInfo LocaleConfiguration { get; }
+        IFileSystemInfo? LocaleConfiguration { get; }
 
         /// <summary>
         /// Gets directory with template source files.
         /// </summary>
-        IDirectory TemplateSourceRoot { get; }
+        IDirectory? TemplateSourceRoot { get; }
 
         /// <summary>
         /// Indicates whether he template should be created in a subdirectory under the output directory.

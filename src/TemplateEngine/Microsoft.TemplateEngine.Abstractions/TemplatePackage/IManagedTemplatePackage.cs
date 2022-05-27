@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         /// <summary>
         /// Gets the version of the template package.
         /// </summary>
-        string Version { get; }
+        string? Version { get; }
 
         /// <summary>
         /// Indicates whether package was installed from local source (e.g. local extracted folder, local nuget etc.).

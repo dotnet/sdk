@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Abstractions.TemplatePackage
         /// <summary>
         /// Raised when template packages have been changed. Indicates that caller should refresh the list of template packages in use.
         /// </summary>
-        event Action TemplatePackagesChanged;
+        event Action? TemplatePackagesChanged;
 
         /// <summary>
         /// Gets <see cref="ITemplatePackageProviderFactory"/> that created the provider.
