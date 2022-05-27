@@ -21,23 +21,39 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         End Function
 
         Protected Overrides Async Function SpecifyCurrentCultureAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, node As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
-            If node.IsKind(SyntaxKind.IdentifierName) Then
-                Dim invocation = node.Parent?.FirstAncestorOrSelf(Of InvocationExpressionSyntax)
-                If invocation IsNot Nothing Then
-                    Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
-                    Dim symbolInfo = model.GetSymbolInfo(node, cancellationToken).Symbol
-                    Dim methodSymbol = TryCast(symbolInfo, IMethodSymbol)
+            If ShouldFix(node) Then
+                Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
 
-                    If methodSymbol IsNot Nothing And methodSymbol.Parameters.Length = 0 Then
-                        Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
-                        Dim newInvocation = invocation.AddArgumentListArguments(DirectCast(newArg, ArgumentSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
-                        Dim newRoot = root.ReplaceNode(invocation, newInvocation)
-                        Return document.WithSyntaxRoot(newRoot)
-                    End If
+                If memberAccess.Parent Is Nothing Or Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken)
+                End If
+
+                Dim invocation = DirectCast(memberAccess.Parent, InvocationExpressionSyntax)
+                If invocation.ArgumentList Is Nothing Then
+                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken)
+                End If
+
+                Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
+                Dim symbolInfo = model.GetSymbolInfo(node, cancellationToken).Symbol
+                Dim methodSymbol = TryCast(symbolInfo, IMethodSymbol)
+
+                If methodSymbol IsNot Nothing And methodSymbol.Parameters.Length = 0 Then
+                    Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
+                    Dim newInvocation = invocation.AddArgumentListArguments(DirectCast(newArg, ArgumentSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
+                    Dim newRoot = root.ReplaceNode(invocation, newInvocation)
+                    Return document.WithSyntaxRoot(newRoot)
                 End If
             End If
 
             Return document
+        End Function
+
+        Private Async Function SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, memberAccess As MemberAccessExpressionSyntax, nodeToReplace As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
+            Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
+            Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
+            Dim invocation = generator.InvocationExpression(memberAccess.WithoutTrailingTrivia(), newArg).WithAdditionalAnnotations(Formatter.Annotation)
+            Dim newRoot = root.ReplaceNode(nodeToReplace, invocation)
+            Return document.WithSyntaxRoot(newRoot)
         End Function
 
         Protected Overrides Function UseInvariantVersionAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, node As SyntaxNode) As Task(Of Document)

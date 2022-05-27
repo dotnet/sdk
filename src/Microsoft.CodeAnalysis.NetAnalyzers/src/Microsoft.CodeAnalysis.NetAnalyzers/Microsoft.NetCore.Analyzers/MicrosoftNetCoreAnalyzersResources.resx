@@ -1877,7 +1877,7 @@
     <value>Specify current culture</value>
   </data>
   <data name="UseInvariantVersion" xml:space="preserve">
-    <value>User an invariant version</value>
+    <value>Use an invariant version</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
     <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>

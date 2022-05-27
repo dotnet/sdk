@@ -2758,8 +2758,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
-        <source>User an invariant version</source>
-        <target state="translated">使用者固定版本</target>
+        <source>Use an invariant version</source>
+        <target state="needs-review-translation">使用者固定版本</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
