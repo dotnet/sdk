@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -71,8 +72,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         {
             foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>().ToList())
             {
-                if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint mountPoint))
-                {
+                if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint? mountPoint))
+{
+                    if (mountPoint is null)
+{
+                        throw new Exception($"{nameof(mountPoint)} cannot be null when {nameof(factory.TryMount)} is 'true'");
+                    }
+
                     // file-based and not originating in the scratch dir.
                     bool isLocalFlatFileSource = mountPoint is FileSystemMountPoint
                                                 && !sourceLocation.StartsWith(_paths.ScratchDir);

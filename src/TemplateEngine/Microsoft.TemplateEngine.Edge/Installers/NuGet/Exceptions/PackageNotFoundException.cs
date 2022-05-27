@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string PackageIdentifier { get; private set; }
 
-        public NuGetVersion PackageVersion { get; private set; }
+        public NuGetVersion? PackageVersion { get; private set; }
 
         public IEnumerable<string> SourcesList { get; private set; }
     }

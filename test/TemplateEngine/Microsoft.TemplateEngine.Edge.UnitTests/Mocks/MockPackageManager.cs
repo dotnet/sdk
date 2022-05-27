@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             switch (identifier)
             {
                 case nameof(InvalidNuGetSourceException): throw new InvalidNuGetSourceException("test message");
-                case nameof(DownloadException): throw new DownloadException(identifier, version, new[] { DefaultFeed });
+                case nameof(DownloadException): throw new DownloadException(identifier, version ?? string.Empty, new[] { DefaultFeed });
                 case nameof(PackageNotFoundException): throw new PackageNotFoundException(identifier, new[] { DefaultFeed });
                 case nameof(Exception): throw new Exception("Generic error");
             }
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             switch (identifier)
             {
                 case nameof(InvalidNuGetSourceException): throw new InvalidNuGetSourceException("test message");
-                case nameof(DownloadException): throw new DownloadException(identifier, version, new[] { DefaultFeed });
+                case nameof(DownloadException): throw new DownloadException(identifier, version ?? string.Empty, new[] { DefaultFeed });
                 case nameof(PackageNotFoundException): throw new PackageNotFoundException(identifier, new[] { DefaultFeed });
                 case nameof(Exception): throw new Exception("Generic error");
             }

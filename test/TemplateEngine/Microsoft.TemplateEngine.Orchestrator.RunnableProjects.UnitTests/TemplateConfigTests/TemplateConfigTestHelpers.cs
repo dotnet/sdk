@@ -47,9 +47,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             foreach (var factory in environment.Components.OfType<IMountPointFactory>())
             {
-                if (factory.TryMount(environment, null, sourceBasePath, out IMountPoint sourceMountPoint))
+                if (factory.TryMount(environment, null, sourceBasePath, out IMountPoint? sourceMountPoint))
                 {
-                    return sourceMountPoint;
+                    return sourceMountPoint!;
                 }
             }
             Assert.True(false, "couldn't create source mount point");

@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge
 {
     internal class ReflectionLoadProbingPath
     {
-        private static readonly ConcurrentDictionary<string, Assembly> LoadedAssemblies = new ConcurrentDictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Assembly?> LoadedAssemblies = new ConcurrentDictionary<string, Assembly?>(StringComparer.OrdinalIgnoreCase);
 
         private static readonly List<ReflectionLoadProbingPath> Instance = new List<ReflectionLoadProbingPath>();
 
@@ -51,9 +51,9 @@ namespace Microsoft.TemplateEngine.Edge
 
 #if !NETFULL
 
-        private static Assembly SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
+        private static Assembly? SelectBestMatch(AssemblyLoadContext loadContext, AssemblyName match, IEnumerable<FileInfo> candidates)
 #else
-        private static Assembly SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
+        private static Assembly? SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
 #endif
         {
             return LoadedAssemblies.GetOrAdd(match.ToString(), n =>
@@ -204,9 +204,9 @@ namespace Microsoft.TemplateEngine.Edge
 
 #if !NETFULL
 
-        private static Assembly Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
+        private static Assembly? Resolving(AssemblyLoadContext assemblyLoadContext, AssemblyName assemblyName)
 #else
-        private static Assembly Resolving(object sender, ResolveEventArgs resolveEventArgs)
+        private static Assembly? Resolving(object sender, ResolveEventArgs resolveEventArgs)
 #endif
         {
 #if !NETFULL
@@ -219,7 +219,7 @@ namespace Microsoft.TemplateEngine.Edge
             foreach (ReflectionLoadProbingPath selector in Instance)
             {
                 DirectoryInfo info = new DirectoryInfo(Path.Combine(selector._path, stringName));
-                Assembly found = null;
+                Assembly? found = null;
 
                 if (info.Exists)
                 {

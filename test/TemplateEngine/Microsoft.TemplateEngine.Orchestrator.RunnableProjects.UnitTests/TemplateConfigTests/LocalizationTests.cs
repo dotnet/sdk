@@ -44,12 +44,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }    
         }
 
@@ -67,13 +67,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
                 Assert.Equal(expectedName, localizationModel.Name);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -91,13 +91,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
                 Assert.Equal(expectedDescription, localizationModel.Description);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedSymbolNamesStr))
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedSymbolNamesStr))
@@ -232,7 +232,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -268,7 +268,7 @@ false,
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
             if (!errorExpected)
             {
-                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+                var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
                 Assert.NotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedPostActionsStr))
@@ -302,7 +302,7 @@ false,
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)));
+                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -341,7 +341,7 @@ false,
             };
 
             var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
             runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
@@ -378,7 +378,7 @@ false,
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
             var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
             runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
@@ -422,7 +422,7 @@ false,
 
             var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationFile = mountPoint.FileInfo(localizationFilename);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile);
+            var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile!);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel, localizationFile));
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
@@ -468,7 +468,7 @@ false,
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
             var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
-            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile));
+            var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel));
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning);
@@ -492,9 +492,9 @@ false,
         {
             foreach (var factory in engineEnvironmentSettings.Components.OfType<IMountPointFactory>())
             {
-                if (factory.TryMount(engineEnvironmentSettings, null, path, out IMountPoint myMountPoint))
+                if (factory.TryMount(engineEnvironmentSettings, null, path, out IMountPoint? myMountPoint))
                 {
-                    return myMountPoint;
+                    return myMountPoint!;
                 }
             }
             throw new Exception($"Failed to mount the location {path}");

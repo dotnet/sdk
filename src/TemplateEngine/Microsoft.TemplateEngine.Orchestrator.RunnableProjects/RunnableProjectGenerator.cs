@@ -608,6 +608,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
 
+            if (config.Parent is null)
+            {
+                return null;
+            }
+
             foreach (IFile hostFile in config.Parent.EnumerateFiles($"*{HostTemplateFileConfigBaseName}", SearchOption.TopDirectoryOnly))
             {
                 allHostFilesForTemplate.Add(hostFile.Name, hostFile);

@@ -224,7 +224,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             catch (DownloadException e)
             {
-                string packageLocation = e.SourcesList == null
+                string? packageLocation = e.SourcesList == null
                     ? e.PackageLocation
                     : string.Join(", ", e.SourcesList);
 

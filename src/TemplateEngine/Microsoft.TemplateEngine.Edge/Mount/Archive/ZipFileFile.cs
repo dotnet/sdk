@@ -10,9 +10,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     internal class ZipFileFile : FileBase
     {
         private readonly ZipFileMountPoint _mountPoint;
-        private ZipArchiveEntry _entry;
+        private ZipArchiveEntry? _entry;
 
-        internal ZipFileFile(IMountPoint mountPoint, string fullPath, string name, ZipArchiveEntry entry)
+        internal ZipFileFile(IMountPoint mountPoint, string fullPath, string name, ZipArchiveEntry? entry)
             : base(mountPoint, fullPath, name)
         {
             _entry = entry;
@@ -36,9 +36,14 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                     throw new FileNotFoundException("File not found", FullPath);
                 }
 
-                ZipFileFile self = info as ZipFileFile;
+                ZipFileFile? self = info as ZipFileFile;
 
                 if (self == null)
+                {
+                    throw new FileNotFoundException("File not found", FullPath);
+                }
+
+                if (self._entry == null)
                 {
                     throw new FileNotFoundException("File not found", FullPath);
                 }

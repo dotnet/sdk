@@ -24,6 +24,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             SourcesList = sources;
         }
 
-        public IEnumerable<string> SourcesList { get; private set; }
+        public IEnumerable<string>? SourcesList { get; private set; }
     }
 }

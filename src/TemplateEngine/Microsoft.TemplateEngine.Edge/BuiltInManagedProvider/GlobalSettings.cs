@@ -126,10 +126,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                 throw new InvalidOperationException($"Before calling {nameof(SetInstalledTemplatePackagesAsync)}, {nameof(LockAsync)} must be called.");
             }
 
-            var globalSettingsData = new GlobalSettingsData()
-            {
-                Packages = packages
-            };
+            var globalSettingsData = new GlobalSettingsData(packages);
 
             for (int i = 0; i < FileReadWriteRetries; i++)
             {

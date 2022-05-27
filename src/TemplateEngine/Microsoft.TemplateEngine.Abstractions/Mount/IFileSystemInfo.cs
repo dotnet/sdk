@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Mount
         /// <summary>
         /// Gets parent directory of file system entry.
         /// </summary>
-        IDirectory Parent { get; }
+        IDirectory? Parent { get; }
 
         /// <summary>
         /// Gets file system entry name.

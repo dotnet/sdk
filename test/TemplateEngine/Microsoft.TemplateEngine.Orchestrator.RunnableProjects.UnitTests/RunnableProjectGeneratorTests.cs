@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
             IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
-            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
             //
             // Running the actual scenario: template files processing and generating output (including macros processing)
@@ -205,7 +205,7 @@ UNKNOWN
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
             parameters.ResolvedValues[choiceParameter] = "SecondChoice";
-            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
             //
             // Running the actual scenario: template files processing and generating output (including macros processing)
@@ -302,7 +302,7 @@ THIRD
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
             parameters.ResolvedValues[choiceParameter] = new MultiValueParameter(new[] { "SecondChoice", "ThirdChoice" });
-            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
             //
             // Running the actual scenario: template files processing and generating output (including macros processing)
@@ -413,7 +413,7 @@ THIRD
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("Platform", out choiceParameter), "ChoiceParam expected to be extracted from template config");
             parameters.ResolvedValues[choiceParameter] = new MultiValueParameter(new[] { "MacOS", "iOS" });
-            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/");
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
             //
             // Running the actual scenario: template files processing and generating output (including macros processing)

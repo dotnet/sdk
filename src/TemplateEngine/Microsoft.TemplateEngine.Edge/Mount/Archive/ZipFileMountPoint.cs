@@ -15,9 +15,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
     /// </summary>
     internal class ZipFileMountPoint : IMountPoint
     {
-        private IReadOnlyDictionary<string, IFileSystemInfo> _universe;
+        private IReadOnlyDictionary<string, IFileSystemInfo>? _universe;
 
-        internal ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, ZipArchive archive)
+        internal ZipFileMountPoint(IEngineEnvironmentSettings environmentSettings, IMountPoint? parent, string mountPointUri, ZipArchive archive)
         {
             MountPointUri = mountPointUri;
             Parent = parent;
@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         public IDirectory Root { get; }
 
-        public IMountPoint Parent { get; }
+        public IMountPoint? Parent { get; }
 
         public string MountPointUri { get; }
 
@@ -51,14 +51,14 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                     {
                         string[] parts = entry.FullName.Split('/', '\\');
                         string path = "/";
-                        IDirectory parentDir = (IDirectory)universe["/"];
+                        IDirectory? parentDir = (IDirectory)universe["/"];
 
                         for (int i = 0; parentDir != null && i < parts.Length - 1; ++i)
                         {
                             parts[i] = Uri.UnescapeDataString(parts[i]);
                             path += parts[i] + "/";
 
-                            if (!universe.TryGetValue(path, out IFileSystemInfo parentDirEntry))
+                            if (!universe.TryGetValue(path, out IFileSystemInfo? parentDirEntry))
                             {
                                 universe[path] = parentDirEntry = new ZipFileDirectory(this, path, parts[i]);
                             }
@@ -89,12 +89,12 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 
         internal Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
 
-        public IFile FileInfo(string path)
+        public IFile? FileInfo(string path)
         {
             return new ZipFileFile(this, path, path.Substring(path.LastIndexOf('/') + 1), null);
         }
 
-        public IDirectory DirectoryInfo(string path)
+        public IDirectory? DirectoryInfo(string path)
         {
             if (Universe.TryGetValue(path, out IFileSystemInfo info))
             {
@@ -108,11 +108,11 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             return new ZipFileDirectory(this, path, path.Substring(path.LastIndexOf('/') + 1));
         }
 
-        public IFileSystemInfo FileSystemInfo(string path)
+        public IFileSystemInfo? FileSystemInfo(string path)
         {
-            IFile file = FileInfo(path);
+            IFile? file = FileInfo(path);
 
-            if (file.Exists)
+            if (file != null && file.Exists)
             {
                 return file;
             }

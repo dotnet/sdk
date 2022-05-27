@@ -40,7 +40,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
             IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
 
-            IDirectory sourceBaseDirectoryInfo = configFile.Parent.Parent.DirectoryInfo(sourceDirectory.TrimEnd('/'));
+            IDirectory? sourceBaseDirectoryInfo = configFile.Parent?.Parent?.DirectoryInfo(sourceDirectory.TrimEnd('/'));
+
+            if (sourceBaseDirectoryInfo is null)
+            {
+                return allRenames;
+            }
 
             foreach (IFileSystemInfo fileSystemEntry in sourceBaseDirectoryInfo.EnumerateFileSystemInfos("*", SearchOption.AllDirectories))
             {

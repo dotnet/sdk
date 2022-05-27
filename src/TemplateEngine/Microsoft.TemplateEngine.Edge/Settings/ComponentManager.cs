@@ -82,8 +82,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
                 foreach (Guid id in ids)
                 {
-                    if (TryGetComponent(id, out T component))
+                    if (TryGetComponent(id, out T? component))
                     {
+                        if (component is null)
+                        {
+                            throw new InvalidOperationException($"{nameof(component)} cannot be null when {nameof(TryGetComponent)} is 'true'");
+                        }
                         yield return component;
                     }
                 }
@@ -116,7 +120,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        public bool TryGetComponent<T>(Guid id, out T component)
+        public bool TryGetComponent<T>(Guid id, out T? component)
                     where T : class, IIdentifiedComponent
         {
             lock (_componentIdToAssemblyQualifiedTypeName)

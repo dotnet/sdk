@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Installer;
+using Newtonsoft.Json;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
@@ -11,6 +12,12 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
     /// </summary>
     internal sealed class GlobalSettingsData
     {
-        public IReadOnlyList<TemplatePackageData> Packages { get; set; }
+        internal GlobalSettingsData(IReadOnlyList<TemplatePackageData> packages)
+        {
+            Packages = packages;
+        }
+
+        [JsonProperty]
+        internal IReadOnlyList<TemplatePackageData> Packages { get; }
     }
 }

@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         [JsonProperty]
         internal Dictionary<string, HashSet<Guid>> ComponentTypeToGuidList { get; } = new();
 
-        internal static SettingsStore? Load(IEngineEnvironmentSettings engineEnvironmentSettings, SettingsFilePaths paths)
+        internal static SettingsStore Load(IEngineEnvironmentSettings engineEnvironmentSettings, SettingsFilePaths paths)
         {
             if (!paths.Exists(paths.SettingsFile))
             {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,7 +31,12 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
         {
             return _paths.EnumerateFileSystemEntries(_physicalPath, pattern, searchOption).Select(x =>
             {
-                string baseName = x.Substring(((FileSystemMountPoint)MountPoint).MountPointRootPath.Length).Replace(Path.DirectorySeparatorChar, '/');
+                if (MountPoint is not FileSystemMountPoint fileSystemMountPoint)
+                {
+                    throw new NotSupportedException($"{nameof(FileSystemDirectory)} may only exist in {nameof(FileSystemMountPoint)} mount point.");
+                }
+
+                string baseName = x.Substring(fileSystemMountPoint.MountPointRootPath.Length).Replace(Path.DirectorySeparatorChar, '/');
 
                 if (baseName.Length == 0)
                 {
@@ -47,7 +53,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                     baseName = baseName + "/";
                 }
 
-                return MountPoint.FileSystemInfo(baseName);
+                return fileSystemMountPoint.FileSystemInfo(baseName);
             });
         }
 

@@ -6,6 +6,7 @@
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
     <DefineConstants Condition="'$(TargetFramework)' == '$(NETFullTargetFramework)'">$(DefineConstants);NETFULL</DefineConstants>
   </PropertyGroup>
 

@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount
 {
     internal abstract class FileSystemInfoBase : IFileSystemInfo
     {
-        private IDirectory _parent;
+        private IDirectory? _parent;
 
         protected FileSystemInfoBase(IMountPoint mountPoint, string fullPath, string name, FileSystemInfoKind kind)
         {
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount
 
         public FileSystemInfoKind Kind { get; }
 
-        public virtual IDirectory Parent
+        public virtual IDirectory? Parent
         {
             get
             {
