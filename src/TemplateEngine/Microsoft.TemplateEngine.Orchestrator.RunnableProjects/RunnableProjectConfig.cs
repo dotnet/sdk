@@ -373,9 +373,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         rootVariableCollection[symbol.Key] = value;
                         computed[symbol.Key] = value;
                     }
-                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
+                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(symbol.Value.Binding))
                     {
-                        if (parameters.TryGetRuntimeValue(_settings, symbol.Value.Binding, out object bindValue) && bindValue != null)
+                        if (parameters.TryGetRuntimeValue(_settings, symbol.Value.Binding!, out object? bindValue) && bindValue != null)
                         {
                             rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
                         }
@@ -641,13 +641,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string tokenValue = token.ToString();
                 if ((tokenValue.IndexOfAny(Path.GetInvalidPathChars()) != -1)
-                    || !sourceFile.Parent.FileInfo(tokenValue).Exists)
+                    || (!sourceFile.Parent?.FileInfo(tokenValue)?.Exists ?? true))
                 {
                     return new List<string>(new[] { tokenValue });
                 }
                 else
                 {
-                    using (Stream excludeList = sourceFile.Parent.FileInfo(token.ToString()).OpenRead())
+                    using (Stream excludeList = sourceFile.Parent!.FileInfo(tokenValue)!.OpenRead())
                     using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
                     {
                         return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -1024,7 +1024,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             string allowedGeneratorVersions = _configuration.GeneratorVersions!;
 
-            if (!VersionStringHelpers.TryParseVersionSpecification(allowedGeneratorVersions, out IVersionSpecification versionChecker) || !versionChecker.CheckIfVersionIsValid(RunnableProjectGenerator.GeneratorVersion))
+            if (!VersionStringHelpers.TryParseVersionSpecification(allowedGeneratorVersions, out IVersionSpecification? versionChecker))
+            {
+                throw new NotSupportedException(string.Format(LocalizableStrings.RunnableProjectGenerator_Exception_TemplateVersionNotSupported, allowedGeneratorVersions, RunnableProjectGenerator.GeneratorVersion));
+            }
+
+            if (versionChecker is null)
+            {
+                throw new InvalidOperationException($"{nameof(versionChecker)} cannot be null when {nameof(VersionStringHelpers.TryParseVersionSpecification)} is 'true'");
+            }
+
+            if (!versionChecker.CheckIfVersionIsValid(RunnableProjectGenerator.GeneratorVersion))
             {
                 throw new NotSupportedException(string.Format(LocalizableStrings.RunnableProjectGenerator_Exception_TemplateVersionNotSupported, allowedGeneratorVersions, RunnableProjectGenerator.GeneratorVersion));
             }
@@ -1162,7 +1172,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 try
                 {
-                    IFile file = TemplateSourceRoot.FileInfo(source.Source);
+                    IFile? file = TemplateSourceRoot?.FileInfo(source.Source);
                     //template source root should not be a file
                     if (file?.Exists ?? false)
                     {
@@ -1170,7 +1180,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                     else
                     {
-                        IDirectory sourceRoot = TemplateSourceRoot.DirectoryInfo(source.Source);
+                        IDirectory? sourceRoot = TemplateSourceRoot?.DirectoryInfo(source.Source);
                         if (sourceRoot is null)
                         {
                             errors.Add(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, source.Source));

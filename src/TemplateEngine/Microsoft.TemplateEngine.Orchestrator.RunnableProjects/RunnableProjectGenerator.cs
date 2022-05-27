@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (templateData.TemplateSourceRoot is null)
             {
-                throw new Exception($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
+                throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
             }
             return CreateAsync(
                 environmentSettings,
@@ -110,6 +110,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             CancellationToken cancellationToken)
         {
             RunnableProjectConfig templateConfig = (RunnableProjectConfig)templateData;
+            if (templateData.TemplateSourceRoot is null)
+            {
+                throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
+            }
             ProcessMacros(environmentSettings, templateConfig.OperationConfig, parameters);
 
             IVariableCollection variables = SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
@@ -179,7 +183,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // tracking issue: https://github.com/dotnet/templating/issues/3255
                     var templateConfiguration = new RunnableProjectConfig(source.EnvironmentSettings, this, file, hostConfigFile);
 
-                    IDirectory localizeFolder = file.Parent.DirectoryInfo("localize");
+                    IDirectory? localizeFolder = file.Parent?.DirectoryInfo("localize");
                     if (localizeFolder != null && localizeFolder.Exists)
                     {
                         foreach (IFile locFile in localizeFolder.EnumerateFiles(LocalizationFilePrefix + "*" + LocalizationFileExtension, SearchOption.AllDirectories))
@@ -321,7 +325,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
                     // which takes care of making null bool -> true as appropriate.
                     // This else can also happen if there is a value but it can't be converted.
-                    string val;
+                    string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, string.Empty, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -365,7 +369,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    string val;
+                    string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -385,7 +389,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    string val;
+                    string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -404,14 +408,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    string val;
+                    string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
 #pragma warning restore CS0618 // Type or member is obsolete
                     {
                     }
 
-                    valueResolutionError = !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
+                    valueResolutionError = !long.TryParse(val?.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
                     return convertedHex;
                 }
             }

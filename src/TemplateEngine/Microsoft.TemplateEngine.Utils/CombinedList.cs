@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             public T Current => _items[_index];
 
-            object IEnumerator.Current => Current;
+            object? IEnumerator.Current => Current;
 
             public void Dispose()
             {

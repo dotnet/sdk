@@ -8,8 +8,14 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class BaselineCacheInfo : IBaselineInfo
     {
-        public string Description { get; set; }
+        public BaselineCacheInfo(IReadOnlyDictionary<string, string> defaultOverrides, string? description = null)
+        {
+            DefaultOverrides = defaultOverrides;
+            Description = description;
+        }
 
-        public IReadOnlyDictionary<string, string> DefaultOverrides { get; set; }
+        public string? Description { get; }
+
+        public IReadOnlyDictionary<string, string> DefaultOverrides { get; }
     }
 }

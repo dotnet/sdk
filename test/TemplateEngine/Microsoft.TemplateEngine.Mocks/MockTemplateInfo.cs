@@ -140,7 +140,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             get
             {
-                return _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo)new BaselineCacheInfo());
+                return _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo)new BaselineCacheInfo(new Dictionary<string, string>()));
             }
         }
 

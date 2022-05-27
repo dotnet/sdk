@@ -390,7 +390,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             {
                 if (parameter.Priority == TemplateParameterPriority.Required && !templateParams.ResolvedValues.ContainsKey(parameter))
                 {
-                    string newParamValue;
+                    string? newParamValue;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
                     while (host.OnParameterError(parameter, "", "Missing required parameter", out newParamValue)
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -400,7 +400,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
                     if (!string.IsNullOrEmpty(newParamValue))
                     {
-                        templateParams.ResolvedValues.Add(parameter, newParamValue);
+                        templateParams.ResolvedValues.Add(parameter, newParamValue!);
                     }
                     else
                     {

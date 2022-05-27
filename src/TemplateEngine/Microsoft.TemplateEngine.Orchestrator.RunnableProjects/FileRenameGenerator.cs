@@ -119,8 +119,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
                 {
-                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object newValueObject))
+                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object? newValueObject))
                     {
+                        if (newValueObject is null)
+                        {
+                            throw new InvalidOperationException($"{nameof(newValueObject)} cannot be null when {nameof(RuntimeValueUtil.TryGetRuntimeValue)} is 'true'");
+                        }
                         string newValue = newValueObject.ToString();
                         operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));
                     }

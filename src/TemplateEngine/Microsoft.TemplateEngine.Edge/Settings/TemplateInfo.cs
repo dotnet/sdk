@@ -10,6 +10,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -109,7 +110,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 logger.LogDebug($"Start loading host config {HostConfigPlace}");
                 try
                 {
-                    using (var sr = new StreamReader(template.TemplateSourceRoot.FileInfo(HostConfigPlace).OpenRead()))
+                    IFile? hostFile = template.TemplateSourceRoot?.FileInfo(HostConfigPlace);
+                    if (hostFile == null || !hostFile.Exists)
+                    {
+                        throw new FileNotFoundException($"Host file {hostFile?.GetDisplayPath()} does not exist.");
+                    }
+                    using (var sr = new StreamReader(hostFile.OpenRead()))
                     using (var jsonTextReader = new JsonTextReader(sr))
                     {
                         HostData = JObject.Load(jsonTextReader);

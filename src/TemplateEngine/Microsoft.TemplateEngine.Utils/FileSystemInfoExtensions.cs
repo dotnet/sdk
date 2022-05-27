@@ -49,19 +49,19 @@ namespace Microsoft.TemplateEngine.Utils
             return "/" + string.Join("/", partStack.Reverse());
         }
 
-        public static IFile FileInfo(this IFileSystemInfo info, string path)
+        public static IFile? FileInfo(this IFileSystemInfo info, string path)
         {
             string fullPath = info.FullPath.CombinePaths(path);
             return info.MountPoint.FileInfo(fullPath);
         }
 
-        public static IDirectory DirectoryInfo(this IFileSystemInfo info, string path)
+        public static IDirectory? DirectoryInfo(this IFileSystemInfo info, string path)
         {
             string fullPath = info.FullPath.CombinePaths(path);
             return info.MountPoint.DirectoryInfo(fullPath);
         }
 
-        public static IFileSystemInfo FileSystemInfo(this IFileSystemInfo info, string path)
+        public static IFileSystemInfo? FileSystemInfo(this IFileSystemInfo info, string path)
         {
             string fullPath = info.FullPath.CombinePaths(path);
             return info.MountPoint.FileSystemInfo(fullPath);
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Utils
         public static string PathRelativeTo(this IFileSystemInfo info, IFileSystemInfo relativeTo)
         {
             //The path should be relative to either source itself (in the case that it's a folder) or the parent of source)
-            IDirectory relTo = relativeTo as IDirectory ?? relativeTo.Parent;
+            IDirectory? relTo = relativeTo as IDirectory ?? relativeTo.Parent;
 
             //If the thing to be relative to is the root (or a file in the root), just use the full path of the item
             if (relTo == null)
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             //Get all the path segments for the thing we're relative to
             Dictionary<string, int> sourceSegments = new Dictionary<string, int> { { relTo.FullPath, 0 } };
-            IDirectory current = relTo.Parent;
+            IDirectory? current = relTo.Parent;
             int index = 0;
             while (current != null)
             {

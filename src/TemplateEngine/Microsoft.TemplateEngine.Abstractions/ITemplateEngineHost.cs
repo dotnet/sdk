@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         bool OnNonCriticalError(string code, string message, string currentFile, long currentPosition);
 
         [Obsolete("The method is deprecated.")]
-        bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue);
+        bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string? newValue);
 
         [Obsolete("The method is deprecated.")]
         void OnSymbolUsed(string symbol, object value);

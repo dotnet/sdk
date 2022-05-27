@@ -13,9 +13,9 @@ namespace Microsoft.TemplateEngine.Utils
     {
         // Walks up the directory path looking for files that match the matchPattern and the secondary filter (if provided)
         // Returns all the matching files in the first directory that has any matched files.
-        public static IReadOnlyList<string> FindFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, string matchPattern, Func<string, bool> secondaryFilter = null)
+        public static IReadOnlyList<string> FindFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string startPath, string matchPattern, Func<string, bool>? secondaryFilter = null)
         {
-            string directory;
+            string? directory;
             if (fileSystem.DirectoryExists(startPath))
             {
                 directory = startPath;

@@ -5,7 +5,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class VersionStringHelpers
     {
-        public static bool TryParseVersionSpecification(string versionString, out IVersionSpecification specification)
+        public static bool TryParseVersionSpecification(string versionString, out IVersionSpecification? specification)
         {
             if (string.IsNullOrEmpty(versionString))
             {
@@ -29,14 +29,14 @@ namespace Microsoft.TemplateEngine.Utils
         // 1 if version1 > version2
         public static int? CompareVersions(string version1, string version2)
         {
-            if (!TryParseVersionString(version1, out int[] parts1) || !TryParseVersionString(version2, out int[] parts2))
+            if (!TryParseVersionString(version1, out int[]? parts1) || !TryParseVersionString(version2, out int[]? parts2))
             {
                 return null;
             }
 
             for (int i = 0; i < 4; i++)
             {
-                if (parts1[i] > parts2[i])
+                if (parts1![i] > parts2![i])
                 {
                     return 1;
                 }
@@ -51,13 +51,13 @@ namespace Microsoft.TemplateEngine.Utils
 
         public static bool IsVersionWellFormed(string version)
         {
-            return TryParseVersionString(version, out int[] parsed);
+            return TryParseVersionString(version, out int[]? parsed);
         }
 
         // tries to parse a version into 4 int parts, zero-padding on the rght if needed.
         // more than 4 parts, return false.
         // Unparse-able, return false.
-        private static bool TryParseVersionString(string version, out int[] parsed)
+        private static bool TryParseVersionString(string version, out int[]? parsed)
         {
             if (string.IsNullOrEmpty(version))
             {

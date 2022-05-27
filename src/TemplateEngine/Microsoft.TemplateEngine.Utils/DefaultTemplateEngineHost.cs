@@ -25,12 +25,12 @@ namespace Microsoft.TemplateEngine.Utils
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string>? defaults)
             : this(hostIdentifier, version, defaults, NoComponents, null)
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> builtIns)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string>? defaults, IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)>? builtIns)
             : this(hostIdentifier, version, defaults, builtIns, null)
         {
         }
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
         }
 
-        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> builtIns, IReadOnlyList<string> fallbackHostTemplateConfigNames)
+        public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string>? defaults, IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)>? builtIns, IReadOnlyList<string>? fallbackHostTemplateConfigNames)
         {
             HostIdentifier = hostIdentifier;
             Version = version;
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public IPhysicalFileSystem FileSystem { get; private set; }
 
-        public Action<string, TimeSpan, int> OnLogTiming { get; set; }
+        public Action<string, TimeSpan, int>? OnLogTiming { get; set; }
 
         public string HostIdentifier { get; }
 
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Utils
             return false;
         }
 
-        public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
+        public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string? newValue)
         {
             newValue = null;
             return false;

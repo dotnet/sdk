@@ -73,10 +73,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             foreach (IMountPointFactory factory in _environmentSettings.Components.OfType<IMountPointFactory>().ToList())
             {
                 if (factory.TryMount(_environmentSettings, null, sourceLocation, out IMountPoint? mountPoint))
-{
+                {
                     if (mountPoint is null)
-{
-                        throw new Exception($"{nameof(mountPoint)} cannot be null when {nameof(factory.TryMount)} is 'true'");
+                    {
+                        throw new InvalidOperationException($"{nameof(mountPoint)} cannot be null when {nameof(factory.TryMount)} is 'true'");
                     }
 
                     // file-based and not originating in the scratch dir.

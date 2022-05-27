@@ -10,21 +10,21 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class ListExtensions
     {
-        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TElement, TKey>(this IEnumerable<TElement> elements, Func<TElement, TKey> grouper, Func<TElement, bool> hasGroupKey, IEqualityComparer<TKey> comparer = null)
-            where TKey : IEquatable<TKey>
+        public static IEnumerable<IGrouping<TKey?, TElement>> GroupBy<TElement, TKey>(this IEnumerable<TElement> elements, Func<TElement, TKey?> grouper, Func<TElement, bool> hasGroupKey, IEqualityComparer<TKey?>? comparer = null)
+            where TKey : IEquatable<TKey?>
         {
             if (comparer == null)
             {
-                comparer = EqualityComparer<TKey>.Default;
+                comparer = EqualityComparer<TKey?>.Default;
             }
-            Dictionary<ValueWrapper<TKey>, List<TElement>> groups = new Dictionary<ValueWrapper<TKey>, List<TElement>>(new ValueWrapperComparer<TKey>(comparer));
+            Dictionary<ValueWrapper<TKey?>, List<TElement>> groups = new Dictionary<ValueWrapper<TKey?>, List<TElement>>(new ValueWrapperComparer<TKey?>(comparer));
             List<TElement> ungrouped = new List<TElement>();
 
             foreach (TElement element in elements)
             {
                 if (hasGroupKey(element))
                 {
-                    ValueWrapper<TKey> x = new ValueWrapper<TKey>(grouper(element));
+                    ValueWrapper<TKey?> x = new ValueWrapper<TKey?>(grouper(element));
                     if (!groups.TryGetValue(x, out List<TElement> group))
                     {
                         groups[x] = group = new List<TElement>();
@@ -38,16 +38,16 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            List<IGrouping<TKey, TElement>> allGrouped = new List<IGrouping<TKey, TElement>>();
+            List<IGrouping<TKey?, TElement>> allGrouped = new List<IGrouping<TKey?, TElement>>();
 
-            foreach (KeyValuePair<ValueWrapper<TKey>, List<TElement>> entry in groups)
+            foreach (KeyValuePair<ValueWrapper<TKey?>, List<TElement>> entry in groups)
             {
-                allGrouped.Add(new Grouping<TKey, TElement>(entry.Key.Val, entry.Value));
+                allGrouped.Add(new Grouping<TKey?, TElement>(entry.Key.Val, entry.Value));
             }
 
             foreach (TElement entry in ungrouped)
             {
-                allGrouped.Add(new Grouping<TKey, TElement>(default(TKey), new[] { entry }));
+                allGrouped.Add(new Grouping<TKey?, TElement>(default(TKey), new[] { entry }));
             }
 
             return allGrouped;

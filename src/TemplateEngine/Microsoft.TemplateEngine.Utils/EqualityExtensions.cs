@@ -8,29 +8,29 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public static class EqualityExtensions
     {
-        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue> selector)
-            where TValue : IEquatable<TValue>
+        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue?> selector)
+            where TValue : IEquatable<TValue?>
         {
             return items.AllAreTheSame(selector, (x, y) => x?.Equals(y) ?? (y == null));
         }
 
-        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue> selector, IEqualityComparer<TValue> comparer)
-            where TValue : IEquatable<TValue>
+        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue?> selector, IEqualityComparer<TValue?> comparer)
+            where TValue : IEquatable<TValue?>
         {
             if (comparer == null)
             {
-                comparer = EqualityComparer<TValue>.Default;
+                comparer = EqualityComparer<TValue?>.Default;
             }
 
             return items.AllAreTheSame(selector, comparer.Equals);
         }
 
-        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue> selector, Func<TValue, TValue, bool> comparer)
-            where TValue : IEquatable<TValue>
+        public static bool AllAreTheSame<T, TValue>(this IEnumerable<T> items, Func<T, TValue?> selector, Func<TValue?, TValue?, bool> comparer)
+            where TValue : IEquatable<TValue?>
         {
             if (comparer == null)
             {
-                comparer = EqualityComparer<TValue>.Default.Equals;
+                comparer = EqualityComparer<TValue?>.Default.Equals;
             }
 
             using (IEnumerator<T> enumerator = items.GetEnumerator())
@@ -40,11 +40,11 @@ namespace Microsoft.TemplateEngine.Utils
                     return true; //If there are no elements they're all the same
                 }
 
-                TValue firstValue = selector(enumerator.Current);
+                TValue? firstValue = selector(enumerator.Current);
 
                 while (enumerator.MoveNext())
                 {
-                    TValue currentValue = selector(enumerator.Current);
+                    TValue? currentValue = selector(enumerator.Current);
 
                     if (!comparer(firstValue, currentValue))
                     {

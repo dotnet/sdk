@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Utils
         private readonly ILogger _logger;
         private readonly string _label;
         private readonly Stopwatch _stopwatch;
-        private readonly IDisposable _disposable;
+        private readonly IDisposable? _disposable;
 
         public Timing(ILogger logger, string label)
         {
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             _stopwatch.Stop();
             _logger.LogDebug($"{_label} finished, took {_stopwatch.ElapsedMilliseconds} ms");
-            _disposable.Dispose();
+            _disposable?.Dispose();
         }
     }
 }

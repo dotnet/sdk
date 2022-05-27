@@ -55,11 +55,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 {
                     foreach (JProperty item in baselineJObject.Properties())
                     {
-                        IBaselineInfo baseline = new BaselineCacheInfo()
+                        var defaultOverrides = item.Value.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides));
+                        if (defaultOverrides is null)
                         {
-                            Description = item.Value.ToString(nameof(IBaselineInfo.Description)),
-                            DefaultOverrides = item.Value.ToStringDictionary(propertyName: nameof(IBaselineInfo.DefaultOverrides))
-                        };
+                            continue;
+                        }
+
+                        IBaselineInfo baseline = new BaselineCacheInfo(defaultOverrides, item.Value.ToString(nameof(IBaselineInfo.Description)));
                         baselineInfo.Add(item.Name, baseline);
                     }
                     info.BaselineInfo = baselineInfo;

@@ -51,9 +51,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             }
             else
             {
-                IFile file = parent.Root.FileInfo(uri.LocalPath);
+                IFile? file = parent.Root.FileInfo(uri.LocalPath);
 
-                if (!file.Exists)
+                if (file == null || !file.Exists)
                 {
                     mountPoint = null;
                     return false;

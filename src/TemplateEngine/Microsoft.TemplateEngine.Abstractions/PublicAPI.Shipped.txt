@@ -128,7 +128,6 @@ Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.LogTiming(string! labe
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnConfirmPartialMatch(string! name) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> void
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnNonCriticalError(string! code, string! message, string! currentFile, long currentPosition) -> bool
-Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string! newValue) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnPotentiallyDestructiveChangesDetected(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! changes, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange!>! destructiveChanges) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnSymbolUsed(string! symbol, object! value) -> void
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.TryGetHostParamDefault(string! paramName, out string? value) -> bool
