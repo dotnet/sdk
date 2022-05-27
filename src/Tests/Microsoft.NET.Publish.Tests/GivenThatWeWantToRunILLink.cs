@@ -1291,7 +1291,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact()]
         public void ILLink_and_crossgen_process_razor_assembly()
         {
-            var targetFramework = "net6.0";
+            var targetFramework = "netcoreapp3.0";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = new TestProject
