@@ -7,4 +7,10 @@
   </PropertyGroup>
 
   <Import Project="$(RepositoryEngineeringDir)AnalyzersForTests.props" />
+  <!-- forces the version in sub dependencies -->
+  <!-- xunit.assert has this dependency, so applying to all test projects-->
+  <ItemGroup>
+    <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Net.Http" />
+    <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Security.Cryptography.X509Certificates" /> 
+  </ItemGroup>
 </Project>

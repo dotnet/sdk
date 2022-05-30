@@ -1,22 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <Import Project="..\Directory.Build.targets" />
-  
-  <ItemGroup>
-    <PackageReference Update="FakeItEasy" Version="6.2.1" />
-    <PackageReference Update="FluentAssertions" Version="5.10.3" />
-    <PackageReference Update="Microsoft.DotNet.Cli.Utils" Version="6.0.100-rc.1.21423.4" />
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="15.8.0" />
-    <PackageReference Update="xunit.abstractions" Version="2.0.3" />
-    <PackageReference Update="xunit" Version="$(XUnitVersion)" />
-    <PackageReference Update="Newtonsoft.Json.Schema" Version="3.0.13" />
-    <PackageReference Update="Verify.XUnit" Version="14.2.0" />
-  </ItemGroup>
 
-  <!-- forces the version in sub dependencies -->
-  <!-- xunit.assert has this dependency, so applying to all test projects-->
-  <ItemGroup>
-    <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Condition="'$(IsTestProject)' == 'true'" Include="System.Security.Cryptography.X509Certificates" Version="4.3.0" /> 
-  </ItemGroup>
 </Project>
