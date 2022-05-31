@@ -213,4 +213,10 @@
   <data name="EnumTypesMustMatch" xml:space="preserve">
     <value>Underlying type of enum '{0}' changed from '{1}' to '{2}'.</value>
   </data>
+  <data name="CannotAddVirtualModifier" xml:space="preserve">
+    <value>Cannot add virtual modifier to member '{0}'.</value>
+  </data>
+  <data name="CannotRemoveVirtualModifier" xml:space="preserve">
+    <value>Cannot remove virtual modifier from member '{0}'.</value>
+  </data>
 </root>
