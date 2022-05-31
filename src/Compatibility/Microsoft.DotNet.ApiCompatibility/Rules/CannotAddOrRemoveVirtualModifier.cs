@@ -12,6 +12,10 @@ using Microsoft.DotNet.ApiCompatibility.Abstractions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
+    /// <summary>
+    /// This class implements a rule to check that the 'virtual' modifier is not added to
+    /// or removed from a member.
+    /// </summary>
     public class CannotAddOrRemoveVirtualModifier : Rule
     {
         public override void Initialize(RuleRunnerContext context) => context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
