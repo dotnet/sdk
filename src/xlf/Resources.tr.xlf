@@ -48,7 +48,7 @@
         <note />
       </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
-        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; agrument.</source>
+        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
         <target state="translated">'{0}' içinde hem MSBuild proje dosyası hem de çözüm dosyası bulundu. Hangisinin &lt;çalışma alanı&gt; bağımsız değişkeni ile kullanılacağını belirtin.</target>
         <note />
       </trans-unit>
