@@ -1933,4 +1933,16 @@
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
     <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
   </data>
+  <data name="PreferDictionaryTryGetValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'TryGetValue(TKey, out TValue)'</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueTitle" xml:space="preserve">
+    <value>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueMessage" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueDescription" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</value>
+  </data>
 </root>
