@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_WarningLevel_To_The_Current_TFM_When_Net(string tfm, string warningLevel)
         {
-            int parsedWarningLevel = double.Parse(warningLevel);
+            int parsedWarningLevel = (int)double.Parse(warningLevel);
             var testProject = new TestProject
             {
                 Name = "HelloWorld",
