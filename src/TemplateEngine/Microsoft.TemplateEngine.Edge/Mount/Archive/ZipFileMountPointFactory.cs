@@ -9,13 +9,13 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {
-    internal class ZipFileMountPointFactory : IMountPointFactory
+    public class ZipFileMountPointFactory : IMountPointFactory
     {
         internal static readonly Guid FactoryId = new Guid("94E92610-CF4C-4F6D-AEB6-9E42DDE1899D");
 
-        public Guid Id => FactoryId;
+        Guid IIdentifiedComponent.Id => FactoryId;
 
-        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint)
+        bool IMountPointFactory.TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint)
         {
             if (!Uri.TryCreate(mountPointUri, UriKind.Absolute, out var uri))
             {

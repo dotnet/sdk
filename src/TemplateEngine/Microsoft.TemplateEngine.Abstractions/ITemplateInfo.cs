@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {

@@ -6,7 +6,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions.Constraints
 {
     /// <summary>
     /// Template constraint factory used to create and initialize the instance of <see cref="ITemplateConstraint"/>.

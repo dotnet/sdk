@@ -1,6 +1,7 @@
 ﻿const Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparator = '|' -> char
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Dispose() -> void
+Microsoft.TemplateEngine.Utils.EnumerableExtensions
 Microsoft.TemplateEngine.Utils.MultiValueParameter
 Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueParameter(System.Collections.Generic.IReadOnlyList<string!>! values) -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -9,6 +10,9 @@ Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, bool allowMultipleValues = false, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
 override Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ToString() -> string!
 override Microsoft.TemplateEngine.Utils.MultiValueParameter.ToString() -> string!
+static Microsoft.TemplateEngine.Utils.EnumerableExtensions.GetDuplicates<T>(this System.Collections.Generic.IEnumerable<T>? sequence, System.Collections.Generic.IEqualityComparer<T>? comparer = null) -> System.Collections.Generic.IEnumerable<T>!
+static Microsoft.TemplateEngine.Utils.EnumerableExtensions.HasDuplicates<T>(this System.Collections.Generic.IEnumerable<T>? sequence, System.Collections.Generic.IEqualityComparer<T>? comparer = null) -> bool
+static Microsoft.TemplateEngine.Utils.EnumerableExtensions.ToCsvString<T>(this System.Collections.Generic.IEnumerable<T>? source, bool useSpace = true) -> string!
 static Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparators.get -> char[]!
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsValidMultiValueParameterValue(this string! value) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.TokenizeMultiValueParameter(this string! literal) -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -16,5 +20,5 @@ override Microsoft.TemplateEngine.Utils.RangeVersionSpecification.ToString() -> 
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string? author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string? baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ClassificationFilter(string? classification) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
-static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ConstraintFilters(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>! constraintDefinitions) -> System.Collections.Generic.IEnumerable<System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!>!
+static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.ConstraintFilters(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint!>! constraintDefinitions) -> System.Collections.Generic.IEnumerable<System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.LanguageFilter(string? language) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!

@@ -5,6 +5,7 @@
 
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 

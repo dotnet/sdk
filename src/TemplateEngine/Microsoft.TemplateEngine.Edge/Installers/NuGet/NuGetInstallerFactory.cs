@@ -7,15 +7,15 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
-    internal class NuGetInstallerFactory : IInstallerFactory
+    public class NuGetInstallerFactory : IInstallerFactory
     {
-        public static readonly Guid FactoryId = new Guid("{015DCBAC-B4A5-49EA-94A6-061616EB60E2}");
+        internal static readonly Guid FactoryId = new Guid("{015DCBAC-B4A5-49EA-94A6-061616EB60E2}");
 
-        public Guid Id => FactoryId;
+        Guid IIdentifiedComponent.Id => FactoryId;
 
-        public string Name => "NuGet";
+        string IInstallerFactory.Name => "NuGet";
 
-        public IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
+        IInstaller IInstallerFactory.CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
         {
             return new NuGetInstaller(this, settings, installPath);
         }

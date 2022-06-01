@@ -7,15 +7,15 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
-    internal class FolderInstallerFactory : IInstallerFactory
+    public class FolderInstallerFactory : IInstallerFactory
     {
-        public static readonly Guid FactoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
+        internal static readonly Guid FactoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
 
-        public Guid Id => FactoryId;
+        Guid IIdentifiedComponent.Id => FactoryId;
 
-        public string Name => "Folder";
+        string IInstallerFactory.Name => "Folder";
 
-        public IInstaller CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
+        IInstaller IInstallerFactory.CreateInstaller(IEngineEnvironmentSettings settings, string installPath)
         {
             return new FolderInstaller(settings, this);
         }

@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using System;
-using System.Threading.Tasks;
-
-namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions.Constraints
 {
     /// <summary>
     /// Constraint that can be used to filter out <see cref="ITemplateInfo"/> from further processing.

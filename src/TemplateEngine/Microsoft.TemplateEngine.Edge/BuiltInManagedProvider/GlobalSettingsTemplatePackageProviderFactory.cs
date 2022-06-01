@@ -7,21 +7,21 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
-    internal class GlobalSettingsTemplatePackageProviderFactory : ITemplatePackageProviderFactory, IPrioritizedComponent
+    public class GlobalSettingsTemplatePackageProviderFactory : ITemplatePackageProviderFactory, IPrioritizedComponent
     {
-        public static readonly Guid FactoryId = new Guid("{3AACE22E-E978-4BAF-8BC1-568B290A238C}");
+        internal static readonly Guid FactoryId = new Guid("{3AACE22E-E978-4BAF-8BC1-568B290A238C}");
 
-        public Guid Id => FactoryId;
+        Guid IIdentifiedComponent.Id => FactoryId;
 
-        public string DisplayName => "Global Settings";
+        string ITemplatePackageProviderFactory.DisplayName => "Global Settings";
 
         /// <summary>
         /// We want to have higher priority than SDK/OptionalWorkload providers.
         /// So user installed templates(from this provider) override those.
         /// </summary>
-        public int Priority => 1000;
+        int IPrioritizedComponent.Priority => 1000;
 
-        public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
+        ITemplatePackageProvider ITemplatePackageProviderFactory.CreateProvider(IEngineEnvironmentSettings settings)
         {
             return new GlobalSettingsTemplatePackageProvider(this, settings);
         }

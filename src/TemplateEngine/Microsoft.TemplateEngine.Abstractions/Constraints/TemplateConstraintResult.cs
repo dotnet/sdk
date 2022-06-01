@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions.Constraints
 {
     /// <summary>
     /// Result of constraint evaluation.

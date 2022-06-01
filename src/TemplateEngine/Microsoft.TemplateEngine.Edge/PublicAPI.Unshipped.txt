@@ -1,8 +1,27 @@
-﻿Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Dispose() -> void
+﻿Microsoft.TemplateEngine.Edge.BuiltInManagedProvider.GlobalSettingsTemplatePackageProviderFactory
+Microsoft.TemplateEngine.Edge.BuiltInManagedProvider.GlobalSettingsTemplatePackageProviderFactory.GlobalSettingsTemplatePackageProviderFactory() -> void
+Microsoft.TemplateEngine.Edge.Constraints.HostConstraintFactory
+Microsoft.TemplateEngine.Edge.Constraints.HostConstraintFactory.HostConstraintFactory() -> void
+Microsoft.TemplateEngine.Edge.Constraints.OSConstraintFactory
+Microsoft.TemplateEngine.Edge.Constraints.OSConstraintFactory.OSConstraintFactory() -> void
+Microsoft.TemplateEngine.Edge.Constraints.SdkVersionConstraintFactory
+Microsoft.TemplateEngine.Edge.Constraints.SdkVersionConstraintFactory.SdkVersionConstraintFactory() -> void
+Microsoft.TemplateEngine.Edge.Constraints.WorkloadConstraintFactory
+Microsoft.TemplateEngine.Edge.Constraints.WorkloadConstraintFactory.WorkloadConstraintFactory() -> void
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Dispose() -> void
+Microsoft.TemplateEngine.Edge.Installers.Folder.FolderInstallerFactory
+Microsoft.TemplateEngine.Edge.Installers.Folder.FolderInstallerFactory.FolderInstallerFactory() -> void
+Microsoft.TemplateEngine.Edge.Installers.NuGet.NuGetInstallerFactory
+Microsoft.TemplateEngine.Edge.Installers.NuGet.NuGetInstallerFactory.NuGetInstallerFactory() -> void
+Microsoft.TemplateEngine.Edge.Mount.Archive.ZipFileMountPointFactory
+Microsoft.TemplateEngine.Edge.Mount.Archive.ZipFileMountPointFactory.ZipFileMountPointFactory() -> void
+Microsoft.TemplateEngine.Edge.Mount.FileSystem.FileSystemMountPointFactory
+Microsoft.TemplateEngine.Edge.Mount.FileSystem.FileSystemMountPointFactory.FileSystemMountPointFactory() -> void
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Dispose() -> void
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.Dispose() -> void
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string? args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>!
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templates, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! Template, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.TemplateConstraintResult!>! Result)>!>!
-Microsoft.TemplateEngine.Edge.TemplateConstraintManager.GetConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>? templates = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateConstraint!>!>!
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string? args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!>!
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>! templates, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! Template, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!>! Result)>!>!
+Microsoft.TemplateEngine.Edge.TemplateConstraintManager.GetConstraintsAsync(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>? templates = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint!>!>!
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.TemplateConstraintManager(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! engineEnvironmentSettings) -> void
+static Microsoft.TemplateEngine.Edge.Components.MandatoryComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!

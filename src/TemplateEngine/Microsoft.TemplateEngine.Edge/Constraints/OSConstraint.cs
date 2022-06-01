@@ -11,11 +11,12 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
-    internal class OSConstraintFactory : ITemplateConstraintFactory
+    public class OSConstraintFactory : ITemplateConstraintFactory
     {
         private static readonly Dictionary<string, OSPlatform> _platformMap = new Dictionary<string, OSPlatform>(StringComparer.OrdinalIgnoreCase)
         {
@@ -24,50 +25,36 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             { "OSX",  OSPlatform.OSX }
         };
 
-        public Guid Id { get; } = Guid.Parse("{73DE9788-264A-427B-A26F-2CA3911EE424}");
+        Guid IIdentifiedComponent.Id { get; } = Guid.Parse("{73DE9788-264A-427B-A26F-2CA3911EE424}");
 
-        public string Type => "os";
+        string ITemplateConstraintFactory.Type => "os";
 
-        public Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
+        Task<ITemplateConstraint> ITemplateConstraintFactory.CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult((ITemplateConstraint)new OSConstraint(environmentSettings, this));
         }
 
-        internal class OSConstraint : ITemplateConstraint
+        internal class OSConstraint : ConstraintBase
         {
-            private readonly IEngineEnvironmentSettings _environmentSettings;
-            private readonly ITemplateConstraintFactory _factory;
-
             internal OSConstraint(IEngineEnvironmentSettings environmentSettings, ITemplateConstraintFactory factory)
+                : base(environmentSettings, factory)
+            { }
+
+            public override string DisplayName => LocalizableStrings.OSConstraint_Name;
+
+            protected override TemplateConstraintResult EvaluateInternal(string? args)
             {
-                _environmentSettings = environmentSettings;
-                _factory = factory;
-            }
+                IEnumerable<OSPlatform> supportedOS = ParseArgs(args);
 
-            public string Type => _factory.Type;
-
-            public string DisplayName => LocalizableStrings.OSConstraint_Name;
-
-            public TemplateConstraintResult Evaluate(string? args)
-            {
-                try
+                foreach (OSPlatform platform in supportedOS)
                 {
-                    IEnumerable<OSPlatform> supportedOS = ParseArgs(args);
-
-                    foreach (OSPlatform platform in supportedOS)
+                    if (RuntimeInformation.IsOSPlatform(platform))
                     {
-                        if (RuntimeInformation.IsOSPlatform(platform))
-                        {
-                            return TemplateConstraintResult.CreateAllowed(Type);
-                        }
+                        return TemplateConstraintResult.CreateAllowed(Type);
                     }
-                    return TemplateConstraintResult.CreateRestricted(Type, string.Format(LocalizableStrings.OSConstraint_Message_Restricted, RuntimeInformation.OSDescription, string.Join(", ", supportedOS)));
                 }
-                catch (ConfigurationException ce)
-                {
-                    return TemplateConstraintResult.CreateFailure(Type, ce.Message, LocalizableStrings.Constraint_WrongConfigurationCTA);
-                }
+                return TemplateConstraintResult.CreateRestricted(Type, string.Format(LocalizableStrings.OSConstraint_Message_Restricted, RuntimeInformation.OSDescription, string.Join(", ", supportedOS)));
             }
 
             //supported configuration:
@@ -76,48 +63,16 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             private static IEnumerable<OSPlatform> ParseArgs(string? args)
             {
                 string supportedValues = string.Join(", ", _platformMap.Keys.Select(e => $"'{e}'"));
-                if (string.IsNullOrWhiteSpace(args))
-                {
-                    throw new ConfigurationException(LocalizableStrings.Constraint_Error_ArgumentsNotSpecified);
-                }
 
-                JToken? token;
-                try
-                {
-                    token = JToken.Parse(args!);
-                }
-                catch (Exception e)
-                {
-                    throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_InvalidJson, args), e);
-                }
+                return args.ParseArrayOfConstraintStrings().Select(Parse);
 
-                if (token!.Type == JTokenType.String)
+                OSPlatform Parse(string arg)
                 {
-                    return new[] { Parse(token.Value<string>()) };
-                }
-                else if (token is JArray jArray)
-                {
-                    IEnumerable<string?> values = jArray.Values<string>();
-                    List<OSPlatform> readValues = new List<OSPlatform>();
-                    foreach (string? value in values)
-                    {
-                        readValues.Add(Parse(value));
-                    }
-                    if (!readValues.Any())
-                    {
-                        throw new ConfigurationException(string.Format(LocalizableStrings.Constraint_Error_ArrayHasNoObjects, args));
-                    }
-                    return readValues;
-                }
-                throw new ConfigurationException(string.Format(LocalizableStrings.OSConstraint_Error_InvalidJsonType, args));
-                OSPlatform Parse(string? arg)
-                {
-                    string value = arg ?? throw new ConfigurationException(string.Format(LocalizableStrings.OSConstraint_Error_InvalidOSName, arg, supportedValues));
-                    if (_platformMap.TryGetValue(value, out OSPlatform parsedValue))
+                    if (_platformMap.TryGetValue(arg, out OSPlatform parsedValue))
                     {
                         return parsedValue;
                     }
-                    throw new ConfigurationException(string.Format(LocalizableStrings.OSConstraint_Error_InvalidOSName, value, supportedValues));
+                    throw new ConfigurationException(string.Format(LocalizableStrings.OSConstraint_Error_InvalidOSName, arg, supportedValues));
                 }
             }
         }

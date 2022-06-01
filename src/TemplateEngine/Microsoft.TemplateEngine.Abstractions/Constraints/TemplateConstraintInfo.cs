@@ -5,7 +5,7 @@
 
 using System;
 
-namespace Microsoft.TemplateEngine.Abstractions
+namespace Microsoft.TemplateEngine.Abstractions.Constraints
 {
     /// <summary>
     /// Represents information about template constraint defintion in template cache <see cref="ITemplateInfo"/>.

@@ -61,6 +61,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; should not contain empty items.
+        /// </summary>
+        internal static string Constaint_Error_ArgumentHasEmptyString {
+            get {
+                return ResourceManager.GetString("Constaint_Error_ArgumentHasEmptyString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Argument(s) were not specified. At least one argument should be specified..
         /// </summary>
         internal static string Constraint_Error_ArgumentsNotSpecified {
@@ -84,6 +93,42 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string Constraint_Error_InvalidJson {
             get {
                 return ResourceManager.GetString("Constraint_Error_InvalidJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; should be an array of objects..
+        /// </summary>
+        internal static string Constraint_Error_InvalidJsonArray_Objects {
+            get {
+                return ResourceManager.GetString("Constraint_Error_InvalidJsonArray_Objects", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON array..
+        /// </summary>
+        internal static string Constraint_Error_InvalidJsonType_Array {
+            get {
+                return ResourceManager.GetString("Constraint_Error_InvalidJsonType_Array", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON string or array..
+        /// </summary>
+        internal static string Constraint_Error_InvalidJsonType_StringOrArray {
+            get {
+                return ResourceManager.GetString("Constraint_Error_InvalidJsonType_StringOrArray", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid version or version range..
+        /// </summary>
+        internal static string Constraint_Error_InvalidVersion {
+            get {
+                return ResourceManager.GetString("Constraint_Error_InvalidVersion", resourceCulture);
             }
         }
         
@@ -181,60 +226,6 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument(s) were not specified. At least one argument should be specified..
-        /// </summary>
-        internal static string HostConstraint_Error_ArgumentsNotSpecified {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_ArgumentsNotSpecified", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; does not contain valid host configurations..
-        /// </summary>
-        internal static string HostConstraint_Error_ArrayHasNoObjects {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_ArrayHasNoObjects", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON.
-        /// </summary>
-        internal static string HostConstraint_Error_InvalidJson {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_InvalidJson", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON array..
-        /// </summary>
-        internal static string HostConstraint_Error_InvalidJsonArray {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_InvalidJsonArray", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; should be an array of objects..
-        /// </summary>
-        internal static string HostConstraint_Error_InvalidJsonArray_Objects {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_InvalidJsonArray_Objects", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid version or version range..
-        /// </summary>
-        internal static string HostConstraint_Error_InvalidVersion {
-            get {
-                return ResourceManager.GetString("HostConstraint_Error_InvalidVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; does not have mandatory property &apos;{1}&apos;..
         /// </summary>
         internal static string HostConstraint_Error_MissingMandatoryProperty {
@@ -249,6 +240,15 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string HostConstraint_Message_Restricted {
             get {
                 return ResourceManager.GetString("HostConstraint_Message_Restricted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Template engine host.
+        /// </summary>
+        internal static string HostConstraint_Name {
+            get {
+                return ResourceManager.GetString("HostConstraint_Name", resourceCulture);
             }
         }
         
@@ -463,15 +463,6 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid JSON string or array..
-        /// </summary>
-        internal static string OSConstraint_Error_InvalidJsonType {
-            get {
-                return ResourceManager.GetString("OSConstraint_Error_InvalidJsonType", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid operating system name. Allowed values are: {1}..
         /// </summary>
         internal static string OSConstraint_Error_InvalidOSName {
@@ -504,6 +495,51 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string Scanner_Error_TemplatePackageLocationIsNotSupported {
             get {
                 return ResourceManager.GetString("Scanner_Error_TemplatePackageLocationIsNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not a valid semver version..
+        /// </summary>
+        internal static string SdkConstraint_Error_InvalidVersion {
+            get {
+                return ResourceManager.GetString("SdkConstraint_Error_InvalidVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple &apos;ISdkInfoProvider&apos; components provided by host ({0}), therefore &apos;SdkVersionConstraint&apos; cannot be properly initialized..
+        /// </summary>
+        internal static string SdkConstraint_Error_MismatchedProviders {
+            get {
+                return ResourceManager.GetString("SdkConstraint_Error_MismatchedProviders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No &apos;ISdkInfoProvider&apos; component provided by host. &apos;SdkVersionConstraint&apos; cannot be properly initialized..
+        /// </summary>
+        internal static string SdkConstraint_Error_MissingProvider {
+            get {
+                return ResourceManager.GetString("SdkConstraint_Error_MissingProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}.
+        /// </summary>
+        internal static string SdkConstraint_Message_Restricted {
+            get {
+                return ResourceManager.GetString("SdkConstraint_Message_Restricted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .NET SDK version.
+        /// </summary>
+        internal static string SdkVersionConstraint_Name {
+            get {
+                return ResourceManager.GetString("SdkVersionConstraint_Name", resourceCulture);
             }
         }
         
@@ -598,6 +634,51 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string TemplatePackageManager_Error_FailedToStoreCache {
             get {
                 return ResourceManager.GetString("TemplatePackageManager_Error_FailedToStoreCache", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Multiple &apos;IWorkloadsInfoProvider&apos; components provided by host ({0}), therefore &apos;WorkloadConstraint&apos; cannot be properly initialized..
+        /// </summary>
+        internal static string WorkloadConstraint_Error_MismatchedProviders {
+            get {
+                return ResourceManager.GetString("WorkloadConstraint_Error_MismatchedProviders", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No &apos;IWorkloadsInfoProvider&apos; component provided by host. &apos;WorkloadConstraint&apos; cannot be properly initialized..
+        /// </summary>
+        internal static string WorkloadConstraint_Error_MissingProvider {
+            get {
+                return ResourceManager.GetString("WorkloadConstraint_Error_MissingProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}.
+        /// </summary>
+        internal static string WorkloadConstraint_Message_Restricted {
+            get {
+                return ResourceManager.GetString("WorkloadConstraint_Message_Restricted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Workload.
+        /// </summary>
+        internal static string WorkloadConstraint_Name {
+            get {
+                return ResourceManager.GetString("WorkloadConstraint_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &apos;IWorkloadsInfoProvider&apos; component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped..
+        /// </summary>
+        internal static string WorkloadConstraint_Warning_DuplicateWorkloads {
+            get {
+                return ResourceManager.GetString("WorkloadConstraint_Warning_DuplicateWorkloads", resourceCulture);
             }
         }
     }

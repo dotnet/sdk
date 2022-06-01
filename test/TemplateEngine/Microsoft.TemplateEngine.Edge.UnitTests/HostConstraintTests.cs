@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
 using Newtonsoft.Json.Linq;

@@ -7,13 +7,13 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
-    internal class FileSystemMountPointFactory : IMountPointFactory
+    public class FileSystemMountPointFactory : IMountPointFactory
     {
         internal static readonly Guid FactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
 
-        public Guid Id => FactoryId;
+        Guid IIdentifiedComponent.Id => FactoryId;
 
-        public bool TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint)
+        bool IMountPointFactory.TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint parent, string mountPointUri, out IMountPoint mountPoint)
         {
             if (!Uri.TryCreate(mountPointUri, UriKind.Absolute, out var uri))
             {
