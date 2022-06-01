@@ -150,12 +150,12 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
+            Package package = Package.Create(packCommand.GetNuGetPackage(), null);
 
             // First we run without references. Without references, ApiCompat should not be able to see that class First
             // removed an interface due to it's base class removing that implementation. We validate that APICompat doesn't
             // log errors when not using references.
-            new CompatibleFrameworkInPackageValidator(false, log, null).Validate(package);
+            new CompatibleFrameworkInPackageValidator(false, log, new Dictionary<string, HashSet<string>>()).Validate(package);
             Assert.Empty(log.errors);
 
             // Now we do pass in references. With references, ApiCompat should now detect that an interface was removed in a
@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
+            Package package = Package.Create(packCommand.GetNuGetPackage(), null);
 
             Dictionary<string, HashSet<string>> references = new()
             {
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             // First we run without references. Without references, ApiCompat should not be able to see that class First
             // removed an interface due to it's base class removing that implementation. We validate that APICompat doesn't
             // log errors when not using references.
-            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : null).Validate(package);
+            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : new Dictionary<string, HashSet<string>>()).Validate(package);
             if (shouldLogError)
                 Assert.Contains($"CP1002 Could not find matching assembly: '{testDummyDependency.Name}.dll' in any of the search directories.", log.errors);
             else
@@ -238,7 +238,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
+            Package package = Package.Create(packCommand.GetNuGetPackage(), null);
 
             Dictionary<string, HashSet<string>> references = new()
             {
@@ -249,7 +249,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             if (deleteFile)
                 File.Delete(Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, $"{dependency.Name}.dll"));
 
-            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : null).Validate(package);
+            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : new Dictionary<string, HashSet<string>>()).Validate(package);
 
             if (expectCP0001)
                 Assert.Contains($"CP0001 Type 'PackageValidationTests.MyForwardedType' exists on lib/netstandard2.0/{testProject.Name}.dll but not on lib/{ToolsetInfo.CurrentTargetFramework}/{testProject.Name}.dll", log.errors);
@@ -284,7 +284,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
+            Package package = Package.Create(packCommand.GetNuGetPackage(), null);
 
             Dictionary<string, HashSet<string>> references = new()
             {
@@ -311,14 +311,14 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
             PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
-            Package package = NupkgParser.CreatePackage(packCommand.GetNuGetPackage(), null);
+            Package package = Package.Create(packCommand.GetNuGetPackage(), null);
 
             Dictionary<string, HashSet<string>> references = new()
             {
                 { "netstandard2.0", new HashSet<string> { Path.Combine(asset.TestRoot, asset.TestProject.Name, "bin", "Debug", "netstandard2.0") } }
             };
 
-            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : null).Validate(package);
+            new CompatibleFrameworkInPackageValidator(false, log, useReferences ? references : new Dictionary<string, HashSet<string>>()).Validate(package);
 
             if (!useReferences)
                 Assert.Empty(log.errors.Where(e => e.Contains("CP1003")));
