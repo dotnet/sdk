@@ -27,10 +27,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 return;
             }
-            // If the left member is virtual, it must not be sealed or inside a sealed type.
+
             if (left.IsVirtual)
             {
-                // If the right member is not virtual, emit a diagnostic
+                // If left is virtual right is not, emit a diagnostic
                 // that the virtual modifier cannot be removed.
                 if (!right.IsVirtual)
                 {
@@ -39,9 +39,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         Resources.CannotRemoveVirtualModifier, left), DifferenceType.Removed, right));
                 }
             }
-            // Otherwise if the left member is not virtual, ensure that
-            // we're either in strict mode, or the left member is not
-            // abstract (since it is legal to change abstract to virtual).
+            // If the left member is not virtual, ensure that we're
+            // either in strict mode, or the left member is not abstract
+            // (since it is legal to change abstract to virtual).
             else if (Settings.StrictMode || !left.IsAbstract)
             {
                 // If the right member is virtual, emit a diagnostic
