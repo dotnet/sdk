@@ -61,6 +61,7 @@ sdk-options:
   dev-certs         {LocalizableStrings.DevCertsDefinition}
   fsi               {LocalizableStrings.FsiDefinition}
   user-secrets      {LocalizableStrings.UserSecretsDefinition}
+  user-jwts         {LocalizableStrings.UserJwtsDefinition}
   watch             {LocalizableStrings.WatchDefinition}
 
 {LocalizableStrings.RunDotnetCommandHelpForMore}";
