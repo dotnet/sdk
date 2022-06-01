@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.DotNet.Compatibility.ErrorSuppression;
+using Microsoft.DotNet.ApiCompatibility.Logging;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 
@@ -16,13 +16,12 @@ namespace Microsoft.DotNet.PackageValidation
     /// </summary>
     public class CompatibleTfmValidator
     {
-        private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
-
+        private static readonly Dictionary<NuGetFramework, HashSet<NuGetFramework>> s_packageTfmMapping = InitializeTfmMappings();
         private readonly bool _runApiCompat;
         private readonly ApiCompatRunner _apiCompatRunner;
-        private readonly ICompatibilityLogger _log;
+        private readonly CompatibilityLoggerBase _log;
 
-        public CompatibleTfmValidator(bool runApiCompat, bool enableStrictMode, ICompatibilityLogger log, Dictionary<string, HashSet<string>> apiCompatReferences)
+        public CompatibleTfmValidator(bool runApiCompat, bool enableStrictMode, CompatibilityLoggerBase log, Dictionary<string, HashSet<string>> apiCompatReferences)
         {
             _runApiCompat = runApiCompat;
             _log = log;
@@ -36,9 +35,6 @@ namespace Microsoft.DotNet.PackageValidation
         /// <param name="package">Nuget Package that needs to be validated.</param>
         public void Validate(Package package)
         {
-            if (_runApiCompat)
-                _apiCompatRunner.InitializePaths(package.PackagePath, package.PackagePath);
-
             HashSet<NuGetFramework> compatibleTargetFrameworks = new();
             foreach (NuGetFramework item in package.FrameworksInPackage)
             {
@@ -51,67 +47,67 @@ namespace Microsoft.DotNet.PackageValidation
 
             foreach (NuGetFramework framework in compatibleTargetFrameworks)
             {
-                ContentItem compileTimeAsset = package.FindBestCompileAssetForFramework(framework);
-
+                ContentItem? compileTimeAsset = package.FindBestCompileAssetForFramework(framework);
                 if (compileTimeAsset == null)
                 {
                     _log.LogError(
-                        new Suppression { DiagnosticId = DiagnosticIds.ApplicableCompileTimeAsset, Target = framework.ToString() },
+                        new Suppression(DiagnosticIds.ApplicableCompileTimeAsset) { Target = framework.ToString() },
                         DiagnosticIds.ApplicableCompileTimeAsset,
                         Resources.NoCompatibleCompileTimeAsset,
                         framework.ToString());
                     break;
                 }
 
-                ContentItem runtimeAsset = package.FindBestRuntimeAssetForFramework(framework);
+                ContentItem? runtimeAsset = package.FindBestRuntimeAssetForFramework(framework);
                 if (runtimeAsset == null)
                 {
                     _log.LogError(
-                        new Suppression { DiagnosticId = DiagnosticIds.CompatibleRuntimeRidLessAsset, Target = framework.ToString() },
+                        new Suppression(DiagnosticIds.CompatibleRuntimeRidLessAsset) { Target = framework.ToString() },
                         DiagnosticIds.CompatibleRuntimeRidLessAsset,
                         Resources.NoCompatibleRuntimeAsset,
                         framework.ToString());
                 }
-                else
+                // Invoke ApiCompat to compare the compile time asset with the runtime asset if they are not the same assembly.
+                else if (_runApiCompat && compileTimeAsset.Path != runtimeAsset.Path)
                 {
-                    if (_runApiCompat && compileTimeAsset.Path != runtimeAsset.Path)
-                    {
-                        string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path);
-                        _apiCompatRunner.QueueApiCompatFromContentItem(package.PackageId, compileTimeAsset, runtimeAsset, header);
-                    }
+                    string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path);
+                    _apiCompatRunner.QueueApiCompatFromContentItem(package.PackageId, compileTimeAsset, runtimeAsset, header);
                 }
 
                 foreach (string rid in package.Rids.Where(t => IsSupportedRidTargetFrameworkPair(framework, t)))
                 {
-                    runtimeAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
-                    if (runtimeAsset == null)
+                    ContentItem? runtimeRidSpecificAsset = package.FindBestRuntimeAssetForFrameworkAndRuntime(framework, rid);
+                    if (runtimeRidSpecificAsset == null)
                     {
                         _log.LogError(
-                            new Suppression { DiagnosticId = DiagnosticIds.CompatibleRuntimeRidSpecificAsset, Target = framework.ToString() + "-" + rid },
+                            new Suppression(DiagnosticIds.CompatibleRuntimeRidSpecificAsset) { Target = framework.ToString() + "-" + rid },
                             DiagnosticIds.CompatibleRuntimeRidSpecificAsset,
                             Resources.NoCompatibleRidSpecificRuntimeAsset,
                             framework.ToString(),
                             rid);
                     }
-                    else
+                    // Invoke ApiCompat to compare the compile time asset with the runtime specific asset if they are not the same and
+                    // if the comparison hasn't already happened (when the runtime asset is the same as the runtime specific asset).
+                    else if (_runApiCompat &&
+                        compileTimeAsset.Path != runtimeRidSpecificAsset.Path &&
+                        (runtimeAsset == null || runtimeAsset.Path != runtimeRidSpecificAsset.Path))
                     {
-                        if (_runApiCompat && compileTimeAsset.Path != runtimeAsset.Path)
-                        {
-                            string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeAsset.Path);
-                            _apiCompatRunner.QueueApiCompatFromContentItem(package.PackageId, compileTimeAsset, runtimeAsset, header);
-                        }
+                        string header = string.Format(Resources.ApiCompatibilityHeader, compileTimeAsset.Path, runtimeRidSpecificAsset.Path);
+                        _apiCompatRunner.QueueApiCompatFromContentItem(package.PackageId, compileTimeAsset, runtimeRidSpecificAsset, header);
                     }
                 }
             }
 
-            _apiCompatRunner.RunApiCompat();
+            if (_runApiCompat)
+                _apiCompatRunner.RunApiCompat(package.PackagePath, package.PackagePath);
         }
 
         private static Dictionary<NuGetFramework, HashSet<NuGetFramework>> InitializeTfmMappings()
         {
             Dictionary<NuGetFramework, HashSet<NuGetFramework>> packageTfmMapping = new();
+
             // creating a map framework in package => frameworks to test based on default compatibilty mapping.
-            foreach (var item in DefaultFrameworkMappings.Instance.CompatibilityMappings)
+            foreach (OneWayCompatibilityMappingEntry item in DefaultFrameworkMappings.Instance.CompatibilityMappings)
             {
                 NuGetFramework forwardTfm = item.SupportedFrameworkRange.Max;
                 NuGetFramework reverseTfm = item.TargetFrameworkRange.Min;
@@ -124,12 +120,11 @@ namespace Microsoft.DotNet.PackageValidation
                     packageTfmMapping.Add(forwardTfm, new HashSet<NuGetFramework> { reverseTfm });
                 }
             }
+
             return packageTfmMapping;
         }
 
-        private static bool IsSupportedRidTargetFrameworkPair(NuGetFramework tfm, string rid)
-        {
-            return tfm.Framework == ".NETFramework" ? rid.StartsWith("win", StringComparison.OrdinalIgnoreCase) : true;
-        }
+        private static bool IsSupportedRidTargetFrameworkPair(NuGetFramework tfm, string rid) =>
+            tfm.Framework != ".NETFramework" || rid.StartsWith("win", StringComparison.OrdinalIgnoreCase);
     }
 }
