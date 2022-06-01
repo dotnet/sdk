@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         }
 
         public override bool Equals(object obj) =>
-            Equals(obj is MetadataInformation) && Equals((MetadataInformation)obj);
+            obj is MetadataInformation && Equals((MetadataInformation)obj);
 
         public bool Equals(MetadataInformation other) =>
             string.Equals(AssemblyName, other.AssemblyName, StringComparison.OrdinalIgnoreCase) &&
