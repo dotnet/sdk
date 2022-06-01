@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
+    <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22114.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
   </ItemGroup>
