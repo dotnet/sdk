@@ -60,7 +60,7 @@ sdk-options:
 {LocalizableStrings.AdditionalTools}
   dev-certs         {LocalizableStrings.DevCertsDefinition}
   fsi               {LocalizableStrings.FsiDefinition}
-  user-kwts         {LocalizableStrings.UserJwtsDefinition}
+  user-jwts         {LocalizableStrings.UserJwtsDefinition}
   user-secrets      {LocalizableStrings.UserSecretsDefinition}
   watch             {LocalizableStrings.WatchDefinition}
 
