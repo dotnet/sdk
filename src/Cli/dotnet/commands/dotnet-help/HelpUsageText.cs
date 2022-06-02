@@ -60,8 +60,8 @@ sdk-options:
 {LocalizableStrings.AdditionalTools}
   dev-certs         {LocalizableStrings.DevCertsDefinition}
   fsi               {LocalizableStrings.FsiDefinition}
-  user-secrets      {LocalizableStrings.UserSecretsDefinition}
   user-jwts         {LocalizableStrings.UserJwtsDefinition}
+  user-secrets      {LocalizableStrings.UserSecretsDefinition}
   watch             {LocalizableStrings.WatchDefinition}
 
 {LocalizableStrings.RunDotnetCommandHelpForMore}";
