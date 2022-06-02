@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
+    <StrongNameKeyId>Open</StrongNameKeyId>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>packagevalidation</ToolCommandName>
     <!-- At the moment this project exists only for internal testing and debugging. -->
