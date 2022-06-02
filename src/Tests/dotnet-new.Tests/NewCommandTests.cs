@@ -8,6 +8,7 @@ using Microsoft.NET.TestFramework.Commands;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.NET.TestFramework.Assertions;
+using System.IO;
 
 namespace Microsoft.DotNet.New.Tests
 {
@@ -64,6 +65,52 @@ namespace Microsoft.DotNet.New.Tests
             cmd.Should().ExitWith(127)
                 .And.HaveStdErrContaining("Unrecognized command or argument '--bla'")
                 .And.HaveStdOutContaining("dotnet new update [options]");
+        }
+
+        [Fact]
+        public void ItCanInstallRemoteNuGetPackage()
+        {
+            var cmd = new DotnetCommand(Log).Execute("new", "install", "Microsoft.DotNet.Web.ProjectTemplates.3.0");
+            cmd.Should().Pass()
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("Determining projects to restore...")
+                .And.HaveStdOutContaining("The following template packages will be installed:")
+                .And.HaveStdOutMatching($"Success: Microsoft\\.DotNet\\.Web\\.ProjectTemplates\\.3\\.0::([\\d\\.a-z-])+ installed the following templates:")
+                .And.HaveStdOutContaining("web")
+                .And.HaveStdOutContaining("blazorserver");
+        }
+
+        [Fact]
+        public void ItCanInstallRemoteNuGetPackageWithVersion()
+        {
+            var cmd = new DotnetCommand(Log).Execute("new", "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0");
+            cmd.Should().Pass()
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("Determining projects to restore...")
+                .And.HaveStdOutContaining("The following template packages will be installed:")
+                .And.HaveStdOutContaining("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0")
+                .And.HaveStdOutContaining($"Success: Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0 installed the following templates:")
+                .And.HaveStdOutContaining("web")
+                .And.HaveStdOutContaining("blazorwasm");
+        }
+
+        [Fact]
+        public void ItCanInstallLocalNuGetPackage()
+        {
+            var dotnetNewDirectory = _testAssetsManager.CopyTestAsset("dotnet-new", testAssetSubdirectory: "TestPackages")
+                            .WithSource();
+            var workingDirectory = Path.Combine(dotnetNewDirectory.Path, "nupkg_templates");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute("new", "install", "TestNupkgInstallTemplate.0.0.1.nupkg");
+
+            cmd.Should().Pass()
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("Determining projects to restore...")
+                .And.HaveStdOutContaining("The following template packages will be installed:")
+                .And.HaveStdOutContaining("TestNupkgInstallTemplate::0.0.1")
+                .And.HaveStdOutContaining($"Success: TestNupkgInstallTemplate::0.0.1 installed the following templates:")
+                .And.HaveStdOutContaining("nupkginstallv2");
         }
 
         [Fact(Skip = "https://github.com/dotnet/templating/issues/1971")]
