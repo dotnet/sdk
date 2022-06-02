@@ -219,4 +219,7 @@
   <data name="CannotRemoveVirtualModifier" xml:space="preserve">
     <value>Cannot remove virtual modifier from member '{0}'.</value>
   </data>
+  <data name="WroteSuppressions" xml:space="preserve">
+    <value>Successfully wrote compatibility suppressions to '{0}'.</value>
+  </data>
 </root>
