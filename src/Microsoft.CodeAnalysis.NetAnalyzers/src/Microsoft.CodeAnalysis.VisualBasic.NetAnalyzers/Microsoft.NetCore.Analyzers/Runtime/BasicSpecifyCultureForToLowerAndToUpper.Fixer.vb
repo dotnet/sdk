@@ -24,7 +24,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
             If ShouldFix(node) Then
                 Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
 
-                If memberAccess.Parent Is Nothing Or Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
+                If memberAccess.Parent Is Nothing OrElse Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
                     Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken)
                 End If
 
