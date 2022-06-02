@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.DotNet.PackageValidation.Validators;
 using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,7 +34,12 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "2.0.0", currentFilePaths, null, null);
-            new BaselinePackageValidator(previousPackage, false, _log, null).Validate(package);
+            new BaselinePackageValidator(_log).Validate(new()
+            {
+                BaselinePackage = previousPackage,
+                Package = package,
+                RunApiCompat = false
+            });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.TargetFrameworkDropped + " " + string.Format(Resources.MissingTargetFramework, ".NETStandard,Version=v2.0"), _log.errors);
         }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using Microsoft.DotNet.PackageValidation.Validators;
 using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,7 +27,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.Single(_log.errors);
             Assert.Equal(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + string.Format(Resources.NoCompatibleRuntimeAsset, ".NETCoreApp,Version=v3.1"), _log.errors[0]);
         }
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package); ;
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + string.Format(Resources.NoCompatibleRuntimeAsset, ".NETStandard,Version=v2.0"), _log.errors);
         }
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.CompatibleRuntimeRidLessAsset + " " + string.Format(Resources.NoCompatibleRuntimeAsset, ".NETCoreApp,Version=v2.0"), _log.errors);
             Assert.Contains(DiagnosticIds.CompatibleRuntimeRidSpecificAsset + " " + string.Format(Resources.NoCompatibleRidSpecificRuntimeAsset, ".NETCoreApp,Version=v2.0", "win"), _log.errors);
@@ -73,7 +74,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
 
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.ApplicableCompileTimeAsset + " " + string.Format(Resources.NoCompatibleCompileTimeAsset, ".NETStandard,Version=v2.0"), _log.errors);
@@ -89,7 +90,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.Empty(_log.errors);
         }
 
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.ApplicableCompileTimeAsset + " " +string.Format(Resources.NoCompatibleCompileTimeAsset, ".NETStandard,Version=v2.0"), _log.errors);
         }
@@ -119,7 +120,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.CompatibleRuntimeRidLessAsset +  " " + string.Format(Resources.NoCompatibleRuntimeAsset, ".NETCoreApp,Version=v3.0"), _log.errors);
         }
@@ -136,7 +137,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.Empty(_log.errors);
         }
 
@@ -150,7 +151,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             Assert.Contains(DiagnosticIds.ApplicableCompileTimeAsset + " " + string.Format(Resources.NoCompatibleCompileTimeAsset, ".NETStandard,Version=v2.0"), _log.errors);
         }
@@ -166,7 +167,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.Empty(_log.errors);
         }
 
@@ -182,7 +183,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "1.0.0", filePaths, null, null);
-            new CompatibleTfmValidator(false, false, _log, null).Validate(package);
+            new CompatibleTfmValidator(_log).Validate(new() { Package = package });
             Assert.Empty(_log.errors);
         }
 

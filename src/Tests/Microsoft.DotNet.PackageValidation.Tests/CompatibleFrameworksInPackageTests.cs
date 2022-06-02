@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.DotNet.PackageValidation.Validators;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
@@ -47,7 +48,7 @@ namespace PackageValidationTests
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
-            new CompatibleFrameworkInPackageValidator(false, _log, new Dictionary<string, HashSet<string>>()).Validate(package);
+            new CompatibleFrameworkInPackageValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
             // TODO: add asserts for assembly and header metadata.
             string assemblyName = $"{asset.TestProject.Name}.dll";
@@ -85,7 +86,7 @@ namespace PackageValidationTests
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
-            new CompatibleFrameworkInPackageValidator(false, _log, new Dictionary<string, HashSet<string>>()).Validate(package);
+            new CompatibleFrameworkInPackageValidator(_log).Validate(new() { Package = package });
             Assert.NotEmpty(_log.errors);
 
             string assemblyName = $"{asset.TestProject.Name}.dll";
