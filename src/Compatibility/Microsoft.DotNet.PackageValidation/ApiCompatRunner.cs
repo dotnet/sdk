@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.PackageValidation
         internal Dictionary<MetadataInformation, List<(MetadataInformation rightAssembly, string header)>> _dict = new();
         private readonly ApiComparer _differ;
         private readonly CompatibilityLoggerBase _log;
-        private readonly Dictionary<string, HashSet<string>> _referencePaths;
+        private readonly Dictionary<string, HashSet<string>>? _referencePaths;
         private readonly string _leftPackagePath;
         private readonly string _rightPackagePath;
         private readonly bool _isBaselineSuppression;
 
         public ApiCompatRunner(bool enableStrictMode,
             CompatibilityLoggerBase log,
-            Dictionary<string, HashSet<string>> referencePaths,
+            Dictionary<string, HashSet<string>>? referencePaths,
             string leftPackagePath,
             string? rightPackagePath = null)
         {
@@ -121,6 +121,7 @@ namespace Microsoft.DotNet.PackageValidation
             // In order to enable reference support for baseline suppression we need a better way
             // to resolve references for the baseline package. Let's not enable it for now.
             bool shouldResolveReferences = !_isBaselineSuppression &&
+                _referencePaths != null &&
                 _referencePaths.TryGetValue(assemblyInformation.TargetFramework, out referencePathForTFM);
 
             AssemblySymbolLoader loader = new(resolveAssemblyReferences: shouldResolveReferences);
@@ -129,7 +130,7 @@ namespace Microsoft.DotNet.PackageValidation
                 resolvedReferences = true;
                 loader.AddReferenceSearchDirectories(referencePathForTFM);
             }
-            else if (!_isBaselineSuppression && _referencePaths.Count != 0)
+            else if (!_isBaselineSuppression && _referencePaths?.Count > 0)
             {
                 _log.LogWarning(
                     new Suppression(ApiCompatibility.DiagnosticIds.SearchDirectoriesNotFoundForTfm)
