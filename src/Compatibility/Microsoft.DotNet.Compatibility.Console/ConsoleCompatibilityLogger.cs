@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Compatibility.Console
 {
     internal class ConsoleCompatibilityLogger : CompatibilityLoggerBase
     {
-        public ConsoleCompatibilityLogger(string? suppressionsFile, bool baselineAllErrors = false, string? noWarn = null)
+        public ConsoleCompatibilityLogger(string? suppressionsFile, bool baselineAllErrors, string? noWarn)
             : base(suppressionsFile, baselineAllErrors, noWarn)
         {
         }

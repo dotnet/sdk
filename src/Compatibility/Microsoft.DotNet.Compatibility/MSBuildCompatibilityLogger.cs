@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Compatibility
     {
         private readonly Logger _log;
 
-        public MSBuildCompatibilityLogger(Logger log, string? suppressionsFile, bool baselineAllErrors = false, string? noWarn = null)
+        public MSBuildCompatibilityLogger(Logger log, string? suppressionsFile, bool baselineAllErrors, string? noWarn)
             : base(suppressionsFile, baselineAllErrors, noWarn)
         {
             _log = log;
