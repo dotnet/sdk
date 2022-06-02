@@ -89,4 +89,6 @@
     </ItemGroup>
   </Target>
 
+  <Import Project="..\Microsoft.DotNet.Compatibility.Shared\Microsoft.DotNet.Compatibility.Shared.projitems" Label="Shared" />
+
 </Project>

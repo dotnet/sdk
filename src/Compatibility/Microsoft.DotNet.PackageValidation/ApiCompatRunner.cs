@@ -18,32 +18,44 @@ namespace Microsoft.DotNet.PackageValidation
     public class ApiCompatRunner
     {
         internal Dictionary<MetadataInformation, List<(MetadataInformation rightAssembly, string header)>> _dict = new();
-        private readonly ApiComparer _differ = new();
+        private readonly ApiComparer _differ;
         private readonly CompatibilityLoggerBase _log;
         private readonly Dictionary<string, HashSet<string>> _referencePaths;
+        private readonly string _leftPackagePath;
+        private readonly string _rightPackagePath;
+        private readonly bool _isBaselineSuppression;
 
-        public ApiCompatRunner(bool enableStrictMode, CompatibilityLoggerBase log, Dictionary<string, HashSet<string>> referencePaths)
+        public ApiCompatRunner(bool enableStrictMode,
+            CompatibilityLoggerBase log,
+            Dictionary<string, HashSet<string>> referencePaths,
+            string leftPackagePath,
+            string? rightPackagePath = null)
         {
-            _differ.StrictMode = enableStrictMode;
+            _differ = new()
+            {
+                StrictMode = enableStrictMode
+            };
             _log = log;
             _referencePaths = referencePaths;
+
+            _leftPackagePath = leftPackagePath;
+            _rightPackagePath = rightPackagePath ?? leftPackagePath;
+            // If assets from different packages are compared, mark the underlying suppression as baseline.
+            _isBaselineSuppression = !_leftPackagePath.Equals(_rightPackagePath, StringComparison.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
         /// Runs the api compat for the tuples in the dictionary.
         /// </summary>
-        public void RunApiCompat(string leftPackagePath, string rightPackagePath)
+        public void RunApiCompat()
         {
-            // If assets from different packages are compared, mark the underlying suppression as baseline.
-            bool isBaselineSuppression = !leftPackagePath.Equals(rightPackagePath, StringComparison.InvariantCultureIgnoreCase);
-
             foreach (MetadataInformation left in _dict.Keys)
             {
                 IAssemblySymbol leftSymbols;
                 bool runWithReferences = false;
-                using (Stream leftAssemblyStream = GetFileStreamFromPackage(leftPackagePath, left.AssemblyId))
+                using (Stream leftAssemblyStream = GetFileStreamFromPackage(_leftPackagePath, left.AssemblyId))
                 {
-                    leftSymbols = GetAssemblySymbolFromStream(leftAssemblyStream, left, isBaselineSuppression, out runWithReferences);
+                    leftSymbols = GetAssemblySymbolFromStream(leftAssemblyStream, left, out runWithReferences);
                 }
 
                 ElementContainer<IAssemblySymbol> leftContainer = new(leftSymbols, left);
@@ -52,9 +64,9 @@ namespace Microsoft.DotNet.PackageValidation
                 foreach ((MetadataInformation rightAssembly, string header) in _dict[left])
                 {
                     IAssemblySymbol rightSymbols;
-                    using (Stream rightAssemblyStream = GetFileStreamFromPackage(rightPackagePath, rightAssembly.AssemblyId))
+                    using (Stream rightAssemblyStream = GetFileStreamFromPackage(_rightPackagePath, rightAssembly.AssemblyId))
                     {
-                        rightSymbols = GetAssemblySymbolFromStream(rightAssemblyStream, rightAssembly, isBaselineSuppression, out bool resolvedReferences);
+                        rightSymbols = GetAssemblySymbolFromStream(rightAssemblyStream, rightAssembly, out bool resolvedReferences);
                         runWithReferences &= resolvedReferences;
                     }
 
@@ -76,7 +88,7 @@ namespace Microsoft.DotNet.PackageValidation
                             Target = difference.ReferenceId,
                             Left = diff.Left.AssemblyId,
                             Right = diff.Right.AssemblyId,
-                            IsBaselineSuppression = isBaselineSuppression
+                            IsBaselineSuppression = _isBaselineSuppression
                         };
 
                         // Log the difference header only if there are non suppressed or baselined errors.
@@ -101,14 +113,14 @@ namespace Microsoft.DotNet.PackageValidation
             _dict.Clear();
         }
 
-        private IAssemblySymbol GetAssemblySymbolFromStream(Stream assemblyStream, MetadataInformation assemblyInformation, bool isBaselineSuppression, out bool resolvedReferences)
+        private IAssemblySymbol GetAssemblySymbolFromStream(Stream assemblyStream, MetadataInformation assemblyInformation, out bool resolvedReferences)
         {
             resolvedReferences = false;
             HashSet<string>? referencePathForTFM = null;
 
             // In order to enable reference support for baseline suppression we need a better way
             // to resolve references for the baseline package. Let's not enable it for now.
-            bool shouldResolveReferences = !isBaselineSuppression &&
+            bool shouldResolveReferences = !_isBaselineSuppression &&
                 _referencePaths.TryGetValue(assemblyInformation.TargetFramework, out referencePathForTFM);
 
             AssemblySymbolLoader loader = new(resolveAssemblyReferences: shouldResolveReferences);
@@ -117,7 +129,7 @@ namespace Microsoft.DotNet.PackageValidation
                 resolvedReferences = true;
                 loader.AddReferenceSearchDirectories(referencePathForTFM);
             }
-            else if (!isBaselineSuppression && _referencePaths.Count != 0)
+            else if (!_isBaselineSuppression && _referencePaths.Count != 0)
             {
                 _log.LogWarning(
                     new Suppression(ApiCompatibility.DiagnosticIds.SearchDirectoriesNotFoundForTfm)

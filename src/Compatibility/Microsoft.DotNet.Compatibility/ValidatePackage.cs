@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.PackageValidation;
 using Microsoft.NET.Build.Tasks;
 #if NETCOREAPP
 using System.Runtime.Loader;
@@ -91,22 +90,17 @@ namespace Microsoft.DotNet.Compatibility
                 }
             }
 
-            Package package = Package.Create(PackageTargetPath, RuntimeGraph);
-            MSBuildCompatibilityLogger logger = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile, NoWarn);
-
-            new CompatibleTfmValidator(RunApiCompat, EnableStrictModeForCompatibleTfms, logger, apiCompatReferences).Validate(package);
-            new CompatibleFrameworkInPackageValidator(EnableStrictModeForCompatibleFrameworksInPackage, logger, apiCompatReferences).Validate(package);
-
-            if (!DisablePackageBaselineValidation && !string.IsNullOrEmpty(BaselinePackageTargetPath))
-            {
-                Package baselinePackage = Package.Create(BaselinePackageTargetPath, RuntimeGraph);
-                new BaselinePackageValidator(baselinePackage, RunApiCompat, logger, apiCompatReferences).Validate(package);
-            }
-
-            if (GenerateCompatibilitySuppressionFile)
-            {
-                logger.WriteSuppressionFile();
-            }
+            MSBuildCompatibilityLogger log = new(Log, CompatibilitySuppressionFilePath, GenerateCompatibilitySuppressionFile, NoWarn);
+            ValidatorBootstrap.RunValidators(log,
+                PackageTargetPath!,
+                GenerateCompatibilitySuppressionFile,
+                RunApiCompat,
+                EnableStrictModeForCompatibleTfms,
+                EnableStrictModeForCompatibleFrameworksInPackage,
+                DisablePackageBaselineValidation,
+                BaselinePackageTargetPath,
+                RuntimeGraph,
+                apiCompatReferences);
         }
 
 #if NETCOREAPP
