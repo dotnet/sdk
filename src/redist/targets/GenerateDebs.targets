@@ -228,7 +228,7 @@
   </Target>
 
   <Target Name="BuildSdkDeb"
-      Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(DebuildPresent)'  == 'true' "
+      Condition=" '$(IsDebianBaseDistro)' == 'True' AND '$(BuildSdkDeb)'  == 'true' "
       DependsOnTargets="PrepareDotnetDebDirectories;
                         GetAspNetSharedFxInstallArgs;"
       Inputs="@(CLISdkFiles);@(TemplatesFiles);@(ManifestFiles)"
@@ -342,7 +342,7 @@
   </Target>
 
   <Target Name="TestSdkDeb"
-      Condition=" '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsDebianBaseDistro)' == 'True' and '$(DebuildPresent)'  == 'true' "
+      Condition=" '$(CLIBUILD_SKIP_TESTS)' != 'true' and '$(IsDebianBaseDistro)' == 'True' and '$(BuildSdkDeb)'  == 'true' "
       DependsOnTargets="GetAspNetSharedFxInstallArgs"
       Inputs="$(DownloadedRuntimeDepsInstallerFile);
               $(DownloadedNetCoreAppHostPackInstallerFile);
@@ -436,13 +436,12 @@
 
       <!-- Check if it returned 0 -->
       <PropertyGroup>
-        <DebuildPresent>false</DebuildPresent>
-        <DebuildPresent Condition=" '$(DebuildExitCode)' == '0' ">true</DebuildPresent>
+        <BuildSdkDeb Condition=" '$(BuildSdkDeb)' == '' or '$(DebuildExitCode)' != '0' ">false</BuildSdkDeb>
       </PropertyGroup>
 
       <!-- Workaround for Ubuntu16 Jenkins https://github.com/dotnet/core-setup/issues/167 -->
-      <Message Condition=" '$(DebuildPresent)'  != 'true' "
-               Text="Debuild Not found, Debian packages will not be built."
+      <Message Condition=" '$(BuildSdkDeb)' == 'false' "
+               Text="Debuild Not found or BuildSdkDeb not set, Debian packages will not be built."
                Importance="High" />
   </Target>
 </Project>
