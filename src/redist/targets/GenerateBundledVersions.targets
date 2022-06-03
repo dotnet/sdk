@@ -162,8 +162,16 @@
       <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
       <Net60RuntimePackRids Remove="browser-wasm" />
 
-      <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
-      <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
+      <NetCoreAppHostRids Include="
+          @(Net60AppHostRids);
+          linux-bionic-arm64;
+          linux-bionic-x64;
+          " />
+      <NetCoreRuntimePackRids Include="
+          @(Net60RuntimePackRids);
+          linux-bionic-arm64;
+          linux-bionic-x64;
+          " />
 
       <!--
         In source-build, we build the current RID from source, which may be
