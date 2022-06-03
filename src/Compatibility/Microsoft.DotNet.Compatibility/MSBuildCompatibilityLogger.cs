@@ -6,7 +6,10 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.DotNet.Compatibility
 {
-    internal class MSBuildCompatibilityLogger : CompatibilityLoggerBase
+    /// <summary>
+    /// An MSBuild based compatibility logger
+    /// </summary>
+    internal sealed class MSBuildCompatibilityLogger : CompatibilityLoggerBase
     {
         private readonly Logger _log;
 
