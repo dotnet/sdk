@@ -233,9 +233,17 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     return string.Equals(a.csharpDocument.GeneratedCode, b.csharpDocument.GeneratedCode, StringComparison.Ordinal);
                 }, static a => StringComparer.Ordinal.GetHashCode(a.csharpDocument));
 
-            context.RegisterSourceOutput(generatedOutput, static (context, pair) =>
+            context.RegisterSourceOutput(generatedOutput.Combine(isGeneratorSuppressed), static (context, pair) =>
             {
-                var (hintName, csharpDocument) = pair;
+                var ((hintName, csharpDocument), isGeneratorSuppressed) = pair;
+
+                // We kept the generated trees around to maintain caches, but if we're suppressed we don't actually want to output in the very end;
+                // doing this this late into the pipeline means everything else is still maintained.
+                if (isGeneratorSuppressed)
+                {
+                    return;
+                }
+
                 RazorSourceGeneratorEventSource.Log.AddSyntaxTrees(hintName);
                 for (var i = 0; i < csharpDocument.Diagnostics.Count; i++)
                 {

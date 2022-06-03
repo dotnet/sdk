@@ -2263,7 +2263,7 @@ namespace AspNetCoreGeneratedDocument
         }
 
         [Fact]
-        public async Task SourceGenerator_DoesNotUpdateSources_WhenSourceGeneratorIsSuppressed()
+        public async Task SourceGenerator_DoesNotOutput_WhenSourceGeneratorIsSuppressed()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/36227
             var project = CreateTestProject(new()
@@ -2332,9 +2332,10 @@ namespace MyApp.Pages
             suppressedOptions.TestGlobalOptions["build_property.SuppressRazorSourceGenerator"] = "true";
             driver = driver.WithUpdatedAnalyzerConfigOptions(suppressedOptions);
 
-            // results should be the same (even though we changed text)
-            result = RunGenerator(compilation!, ref driver)
-                    .VerifyOutputsMatch(result);
+            // we should no longer be outputting anything
+            var suppressedResult = RunGenerator(compilation!, ref driver);
+            Assert.Empty(suppressedResult.GeneratedSources);
+            Assert.Empty(suppressedResult.Diagnostics);
 
             // now unsuppress and re-run
             driver = driver.WithUpdatedAnalyzerConfigOptions(optionsProvider);
