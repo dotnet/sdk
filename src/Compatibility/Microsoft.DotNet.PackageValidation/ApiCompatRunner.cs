@@ -25,8 +25,8 @@ namespace Microsoft.DotNet.PackageValidation
         private readonly string _rightPackagePath;
         private readonly bool _isBaselineSuppression;
 
-        public ApiCompatRunner(bool enableStrictMode,
-            CompatibilityLoggerBase log,
+        public ApiCompatRunner(CompatibilityLoggerBase log,
+            bool enableStrictMode,
             Dictionary<string, HashSet<string>>? referencePaths,
             string leftPackagePath,
             string? rightPackagePath = null)
