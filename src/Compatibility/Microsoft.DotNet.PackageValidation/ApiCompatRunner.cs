@@ -91,10 +91,12 @@ namespace Microsoft.DotNet.PackageValidation
                             IsBaselineSuppression = _isBaselineSuppression
                         };
 
+                        // If the error is suppressed, don't log anything.
+                        if (_log.SuppressionEngine.IsErrorSuppressed(suppression))
+                            continue;
+
                         // Log the difference header only if there are non suppressed or baselined errors.
-                        if (!headerLogged &&
-                            !_log.BaselineAllErrors &&
-                            !_log.SuppressionEngine.IsErrorSuppressed(suppression))
+                        if (!headerLogged && !_log.BaselineAllErrors)
                         {
                             headerLogged = true;
                             (MetadataInformation rightAssembly, string header) = _dict[left][counter];

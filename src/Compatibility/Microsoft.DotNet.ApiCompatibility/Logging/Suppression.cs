@@ -32,6 +32,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// </summary>
         public string? Right { get; set; }
 
+        /// <summary>
+        /// <see langword="true"/> if the suppression is to be applied to a baseline validation. <see langword="false"/> otherwise.
+        /// </summary>
+        public bool IsBaselineSuppression { get; set; }
+
         // Neccessary for XmlSerializer to instantiate an object of this class.
         private Suppression()
         {
@@ -44,11 +49,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         /// <summary>
-        /// <see langword="true"/> if the suppression is to be applied to a baseline validation. <see langword="false"/> otherwise.
+        /// It only makes sense to serialize IsBaselineSuppression when is true, if it is off, no need to have it on the file.
         /// </summary>
-        public bool IsBaselineSuppression { get; set; }
-
-        // It only makes sense to serialize IsBaselineSuppression when is true, if it is off, no need to have it on the file.
+        /// <returns>Returns true if IsBaselineSuppression should be serialized</returns>
         public bool ShouldSerializeIsBaselineSuppression() => IsBaselineSuppression;
 
         /// <inheritdoc/>
@@ -65,10 +68,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 => string.IsNullOrEmpty(first?.Trim()) && string.IsNullOrEmpty(second?.Trim()) || StringComparer.InvariantCultureIgnoreCase.Equals(first?.Trim(), second?.Trim());
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             int hashCode = 1447485498;
-            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId?.ToLowerInvariant() ?? string.Empty);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId.ToLowerInvariant());
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Target?.ToLowerInvariant() ?? string.Empty);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Left?.ToLowerInvariant() ?? string.Empty);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Right?.ToLowerInvariant() ?? string.Empty);

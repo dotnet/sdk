@@ -45,14 +45,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
         public bool IsErrorSuppressed(string diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
         {
-            var suppressionToCheck = new Suppression(diagnosticId)
+            return IsErrorSuppressed(new Suppression(diagnosticId)
             {
                 Target = target,
                 Left = left,
                 Right = right,
                 IsBaselineSuppression = isBaselineSuppression
-            };
-            return IsErrorSuppressed(suppressionToCheck);
+            });
         }
 
         /// <summary>
