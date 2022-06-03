@@ -27,12 +27,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <summary>
         /// Creates a new instance of <see cref="SuppressionEngine"/>.
         /// </summary>
-        /// <param name="noWarn"></param>
-        /// <param name="suppressionFile">The path to the suppressions file to be used for initialization.</param>
-        public SuppressionEngine(string? noWarn = null, string? suppressionFile = null)
+        /// <param name="suppressionsFile">The path to the suppressions file to be used for initialization.</param>
+        /// <param name="noWarn">Suppression ids to suppress specific errors. Multiple suppressions are separated by a ';' character.</param>
+        public SuppressionEngine(string? suppressionsFile = null, string ? noWarn = null)
         {
+            _validationSuppressions = ParseSuppressionFile(suppressionsFile);
             _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn?.Split(';'));
-            _validationSuppressions = ParseSuppressionFile(suppressionFile);
         }
 
         /// <summary>

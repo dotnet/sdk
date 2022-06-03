@@ -33,14 +33,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// </summary>
         /// <param name="suppressionsFile">The path to the suppression file to read from or to generate.</param>
         /// <param name="baselineAllErrors">If true, all errors are baselined.</param>
-        /// <param name="noWarn">Pass in suppression ids to suppress specific errors. Multiple suppressions are separated by a ';' character.</param>
+        /// <param name="noWarn">Suppression ids to suppress specific errors. Multiple suppressions are separated by a ';' character.</param>
         public CompatibilityLoggerBase(string? suppressionsFile, bool baselineAllErrors, string? noWarn)
         {
             SuppressionsFile = suppressionsFile;
             BaselineAllErrors = baselineAllErrors;
             SuppressionEngine = baselineAllErrors && !File.Exists(suppressionsFile) ?
-                new SuppressionEngine(noWarn) :
-                new SuppressionEngine(noWarn, suppressionsFile);
+                new SuppressionEngine(noWarn: noWarn) :
+                new SuppressionEngine(suppressionsFile, noWarn);
         }
 
         /// <summary>
