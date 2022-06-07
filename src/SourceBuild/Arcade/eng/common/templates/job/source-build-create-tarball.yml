@@ -88,3 +88,5 @@ jobs:
         # fi
       displayName: Tarball Build Check
       name: Tarball_Build_Check
+      # Disable tarball CI for 7.0 Preview 5 since source-build in not fully supported.
+      condition: false
