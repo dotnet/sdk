@@ -501,7 +501,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       TargetFramework="net6.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NET60RuntimePackVersion)"
-                      AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
+                      AppHostRuntimeIdentifiers="@(NetCore60AppHostRids, '%3B')"
                       />
 
     <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
