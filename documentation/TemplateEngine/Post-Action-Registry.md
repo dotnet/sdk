@@ -18,7 +18,7 @@ The standard properties are listed below.
    - `condition` (string) (optional): A C++ style boolean expression defining if post action should be run. This expression may use any symbols that have been defined.
    - `description` (string) (optional): A human-readable description of the action.
    - `configFile` (string) (optional): Additional configuration for the associated post action. The structure & content will vary based on the post action.
-   - `continueOnError` (bool) (optional): If this action fails, the value of continueOnError indicates whether to process the next action, or stop processing the post actions. Should be set to true when subsequent actions rely on the result of the current action. The default value is false.
+   - <a name="continueOnError"></a>`continueOnError` (bool) (optional): If this action fails, the value of continueOnError indicates whether to process the next action, or stop processing the post actions. Should be set to true when subsequent actions rely on the result of the current action. The default value is false.
    - `manualInstructions` (array) (optional): An ordered list of possible instructions to display if the action cannot be performed. Each element in the list must contain a key named "text", whose value contains the instructions. Each element may also optionally provide a key named "condition" - a boolean expression. The first instruction with blank condition is considered a default. If true conditions are present, the last one of them will be considered valid, all other ignored. It is recommended not to have more than one true condition at the time.
 
 # Restore NuGet packages

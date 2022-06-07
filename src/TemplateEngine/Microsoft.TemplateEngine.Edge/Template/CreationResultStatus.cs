@@ -23,6 +23,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
         CreateFailed = unchecked((int)0x80020009),
 
         /// <summary>
+        /// The template instantiation failed.
+        /// </summary>
+        TemplateIssueDetected = unchecked((int)0x8002000A),
+
+        /// <summary>
         /// The mandatory parameters for template are missing.
         /// </summary>
         MissingMandatoryParam = unchecked((int)0x8002000F),

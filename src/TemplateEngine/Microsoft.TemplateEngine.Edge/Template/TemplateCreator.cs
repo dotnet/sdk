@@ -136,25 +136,13 @@ namespace Microsoft.TemplateEngine.Edge.Template
                     outputBaseDir: targetDir,
                     creationEffects: creationEffects);
             }
-            catch (ContentGenerationException cx)
+            catch (Exception cx)
             {
-                string message = cx.Message;
-                if (cx.InnerException != null)
-                {
-                    message += Environment.NewLine + cx.InnerException;
-                }
+                string message = string.Join(Environment.NewLine, ExceptionMessages(cx));
                 return new TemplateCreationResult(
-                    status: CreationResultStatus.CreateFailed,
+                    status: cx is TemplateAuthoringException ? CreationResultStatus.TemplateIssueDetected : CreationResultStatus.CreateFailed,
                     templateName: template.Name,
                     localizedErrorMessage: string.Format(LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CreationFailed, message),
-                    outputBaseDir: targetDir);
-            }
-            catch (Exception ex)
-            {
-                return new TemplateCreationResult(
-                    status: CreationResultStatus.CreateFailed,
-                    templateName: template.Name,
-                    localizedErrorMessage: string.Format(LocalizableStrings.TemplateCreator_TemplateCreationResult_Error_CreationFailed, ex.Message),
                     outputBaseDir: targetDir);
             }
             finally
@@ -335,6 +323,15 @@ namespace Microsoft.TemplateEngine.Edge.Template
             }
 
             return null;
+        }
+
+        private static IEnumerable<string> ExceptionMessages(Exception? e)
+        {
+            while (e != null)
+            {
+                yield return e.Message;
+                e = e.InnerException;
+            }
         }
 
         /// <summary>

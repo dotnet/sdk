@@ -140,7 +140,7 @@ A symbol for which the config provides literal and/or default values.
 |`replaces`|The text to be replaced by the symbol value in the template files content|	 
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
-|`isRequired`|Indicates if the parameter is required or not.|
+|<a name="isRequired"></a>`isRequired`|Indicates if the parameter is required or not.|
 |`choices`|Applicable only when `datatype=choice.`<br />List of available choices. Contains array of the elements: <br />- `choice`: possible value of the symbol.<br />- `description`: human readable text describing the meaning of the choice. This has no effect on template generation. <br /> If not provided, there are no valid choices for the symbol, so it can never be assigned a value.|
 |`allowMultipleValues`|Applicable only when `datatype=choice.`<br />. Enables ability to specify multiple values for single symbol.|
 |<a id="enableQuotelessLiterals"></a>`enableQuotelessLiterals`|Applicable only when `datatype=choice.`<br />. Enables ability to specify choice literals in conditions without quotation.|

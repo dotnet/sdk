@@ -18,6 +18,7 @@ Microsoft.TemplateEngine.Edge.Mount.Archive.ZipFileMountPointFactory.ZipFileMoun
 Microsoft.TemplateEngine.Edge.Mount.FileSystem.FileSystemMountPointFactory
 Microsoft.TemplateEngine.Edge.Mount.FileSystem.FileSystemMountPointFactory.FileSystemMountPointFactory() -> void
 Microsoft.TemplateEngine.Edge.EngineEnvironmentSettings.Dispose() -> void
+Microsoft.TemplateEngine.Edge.Template.CreationResultStatus.TemplateIssueDetected = -2147352566 -> Microsoft.TemplateEngine.Edge.Template.CreationResultStatus
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.Dispose() -> void
 Microsoft.TemplateEngine.Edge.TemplateConstraintManager.EvaluateConstraintAsync(string! type, string? args, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!>!

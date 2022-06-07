@@ -318,6 +318,10 @@ namespace Microsoft.TemplateEngine.Core.Util
                     }
                 }
             }
+            catch (TemplateAuthoringException ex)
+            {
+                throw new TemplateAuthoringException($"Template authoring error encountered while processing file {sourceFile.FullPath}: {ex.Message}", ex.ConfigItem, ex);
+            }
             catch (Exception ex)
             {
                 throw new ContentGenerationException($"Error while processing file {sourceFile.FullPath}", ex);
