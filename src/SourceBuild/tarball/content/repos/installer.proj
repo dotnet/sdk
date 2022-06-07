@@ -85,6 +85,7 @@
       Unable to find package dotnet-ef.
       Unable to find package dotnet-sql-cache.
       Unable to find package dotnet-user-secrets.
+      Unable to find package dotnet-user-jwts.
       Unable to find package dotnet-watch.  -->
     <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
   </ItemGroup>
