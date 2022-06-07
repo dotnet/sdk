@@ -162,15 +162,28 @@
       <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
       <Net60RuntimePackRids Remove="browser-wasm" />
 
-      <NetCoreAppHostRids Include="
+      <Net70AppHostRids Include="
           @(Net60AppHostRids);
+          linux-bionic-arm;
           linux-bionic-arm64;
           linux-bionic-x64;
-          " />
-      <NetCoreRuntimePackRids Include="
+          linux-bionic-x86;
+          "/>
+
+      <Net70RuntimePackRids Include="
           @(Net60RuntimePackRids);
+          linux-bionic-arm;
           linux-bionic-arm64;
           linux-bionic-x64;
+          linux-bionic-x86;
+          " />
+
+      <NetCoreAppHostRids Include="
+          @(Net70AppHostRids);
+          " />
+
+      <NetCoreRuntimePackRids Include="
+          @(Net70RuntimePackRids);
           " />
 
       <!--
