@@ -218,10 +218,6 @@ Multichoice symbols have similar behavior and usage scenarios as [C# Flag enums]
           "description": "Windows Desktop"
         },
         {
-          "choice": "WindowsPhone",
-          "description": "Windows Phone"
-        },
-        {
           "choice": "MacOS",
           "description": "Macintosh computers"
         },
