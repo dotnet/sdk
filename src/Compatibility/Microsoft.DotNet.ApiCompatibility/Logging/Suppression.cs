@@ -49,7 +49,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         /// <summary>
-        /// It only makes sense to serialize IsBaselineSuppression when is true, if it is off, no need to have it on the file.
+        /// Only serialize the IsBaselineSuppression property when this is a baseline suppression. If it is not,
+        /// the property won't be serialized to keep the baseline file minimal. The method's name is important as
+        /// XmlSerializer will look for methods called ShouldSerializeX to determine if properties should be serialized.
         /// </summary>
         /// <returns>Returns true if IsBaselineSuppression should be serialized</returns>
         public bool ShouldSerializeIsBaselineSuppression() => IsBaselineSuppression;

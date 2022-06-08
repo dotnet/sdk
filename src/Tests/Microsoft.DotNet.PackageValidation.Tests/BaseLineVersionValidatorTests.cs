@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests
             };
 
             Package package = new(string.Empty, "TestPackage", "2.0.0", currentFilePaths, null, null);
-            new BaselinePackageValidator(_log).Validate(new(
+            new BaselinePackageValidator(_log).Validate(new PackageValidatorOption(
                 package,
                 enableStrictMode: false,
                 runApiCompat: false,

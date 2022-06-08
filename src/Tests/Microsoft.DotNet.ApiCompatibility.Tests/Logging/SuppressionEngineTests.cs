@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         public void SuppressionEngineDoesNotThrowOnEmptyFile()
         {
             SuppressionEngine _ = new(suppressionsFile: string.Empty);
-            _ = new SuppressionEngine("      ");
+            _ = new SuppressionEngine(suppressionsFile: "      ");
         }
 
         [Fact]

@@ -13,27 +13,27 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         /// <summary>
         /// The latest package that should be validated
         /// </summary>
-        public readonly Package Package { get; }
+        public Package Package { get; }
 
         /// <summary>
         /// If true, comparision is performed in strict mode
         /// </summary>
-        public readonly bool EnableStrictMode { get; }
+        public bool EnableStrictMode { get; }
 
         /// <summary>
         /// If true, ApiCompat comparision is performed in addition to other package checks
         /// </summary>
-        public readonly bool RunApiCompat { get; }
+        public bool RunApiCompat { get; }
 
         /// <summary>
         /// Assembly reference assemblies grouped per target framework
         /// </summary>
-        public readonly Dictionary<string, HashSet<string>>? FrameworkReferences { get; }
+        public Dictionary<string, HashSet<string>>? FrameworkReferences { get; }
 
         /// <summary>
         /// The baseline package to validate the latest package
         /// </summary>
-        public readonly Package? BaselinePackage { get; }
+        public Package? BaselinePackage { get; }
 
         /// <summary>
         /// Intantiates a new PackageValidatorOption type to be passed into a validator
