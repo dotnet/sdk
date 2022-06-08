@@ -162,8 +162,29 @@
       <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
       <Net60RuntimePackRids Remove="browser-wasm" />
 
-      <NetCoreAppHostRids Include="@(Net60AppHostRids)" />
-      <NetCoreRuntimePackRids Include="@(Net60RuntimePackRids)" />
+      <Net70AppHostRids Include="
+          @(Net60AppHostRids);
+          linux-bionic-arm;
+          linux-bionic-arm64;
+          linux-bionic-x64;
+          linux-bionic-x86;
+          "/>
+
+      <Net70RuntimePackRids Include="
+          @(Net60RuntimePackRids);
+          linux-bionic-arm;
+          linux-bionic-arm64;
+          linux-bionic-x64;
+          linux-bionic-x86;
+          " />
+
+      <NetCoreAppHostRids Include="
+          @(Net70AppHostRids);
+          " />
+
+      <NetCoreRuntimePackRids Include="
+          @(Net70RuntimePackRids);
+          " />
 
       <!--
         In source-build, we build the current RID from source, which may be
@@ -480,7 +501,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       TargetFramework="net6.0"
                       AppHostPackNamePattern="Microsoft.NETCore.App.Host.**RID**"
                       AppHostPackVersion="$(_NET60RuntimePackVersion)"
-                      AppHostRuntimeIdentifiers="@(NetCoreAppHostRids, '%3B')"
+                      AppHostRuntimeIdentifiers="@(Net60AppHostRids, '%3B')"
                       />
 
     <KnownCrossgen2Pack Include="Microsoft.NETCore.App.Crossgen2"
