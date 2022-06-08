@@ -56,6 +56,8 @@ namespace Microsoft.DotNet.Cli
         {
             var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.AppFullName);
 
+            ConfigurationOption.SetDefaultValue("Release");
+
             command.AddArgument(SlnOrProjectArgument);
             command.AddOption(OutputOption);
             command.AddOption(NoBuildOption);
