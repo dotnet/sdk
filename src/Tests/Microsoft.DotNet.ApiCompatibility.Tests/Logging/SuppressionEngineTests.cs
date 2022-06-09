@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             engine.AddSuppression("CP0001", "T:A.B", isBaselineSuppression: true);
             engine.AddSuppression("CP0001", "T:A.C");
             // Engine has a suppression with no target. Should be treated globally for any target with that left and right.
-            engine.AddSuppression("CP0003", null, left: "ref/net6.0/myleft.dll", right: "lib/net6.0/myright.dll", isBaselineSuppression: false);
+            engine.AddSuppression("CP0003", left: "ref/net6.0/myleft.dll", right: "lib/net6.0/myright.dll", isBaselineSuppression: false);
 
             Assert.True(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true));
             Assert.False(engine.IsErrorSuppressed("CP0001", "T:A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false));
@@ -108,6 +108,36 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
             Assert.True(engine.IsErrorSuppressed("CP0003", "T:A.C", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll"));
             Assert.True(engine.IsErrorSuppressed("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll"));
             Assert.False(engine.IsErrorSuppressed("CP0003", "T:A.D", "ref/net6.0/myLeft.dll", "lib/net6.0/myRight.dll", isBaselineSuppression: true));
+        }
+
+        [Fact]
+        public void IsErrorSuppressedForLeftAndRightWithoutDiagnosticId()
+        {
+            SuppressionEngine engine = new();
+            string left = "ref/net6.0/A.dll";
+            string right = "lib/net6.0/A.dll";
+
+            // Explicitly add a suppression without a diagnostic id for testing.
+            engine.AddSuppression(string.Empty, left: left, right: right, isBaselineSuppression: true);
+            Assert.True(engine.IsErrorSuppressed("CP9999", left: left, right: right, isBaselineSuppression: true));
+            Assert.False(engine.IsErrorSuppressed("CP9999", left: left, right: right, isBaselineSuppression: false));
+
+            engine.AddSuppression(string.Empty, left: left, right: right, isBaselineSuppression: false);
+            Assert.True(engine.IsErrorSuppressed("CP9999", left: left, right: right, isBaselineSuppression: false));
+        }
+
+        [Fact]
+        public void CtorSuppressionWithoutDiagnosticIdRoundtrip()
+        {
+            SuppressionEngine engine = new();
+            // Explicitly add a suppression without a diagnostic id for testing.
+            Suppression suppression = new(string.Empty) { Left = "ref/net6.0/A.dll", Right = "lib/net6.0/A.dll", IsBaselineSuppression = true };
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
+
+            engine.AddSuppression(suppression);
+            Assert.True(engine.WriteSuppressionsToFile(filePath));
+
+            Assert.True(new SuppressionEngine(filePath).IsErrorSuppressed(suppression));
         }
 
         [Fact]

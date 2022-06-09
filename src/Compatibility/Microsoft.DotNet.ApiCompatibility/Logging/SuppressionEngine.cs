@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
-using System;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <param name="left">Optional. The left operand in a APICompat error.</param>
         /// <param name="right">Optional. The right operand in a APICompat error.</param>
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
-        public bool IsErrorSuppressed(string diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
+        public bool IsErrorSuppressed(string diagnosticId, string? target = null, string? left = null, string? right = null, bool isBaselineSuppression = false)
         {
             return IsErrorSuppressed(new Suppression(diagnosticId)
             {
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         /// <summary>
-        /// Checks if the passed in error is suppressed or not.
+        /// Checks if the passed in error is suppressed.
         /// </summary>
         /// <param name="error">The <see cref="Suppression"/> error to check.</param>
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
@@ -64,15 +64,22 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             _readerWriterLock.EnterReadLock();
             try
             {
-                if (_noWarn.Contains(error.DiagnosticId) || _validationSuppressions.Contains(error))
+                if (_noWarn.Contains(error.DiagnosticId))
                 {
                     return true;
                 }
-                else if (error.DiagnosticId.StartsWith("cp", StringComparison.InvariantCultureIgnoreCase))
+                else if (_validationSuppressions.Count > 0)
                 {
-                    // See if the error is globally suppressed by checking if the same diagnosticid and target or with the same left and right
-                    return _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression }) ||
-                           _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression });
+                    // An error is suppressed if
+                    // 1. There's a direct match in the suppression backing store
+                    return _validationSuppressions.Contains(error) ||
+                    // 2. The DiagnosticId, Target and IsBaselineSuppression values match
+                        _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression }) ||
+                    // 3. The DiagnosticId, Left, Right and IsBaselineSupression values match
+                        _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression }) ||
+                    // 4. The Left, Right and IsBaselineSuppression values match. Any component that logs a suppressable warning or error must provide
+                    //    a DiagnosticId in order for NoWarn to work. Only suppression files can contain suppressions without diagnostic ids.
+                        _validationSuppressions.Contains(new Suppression(string.Empty) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression });
                 }
 
                 return false;
@@ -90,7 +97,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <param name="target">The target of where the <paramref name="diagnosticId"/> should be applied.</param>
         /// <param name="left">Optional. The left operand in a APICompat error.</param>
         /// <param name="right">Optional. The right operand in a APICompat error.</param>
-        public void AddSuppression(string diagnosticId, string? target, string? left = null, string? right = null, bool isBaselineSuppression = false)
+        public void AddSuppression(string diagnosticId, string? target = null, string? left = null, string? right = null, bool isBaselineSuppression = false)
         {
             AddSuppression(new Suppression(diagnosticId)
             {
