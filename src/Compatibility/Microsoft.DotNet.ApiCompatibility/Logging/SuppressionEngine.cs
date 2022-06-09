@@ -61,24 +61,25 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
         public bool IsErrorSuppressed(Suppression error)
         {
+            // An error is suppressed if
             _readerWriterLock.EnterReadLock();
             try
             {
-                if (_noWarn.Contains(error.DiagnosticId))
+                // An error is suppressed if there's a direct match in the suppression backing store or in the NoWarn property
+                if (_noWarn.Contains(error.DiagnosticId) || _validationSuppressions.Contains(error))
                 {
                     return true;
                 }
-                else if (_validationSuppressions.Count > 0)
+                // If the suppression backing store doesn't contain any items or the error is a package validation error for which a left and right doesn't exist,
+                // don't attempt to find a global suppression to avoid unnecessary Suppression allocations.
+                else if (_validationSuppressions.Count > 0 && !error.DiagnosticId.StartsWith("pkv", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    // An error is suppressed if
-                    // 1. There's a direct match in the suppression backing store
-                    return _validationSuppressions.Contains(error) ||
-                    // 2. The DiagnosticId, Target and IsBaselineSuppression values match
-                        _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression }) ||
-                    // 3. The DiagnosticId, Left, Right and IsBaselineSupression values match
+                    // The DiagnosticId, Target and IsBaselineSuppression values match
+                    return _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Target = error.Target, IsBaselineSuppression = error.IsBaselineSuppression }) ||
+                    // The DiagnosticId, Left, Right and IsBaselineSupression values match
                         _validationSuppressions.Contains(new Suppression(error.DiagnosticId) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression }) ||
-                    // 4. The Left, Right and IsBaselineSuppression values match. Any component that logs a suppressable warning or error must provide
-                    //    a DiagnosticId in order for NoWarn to work. Only suppression files can contain suppressions without diagnostic ids.
+                    // The Left, Right and IsBaselineSuppression values match. Any component that logs a suppressable warning or error must provide
+                    // a DiagnosticId in order for NoWarn to work. Only suppression files can contain suppressions without diagnostic ids.
                         _validationSuppressions.Contains(new Suppression(string.Empty) { Left = error.Left, Right = error.Right, IsBaselineSuppression = error.IsBaselineSuppression });
                 }
 
