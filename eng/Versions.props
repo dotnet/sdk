@@ -13,7 +13,7 @@
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <MicrosoftBuildVersion>16.11.0</MicrosoftBuildVersion>
+    <MicrosoftBuildVersion>17.3.0-preview-22302-02</MicrosoftBuildVersion>
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>5.0.0</MicrosoftExtensionsDependencyInjectionVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
