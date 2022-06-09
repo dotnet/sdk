@@ -206,7 +206,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Files" ItemName="_StaticWebAssetsFilesToPack" />
     </StaticWebAssetsReadPackManifest>
 
-    <ItemGroup Condition="Exists('$(StaticWebAssetPackManifestPath)')">
+    <ItemGroup>
       <Content Include="@(_StaticWebAssetsFilesToPack)" 
         Pack="true" 
         CopyToOutputDirectory="Never"
