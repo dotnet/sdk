@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge
         [Obsolete("The method is deprecated.")]
         bool ITemplateEngineHost.OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string newValue)
         {
-            newValue = "";
+            newValue = receivedValue;
             return false;
         }
 

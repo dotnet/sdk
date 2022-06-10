@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual bool OnParameterError(ITemplateParameter parameter, string receivedValue, string message, out string? newValue)
         {
-            newValue = null;
+            newValue = receivedValue;
             return false;
         }
 

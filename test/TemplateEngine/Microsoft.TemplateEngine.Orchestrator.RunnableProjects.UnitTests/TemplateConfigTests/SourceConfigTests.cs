@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
             // config
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             // content
             templateSourceFiles.Add("core.config", null);
             templateSourceFiles.Add("full.config", null);
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("something.txt", null);
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
@@ -222,7 +222,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("other.xyz", null);
             templateSourceFiles.Add("include.xyz", null);
             templateSourceFiles.Add("exclude.xyz", null);
@@ -272,7 +272,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("other.xyz", null);
             templateSourceFiles.Add("include.xyz", null);
             templateSourceFiles.Add("exclude.xyz", null);

@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Mocks;
+using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
@@ -48,7 +49,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             _environmentSettings = environment;
             _sourceFiles = sourceFiles;
             _sourceBaseDir = sourceBaseDir;
-            _configFile = TemplateConfigTestHelpers.DefaultConfigRelativePath;
+            _configFile = TestFileSystemHelper.DefaultConfigRelativePath;
         }
 
         public TestTemplateSetup(IEngineEnvironmentSettings environment, string sourceBaseDir, IDictionary<string, string> sourceFiles, SimpleConfigModel configModel)
@@ -57,7 +58,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             _sourceFiles = sourceFiles;
             _configModel = configModel;
             _sourceBaseDir = sourceBaseDir;
-            _configFile = TemplateConfigTestHelpers.DefaultConfigRelativePath;
+            _configFile = TestFileSystemHelper.DefaultConfigRelativePath;
         }
 
         private IMountPoint SourceMountPoint
@@ -66,7 +67,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 if (_sourceMountPoint == null)
                 {
-                    _sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(_environmentSettings, _sourceBaseDir);
+                    _sourceMountPoint = TestFileSystemHelper.CreateMountPoint(_environmentSettings, _sourceBaseDir);
                 }
 
                 return _sourceMountPoint;
@@ -85,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public void WriteSource()
         {
-            TemplateConfigTestHelpers.WriteTemplateSource(_environmentSettings, _sourceBaseDir, _sourceFiles);
+            TestFileSystemHelper.WriteTemplateSource(_environmentSettings, _sourceBaseDir, _sourceFiles);
         }
 
         public void InstantiateTemplate(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)
@@ -155,7 +156,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public IReadOnlyDictionary<string, string> GetRenames(string sourceDir, string targetBaseDir, IParameterSet parameters, IReadOnlyList<IReplacementTokens> symbolBasedRenames)
         {
-            IFileSystemInfo configFileInfo = SourceMountPoint.FileInfo(_configFile ?? TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            IFileSystemInfo configFileInfo = SourceMountPoint.FileInfo(_configFile ?? TestFileSystemHelper.DefaultConfigRelativePath);
             parameters.TryGetParameterDefinition("name", out ITemplateParameter nameParam);
             object resolvedNameValue = parameters.ResolvedValues[nameParam];
             return FileRenameGenerator.AugmentFileRenames(_environmentSettings, _sourceBaseDir, configFileInfo, sourceDir, ref targetBaseDir, resolvedNameValue, parameters, new Dictionary<string, string>(), symbolBasedRenames);
@@ -176,7 +177,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private IRunnableProjectConfig GetConfig()
         {
-            string configPath = _configFile ?? TemplateConfigTestHelpers.DefaultConfigRelativePath;
+            string configPath = _configFile ?? TestFileSystemHelper.DefaultConfigRelativePath;
 
             return _configModel == null
                 ? new RunnableProjectConfig(_environmentSettings, A.Fake<IGenerator>(), SourceMountPoint.FileInfo(configPath))

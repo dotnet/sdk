@@ -563,12 +563,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return param.DefaultValue;
             }
 
-            string? val;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-            environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out val);
+            if (
+                environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out string? val)
+                && TryResolveChoiceValue(val, param, out string? match2))
+            {
+                return match2;
+            }
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            return val;
+            return literal == string.Empty ? string.Empty : null;
         }
 
         private static bool TryResolveChoiceValue(string? literal, ITemplateParameter param, out string? match)

@@ -112,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
 
             //content
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
@@ -131,9 +131,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
 
-            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
 
             if (expectedToBeValid)
             {

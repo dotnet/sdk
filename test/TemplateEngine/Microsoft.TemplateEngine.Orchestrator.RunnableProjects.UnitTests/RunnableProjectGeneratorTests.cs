@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, config.ToJObject().ToString());
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
 
             //content
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
@@ -66,9 +66,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
 
-            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
-            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -183,7 +183,7 @@ UNKNOWN
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
 
             //content
             templateSourceFiles.Add("sourcFile", sourceSnippet);
@@ -196,11 +196,11 @@ UNKNOWN
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
-            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
@@ -280,7 +280,7 @@ THIRD
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
 
             //content
             templateSourceFiles.Add("sourcFile", sourceSnippet);
@@ -293,11 +293,11 @@ THIRD
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
-            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("ChoiceParam", out choiceParameter), "ChoiceParam expected to be extracted from template config");
@@ -391,7 +391,7 @@ THIRD
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TemplateConfigTestHelpers.DefaultConfigRelativePath, templateConfig);
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
 
             //content
             templateSourceFiles.Add("sourcFile", sourceSnippet);
@@ -404,11 +404,11 @@ THIRD
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            TemplateConfigTestHelpers.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TemplateConfigTestHelpers.CreateMountPoint(environment, sourceBasePath);
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
-            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TemplateConfigTestHelpers.DefaultConfigRelativePath));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             IParameterSet parameters = new ParameterSet(runnableConfig);
             ITemplateParameter choiceParameter;
             Assert.True(parameters.TryGetParameterDefinition("Platform", out choiceParameter), "ChoiceParam expected to be extracted from template config");

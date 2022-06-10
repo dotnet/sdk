@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = SetupSplitConfigWithAFileOutsideMountPoint(_engineEnvironmentSettings, sourcePath);
 
             IGenerator generator = new RunnableProjectGenerator();
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TestFileSystemHelper.DefaultConfigRelativePath);
             bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
             Assert.False(result, "Template config should not be readable - additional file is outside the base path.");
             Assert.Null(template);
@@ -151,7 +151,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = SetupSplitConfigWithAMissingReferencedFile(_engineEnvironmentSettings, sourcePath);
             IGenerator generator = new RunnableProjectGenerator();
 
-            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TemplateConfigTestHelpers.DefaultConfigRelativePath);
+            IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile(TestFileSystemHelper.DefaultConfigRelativePath);
             bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
             Assert.False(result, "Template config should not be readable - missing additional file.");
             Assert.Null(template);
