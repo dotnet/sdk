@@ -116,9 +116,9 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
-            if (!RuntimeIdentifier.Equals(RuntimeIdentifier.ToLowerInvariant()))
+            if (RuntimeIdentifier is not null && !RuntimeIdentifier.Equals(RuntimeIdentifier.ToLowerInvariant()))
             {
-                Log.LogError(Strings.AddResourceWithNonIntegerResource);
+                Log.LogError(Strings.RuntimeIdentifierNotRecognized, RuntimeIdentifier);
                 return;
             }
 
