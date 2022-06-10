@@ -53,8 +53,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// the property won't be serialized to keep the baseline file minimal. The method's name is important as
         /// XmlSerializer will look for methods called ShouldSerializeX to determine if properties should be serialized.
         /// </summary>
-        /// <returns>Returns true if IsBaselineSuppression should be serialized</returns>
+        /// <returns>Returns true if IsBaselineSuppression should be serialized.</returns>
         public bool ShouldSerializeIsBaselineSuppression() => IsBaselineSuppression;
+
+        /// <summary>
+        /// Same as the above, this method is used to determine if the DiagnosticId property should be serialized.
+        /// </summary>
+        /// <returns>Returns true if DiagnosticId shoudl be serialized.</returns>
+        public bool ShouldSerializeDiagnosticId() => DiagnosticId != string.Empty;
 
         /// <inheritdoc/>
         public bool Equals(Suppression? other)

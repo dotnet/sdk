@@ -62,7 +62,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <returns><see langword="true"/> if the error is already suppressed. <see langword="false"/> otherwise.</returns>
         public bool IsErrorSuppressed(Suppression error)
         {
-            // An error is suppressed if
             _readerWriterLock.EnterReadLock();
             try
             {

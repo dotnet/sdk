@@ -127,16 +127,31 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         }
 
         [Fact]
-        public void CtorSuppressionWithoutDiagnosticIdRoundtrip()
+        public void CtorSuppressionWithoutDiagnosticIdRoundtrips()
         {
+            string left = "ref/net6.0/A.dll";
+            string right = "lib/net6.0/A.dll";
+            bool isBaselineSuppression = true;
+            string SuppressionsFileWithoutDiagnosticId = @$"<?xml version=""1.0"" encoding=""utf-8""?>
+<Suppressions xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <Suppression>
+    <Left>{left}</Left>
+    <Right>{right}</Right>
+    <IsBaselineSuppression>{isBaselineSuppression.ToString().ToLowerInvariant()}</IsBaselineSuppression>
+  </Suppression>
+</Suppressions>";
+
+            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
             SuppressionEngine engine = new();
             // Explicitly add a suppression without a diagnostic id for testing.
-            Suppression suppression = new(string.Empty) { Left = "ref/net6.0/A.dll", Right = "lib/net6.0/A.dll", IsBaselineSuppression = true };
-            string filePath = Path.Combine(Path.GetTempPath(), Path.GetTempFileName());
-
+            Suppression suppression = new(string.Empty) { Left = left, Right = right, IsBaselineSuppression = isBaselineSuppression };
             engine.AddSuppression(suppression);
-            Assert.True(engine.WriteSuppressionsToFile(filePath));
 
+            // Validated that the suppressions are correctly serialized to disk.
+            Assert.True(engine.WriteSuppressionsToFile(filePath));
+            // Validate that generated suppression file contains the expected input.
+            Assert.Equal(SuppressionsFileWithoutDiagnosticId, File.ReadAllText(filePath).Trim());
+            // Validate that the suppression engine respects the generated suppression file.
             Assert.True(new SuppressionEngine(filePath).IsErrorSuppressed(suppression));
         }
 
