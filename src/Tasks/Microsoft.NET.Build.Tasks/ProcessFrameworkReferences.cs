@@ -116,6 +116,12 @@ namespace Microsoft.NET.Build.Tasks
                 return;
             }
 
+            if (!RuntimeIdentifier.Equals(RuntimeIdentifier.ToLowerInvariant()))
+            {
+                Log.LogError(Strings.AddResourceWithNonIntegerResource);
+                return;
+            }
+
             _normalizedTargetFrameworkVersion = NormalizeVersion(new Version(TargetFrameworkVersion));
 
             var knownFrameworkReferencesForTargetFramework =
