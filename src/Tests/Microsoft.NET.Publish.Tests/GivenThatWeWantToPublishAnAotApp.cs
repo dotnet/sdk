@@ -51,10 +51,13 @@ namespace Microsoft.NET.Publish.Tests
                     .And.NotHaveStdErrContaining("NETSDK1179")
                     .And.NotHaveStdErrContaining("warning");
 
-                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid);
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+                var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
+                var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+                var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
 
-                var publishedExe = Path.Combine(publishDirectory.FullName, $"{testProject.Name}{Constants.ExeSuffix}");
-
+                // NativeAOT published dir should not contain a non-host stand alone package
+                File.Exists(publishedDll).Should().BeFalse();
                 // The exe exist and should be native
                 File.Exists(publishedExe).Should().BeTrue();
                 IsNativeImage(publishedExe).Should().BeTrue();
