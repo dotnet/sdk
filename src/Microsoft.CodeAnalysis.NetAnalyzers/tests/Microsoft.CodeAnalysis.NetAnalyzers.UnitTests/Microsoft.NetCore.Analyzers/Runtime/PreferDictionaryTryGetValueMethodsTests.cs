@@ -3,6 +3,7 @@
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferDictionaryTryGetValueAnalyzer,
@@ -56,7 +57,7 @@ namespace Test
         private const string DictionaryContainsKeyPrintValueFixed = @"
             string key = ""key"";
             Dictionary<string, int> data = new Dictionary<string, int>();
-            if (data.TryGetValue(key, out var value))
+            if (data.TryGetValue(key, out int value))
             {
                 Console.WriteLine(value);
             }
@@ -76,7 +77,7 @@ namespace Test
         private const string DictionaryContainsKeyReturnValueFixed = @"
             string key = ""key"";
             ConcurrentDictionary<string, int> data = new ConcurrentDictionary<string, int>();
-            if (data.TryGetValue(key, out var value))
+            if (data.TryGetValue(key, out int value))
             {
                 return value;
             }
@@ -100,7 +101,7 @@ namespace Test
         private const string DictionaryContainsKeyMultipleStatementsInIfFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
-            if (data.TryGetValue(key, out var value))
+            if (data.TryGetValue(key, out int value))
             {
                 Console.WriteLine(2);
                 var x = 2;
@@ -128,7 +129,7 @@ namespace Test
         private const string DictionaryContainsKeyMultipleConditionsFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
-            if (key == ""key"" && data.TryGetValue(key, out var value))
+            if (key == ""key"" && data.TryGetValue(key, out int value))
             {
                 Console.WriteLine(2);
                 var x = 2;
@@ -160,7 +161,7 @@ namespace Test
         private const string DictionaryContainsKeyNestedDictionaryAccessFixed = @"
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
-            if (key == ""key"" && data.TryGetValue(key, out var value))
+            if (key == ""key"" && data.TryGetValue(key, out int value))
             {
                 Console.WriteLine(2);
                 var x = 2;
@@ -185,7 +186,7 @@ namespace Test
             string key = ""key"";
             IDictionary<string, int> data = new Dictionary<string, int>();
 
-            return data.TryGetValue(key, out var value) ? value : 2;";
+            return data.TryGetValue(key, out int value) ? value : 2;";
 
         #region NoDiagnostic
 
@@ -525,6 +526,58 @@ End Namespace";
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync();
+        }
+
+        [Theory, CombinatorialData]
+        [WorkItem(6022, "https://github.com/dotnet/roslyn-analyzers/issues/6022")]
+        public async Task TestVarPreference(bool preferVar)
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+using System.Collections.Generic;
+
+class C
+{
+    void M(string key)
+    {
+        var data = new Dictionary<string, int>();
+        if ([|data.ContainsKey(key)|])
+        {
+            Console.WriteLine(data[key]);
+        }
+    }
+}
+"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+[*]
+csharp_style_var_for_built_in_types = {preferVar}
+csharp_style_var_when_type_is_apparent = {preferVar}
+csharp_style_var_elsewhere = {preferVar}") }
+                },
+                FixedCode = $@"
+using System;
+using System.Collections.Generic;
+
+class C
+{{
+    void M(string key)
+    {{
+        var data = new Dictionary<string, int>();
+        if (data.TryGetValue(key, out {(preferVar ? "var" : "int")} value))
+        {{
+            Console.WriteLine(value);
+        }}
+    }}
+}}
+",
             }.RunAsync();
         }
 
