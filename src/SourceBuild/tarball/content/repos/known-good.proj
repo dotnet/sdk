@@ -31,13 +31,12 @@
         <RepositoryReference Include="arcade" />
 
         <!-- Tier 1 -->
-        <RepositoryReference Include="clicommandlineparser" />
         <RepositoryReference Include="command-line-api" />
         <RepositoryReference Include="diagnostics" />
+        <RepositoryReference Include="razor-compiler" />
         <RepositoryReference Include="roslyn" />
-        <RepositoryReference Include="source-build" />
+        <RepositoryReference Include="source-build-externals" />
         <RepositoryReference Include="symreader" />
-        <RepositoryReference Include="test-templates" />
         <RepositoryReference Include="xdt" />
         <RepositoryReference Include="xliff-tasks" />
 
@@ -46,7 +45,6 @@
         <RepositoryReference Include="msbuild" />
         <RepositoryReference Include="runtime-portable" />
         <RepositoryReference Include="runtime" />
-        <RepositoryReference Include="templating" />
 
         <!-- Tier 3 -->
         <RepositoryReference Include="roslyn-analyzers" />
@@ -56,6 +54,8 @@
         <RepositoryReference Include="deployment-tools" />
         <RepositoryReference Include="format" />
         <RepositoryReference Include="nuget-client" />
+        <RepositoryReference Include="templating" />
+        <RepositoryReference Include="test-templates" />
 
         <!-- Tier 5 -->
         <RepositoryReference Include="fsharp" />

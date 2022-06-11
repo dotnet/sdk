@@ -143,7 +143,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             RemoveCliGeneratedEnvironmentVariablesFrom(psi);
 
             psi.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-            psi.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1";
 
             // Set DOTNET_ROOT to ensure sub process find the same host fxr
             string dotnetDirectoryPath = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);

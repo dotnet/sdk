@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Tue, 17 May 2022 23:23:42 +0000
+Subject: [PATCH] Update to handle Microsoft.FSharp.Compiler to handle no NuGet repack support in source-build
+
+Tracking issue: https://github.com/dotnet/source-build/issues/2873
+---
+ .../Microsoft.FSharp.Compiler.nuspec                       | 7 ++-----
+ 1 files changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/src/fsharp/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec b/src/fsharp/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
+index ee67b15c5..b3f926f2f 100644
+--- a/src/fsharp/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
++++ b/src/fsharp/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
+@@ -54,11 +54,8 @@
+         <file src="FSharp.Build\$Configuration$\netstandard2.0\**\FSharp.Build.resources.dll"              target="lib\net6.0" />
+         <file src="FSharp.DependencyManager.Nuget\$configuration$\netstandard2.0\**\FSharp.DependencyManager.Nuget.resources.dll"
+                                                                                                            target="lib\net6.0" />
+-        <file src="$artifactsPackagesDir$Shipping\FSharp.Core.$fSharpCorePreviewPackageVersion$*nupkg"     target="contentFiles\Shipping" />
+-        <file src="$artifactsPackagesDir$Release\FSharp.Core.$fSharpCorePackageVersion$*nupkg"             target="contentFiles\Release" />
+-        <file src="$artifactsPackagesDir$Shipping\FSharp.Compiler.Service.$fSharpCompilerServicePreviewPackageVersion$*nupkg"
+-                                                                                                           target="contentFiles\Shipping" />
+-        <file src="$artifactsPackagesDir$Release\FSharp.Compiler.Service.$fSharpCompilerServicePackageVersion$*nupkg"
++        <file src="$artifactsPackagesDir$\FSharp.Core.$fSharpCorePackageVersion$*nupkg"             target="contentFiles\Release" />
++        <file src="$artifactsPackagesDir$\FSharp.Compiler.Service.$fSharpCompilerServicePackageVersion$*nupkg"
+                                                                                                            target="contentFiles\Release" />
+         <file src="FSharp.Build\$Configuration$\netstandard2.0\Shipping\Microsoft.FSharp.Core.NetSdk.props"
+                                                                                                            target="contentFiles\Shipping" />

@@ -31,7 +31,7 @@
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
-    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkSdkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 

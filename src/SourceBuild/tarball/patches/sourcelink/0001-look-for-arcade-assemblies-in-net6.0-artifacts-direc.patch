@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Logan Bussell <loganbussell@microsoft.com>
+Date: Mon, 25 Apr 2022 15:07:55 -0700
+Subject: [PATCH] look for arcade assemblies in net6.0 artifacts directory
+
+---
+ eng/common/tools.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/eng/common/tools.sh b/eng/common/tools.sh
+index 17f0a365..f8852dbb 100755
+--- a/eng/common/tools.sh
++++ b/eng/common/tools.sh
+@@ -435,6 +435,8 @@ function MSBuild {
+     possiblePaths+=( "$toolset_dir/netcoreapp2.1/Microsoft.DotNet.Arcade.Sdk.dll" )
+     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.ArcadeLogging.dll" )
+     possiblePaths+=( "$toolset_dir/netcoreapp3.1/Microsoft.DotNet.Arcade.Sdk.dll" )
++    possiblePaths+=( "$toolset_dir/net6.0/Microsoft.DotNet.ArcadeLogging.dll" )
++    possiblePaths+=( "$toolset_dir/net6.0/Microsoft.DotNet.Arcade.Sdk.dll" )
+     for path in "${possiblePaths[@]}"; do
+       if [[ -f $path ]]; then
+         selectedPath=$path
