@@ -4,15 +4,31 @@
 |:-----|----------|
 | [Operating system](#operating-system) | `os` |
 | [Running template engine host](#template-engine-host) | `host` |
+| [Installed workloads](#installed-workloads) | `workload` |
+| [Current SDK version](#current-sdk-version) | `sdk-version` |
 
 The feature is available since .NET SDK 7.0.100.
 The template may define the constraints all of which must be met in order for the template to be used.  In case constraints are not met, the template will be installed, however will not be visible or used by default. 
 
 
 # Base configuration
-The constraints are defined under `constraints` property in `template.json`. `constraints` contains objects (constraint definition). Each constraint should have a unique name, and the following properties:
+The constraints are defined under `constraints` top-level property in `template.json`. `constraints` contains objects (constraint definition). Each constraint should have a unique name, and the following properties:
 - `type`: (string) - constraint type (mandatory)
 - `args`: (string, array, object) - constraint arguments - depend on actual constraint implementation. May be optional.
+
+Example `template.json`:
+```json
+}
+  // other template elements
+
+  "constraints": {
+    "windows-only": {    // Custom name - not validate
+      "type": "os",      // Type of the constraint - used to match to proper Constraint component to evaluate the constraint
+      "args": "Windows"  // Arguments passed to the evaluating constraint component
+    }
+  }
+}
+```
 
 ## Operating system
 
@@ -21,7 +37,7 @@ Restrict the template instantiation to certain operating system.
 **Configuration:**
 
  - `type`: `os`
- - `args`: (string, array) - list of supported operating systems. Possible values are: Windows, Unix, OSX.
+ - `args`: (string, array) - list of supported operating systems. Possible values are: Windows, Linux, OSX.
 
 **Supported in:**
    - all hosts (by default). 3rd party host may explicitly disable the constraint.
@@ -31,17 +47,17 @@ Restrict the template instantiation to certain operating system.
 
 ```json
    "constraints": {
-       "unix-only": {
+       "linux-only": {
            "type": "os",
-           "args": "Unix"
+           "args": "Linux"
        },
    }
 ```  
 ```json
    "constraints": {
-       "unix-and-osx": {
+       "linux-and-osx": {
            "type": "os",
-           "args": [ "Unix", "OSX" ]
+           "args": [ "Linux", "OSX" ]
        },
    }
 ```  
@@ -119,6 +135,71 @@ Supported in .NET SDK and Visual Studio
                     "hostname": "vs"
                },
            ]
+       },
+   }
+```
+
+## Installed Workloads
+Defines applicability of a template in the dotnet runtime with specific [workloads](https://github.com/dotnet/designs/blob/main/accepted/2020/workloads/workloads.md) installed.
+All the installed (queryable via `dotnet workload list`) as well as [extended](https://github.com/dotnet/designs/blob/main/accepted/2020/workloads/workload-manifest.md#workload-composition) workloads are inspected during evaluating of this constraint.
+
+**Configuration:**
+
+- `type`: `workload`
+- `args` (string, array). Mandatory. List of names of supported workloads (running host need to have at least one of the requested workloads installed).
+
+  To see the list of instaled workloads run [`dotnet workload list`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-list). To see the list of available workloads run [`dotnet workload search`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-search)
+
+**Supported in**:
+   - .NET SDK CLI (`dotnet new`)
+
+### Examples
+
+```json
+   "constraints": {
+       "android-runtime": {
+           "type": "workload",
+           "args": [ "microsoft-net-runtime-android", "microsoft-net-runtime-android-aot" ]
+       },
+   }
+```  
+```json
+   "constraints": {
+       "web-assembly": {
+           "type": "workload",
+           "args": "wasm-tools"
+       },
+   }
+```
+
+## Current SDK Version
+Defines .NET SDK version(s) the template can be used on.
+
+Only the currently active SDK (queryable via `dotnet --version`, changeable by the [`global.json`](https://docs.microsoft.com/en-us/dotnet/core/tools/global-json)) is being considered. Other available SDKs (queryable via `dotnet --list-sdks`) are checked for possible match and result is reported in the evaluation output wuth possible remedy steps - the form of reporting is dependend on the templating host.
+
+**Configuration:**
+
+- `type`: `sdk-version`
+- `args` (string, array). List of versions supported by the template. Syntax and match evaluation of versions are identical as in the [Template engine host](#template-engine-host) constraint.
+
+**Supported in**:
+   - .NET SDK CLI (`dotnet new`)
+
+### Examples
+
+```json
+   "constraints": {
+       "LTS ": {
+           "type": "sdk-version",
+           "args": [ "6.0.*", "3.1.*" ]
+       },
+   }
+```  
+```json
+   "current-with-previews": {
+       "web-assembly": {
+           "type": "sdk-varsion",
+           "args": "7.*.*-*"
        },
    }
 ```

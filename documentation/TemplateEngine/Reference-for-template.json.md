@@ -476,13 +476,13 @@ Available since .NET SDK 7.0.100.
 The template may define the constraints all of which must be met in order for the template to be used. 
 In case constraints are not met, the template will be installed, however will not be visible by default. 
 For the details on available constraints, refer to [the article](link).
-The constraints are defined under `constraints` property. `constraints` contains objects (constraint definition). Each constraint should have a unique name, `type` and optional arguments (`args`). Argument syntax depends on the constraint implementation.
+The constraints are defined under `constraints` property (top level in template.json). `constraints` contains objects (constraint definition). Each constraint should have a unique name, `type` and optional arguments (`args`). Argument syntax depends on the constraint implementation.
 
 ```json
    "constraints": {
-       "unix-only": {
+       "linux-only": {
            "type": "os",
-           "args": "Unix"
+           "args": "Linux"
        },
        "sdk-only": {
            "type": "host",
