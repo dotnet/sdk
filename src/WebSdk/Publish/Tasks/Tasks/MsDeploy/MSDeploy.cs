@@ -1,12 +1,12 @@
 ﻿namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using CultureInfo = System.Globalization.CultureInfo;
-    using IO = System.IO;
-    using Framework = Microsoft.Build.Framework;
-    using Utilities = Microsoft.Build.Utilities;
+    using System;
     using System.Linq;
     using Microsoft.NET.Sdk.Publish.Tasks.Properties;
-    using System;
+    using CultureInfo = System.Globalization.CultureInfo;
+    using Framework = Microsoft.Build.Framework;
+    using IO = System.IO;
+    using Utilities = Microsoft.Build.Utilities;
 
     /// <summary>
     /// The MSDeploy task, which is a wrapper around msdeploy.exe
