@@ -17,7 +17,8 @@ namespace EndToEnd
         [InlineData("10.0.18362.0")]
         [InlineData("10.0.19041.0")]
         [InlineData("10.0.20348.0")]
-        [InlineData("10.0.22000.0", Skip = "Package not published yet")]
+        [InlineData("10.0.22000.0")]
+        [InlineData("10.0.22621.0")]
         public void ItCanBuildAndRun(string targetPlatformVersion)
         {
             var testInstance = TestAssets.Get(TestAssetKinds.TestProjects, "UseCswinrt")
