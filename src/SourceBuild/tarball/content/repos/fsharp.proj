@@ -29,5 +29,12 @@
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
 
+  <Target Name="SetArcadeSdkDir"
+          BeforeTargets="Build">
+    <ItemGroup>
+      <EnvironmentVariables Include="ArcadeSdkDir=$(ToolPackageExtractDir)%(UseSourceBuiltSdkOverride.Identity)/" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Fri, 10 Jun 2022 20:31:15 +0000
+Subject: [PATCH] Define SystemCollectionsImmutableVersion Versions.props
+
+---
+ eng/Versions.props                                              | 1 +
+ .../Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj  | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 08c828d775..8e359a44cb 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -29,6 +29,7 @@
+     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
+     <NewtonsoftJsonPackageVersion>13.0.1</NewtonsoftJsonPackageVersion>
+     <NewtonsoftJsonVersion>$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersion>
++    <SystemCollectionsImmutableVersion>6.0.0</SystemCollectionsImmutableVersion>
+     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
+     <SystemReflectionMetadataVersion>6.0.0</SystemReflectionMetadataVersion>
+     <MicrosoftDotNetSignToolVersion>7.0.0-beta.22310.1</MicrosoftDotNetSignToolVersion>
+diff --git a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+index 1a6ba41771..38a5b931db 100644
+--- a/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj
+@@ -74,7 +74,7 @@
+         Also download an old version and (later in the target ReferenceOlderSCIandSRM)
+         pass them to the compiler. -->
+     <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" IncludeAssets="none" />
+-    <PackageReference Include="System.Collections.Immutable" Version="6.0.0" IncludeAssets="none" />
++    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" IncludeAssets="none" />
+     <PackageDownload Include="System.Collections.Immutable" Version="[5.0.0]" GeneratePathProperty="true" />
+     <PackageDownload Include="System.Reflection.Metadata" Version="[5.0.0]" GeneratePathProperty="true" />
+   </ItemGroup>

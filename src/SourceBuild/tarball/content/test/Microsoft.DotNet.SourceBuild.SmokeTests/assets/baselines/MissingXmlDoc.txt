@@ -2,10 +2,10 @@ Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.Analyz
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.CodeFixes.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.Components.Analyzers.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/roslyn4.0/cs/Microsoft.Extensions.Logging.Generators.xml
+Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.xml
+Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/System.Text.Json.SourceGeneration.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/System.Text.RegularExpressions.Generator.xml
-Microsoft.NETCore.App.Ref/analyzers/dotnet/Microsoft.Interop.LibraryImportGenerator.xml
-Microsoft.NETCore.App.Ref/analyzers/dotnet/Microsoft.Interop.SourceGeneration.xml
 Microsoft.NETCore.App.Ref/ref/netx.y/Microsoft.CSharp.xml
 Microsoft.NETCore.App.Ref/ref/netx.y/Microsoft.VisualBasic.Core.xml
 Microsoft.NETCore.App.Ref/ref/netx.y/Microsoft.Win32.Primitives.xml
