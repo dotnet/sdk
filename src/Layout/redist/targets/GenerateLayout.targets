@@ -293,7 +293,7 @@
       SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="PublishRazorSdkTools"
+  <!--<Target Name="PublishRazorSdkTools"
           BeforeTargets="PublishNetSdks">
     <MSBuild
       Targets="Publish"
@@ -303,7 +303,7 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj"
       Properties="Configuration=$(Configuration)" />
-  </Target>
+  </Target>-->
 
   <Target Name="MoveRazorSdkTools" AfterTargets="PublishRazorSdkTools">
     <ItemGroup>

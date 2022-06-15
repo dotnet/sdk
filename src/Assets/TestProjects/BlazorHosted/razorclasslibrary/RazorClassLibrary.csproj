@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <PropertyGroup>
-    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
-    <UseStaticWebAssetsV2>true</UseStaticWebAssetsV2>
-  </PropertyGroup>
-
-</Project>
