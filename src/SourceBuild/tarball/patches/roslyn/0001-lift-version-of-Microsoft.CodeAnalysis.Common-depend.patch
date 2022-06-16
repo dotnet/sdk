@@ -4,6 +4,7 @@ Date: Thu, 21 Oct 2021 23:15:23 +0000
 Subject: [PATCH] lift version of Microsoft.CodeAnalysis.Common dependencies to
  previously source built versions
 
+Requires https://github.com/dotnet/source-build/issues/2482 in order to eliminate this patch
 ---
  .../Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj | 4 ++++
  1 file changed, 4 insertions(+)

@@ -5,6 +5,8 @@ Subject: [PATCH] Disable warning CS0618
 
 This is needed because IOperation.Children is deprecated in
 Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
+
+Requires https://github.com/dotnet/source-build/issues/2482 in order to eliminate this patch
 ---
  .../src/Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj            | 1 +
  1 file changed, 1 insertion(+)

@@ -2,10 +2,9 @@ From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Chris Rummel <crummel@microsoft.com>
 Date: Wed, 1 Jun 2022 10:10:01 -0500
 Subject: [PATCH] Temporarily patch out native sourcelink file check in
- source-build. This returns source-build to its old behavior.  
- https://github.com/dotnet/source-build/issues/2883 tracks the follow-up to
- confirm a proper fix.
+ source-build. This returns source-build to its old behavior.
 
+Backport: https://github.com/dotnet/source-build/issues/2883
 ---
  src/coreclr/runtime-prereqs.proj | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

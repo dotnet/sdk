@@ -4,8 +4,7 @@ Date: Mon, 16 May 2022 16:29:43 -0700
 Subject: [PATCH] Update nullability constraints for BeginScope in
  SimpleConsoleLogger
 
-Remove when issue is closed: https://github.com/dotnet/format/issues/1609
-
+Workaround for: https://github.com/dotnet/format/issues/1609
 ---
  src/Logging/SimpleConsoleLogger.cs | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

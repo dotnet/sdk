@@ -6,6 +6,8 @@ Subject: [PATCH] Pin Microsoft.Build and
 
 Update package version reference to not pick up the source-build PVP versions and instead utilize SBRP versions 
 so that source-build builds closer to the normal repo build.
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/4643
 ---
  build/packages.targets | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)

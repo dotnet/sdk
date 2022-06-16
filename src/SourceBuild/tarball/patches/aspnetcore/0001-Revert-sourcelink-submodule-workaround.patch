@@ -5,6 +5,8 @@ Subject: [PATCH] Revert sourcelink submodule workaround
 
 aspnetcore will fail the offline tarball build because of the sourcelink workaround being removed here.
 To fix this, a sourcelink patch was added to address the issue.
+
+Backport: https://github.com/dotnet/source-build/issues/2708
 ---
  eng/SourceBuild.props | 14 --------------
  1 file changed, 14 deletions(-)

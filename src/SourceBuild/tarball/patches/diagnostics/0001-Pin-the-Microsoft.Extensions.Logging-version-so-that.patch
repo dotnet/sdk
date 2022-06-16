@@ -4,6 +4,7 @@ Date: Thu, 2 Jun 2022 19:27:41 +0000
 Subject: [PATCH] Pin the Microsoft.Extensions.Logging version so that
  source-build does not pick up latest
 
+Backport: https://github.com/dotnet/diagnostics/pull/3121
 ---
  eng/Versions.props                                            | 2 +-
  .../Microsoft.Diagnostics.Monitoring.EventPipe.csproj         | 2 +-

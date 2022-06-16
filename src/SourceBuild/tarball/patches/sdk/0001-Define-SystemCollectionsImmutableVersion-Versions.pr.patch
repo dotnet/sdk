@@ -3,6 +3,7 @@ From: MichaelSimons <msimons@microsoft.com>
 Date: Fri, 10 Jun 2022 20:31:15 +0000
 Subject: [PATCH] Define SystemCollectionsImmutableVersion Versions.props
 
+Backport: https://github.com/dotnet/sdk/pull/26007
 ---
  eng/Versions.props                                              | 1 +
  .../Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj  | 2 +-

@@ -6,8 +6,7 @@ Subject: [PATCH] Add NoWarn for NU1507
 This warning occurs when using NuGet central package management without defining
 any Package Source Mappings.
 
-Remove when issue is closed: https://github.com/dotnet/razor-compiler/issues/242
-
+Workaround for: https://github.com/dotnet/razor-compiler/issues/242
 ---
  Directory.Build.props | 1 +
  1 file changed, 1 insertion(+)
