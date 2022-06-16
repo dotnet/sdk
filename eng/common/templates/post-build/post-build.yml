@@ -69,6 +69,7 @@ stages:
               /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/PackageArtifacts'
               /p:SignCheckExclusionsFile='$(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt'
               /p:Configuration=Release 
+              /p:CheckEolTargetFramework=false
               ${{ parameters.signingValidationAdditionalParameters }}
 
   - ${{ if eq(parameters.enableSourceLinkValidation, 'true') }}:
