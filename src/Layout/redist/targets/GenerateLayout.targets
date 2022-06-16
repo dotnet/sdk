@@ -135,7 +135,6 @@
       <NETSdkWebProjectSystemSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Web.ProjectSystem</NETSdkWebProjectSystemSourceRoot>
       <NETSdkWorkerSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Worker</NETSdkWorkerSourceRoot>
       <NETSdkBlazorWasmSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly</NETSdkBlazorWasmSourceRoot>
-      <NETSdkRazorSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Razor</NETSdkRazorSourceRoot>
     </PropertyGroup>
     <ItemGroup>
       <NETSdksContent Include="$(NETSdkSourceRoot)\**\*.*"
@@ -150,8 +149,6 @@
                      DeploymentSubPath="Sdks\Microsoft.NET.Sdk.Worker"/>
       <NETSdksContent Include="$(NETSdkBlazorWasmSourceRoot)\**\*.*"
                      DeploymentSubPath="Sdks\Microsoft.NET.Sdk.BlazorWebAssembly"/>
-      <NETSdksContent Include="$(NETSdkRazorSourceRoot)\**\*.*"
-                     DeploymentSubPath="Sdks\Microsoft.NET.Sdk.Razor"/>
     </ItemGroup>
     <Copy SourceFiles="@(NETSdksContent)"
       DestinationFiles="@(NETSdksContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')" />
@@ -290,41 +287,6 @@
     <Copy
       SourceFiles="@(_WebAssemblyToolsOutput)"
       DestinationFolder="$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(SdkTargetFramework)\"
-      SkipUnchangedFiles="true" />
-  </Target>
-
-  <!--<Target Name="PublishRazorSdkTools"
-          BeforeTargets="PublishNetSdks">
-    <MSBuild
-      Targets="Publish"
-      Projects="$(RepoRoot)/src/RazorSdk/Tool/Microsoft.NET.Sdk.Razor.Tool.csproj"
-      Properties="Configuration=$(Configuration)" />
-    <MSBuild
-      Targets="Publish"
-      Projects="$(RepoRoot)/src/RazorSdk/SourceGenerators/Microsoft.NET.Sdk.Razor.SourceGenerators.csproj"
-      Properties="Configuration=$(Configuration)" />
-  </Target>-->
-
-  <Target Name="MoveRazorSdkTools" AfterTargets="PublishRazorSdkTools">
-    <ItemGroup>
-      <_RazorToolOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
-      <!-- To reduce the size of the SDK, we use the compiler dependencies that are located in the `Rosyln/bincore` location
-      instead of shipping our own copies in the Razor compiler. These assemblies will be resolved by path in the
-      rzc executable. -->
-      <_RazorToolOutput Remove="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\Microsoft.CodeAnalysis.dll" />
-      <_RazorToolOutput Remove="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\Microsoft.CodeAnalysis.CSharp.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\Microsoft.AspNetCore.Razor.SourceGenerator.Tooling.Internal.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\Microsoft.NET.Sdk.Razor.SourceGenerators.dll" />
-      <_RazorSourceGeneratorsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.SourceGenerators\$(Configuration)\netstandard2.0\publish\RazorSourceGenerator.razorencconfig	" />
-    </ItemGroup>
-
-    <Copy
-      SourceFiles="@(_RazorToolOutput)"
-      DestinationFolder="$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Razor\tools\"
-      SkipUnchangedFiles="true" />
-    <Copy
-      SourceFiles="@(_RazorSourceGeneratorsOutput)"
-      DestinationFolder="$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk.Razor\source-generators\"
       SkipUnchangedFiles="true" />
   </Target>
 

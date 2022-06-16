@@ -39,7 +39,7 @@
     <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor.Tasks" Version="7.0.0-preview.5.22314.1"/>
+    <PackageReference Include="Microsoft.NET.Sdk.Razor.Tasks" Version="$(MicrosoftNETSdkRazorPackageVersion)"/>
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
   </ItemGroup>
 
