@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
-        <target state="new">'{0}' should not contain empty items</target>
+        <target state="translated">'{0}' no debe contener elementos vacíos</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
@@ -24,22 +24,22 @@
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonArray_Objects">
         <source>'{0}' should be an array of objects.</source>
-        <target state="new">'{0}' should be an array of objects.</target>
+        <target state="translated">'{0}' debe ser una matriz de objetos.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_Array">
         <source>'{0}' is not a valid JSON array.</source>
-        <target state="new">'{0}' is not a valid JSON array.</target>
+        <target state="translated">'{0}' no es una matriz JSON válida.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_StringOrArray">
         <source>'{0}' is not a valid JSON string or array.</source>
-        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <target state="translated">'{0}' no es una cadena o matriz JSON válida.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidVersion">
         <source>'{0}' is not a valid version or version range.</source>
-        <target state="new">'{0}' is not a valid version or version range.</target>
+        <target state="translated">'{0}' no es una versión o un rango de versiones válidos.</target>
         <note>{0} is version range specified in JSON configuration</note>
       </trans-unit>
       <trans-unit id="Constraint_WrongConfigurationCTA">
@@ -106,7 +106,7 @@
       </trans-unit>
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
-        <target state="new">Template engine host</target>
+        <target state="translated">Host del motor de plantillas</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
@@ -253,27 +253,27 @@ Detalles: {1}.</target>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid semver version.</source>
-        <target state="new">'{0}' is not a valid semver version.</target>
+        <target state="translated">'{0}' no es una versión de SemVer válida.</target>
         <note>{0} is the provided version</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MismatchedProviders">
         <source>Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">Hay varios componentes 'ISdkInfoProvider' proporcionados por el host ({0}), por lo que 'SdkVersionConstraint' no se puede inicializar correctamente.</target>
         <note>{0} is the list of providers</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MissingProvider">
         <source>No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">No hay ningún componente 'ISdkInfoProvider' proporcionado por el host. 'SdkVersionConstraint' no se puede inicializar correctamente.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkConstraint_Message_Restricted">
         <source>Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</source>
-        <target state="new">Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</target>
+        <target state="translated">No se admite la ejecución de la plantilla en la versión actual del SDK de .NET ({0}). Versiones admitidas: {1}</target>
         <note>{0} is the current SDK version, {1} is the list of supported SDK versions</note>
       </trans-unit>
       <trans-unit id="SdkVersionConstraint_Name">
         <source>.NET SDK version</source>
-        <target state="new">.NET SDK version</target>
+        <target state="translated">Versión del SDK de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToEvaluate">
@@ -339,27 +339,27 @@ La caché de las plantillas se volverá a crear en la siguiente ejecución.</tar
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
         <source>Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">Hay varios componentes 'IWorkloadsInfoProvider' proporcionados por el host ({0}), por lo que 'WorkloadConstraint' no se puede inicializar correctamente.</target>
         <note>{0} is list of ids of providers</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MissingProvider">
         <source>No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">No hay ningún componente 'IWorkloadsInfoProvider' proporcionado por el host. 'WorkloadConstraint' no se puede inicializar correctamente.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Message_Restricted">
         <source>Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</source>
-        <target state="new">Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</target>
+        <target state="translated">No se admite la ejecución de la plantilla. Las cargas de trabajo opcionales necesarias no están instaladas. Cargas de trabajo admitidas: {0}. Cargas de trabajo opcionales instaladas actualmente: {1}</target>
         <note>{0} is list of supported workloads. {1} is list of installed optional workloads</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Name">
         <source>Workload</source>
-        <target state="new">Workload</target>
+        <target state="translated">Carga de trabajo</target>
         <note>Terminus Technicus - most likely not to be translated (https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-install)</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Warning_DuplicateWorkloads">
         <source>'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</source>
-        <target state="new">'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</target>
+        <target state="translated">El componente 'IWorkloadsInfoProvider' proporcionado por el host proporcionó algunas cargas de trabajo duplicadas (duplicados: {0}). Se omitirán los duplicados.</target>
         <note>{0} is the list of duplicates</note>
       </trans-unit>
     </body>

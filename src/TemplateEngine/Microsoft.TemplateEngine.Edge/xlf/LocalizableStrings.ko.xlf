@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
-        <target state="new">'{0}' should not contain empty items</target>
+        <target state="translated">'{0}'에는 빈 항목이 없어야 합니다.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
@@ -24,22 +24,22 @@
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonArray_Objects">
         <source>'{0}' should be an array of objects.</source>
-        <target state="new">'{0}' should be an array of objects.</target>
+        <target state="translated">'{0}'은(는) 개체 배열이어야 합니다.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_Array">
         <source>'{0}' is not a valid JSON array.</source>
-        <target state="new">'{0}' is not a valid JSON array.</target>
+        <target state="translated">'{0}'은(는) 유효한 JSON 배열이 아닙니다.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_StringOrArray">
         <source>'{0}' is not a valid JSON string or array.</source>
-        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <target state="translated">'{0}'은(는) 유효한 JSON 문자열 또는 배열이 아닙니다.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidVersion">
         <source>'{0}' is not a valid version or version range.</source>
-        <target state="new">'{0}' is not a valid version or version range.</target>
+        <target state="translated">'{0}'은(는) 올바른 버전 또는 버전 범위가 아닙니다.</target>
         <note>{0} is version range specified in JSON configuration</note>
       </trans-unit>
       <trans-unit id="Constraint_WrongConfigurationCTA">
@@ -106,7 +106,7 @@
       </trans-unit>
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
-        <target state="new">Template engine host</target>
+        <target state="translated">템플릿 엔진 호스트</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
@@ -253,27 +253,27 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid semver version.</source>
-        <target state="new">'{0}' is not a valid semver version.</target>
+        <target state="translated">'{0}'(는) 유효한 셈버 버전이 아닙니다.</target>
         <note>{0} is the provided version</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MismatchedProviders">
         <source>Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">호스트에서 제공하는 여러 'ISdkInfoProvider' 구성 요소({0})가 존재합니다. 따라서 'SdkVersionConstraint'를 제대로 초기화할 수 없습니다.</target>
         <note>{0} is the list of providers</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MissingProvider">
         <source>No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">호스트에서 제공하는 'ISdkInfoProvider' 구성 요소가 없습니다. 'SdkVersionConstraint'를 제대로 초기화할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkConstraint_Message_Restricted">
         <source>Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</source>
-        <target state="new">Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</target>
+        <target state="translated">현재 .NET SDK 버전({0})에서 실행 중인 템플릿은 지원되지 않습니다. 지원되는 버전: {1}</target>
         <note>{0} is the current SDK version, {1} is the list of supported SDK versions</note>
       </trans-unit>
       <trans-unit id="SdkVersionConstraint_Name">
         <source>.NET SDK version</source>
-        <target state="new">.NET SDK version</target>
+        <target state="translated">.NET SDK 버전</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToEvaluate">
@@ -339,27 +339,27 @@ Template cache will be recreated on the next run.</source>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
         <source>Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">호스트에서 제공하는 여러 'IWorkloadsInfoProvider' 구성 요소({0})가 존재합니다. 따라서 'WorkloadConstraint'를 제대로 초기화할 수 없습니다.</target>
         <note>{0} is list of ids of providers</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MissingProvider">
         <source>No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">호스트에서 제공하는 'IWorkloadsInfoProvider' 구성 요소가 없습니다. 'WorkloadConstraint'를 제대로 초기화할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Message_Restricted">
         <source>Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</source>
-        <target state="new">Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</target>
+        <target state="translated">템플릿 실행은 지원되지 않습니다. 필수 선택적 워크로드가 설치되지 않았습니다. 지원되는 워크로드: {0}. 현재 설치된 선택적 워크로드: {1}</target>
         <note>{0} is list of supported workloads. {1} is list of installed optional workloads</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Name">
         <source>Workload</source>
-        <target state="new">Workload</target>
+        <target state="translated">워크로드</target>
         <note>Terminus Technicus - most likely not to be translated (https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-install)</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Warning_DuplicateWorkloads">
         <source>'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</source>
-        <target state="new">'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</target>
+        <target state="translated">호스트에서 제공하는 'IWorkloadsInfoProvider' 구성 요소에서 중복된 작업(중복: {0})을 제공했습니다. 중복 항목은 건너뜁니다.</target>
         <note>{0} is the list of duplicates</note>
       </trans-unit>
     </body>

@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
-        <target state="new">'{0}' should not contain empty items</target>
+        <target state="translated">«{0}» не должна содержать пустых элементов</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
@@ -24,22 +24,22 @@
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonArray_Objects">
         <source>'{0}' should be an array of objects.</source>
-        <target state="new">'{0}' should be an array of objects.</target>
+        <target state="translated">«{0}» должно быть массивом объектов.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_Array">
         <source>'{0}' is not a valid JSON array.</source>
-        <target state="new">'{0}' is not a valid JSON array.</target>
+        <target state="translated">«{0}» не является допустимым массивом JSON.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_StringOrArray">
         <source>'{0}' is not a valid JSON string or array.</source>
-        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <target state="translated">«{0}» не является допустимой строкой или массивом JSON.</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidVersion">
         <source>'{0}' is not a valid version or version range.</source>
-        <target state="new">'{0}' is not a valid version or version range.</target>
+        <target state="translated">«{0}» не является допустимой версией или диапазоном версий.</target>
         <note>{0} is version range specified in JSON configuration</note>
       </trans-unit>
       <trans-unit id="Constraint_WrongConfigurationCTA">
@@ -106,7 +106,7 @@
       </trans-unit>
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
-        <target state="new">Template engine host</target>
+        <target state="translated">Узел обработчика шаблонов</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
@@ -253,27 +253,27 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid semver version.</source>
-        <target state="new">'{0}' is not a valid semver version.</target>
+        <target state="translated">«{0}» не является допустимой версией SemVer.</target>
         <note>{0} is the provided version</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MismatchedProviders">
         <source>Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">Несколько компонентов ISdkInfoProvider, предоставляемых узлом ({0}), поэтому не удается правильно инициализировать SdkVersionConstraint.</target>
         <note>{0} is the list of providers</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MissingProvider">
         <source>No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">Компонент ISdkInfoProvider не предоставляется узлом. Не удается правильно инициализировать SdkVersionConstraint.</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkConstraint_Message_Restricted">
         <source>Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</source>
-        <target state="new">Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</target>
+        <target state="translated">Выполняемый шаблон в текущей версии пакета SDK для .NET ({0}) не поддерживается. Поддерживаемые версии: {1}</target>
         <note>{0} is the current SDK version, {1} is the list of supported SDK versions</note>
       </trans-unit>
       <trans-unit id="SdkVersionConstraint_Name">
         <source>.NET SDK version</source>
-        <target state="new">.NET SDK version</target>
+        <target state="translated">Версия пакета SDK для .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToEvaluate">
@@ -339,27 +339,27 @@ Template cache will be recreated on the next run.</source>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
         <source>Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">Несколько компонентов IWorkloadsInfoProvider, предоставляемых узлом ({0}), поэтому не удается правильно инициализировать WorkloadConstraint.</target>
         <note>{0} is list of ids of providers</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MissingProvider">
         <source>No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">Компонент IWorkloadsInfoProvider не предоставляется узлом. Не удается правильно инициализировать WorkloadConstraint.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Message_Restricted">
         <source>Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</source>
-        <target state="new">Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</target>
+        <target state="translated">Выполняемый шаблон не поддерживается — необходимые дополнительные рабочие нагрузки не установлены. Поддерживаемые рабочие нагрузки: {0}. В настоящее время установлены дополнительные рабочие нагрузки: {1}</target>
         <note>{0} is list of supported workloads. {1} is list of installed optional workloads</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Name">
         <source>Workload</source>
-        <target state="new">Workload</target>
+        <target state="translated">Рабочая нагрузка</target>
         <note>Terminus Technicus - most likely not to be translated (https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-install)</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Warning_DuplicateWorkloads">
         <source>'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</source>
-        <target state="new">'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</target>
+        <target state="translated">Компонент «IWorkloadsInfoProvider», предоставленный узлом, предоставил несколько дублированных рабочих нагрузок (дубликаты: {0}). Дубликаты будут пропущены.</target>
         <note>{0} is the list of duplicates</note>
       </trans-unit>
     </body>

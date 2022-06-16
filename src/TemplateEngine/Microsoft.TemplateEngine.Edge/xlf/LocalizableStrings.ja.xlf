@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
-        <target state="new">'{0}' should not contain empty items</target>
+        <target state="translated">'{0}' に空の項目を含めることはできません</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
@@ -24,22 +24,22 @@
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonArray_Objects">
         <source>'{0}' should be an array of objects.</source>
-        <target state="new">'{0}' should be an array of objects.</target>
+        <target state="translated">'{0}' はオブジェクトの配列である必要があります。</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_Array">
         <source>'{0}' is not a valid JSON array.</source>
-        <target state="new">'{0}' is not a valid JSON array.</target>
+        <target state="translated">'{0}' は有効な JSON 配列ではありません。</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidJsonType_StringOrArray">
         <source>'{0}' is not a valid JSON string or array.</source>
-        <target state="new">'{0}' is not a valid JSON string or array.</target>
+        <target state="translated">'{0}' は有効な JSON 文字列または配列ではありません。</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_InvalidVersion">
         <source>'{0}' is not a valid version or version range.</source>
-        <target state="new">'{0}' is not a valid version or version range.</target>
+        <target state="translated">'{0}' は有効なバージョンまたはバージョンの範囲ではありません。</target>
         <note>{0} is version range specified in JSON configuration</note>
       </trans-unit>
       <trans-unit id="Constraint_WrongConfigurationCTA">
@@ -106,7 +106,7 @@
       </trans-unit>
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
-        <target state="new">Template engine host</target>
+        <target state="translated">テンプレート エンジン ホスト</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
@@ -253,27 +253,27 @@ Details: {1}.</source>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_InvalidVersion">
         <source>'{0}' is not a valid semver version.</source>
-        <target state="new">'{0}' is not a valid semver version.</target>
+        <target state="translated">'{0}' は有効なセマンティック バージョンではありません。</target>
         <note>{0} is the provided version</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MismatchedProviders">
         <source>Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'ISdkInfoProvider' components provided by host ({0}), therefore 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">ホスト ({0}) によって複数の 'ISdkInfoProvider' コンポーネントが提供されたため、'SdkVersionConstraint' を正しく初期化できません。</target>
         <note>{0} is the list of providers</note>
       </trans-unit>
       <trans-unit id="SdkConstraint_Error_MissingProvider">
         <source>No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'ISdkInfoProvider' component provided by host. 'SdkVersionConstraint' cannot be properly initialized.</target>
+        <target state="translated">ホストから 'ISdkInfoProvider' コンポーネントが提供されていません。'SdkVersionConstraint' を正しく初期化できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkConstraint_Message_Restricted">
         <source>Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</source>
-        <target state="new">Running template on current .NET SDK version ({0}) is unsupported. Supported version(s): {1}</target>
+        <target state="translated">現在の .NET SDK バージョン ({0}) でテンプレートを実行することはサポートされていません。サポートされているバージョン: {1}</target>
         <note>{0} is the current SDK version, {1} is the list of supported SDK versions</note>
       </trans-unit>
       <trans-unit id="SdkVersionConstraint_Name">
         <source>.NET SDK version</source>
-        <target state="new">.NET SDK version</target>
+        <target state="translated">.NET SDK バージョン</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateConstraintManager_Error_FailedToEvaluate">
@@ -339,27 +339,27 @@ Template cache will be recreated on the next run.</source>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MismatchedProviders">
         <source>Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">Multiple 'IWorkloadsInfoProvider' components provided by host ({0}), therefore 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">ホスト ({0}) によって複数の 'IWorkloadsInfoProvider' コンポーネントが提供されたため、'IWorkloadsInfoProvider' を正しく初期化できません。</target>
         <note>{0} is list of ids of providers</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Error_MissingProvider">
         <source>No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</source>
-        <target state="new">No 'IWorkloadsInfoProvider' component provided by host. 'WorkloadConstraint' cannot be properly initialized.</target>
+        <target state="translated">ホストから 'IWorkloadsInfoProvider' コンポーネントが提供されていません。'WorkloadConstraint' を正しく初期化できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Message_Restricted">
         <source>Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</source>
-        <target state="new">Running template is not supported - required optional workload(s) not installed. Supported workload(s): {0}. Currently installed optional workloads: {1}</target>
+        <target state="translated">テンプレートの実行はサポートされていません - 必要なオプションのワークロードがインストールされていません。サポートされているワークロード: {0}。現在インストールされているオプションのワークロード: {1}</target>
         <note>{0} is list of supported workloads. {1} is list of installed optional workloads</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Name">
         <source>Workload</source>
-        <target state="new">Workload</target>
+        <target state="translated">ワークロード</target>
         <note>Terminus Technicus - most likely not to be translated (https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-install)</note>
       </trans-unit>
       <trans-unit id="WorkloadConstraint_Warning_DuplicateWorkloads">
         <source>'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</source>
-        <target state="new">'IWorkloadsInfoProvider' component provided by host provided some duplicated workloads (duplicates: {0}). Duplicates will be skipped.</target>
+        <target state="translated">ホストによって提供された 'IWorkloadsInfoProvider' コンポーネントにより、いくつかの重複したワークロードが提供されました (重複: {0})。重複はスキップされます。</target>
         <note>{0} is the list of duplicates</note>
       </trans-unit>
     </body>
