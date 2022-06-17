@@ -25,7 +25,11 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<bool> isSuppressedProvider)
             where T : notnull
         {
-            return provider.Combine(isSuppressedProvider).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
+            return provider
+                .Combine(isSuppressedProvider)
+                .WithComparer(new RazorSourceGeneratorComparer<T>())
+                .Where(t => !t.Item2) // if we passed through here, but are still suppressed it means there is nothing in the cache yet, so we can set it to empty without wiping anything out
+                .Select((pair, _) => pair.Left);
         }
 
 

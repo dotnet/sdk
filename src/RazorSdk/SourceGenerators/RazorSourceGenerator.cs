@@ -93,10 +93,15 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 .Combine(razorSourceGeneratorOptions)
                 .Select(static (pair, _) =>
                 {
-                    RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromCompilationStart();
-
                     var ((compilation, generatedDeclarationSyntaxTrees), razorSourceGeneratorOptions) = pair;
 
+                    // don't try and and find any tag helpers if we don't have any components
+                    if(generatedDeclarationSyntaxTrees.Length == 0)
+                    {
+                        return ImmutableArray<TagHelperDescriptor>.Empty;
+                    }
+
+                    RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromCompilationStart();
                     var tagHelperFeature = new StaticCompilationTagHelperFeature();
                     var discoveryProjectEngine = GetDiscoveryProjectEngine(compilation.References.ToImmutableArray(), tagHelperFeature);
 
@@ -155,16 +160,14 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                 })
                 .Select(static (pair, _) =>
                 {
-                    RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromReferencesStart();
-
                     var ((compilation, razorSourceGeneratorOptions), hasRazorFiles) = pair;
                     if (!hasRazorFiles)
                     {
                         // If there's no razor code in this app, don't do anything.
-                        RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromReferencesStop();
                         return ImmutableArray<TagHelperDescriptor>.Empty;
                     }
 
+                    RazorSourceGeneratorEventSource.Log.DiscoverTagHelpersFromReferencesStart();
                     var tagHelperFeature = new StaticCompilationTagHelperFeature();
                     var discoveryProjectEngine = GetDiscoveryProjectEngine(compilation.References.ToImmutableArray(), tagHelperFeature);
 
@@ -233,9 +236,16 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
                     return string.Equals(a.csharpDocument.GeneratedCode, b.csharpDocument.GeneratedCode, StringComparison.Ordinal);
                 }, static a => StringComparer.Ordinal.GetHashCode(a.csharpDocument));
 
-            context.RegisterSourceOutput(generatedOutput, static (context, pair) =>
+            context.RegisterSourceOutput(generatedOutput.Combine(isGeneratorSuppressed), static (context, pair) =>
             {
-                var (hintName, csharpDocument) = pair;
+                var ((hintName, csharpDocument), isSupressed) = pair;
+
+                // we should never reach here if we're suppressed, but ensure we don't output anything if we somehow do
+                if (isSupressed)
+                {
+                    return;
+                }
+
                 RazorSourceGeneratorEventSource.Log.AddSyntaxTrees(hintName);
                 for (var i = 0; i < csharpDocument.Diagnostics.Count; i++)
                 {
