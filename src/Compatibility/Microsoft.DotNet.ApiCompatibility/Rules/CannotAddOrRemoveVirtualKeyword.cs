@@ -13,10 +13,10 @@ using Microsoft.DotNet.ApiCompatibility.Abstractions;
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     /// <summary>
-    /// This class implements a rule to check that the 'virtual' modifier is not added to
+    /// This class implements a rule to check that the 'virtual' keyword is not added to
     /// or removed from a member.
     /// </summary>
-    public class CannotAddOrRemoveVirtualModifier : Rule
+    public class CannotAddOrRemoveVirtualKeyword : Rule
     {
         public override void Initialize(RuleRunnerContext context) => context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
 
@@ -28,20 +28,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
+            // TODO: Skip interface members for now
+            if (leftContainingType.TypeKind == TypeKind.Interface || rightContainingType.TypeKind == TypeKind.Interface)
+            {
+                return;
+            }
+
             if (left.IsVirtual)
             {
-                // If left is virtual right is not, emit a diagnostic
-                // that the virtual modifier cannot be removed.
+                // If left is virtual and right is not, then emit a diagnostic
+                // specifying that the virtual modifier cannot be removed.
                 if (!right.IsVirtual)
                 {
                     differences.Add(new CompatDifference(
-                    DiagnosticIds.CannotRemoveVirtualModifier, string.Format(
-                        Resources.CannotRemoveVirtualModifier, left), DifferenceType.Removed, right));
+                    DiagnosticIds.CannotRemoveVirtualFromMember, string.Format(
+                        Resources.CannotRemoveVirtualFromMember, left), DifferenceType.Removed, right));
                 }
             }
             // If the left member is not virtual, ensure that we're
             // either in strict mode, or the left member is not abstract
-            // (since it is legal to change abstract to virtual).
+            // (since it is not a breaking change to have a member go from abstract to virtual).
             else if (Settings.StrictMode || !left.IsAbstract)
             {
                 // If the right member is virtual, emit a diagnostic
@@ -49,8 +55,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 if (right.IsVirtual)
                 {
                     differences.Add(new CompatDifference(
-                    DiagnosticIds.CannotAddVirtualModifier, string.Format(
-                        Resources.CannotAddVirtualModifier, right), DifferenceType.Added, right));
+                    DiagnosticIds.CannotAddVirtualToMember, string.Format(
+                        Resources.CannotAddVirtualToMember, right), DifferenceType.Added, right));
                 }
             }
         }

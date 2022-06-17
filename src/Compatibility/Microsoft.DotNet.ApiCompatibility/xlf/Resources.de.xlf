@@ -47,9 +47,9 @@
         <target state="translated">Der Schnittstellenelement „{0}“ kann {1} nicht hinzugefügt werden, da es in {2} nicht vorhanden ist.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotAddVirtualModifier">
-        <source>Cannot add virtual modifier to member '{0}'.</source>
-        <target state="new">Cannot add virtual modifier to member '{0}'.</target>
+      <trans-unit id="CannotAddVirtualToMember">
+        <source>Cannot add virtual keyword to member '{0}'.</source>
+        <target state="new">Cannot add virtual keyword to member '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveBaseInterface">
@@ -62,9 +62,9 @@
         <target state="translated">Der Typ „{0}“ erbt nicht vom Basistyp „{1}“ auf {2}, auf {3} aber schon.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualModifier">
-        <source>Cannot remove virtual modifier from member '{0}'.</source>
-        <target state="new">Cannot remove virtual modifier from member '{0}'.</target>
+      <trans-unit id="CannotRemoveVirtualFromMember">
+        <source>Cannot remove virtual keyword from member '{0}'.</source>
+        <target state="new">Cannot remove virtual keyword from member '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">

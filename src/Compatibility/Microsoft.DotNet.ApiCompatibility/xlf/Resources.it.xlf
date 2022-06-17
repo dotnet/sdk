@@ -47,9 +47,9 @@
         <target state="translated">Non è possibile aggiungere il membro di interfaccia '{0}' a {1} perché non esiste in {2}</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotAddVirtualModifier">
-        <source>Cannot add virtual modifier to member '{0}'.</source>
-        <target state="new">Cannot add virtual modifier to member '{0}'.</target>
+      <trans-unit id="CannotAddVirtualToMember">
+        <source>Cannot add virtual keyword to member '{0}'.</source>
+        <target state="new">Cannot add virtual keyword to member '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveBaseInterface">
@@ -62,9 +62,9 @@
         <target state="translated">Il tipo '{0}' non eredita dal tipo di base '{1}' in {2} ma in {3}</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualModifier">
-        <source>Cannot remove virtual modifier from member '{0}'.</source>
-        <target state="new">Cannot remove virtual modifier from member '{0}'.</target>
+      <trans-unit id="CannotRemoveVirtualFromMember">
+        <source>Cannot remove virtual keyword from member '{0}'.</source>
+        <target state="new">Cannot remove virtual keyword from member '{0}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">
