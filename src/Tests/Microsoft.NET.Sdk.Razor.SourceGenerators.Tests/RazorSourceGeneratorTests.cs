@@ -1301,8 +1301,6 @@ namespace AspNetCoreGeneratedDocument
 
             Assert.Collection(eventListener.Events,
                 e => Assert.Equal("ComputeRazorSourceGeneratorOptions", e.EventName),
-                e => Assert.Equal("DiscoverTagHelpersFromCompilationStart", e.EventName),
-                e => Assert.Equal("DiscoverTagHelpersFromCompilationStop", e.EventName),
                 e => Assert.Equal("DiscoverTagHelpersFromReferencesStart", e.EventName),
                 e => Assert.Equal("DiscoverTagHelpersFromReferencesStop", e.EventName),
                 e =>
@@ -1700,9 +1698,7 @@ public class Person
             Assert.Empty(result.Diagnostics);
             Assert.Equal(2, result.GeneratedSources.Length);
 
-            Assert.Collection(eventListener.Events,
-               e => Assert.Equal("DiscoverTagHelpersFromCompilationStart", e.EventName),
-               e => Assert.Equal("DiscoverTagHelpersFromCompilationStop", e.EventName));
+            Assert.Empty(eventListener.Events);
 
         }
 
@@ -1859,8 +1855,6 @@ public class HeaderTagHelper : TagHelper
             Assert.Equal(2, result.GeneratedSources.Length);
 
             Assert.Collection(eventListener.Events,
-               e => Assert.Equal("DiscoverTagHelpersFromCompilationStart", e.EventName),
-               e => Assert.Equal("DiscoverTagHelpersFromCompilationStop", e.EventName),
                e =>
                {
                    Assert.Equal("RazorCodeGenerateStart", e.EventName);

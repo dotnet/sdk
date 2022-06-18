@@ -28,8 +28,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
             return provider
                 .Combine(isSuppressedProvider)
                 .WithComparer(new RazorSourceGeneratorComparer<T>())
-                .Where(t => !t.Item2) // if we passed through here, but are still suppressed it means there is nothing in the cache yet, so we can set it to empty without wiping anything out
-                .Select((pair, _) => pair.Left);
+                .Combine(isSuppressedProvider)
+                .Where(t => !t.Right) // if we passed through here, but are still suppressed it means there is nothing in the cache yet, so we can set it to empty without wiping anything out
+                .Select((pair, _) => pair.Left.Left);
         }
 
 
