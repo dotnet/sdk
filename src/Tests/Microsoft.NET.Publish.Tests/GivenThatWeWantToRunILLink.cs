@@ -1519,7 +1519,7 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework,
                 IsExe = isExe
             };
-            testProject.AdditionalProperties["NoWarn"] = "NU1505";
+            testProject.AdditionalProperties["NoWarn"] = "$(NoWarn);NU1505";
 
             testProject.SourceFiles[$"{projectName}.cs"] = @"
 using System;
