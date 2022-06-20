@@ -35,6 +35,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
         public bool Verified { get; private set; }
 
+        public string? Description { get; private set; }
+
+        public string? IconUrl { get; private set; }
+
         //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
         internal static NuGetPackageSourceInfo FromJObject (JObject entry)
         {
@@ -44,6 +48,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             sourceInfo.TotalDownloads = entry.ToInt32("totalDownloads");
             sourceInfo.Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection(Array.Empty<string>());
             sourceInfo.Verified = entry.ToBool("verified");
+            sourceInfo.Description = entry.ToString("description");
+            sourceInfo.IconUrl = entry.ToString("iconUrl");
 
             return sourceInfo;
         }

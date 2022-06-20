@@ -16,6 +16,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Owners = info.Owners;
             TotalDownloads = info.TotalDownloads;
             Verified = info.Verified;
+            Description = info.Description;
+            IconUrl = info.IconUrl;
         }
 
         [JsonConstructor]
@@ -42,6 +44,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         [JsonProperty]
         public bool Verified { get; private set; }
+
+        [JsonIgnore]
+        public string? Description { get; private set; }
+
+        [JsonIgnore]
+        public string? IconUrl { get; private set; }
     }
 }
 

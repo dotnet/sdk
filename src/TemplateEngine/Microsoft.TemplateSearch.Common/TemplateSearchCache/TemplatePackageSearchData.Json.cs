@@ -33,6 +33,9 @@ namespace Microsoft.TemplateSearch.Common
             Owners = jObject.Get<JToken>(nameof(Owners)).JTokenStringOrArrayToCollection(Array.Empty<string>());
             Verified = jObject.ToBool(nameof(Verified));
 
+            Description = jObject.ToString(nameof(Description));
+            IconUrl = jObject.ToString(nameof(IconUrl));
+
             JArray? templatesData = jObject.Get<JArray>(nameof(Templates));
             if (templatesData == null)
             {
@@ -116,6 +119,16 @@ namespace Microsoft.TemplateSearch.Common
                 {
                     writer.WritePropertyName(nameof(Verified));
                     writer.WriteValue(value.Verified);
+                }
+                if (!string.IsNullOrWhiteSpace(value.Description))
+                {
+                    writer.WritePropertyName(nameof(Description));
+                    writer.WriteValue(value.Description);
+                }
+                if (!string.IsNullOrWhiteSpace(value.IconUrl))
+                {
+                    writer.WritePropertyName(nameof(IconUrl));
+                    writer.WriteValue(value.IconUrl);
                 }
 
                 writer.WritePropertyName(nameof(Templates));

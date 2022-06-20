@@ -136,6 +136,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var mockPackage = A.Fake<ITemplatePackageInfo>();
             A.CallTo(() => mockPackage.Name).Returns("pack");
             A.CallTo(() => mockPackage.Version).Returns("packVer");
+            A.CallTo(() => mockPackage.Description).Returns("description");
+            A.CallTo(() => mockPackage.IconUrl).Returns("https://icon");
 
             TemplatePackageSearchData package = new TemplatePackageSearchData(mockPackage, new[] { template });
             TemplateSearchCache cache = new TemplateSearchCache(new[] { package });
@@ -150,6 +152,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             Assert.Equal("pack", deserializedCache.TemplatePackages[0].Name);
             Assert.Equal("packVer", deserializedCache.TemplatePackages[0].Version);
+            Assert.Equal("description", deserializedCache.TemplatePackages[0].Description);
+            Assert.Equal("https://icon", deserializedCache.TemplatePackages[0].IconUrl);
 
             var templateToTest = deserializedCache.TemplatePackages[0].Templates[0];
 

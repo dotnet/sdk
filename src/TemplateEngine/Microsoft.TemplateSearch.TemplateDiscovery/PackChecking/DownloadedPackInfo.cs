@@ -31,5 +31,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         public IReadOnlyList<string> Owners => _info.Owners;
 
         public bool Verified => _info.Verified;
+
+        public string? Description => _info.Description;
+
+        public string? IconUrl => _info.IconUrl;
     }
 }

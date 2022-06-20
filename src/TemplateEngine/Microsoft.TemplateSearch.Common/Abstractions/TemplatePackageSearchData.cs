@@ -32,6 +32,8 @@ namespace Microsoft.TemplateSearch.Common
             Owners = packInfo.Owners;
             Verified = packInfo.Verified;
             Templates = templates.ToList();
+            Description = packInfo.Description;
+            IconUrl = packInfo.IconUrl;
             AdditionalData = data ?? new Dictionary<string, object>();
         }
 
@@ -49,6 +51,12 @@ namespace Microsoft.TemplateSearch.Common
 
         /// <inheritdoc/>
         public bool Verified { get; }
+
+        /// <inheritdoc/>
+        public string? Description { get; }
+
+        /// <inheritdoc/>
+        public string? IconUrl { get; }
 
         /// <summary>
         /// Gets the list of templates in template package.

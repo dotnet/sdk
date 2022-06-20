@@ -41,5 +41,11 @@ namespace Microsoft.TemplateSearch.Common
 
         [JsonProperty]
         public bool Verified { get; }
+
+        //not supported for v1
+        public string? Description => null;
+
+        //not supported for v1
+        public string? IconUrl => null;
     }
 }

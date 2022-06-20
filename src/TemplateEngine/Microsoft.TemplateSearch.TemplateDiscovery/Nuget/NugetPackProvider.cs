@@ -266,6 +266,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 Version = packageSearchMetadata.Identity.Version.ToString();
                 TotalDownloads = packageSearchMetadata.DownloadCount ?? 0;
                 Verified = packageSearchMetadata.PrefixReserved;
+                Description = packageSearchMetadata.Description;
+                IconUrl = packageSearchMetadata.IconUrl.ToString();
             }
 
             public string Name { get; }
@@ -277,6 +279,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             public IReadOnlyList<string> Owners => Array.Empty<string>();
 
             public bool Verified { get; }
+
+            public string? Description { get; }
+
+            public string? IconUrl { get; }
         }
     }
 }

@@ -38,5 +38,15 @@ namespace Microsoft.TemplateSearch.Common.Abstractions
         /// For NuGet.org 'verified' means that package ID is under reserved namespaces, see  <see href="https://docs.microsoft.com/en-us/nuget/nuget-org/id-prefix-reservation"/>.
         /// </remarks>
         public bool Verified { get; }
+
+        /// <summary>
+        /// Gets the NuGet package description.
+        /// </summary>
+        public string? Description { get; }
+
+        /// <summary>
+        /// Gets the URL to the package icon.
+        /// </summary>
+        public string? IconUrl { get; }
     }
 }

@@ -34,5 +34,9 @@ namespace Microsoft.TemplateEngine.Mocks
         public IReadOnlyList<string> Owners { get; }
 
         public bool Verified => false;
+
+        public string? Description => null;
+
+        public string? IconUrl => null;
     }
 }

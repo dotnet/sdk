@@ -114,6 +114,52 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         }
 
         [Fact]
+        public void CanReadDescription()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v")
+                .Execute()
+                .Should()
+                .ExitWith(0);
+
+            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
+            Assert.Equal("description", jObjectV2!["TemplatePackages"]![0]!["Description"]!.Value<string>());
+        }
+
+        [Fact]
+        public void CanReadIconUrl()
+        {
+            string testDir = TestUtils.CreateTemporaryFolder();
+            using var packageManager = new PackageManager();
+            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+
+            new DotnetCommand(
+                _log,
+                "Microsoft.TemplateSearch.TemplateDiscovery.dll",
+                "--basePath",
+                testDir,
+                "--packagesPath",
+                Path.GetDirectoryName(packageLocation),
+                "-v")
+                .Execute()
+                .Should()
+                .ExitWith(0);
+
+            var jObjectV2 = JObject.Parse(File.ReadAllText(Path.Combine(testDir, "SearchCache", "NuGetTemplateSearchInfoVer2.json")))!;
+            Assert.Equal("https://icon", jObjectV2!["TemplatePackages"]![0]!["IconUrl"]!.Value<string>());
+        }
+
+        [Fact]
         public async Task CanDetectNewPackagesInDiffMode()
         {
             string testDir = TestUtils.CreateTemporaryFolder();
