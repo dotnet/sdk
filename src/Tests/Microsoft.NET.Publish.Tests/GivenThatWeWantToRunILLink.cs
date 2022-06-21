@@ -1185,7 +1185,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true", "/p:SuppressTrimAnalysisWarnings=false",
-                                    "/p:TreatWarningsAsErrors=true", "/p:ILLinkTreatWarningsAsErrors=false", "/p:NoWarn=IL2026%3BIL2046")
+                                    "/p:TreatWarningsAsErrors=true", "/p:ILLinkTreatWarningsAsErrors=false", "/p:NoWarn=IL2026%3BIL2046%3BNU1505")
                 .Should().Pass()
                 // This warning is produced by both the analyzer and the linker. Ignore it for this test.
                 .And.NotHaveStdOutContaining("warning IL2026")
