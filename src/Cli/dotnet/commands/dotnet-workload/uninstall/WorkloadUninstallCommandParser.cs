@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
 
-        public static readonly Option<VerbosityOptions> VerbosityOption = WorkloadInstallCommandParser.VerbosityOption;
-        
         public static readonly Option<string> VersionOption = WorkloadInstallCommandParser.VersionOption;
 
         private static readonly Command Command = ConstructCommand();
@@ -29,6 +27,7 @@ namespace Microsoft.DotNet.Cli
         {
             Command command = new Command("uninstall", LocalizableStrings.CommandDescription);
             command.AddArgument(WorkloadIdArgument);
+            command.AddOption(WorkloadInstallCommandParser.SkipSignCheckOption);
 
             command.SetHandler((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
 

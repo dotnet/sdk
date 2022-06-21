@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.New.Tests
         [Fact]
         public void WhenSwitchIsSkippedThenItPrintsError()
         {
-            var cmd = new DotnetCommand(Log).Execute("new", "Web1.1");
+            var cmd = new DotnetCommand(Log).Execute("new", "Web1.1", "--debug:ephemeral-hive");
 
             cmd.ExitCode.Should().NotBe(0);
 
@@ -34,14 +34,14 @@ namespace Microsoft.DotNet.New.Tests
         public void ItCanCreateTemplate()
         {
             var tempDir = _testAssetsManager.CreateTestDirectory();
-            var cmd = new DotnetCommand(Log).Execute("new", "console", "-o", tempDir.Path);
+            var cmd = new DotnetCommand(Log).Execute("new", "console", "-o", tempDir.Path, "--debug:ephemeral-hive");
             cmd.Should().Pass();
         }
 
         [Fact]
         public void ItCanShowHelp()
         {
-            var cmd = new DotnetCommand(Log).Execute("new", "--help");
+            var cmd = new DotnetCommand(Log).Execute("new", "--help", "--debug:ephemeral-hive");
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("Usage:")
                 .And.HaveStdOutContaining("dotnet new [command] [options]");
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.New.Tests
         [Fact]
         public void ItCanShowHelpForTemplate()
         {
-            var cmd = new DotnetCommand(Log).Execute("new", "classlib", "--help");
+            var cmd = new DotnetCommand(Log).Execute("new", "classlib", "--help", "--debug:ephemeral-hive");
             cmd.Should().Pass()
                 .And.NotHaveStdOutContaining("Usage: new [options]")
                 .And.HaveStdOutContaining("Class Library (C#)")
@@ -66,16 +66,16 @@ namespace Microsoft.DotNet.New.Tests
                 .And.HaveStdOutContaining("dotnet new update [options]");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/templating/issues/1971")]
+        [Fact]
         public void WhenTemplateNameIsNotUniquelyMatchedThenItIndicatesProblemToUser()
         {
-            var cmd = new DotnetCommand(Log).Execute("new", "c");
+            var cmd = new DotnetCommand(Log).Execute("new", "c", "--debug:ephemeral-hive");
 
             cmd.ExitCode.Should().NotBe(0);
 
             if (!TestContext.IsLocalized())
             {
-                cmd.StdErr.Should().StartWith("Unable to determine the desired template from the input template name: c.");
+                cmd.StdErr.Should().StartWith("No templates found matching: 'c'.");
             }
         }
     }
