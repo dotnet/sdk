@@ -94,6 +94,10 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net7.0")]
         public void It_collects_Aot_publishing_properties(string targetFramework)
         {
+            // NativeAOT is only supported on Linux/Windows x64 scenarios for now
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64)
+                return;
+
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             var TelemetryTestLogger = new[]
                 {
@@ -101,7 +105,9 @@ namespace Microsoft.NET.Publish.Tests
                 };
 
             // NativeAOT compilation requires PublishTrimmed and will be set to true if not set by the user
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testProject = CreateTestProject(targetFramework, "AotProject", aot: true);
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
 
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
             var publishCommand = new PublishCommand(testProjectInstance);
