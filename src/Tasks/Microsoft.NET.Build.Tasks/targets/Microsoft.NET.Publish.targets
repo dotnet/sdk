@@ -381,7 +381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Copy the deps file if using the build deps file. -->
       <ResolvedFileToPublish Include="$(ProjectDepsFilePath)"
-                             Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' == 'true' and '$(PublishAot)' != 'true'">
+                             Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' == 'true'">
         <RelativePath>$(ProjectDepsFileName)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>

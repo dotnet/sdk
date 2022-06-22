@@ -135,8 +135,7 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().Pass();
 
                 var outputDirectory = buildCommand.GetOutputDirectory(targetFramework).FullName;
-                var sharedLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".dll" : ".so";
-                var assemblyPath = Path.Combine(outputDirectory, $"{projectName}{sharedLibSuffix}");
+                var assemblyPath = Path.Combine(outputDirectory, $"{projectName}{Constants.ExeSuffix}");
                 var runtimeConfigPath = Path.Combine(outputDirectory, $"{projectName}.runtimeconfig.json");
                 var depsPath = Path.Combine(outputDirectory, $"{projectName}.deps.json");
 
