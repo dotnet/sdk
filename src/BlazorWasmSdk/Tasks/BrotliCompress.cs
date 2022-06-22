@@ -67,8 +67,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
         protected override string GenerateCommandLineCommands() => Quote(ToolAssembly);
 
-        protected override string GenerateResponseFileCommands()
-        {
+        public string GenerateResponseFileCommandsCore() {
             var builder = new StringBuilder();
 
 
@@ -119,6 +118,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             return builder.ToString();
         }
+        protected override string GenerateResponseFileCommands() => GenerateResponseFileCommandsCore();
 
         internal static string CalculateTargetPath(string relativePath, string extension)
         {
