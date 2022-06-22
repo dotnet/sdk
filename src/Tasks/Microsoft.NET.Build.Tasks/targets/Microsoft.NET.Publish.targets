@@ -938,7 +938,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->
       <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
       <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
-      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' and '$(PublishSingleFile)' != 'true' and '$(PublishAot)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
+      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' == ''">false</_IsSingleFilePublish>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' != ''">$(PublishSingleFile)</_IsSingleFilePublish>
     </PropertyGroup>
