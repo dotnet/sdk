@@ -28,7 +28,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            // TODO: Skip interface members for now
+            // TODO: Skip interfaces for now, until the compatibility rules for interface
+            // members are clarified: https://github.com/dotnet/sdk/issues/26169
             if (leftContainingType.TypeKind == TypeKind.Interface || rightContainingType.TypeKind == TypeKind.Interface)
             {
                 return;

@@ -3,19 +3,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Tests;
 using Xunit;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests
+namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class CannotAddOrRemoveVirtualKeywordTests
     {
         private static readonly bool IsNetFramework = RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
+
         private static string CreateType(string s, params object[] args) => string.Format(@"
 namespace CompatTests {{
   public{0} First
@@ -30,17 +29,14 @@ namespace CompatTests {{
             var differences = new CompatDifference[args.Length];
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i].dt == DifferenceType.Removed)
-                {
-                    differences[i] = new CompatDifference(DiagnosticIds.CannotRemoveVirtualFromMember, string.Empty, DifferenceType.Removed, args[i].memberId);
-                }
-                else if (args[i].dt == DifferenceType.Added)
-                {
-                    differences[i] = new CompatDifference(DiagnosticIds.CannotAddVirtualToMember, string.Empty, DifferenceType.Added, args[i].memberId);
-                }
+                string diagnosticId = args[i].dt == DifferenceType.Removed
+                    ? DiagnosticIds.CannotRemoveVirtualFromMember
+                    : DiagnosticIds.CannotAddVirtualToMember;
+                differences[i] = new CompatDifference(diagnosticId, string.Empty, args[i].dt, args[i].memberId);
             }
             return differences;
         }
+
         public static IEnumerable<object[]> RemovedCases()
         {
             // remove virtual
