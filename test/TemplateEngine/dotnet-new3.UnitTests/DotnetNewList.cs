@@ -20,27 +20,9 @@ namespace Dotnet_new3.IntegrationTests
         public DotnetNewList(SharedHomeDirectory sharedHome, VerifySettingsFixture verifySettings, ITestOutputHelper log)
         {
             _sharedHome = sharedHome;
+            _sharedHome.InstallPackage("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0");
             _log = log;
             _verifySettings = verifySettings.Settings;
-        }
-
-        [Theory]
-        [InlineData("--list")]
-        [InlineData("list")]
-        [InlineData("-l")]
-        public void BasicTest(string command)
-        {
-            new DotnetNewCommand(_log, command.Split(" "))
-                .WithCustomHive(_sharedHome.HomeDirectory)
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And.NotHaveStdErr()
-                .And.HaveStdOutContaining($"These templates matched your input:")
-                .And.HaveStdOutMatching("Template Name\\s+Short Name\\s+Language\\s+Tags")
-                .And.HaveStdOutMatching("Console App\\s+console\\s+\\[C#\\],F#,VB\\s+Common/Console")
-                .And.HaveStdOutMatching("dotnet gitignore file\\s+gitignore\\s+Config")
-                .And.HaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
         }
 
         [Theory]
@@ -117,46 +99,6 @@ namespace Dotnet_new3.IntegrationTests
                 .And.HaveStdOutMatching("Console App\\s+console\\s+\\[C#\\],F#,VB\\s+Common/Console")
                 .And.NotHaveStdOutMatching("dotnet gitignore file\\s+gitignore\\s+Config")
                 .And.NotHaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
-        }
-
-        [Theory]
-        [InlineData("--list")]
-        [InlineData("list")]
-        [InlineData("-l")]
-        public void CanSortByName(string command)
-        {
-            const string expectedOutput =
-@"Template Name                                 Short Name     Language    Tags                  
---------------------------------------------  -------------  ----------  ----------------------
-ASP.NET Core Empty                            web            [C#],F#     Web/Empty             
-ASP.NET Core gRPC Service                     grpc           [C#]        Web/gRPC              
-ASP.NET Core Web API                          webapi         [C#],F#     Web/WebAPI            
-ASP.NET Core Web App                          webapp,razor   [C#]        Web/MVC/Razor Pages   
-ASP.NET Core Web App (Model-View-Controller)  mvc            [C#],F#     Web/MVC               
-Blazor Server App                             blazorserver   [C#]        Web/Blazor            
-Blazor WebAssembly App                        blazorwasm     [C#]        Web/Blazor/WebAssembly
-Class Library                                 classlib       [C#],F#,VB  Common/Library        
-Console App                                   console        [C#],F#,VB  Common/Console        
-dotnet gitignore file                         gitignore                  Config                
-Dotnet local tool manifest file               tool-manifest              Config                
-EditorConfig file                             editorconfig               Config                
-global.json file                              globaljson                 Config                
-NuGet Config                                  nugetconfig                Config                
-Razor Class Library                           razorclasslib  [C#]        Web/Razor/Library     
-Solution File                                 sln                        Solution              
-Web Config                                    webconfig                  Config                
-Worker Service                                worker         [C#],F#     Common/Worker/Web     ";
-
-            string home = TestUtils.CreateTemporaryFolder();
-            Helpers.InstallNuGetTemplate("Microsoft.DotNet.Web.ProjectTemplates.5.0::5.0.0", _log, home, null);
-
-            new DotnetNewCommand(_log, command)
-                .WithCustomHive(home)
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And.HaveStdOutContaining(expectedOutput)
-                .And.NotHaveStdErr();
         }
 
         [Fact]
