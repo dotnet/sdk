@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
 
             // TODO: Skip interfaces for now, until the compatibility rules for interface
-            // members are clarified: https://github.com/dotnet/sdk/issues/26169
+            // members are clarified: https://github.com/dotnet/sdk/issues/26169.
             if (leftContainingType.TypeKind == TypeKind.Interface || rightContainingType.TypeKind == TypeKind.Interface)
             {
                 return;
@@ -46,10 +46,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         Resources.CannotRemoveVirtualFromMember, left), DifferenceType.Removed, right));
                 }
             }
-            // If the left member is not virtual, ensure that we're
-            // either in strict mode, or the left member is not abstract
-            // (since it is not a breaking change to have a member go from abstract to virtual).
-            else if (Settings.StrictMode || !left.IsAbstract)
+            // If the left member is not virtual, ensure that we're in strict mode.
+            // TODO: This check can be expanded once compatibility rules for
+            // adding a virtual keyword are clarified: https://github.com/dotnet/sdk/issues/26169.
+            else if (Settings.StrictMode)
             {
                 // If the right member is virtual, emit a diagnostic
                 // that the virtual modifier cannot be added.
