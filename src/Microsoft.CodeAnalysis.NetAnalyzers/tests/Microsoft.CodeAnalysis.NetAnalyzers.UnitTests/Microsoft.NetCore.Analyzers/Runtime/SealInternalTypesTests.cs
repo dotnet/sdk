@@ -219,6 +219,15 @@ End Class";
         }
 
         [Fact]
+        public Task InternalsVisibleTo_NoDiagnostic()
+        {
+            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
+                              internal class C { }";
+
+            return VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [Fact]
         public Task ComImportAttributedType_NoDiagnostic_CS()
         {
             string source = $"[System.Runtime.InteropServices.ComImport] [System.Runtime.InteropServices.Guid(\"E8D59775-E821-4D6C-B63D-BB0D969361DA\")] internal class C {{ }}";

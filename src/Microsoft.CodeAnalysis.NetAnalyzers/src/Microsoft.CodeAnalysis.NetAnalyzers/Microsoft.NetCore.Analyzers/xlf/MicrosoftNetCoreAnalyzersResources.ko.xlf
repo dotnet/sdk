@@ -682,6 +682,21 @@
         <target state="translated">ServicePointManagerSecurityProtocols를 사용하지 않도록 설정 안 함</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
+        <target state="translated">'Dictionary.ContainsKey(key)'를 사용하여 'Dictionary.Remove(key)'를 보호하지 마세요. 전자는 키가 있는지 여부를 이미 확인하고, 있지 않으면 throw하지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">'Dictionary.ContainsKey(key)'를 사용하여 'Dictionary.Remove(key)'를 보호하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
+        <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">'Dictionary.ContainsKey(key)'에 대한 불필요한 호출</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">인증서 하드 코딩 안 함</target>
@@ -713,7 +728,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
         <target state="translated">기본적으로 신뢰할 수 있는 루트 인증 기관 인증서 저장소는 Microsoft 루트 인증서 프로그램의 요구 사항을 준수하는 공용 CA 세트로 구성됩니다. 모든 신뢰할 수 있는 루트 CA는 모든 도메인에 대한 인증서를 발급할 수 있으므로 공격자는 사용자가 직접 설치한 약하거나 강제할 수 있는 CA를 선택하여 공격 대상으로 지정할 수 있으며, 취약하거나 악의적이거나 강제할 수 있는 CA 하나가 전체 시스템의 보안을 약화시킵니다. 설상가상으로 이러한 공격자는 상당히 쉽게 눈에 띄지 않고 넘어갈 수 있습니다.</target>
         <note />
       </trans-unit>
@@ -1125,6 +1140,11 @@
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
         <target state="translated">By-ref 매개 변수는 런타임 마샬링을 활성화해야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
+        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -1693,8 +1713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
-        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="translated">모듈 이니셜라이저는 응용 프로그램 코드가 실행을 시작하기 전에 응용 프로그램의 구성 요소가 초기화되도록 하기 위해 응용 프로그램 코드에서 사용하기 위한 것입니다. 라이브러리 코드가 'ModuleInitializer' 메서드를 선언하면 응용 프로그램 초기화를 방해할 수 있으며 해당 응용 프로그램의 트리밍 기능에 제한이 생길 수도 있습니다. 따라서 라이브러리 코드는 'ModuleInitializer' 특성을 사용해서는 안 되며 대신 라이브러리 내의 구성 요소를 초기화하는 데 사용할 수 있는 메서드를 노출하고 응용 프로그램 초기화 중에 응용 프로그램이 메서드를 호출할 수 있도록 해야 합니다.</target>
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">모듈 이니셜라이저는 응용 프로그램 코드가 실행을 시작하기 전에 응용 프로그램의 구성 요소가 초기화되도록 응용 프로그램 코드에서 사용하기 위한 것입니다. 라이브러리 코드가 'ModuleInitializerAttribute'를 사용하여 메서드를 선언하면 응용 프로그램 초기화를 방해할 수 있으며 해당 응용 프로그램의 트리밍 기능에 제한이 생길 수도 있습니다. 'ModuleInitializerAttribute'로 표시된 메서드를 사용하는 대신 라이브러리는 라이브러리 내의 구성 요소를 초기화하는 데 사용할 수 있는 메서드를 노출하고 응용 프로그램 초기화 중에 응용 프로그램이 메서드를 호출할 수 있도록 해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
@@ -2142,6 +2162,11 @@
         <target state="translated">중복 호출 제거</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
+        <source>Remove unnecessary call</source>
+        <target state="translated">불필요한 호출 제거</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">문자열 리터럴을 char 리터럴로 바꾸기</target>
@@ -2299,22 +2324,22 @@
       </trans-unit>
       <trans-unit id="SealInternalTypesCodeFixTitle">
         <source>Seal class</source>
-        <target state="new">Seal class</target>
+        <target state="translated">봉인 클래스</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesDescription">
         <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
-        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <target state="translated">형식이 해당 어셈블리 외부에서 액세스할 수 없고 포함하는 어셈블리 내에 하위 형식이 없는 경우 안전하게 봉인할 수 있습니다. 봉인 유형은 성능을 향상시킬 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesMessage">
         <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
-        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <target state="translated">유형 '{0}'은(는) 포함하는 어셈블리에 하위 유형이 없고 외부에서 볼 수 없기 때문에 봉인될 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesTitle">
         <source>Seal internal types</source>
-        <target state="new">Seal internal types</target>
+        <target state="translated">내부 형식 봉인</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
@@ -2349,17 +2374,17 @@
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
         <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
-        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <target state="translated">현재 문화권에 대한 우발적인 암시적 종속을 방지하려면 문화권을 지정하세요. 불변 버전을 사용하면 애플리케이션의 문화권에 관계없이 일관된 결과를 얻을 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
         <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
-        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <target state="translated">현재 문화권에 대한 암시적 종속성을 피하기 위해 문화권을 지정하거나 고정 버전을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
         <source>Specify a culture or use an invariant version</source>
-        <target state="new">Specify a culture or use an invariant version</target>
+        <target state="translated">문화권 지정 또는 고정 버전 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
@@ -2379,7 +2404,7 @@
       </trans-unit>
       <trans-unit id="SpecifyCurrentCulture">
         <source>Specify current culture</source>
-        <target state="new">Specify current culture</target>
+        <target state="translated">현재 문화권 지정</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2733,8 +2758,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
-        <source>User an invariant version</source>
-        <target state="new">User an invariant version</target>
+        <source>Use an invariant version</source>
+        <target state="new">Use an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
@@ -2788,8 +2813,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">충분한 키 크기로 RSA(Rivest–Shamir–Adleman) 알고리즘 사용</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">충분한 키 크기로 RSA(Rivest-Shamir-Adleman) 알고리즘 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
@@ -2975,6 +3000,26 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}'은(는) 미리 보기 유형 '{1}'을(를) 사용하며 미리 보기 기능을 선택해야 합니다. 자세한 내용은 {2}를 참조하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
+        <source>Use 'TryGetValue(TKey, out TValue)'</source>
+        <target state="new">Use 'TryGetValue(TKey, out TValue)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueTitle">
+        <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
+        <target state="new">Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueMessage">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
+        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueDescription">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
+        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</target>
         <note />
       </trans-unit>
     </body>

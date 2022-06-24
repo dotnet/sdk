@@ -682,6 +682,21 @@
         <target state="translated">Nezakazujte ServicePointManagerSecurityProtocols</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
+        <target state="translated">Nebránit Dictionary.Remove(key) s Dictionary.ContainsKey(key). Předchozí už kontroluje, jestli klíč existuje, a pokud ne, nevyvolá ho.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">Nechránit Dictionary.Remove(key) s Dictionary.ContainsKey(key)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
+        <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">Nepotřebné volání Dictionary.ContainsKey(key)</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">Nepoužívejte pevně zakódovaný certifikát</target>
@@ -713,7 +728,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
         <target state="translated">Standardně je úložiště certifikátů důvěryhodných kořenových certifikačních autorit nakonfigurované na sadu veřejných CA, které splnily požadavky programu Microsoft Root Certificate Program. Vzhledem k tomu, že všechny důvěryhodné kořenové CA můžou vystavovat certifikáty pro libovolnou doménu, útočník si může vybrat slabou nebo zranitelnou CA, kterou si sami nainstalujete na cíl útoku – a jedna ohrožená, škodlivá nebo zranitelná CA ohrožuje zabezpečení celého systému. A co je horší, tyto útoky se dají vcelku snadno skrýt.</target>
         <note />
       </trans-unit>
@@ -1125,6 +1140,11 @@
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
         <target state="translated">Parametry By-ref vyžadují, aby bylo povoleno zařazování modulu runtime</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
+        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -1693,8 +1713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
-        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="translated">Inicializátory modulů jsou určeny pro použití kódem aplikace k zajištění, aby byly komponenty aplikace inicializovány před tím, než se začne kód aplikace spouštět. Pokud kód knihovny deklaruje metodu ModuleInitializer, může narušovat inicializaci aplikace a také vést k omezením schopností oříznutí dané aplikace. Kód knihovny by proto neměl používat atribut ModuleInitializer, ale namísto toho zpřístupnit metody, které lze použít k inicializaci všech komponent v rámci knihovny a umožnit aplikaci vyvolat metodu během inicializace aplikace.</target>
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">Inicializátory modulů jsou určeny pro použití kódem aplikace k zajištění, aby byly komponenty aplikace inicializovány před tím, než se začne kód aplikace spouštět. Pokud kód knihovny deklaruje metodu s ModuleInitializerAttribute, může narušovat inicializaci aplikace a také vést k omezením schopností oříznutí dané aplikace. Knihovna by proto neměla používat metody s označením ModuleInitializerAttribute, ale namísto toho by měla zpřístupnit metody, které lze použít k inicializaci všech komponent v rámci knihovny a umožnit aplikaci vyvolat metodu během inicializace aplikace.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
@@ -2142,6 +2162,11 @@
         <target state="translated">Odebrat redundantní volání</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
+        <source>Remove unnecessary call</source>
+        <target state="translated">Odebrat nepotřebné volání</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">Nahradit řetězcový literál s literálem char</target>
@@ -2299,22 +2324,22 @@
       </trans-unit>
       <trans-unit id="SealInternalTypesCodeFixTitle">
         <source>Seal class</source>
-        <target state="new">Seal class</target>
+        <target state="translated">Třída zapečetění</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesDescription">
         <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
-        <target state="new">When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</target>
+        <target state="translated">Pokud typ není přístupný mimo své sestavení a nemá v rámci svého obsaženého sestavení žádné podtypy, lze jej bezpečně zapečetit. Typy zapečetění můžou zlepšit výkon.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesMessage">
         <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
-        <target state="new">Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</target>
+        <target state="translated">Typ {0} lze zapečetit, protože ve svém obsaženém sestavení nemá žádné podtypy a není externě viditelný.</target>
         <note />
       </trans-unit>
       <trans-unit id="SealInternalTypesTitle">
         <source>Seal internal types</source>
-        <target state="new">Seal internal types</target>
+        <target state="translated">Zapečetění interních typů</target>
         <note />
       </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
@@ -2349,17 +2374,17 @@
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
         <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
-        <target state="new">Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</target>
+        <target state="translated">Zadejte jazykovou verzi, která vám pomůže vyhnout se neúmyslné implicitní závislosti na aktuální jazykové verzi. Použití neutrální verze zajišťuje konzistentní výsledky bez ohledu na jazykovou verzi aplikace.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
         <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
-        <target state="new">Specify a culture or use an invariant version to avoid implicit dependency on current culture</target>
+        <target state="translated">Zadejte jazykovou verzi nebo použijte neutrální verzi, abyste se vyhnuli implicitní závislosti na aktuální jazykové verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
         <source>Specify a culture or use an invariant version</source>
-        <target state="new">Specify a culture or use an invariant version</target>
+        <target state="translated">Zadejte jazykovou verzi nebo použijte neutrální verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
@@ -2379,7 +2404,7 @@
       </trans-unit>
       <trans-unit id="SpecifyCurrentCulture">
         <source>Specify current culture</source>
-        <target state="new">Specify current culture</target>
+        <target state="translated">Zadejte aktuální jazykovou verzi.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2733,8 +2758,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
-        <source>User an invariant version</source>
-        <target state="new">User an invariant version</target>
+        <source>Use an invariant version</source>
+        <target state="new">Use an invariant version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
@@ -2788,7 +2813,7 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
         <target state="translated">Použijte algoritmus RSA (Rivest-Shamir-Adleman) s dostatečnou velikostí klíče</target>
         <note />
       </trans-unit>
@@ -2975,6 +3000,26 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}{0} používá typ preview {1} a vyžaduje vyjádření výslovného souhlasu s funkcemi preview. Další informace najdete v {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
+        <source>Use 'TryGetValue(TKey, out TValue)'</source>
+        <target state="new">Use 'TryGetValue(TKey, out TValue)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueTitle">
+        <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
+        <target state="new">Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueMessage">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
+        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueDescription">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
+        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</target>
         <note />
       </trans-unit>
     </body>

@@ -32,10 +32,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantTitle)),
             CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantMessage)),
             DiagnosticCategory.Design,
-            RuleLevel.Disabled,  // We can make this an IdeSuggestion once we update templates to add CLSCompliant(false)
+            RuleLevel.Disabled,  // See https://github.com/dotnet/runtime/issues/44194
             description: CreateLocalizableResourceString(nameof(MarkAssembliesWithClsCompliantDescription)),
             isPortedFxCopRule: true,
             isDataflowRule: false,
+            isEnabledByDefaultInAggressiveMode: false, // See https://github.com/dotnet/runtime/issues/44194
             isReportedAtCompilationEnd: true);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(CA1016Rule, CA1014Rule);

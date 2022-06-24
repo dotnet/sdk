@@ -36,6 +36,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
+            // To avoid false positives, as with CA1812 (avoid uninstantiated internal classes), skip any assemblies with InternalsVisibleTo.
+            var internalsVisibleToAttributeSymbol = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute);
+            if (context.Compilation.Assembly.HasAttribute(internalsVisibleToAttributeSymbol))
+            {
+                return;
+            }
+
             INamedTypeSymbol? comImportAttributeType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeInteropServicesComImportAttribute);
 
             var candidateTypes = PooledConcurrentSet<INamedTypeSymbol>.GetInstance(SymbolEqualityComparer.Default);

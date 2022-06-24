@@ -11,15 +11,21 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     Public Class BasicSpecifyCultureForToLowerAndToUpperAnalyzer
         Inherits SpecifyCultureForToLowerAndToUpperAnalyzer
 
-        Protected Overrides Function GetMethodNameLocation(invocationNode As SyntaxNode) As Location
-            Debug.Assert(invocationNode.IsKind(SyntaxKind.InvocationExpression))
+        Protected Overrides Function GetMethodNameLocation(node As SyntaxNode) As Location
+            Debug.Assert(node.IsKind(SyntaxKind.InvocationExpression) OrElse node.IsKind(SyntaxKind.SimpleMemberAccessExpression))
 
-            Dim invocation = CType(invocationNode, InvocationExpressionSyntax)
-            If invocation.Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression) Then
-                Return DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.GetLocation()
+            If node.IsKind(SyntaxKind.InvocationExpression) Then
+                Dim invocation = DirectCast(node, InvocationExpressionSyntax)
+                If invocation.Expression.IsKind(SyntaxKind.SimpleMemberAccessExpression) Then
+                    Return DirectCast(invocation.Expression, MemberAccessExpressionSyntax).Name.GetLocation()
+                End If
             End If
 
-            Return invocation.GetLocation()
+            If node.IsKind(SyntaxKind.SimpleMemberAccessExpression) Then
+                Return DirectCast(node, MemberAccessExpressionSyntax).Name.GetLocation()
+            End If
+
+            Return node.GetLocation()
         End Function
     End Class
 End Namespace

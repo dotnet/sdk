@@ -649,7 +649,6 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
               "CompilationEnd"
             ]
           }
@@ -2841,6 +2840,46 @@
             ]
           }
         },
+        "CA1853": {
+          "id": "CA1853",
+          "shortDescription": "Unnecessary call to 'Dictionary.ContainsKey(key)'",
+          "fullDescription": "Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotGuardDictionaryRemoveByContainsKey",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1854": {
+          "id": "CA1854",
+          "shortDescription": "Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method",
+          "fullDescription": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferDictionaryTryGetValueAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -3832,7 +3871,7 @@
         "CA2255": {
           "id": "CA2255",
           "shortDescription": "The 'ModuleInitializer' attribute should not be used in libraries",
-          "fullDescription": "Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.",
+          "fullDescription": "Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255",
           "properties": {
@@ -5150,7 +5189,7 @@
         "CA5380": {
           "id": "CA5380",
           "shortDescription": "Do Not Add Certificates To Root Store",
-          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
+          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380",
           "properties": {
@@ -5172,7 +5211,7 @@
         "CA5381": {
           "id": "CA5381",
           "shortDescription": "Ensure Certificates Are Not Added To Root Store",
-          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
+          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381",
           "properties": {
@@ -5257,7 +5296,7 @@
         },
         "CA5385": {
           "id": "CA5385",
-          "shortDescription": "Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size",
+          "shortDescription": "Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size",
           "fullDescription": "Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385",

@@ -859,7 +859,7 @@
     <value>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</value>
   </data>
   <data name="DoNotInstallRootCertDescription" xml:space="preserve">
-    <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
+    <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
   </data>
   <data name="PotentialReferenceCycleInDeserializedObjectGraphTitle" xml:space="preserve">
     <value>Potential reference cycle in deserialized object graph</value>
@@ -1057,7 +1057,7 @@
     <value>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</value>
   </data>
   <data name="UseRSAWithSufficientKeySize" xml:space="preserve">
-    <value>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</value>
+    <value>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</value>
   </data>
   <data name="UseRSAWithSufficientKeySizeDescription" xml:space="preserve">
     <value>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</value>
@@ -1552,6 +1552,18 @@
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
   </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyDescription" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyMessage" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyTitle" xml:space="preserve">
+    <value>Unnecessary call to 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
+    <value>Remove unnecessary call</value>
+  </data>
   <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
     <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
   </data>
@@ -1786,7 +1798,7 @@
     <value>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
-    <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
+    <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage" xml:space="preserve">
     <value>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</value>
@@ -1865,7 +1877,7 @@
     <value>Specify current culture</value>
   </data>
   <data name="UseInvariantVersion" xml:space="preserve">
-    <value>User an invariant version</value>
+    <value>Use an invariant version</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
     <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
@@ -1917,5 +1929,20 @@
   </data>
   <data name="SealInternalTypesCodeFixTitle" xml:space="preserve">
     <value>Seal class</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
+    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'TryGetValue(TKey, out TValue)'</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueTitle" xml:space="preserve">
+    <value>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueMessage" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueDescription" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</value>
   </data>
 </root>
