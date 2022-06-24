@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             _fallbackNames = fallbackNames ?? new[] { "dotnetcli" };
         }
 
-        internal Dictionary<string, string> HostParamDefaults { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> HostParamDefaults { get; set; } = new Dictionary<string, string>();
 
         IPhysicalFileSystem ITemplateEngineHost.FileSystem => _fileSystem;
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +22,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Array.Empty<string>());
 
         // by default, symbols get the "identity" value form, for a direct replacement
-        internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new List<string>() { IdentityValueFormName });
+        internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new[] { IdentityValueFormName });
+
+        internal static SymbolValueFormsModel NameForms { get; } = new SymbolValueFormsModel(new[]
+        {
+            IdentityValueFormName,
+            DefaultSafeNameValueFormModel.FormName,
+            DefaultLowerSafeNameValueFormModel.FormName,
+            DefaultSafeNamespaceValueFormModel.FormName,
+            DefaultLowerSafeNamespaceValueFormModel.FormName
+        });
 
         internal IReadOnlyList<string> GlobalForms { get; }
 
@@ -49,16 +60,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         // If there is an identity form listed, its position remains intact irrespective of the addIdentity flag.
         internal static SymbolValueFormsModel FromJObject(JObject configJson)
         {
-            JToken globalConfig = configJson.Property("global").Value;
+            JToken? globalConfig = configJson.Property("global")?.Value;
             List<string> globalForms;
             bool addIdentity;
-            if (globalConfig.Type == JTokenType.Array)
+
+            if (globalConfig?.Type == JTokenType.Array)
             {
                 // config is just an array of form names.
                 globalForms = globalConfig.ArrayAsStrings().ToList();
                 addIdentity = true; // default value
             }
-            else if (globalConfig.Type == JTokenType.Object)
+            else if (globalConfig?.Type == JTokenType.Object)
             {
                 // config is an object.
                 globalForms = globalConfig.ArrayAsStrings("forms").ToList();

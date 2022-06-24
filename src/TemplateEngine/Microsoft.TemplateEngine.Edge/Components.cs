@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -33,6 +34,8 @@ namespace Microsoft.TemplateEngine.Edge
                 (typeof(ITemplateConstraintFactory), new HostConstraintFactory()),
                 (typeof(ITemplateConstraintFactory), new WorkloadConstraintFactory()),
                 (typeof(ITemplateConstraintFactory), new SdkVersionConstraintFactory()),
+                (typeof(IBindSymbolSource), new EnvironmentVariablesBindSource()),
+                (typeof(IBindSymbolSource), new HostParametersBindSource()),
             };
 
         public static IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> MandatoryComponents { get; } =
@@ -42,6 +45,8 @@ namespace Microsoft.TemplateEngine.Edge
                 (typeof(IMountPointFactory), new FileSystemMountPointFactory()),
                 (typeof(ITemplatePackageProviderFactory), new GlobalSettingsTemplatePackageProviderFactory()),
                 (typeof(IInstallerFactory), new FolderInstallerFactory()),
+                (typeof(IBindSymbolSource), new EnvironmentVariablesBindSource()),
+                (typeof(IBindSymbolSource), new HostParametersBindSource()),
             };
     }
 }

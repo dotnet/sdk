@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             IRunnableProjectConfig runnableConfig = GetConfig();
 
-            runnableConfig.Evaluate(parameters, variables);
+            runnableConfig.Evaluate( variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             runSpec.RootVariableCollection = variables;
@@ -133,7 +133,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
 
             IRunnableProjectConfig runnableConfig = GetConfig();
-            runnableConfig.Evaluate(parameters, variables);
+            runnableConfig.Evaluate(variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");
@@ -154,12 +154,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             return changesByTarget;
         }
 
-        public IReadOnlyDictionary<string, string> GetRenames(string sourceDir, string targetBaseDir, IParameterSet parameters, IReadOnlyList<IReplacementTokens> symbolBasedRenames)
+        public IReadOnlyDictionary<string, string> GetRenames(string sourceDir, string targetBaseDir, IVariableCollection variables, IReadOnlyList<IReplacementTokens> symbolBasedRenames)
         {
             IFileSystemInfo configFileInfo = SourceMountPoint.FileInfo(_configFile ?? TestFileSystemHelper.DefaultConfigRelativePath);
-            parameters.TryGetParameterDefinition("name", out ITemplateParameter nameParam);
-            object resolvedNameValue = parameters.ResolvedValues[nameParam];
-            return FileRenameGenerator.AugmentFileRenames(_environmentSettings, _sourceBaseDir, configFileInfo, sourceDir, ref targetBaseDir, resolvedNameValue, parameters, new Dictionary<string, string>(), symbolBasedRenames);
+            object resolvedNameValue = variables["name"];
+            return FileRenameGenerator.AugmentFileRenames(_environmentSettings, _sourceBaseDir, configFileInfo, sourceDir, ref targetBaseDir, resolvedNameValue, variables, new Dictionary<string, string>(), symbolBasedRenames);
         }
 
         public void AddFile(string filename, string content = null)

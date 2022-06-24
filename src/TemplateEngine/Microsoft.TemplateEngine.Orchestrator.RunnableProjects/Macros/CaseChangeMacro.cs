@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
         {
-            string value = null;
+            string value = string.Empty;
             CaseChangeMacroConfig config = rawConfig as CaseChangeMacroConfig;
 
             if (config == null)
@@ -28,18 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as CaseChangeMacroConfig");
             }
 
-            if (!vars.TryGetValue(config.SourceVariable, out object working))
-            {
-                if (RuntimeValueUtil.TryGetRuntimeValue(parameters, environmentSettings, config.SourceVariable, out object resolvedValue, true))
-                {
-                    value = resolvedValue.ToString();
-                }
-                else
-                {
-                    value = string.Empty;
-                }
-            }
-            else
+            if (vars.TryGetValue(config.SourceVariable, out object working))
             {
                 value = working?.ToString() ?? "";
             }

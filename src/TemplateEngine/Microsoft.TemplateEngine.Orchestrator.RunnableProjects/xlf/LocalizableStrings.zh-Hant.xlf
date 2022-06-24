@@ -98,6 +98,18 @@ Details: {1}</source>
         <target state="translated">範本根目錄超出指定的安裝來源位置。</target>
         <note />
       </trans-unit>
+      <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">
+        <source>Failed to evaluate bind symbol '{0}', it will be skipped.</source>
+        <target state="new">Failed to evaluate bind symbol '{0}', it will be skipped.</target>
+        <note>{0} - name of the symbol in configuration that cannot be evaluated</note>
+      </trans-unit>
+      <trans-unit id="BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources">
+        <source>Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</source>
+        <target state="new">Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</target>
+        <note>{0} - binding from template.json configuration
+{1} - the comma separated list of sources (localized values) which define the binding
+{2} - the comma separated list of prefixes that can be used to define the source of the value</note>
+      </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
         <target state="translated">無法讀取剖析當地語系化檔案 {0}，將略過進一步處理。</target>
@@ -152,6 +164,11 @@ Details: {1}</source>
         <source>Constraint definition '{0}' does not contain mandatory property '{1}'.</source>
         <target state="translated">限制式定義 '{0}' 不包含強制屬性 '{1}'。</target>
         <note>{0} - JSON with constraint defintion, {1} - missing property.</note>
+      </trans-unit>
+      <trans-unit id="SymbolModel_Error_MandatoryPropertyMissing">
+        <source>The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</source>
+        <target state="new">The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</target>
+        <note />
       </trans-unit>
     </body>
   </file>

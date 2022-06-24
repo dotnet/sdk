@@ -4,6 +4,8 @@
 #nullable enable
 
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 
@@ -27,6 +29,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
 
-        void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection);
+        void Evaluate(IVariableCollection rootVariableCollection);
+
+        Task EvaluateBindSymbolsAsync(IEngineEnvironmentSettings settings, IVariableCollection variableCollection, CancellationToken cancellationToken);
     }
 }

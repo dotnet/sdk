@@ -185,26 +185,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter testParameter = new Parameter()
-            {
-                Name = "test"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(testParameter);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[testParameter] = "Replace1Value";
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["test"] = "Replace1Value";
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace1")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(1, allChanges.Count);
             Assert.Equal("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
         }
@@ -229,26 +219,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter intDateParameter = new Parameter()
-            {
-                Name = "date"
-            };
-            Parameter otherParameter = new Parameter()
-            {
-                Name = "other"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(intDateParameter);
-            parameters.AddParameter(otherParameter);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[intDateParameter] = 20210429;
-            parameters.ResolvedValues[otherParameter] = new TestParameterValueClass { A = "foo", B = "bar" };
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["date"] = 20210429;
+            variables["other"] = new TestParameterValueClass { A = "foo", B = "bar" };
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
@@ -256,7 +231,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             symbolBasedRenames.Add(new ReplacementTokens("other", TokenConfig.FromValue("other")));
             symbolBasedRenames.Add(new ReplacementTokens("name", TokenConfig.FromValue("name")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal("20210429_testName.txt", allChanges["date_name.txt"]);
             Assert.Equal("foo-bar_testName.txt", allChanges["other_name.txt"]);
@@ -283,32 +258,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter testParameterIdentity = new Parameter()
-            {
-                Name = "test{-VALUE-FORMS-}identity"
-            };
-            Parameter testParameterUC = new Parameter()
-            {
-                Name = "test{-VALUE-FORMS-}uc"
-            };
-            Parameter testParameterLC = new Parameter()
-            {
-                Name = "test{-VALUE-FORMS-}lc"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(testParameterIdentity);
-            parameters.AddParameter(testParameterUC);
-            parameters.AddParameter(testParameterLC);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[testParameterIdentity] = "TestProject";
-            parameters.ResolvedValues[testParameterUC] = "TESTPROJECT";
-            parameters.ResolvedValues[testParameterLC] = "testproject";
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["test{-VALUE-FORMS-}identity"] = "TestProject";
+            variables["test{-VALUE-FORMS-}uc"] = "TESTPROJECT";
+            variables["test{-VALUE-FORMS-}lc"] = "testproject";
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
@@ -316,7 +271,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}uc", TokenConfig.FromValue("REPLACE")));
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(3, allChanges.Count);
             Assert.Equal("TestProject1_file.txt", allChanges["Replace1_file.txt"]);
             Assert.Equal("TESTPROJECT3_file.txt", allChanges["REPLACE3_file.txt"]);
@@ -343,33 +298,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter testParameterIdentity = new Parameter()
-            {
-                Name = "test{-VALUE-FORMS-}identity"
-            };
-            Parameter testParameterLC = new Parameter()
-            {
-                Name = "test{-VALUE-FORMS-}lc"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(testParameterIdentity);
-            parameters.AddParameter(testParameterLC);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[testParameterIdentity] = "testproject";
-            parameters.ResolvedValues[testParameterLC] = "testproject";
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["test{-VALUE-FORMS-}identity"] = "testproject";
+            variables["test{-VALUE-FORMS-}lc"] = "testproject";
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("replace")));
             symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal("testproject1_file.txt", allChanges["replace1_file.txt"]);
             Assert.Equal("testproject2_file.txt", allChanges["replace2_file.txt"]);
@@ -395,26 +335,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter testParameter = new Parameter()
-            {
-                Name = "test"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(testParameter);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[testParameter] = "ReplaceValue";
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["test"] = "ReplaceValue";
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal("ReplaceValue1_file.txt", allChanges["Replace1_file.txt"]);
             Assert.Equal("ReplaceValue2_file.txt", allChanges["Replace2_file.txt"]);
@@ -439,26 +369,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             //get target directory
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
-            //prepare parameters
-            ParameterSet parameters = new ParameterSet(A.Fake<IRunnableProjectConfig>());
-            Parameter nameParameter = new Parameter()
-            {
-                Name = "name"
-            };
-            Parameter testParameter = new Parameter()
-            {
-                Name = "test"
-            };
-            parameters.AddParameter(nameParameter);
-            parameters.AddParameter(testParameter);
-            parameters.ResolvedValues[nameParameter] = "testName";
-            parameters.ResolvedValues[testParameter] = "ReplaceValue";
+            //prepare variables
+            IVariableCollection variables = new VariableCollection();
+            variables["name"] = "testName";
+            variables["test"] = "ReplaceValue";
 
             //prepare renames configuration
             List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
             symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
 
-            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, parameters, symbolBasedRenames);
+            IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
             Assert.Equal(@"ReplaceValue_dir", allChanges[@"Replace_dir"]);
             Assert.Equal(@"ReplaceValue_dir/ReplaceValue_file.txt", allChanges[@"Replace_dir/Replace_file.txt"]);

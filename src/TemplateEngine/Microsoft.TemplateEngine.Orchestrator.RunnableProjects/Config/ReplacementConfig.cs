@@ -63,16 +63,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
             }
         }
 
-        internal static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IParameterSet parameters)
+        internal static IOperationProvider Setup(IEngineEnvironmentSettings environmentSettings, IReplacementTokens tokens, IVariableCollection variables)
         {
-            if (parameters.TryGetRuntimeValue(environmentSettings, tokens.VariableName, out object newValueObject))
+            if (variables.TryGetValue(tokens.VariableName, out object newValueObject))
             {
                 string newValue = newValueObject.ToString();
                 return new Replacement(tokens.OriginalValue, newValue, null, true);
             }
             else
             {
-                environmentSettings.Host.Logger.LogDebug($"Couldn't find a parameter called {tokens.VariableName}");
+                environmentSettings.Host.Logger.LogDebug($"Couldn't find a variable called {tokens.VariableName}");
                 return null;
             }
         }

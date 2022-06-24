@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private const string NameSymbolName = "name";
         private readonly ILogger? _logger;
         private IReadOnlyDictionary<string, string> _tags = new Dictionary<string, string>();
-        private Dictionary<string, ISymbolModel> _symbols = new Dictionary<string, ISymbolModel>();
+        private Dictionary<string, BaseSymbol> _symbols = new Dictionary<string, BaseSymbol>();
         private IReadOnlyList<PostActionModel> _postActions = new List<PostActionModel>();
         private string? _author;
         private string? _name;
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal SimpleConfigModel()
         {
-            Symbols = new Dictionary<string, ISymbolModel>();
+            Symbols = Array.Empty<BaseSymbol>();
         }
 
         private SimpleConfigModel(JObject source, ILogger? logger, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
@@ -106,28 +106,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 BaselineInfo.TryGetValue(configModifiers!.BaselineName, out baseline);
             }
 
-            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>(StringComparer.Ordinal);
+            Dictionary<string, BaseSymbol> symbols = new(StringComparer.Ordinal);
             // create a name symbol. If one is explicitly defined in the template, it'll override this.
             NameSymbol = SetupDefaultNameSymbol(SourceName);
-            symbols.Add(NameSymbolName, NameSymbol);
+            symbols[NameSymbol.Name] = NameSymbol;
 
             // tags are being deprecated from template configuration, but we still read them for backwards compatibility.
             // They're turned into symbols here, which eventually become tags.
             _tags = source.ToStringDictionary(StringComparer.OrdinalIgnoreCase, "tags");
-            IReadOnlyDictionary<string, ISymbolModel> symbolsFromTags = ConvertDeprecatedTagsToParameterSymbols(_tags);
-
-            foreach (KeyValuePair<string, ISymbolModel> tagSymbol in symbolsFromTags)
+            foreach (KeyValuePair<string, string> tagInfo in _tags)
             {
-                if (!symbols.ContainsKey(tagSymbol.Key))
+                if (!symbols.ContainsKey(tagInfo.Key))
                 {
-                    symbols.Add(tagSymbol.Key, tagSymbol.Value);
+                    symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Key, tagInfo.Value);
                 }
             }
-
-            _symbols = symbols;
             foreach (JProperty prop in source.PropertiesOf(nameof(Symbols)))
             {
                 if (prop.Value is not JObject obj)
+                {
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(prop.Name))
                 {
                     continue;
                 }
@@ -138,18 +138,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     baseline.DefaultOverrides.TryGetValue(prop.Name, out defaultOverride);
                 }
 
-                ISymbolModel modelForSymbol = SymbolModelConverter.GetModelForObject(obj, defaultOverride);
+                BaseSymbol modelForSymbol = SymbolModelConverter.GetModelForObject(prop.Name, obj, logger, defaultOverride);
 
                 if (modelForSymbol != null)
                 {
                     // The symbols dictionary comparer is Ordinal, making symbol names case-sensitive.
                     if (string.Equals(prop.Name, NameSymbolName, StringComparison.Ordinal)
-                            && symbols.TryGetValue(prop.Name, out ISymbolModel existingSymbol)
+                            && symbols.TryGetValue(prop.Name, out BaseSymbol existingSymbol)
                             && existingSymbol is ParameterSymbol existingParameterSymbol
                             && modelForSymbol is ParameterSymbol modelForParameterSymbol)
                     {
                         // "name" symbol is explicitly defined above. If it's also defined in the template.json, it gets special handling here.
-                        symbols[prop.Name] = new ParameterSymbol(modelForParameterSymbol, existingParameterSymbol.Binding, existingParameterSymbol.Forms);
+                        symbols[prop.Name] = new ParameterSymbol(modelForParameterSymbol, existingParameterSymbol.Forms);
                     }
                     else
                     {
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
             }
-
+            _symbols = symbols;
             _postActions = PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _logger, filename);
             PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
@@ -313,17 +313,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal IReadOnlyList<TemplateConstraintInfo> Constraints { get; init; } = Array.Empty<TemplateConstraintInfo>();
 
-        internal IReadOnlyDictionary<string, ISymbolModel> Symbols
+        internal IEnumerable<BaseSymbol> Symbols
 
         {
             get
             {
-                return _symbols;
+                return _symbols.Values;
             }
 
             init
             {
-                _symbols = value.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                _symbols = value.ToDictionary(s => s.Name, s => s);
                 _symbols[NameSymbolName] = NameSymbol;
             }
         }
@@ -336,7 +336,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal IReadOnlyList<ICustomFileGlobModel> SpecialCustomOperations { get; init; } = Array.Empty<ICustomFileGlobModel>();
 
-        internal ISymbolModel NameSymbol { get; private set; } = SetupDefaultNameSymbol(null);
+        internal BaseSymbol NameSymbol { get; private set; } = SetupDefaultNameSymbol(null);
 
         internal static SimpleConfigModel FromJObject(JObject source, ILogger? logger = null, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
         {
@@ -387,36 +387,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return token.ArrayAsStrings();
         }
 
-        private static ISymbolModel SetupDefaultNameSymbol(string? sourceName)
+        private static BaseSymbol SetupDefaultNameSymbol(string? sourceName)
         {
-            StringBuilder nameSymbolConfigBuilder = new StringBuilder(512);
-
-            nameSymbolConfigBuilder.AppendLine(@"
-{
-  ""binding"": """ + NameSymbolName + @""",
-  ""type"": """ + ParameterSymbol.TypeName + @""",
-  ""description"": ""The default name symbol"",
-  ""datatype"": ""string"",
-  ""forms"": {
-    ""global"": [ """ + IdentityValueForm.FormName
-                    + @""", """ + DefaultSafeNameValueFormModel.FormName
-                    + @""", """ + DefaultLowerSafeNameValueFormModel.FormName
-                    + @""", """ + DefaultSafeNamespaceValueFormModel.FormName
-                    + @""", """ + DefaultLowerSafeNamespaceValueFormModel.FormName
-                    + @"""]
-  }
-");
-
-            if (!string.IsNullOrEmpty(sourceName))
+            string? replaces = string.IsNullOrWhiteSpace(sourceName) ? null : sourceName;
+            return new ParameterSymbol(NameSymbolName, replaces)
             {
-                nameSymbolConfigBuilder.AppendLine(",");
-                nameSymbolConfigBuilder.AppendLine($"\"replaces\": \"{sourceName}\"");
-            }
-
-            nameSymbolConfigBuilder.AppendLine("}");
-
-            JObject config = JObject.Parse(nameSymbolConfigBuilder.ToString());
-            return new ParameterSymbol(config, null);
+                Description = "The default name symbol",
+                DataType = "string",
+                Forms = SymbolValueFormsModel.NameForms
+            };
         }
 
         private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
@@ -467,18 +446,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return allBaselines;
-        }
-
-        private static IReadOnlyDictionary<string, ISymbolModel> ConvertDeprecatedTagsToParameterSymbols(IReadOnlyDictionary<string, string> tagsDeprecated)
-        {
-            Dictionary<string, ISymbolModel> symbols = new Dictionary<string, ISymbolModel>();
-
-            foreach (KeyValuePair<string, string> tagInfo in tagsDeprecated)
-            {
-                symbols[tagInfo.Key] = ParameterSymbol.FromDeprecatedConfigTag(tagInfo.Value);
-            }
-
-            return symbols;
         }
     }
 }

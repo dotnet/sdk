@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
@@ -14,21 +17,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         internal const string TypeName = "parameter";
 
-        private IReadOnlyDictionary<string, ParameterChoice> _choices;
-
-        /// <summary>
-        /// Creates a default instance of <see cref="ParameterSymbol"/>.
-        /// </summary>
-        public ParameterSymbol() { }
+        private IReadOnlyDictionary<string, ParameterChoice>? _choices;
 
         /// <summary>
         /// Creates an instance of <see cref="ParameterSymbol"/> using
         /// the provided Json Data.
         /// </summary>
+        /// <param name="name"></param>
         /// <param name="jObject">JSON to initialize the symbol with.</param>
         /// <param name="defaultOverride"></param>
-        public ParameterSymbol(JObject jObject, string defaultOverride)
-            : base(jObject, defaultOverride)
+        public ParameterSymbol(string name, JObject jObject, string? defaultOverride)
+            : base(name, jObject, defaultOverride)
         {
             DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
             DisplayName = jObject.ToString(nameof(DisplayName)) ?? string.Empty;
@@ -43,12 +42,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
                 foreach (JObject choiceObject in jObject.Items<JObject>(nameof(Choices)))
                 {
-                    string choiceName = choiceObject.ToString("choice");
+                    string? choiceName = choiceObject.ToString("choice");
+
+                    if (string.IsNullOrWhiteSpace(choiceName))
+                    {
+                        throw new TemplateAuthoringException(string.Format(LocalizableStrings.SymbolModel_Error_MandatoryPropertyMissing, name, ParameterSymbol.TypeName, "choice"), name);
+                    }
+
                     var choice = new ParameterChoice(
                         choiceObject.ToString("displayName") ?? string.Empty,
                         choiceObject.ToString("description") ?? string.Empty);
 
-                    choicesAndDescriptions.Add(choiceName, choice);
+                    choicesAndDescriptions.Add(choiceName!, choice);
                 }
             }
             else if (DataType == "bool" && string.IsNullOrEmpty(DefaultIfOptionWithoutValue))
@@ -66,44 +71,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         /// Creates a clone of the given <see cref="ParameterSymbol"/>.
         /// </summary>
         /// <param name="cloneFrom">The symbol to copy the values from.</param>
-        /// <param name="bindingFallback">The value to be used for <see cref="BaseValueSymbol.Binding"/> in the case
-        /// that the <paramref name="cloneFrom"/> does not specify a value for <see cref="BaseValueSymbol.Binding"/>.</param>
         /// <param name="formsFallback">The value to be used for <see cref="BaseValueSymbol.Forms"/> in the case
         /// that the <paramref name="cloneFrom"/> does not specify a value for <see cref="BaseValueSymbol.Forms"/>.</param>
-        public ParameterSymbol(ParameterSymbol cloneFrom, string bindingFallback, SymbolValueFormsModel formsFallback)
+        public ParameterSymbol(ParameterSymbol cloneFrom, SymbolValueFormsModel formsFallback) : base (cloneFrom, formsFallback)
         {
-            DefaultValue = cloneFrom.DefaultValue;
             Description = cloneFrom.Description;
-            IsRequired = cloneFrom.IsRequired;
-            Type = cloneFrom.Type;
-            Replaces = cloneFrom.Replaces;
-            DataType = cloneFrom.DataType;
-            FileRename = cloneFrom.FileRename;
             IsTag = cloneFrom.IsTag;
             TagName = cloneFrom.TagName;
             Choices = cloneFrom.Choices;
-            ReplacementContexts = cloneFrom.ReplacementContexts;
-            Binding = string.IsNullOrEmpty(cloneFrom.Binding) ? bindingFallback : cloneFrom.Binding;
-            Forms = cloneFrom.Forms.GlobalForms.Count != 0 ? cloneFrom.Forms : formsFallback;
             AllowMultipleValues = cloneFrom.AllowMultipleValues;
             EnableQuotelessLiterals = cloneFrom.EnableQuotelessLiterals;
         }
 
         /// <summary>
+        /// Creates a default instance of <see cref="ParameterSymbol"/>.
+        /// </summary>
+        public ParameterSymbol(string name, string? replaces = null) : base (name, replaces) { }
+
+        internal override string Type => TypeName;
+
+        /// <summary>
         /// Gets or sets the friendly name of the symbol to be displayed to the user.
         /// </summary>
-        internal string DisplayName { get; private set; }
+        internal string? DisplayName { get; private set; }
 
-        internal string Description { get; private set; }
+        internal string? Description { get; init; }
 
         // only relevant for choice datatype
         internal bool IsTag { get; init; }
 
         // only relevant for choice datatype
-        internal string TagName { get; init; }
+        internal string? TagName { get; init; }
 
         // If this is set, the option can be provided without a value. It will be given this value.
-        internal string DefaultIfOptionWithoutValue { get; init; }
+        internal string? DefaultIfOptionWithoutValue { get; init; }
 
         // If this is set, it's allowed to sepcify multiple values of that parameter
         internal bool AllowMultipleValues { get; init; }
@@ -111,7 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         // If this is set, it's allowed to sepcify choice literals without quotation within conditions.
         internal bool EnableQuotelessLiterals { get; init; }
 
-        internal IReadOnlyDictionary<string, ParameterChoice> Choices
+        internal IReadOnlyDictionary<string, ParameterChoice>? Choices
         {
             get
             {
@@ -120,16 +121,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
 
             set
             {
-                _choices = value.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
+                _choices = value?.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
             }
         }
 
-        internal static ISymbolModel FromDeprecatedConfigTag(string value)
+        internal static ParameterSymbol FromDeprecatedConfigTag(string name, string value)
         {
-            ParameterSymbol symbol = new ParameterSymbol
+            ParameterSymbol symbol = new ParameterSymbol(name)
             {
                 DefaultValue = value,
-                Type = TypeName,
                 DataType = "choice",
                 IsTag = true,
                 Choices = new Dictionary<string, ParameterChoice>()

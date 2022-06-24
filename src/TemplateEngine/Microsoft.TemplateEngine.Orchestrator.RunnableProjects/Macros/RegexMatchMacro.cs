@@ -30,9 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
-                value = parameters.TryGetRuntimeValue(environmentSettings, config.SourceVariable, out object resolvedValue, true)
-                    ? resolvedValue.ToString()
-                    : string.Empty;
+                value = string.Empty;
             }
             else
             {

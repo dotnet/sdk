@@ -31,14 +31,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             string sourceDirectory,
             ref string targetDirectory,
             object? resolvedNameParamValue,
-            IParameterSet parameterSet,
+            IVariableCollection variables,
             Dictionary<string, string> fileRenames,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
         {
             Dictionary<string, string> allRenames = new Dictionary<string, string>(StringComparer.Ordinal);
 
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
-            IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
+            IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, variables, symbolBasedFileRenames);
 
             IDirectory? sourceBaseDirectoryInfo = configFile.Parent?.Parent?.DirectoryInfo(sourceDirectory.TrimEnd('/'));
 
@@ -69,11 +69,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IEngineEnvironmentSettings environmentSettings,
             string? sourceName,
             object resolvedNameParamValue,
-            IParameterSet parameterSet,
+            IVariableCollection variables,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
         {
             string targetDirectoryStub = string.Empty;
-            IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectoryStub, resolvedNameParamValue, parameterSet, symbolBasedFileRenames);
+            IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectoryStub, resolvedNameParamValue, variables, symbolBasedFileRenames);
             return ApplyRenameProcessorToFilename(symbolRenameProcessor, primaryOutputPath);
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             string? sourceName,
             ref string targetDirectory,
             object? resolvedNameParamValue,
-            IParameterSet parameterSet,
+            IVariableCollection variables,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
@@ -119,12 +119,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
                 {
-                    if (parameterSet.TryGetRuntimeValue(environmentSettings, fileRenameToken.VariableName, out object? newValueObject))
+                    if (variables.TryGetValue (fileRenameToken.VariableName, out object? newValueObject))
                     {
-                        if (newValueObject is null)
-                        {
-                            throw new InvalidOperationException($"{nameof(newValueObject)} cannot be null when {nameof(RuntimeValueUtil.TryGetRuntimeValue)} is 'true'");
-                        }
                         string newValue = newValueObject.ToString();
                         operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));
                     }

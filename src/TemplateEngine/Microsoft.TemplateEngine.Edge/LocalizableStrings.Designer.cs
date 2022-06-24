@@ -142,6 +142,15 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Environment variables.
+        /// </summary>
+        internal static string EnvironmentVariablesBindSource_Name {
+            get {
+                return ResourceManager.GetString("EnvironmentVariablesBindSource_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The folder {0} doesn&apos;t exist..
         /// </summary>
         internal static string FolderInstaller_InstallResult_Error_FolderDoesNotExist {
@@ -249,6 +258,15 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string HostConstraint_Name {
             get {
                 return ResourceManager.GetString("HostConstraint_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host defined parameters.
+        /// </summary>
+        internal static string HostParametersBindSource_Name {
+            get {
+                return ResourceManager.GetString("HostParametersBindSource_Name", resourceCulture);
             }
         }
         

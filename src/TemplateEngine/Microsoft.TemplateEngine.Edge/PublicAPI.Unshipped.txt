@@ -9,6 +9,10 @@ Microsoft.TemplateEngine.Edge.Constraints.SdkVersionConstraintFactory.SdkVersion
 Microsoft.TemplateEngine.Edge.Constraints.WorkloadConstraintFactory
 Microsoft.TemplateEngine.Edge.Constraints.WorkloadConstraintFactory.WorkloadConstraintFactory() -> void
 Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.Dispose() -> void
+Microsoft.TemplateEngine.Edge.EnvironmentVariablesBindSource
+Microsoft.TemplateEngine.Edge.EnvironmentVariablesBindSource.EnvironmentVariablesBindSource() -> void
+Microsoft.TemplateEngine.Edge.HostParametersBindSource
+Microsoft.TemplateEngine.Edge.HostParametersBindSource.HostParametersBindSource() -> void
 Microsoft.TemplateEngine.Edge.Installers.Folder.FolderInstallerFactory
 Microsoft.TemplateEngine.Edge.Installers.Folder.FolderInstallerFactory.FolderInstallerFactory() -> void
 Microsoft.TemplateEngine.Edge.Installers.NuGet.NuGetInstallerFactory

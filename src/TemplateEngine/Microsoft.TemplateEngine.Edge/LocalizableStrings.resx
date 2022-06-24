@@ -151,6 +151,9 @@
   <data name="Constraint_WrongConfigurationCTA" xml:space="preserve">
     <value>Check the constraint configuration in template.json.</value>
   </data>
+  <data name="EnvironmentVariablesBindSource_Name" xml:space="preserve">
+    <value>Environment variables</value>
+  </data>
   <data name="FolderInstaller_InstallResult_Error_FolderDoesNotExist" xml:space="preserve">
     <value>The folder {0} doesn't exist.</value>
   </data>
@@ -192,6 +195,9 @@
   </data>
   <data name="HostConstraint_Name" xml:space="preserve">
     <value>Template engine host</value>
+  </data>
+  <data name="HostParametersBindSource_Name" xml:space="preserve">
+    <value>Host defined parameters</value>
   </data>
   <data name="NuGetApiPackageManager_Error_FailedToLoadSource" xml:space="preserve">
     <value>Failed to load the NuGet source {0}.</value>

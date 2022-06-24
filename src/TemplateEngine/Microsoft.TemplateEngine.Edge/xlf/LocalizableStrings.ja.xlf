@@ -47,6 +47,11 @@
         <target state="translated">template.json の制約の構成を確認してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvironmentVariablesBindSource_Name">
+        <source>Environment variables</source>
+        <target state="new">Environment variables</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
         <target state="translated">フォルダー {0} が存在しません。</target>
@@ -107,6 +112,11 @@
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
         <target state="translated">テンプレート エンジン ホスト</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HostParametersBindSource_Name">
+        <source>Host defined parameters</source>
+        <target state="new">Host defined parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">

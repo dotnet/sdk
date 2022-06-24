@@ -185,6 +185,16 @@ Details: {1}</value>
   <data name="Authoring_TemplateRootOutsideInstallSource" xml:space="preserve">
     <value>The template root is outside the specified install source location.</value>
   </data>
+  <data name="BindSymbolEvaluator_Warning_EvaluationError" xml:space="preserve">
+    <value>Failed to evaluate bind symbol '{0}', it will be skipped.</value>
+    <comment>{0} - name of the symbol in configuration that cannot be evaluated</comment>
+  </data>
+  <data name="BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources" xml:space="preserve">
+    <value>Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</value>
+    <comment>{0} - binding from template.json configuration
+{1} - the comma separated list of sources (localized values) which define the binding
+{2} - the comma separated list of prefixes that can be used to define the source of the value</comment>
+  </data>
   <data name="LocalizationModelDeserializer_Error_FailedToParse" xml:space="preserve">
     <value>Failed to read parse localization file {0}, it will be skipped from further processing.</value>
   </data>
@@ -224,5 +234,8 @@ Details: {1}</value>
   <data name="SimpleConfigModel_Error_Constraints_MissingType" xml:space="preserve">
     <value>Constraint definition '{0}' does not contain mandatory property '{1}'.</value>
     <comment>{0} - JSON with constraint defintion, {1} - missing property.</comment>
+  </data>
+  <data name="SymbolModel_Error_MandatoryPropertyMissing" xml:space="preserve">
+    <value>The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</value>
   </data>
 </root>

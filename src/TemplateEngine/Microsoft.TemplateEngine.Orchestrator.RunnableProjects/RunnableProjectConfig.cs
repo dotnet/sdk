@@ -8,8 +8,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -21,6 +24,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
+using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -355,7 +359,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal SimpleConfigModel ConfigurationModel => _configuration;
 
-        public void Evaluate(IParameterSet parameters, IVariableCollection rootVariableCollection)
+        public void Evaluate(IVariableCollection rootVariableCollection)
         {
             bool stable = false;
             Dictionary<string, bool> computed = new Dictionary<string, bool>();
@@ -363,23 +367,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             while (!stable)
             {
                 stable = true;
-                foreach (KeyValuePair<string, ISymbolModel> symbol in _configuration.Symbols)
+                foreach (ComputedSymbol symbol in _configuration.Symbols.OfType<ComputedSymbol>())
                 {
-                    if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
-                    {
-                        ComputedSymbol sym = (ComputedSymbol)symbol.Value;
-                        bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings.Host.Logger, sym.Value, rootVariableCollection);
-                        stable &= computed.TryGetValue(symbol.Key, out bool currentValue) && currentValue == value;
-                        rootVariableCollection[symbol.Key] = value;
-                        computed[symbol.Key] = value;
-                    }
-                    else if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal) && !string.IsNullOrWhiteSpace(symbol.Value.Binding))
-                    {
-                        if (parameters.TryGetRuntimeValue(_settings, symbol.Value.Binding!, out object? bindValue) && bindValue != null)
-                        {
-                            rootVariableCollection[symbol.Key] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindValue.ToString());
-                        }
-                    }
+                    bool value = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_settings.Host.Logger, symbol.Value, rootVariableCollection);
+                    stable &= computed.TryGetValue(symbol.Name, out bool currentValue) && currentValue == value;
+                    rootVariableCollection[symbol.Name] = value;
+                    computed[symbol.Name] = value;
                 }
             }
 
@@ -390,9 +383,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
             }
 
-            parameters.ResolvedValues.TryGetValue(NameParameter, out object resolvedNameParamValue);
+            rootVariableCollection.TryGetValue(NameParameter.Name, out object resolvedNameParamValue);
 
-            _sources = EvaluateSources(parameters, rootVariableCollection, resolvedNameParamValue);
+            _sources = EvaluateSources(rootVariableCollection, resolvedNameParamValue);
 
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
             foreach (ICreationPathModel pathModel in _configuration.PrimaryOutputs)
@@ -406,10 +399,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         _settings,
                         _configuration.SourceName,
                         resolvedNameParamValue,
-                        parameters,
+                        rootVariableCollection,
                         SymbolFilenameReplacements);
                 }
             }
+        }
+
+        public Task EvaluateBindSymbolsAsync(IEngineEnvironmentSettings settings, IVariableCollection variableCollection, CancellationToken cancellationToken)
+        {
+            var bindSymbols = _configuration.Symbols.OfType<BindSymbol>();
+            if (!bindSymbols.Any())
+            {
+                return Task.FromResult(0);
+            }
+            BindSymbolEvaluator bindSymbolEvaluator = new BindSymbolEvaluator(settings);
+
+            return bindSymbolEvaluator.EvaluateBindedSymbolsAsync(bindSymbols, variableCollection, cancellationToken);
         }
 
         /// <summary>
@@ -491,16 +496,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private static IReadOnlyDictionary<string, Parameter> ExtractParameters(SimpleConfigModel configuration)
         {
             Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
-            foreach (KeyValuePair<string, ISymbolModel> symbol in configuration.Symbols)
+            foreach (BaseValueSymbol baseSymbol in configuration.Symbols.OfType<BaseValueSymbol>())
             {
-                if (!string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
-                        !string.Equals(symbol.Value.Type, DerivedSymbol.TypeName, StringComparison.Ordinal) ||
-                        !(symbol.Value is BaseValueSymbol baseSymbol))
-                {
-                    // Symbol is of wrong type. Skip.
-                    continue;
-                }
-
                 bool isName = baseSymbol == configuration.NameSymbol;
 
                 Parameter parameter = new Parameter
@@ -508,14 +505,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
                     IsName = isName,
                     IsVariable = true,
-                    Name = symbol.Key,
+                    Name = baseSymbol.Name,
                     Priority = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
                     Type = baseSymbol.Type,
                     DataType = baseSymbol.DataType
                 };
 
-                if (string.Equals(symbol.Value.Type, ParameterSymbol.TypeName, StringComparison.Ordinal) &&
-                        symbol.Value is ParameterSymbol parameterSymbol)
+                if (baseSymbol is ParameterSymbol parameterSymbol)
                 {
                     parameter.Priority = parameterSymbol.IsTag ? TemplateParameterPriority.Implicit : parameter.Priority;
                     parameter.Description = parameterSymbol.Description;
@@ -526,7 +522,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     parameter.AllowMultipleValues = parameterSymbol.AllowMultipleValues;
                 }
 
-                parameters[symbol.Key] = parameter;
+                parameters[baseSymbol.Name] = parameter;
             }
 
             return parameters;
@@ -661,20 +657,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private IReadOnlyList<IReplacementTokens> ProduceSymbolFilenameReplacements()
         {
             List<IReplacementTokens> filenameReplacements = new List<IReplacementTokens>();
-            if (_configuration.Symbols.Count == 0)
+            if (!_configuration.Symbols.Any())
             {
                 return filenameReplacements;
             }
 
-            foreach (KeyValuePair<string, ISymbolModel> symbol in _configuration.Symbols.Where(s => !string.IsNullOrWhiteSpace(s.Value.FileRename)))
+            foreach (BaseReplaceSymbol symbol in _configuration.Symbols.OfType<BaseReplaceSymbol>().Where(s => !string.IsNullOrWhiteSpace(s.FileRename)))
             {
-                if (symbol.Value is BaseValueSymbol p)
+                if (symbol is BaseValueSymbol p)
                 {
                     foreach (string formName in p.Forms.GlobalForms)
                     {
                         if (_configuration.Forms.TryGetValue(formName, out IValueForm valueForm))
                         {
-                            string symbolName = symbol.Key + "{-VALUE-FORMS-}" + formName;
+                            string symbolName = symbol.Name + "{-VALUE-FORMS-}" + formName;
                             string processedFileReplacement = valueForm.Process(_configuration.Forms, p.FileRename);
                             GenerateFileReplacementsForSymbol(processedFileReplacement, symbolName, filenameReplacements);
                         }
@@ -686,9 +682,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
-                    if (!string.IsNullOrWhiteSpace(symbol.Value.FileRename))
+                    if (!string.IsNullOrWhiteSpace(symbol.FileRename))
                     {
-                        GenerateFileReplacementsForSymbol(symbol.Value.FileRename!, symbol.Key, filenameReplacements);
+                        GenerateFileReplacementsForSymbol(symbol.FileRename!, symbol.Name, filenameReplacements);
                     }
                 }
             }
@@ -734,49 +730,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 macros = ProduceMacroConfig(computedMacros);
             }
 
-            foreach (KeyValuePair<string, ISymbolModel> symbol in _configuration.Symbols)
+            foreach (BaseSymbol symbol in _configuration.Symbols)
             {
-                if (symbol.Value is DerivedSymbol derivedSymbol)
+                if (symbol is DerivedSymbol derivedSymbol)
                 {
                     if (generateMacros)
                     {
-                        macros?.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Key, derivedSymbol.DataType, derivedSymbol.ValueTransform, _configuration.Forms));
+                        macros?.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Name, derivedSymbol.DataType, derivedSymbol.ValueTransform, _configuration.Forms));
                     }
                 }
 
-                string? sourceVariable = null;
-                if (string.Equals(symbol.Value.Type, SymbolModelConverter.BindSymbolTypeName, StringComparison.Ordinal))
-                {
-                    if (string.IsNullOrWhiteSpace(symbol.Value.Binding))
-                    {
-                        _settings.Host.Logger.LogWarning($"Binding wasn't specified for bind-type symbol {symbol.Key}");
-                    }
-                    else
-                    {
-                        //Since this is a bind symbol, don't replace the literal with this symbol's value,
-                        //  replace it with the value of the bound symbol
-                        sourceVariable = symbol.Value.Binding;
-                    }
-                }
-                else
-                {
-                    //Replace the literal value in the "replaces" property with the evaluated value of the symbol
-                    sourceVariable = symbol.Key;
-                }
+                string sourceVariable = symbol.Name;
 
-                if (sourceVariable != null)
+                if (symbol is BaseReplaceSymbol replaceSymbol)
                 {
-                    if (symbol.Value is BaseValueSymbol p && p.Forms != null)
+                    if (symbol is BaseValueSymbol baseValueSymbol)
                     {
-                        foreach (string formName in p.Forms.GlobalForms)
+                        foreach (string formName in baseValueSymbol.Forms.GlobalForms)
                         {
                             if (_configuration.Forms.TryGetValue(formName, out IValueForm valueForm))
                             {
                                 string symbolName = sourceVariable + "{-VALUE-FORMS-}" + formName;
-                                if (!string.IsNullOrWhiteSpace(symbol.Value.Replaces))
+                                if (!string.IsNullOrWhiteSpace(replaceSymbol.Replaces))
                                 {
-                                    string processedReplacement = valueForm.Process(_configuration.Forms, p.Replaces);
-                                    GenerateReplacementsForParameter(symbol, processedReplacement, symbolName, macroGeneratedReplacements);
+                                    string processedReplacement = valueForm.Process(_configuration.Forms, baseValueSymbol.Replaces);
+                                    GenerateReplacementsForSymbol(replaceSymbol, processedReplacement, symbolName, macroGeneratedReplacements);
                                 }
                                 if (generateMacros)
                                 {
@@ -789,9 +767,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             }
                         }
                     }
-                    else if (!string.IsNullOrWhiteSpace(symbol.Value.Replaces))
+                    else if (!string.IsNullOrWhiteSpace(replaceSymbol.Replaces))
                     {
-                        GenerateReplacementsForParameter(symbol, symbol.Value.Replaces!, sourceVariable, macroGeneratedReplacements);
+                        GenerateReplacementsForSymbol(replaceSymbol, replaceSymbol.Replaces!, sourceVariable, macroGeneratedReplacements);
                     }
                 }
             }
@@ -842,12 +820,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return config;
         }
 
-        private void GenerateReplacementsForParameter(KeyValuePair<string, ISymbolModel> symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
+        private void GenerateReplacementsForSymbol(BaseReplaceSymbol symbol, string replaces, string sourceVariable, List<IReplacementTokens> macroGeneratedReplacements)
         {
             TokenConfig replacementConfig = replaces.TokenConfigBuilder();
-            if (symbol.Value.ReplacementContexts.Count > 0)
+            if (symbol.ReplacementContexts.Count > 0)
             {
-                foreach (IReplacementContext context in symbol.Value.ReplacementContexts)
+                foreach (IReplacementContext context in symbol.ReplacementContexts)
                 {
                     TokenConfig builder = replacementConfig;
                     if (!string.IsNullOrEmpty(context.OnlyIfAfter))
@@ -891,29 +869,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            foreach (KeyValuePair<string, ISymbolModel> symbol in _configuration.Symbols)
+            foreach (BaseSymbol symbol in _configuration.Symbols)
             {
-                if (string.Equals(symbol.Value.Type, ComputedSymbol.TypeName, StringComparison.Ordinal))
+                if (symbol is ComputedSymbol computed)
                 {
-                    ComputedSymbol computed = (ComputedSymbol)symbol.Value;
                     string value = computed.Value;
-                    string evaluator = computed.Evaluator;
-                    string dataType = computed.DataType;
-                    computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Key, dataType, value, evaluator));
+                    string? evaluator = computed.Evaluator;
+                    computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Name, "bool", value, evaluator));
                 }
-                else if (string.Equals(symbol.Value.Type, GeneratedSymbol.TypeName, StringComparison.Ordinal))
+                else if (symbol is GeneratedSymbol generated)
                 {
-                    GeneratedSymbol symbolInfo = (GeneratedSymbol)symbol.Value;
-                    string type = symbolInfo.Generator;
-                    string variableName = symbol.Key;
+                    string type = generated.Generator;
+                    string variableName = symbol.Name;
                     Dictionary<string, JToken> configParams = new Dictionary<string, JToken>();
 
-                    foreach (KeyValuePair<string, JToken> parameter in symbolInfo.Parameters)
+                    foreach (KeyValuePair<string, JToken> parameter in generated.Parameters)
                     {
                         configParams.Add(parameter.Key, parameter.Value);
                     }
 
-                    string dataType = symbolInfo.DataType;
+                    string? dataType = generated.DataType;
 
                     if (string.Equals(dataType, "choice", StringComparison.OrdinalIgnoreCase))
                     {
@@ -927,7 +902,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
-        private List<FileSourceMatchInfo> EvaluateSources(IParameterSet parameters, IVariableCollection rootVariableCollection, object resolvedNameParamValue)
+        private List<FileSourceMatchInfo> EvaluateSources(IVariableCollection rootVariableCollection, object resolvedNameParamValue)
         {
             if (SourceFile == null)
             {
@@ -976,7 +951,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string sourceDirectory = source.Source ?? "./";
                 string targetDirectory = source.Target ?? "./";
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     sourceDirectory,
@@ -996,7 +971,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string targetDirectory = string.Empty;
                 Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(StringComparer.Ordinal);
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, "./", ref targetDirectory, resolvedNameParamValue, parameters, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, "./", ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     "./",
@@ -1010,9 +985,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return sources;
         }
 
-        private IReadOnlyDictionary<string, string> AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IParameterSet parameters, Dictionary<string, string> fileRenames)
+        private IReadOnlyDictionary<string, string> AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IVariableCollection variables, Dictionary<string, string> fileRenames)
         {
-            return FileRenameGenerator.AugmentFileRenames(_settings, _configuration.SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, parameters, fileRenames, SymbolFilenameReplacements);
+            return FileRenameGenerator.AugmentFileRenames(_settings, _configuration.SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, variables, fileRenames, SymbolFilenameReplacements);
         }
 
         private void CheckGeneratorVersionRequiredByTemplate()
@@ -1071,7 +1046,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             var invalidMultichoices =
-                _configuration.Symbols.Values
+                _configuration.Symbols
                     .OfType<ParameterSymbol>()
                     .Where(p => p.AllowMultipleValues)
                     .Where(p => p.Choices.Any(c => !c.Key.IsValidMultiValueParameterValue()));

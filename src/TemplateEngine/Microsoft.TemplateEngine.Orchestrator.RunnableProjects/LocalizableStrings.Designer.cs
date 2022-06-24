@@ -224,6 +224,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to evaluate bind symbol &apos;{0}&apos;, it will be skipped..
+        /// </summary>
+        internal static string BindSymbolEvaluator_Warning_EvaluationError {
+            get {
+                return ResourceManager.GetString("BindSymbolEvaluator_Warning_EvaluationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to evaluate binding &apos;{0}&apos;, its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead..
+        /// </summary>
+        internal static string BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources {
+            get {
+                return ResourceManager.GetString("BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to read parse localization file {0}, it will be skipped from further processing..
         /// </summary>
         internal static string LocalizationModelDeserializer_Error_FailedToParse {
@@ -319,6 +337,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string SimpleConfigModel_Error_Constraints_MissingType {
             get {
                 return ResourceManager.GetString("SimpleConfigModel_Error_Constraints_MissingType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The symbol &apos;{0}&apos; of type &apos;{1}&apos; is incorrect: mandatory property &apos;{2}&apos; is not set. The symbol will be skipped..
+        /// </summary>
+        internal static string SymbolModel_Error_MandatoryPropertyMissing {
+            get {
+                return ResourceManager.GetString("SymbolModel_Error_MandatoryPropertyMissing", resourceCulture);
             }
         }
     }

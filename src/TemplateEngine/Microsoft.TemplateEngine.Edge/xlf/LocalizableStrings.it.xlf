@@ -47,6 +47,11 @@
         <target state="translated">Controllare la configurazione del vincolo in template.json.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvironmentVariablesBindSource_Name">
+        <source>Environment variables</source>
+        <target state="new">Environment variables</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
         <target state="translated">La cartella {0} non esiste.</target>
@@ -107,6 +112,11 @@
       <trans-unit id="HostConstraint_Name">
         <source>Template engine host</source>
         <target state="translated">Host del motore del modello</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HostParametersBindSource_Name">
+        <source>Host defined parameters</source>
+        <target state="new">Host defined parameters</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">

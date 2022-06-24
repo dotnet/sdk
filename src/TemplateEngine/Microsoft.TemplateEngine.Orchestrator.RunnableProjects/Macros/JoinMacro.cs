@@ -40,18 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     case "ref":
                         if (!vars.TryGetValue(symbol.Value, out object working))
                         {
-                            if (parameters.TryGetRuntimeValue(
-                                environmentSettings,
-                                symbol.Value,
-                                out object resolvedValue,
-                                true))
-                            {
-                                values.Add(resolvedValue.ToString());
-                            }
-                            else
-                            {
-                                values.Add(string.Empty);
-                            }
+                            values.Add(string.Empty);
                         }
                         else if (working != null && working is MultiValueParameter multiValue)
                         {

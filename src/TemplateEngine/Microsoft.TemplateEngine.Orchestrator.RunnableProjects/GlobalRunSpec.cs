@@ -26,7 +26,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal GlobalRunSpec(
             IDirectory templateRoot,
             IComponentManager componentManager,
-            IParameterSet parameters,
             IVariableCollection variables,
             IGlobalRunConfig globalConfig,
             IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
@@ -36,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             RootVariableCollection = variables;
             IgnoreFileNames = ignoreFileNames;
-            Operations = ResolveOperations(globalConfig, templateRoot, variables, parameters);
+            Operations = ResolveOperations(globalConfig, templateRoot, variables);
             List<KeyValuePair<IPathMatcher, IRunSpec>> specials = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
 
             if (fileGlobConfigs != null)
@@ -47,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (specialEntry.Value != null)
                     {
-                        specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables, parameters);
+                        specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables);
                     }
 
                     RunSpec spec = new RunSpec(specialOps, specialEntry.Value.VariableSetup.FallbackFormat);
@@ -108,10 +107,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If there are custom Conditional operations, don't include the default Conditionals.
         //
         // Note: we may need a more robust filtering mechanism in the future.
-        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables, IParameterSet parameters)
+        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables)
         {
             IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, templateRoot, variables);
-            IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(templateRoot.MountPoint.EnvironmentSettings, parameters, runConfig);
+            IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(templateRoot.MountPoint.EnvironmentSettings, variables, runConfig);
 
             List<IOperationProvider> operations = new List<IOperationProvider>(customOperations);
 
@@ -127,7 +126,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IGlobalRunConfig runConfig)
+        private static IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGlobalRunConfig runConfig)
         {
             // default operations
             List<IOperationProvider> operations = new List<IOperationProvider>();
@@ -138,7 +137,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
                 {
-                    IOperationProvider replacement = ReplacementConfig.Setup(environmentSettings, replaceSetup, parameters);
+                    IOperationProvider replacement = ReplacementConfig.Setup(environmentSettings, replaceSetup, variables);
                     if (replacement != null)
                     {
                         operations.Add(replacement);

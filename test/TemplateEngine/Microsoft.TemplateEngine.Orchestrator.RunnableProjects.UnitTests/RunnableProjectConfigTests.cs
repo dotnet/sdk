@@ -104,9 +104,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 Identity = "test",
                 Name = "name",
                 ShortNameList = new [] { "shortName" },
-                Symbols = new Dictionary<string, ISymbolModel>()
+                Symbols = new[] 
                 {
-                    { "ParamA", new ParameterSymbol(choiceParam, null) }
+                    new ParameterSymbol( "ParamA", choiceParam, null) 
                 }
             };
 
