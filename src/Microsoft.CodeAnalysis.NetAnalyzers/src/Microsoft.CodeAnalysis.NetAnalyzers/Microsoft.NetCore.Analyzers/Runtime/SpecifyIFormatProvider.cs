@@ -77,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static readonly ImmutableArray<string> s_dateInvariantFormats = ImmutableArray.Create("o", "O", "r", "R", "s", "u");
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, UICultureStringRule, UICultureRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, IFormatProviderOptionalRule, UICultureStringRule, UICultureRule);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
