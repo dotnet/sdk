@@ -49,25 +49,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator, removeEmptyValues);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
-
-            Parameter referenceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = referenceSymbolName
-            };
-
             variables[referenceSymbolName] = referenceSymbolValue;
-            setter(referenceParam, referenceSymbolValue);
 
             JoinMacro macro = new JoinMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
-
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
-
-            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            string convertedValue = (string)variables[variableName];
             string expectedValue =
                 removeEmptyValues ?
                 string.Join(separator, constantValue, referenceSymbolValue) :
@@ -98,26 +84,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("JoinMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
-
-            Parameter referenceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = referenceSymbolName
-            };
-
             variables[referenceSymbolName] = referenceSymbolValue;
-            setter(referenceParam, referenceSymbolValue);
 
             JoinMacro macro = new JoinMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
 
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter convertedParam));
-
-            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
+            string convertedValue = (string)variables[variableName];
             string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
             Assert.Equal(convertedValue, expectedValue);
         }

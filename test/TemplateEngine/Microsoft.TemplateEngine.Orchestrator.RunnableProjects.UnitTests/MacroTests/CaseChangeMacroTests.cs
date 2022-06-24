@@ -35,26 +35,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             CaseChangeMacroConfig macroConfig = new CaseChangeMacroConfig(variableName, null, sourceVariable, toLower);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
-
             string sourceValue = "Original Value SomethingCamelCase";
-            Parameter sourceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = sourceVariable
-            };
-
             variables[sourceVariable] = sourceValue;
-            setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            ITemplateParameter convertedParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
-            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
+            string convertedValue = (string)variables[variableName];
             Assert.Equal(convertedValue, sourceValue.ToLower());
         }
 
@@ -68,26 +55,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             CaseChangeMacroConfig macroConfig = new CaseChangeMacroConfig(variableName, null, sourceVariable, toLower);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             string sourceValue = "Original Value SomethingCamelCase";
-            Parameter sourceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = sourceVariable
-            };
-
             variables[sourceVariable] = sourceValue;
-            setter(sourceParam, sourceValue);
 
             CaseChangeMacro macro = new CaseChangeMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            ITemplateParameter convertedParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
-            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
+            string convertedValue = (string)variables[variableName];
             Assert.Equal(convertedValue, sourceValue.ToUpper());
         }
 
@@ -95,34 +70,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestDeferredCaseChangeConfig()
         {
             string variableName = "myString";
+            string sourceVariable = "sourceString";
 
             Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            string sourceVariable = "sourceString";
             jsonParameters.Add("source", sourceVariable);
             jsonParameters.Add("toLower", false);
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("CaseChangeMacro", null, variableName, jsonParameters);
 
             CaseChangeMacro macro = new CaseChangeMacro();
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             string sourceValue = "Original Value SomethingCamelCase";
-            Parameter sourceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = sourceVariable
-            };
-
             variables[sourceVariable] = sourceValue;
-            setter(sourceParam, sourceValue);
 
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ITemplateParameter convertedParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out convertedParam));
-            string convertedValue = (string)parameters.ResolvedValues[convertedParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+
+            string convertedValue = (string)variables[variableName];
             Assert.Equal(convertedValue, sourceValue.ToUpper());
         }
     }

@@ -40,15 +40,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             SwitchMacroConfig macroConfig = new SwitchMacroConfig(variableName, evaluator, dataType, switches);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             SwitchMacro macro = new SwitchMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
-            ITemplateParameter resultParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
-            string resultValue = (string)parameters.ResolvedValues[resultParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+
+            string resultValue = (string)variables[variableName];
             Assert.Equal(resultValue, expectedValue);
         }
 
@@ -86,16 +82,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("SwitchMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             SwitchMacro macro = new SwitchMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ITemplateParameter resultParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
-            string resultValue = (string)parameters.ResolvedValues[resultParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+
+            string resultValue = (string)variables[variableName];
             Assert.Equal(resultValue, expectedValue);
         }
     }

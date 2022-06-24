@@ -32,17 +32,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [Fact(DisplayName = nameof(TestGuidConfig))]
         public void TestGuidConfig()
         {
-            string paramName = "TestGuid";
-            IMacroConfig macroConfig = new GuidMacroConfig(paramName, "string", string.Empty, null);
+            string variableName = "TestGuid";
+            IMacroConfig macroConfig = new GuidMacroConfig(variableName, "string", string.Empty, null);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             GuidMacro guidMacro = new GuidMacro();
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
-            ValidateGuidMacroCreatedParametersWithResolvedValues(paramName, parameters);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
         }
 
         [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
@@ -55,41 +52,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             GuidMacro guidMacro = new GuidMacro();
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             IMacroConfig realConfig = guidMacro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, parameters);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
         }
 
-        private static void ValidateGuidMacroCreatedParametersWithResolvedValues(string variableName, IParameterSet parameters)
+        private static void ValidateGuidMacroCreatedParametersWithResolvedValues(string variableName, IVariableCollection variables)
         {
-            ITemplateParameter setParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out setParam));
+            Assert.True(variables.ContainsKey(variableName));
 
-            Guid paramValue = Guid.Parse((string)parameters.ResolvedValues[setParam]);
+            Guid paramValue = Guid.Parse((string)variables[variableName]);
 
             // check that all the param name variants were created, and their values all resolve to the same guid.
             string guidFormats = GuidMacroConfig.DefaultFormats;
             for (int i = 0; i < guidFormats.Length; ++i)
             {
-                string otherFormatParamName = variableName + "-" + guidFormats[i];
-                ITemplateParameter testParam;
-                Assert.True(parameters.TryGetParameterDefinition(otherFormatParamName, out testParam));
-                Guid testValue = Guid.Parse((string)parameters.ResolvedValues[testParam]);
+                string otherFormatVariableName = variableName + "-" + guidFormats[i];
+                Guid testValue = Guid.Parse((string)variables[otherFormatVariableName]);
                 Assert.Equal(paramValue, testValue);
 
                 // Test the new formats - that distinguish upper and lower case by tags that are
                 //  distinguishable regardless of casing comparison
-                otherFormatParamName =
+                otherFormatVariableName =
                     variableName +
                     (char.IsUpper(guidFormats[i]) ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +
                     guidFormats[i];
-                Assert.True(parameters.TryGetParameterDefinition(otherFormatParamName, out testParam));
-                string resolvedValue = (string)parameters.ResolvedValues[testParam];
-                testValue = Guid.Parse(resolvedValue);
+
+                string resolvedValue = (string)variables[otherFormatVariableName];
+                testValue = Guid.Parse((string)variables[otherFormatVariableName]);
                 Assert.Equal(paramValue, testValue);
                 Assert.Equal(char.IsUpper(guidFormats[i]), char.IsUpper(resolvedValue.First(char.IsLetter)));
             }
@@ -104,22 +95,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IMacroConfig macroConfigUpper = new GuidMacroConfig(paramNameUpper, "string", string.Empty, "N");
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             GuidMacro guidMacro = new GuidMacro();
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigLower, parameters, setter);
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigUpper, parameters, setter);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigLower);
+            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigUpper);
 
-            Assert.True(parameters.TryGetParameterDefinition(paramNameLower, out var setParamLower));
-            Assert.All(((string)parameters.ResolvedValues[setParamLower]).ToCharArray(), (c) =>
+            Assert.True(variables.ContainsKey(paramNameLower));
+            Assert.All(((string)variables[paramNameLower]).ToCharArray(), (c) =>
             {
                 Assert.True(char.IsLower(c) || char.IsDigit(c));
             });
 
-            Assert.True(parameters.TryGetParameterDefinition(paramNameUpper, out var setParamUpper));
-            Assert.All(((string)parameters.ResolvedValues[setParamUpper]).ToCharArray(), (c) =>
+            Assert.True(variables.ContainsKey(paramNameUpper));
+            Assert.All(((string)variables[paramNameUpper]).ToCharArray(), (c) =>
             {
                 Assert.True(char.IsUpper(c) || char.IsDigit(c));
             });

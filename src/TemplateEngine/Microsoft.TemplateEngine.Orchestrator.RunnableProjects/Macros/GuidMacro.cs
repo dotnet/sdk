@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "guid";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
             var config = rawConfig as GuidMacroConfig;
 
@@ -44,56 +44,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 bool isUpperCase = char.IsUpper(guidFormats[i]);
                 string value = g.ToString(guidFormats[i].ToString());
                 value = isUpperCase ? value.ToUpperInvariant() : value.ToLowerInvariant();
-                Parameter pLegacy = new Parameter
-                {
-                    IsVariable = true,
-                    Name = config.VariableName + "-" + guidFormats[i],
-                    DataType = config.DataType
-                };
-
                 // Not breaking any dependencies on exact param names and on the
                 //  case insensitive matching of parameters (https://github.com/dotnet/templating/blob/7e14ef44/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/RunnableProjectGenerator.cs#L726)
                 //  we need to introduce new parameters - with distinc naming for upper- and lower- casing replacements
-                Parameter pNew = new Parameter
-                {
-                    IsVariable = true,
-                    Name =
-                        config.VariableName +
+                string legacyName = config.VariableName + "-" + guidFormats[i];
+                string newName = config.VariableName +
                         (isUpperCase ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +
-                        guidFormats[i],
-                    DataType = config.DataType
-                };
+                        guidFormats[i];
 
-                vars[pLegacy.Name] = value;
-                vars[pNew.Name] = value;
-                setter(pLegacy, value);
-                setter(pNew, value);
+                vars[legacyName] = value;
+                vars[newName] = value;
             }
 
-            Parameter pd;
-
-            if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
-            {
-                // If there is an existing parameter with this name, it must be reused so it can be referenced by name
-                // for other processing, for example: if the parameter had value forms defined for creating variants.
-                // When the param already exists, use its definition, but set IsVariable = true for consistency.
-                pd = (Parameter)existingParam;
-                pd.IsVariable = true;
-            }
-            else
-            {
-                pd = new Parameter
-                {
-                    IsVariable = true,
-                    Name = config.VariableName
-                };
-            }
             var defaultFormat = string.IsNullOrEmpty(config.DefaultFormat) ? "D" : config.DefaultFormat!;
             string defaultValue = char.IsUpper(defaultFormat[0]) ?
                 g.ToString(config.DefaultFormat).ToUpperInvariant() :
                 g.ToString(config.DefaultFormat).ToLowerInvariant();
             vars[config.VariableName] = defaultValue;
-            setter(pd, defaultValue);
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)

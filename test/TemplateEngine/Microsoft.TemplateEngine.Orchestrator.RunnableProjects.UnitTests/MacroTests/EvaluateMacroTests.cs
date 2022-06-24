@@ -33,16 +33,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, predicate, evaluator);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             EvaluateMacro macro = new EvaluateMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
-            ITemplateParameter resultParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
-            bool resultValue = (bool)parameters.ResolvedValues[resultParam];
-            Assert.Equal(resultValue, expectedResult);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            Assert.Equal(variables[variableName], expectedResult);
         }
     }
 }

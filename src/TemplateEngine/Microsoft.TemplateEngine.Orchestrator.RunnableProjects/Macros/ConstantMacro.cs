@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "constant";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
             ConstantMacroConfig config = rawConfig as ConstantMacroConfig;
 
@@ -24,34 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as ConstantMacroConfig");
             }
-
-            Parameter p;
-
-            if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
-            {
-                // If there is an existing parameter with this name, it must be reused so it can be referenced by name
-                // for other processing, for example: if the parameter had value forms defined for creating variants.
-                // When the param already exists, use its definition, but set IsVariable = true for consistency.
-                p = (Parameter)existingParam;
-                p.IsVariable = true;
-
-                if (string.IsNullOrEmpty(p.DataType))
-                {
-                    p.DataType = config.DataType;
-                }
-            }
-            else
-            {
-                p = new Parameter
-                {
-                    IsVariable = true,
-                    Name = config.VariableName,
-                    DataType = config.DataType
-                };
-            }
-
             vars[config.VariableName] = config.Value;
-            setter(p, config.Value);
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)

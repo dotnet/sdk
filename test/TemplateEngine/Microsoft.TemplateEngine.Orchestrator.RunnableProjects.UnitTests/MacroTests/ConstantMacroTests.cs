@@ -33,17 +33,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             ConstantMacroConfig macroConfig = new ConstantMacroConfig(null, variableName, value);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             ConstantMacro macro = new ConstantMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            ITemplateParameter constParameter;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out constParameter));
-            string constParamValue = (parameters.ResolvedValues[constParameter]).ToString();
-            Assert.Equal(constParamValue, value);
+            Assert.Equal(value, variables[variableName]);
         }
 
         [Fact(DisplayName = nameof(TestConstantDeferredConfig))]
@@ -56,17 +50,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("ConstantMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             ConstantMacro macro = new ConstantMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ITemplateParameter constParameter;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out constParameter));
-            string constParamValue = (parameters.ResolvedValues[constParameter]).ToString();
-            Assert.Equal(constParamValue, value);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            Assert.Equal(value, variables[variableName]);
         }
     }
 }

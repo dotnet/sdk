@@ -17,18 +17,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
         // Warning: if there are unknown macro "types", they are quietly ignored here.
         // This applies to both the regular and deferred macros.
-        internal IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables, IParameterSet parameters)
+        internal IEnumerable<IOperationProvider> ProcessMacros(IEngineEnvironmentSettings environmentSettings, IReadOnlyList<IMacroConfig> macroConfigs, IVariableCollection variables)
         {
             EnsureMacros(environmentSettings.Components);
             EnsureDeferredMacros(environmentSettings.Components);
-
-            ParameterSetter setter = (p, value) =>
-            {
-                ((RunnableProjectGenerator.ParameterSet)parameters).AddParameter(p);
-                parameters.ResolvedValues[p] = RunnableProjectGenerator.InternalConvertParameterValueToType(environmentSettings, p, value, out bool valueResolutionError);
-                // TODO: consider checking the valueResolutionError and act on it, if needed.
-                // Should be safe to ignore, params should be verified by the time this occurs.
-            };
 
             IList<IMacroConfig> allMacroConfigs = new List<IMacroConfig>(macroConfigs);
             IList<GeneratedSymbolDeferredMacroConfig> deferredConfigList = new List<GeneratedSymbolDeferredMacroConfig>();
@@ -44,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
                 if (_macroObjects.TryGetValue(config.Type, out IMacro macroObject))
                 {
-                    macroObject.EvaluateConfig(environmentSettings, variables, config, parameters, setter);
+                    macroObject.EvaluateConfig(environmentSettings, variables, config);
                 }
             }
 
@@ -64,7 +56,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config
 
             foreach (Tuple<IMacro, IMacroConfig> config in deferredConfigs)
             {
-                config.Item1.EvaluateConfig(environmentSettings, variables, config.Item2, parameters, setter);
+                config.Item1.EvaluateConfig(environmentSettings, variables, config.Item2);
             }
 
             return Array.Empty<IOperationProvider>();

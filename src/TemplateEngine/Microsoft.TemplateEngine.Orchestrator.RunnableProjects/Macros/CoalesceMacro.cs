@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             return realConfig;
         }
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config, IParameterSet parameters, ParameterSetter setter)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config)
         {
             CoalesceMacroConfig realConfig = config as CoalesceMacroConfig;
 
@@ -58,16 +58,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
 
             object targetValue = null;
-            string datatype = realConfig.DataType;
-
             if (vars.TryGetValue(realConfig.SourceVariableName, out object currentSourceValue) && !Equals(currentSourceValue ?? string.Empty, realConfig.DefaultValue ?? string.Empty))
             {
                 targetValue = currentSourceValue;
-
-                if (parameters.TryGetParameterDefinition(realConfig.SourceVariableName, out ITemplateParameter sourceParameter))
-                {
-                    datatype = sourceParameter.DataType;
-                }
             }
             else
             {
@@ -76,39 +69,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     environmentSettings.Host.Logger.LogDebug("Unable to find a variable to fall back to called " + realConfig.FallbackVariableName);
                     targetValue = realConfig.DefaultValue;
                 }
-                else if (parameters.TryGetParameterDefinition(realConfig.FallbackVariableName, out ITemplateParameter sourceParameter))
-                {
-                    datatype = sourceParameter.DataType;
-                }
             }
-
-            Parameter p;
-
-            if (parameters.TryGetParameterDefinition(config.VariableName, out ITemplateParameter existingParam))
-            {
-                // If there is an existing parameter with this name, it must be reused so it can be referenced by name
-                // for other processing, for example: if the parameter had value forms defined for creating variants.
-                // When the param already exists, use its definition, but set IsVariable = true for consistency.
-                p = (Parameter)existingParam;
-                p.IsVariable = true;
-
-                if (string.IsNullOrEmpty(p.DataType))
-                {
-                    p.DataType = datatype;
-                }
-            }
-            else
-            {
-                p = new Parameter
-                {
-                    IsVariable = true,
-                    Name = config.VariableName,
-                    DataType = datatype
-                };
-            }
-
             vars[config.VariableName] = targetValue?.ToString();
-            setter(p, targetValue?.ToString());
         }
     }
 }

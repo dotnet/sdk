@@ -37,16 +37,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RandomMacroConfig macroConfig = new RandomMacroConfig(variableName, null, low, high);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             RandomMacro macro = new RandomMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            ITemplateParameter valueParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out valueParam));
-            long randomValue = (long)parameters.ResolvedValues[valueParam];
+            long randomValue = (int)variables[variableName];
             Assert.True(randomValue >= low);
 
             if (high.HasValue)
@@ -73,16 +68,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("RandomMacro", null, variableName, jsonParameters);
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             RandomMacro macro = new RandomMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ITemplateParameter valueParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out valueParam));
-            long randomValue = (long)parameters.ResolvedValues[valueParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            long randomValue = (int)variables[variableName];
             Assert.True(randomValue >= low);
 
             if (high.HasValue)

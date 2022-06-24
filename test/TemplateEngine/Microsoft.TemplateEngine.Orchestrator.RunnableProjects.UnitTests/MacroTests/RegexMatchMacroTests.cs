@@ -30,27 +30,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RegexMatchMacroConfig macroConfig = new RegexMatchMacroConfig(variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             const string sourceValue = "1234test";
             const bool expectedValue = true;
-
-            Parameter sourceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = sourceVariable
-            };
-
             variables[sourceVariable] = sourceValue;
-            setter(sourceParam, sourceValue);
 
             RegexMatchMacro macro = new RegexMatchMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter newParam));
-            bool newValue = (bool)parameters.ResolvedValues[newParam];
+            bool newValue = (bool)variables[variableName];
             Assert.Equal(newValue, expectedValue);
         }
 
@@ -62,27 +50,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RegexMatchMacroConfig macroConfig = new RegexMatchMacroConfig(variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new RunnableProjectGenerator.ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             const string sourceValue = "A1234test";
             const bool expectedValue = false;
-
-            Parameter sourceParam = new Parameter
-            {
-                IsVariable = true,
-                Name = sourceVariable
-            };
-
             variables[sourceVariable] = sourceValue;
-            setter(sourceParam, sourceValue);
 
             RegexMatchMacro macro = new RegexMatchMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out ITemplateParameter newParam));
-            bool newValue = (bool)parameters.ResolvedValues[newParam];
+            bool newValue = (bool)variables[variableName];
             Assert.Equal(newValue, expectedValue);
         }
     }

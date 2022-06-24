@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             await runnableProjectConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            ProcessMacros(environmentSettings, runnableProjectConfig.OperationConfig, parameters, variables);
+            ProcessMacros(environmentSettings, runnableProjectConfig.OperationConfig, variables);
             runnableProjectConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableCollection variables = SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
             await templateConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            ProcessMacros(environmentSettings, templateConfig.OperationConfig, parameters, variables);
+            ProcessMacros(environmentSettings, templateConfig.OperationConfig, variables);
             templateConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
@@ -534,19 +534,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // Note the deferred-config macros (generated) are part of the runConfig.Macros
         //      and not in the ComputedMacros.
         //  Possibly make a separate property for the deferred-config macros
-        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IGlobalRunConfig runConfig, IParameterSet parameters, IVariableCollection variableCollection)
+        private static void ProcessMacros(IEngineEnvironmentSettings environmentSettings, IGlobalRunConfig runConfig, IVariableCollection variableCollection)
         {
             MacrosOperationConfig? macroProcessor = null;
             if (runConfig.Macros != null)
             {
                 macroProcessor = new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, runConfig.Macros, variableCollection, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, runConfig.Macros, variableCollection);
             }
 
             if (runConfig.ComputedMacros != null)
             {
                 macroProcessor = macroProcessor ?? new MacrosOperationConfig();
-                macroProcessor.ProcessMacros(environmentSettings, runConfig.ComputedMacros, variableCollection, parameters);
+                macroProcessor.ProcessMacros(environmentSettings, runConfig.ComputedMacros, variableCollection);
             }
         }
 

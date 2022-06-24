@@ -39,16 +39,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.Equal("string", macroConfig.DataType);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             NowMacro macro = new NowMacro();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig, parameters, setter);
-            ITemplateParameter resultParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
-            Assert.IsType<string>(parameters.ResolvedValues[resultParam]);
-            string macroNowString = (string)parameters.ResolvedValues[resultParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            Assert.IsType<string>(variables[variableName]);
+            string macroNowString = (string)variables[variableName];
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.UtcNow);
@@ -70,19 +65,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
-            IRunnableProjectConfig config = A.Fake<IRunnableProjectConfig>();
-            IParameterSet parameters = new ParameterSet(config);
-            ParameterSetter setter = MacroTestHelpers.TestParameterSetter(_engineEnvironmentSettings, parameters);
 
             NowMacro macro = new NowMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
             Assert.Equal("string", (realConfig as NowMacroConfig)?.DataType);
 
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig, parameters, setter);
-            ITemplateParameter resultParam;
-            Assert.True(parameters.TryGetParameterDefinition(variableName, out resultParam));
-            Assert.IsType<string>(parameters.ResolvedValues[resultParam]);
-            string macroNowString = (string)parameters.ResolvedValues[resultParam];
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            Assert.IsType<string>(variables[variableName]);
+            string macroNowString = (string)variables[variableName];
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.Now);

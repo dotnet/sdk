@@ -12,6 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
     {
         string Type { get; }
 
-        void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config, IParameterSet parameters, ParameterSetter setter);
+        void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config);
     }
 }
