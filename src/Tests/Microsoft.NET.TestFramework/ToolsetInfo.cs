@@ -19,6 +19,10 @@ namespace Microsoft.NET.TestFramework
     {
         public const string CurrentTargetFramework = "net7.0";
         public const string CurrentTargetFrameworkVersion = "7.0";
+        public const string NextTargetFramework = "net8.0";
+        public const string NextTargetFrameworkVersion = "8.0";
+
+        public const string LatestWinRuntimeIdentifier = "win10";
 
         public string DotNetRoot { get; }
         public string DotNetHostPath { get; }
@@ -293,6 +297,10 @@ namespace Microsoft.NET.TestFramework
                 else if (!string.IsNullOrWhiteSpace(commandLine.MsbuildAdditionalSdkResolverFolder))
                 {
                     ret.SdkResolverPath = Path.Combine(commandLine.MsbuildAdditionalSdkResolverFolder, configuration, "net472", "SdkResolvers");
+                }
+                else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER") != null)
+                {
+                    ret.SdkResolverPath = Path.Combine(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER"), configuration, "net472", "SdkResolvers");
                 }
                 else
                 {

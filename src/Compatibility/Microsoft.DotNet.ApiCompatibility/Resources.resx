@@ -207,4 +207,22 @@
   <data name="TypeIsEffectivelySealed" xml:space="preserve">
     <value>Type '{0}' is sealed because it has no visible constructor on {1} but it does on {2}</value>
   </data>
+  <data name="EnumValuesMustMatch" xml:space="preserve">
+    <value>Value of field '{1}' in enum '{0}' changed from '{2}' to '{3}'.</value>
+  </data>
+  <data name="EnumTypesMustMatch" xml:space="preserve">
+    <value>Underlying type of enum '{0}' changed from '{1}' to '{2}'.</value>
+  </data>
+  <data name="CannotAddVirtualToMember" xml:space="preserve">
+    <value>Cannot add virtual keyword to member '{0}'.</value>
+  </data>
+  <data name="CannotRemoveVirtualFromMember" xml:space="preserve">
+    <value>Cannot remove virtual keyword from member '{0}'.</value>
+  </data>
+  <data name="WroteSuppressions" xml:space="preserve">
+    <value>Successfully wrote compatibility suppressions to '{0}'.</value>
+  </data>
+  <data name="SuppressionsFileNotSpecified" xml:space="preserve">
+    <value>A file path must be passed in to successfully generate a compatibility suppression file.</value>
+  </data>
 </root>

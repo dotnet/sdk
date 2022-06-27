@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Tests;
 using Xunit;
 
-namespace Microsoft.DotNet.ApiCompatibility.Tests
+namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class MembersMustExistTests_Strict
     {
@@ -358,6 +356,52 @@ namespace CompatTests
             };
 
             AssertExtensions.MultiRightResult(left.MetadataInformation, expectedDiffs, differences);
+        }
+
+        [Fact]
+        public static void MissingMembersOnEnumReported()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public enum First
+  {
+    A = 0,
+    B = 1,
+    C = 2,
+    D = 3,
+  }
+}
+";
+
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public enum First
+  {
+    F = 5,
+    E = 4,
+    D = 3,
+    C = 2,
+  }
+}
+";
+
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new();
+            differ.StrictMode = true;
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
+
+            CompatDifference[] expected = new[]
+            {
+                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.A"),
+                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.B"),
+                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Added, "F:CompatTests.First.F"),
+                new CompatDifference(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Added, "F:CompatTests.First.E"),
+            };
+
+            Assert.Equal(expected, differences);
         }
     }
 }

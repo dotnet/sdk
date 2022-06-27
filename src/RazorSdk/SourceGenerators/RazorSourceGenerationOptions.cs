@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 {
-    internal class RazorSourceGenerationOptions : IEquatable<RazorSourceGenerationOptions>
+    internal sealed class RazorSourceGenerationOptions : IEquatable<RazorSourceGenerationOptions>
     {
         public string RootNamespace { get; set; } = "ASP";
 
@@ -17,17 +17,7 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// <summary>
         /// Gets a flag that determines if generated Razor views and Pages includes the <c>RazorSourceChecksumAttribute</c>.
         /// </summary>
-        public bool GenerateMetadataSourceChecksumAttributes { get; set; }
-
-        /// <summary>
-        /// Gets a flag that determines if the source generator should no-op.
-        /// <para>
-        /// This flag exists to support scenarios in VS where design-time and EnC builds need
-        /// to run without invoking the source generator to avoid duplicate types being produced.
-        /// The property is set by the SDK via an editor config.
-        /// </para>
-        /// </summary>
-        public bool SuppressRazorSourceGenerator { get; set; }
+        public bool GenerateMetadataSourceChecksumAttributes { get; set; } = false;
 
         /// <summary>
         /// Gets the CSharp language version currently used by the compilation.
@@ -37,12 +27,9 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
         /// <summary>
         /// Gets a flag that determines if localized component names should be supported.</c>.
         /// </summary>
-        public bool SupportLocalizedComponentNames { get; set; }
+        public bool SupportLocalizedComponentNames { get; set; } = false;
 
         public bool Equals(RazorSourceGenerationOptions other)
-            => SuppressRazorSourceGenerator == other.SuppressRazorSourceGenerator && EqualsIgnoringSupression(other);
-
-        public bool EqualsIgnoringSupression(RazorSourceGenerationOptions other)
         {
             return
                 RootNamespace == other.RootNamespace &&

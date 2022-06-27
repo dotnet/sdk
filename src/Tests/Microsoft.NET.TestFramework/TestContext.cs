@@ -127,6 +127,10 @@ namespace Microsoft.NET.TestFramework
             {
                 testContext.TestExecutionDirectory = commandLine.TestExecutionDirectory;
             }
+            else if (Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY") != null)
+            {
+                testContext.TestExecutionDirectory = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY");
+            }
             else if (runAsTool)
             {
                 testContext.TestExecutionDirectory = Path.Combine(Path.GetTempPath(), "dotnetSdkTests", Path.GetRandomFileName());
@@ -165,9 +169,9 @@ namespace Microsoft.NET.TestFramework
             }
             else if (runAsTool)
             {
-                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestAssetsDirectory, ".nuget", "NuGetFallbackFolder");
-                testContext.NuGetExePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
-                testContext.NuGetCachePath = Path.Combine(testContext.TestAssetsDirectory, ".nuget", "packages");
+                testContext.NuGetFallbackFolder = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "NuGetFallbackFolder");
+                testContext.NuGetExePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", $"nuget{Constants.ExeSuffix}");
+                testContext.NuGetCachePath = Path.Combine(testContext.TestExecutionDirectory, ".nuget", "packages");
 
                 var testPackages = Path.Combine(testContext.TestExecutionDirectory, "Testpackages");
                 if (Directory.Exists(testPackages))

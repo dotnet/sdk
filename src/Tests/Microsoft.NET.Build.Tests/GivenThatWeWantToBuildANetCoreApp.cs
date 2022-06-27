@@ -380,7 +380,7 @@ public static class Program
         [InlineData("netcoreapp2.0", true)]
         [InlineData("netcoreapp3.0", true)]
         [InlineData("net5.0", true)]
-        [InlineData("net6.0", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
         public void It_stops_generating_runtimeconfig_dev_json_after_net6(string targetFramework, bool shouldGenerateRuntimeConfigDevJson)
         {
             TestProject proj = new TestProject()
@@ -409,7 +409,7 @@ public static class Program
         [InlineData("netcoreapp2.0")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
-        [InlineData("net6.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_stops_generating_runtimeconfig_dev_json_after_net6_allow_property_override(string targetFramework)
         {
             TestProject proj = new TestProject()
@@ -575,7 +575,7 @@ public static class Program
             var testProject = new TestProject()
             {
                 Name = "AppUsingPackageWithSatellites",
-                TargetFrameworks = "netcoreapp2.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
@@ -622,7 +622,7 @@ public static class Program
                 IsExe = true
             };
 
-            string[] extraArgs = new[] { "/p:TargetFramework=NETCOREAPP1.1" };
+            string[] extraArgs = new[] { $"/p:TargetFramework={ToolsetInfo.CurrentTargetFramework.ToUpper()}" };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
 
@@ -638,14 +638,14 @@ public static class Program
             Directory.GetDirectories(outputFolderWithConfiguration)
                 .Select(Path.GetFileName)
                 .Should()
-                .BeEquivalentTo("netcoreapp1.1");
+                .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
 
             string intermediateFolderWithConfiguration = Path.Combine(buildCommand.GetBaseIntermediateDirectory().FullName, "Debug");
 
             Directory.GetDirectories(intermediateFolderWithConfiguration)
                 .Select(Path.GetFileName)
                 .Should()
-                .BeEquivalentTo("netcoreapp1.1");
+                .BeEquivalentTo(ToolsetInfo.CurrentTargetFramework);
         }
 
         [Fact]
@@ -876,7 +876,7 @@ class Program
             var testProject = new TestProject()
             {
                 Name = "MainProject",
-                TargetFrameworks = "net5.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsSdkProject = true,
                 IsExe = true
             };
@@ -891,7 +891,7 @@ class Program
                 .Should()
                 .Pass();
 
-            var outputPath = buildCommand.GetOutputDirectory(targetFramework: "net5.0").FullName;
+            var outputPath = buildCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework).FullName;
             if (produceOnlyReferenceAssembly == true)
             {
                 var refPath = Path.Combine(outputPath, "ref");
@@ -903,7 +903,7 @@ class Program
             {
                 // Reference assembly should be produced in obj
                 var refPath = Path.Combine(
-                    buildCommand.GetIntermediateDirectory(targetFramework: "net5.0").FullName,
+                    buildCommand.GetIntermediateDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework).FullName,
                     "ref",
                     "MainProject.dll");
                 File.Exists(refPath)

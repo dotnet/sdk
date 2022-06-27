@@ -4,6 +4,7 @@
       [string] $buildSourcesDirectory,
       [string] $customHelixTargetQueue,
       [string] $officialBuildIdArgs,
+      [string] $additionalMSBuildParameters = "",
       [switch] $test
   )
 
@@ -13,18 +14,23 @@
       return
   }
 
-  $runTestsCannotRunOnHelixArgs = ("-configuration", $configuration, "-ci", $officialBuildIdArgs)
+  $runTestsCannotRunOnHelixArgs = ("-configuration", $configuration, "-ci", $officialBuildIdArgs) + $additionalMSBuildParameters
   $runTestsOnHelixArgs = ("-configuration", $configuration,
     "-ci",
   "-restore",
   "-test",
   "-projects", "$buildSourcesDirectory/src/Tests/UnitTests.proj",
   "/bl:$buildSourcesDirectory/artifacts/log/$configuration/TestInHelix.binlog",
-  "/p:_CustomHelixTargetQueue=$customHelixTargetQueue")
+  "/p:_CustomHelixTargetQueue=$customHelixTargetQueue") + $additionalMSBuildParameters
 
-  $runTests = ("&'$PSScriptRoot/runTestsCannotRunOnHelix.sh' $runTestsCannotRunOnHelixArgs", "&'$PSScriptRoot/common/build.sh' $runTestsOnHelixArgs")
 
-  $runTests | ForEach-Object -Parallel { Invoke-Expression $_}
+  Write-Output "Trying to run tests in parallel"
+  Write-Output "non-helix test command: &'$PSScriptRoot/runTestsCannotRunOnHelix.sh' $runTestsCannotRunOnHelixArgs"
+  Write-Output "helix test command &'$PSScriptRoot/common/build.sh' $runTestsOnHelixArgs"
+
+  $runTests = ("&'$PSScriptRoot/common/build.sh' $runTestsOnHelixArgs")
+
+  $runTests | ForEach-Object { Invoke-Expression $_}
 
   # An array of names of processes to stop on script exit
   $processesToStopOnExit =  @('msbuild', 'dotnet', 'vbcscompiler')

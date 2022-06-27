@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -10,28 +11,23 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
     internal static class IncrementalValuesProviderExtensions
     {
         /// <summary>
-        /// Adds a comparer used to determine if an incremental steps needs to be re-run accounting for <see cref="RazorSourceGenerationOptions.SuppressRazorSourceGenerator"/>.
-        /// <para>
-        /// In VS, design time builds are executed with <see cref="RazorSourceGenerationOptions.SuppressRazorSourceGenerator"/> set to <c>true</c>. In this case, RSG can safely
-        /// allow previously cached results to be used, while no-oping in the step that adds sources to the context. This allows source generator caches from being evicted
-        /// when the value of this property flip-flips during a hot-reload / EnC session.
-        /// </para>
+        /// Adds a comparer that will force the provider to be considered as cached if the razor options call for suppression
         /// </summary>
-        internal static IncrementalValueProvider<(T Left, RazorSourceGenerationOptions Right)> WithRazorSourceGeneratorComparer<T>(
-            this IncrementalValueProvider<(T Left, RazorSourceGenerationOptions Right)> source,
-            Func<T, T, bool>? equals = null)
+        internal static IncrementalValueProvider<T> AsCachedIfSuppressed<T>(this IncrementalValueProvider<T> provider, IncrementalValueProvider<bool> isSuppressedProvider)
             where T : notnull
         {
-            return source.WithComparer(new RazorSourceGeneratorComparer<T>(equals));
+            return provider.Combine(isSuppressedProvider).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
 
-        internal static IncrementalValuesProvider<(T Left, RazorSourceGenerationOptions Right)> WithRazorSourceGeneratorComparer<T>(
-            this IncrementalValuesProvider<(T Left, RazorSourceGenerationOptions Right)> source,
-            Func<T, T, bool>? equals = null)
+        /// <summary>
+        /// Adds a comparer that will force the provider to be considered as cached if the razor options call for suppression
+        /// </summary>
+        internal static IncrementalValuesProvider<T> AsCachedIfSuppressed<T>(this IncrementalValuesProvider<T> provider, IncrementalValueProvider<bool> isSuppressedProvider)
             where T : notnull
         {
-            return source.WithComparer(new RazorSourceGeneratorComparer<T>(equals));
+            return provider.Combine(isSuppressedProvider).WithComparer(new RazorSourceGeneratorComparer<T>()).Select((pair, _) => pair.Left);
         }
+
 
         internal static IncrementalValueProvider<T> WithLambdaComparer<T>(this IncrementalValueProvider<T> source, Func<T, T, bool> equal, Func<T, int> getHashCode)
         {
@@ -72,9 +68,37 @@ namespace Microsoft.NET.Sdk.Razor.SourceGenerators
 
             return source.Select((pair, ct) => pair.Item1!);
         }
+
+        /// <summary>
+        /// A highly specialized comparer that allows for treating an event source as cached if the razor options are set to suppress generation.
+        /// </summary>
+        /// <remarks>
+        /// This should not be used outside of <see cref="IncrementalValuesProviderExtensions.AsCachedIfSuppressed{T}(IncrementalValueProvider{T}, IncrementalValueProvider{RazorSourceGenerationOptions})"/>
+        /// </remarks>
+        private sealed class RazorSourceGeneratorComparer<T> : IEqualityComparer<(T Left, bool IsSuppressed)> where T : notnull
+        {
+            private readonly Func<T, T, bool> _equals;
+            public RazorSourceGeneratorComparer(Func<T, T, bool>? equals = null)
+            {
+                _equals = equals ?? EqualityComparer<T>.Default.Equals;
+            }
+
+            public bool Equals((T Left, bool IsSuppressed) x, (T Left, bool IsSuppressed) y)
+            {
+                if (y.IsSuppressed)
+                {
+                    // If source generation is suppressed, we can always use previously cached results.
+                    return true;
+                }
+
+                return _equals(x.Left, y.Left);
+            }
+
+            public int GetHashCode((T Left, bool IsSuppressed) obj) => throw new NotImplementedException("GetHashCode is never expected to be called");
+        }
     }
 
-    internal class LambdaComparer<T> : IEqualityComparer<T>
+    internal sealed class LambdaComparer<T> : IEqualityComparer<T>
     {
         private readonly Func<T, T, bool> _equal;
         private readonly Func<T, int> _getHashCode;

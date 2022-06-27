@@ -8,16 +8,18 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetPackInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         const string ExpectedPrefix = "-maxcpucount -verbosity:m -restore -target:pack";
         const string ExpectedNoBuildPrefix = "-maxcpucount -verbosity:m -target:pack";
+        const string ExpectedProperties = "-property:_IsPacking=true";
 
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
         [Theory]
@@ -48,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : ExpectedPrefix;
 
                 command.SeparateRestoreCommand.Should().BeNull();
-                command.GetArgumentsToMSBuild().Should().Be($"{expectedPrefix}{expectedAdditionalArgs}");
+                command.GetArgumentsToMSBuild().Should().Be($"{expectedPrefix} {ExpectedProperties}{expectedAdditionalArgs}");
             });
         }
     }

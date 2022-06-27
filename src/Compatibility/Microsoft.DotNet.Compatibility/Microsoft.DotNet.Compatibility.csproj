@@ -2,14 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>net6.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(DotNetBuildFromSource)' == 'true' ">net6.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShippingPackage>true</IsShippingPackage>
     <StrongNameKeyId>Open</StrongNameKeyId>
-    <VersionPrefix>2.0.0</VersionPrefix>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!-- This package doesnot contain any lib or ref assemblies because its a tooling package.-->
+    <!-- This package doesn't contain any lib or ref assemblies because it's a tooling package.-->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -90,5 +89,7 @@
       <TfmSpecificPackageFile Include="$(OutputPath)**" PackagePath="tools/$(TargetFramework)/%(RecursiveDir)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
+
+  <Import Project="..\Microsoft.DotNet.Compatibility.Shared\Microsoft.DotNet.Compatibility.Shared.projitems" Label="Shared" />
 
 </Project>

@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.Cli
         public static readonly Argument<IEnumerable<string>> WorkloadIdArgument =
             new Argument<IEnumerable<string>>(LocalizableStrings.WorkloadIdArgumentName)
             {
-                Arity = ArgumentArity.OneOrMore, Description = LocalizableStrings.WorkloadIdArgumentDescription
+                Arity = ArgumentArity.OneOrMore,
+                Description = LocalizableStrings.WorkloadIdArgumentDescription
             };
 
         public static readonly Option<string> ConfigOption =
@@ -32,6 +33,12 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly Option<bool> PrintDownloadLinkOnlyOption =
             new Option<bool>("--print-download-link-only", LocalizableStrings.PrintDownloadLinkOnlyDescription)
+            {
+                IsHidden = true
+            };
+
+        public static readonly Option<bool> SkipSignCheckOption =
+            new Option<bool>("--skip-sign-check", LocalizableStrings.SkipSignCheckOptionDescription)
             {
                 IsHidden = true
             };
@@ -61,8 +68,6 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<bool> SkipManifestUpdateOption = new Option<bool>("--skip-manifest-update", LocalizableStrings.SkipManifestUpdateOptionDescription);
 
         public static readonly Option<string> TempDirOption = new Option<string>("--temp-dir", LocalizableStrings.TempDirOptionDescription);
-
-        public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
         public static readonly Option<string> FromRollbackFileOption = new Option<string>("--from-rollback-file", Microsoft.DotNet.Workloads.Workload.Update.LocalizableStrings.FromRollbackDefinitionOptionDescription)
         {
@@ -100,8 +105,9 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(IncludePreviewOption);
             command.AddOption(TempDirOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-            command.AddOption(VerbosityOption);
+            command.AddOption(CommonOptions.VerbosityOption);
             command.AddOption(FromRollbackFileOption);
+            command.AddOption(SkipSignCheckOption);
         }
     }
 }

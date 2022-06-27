@@ -129,7 +129,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void Publish_self_contained_app_with_dot_in_the_name()
         {
-            var targetFramework = "netcoreapp2.1";
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             TestProject testProject = new TestProject()
@@ -139,17 +139,17 @@ namespace Microsoft.NET.Publish.Tests
                 RuntimeIdentifier = rid,
                 IsExe = true,
             };
-            
+
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
-            testProject.SourceFiles["Program.cs"] = @"
+            testProject.SourceFiles["Program.cs"] = $@"
 using System;
 public static class Program
-{
+{{
     public static void Main()
-    {
-        Console.WriteLine(""Hello from a netcoreapp2.1!"");
-    }
-}
+    {{
+        Console.WriteLine(""Hello from a {ToolsetInfo.CurrentTargetFramework}!"");
+    }}
+}}
 ";
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
 
@@ -162,13 +162,13 @@ public static class Program
 
             publishDirectory.Should().HaveFile($"Hello.World{Constants.ExeSuffix}");
         }
-		
+
         [Theory]
         [InlineData("win-arm")]
         [InlineData("win8-arm")]
         [InlineData("win81-arm")]
-        [InlineData("win10-arm")]
-        [InlineData("win10-arm64")]
+        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
+        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
         {
             // Tests for existence of expected files when publishing an ARM project
@@ -206,14 +206,14 @@ public static class Program
                 targetFramework: targetFramework,
                 runtimeIdentifier: runtimeIdentifier);
             var outputDirectory = publishDirectory.Parent;
-            
+
             // The name of the self contained executable depends on the runtime identifier.
             // For Windows family ARM publishing, it'll always be Hello.exe.
             // We shouldn't use "Constants.ExeSuffix" for the suffix here because that changes
             // depending on the RuntimeInformation
             var selfContainedExecutable = "Hello.exe";
 
-            var filesPublished = new [] {
+            var filesPublished = new[] {
                 selfContainedExecutable,
                 "Hello.dll",
                 "Hello.pdb",
@@ -424,6 +424,32 @@ public static class Program
         }
 
         [Fact]
+        public void It_publishes_on_release_if_PublishRelease_property_set()
+        {
+            var helloWorldAsset = _testAssetsManager
+               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorld")
+               .WithSource()
+               .WithTargetFramework("net7.0");
+
+            System.IO.File.WriteAllText(helloWorldAsset.Path + "/Directory.Build.props", "<Project><PropertyGroup><PublishRelease>true</PublishRelease></PropertyGroup></Project>");
+
+            new BuildCommand(helloWorldAsset)
+           .Execute()
+           .Should()
+           .Pass();
+
+            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
+
+            publishCommand
+            .Execute()
+            .Should()
+            .Pass();
+
+            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", "net7.0", "HelloWorld.dll");
+            Assert.True(File.Exists(expectedAssetPath));
+        }
+
+        [Fact]
         public void It_allows_unsupported_rid_with_override()
         {
             var helloWorldAsset = _testAssetsManager
@@ -522,7 +548,7 @@ public static class Program
                     testProject.AdditionalProperties.Add("UseWpf", "true");
                     testProject.AdditionalProperties.Add("UseWindowsForms", "true");
                     break;
-               case "console":
+                case "console":
                     break;
                 case "web":
                     testProject.ProjectSdk = "Microsoft.NET.Sdk.Web";
@@ -574,7 +600,7 @@ public static class Program
         [InlineData(true, true)]
         public void It_publishes_with_a_publish_profile(bool? selfContained, bool? useAppHost)
         {
-            var tfm = "netcoreapp2.2";
+            var tfm = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
 
             var testProject = new TestProject()
@@ -701,7 +727,7 @@ public static class Program
             var testProject = new TestProject()
             {
                 Name = "PublishMultitarget",
-                TargetFrameworks = "net472;net5.0"
+                TargetFrameworks = $"net472;{ToolsetInfo.CurrentTargetFramework}"
             };
             testProject.AdditionalProperties.Add("IsPublishable", "false");
             var testAsset = _testAssetsManager.CreateTestProject(testProject);

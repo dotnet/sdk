@@ -32,7 +32,8 @@ namespace Microsoft.NET.Publish.Tests
         private const string ExcludeAlways = "/p:ExcludeAlways=true";
         private const string DontUseAppHost = "/p:UseAppHost=false";
         private const string ReadyToRun = "/p:PublishReadyToRun=true";
-        private const string ReadyToRunComposite = "/p:PublishReadyToRunComposite=true";
+        private const string ReadyToRunCompositeOn = "/p:PublishReadyToRunComposite=true";
+        private const string ReadyToRunCompositeOff = "/p:PublishReadyToRunComposite=false";
         private const string ReadyToRunWithSymbols = "/p:PublishReadyToRunEmitSymbols=true";
         private const string UseAppHost = "/p:UseAppHost=true";
         private const string IncludeDefault = "/p:IncludeSymbolsInSingleFile=false";
@@ -299,48 +300,42 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(false)]
         public void It_supports_composite_r2r(bool extractAll)
         {
-            // the test fails once in a while on OSX, but dumps are not very informative,
-            // so enabling this for non-OSX platforms, hoping to get a better crash dump
-            // if you see this failing on Linux, please preserve the dump.
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            var projName = "SingleFileTest";
+            if (extractAll)
             {
-                var projName = "SingleFileTest";
-                if (extractAll)
-                {
-                    projName += "Extracted";
-                }
-
-                var testProject = new TestProject()
-                {
-                    Name = projName,
-                    TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-                    IsExe = true,
-                };
-
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
-                var publishCommand = new PublishCommand(testAsset);
-                var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunComposite, RuntimeIdentifier };
-
-                if (extractAll)
-                {
-                    extraArgs.Add(IncludeAllContent);
-                }
-
-                publishCommand
-                    .Execute(extraArgs.ToArray())
-                    .Should()
-                    .Pass();
-
-                var publishDir = GetPublishDirectory(publishCommand, targetFramework: ToolsetInfo.CurrentTargetFramework).FullName;
-                var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
-
-                var command = new RunExeCommand(Log, singleFilePath);
-                command.Execute()
-                    .Should()
-                    .Pass()
-                    .And
-                    .HaveStdOutContaining("Hello World");
+                projName += "Extracted";
             }
+
+            var testProject = new TestProject()
+            {
+                Name = projName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+            var extraArgs = new List<string>() { PublishSingleFile, ReadyToRun, ReadyToRunCompositeOn, RuntimeIdentifier };
+
+            if (extractAll)
+            {
+                extraArgs.Add(IncludeAllContent);
+            }
+
+            publishCommand
+                .Execute(extraArgs.ToArray())
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework: ToolsetInfo.CurrentTargetFramework).FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            var command = new RunExeCommand(Log, singleFilePath);
+            command.Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
@@ -440,7 +435,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = GetPublishCommand();
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols)
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols, ReadyToRunCompositeOff)
                 .Should()
                 .Pass();
 
@@ -511,7 +506,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             var publishCommand = GetPublishCommand();
             publishCommand
-                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun)
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunCompositeOff)
                 .Should()
                 .Pass();
 

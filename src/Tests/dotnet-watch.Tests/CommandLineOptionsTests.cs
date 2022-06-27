@@ -38,8 +38,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         [Theory]
         [InlineData(new[] { "run" }, new[] { "run" })]
-        [InlineData(new[] { "run", "--", "subarg" }, new[] { "run", "--", "subarg" })]
-        [InlineData(new[] { "--", "run", "--", "subarg" }, new[] { "--", "run", "--", "subarg" })]
+        [InlineData(new[] { "run", "--", "subarg" }, new[] { "run", "subarg" })]
+        [InlineData(new[] { "--", "run", "--", "subarg" }, new[] { "run", "--", "subarg" })]
         [InlineData(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
         public async Task ParsesRemainingArgs(string[] args, string[] expected)
         {
@@ -96,6 +96,34 @@ namespace Microsoft.DotNet.Watcher.Tools
             reporter.Verify(r => r.Warn(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
             Assert.NotNull(options);
             Assert.Equal("MyProject.csproj", options.Project);
+        }
+
+        [Fact]
+        public async Task LongFormForLaunchProfileArgumentWorks()
+        {
+            var reporter = new Mock<Extensions.Tools.Internal.IReporter>();
+            CommandLineOptions options = null;
+            var rootCommand = Program.CreateRootCommand(c => { options = c; return Task.FromResult(0); }, reporter.Object);
+
+            await rootCommand.InvokeAsync(new[] { "--launch-profile", "CustomLaunchProfile" }, _console);
+
+            reporter.Verify(r => r.Warn(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Assert.NotNull(options);
+            Assert.Equal("CustomLaunchProfile", options.LaunchProfile);
+        }
+
+        [Fact]
+        public async Task ShortFormForLaunchProfileArgumentWorks()
+        {
+            var reporter = new Mock<Extensions.Tools.Internal.IReporter>();
+            CommandLineOptions options = null;
+            var rootCommand = Program.CreateRootCommand(c => { options = c; return Task.FromResult(0); }, reporter.Object);
+
+            await rootCommand.InvokeAsync(new[] { "-lp", "CustomLaunchProfile" }, _console);
+
+            reporter.Verify(r => r.Warn(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+            Assert.NotNull(options);
+            Assert.Equal("CustomLaunchProfile", options.LaunchProfile);
         }
     }
 }

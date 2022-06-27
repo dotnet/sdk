@@ -20,7 +20,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <Configurations Condition=" '$(Configurations)' == '' ">Debug;Release</Configurations>
     <Platforms Condition=" '$(Platforms)' == '' ">AnyCPU</Platforms>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(_IsPacking)' == 'true' and '$(PackRelease)' == 'true' and '$(Configuration)' == '' ">Release</Configuration>
+    <Configuration Condition=" '$(_IsPublishing)' == 'true' and '$(PublishRelease)' == 'true' and '$(Configuration)' == '' ">Release</Configuration>
+    <Configuration Condition="'$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
   </PropertyGroup>
 
@@ -69,6 +71,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'ARM' ">
     <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">ARM</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'arm64' ">
+    <PlatformTarget Condition=" '$(PlatformTarget)' == '' ">arm64</PlatformTarget>
   </PropertyGroup>
 
   <!-- Default settings for all projects built with this Sdk package -->
@@ -148,7 +153,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.CSharp.props" Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.VisualBasic.props" Condition="'$(MSBuildProjectExtension)' == '.vbproj'" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.FSharp.props" Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
-  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.ILLink.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.ILLink.Tasks" />
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Compatibility.props" />
 
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.props" />

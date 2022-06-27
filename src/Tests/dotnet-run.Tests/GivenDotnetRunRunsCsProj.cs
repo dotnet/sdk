@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             string [] args = new string[] { "--packages", dir };
 
             string [] newArgs = new string[] { "console", "-o", rootPath, "--no-restore" };
-            new DotnetCommand(Log, "new")
+            new DotnetCommand(Log, "new","--debug:ephemeral-hive")
                 .WithWorkingDirectory(rootPath)
                 .Execute(newArgs)
                 .Should()
@@ -687,6 +687,46 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Pass()
                .And
                .HaveStdOutContaining(expectedValue);
+        }
+
+        [Fact]
+        public void ItIncludesCommandArgumentsSpecifiedInLaunchSettings()
+        {
+            var expectedValue = "TestAppCommandLineArguments";
+            var secondExpectedValue = "SecondTestAppCommandLineArguments";
+            var testAppName = "TestAppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining(expectedValue)
+               .And
+               .HaveStdOutContaining(secondExpectedValue);
+        }
+
+        [Fact]
+        public void ItCLIArgsOverrideCommandArgumentsSpecifiedInLaunchSettings()
+        {
+            var expectedValue = "TestAppCommandLineArguments";
+            var secondExpectedValue = "SecondTestAppCommandLineArguments";
+            var testAppName = "TestAppWithLaunchSettings";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource();
+
+            new DotnetCommand(Log, "run", "-- test")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdOutContaining(expectedValue)
+               .And
+               .NotHaveStdOutContaining(secondExpectedValue);
         }
     }
 }

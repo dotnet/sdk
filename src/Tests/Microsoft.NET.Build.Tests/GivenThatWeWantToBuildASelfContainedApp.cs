@@ -95,7 +95,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_errors_out_when_RuntimeIdentifier_architecture_and_PlatformTarget_do_not_match()
         {
-            const string RuntimeIdentifier = "win10-x64";
+            const string RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             const string PlatformTarget = "x86";
 
             var testAsset = _testAssetsManager
@@ -163,7 +163,7 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 IsExe = true,
-                TargetFrameworks = "net6.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
@@ -259,17 +259,17 @@ namespace Microsoft.NET.Build.Tests
             var testProject = new TestProject()
             {
                 IsExe = true,
-                TargetFrameworks = "net6.0",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
 
             //  Set up test FrameworkReference that will use workload manifest to resolve versions
             testProject.ProjectChanges.Add(project =>
             {
-                var itemGroup = XElement.Parse(@"
+                var itemGroup = XElement.Parse($@"
   <ItemGroup>
     <KnownFrameworkReference Include='Microsoft.NETCore.App.Test'
-                          TargetFramework='net6.0'
+                          TargetFramework='{ToolsetInfo.CurrentTargetFramework}'
                           RuntimeFrameworkName='Microsoft.NETCore.App.Test'
                           DefaultRuntimeFrameworkVersion='**FromWorkload**'
                           LatestRuntimeFrameworkVersion='**FromWorkload**'
@@ -347,6 +347,31 @@ namespace Microsoft.NET.Build.Tests
             var testRuntimePack = runtimePacks.Single(p => p.value == "Microsoft.NETCore.App.Test.RuntimePack");
             testRuntimePack.metadata["NuGetPackageId"].Should().Be("Microsoft.NETCore.App.Test.RuntimePack");
             testRuntimePack.metadata["NuGetPackageVersion"].Should().Be("1.0.42-abc");
+        }
+
+        [Theory]
+        [InlineData("net6.0")]
+        public void It_can_publish_runtime_specific_apps_with_library_dependencies_self_contained(string targetFramework) {
+
+            // create a basic library and a basic app, reference the library from the app and then
+            // publish the app with a RID specified and self-contained.
+            // verify that no warnings about missing the --self-contained flag are emitted.
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var libProject = new TestProject("RidSelfContainedLib"){
+                IsExe = false,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true
+            };
+            var createdLibProject = _testAssetsManager.CreateTestProject(libProject);
+            var appProject = new TestProject("RidSelfContainedApp") {
+                IsExe = true,
+                TargetFrameworks = targetFramework,
+                IsSdkProject = true
+            };
+            appProject.ReferencedProjects.Add(libProject);
+            var createdAppProject = _testAssetsManager.CreateTestProject(appProject);
+            var publishCommand = new PublishCommand(createdAppProject);
+            publishCommand.Execute(new [] {"-property:SelfContained=true", "-property:_CommandLineDefinedSelfContained=true", $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" }).Should().Pass().And.NotHaveStdOutContaining("warning");
         }
     }
 }

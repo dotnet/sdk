@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Linq;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Test;
@@ -64,7 +66,8 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<string> DiagOption = new ForwardedOption<string>(new string[] { "-d", "--diag" }, LocalizableStrings.CmdPathTologFileDescription)
         {
             ArgumentHelpName = LocalizableStrings.CmdPathToLogFile
-        }.ForwardAsSingle(o => $"-property:VSTestDiag={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
+        }
+        .ForwardAsSingle(o => $"-property:VSTestDiag={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.CmdNoBuildDescription)
             .ForwardAs("-property:VSTestNoBuild=true");
@@ -77,7 +80,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly Option<IEnumerable<string>> CollectOption = new ForwardedOption<IEnumerable<string>>("--collect", LocalizableStrings.cmdCollectDescription)
         {
             ArgumentHelpName = LocalizableStrings.cmdCollectFriendlyName
-        }.ForwardAsSingle(o => $"-property:VSTestCollect={SurroundWithDoubleQuotes(string.Join(";", GetSemiColonEscapedArgs(o)))}")
+        }.ForwardAsSingle(o => $"-property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o))}\"")
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> BlameOption = new ForwardedOption<bool>("--blame", LocalizableStrings.CmdBlameDescription)
@@ -188,15 +191,40 @@ namespace Microsoft.DotNet.Cli
         /// <summary>
         /// Adding double quotes around the property helps MSBuild arguments parser and avoid incorrect splits on ',' or ';'.
         /// </summary>
-        private static string SurroundWithDoubleQuotes(string s)
+        internal /* for testing purposes */ static string SurroundWithDoubleQuotes(string input)
         {
-            if (s.StartsWith("\"", StringComparison.Ordinal)
-                && s.EndsWith("\"", StringComparison.Ordinal))
+            if (input is null)
             {
-                return s;
+                throw new ArgumentNullException(nameof(input));
             }
 
-            return string.Concat("\"", s, "\"");
+            // If already escaped by double quotes then return original string.
+            if (input.StartsWith("\"", StringComparison.Ordinal)
+                && input.EndsWith("\"", StringComparison.Ordinal))
+            {
+                return input;
+            }
+
+            // We want to count the number of trailing backslashes to ensure
+            // we will have an even number before adding the final double quote.
+            // Otherwise the last \" will be interpreted as escaping the double
+            // quote rather than a backslash and a double quote.
+            var trailingBackslashesCount = 0;
+            for (int i = input.Length - 1; i >= 0; i--)
+            {
+                if (input[i] == '\\')
+                {
+                    trailingBackslashesCount++;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return trailingBackslashesCount % 2 == 0
+                ? string.Concat("\"", input, "\"")
+                : string.Concat("\"", input, "\\\"");
         }
     }
 }
