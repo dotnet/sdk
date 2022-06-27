@@ -267,7 +267,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 TotalDownloads = packageSearchMetadata.DownloadCount ?? 0;
                 Verified = packageSearchMetadata.PrefixReserved;
                 Description = packageSearchMetadata.Description;
-                IconUrl = packageSearchMetadata.IconUrl.ToString();
+                IconUrl = packageSearchMetadata.IconUrl?.ToString();
             }
 
             public string Name { get; }
