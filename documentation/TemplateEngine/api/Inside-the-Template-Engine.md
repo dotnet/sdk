@@ -157,6 +157,8 @@ be split into two main categories:
 
     -   constraints
 
+    -   bind source
+
 -   the components required by the host:
 
     -   template package providers: managed and non-managed
@@ -251,6 +253,19 @@ mountPointUri, out IMountPoint mountPoint) method of IEngineEnvironmentSettings.
 The template may define certain constraint(s) under which it can be used. The constraint implementation evaluates those restrictions and whether such template is allowed to be used or is restricted.
 Template engine host works with constraint using `TemplateConstraintManager` class.
 
+## [Bind symbol source](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
+
+The template may define `bind` symbols. Those symbols might be bound to values provided externally using bind symbol source components.
+Default sources are:
+- host provided parameters - uses prefix `host:`. Binds symbol to parameters provided by the host. 
+- environment variables - uses prefix `env:`. Binds symbol to environment variables.
+
+These components are defined in `Microsoft.TemplateEngine.Edge` and are part of mandatory components collection to be loaded.
+
+If the `binding` does not have prefix, or prefixed value cannot be evaluated the evaluation without prefix is performed as the fallback. 
+In case there are more than one component which returns the value, the component priority will be used to define the value to be bounded. In case of same priorities, the evaluation results in error.
+The template author needs to explicitly specify the prefix in this case.
+
 
 ## Registering the components
 
@@ -281,6 +296,9 @@ You can implement the following own components and register them:
 -   [ITemplateConstraint](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraint.cs)
     – constraint implementation, via
     [ITemplateConstraintFactory](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Constraints/ITemplateConstraintFactory.cs)
+
+-   [IBindSymbolSource](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Abstractions/Components/IBindSymbolSource.cs)
+    – bind symbol source implementation
 
 It is possible to register additional components to in the following way:
 

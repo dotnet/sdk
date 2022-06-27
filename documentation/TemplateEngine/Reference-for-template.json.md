@@ -136,7 +136,6 @@ A symbol for which the config provides literal and/or default values.
 |`type`|`parameter`|
 |`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `choice`: enumeration, possible values are defined in `choices` property.<br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.
 |`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host.|
-|`binding`|The name of the host property to take the value from.|	
 |`replaces`|The text to be replaced by the symbol value in the template files content|	 
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
@@ -308,6 +307,7 @@ A symbol whose value gets computed by a built-in symbol value generator. [Detail
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
 |`replaces`|The text to be replaced by the symbol value in the template files content|	 
 |`fileRename`|(supported in 5.0.200 or higher) The portion of template filenames to be replaced by the symbol value.| 
+|`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.
 
 ##### Example
  
@@ -436,11 +436,19 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 
 #### Bind symbol
 
+The symbol binds value from external sources. 
+By default, the following sources are available:
+- host parameters - parameters defined at certain host. For .NET SDK the following parameters are defined: `HostIdentifier: dotnetcli`, `GlobalJsonExists: true/false`.  Binding syntax is `host:<param name>`, example: `host:HostIdentifier`. 
+- environment variables - allows to bind environment allowed. Binding syntax is `env:<environment variable name>`, example: `env:MYENVVAR`. 
+
+It is also posible to bind the parameter without the prefix as the fallback behavior: `HostIdentifier`, `MYENVVAR`.
+
 |Name|Description|
 |---|---|
 |`type`|`bind`|
-|`binding`|The name of the host property to take the value from.|
-|`replaces`|The text to be replaced by the symbol value in the template files content|	 
+|`binding`| Mandatory. The name of the source and parameter in the source to take the value from. The syntax follows: `<source prefix>:<parameter name>`.|
+|`replaces`|The text to be replaced by the symbol value in the template files content.|
+|`fileRename`|The portion of template filenames to be replaced by the symbol value.| 	 
 
  
 ##### Example  
@@ -448,7 +456,7 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 ```json
    "HostIdentifier": {
       "type": "bind",
-      "binding": "HostIdentifier"
+      "binding": "host:HostIdentifier"
     }
 ```  
 
