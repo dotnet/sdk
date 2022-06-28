@@ -2,6 +2,7 @@ Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.Analyz
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.CodeFixes.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.Components.Analyzers.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/roslyn4.0/cs/Microsoft.Extensions.Logging.Generators.xml
+Microsoft.AspNetCore.App.Ref/ref/netx.y/Microsoft.AspNetCore.OutputCaching.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/System.Text.Json.SourceGeneration.xml
