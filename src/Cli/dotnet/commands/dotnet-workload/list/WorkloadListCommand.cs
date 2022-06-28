@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             {
                 InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
                 Reporter.WriteLine();
-                
+
                 PrintableTable<KeyValuePair<string, string>> table = new();
                 table.AddColumn(LocalizableStrings.WorkloadIdColumn, workload => workload.Key);
                 table.AddColumn(LocalizableStrings.WorkloadManfiestVersionColumn, workload => _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key)).Version);
