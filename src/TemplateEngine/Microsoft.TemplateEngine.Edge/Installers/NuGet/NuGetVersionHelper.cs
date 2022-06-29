@@ -9,6 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal static class NuGetVersionHelper
     {
+        // '*'
+        private static readonly FloatRange _unspecifiedVersion = new FloatRange(NuGetVersionFloatBehavior.Major);
+
         public static bool IsSupportedVersionString(string? versionString)
         {
             return
@@ -17,6 +20,11 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 NuGetVersion.TryParse(versionString, out _)
                 ||
                 FloatRange.TryParse(versionString, out _);
+        }
+
+        public static bool IsUnrestricted(this FloatRange floatRange)
+        {
+            return floatRange.Equals(_unspecifiedVersion);
         }
 
         /// <summary>
@@ -31,9 +39,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         {
             floatRange =
                 string.IsNullOrEmpty(versionString) ?
-                new FloatRange(NuGetVersionFloatBehavior.Major) : FloatRange.Parse(versionString);
+                    _unspecifiedVersion : FloatRange.Parse(versionString);
 
-            return floatRange != null && floatRange.FloatBehavior != NuGetVersionFloatBehavior.None;
+            return floatRange.FloatBehavior != NuGetVersionFloatBehavior.None;
         }
     }
 }

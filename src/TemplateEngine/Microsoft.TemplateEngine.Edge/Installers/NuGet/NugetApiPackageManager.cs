@@ -226,7 +226,32 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 .Where(result => result.FoundPackages != null)
                 .SelectMany(result => result.FoundPackages.Select(package => (result.Source, package)));
 
-            if (!accumulativeSearchResults.Any())
+            (PackageSource, IPackageSearchMetadata)? latestVersion = accumulativeSearchResults.Aggregate(
+                ((PackageSource, IPackageSearchMetadata)?)null,
+                (max, current) =>
+                {
+                    return
+                        (max == null || current.package.Identity.Version > max.Value.Item2.Identity.Version)
+                        &&
+                        floatRange.Satisfies(current.package.Identity.Version) ?
+                            current : max;
+                });
+
+            // In case no package was found and we haven't been restricting versions - try prerelease as well (so behave like '*-*')
+            if (latestVersion == null && floatRange.IsUnrestricted())
+            {
+                latestVersion = accumulativeSearchResults.Aggregate(
+                    ((PackageSource, IPackageSearchMetadata)?)null,
+                    (max, current) =>
+                    {
+                        return
+                            (max == null || current.package.Identity.Version > max.Value.Item2.Identity.Version)
+                                ? current
+                                : max;
+                    });
+            }
+
+            if (latestVersion == null)
             {
                 _nugetLogger.LogDebug(
                     string.Format(
@@ -236,15 +261,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new PackageNotFoundException(packageIdentifier, packageSources.Select(source => source.Source));
             }
 
-            (PackageSource, IPackageSearchMetadata) latestVersion = accumulativeSearchResults.Aggregate(
-                (max, current) =>
-                {
-                    return
-                        current.package.Identity.Version > max.package.Identity.Version &&
-                        floatRange.Satisfies(current.package.Identity.Version) ?
-                            current : max;
-                });
-            return latestVersion;
+            return latestVersion.Value;
         }
 
         private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier, NuGetVersion packageVersion, IEnumerable<PackageSource> sources, CancellationToken cancellationToken)
