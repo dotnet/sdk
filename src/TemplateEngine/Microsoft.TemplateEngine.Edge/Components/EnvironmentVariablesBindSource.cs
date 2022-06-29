@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
@@ -28,7 +29,19 @@ namespace Microsoft.TemplateEngine.Edge
 
         Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
         {
-            return Task.FromResult(settings.Environment.GetEnvironmentVariable(bindname));
+            settings.Host.Logger.LogDebug(
+                "[{0}]: Retrieving bound value for '{1}'.",
+                        nameof(EnvironmentVariablesBindSource),
+                        bindname);
+
+            string? result = settings.Environment.GetEnvironmentVariable(bindname);
+
+            settings.Host.Logger.LogDebug(
+        "[{0}]: Retrieved bound value for '{1}': '{2}'.",
+                    nameof(EnvironmentVariablesBindSource),
+                    bindname,
+                    result ?? "<null>");
+            return Task.FromResult(result);
         }
     }
 }

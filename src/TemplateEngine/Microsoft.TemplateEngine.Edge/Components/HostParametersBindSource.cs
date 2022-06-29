@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
@@ -29,7 +30,19 @@ namespace Microsoft.TemplateEngine.Edge
 
         Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
         {
+            settings.Host.Logger.LogDebug(
+        "[{0}]: Retrieving bound value for '{1}'.",
+                nameof(HostParametersBindSource),
+                bindname);
+
             settings.Host.TryGetHostParamDefault(bindname, out string? newValue);
+
+            settings.Host.Logger.LogDebug(
+        "[{0}]: Retrieved bound value for '{1}': '{2}'.",
+                    nameof(HostParametersBindSource),
+                    bindname,
+                    newValue ?? "<null>");
+
             return Task.FromResult(newValue);
         }
     }

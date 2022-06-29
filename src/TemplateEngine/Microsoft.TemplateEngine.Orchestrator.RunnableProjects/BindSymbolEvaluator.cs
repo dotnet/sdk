@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             _settings = settings;
             _bindSymbolSources = settings.Components.OfType<IBindSymbolSource>().ToList();
-            _logger = settings.Host.Logger;
+            _logger = settings.Host.LoggerFactory.CreateLogger<BindSymbolEvaluator>();
         }
 
         /// <summary>
@@ -42,12 +42,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             if (!_bindSymbolSources.Any())
             {
+                _logger.LogDebug("No sources for bind symbols are available");
                 return;
             }
+            _logger.LogDebug(
+                "Configured bind sources are: {0}.",
+                string.Join(", ", _bindSymbolSources.Select(s => $"{s.DisplayName}({s.GetType().Name})")));
 
             var bindSymbols = symbols.Where(bs => !string.IsNullOrWhiteSpace(bs.Binding));
             if (!bindSymbols.Any())
             {
+                _logger.LogDebug("No bind symbols has '{0}' defined.", nameof(BindSymbol.Binding).ToLowerInvariant());
                 return;
             }
 
@@ -72,6 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             foreach (var task in successfulTasks)
             {
                 variableCollection[task.Symbol.Name] = RunnableProjectGenerator.InferTypeAndConvertLiteral(task.Task.Result!);
+                _logger.LogDebug("Variable '{0}' was set to '{1}'.", task.Symbol.Name, variableCollection[task.Symbol.Name]);
             }
         }
 
@@ -81,6 +87,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 throw new ArgumentException($"'{nameof(configuredBinding)}' cannot be null or whitespace.", nameof(configuredBinding));
             }
+            _logger.LogDebug("Evaluating binding '{0}'.", configuredBinding);
 
             string? prefix = null;
             string binding = configuredBinding;
@@ -97,14 +104,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IEnumerable<IBindSymbolSource>? sourcesToSearch = null;
             if (string.IsNullOrWhiteSpace(prefix))
             {
+                _logger.LogDebug("Binding '{0}' does not define prefix. All the sources will be queried for this binding.", configuredBinding);
                 sourcesToSearch = _bindSymbolSources;
             }
             else
             {
                 sourcesToSearch = _bindSymbolSources.Where(s => s.SourcePrefix?.Equals(prefix, StringComparison.OrdinalIgnoreCase) ?? false);
+                _logger.LogDebug(
+                    "The following sources match prefix '{0}': {1}.",
+                    prefix,
+                    string.Join(", ", sourcesToSearch.Select(s => s.DisplayName)));
                 if (!sourcesToSearch.Any())
                 {
-                    //if there is no matching sources, then use all the sources with full binding
+                    _logger.LogDebug("No sources matches prefix '{0}' does not define prefix. All the sources will be queried for the binding '{1}'.", prefix, configuredBinding);
                     sourcesToSearch = _bindSymbolSources;
                     binding = configuredBinding;
                 }
@@ -114,6 +126,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             cancellationToken.ThrowIfCancellationRequested();
             if (!successfulTasks.Any())
             {
+                _logger.LogDebug(
+                    "No values were retrieved for '{0}' for the sources matching the prefix. All the sources will be queried for the binding '{1}' now.",
+                    binding,
+                    configuredBinding);
+                binding = configuredBinding;
                 //if nothing is found, try all sources with unparsed values from configuration
                 successfulTasks = await RunEvaluationTasks(_bindSymbolSources, configuredBinding, cancellationToken).ConfigureAwait(false);
             }
@@ -121,15 +138,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (!successfulTasks.Any())
             {
+                _logger.LogDebug("No values were retrieved for '{0}'.", binding);
                 return null;
             }
             else if (successfulTasks.Count() == 1)
             {
+                _logger.LogDebug("'{0}' was retrieved for '{1}'.", successfulTasks.Single().Value, binding);
                 return successfulTasks.Single().Value;
             }
             else
             {
                 //in case of multiple results, use highest priority source
+                _logger.LogDebug(
+                    "The following values were retrieved for binding '{0}': {1}.",
+                    binding,
+                    string.Join(", ", successfulTasks.Select(t => $"{t.Source.DisplayName} (priority: {t.Source.Priority}): '{t.Value}'"))
+                );
                 var highestPriority = successfulTasks.Max(t => t.Source.Priority);
                 var highestPrioTasks = successfulTasks.Where(t => t.Source.Priority == highestPriority);
                 if (highestPrioTasks.Count() > 1)
@@ -141,6 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
                 else
                 {
+                    _logger.LogDebug("'{0}' was selected for '{1}' as highest priority value.", highestPrioTasks.Single().Value, binding);
                     return highestPrioTasks.Single().Value;
                 }
             }
@@ -160,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             cancellationToken.ThrowIfCancellationRequested();
             foreach (var task in tasksToRun.Where(t => t.Task.IsFaulted))
             {
-                _logger.LogDebug($"Failed to retrieve '{binding}' from the source {nameof(task.Source)}: {task.Task.Exception.Message}");
+                _logger.LogDebug("Failed to retrieve '{0}' from the source {1}: {2}", binding, nameof(task.Source), task.Task.Exception.Message);
             }
 
             return tasksToRun
