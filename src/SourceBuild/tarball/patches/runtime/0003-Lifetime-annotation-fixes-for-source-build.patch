@@ -1,0 +1,167 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aaron Robinson <arobins@microsoft.com>
+Date: Wed, 29 Jun 2022 17:09:34 -0700
+Subject: [PATCH] Fix lifetime annotations
+
+---
+ src/coreclr/tools/dotnet-pgo/SPGO/LbrEntry.cs        | 12 ++++++++++--
+ .../src/System.Diagnostics.DiagnosticSource.csproj   |  2 ++
+ .../src/System/Globalization/DateTimeFormat.cs       |  4 ++--
+ .../src/System/Globalization/TimeSpanFormat.cs       |  2 +-
+ .../src/System/Runtime/CompilerServices/Unsafe.cs    |  2 +-
+ .../System/Runtime/InteropServices/MemoryMarshal.cs  |  4 ++--
+ .../src/System/TimeZoneInfo.Unix.cs                  | 10 +++++-----
+ 7 files changed, 23 insertions(+), 13 deletions(-)
+
+diff --git a/src/coreclr/tools/dotnet-pgo/SPGO/LbrEntry.cs b/src/coreclr/tools/dotnet-pgo/SPGO/LbrEntry.cs
+index 5f01ddfab8b..bdf40ff153c 100644
+--- a/src/coreclr/tools/dotnet-pgo/SPGO/LbrEntry.cs
++++ b/src/coreclr/tools/dotnet-pgo/SPGO/LbrEntry.cs
+@@ -58,7 +58,11 @@ public unsafe struct LbrTraceEventData32
+         public Span<LbrEntry32> Entries(int totalSize)
+         {
+             IntPtr entriesOffset = Unsafe.ByteOffset(ref Unsafe.As<LbrTraceEventData32, byte>(ref this), ref Unsafe.As<LbrEntry32, byte>(ref _entries));
+-            return MemoryMarshal.CreateSpan(ref _entries, (totalSize - (int)entriesOffset) / sizeof(LbrEntry32));
++
++            fixed (LbrTraceEventData32* p = &this)
++            {
++                return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<LbrEntry32>(Unsafe.AsPointer(ref _entries)), (totalSize - (int)entriesOffset) / sizeof(LbrEntry32));
++            }
+         }
+     }
+
+@@ -74,7 +78,11 @@ public unsafe struct LbrTraceEventData64
+         public Span<LbrEntry64> Entries(int totalSize)
+         {
+             IntPtr entriesOffset = Unsafe.ByteOffset(ref Unsafe.As<LbrTraceEventData64, byte>(ref this), ref Unsafe.As<LbrEntry64, byte>(ref _entries));
+-            return MemoryMarshal.CreateSpan(ref _entries, (totalSize - (int)entriesOffset) / sizeof(LbrEntry64));
++
++            fixed (LbrTraceEventData64* p = &this)
++            {
++                return MemoryMarshal.CreateSpan(ref Unsafe.AsRef<LbrEntry64>(Unsafe.AsPointer(ref _entries)), (totalSize - (int)entriesOffset) / sizeof(LbrEntry64));
++            }
+         }
+     }
+ }
+diff --git a/src/libraries/System.Diagnostics.DiagnosticSource/src/System.Diagnostics.DiagnosticSource.csproj b/src/libraries/System.Diagnostics.DiagnosticSource/src/System.Diagnostics.DiagnosticSource.csproj
+index fabda09091a..3d8bd1b6da3 100644
+--- a/src/libraries/System.Diagnostics.DiagnosticSource/src/System.Diagnostics.DiagnosticSource.csproj
++++ b/src/libraries/System.Diagnostics.DiagnosticSource/src/System.Diagnostics.DiagnosticSource.csproj
+@@ -11,6 +11,8 @@
+ Commonly Used Types:
+ System.Diagnostics.DiagnosticListener
+ System.Diagnostics.DiagnosticSource</PackageDescription>
++    <!-- Lifetime rules introduced in C# 11 impact scenarios in net6 framework -->
++    <LangVersion Condition="'$(TargetFramework)' == 'net6.0'">10</LangVersion>
+   </PropertyGroup>
+
+   <!-- DesignTimeBuild requires all the TargetFramework Derived Properties to not be present in the first property group. -->
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Globalization/DateTimeFormat.cs b/src/libraries/System.Private.CoreLib/src/System/Globalization/DateTimeFormat.cs
+index cfdbe719b8d..bb5917a06fd 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Globalization/DateTimeFormat.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Globalization/DateTimeFormat.cs
+@@ -299,7 +299,7 @@ private static string FormatHebrewMonthName(DateTime time, int month, int repeat
+         // The pos should point to a quote character. This method will
+         // append to the result StringBuilder the string enclosed by the quote character.
+         //
+-        internal static int ParseQuoteString(ReadOnlySpan<char> format, int pos, ref ValueStringBuilder result)
++        internal static int ParseQuoteString(scoped ReadOnlySpan<char> format, int pos, ref ValueStringBuilder result)
+         {
+             //
+             // NOTE : pos will be the index of the quote character in the 'format' string.
+@@ -444,7 +444,7 @@ private static bool IsUseGenitiveForm(ReadOnlySpan<char> format, int index, int
+         //  Actions: Format the DateTime instance using the specified format.
+         //
+         private static void FormatCustomized(
+-            DateTime dateTime, ReadOnlySpan<char> format, DateTimeFormatInfo dtfi, TimeSpan offset, ref ValueStringBuilder result)
++            DateTime dateTime, scoped ReadOnlySpan<char> format, DateTimeFormatInfo dtfi, TimeSpan offset, ref ValueStringBuilder result)
+         {
+             Calendar cal = dtfi.Calendar;
+
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Globalization/TimeSpanFormat.cs b/src/libraries/System.Private.CoreLib/src/System/Globalization/TimeSpanFormat.cs
+index 8695e9b9bea..f66e5482c36 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Globalization/TimeSpanFormat.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Globalization/TimeSpanFormat.cs
+@@ -300,7 +300,7 @@ private static void WriteDigits(uint value, Span<char> buffer)
+         }
+
+         /// <summary>Format the TimeSpan instance using the specified format.</summary>
+-        private static void FormatCustomized(TimeSpan value, ReadOnlySpan<char> format, DateTimeFormatInfo dtfi, ref ValueStringBuilder result)
++        private static void FormatCustomized(TimeSpan value, scoped ReadOnlySpan<char> format, DateTimeFormatInfo dtfi, ref ValueStringBuilder result)
+         {
+             Debug.Assert(dtfi != null);
+
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/Unsafe.cs b/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/Unsafe.cs
+index d006bd58cbc..a2cbe16e4b5 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/Unsafe.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Runtime/CompilerServices/Unsafe.cs
+@@ -671,7 +671,7 @@ public static void Write<T>(void* destination, T value)
+         // Mono:AsRef
+         [NonVersionable]
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+-        public static ref T AsRef<T>([LifetimeAnnotation(true, false)] in T source)
++        public static ref T AsRef<T>(scoped in T source)
+         {
+             throw new PlatformNotSupportedException();
+
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/MemoryMarshal.cs b/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/MemoryMarshal.cs
+index f089434fa33..b6d7e8c266a 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/MemoryMarshal.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Runtime/InteropServices/MemoryMarshal.cs
+@@ -219,7 +219,7 @@ public static ReadOnlySpan<byte> AsBytes<T>(ReadOnlySpan<T> span)
+         /// <returns>A span representing the specified reference and length.</returns>
+         /// <remarks>The lifetime of the returned span will not be validated for safety by span-aware languages.</remarks>
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+-        public static Span<T> CreateSpan<T>([LifetimeAnnotation(true, false)] ref T reference, int length) => new Span<T>(ref reference, length);
++        public static Span<T> CreateSpan<T>(scoped ref T reference, int length) => new Span<T>(ref Unsafe.AsRef(in reference), length);
+
+         /// <summary>
+         /// Creates a new read-only span over a portion of a regular managed object. This can be useful
+@@ -231,7 +231,7 @@ public static ReadOnlySpan<byte> AsBytes<T>(ReadOnlySpan<T> span)
+         /// <returns>A read-only span representing the specified reference and length.</returns>
+         /// <remarks>The lifetime of the returned span will not be validated for safety by span-aware languages.</remarks>
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+-        public static ReadOnlySpan<T> CreateReadOnlySpan<T>([LifetimeAnnotation(true, false)] ref T reference, int length) => new ReadOnlySpan<T>(ref reference, length);
++        public static ReadOnlySpan<T> CreateReadOnlySpan<T>(scoped ref T reference, int length) => new ReadOnlySpan<T>(ref Unsafe.AsRef(in reference), length);
+
+         /// <summary>Creates a new read-only span for a null-terminated string.</summary>
+         /// <param name="value">The pointer to the null-terminated string of characters.</param>
+diff --git a/src/libraries/System.Private.CoreLib/src/System/TimeZoneInfo.Unix.cs b/src/libraries/System.Private.CoreLib/src/System/TimeZoneInfo.Unix.cs
+index 99aec155a29..d4307307463 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/TimeZoneInfo.Unix.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/TimeZoneInfo.Unix.cs
+@@ -1007,7 +1007,7 @@ private static bool TZif_ParseMDateRule(ReadOnlySpan<char> dateRule, out int mon
+             return !standardName.IsEmpty && !standardOffset.IsEmpty;
+         }
+
+-        private static ReadOnlySpan<char> TZif_ParsePosixName(ReadOnlySpan<char> posixFormat, ref int index)
++        private static ReadOnlySpan<char> TZif_ParsePosixName(ReadOnlySpan<char> posixFormat, scoped ref int index)
+         {
+             bool isBracketEnclosed = index < posixFormat.Length && posixFormat[index] == '<';
+             if (isBracketEnclosed)
+@@ -1034,7 +1034,7 @@ private static ReadOnlySpan<char> TZif_ParsePosixName(ReadOnlySpan<char> posixFo
+             }
+         }
+
+-        private static ReadOnlySpan<char> TZif_ParsePosixOffset(ReadOnlySpan<char> posixFormat, ref int index) =>
++        private static ReadOnlySpan<char> TZif_ParsePosixOffset(ReadOnlySpan<char> posixFormat, scoped ref int index) =>
+             TZif_ParsePosixString(posixFormat, ref index, c => !char.IsDigit(c) && c != '+' && c != '-' && c != ':');
+
+         private static void TZif_ParsePosixDateTime(ReadOnlySpan<char> posixFormat, ref int index, out ReadOnlySpan<char> date, out ReadOnlySpan<char> time)
+@@ -1049,13 +1049,13 @@ private static void TZif_ParsePosixDateTime(ReadOnlySpan<char> posixFormat, ref
+             }
+         }
+
+-        private static ReadOnlySpan<char> TZif_ParsePosixDate(ReadOnlySpan<char> posixFormat, ref int index) =>
++        private static ReadOnlySpan<char> TZif_ParsePosixDate(ReadOnlySpan<char> posixFormat, scoped ref int index) =>
+             TZif_ParsePosixString(posixFormat, ref index, c => c == '/' || c == ',');
+
+-        private static ReadOnlySpan<char> TZif_ParsePosixTime(ReadOnlySpan<char> posixFormat, ref int index) =>
++        private static ReadOnlySpan<char> TZif_ParsePosixTime(ReadOnlySpan<char> posixFormat, scoped ref int index) =>
+             TZif_ParsePosixString(posixFormat, ref index, c => c == ',');
+
+-        private static ReadOnlySpan<char> TZif_ParsePosixString(ReadOnlySpan<char> posixFormat, ref int index, Func<char, bool> breakCondition)
++        private static ReadOnlySpan<char> TZif_ParsePosixString(ReadOnlySpan<char> posixFormat, scoped ref int index, Func<char, bool> breakCondition)
+         {
+             int startIndex = index;
+             for (; index < posixFormat.Length; index++)
