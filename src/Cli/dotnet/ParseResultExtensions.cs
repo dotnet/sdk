@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Cli
             Parser.Instance.Parse(tokenList).Invoke();
         }
 
+
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
             if (parseResult.Errors.Any())
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Cli
                 {
                     throw new CommandParsingException(
                         message: string.Join(Environment.NewLine,
-                                             parseResult.Errors.Select(e => e.Message)), 
+                                             parseResult.Errors.Select(e => e.Message)),
                         parseResult: parseResult);
                 }
             }
@@ -59,7 +60,7 @@ namespace Microsoft.DotNet.Cli
 
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
-            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) || 
+            return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
                 Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
@@ -128,7 +129,7 @@ namespace Microsoft.DotNet.Cli
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
-            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) && 
+            parseResult.HasOption(CommonOptions.LongFormArchitectureOption)) &&
             parseResult.HasOption(CommonOptions.OperatingSystemOption);
 
         internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
@@ -180,7 +181,7 @@ namespace Microsoft.DotNet.Cli
             var optionString = shorthand ? "-p" : "--property";
             var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(TokenType.Option));
             var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Children.SelectMany(c => c.Tokens.Select(t=> t.Value))).ToArray();
+            var propertyValues = propertyOptions.SelectMany(o => o.Children.SelectMany(c => c.Tokens.Select(t => t.Value))).ToArray();
             return propertyValues;
         }
 

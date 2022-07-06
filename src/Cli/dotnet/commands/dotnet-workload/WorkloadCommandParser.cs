@@ -5,6 +5,8 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using Reporter = Microsoft.DotNet.Cli.Utils.Reporter;
+using NuGet.Protocol.Plugins;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -15,9 +17,22 @@ namespace Microsoft.DotNet.Cli
 
         private static readonly Command Command = ConstructCommand();
 
+        public static readonly Option<bool> InfoOption = new Option<bool>("--info");
+
         public static Command GetCommand()
         {
+            Command.AddOption(InfoOption);
             return Command;
+        }
+
+        public static int ProcessArgs(ParseResult parseResult)
+        {
+            if (parseResult.HasOption(InfoOption) && parseResult.IsTopLevelDotnetCommand())
+            {
+                Reporter.Output.WriteLine("Test");
+                return 0;
+            }
+            return parseResult.HandleMissingCommand();
         }
 
         private static Command ConstructCommand()
@@ -33,7 +48,10 @@ namespace Microsoft.DotNet.Cli
             command.AddCommand(WorkloadRestoreCommandParser.GetCommand());
             command.AddCommand(WorkloadElevateCommandParser.GetCommand());
 
-            command.SetHandler((parseResult) => parseResult.HandleMissingCommand());
+
+            command.SetHandler((parseResult) =>
+                ProcessArgs(parseResult)
+            );
 
             return command;
         }
