@@ -18,6 +18,7 @@
     <!-- Strip the '-parallel none' flag here -->
     <XUnitRunnerAdditionalArguments></XUnitRunnerAdditionalArguments>
     <PackageId>testSdkBuild</PackageId>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>

@@ -17,7 +17,7 @@
     <MicrosoftExtensionsDependencyModelVersion>2.1.0-preview2-26306-03</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftNETHostModelVersion>3.1.16</MicrosoftNETHostModelVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
-    <NewtonsoftJsonVersion>9.0.1</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
     <NuGetBuildTasksPackageVersion>5.7.2-rtm.8</NuGetBuildTasksPackageVersion>
     <NuGetPackagingVersion>$(NuGetBuildTasksPackageVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetBuildTasksPackageVersion)</NuGetProjectModelVersion>
