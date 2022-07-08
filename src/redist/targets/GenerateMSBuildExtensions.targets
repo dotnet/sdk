@@ -46,7 +46,7 @@
                                   DeploymentSubpath="msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/" />
 
       <VSMSBuildExtensionsContent Include="$(DotNetDeploymentReleasesPkgPath)\lib\net452\**\*.*"
-                                  DeploymentSubpath="MSBuildSdkResolver" />
+                                  DeploymentSubpath="MSBuildSdkResolver/" />
 
       <VSMSBuildExtensionsContent Include="$(SdkResolverLayoutPath)/**/*"
                                   DeploymentSubpath="MSBuildSdkResolver/" />
