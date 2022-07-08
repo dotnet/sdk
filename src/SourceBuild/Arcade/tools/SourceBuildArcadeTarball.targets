@@ -177,6 +177,11 @@
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <Exec
+      Command="git submodule foreach 'rm -rf %24%28git rev-parse --git-dir%29/objects ||:'"
+      WorkingDirectory="$(TarballRepoSourceDir)"
+      Condition="$(PreserveTarballGitFolders) != 'true'" />
+
+    <Exec
       Command="git config --file $(TarballRepoSourceDir)/.git/config --unset remote.origin.url"
       WorkingDirectory="$(RepoRoot)"/>
 
@@ -329,6 +334,8 @@
       Overwrite="true" />
 
     <MakeDir Directories="$(TarballRootDir)packages/prebuilt" />
+    <!-- make sure this directory is persisted through source control, NuGet depends on it existing -->
+    <Exec Command="touch $(TarballRootDir)packages/prebuilt/_" />
   </Target>
 
   <!--
