@@ -21,27 +21,29 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDynamicInterfaceCastableImplementationFixer : DynamicInterfaceCastableImplementationFixer
     {
-        protected override Document ImplementInterfacesOnDynamicCastableImplementation(
+        protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode root,
             SyntaxNode declaration,
-            INamedTypeSymbol type,
             Document document,
             SyntaxGenerator generator,
-            Compilation compilation)
+            CancellationToken cancellationToken)
         {
-            var defaultMethodBodyStatements = generator.DefaultMethodBody(compilation).ToArray();
+            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var type = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, cancellationToken);
+
+            var defaultMethodBodyStatements = generator.DefaultMethodBody(model.Compilation).ToArray();
             var generatedMembers = new List<SyntaxNode>();
             foreach (var iface in type.AllInterfaces)
             {
                 foreach (var member in iface.GetMembers())
                 {
-                    if (!member.IsStatic && member.IsAbstract && member.Kind != SymbolKind.NamedType && type.FindImplementationForInterfaceMember(member) is null)
+                    if (member.IsAbstract && type.FindImplementationForInterfaceMember(member) is null)
                     {
                         var implementation = member.Kind switch
                         {
                             SymbolKind.Method => GenerateMethodImplementation((IMethodSymbol)member),
                             SymbolKind.Property => GeneratePropertyImplementation((IPropertySymbol)member),
-                            SymbolKind.Event => GenerateEventImplementation((IEventSymbol)member, declaration, generator, defaultMethodBodyStatements),
+                            SymbolKind.Event => GenerateEventImplementation((IEventSymbol)member, generator, defaultMethodBodyStatements),
                             _ => null
                         };
                         if (implementation is not null)
@@ -69,7 +71,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                     return null;
                 }
                 var methodDecl = generator.MethodDeclaration(method);
-                methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+                methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(methodDecl).WithIsAbstract(false));
                 return generator.WithStatements(methodDecl, defaultMethodBodyStatements);
             }
 
@@ -78,18 +80,18 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 var propertyDecl = property.IsIndexer
                     ? generator.IndexerDeclaration(property)
                     : generator.PropertyDeclaration(property);
-                propertyDecl = generator.WithModifiers(propertyDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+                propertyDecl = generator.WithModifiers(propertyDecl, generator.GetModifiers(propertyDecl).WithIsAbstract(false));
 
                 // Remove default property accessors.
                 propertyDecl = generator.WithAccessorDeclarations(propertyDecl);
 
                 if (property.GetMethod is not null
-                    && compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
+                    && model.Compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
                 {
                     propertyDecl = generator.WithGetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
                 }
                 if (property.SetMethod is not null
-                    && compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
+                    && model.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {
                     propertyDecl = AddSetAccessor(property, propertyDecl, generator, defaultMethodBodyStatements, includeAccessibility: false);
                 }
@@ -147,12 +149,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
         private static SyntaxNode GenerateEventImplementation(
             IEventSymbol evt,
-            SyntaxNode declaration,
             SyntaxGenerator generator,
             SyntaxNode[] defaultMethodBodyStatements)
         {
             var eventDecl = generator.CustomEventDeclaration(evt);
-            eventDecl = generator.WithModifiers(eventDecl, generator.GetModifiers(declaration).WithIsAbstract(false));
+            eventDecl = generator.WithModifiers(eventDecl, generator.GetModifiers(eventDecl).WithIsAbstract(false));
 
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53649
             var eventDeclaration = (EventDeclarationSyntax)eventDecl;

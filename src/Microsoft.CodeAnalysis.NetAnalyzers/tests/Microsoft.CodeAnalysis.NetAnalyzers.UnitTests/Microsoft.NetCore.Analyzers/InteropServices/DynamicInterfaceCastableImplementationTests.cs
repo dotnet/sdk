@@ -1219,8 +1219,25 @@ public interface {|CA2256:I2|} : I
 {
 }
 ";
+            string fixedSource = @"
+using System.Runtime.InteropServices;
 
-            await VerifyCSCodeFixAsync(source, source, CSharp.LanguageVersion.Preview, ReferenceAssemblies.Net.Net60);
+public interface I
+{
+    static abstract void M();
+}
+
+[DynamicInterfaceCastableImplementation]
+public interface I2 : I
+{
+    static void I.M()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+";
+
+            await VerifyCSCodeFixAsync(source, fixedSource, CSharp.LanguageVersion.Preview, ReferenceAssemblies.Net.Net60);
         }
 
         private static Task VerifyCSAnalyzerAsync(string source)

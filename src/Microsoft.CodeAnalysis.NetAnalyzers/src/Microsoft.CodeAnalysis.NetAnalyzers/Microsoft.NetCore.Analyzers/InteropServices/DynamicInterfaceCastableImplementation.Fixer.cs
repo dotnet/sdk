@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -39,18 +38,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
                 {
-                    var model = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-                    var symbol = (INamedTypeSymbol)model.GetDeclaredSymbol(declaration, context.CancellationToken);
-                    if (symbol.AllInterfaces.SelectMany(m => m.GetMembers()).Any(m => m.IsStatic && m.IsAbstract))
-                    {
-                        // Cannot offer a fix for static abstracts.
-                        return;
-                    }
-
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                            _ => Task.FromResult(ImplementInterfacesOnDynamicCastableImplementation(root, declaration, symbol, context.Document, generator, model.Compilation)),
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(root, declaration, context.Document, generator, ct).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                         diagnostic);
                 }
@@ -60,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
-                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, ct).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
                         diagnostic);
                 }
@@ -74,13 +65,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
-        protected abstract Document ImplementInterfacesOnDynamicCastableImplementation(
+        protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode root,
             SyntaxNode declaration,
-            INamedTypeSymbol type,
             Document document,
             SyntaxGenerator generator,
-            Compilation compilation);
+            CancellationToken cancellationToken);
 
         protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(
             SyntaxNode declaration,
