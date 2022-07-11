@@ -672,6 +672,18 @@ A string comparison operation uses a method overload that does not set a StringC
 |CodeFix|False|
 ---
 
+## [CA1311](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311): Specify a culture or use an invariant version
+
+Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.
+
+|Item|Value|
+|-|-|
+|Category|Globalization|
+|Enabled|True|
+|Severity|Hidden|
+|CodeFix|True|
+---
+
 ## [CA1401](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1401): P/Invokes should not be visible
 
 A public or protected method in a public type has the System.Runtime.InteropServices.DllImportAttribute attribute (also implemented by the Declare keyword in Visual Basic). Such methods should not be exposed.
@@ -1512,6 +1524,42 @@ Possible multiple enumerations of 'IEnumerable' collection. Consider using an im
 |CodeFix|False|
 ---
 
+## [CA1852](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852): Seal internal types
+
+When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Hidden|
+|CodeFix|True|
+---
+
+## [CA1853](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853): Unnecessary call to 'Dictionary.ContainsKey(key)'
+
+Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1854](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854): Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method
+
+Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -2162,7 +2210,7 @@ The logging message template should not vary between calls.
 
 ## [CA2255](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255): The 'ModuleInitializer' attribute should not be used in libraries
 
-Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.
+Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.
 
 |Item|Value|
 |-|-|
@@ -3002,7 +3050,7 @@ Some implementations of the Rfc2898DeriveBytes class allow for a hash algorithm 
 
 ## [CA5380](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380): Do Not Add Certificates To Root Store
 
-By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
 
 |Item|Value|
 |-|-|
@@ -3014,7 +3062,7 @@ By default, the Trusted Root Certification Authorities certificate store is conf
 
 ## [CA5381](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381): Ensure Certificates Are Not Added To Root Store
 
-By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
+By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.
 
 |Item|Value|
 |-|-|
@@ -3060,7 +3108,7 @@ DSA is too weak to use.
 |CodeFix|False|
 ---
 
-## [CA5385](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385): Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size
+## [CA5385](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385): Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size
 
 Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.
 

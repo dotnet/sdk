@@ -12,4 +12,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
+  <Import Project="..\..\Utilities\Compiler.CSharp\Analyzer.CSharp.Utilities.projitems" Label="Shared" />
 </Project>

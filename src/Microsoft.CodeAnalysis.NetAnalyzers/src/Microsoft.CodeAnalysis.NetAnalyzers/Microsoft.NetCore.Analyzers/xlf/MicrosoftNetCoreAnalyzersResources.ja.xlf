@@ -682,6 +682,21 @@
         <target state="translated">ServicePointManagerSecurityProtocols を無効にしないでください</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
+        <target state="translated">'Dictionary.ContainsKey(key)' を使用して 'Dictionary.Remove(key)' をガードしないでください。キーが存在するかどうかは、'Dictionary.Remove(key)' で既に確認されています。存在しない場合はスローしません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">'Dictionary.ContainsKey(key)' を使用して 'Dictionary.Remove(key)' をガードしないでください</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
+        <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">'Dictionary.ContainsKey(key)' への不要な呼び出し</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">証明書をハードコーディングしない</target>
@@ -713,7 +728,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
         <target state="translated">既定では、信頼されたルート証明機関の証明書ストアは、Microsoft ルート証明書プログラムの要件を満たす一連の公的 CA で構成されています。すべての信頼されたルート CA は任意のドメインの証明書を発行できますが、攻撃者はユーザー自身がインストールする脆弱な CA または制御可能な CA を攻撃対象として選択できます。脆弱な CA、悪意のあるCA、制御可能な CA が 1 つでもあると、システム全体のセキュリティが弱体化します。さらに悪いことに、こうした攻撃はまったく気付かずに、しかも簡単に行うことができます。</target>
         <note />
       </trans-unit>
@@ -1125,6 +1140,11 @@
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
         <target state="translated">参照によるパラメーターでは、ランタイム マーシャリングを有効にする必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
+        <target state="translated">パラメーターまたは戻り値の型としてマネージド型を持つデリゲートでは、デリゲートが定義されているアセンブリでランタイム マーシャリングを有効にする必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -1693,8 +1713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
-        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="translated">モジュール初期化子は、アプリケーション コードの実行を開始する前にアプリケーションのコンポーネントが初期化されるように、アプリケーション コードによって使用されることを目的としています。ライブラリ コードが 'ModuleInitializer' メソッドを宣言する場合、アプリケーションの初期化を妨げる可能性があり、そのアプリケーションのトリミング機能の制限にもつながります。したがって、ライブラリ コードは 'ModuleInitializer' 属性を利用するのではなく、ライブラリ内のコンポーネントを初期化し、アプリケーションの初期化中にアプリケーションがメソッドを呼び出せるようにするために使用できるメソッドを公開する必要があります。</target>
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">モジュール初期化子は、アプリケーション コードの実行を開始する前にアプリケーションのコンポーネントが初期化されるように、アプリケーション コードによって使用されることを目的としています。ライブラリ コードで 'ModuleInitializerAttribute' を使用してメソッドを宣言する場合、アプリケーションの初期化を妨げる可能性があり、そのアプリケーションのトリミング機能の制限にもつながります。'ModuleInitializerAttribute' でマークされたメソッドを使用する代わりに、ライブラリ内のコンポーネントを初期化し、アプリケーションの初期化中にアプリケーションがメソッドを呼び出せるようにするために使用できるメソッドを公開する必要があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
@@ -2142,6 +2162,11 @@
         <target state="translated">冗長な呼び出しを削除する</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
+        <source>Remove unnecessary call</source>
+        <target state="translated">不要な呼び出しの削除</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">文字列リテラルを char リテラルに置き換える</target>
@@ -2297,6 +2322,26 @@
         <target state="translated">SQL クエリのセキュリティ脆弱性を確認</target>
         <note />
       </trans-unit>
+      <trans-unit id="SealInternalTypesCodeFixTitle">
+        <source>Seal class</source>
+        <target state="translated">クラスのシール</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesDescription">
+        <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
+        <target state="translated">型がアセンブリの外部からアクセスできず、そこに含まれるアセンブリ内にサブタイプがない場合は、安全にシールできます。型をシールするとパフォーマンスが向上します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesMessage">
+        <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
+        <target state="translated">型'{0}' に含まれるアセンブリにはサブタイプがなく、外部から参照できないため、シールできます</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesTitle">
+        <source>Seal internal types</source>
+        <target state="translated">内部型のシール</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">HttpCookie で HttpOnly を true に設定する</target>
@@ -2327,6 +2372,21 @@
         <target state="translated">System.Web.UI.Page から派生したクラス {0} は、OnInit メソッドまたは Page_Init メソッドで ViewStateUserKey プロパティを設定しません</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="translated">現在のカルチャで偶発的に暗黙的な依存関係が発生することを回避するためにカルチャを指定します。インバリアント バージョンを使用すると、アプリケーションのカルチャに関係なく、一貫性のある結果が得られます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="translated">カルチャを指定するかインバリアント バージョンを使用して、現在のカルチャへの暗黙的な依存関係を回避します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="translated">カルチャの指定またはインバリアント バージョンの使用</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">メソッドまたはコンストラクターは、System.Globalization.CultureInfo パラメーターを受け取るオーバーロードを持つメンバーを呼び出します。CultureInfo パラメーターを受け取るオーバーロードは呼び出しません。CultureInfo または System.IFormatProvider オブジェクトが指定されない場合、オーバーロードされたメンバーによって指定される既定値は、一部のロケールでは期待どおりの効果がないことがあります。結果がユーザーに表示される場合は、'CultureInfo' パラメーターとして 'CultureInfo.CurrentCulture' を指定してください。そうではなく、結果がソフトウェアによって格納およびアクセスされる場合 (結果がディスクやデータベースに永続的に保存される場合など) は、'CultureInfo.InvariantCulture' を指定します。</target>
@@ -2340,6 +2400,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">CultureInfo を指定します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="translated">現在のカルチャの指定</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2692,6 +2757,11 @@
         <target state="translated">インデクサーを使用する</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>Use an invariant version</source>
+        <target state="translated">インバリアント バージョンを使用する</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
         <source>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</source>
         <target state="translated">オペレーティング システムの呼び出しメソッドが定義されており、同等の機能を持つメソッドが .NET Framework クラス ライブラリにあります。</target>
@@ -2743,8 +2813,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">十分なキー サイズの Rivest–Shamir–Adleman (RSA) アルゴリズムを使用します</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">十分なキー サイズの Rivest-Shamir-Adleman (RSA) アルゴリズムを使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
@@ -2930,6 +3000,26 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3} '{0}' はプレビュー型 '{1}' を使用するため、プレビュー機能を選択する必要があります。詳細については、「{2}」を参照してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
+        <source>Use 'TryGetValue(TKey, out TValue)'</source>
+        <target state="translated">'TryGetValue(TKey, out TValue)' を使用する</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueTitle">
+        <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
+        <target state="translated">'IDictionary.TryGetValue(TKey, out TValue)' メソッドを優先します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueMessage">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
+        <target state="translated">二重参照を回避するには、'ContainsKey' チェックによって保護された Dictionary インデクサー アクセスよりも 'TryGetValue' 呼び出しを優先します</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueDescription">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
+        <target state="translated">'ContainsKey' チェックによって保護された Dictionary インデクサー アクセスよりも 'TryGetValue' 呼び出しを優先します。'ContainsKey' とインデクサーの両方が内部のキーを参照するため、'TryGetValue' を使用すると余分な参照が削除されます。</target>
         <note />
       </trans-unit>
     </body>

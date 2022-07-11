@@ -682,6 +682,21 @@
         <target state="translated">Não desabilitar ServicePointManagerSecurityProtocols</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyDescription">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</source>
+        <target state="translated">Não proteger 'Dictionary.Remove(key)' com 'Dictionary.ContainsKey(key)'. O primeiro já verifica se a chave existe e não lançará se não existir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyMessage">
+        <source>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">Não proteger 'Dictionary.Remove(key)' com 'Dictionary.ContainsKey(key)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotGuardDictionaryRemoveByContainsKeyTitle">
+        <source>Unnecessary call to 'Dictionary.ContainsKey(key)'</source>
+        <target state="translated">Chamada desnecessária para 'Dictionary.ContainsKey(key)'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
         <source>Do not hard-code certificate</source>
         <target state="translated">Não embutir o certificado em código</target>
@@ -713,8 +728,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotInstallRootCertDescription">
-        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
-        <target state="translated">Por padrão, o repositório de certificados de Autoridades de Certificação Confiáveis é configurado com um conjunto de CAs públicas que atendem aos requisitos do Microsoft Root Certificate Program. Como todas as ACs raiz confiáveis podem emitir certificados para qualquer domínio, um invasor pode escolher uma AC fraca ou coercível que você instala sozinho para direcionar um ataque – e uma única AC vulnerável, mal-intencionada ou coercível enfraquece a segurança de todo o sistema. Para piorar as coisas, esses ataques podem facilmente passar despercebidos.</target>
+        <source>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</source>
+        <target state="translated">Por padrão, o repositório de certificados de Autoridades de Certificação Raiz Confiáveis é configurado com um conjunto de CAs públicas que atendem aos requisitos do Programa de Certificação Raiz da Microsoft. Como todas as CAs raiz confiáveis podem emitir certificados para qualquer domínio, um invasor pode escolher uma CA fraca ou coercível que você mesmo instala para atacar - e uma única CA vulnerável, maliciosa ou coercível prejudica a segurança de todo o sistema. Para piorar a situação, esses ataques podem passar despercebidos com bastante facilidade.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotLockOnObjectsWithWeakIdentityDescription">
@@ -1125,6 +1140,11 @@
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters">
         <source>By-ref parameters require runtime marshalling to be enabled</source>
         <target state="translated">Os parâmetros por referência exigem que o marshalling em tempo de execução esteja habilitado</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
+        <target state="translated">Os delegados com tipos gerenciados como parâmetros ou o tipo de retorno exigem que o empacotamento de tempo de execução seja habilitado no assembly em que o delegado está definido.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -1693,8 +1713,8 @@
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
-        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
-        <target state="translated">Os inicializadores de módulo devem ser usados pelo código do aplicativo para garantir que os componentes de um aplicativo sejam inicializados antes que o código do aplicativo comece a ser executado. Se o código da biblioteca declarar um método 'ModuleInitializer', ele poderá interferir na inicialização do aplicativo e também levar a limitações nas habilidades de corte desse aplicativo. Portanto, o código da biblioteca não deve utilizar o atributo 'ModuleInitializer', mas expor métodos que podem ser usados para inicializar qualquer componente dentro da biblioteca e permitir que o aplicativo invoque o método durante a inicialização do aplicativo.</target>
+        <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
+        <target state="translated">Os inicializadores de módulo devem ser usados pelo código do aplicativo para garantir que os componentes de um aplicativo sejam inicializados antes que o código do aplicativo comece a ser executado. Se o código da biblioteca declara um método com o 'ModuleInitializerAttribute', ele pode interferir na inicialização do aplicativo e também levar a limitações nas habilidades de corte do aplicativo. Ao invés de usar métodos marcados com 'ModuleInitializerAttribute', a biblioteca deve expor os métodos que podem ser usados para inicializar quaisquer componentes dentro da biblioteca e permitir que o aplicativo invoque o método durante a inicialização do aplicativo.</target>
         <note />
       </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage">
@@ -2142,6 +2162,11 @@
         <target state="translated">Remova a chamada redundante</target>
         <note />
       </trans-unit>
+      <trans-unit id="RemoveRedundantGuardCallCodeFixTitle">
+        <source>Remove unnecessary call</source>
+        <target state="translated">Remover chamada desnecessária</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReplaceStringLiteralWithCharLiteralCodeActionTitle">
         <source>Replace string literal with char literal</source>
         <target state="translated">Substituir literal de cadeia de caracteres por literal char</target>
@@ -2297,6 +2322,26 @@
         <target state="translated">Revisar as consultas SQL em busca de vulnerabilidades de segurança</target>
         <note />
       </trans-unit>
+      <trans-unit id="SealInternalTypesCodeFixTitle">
+        <source>Seal class</source>
+        <target state="translated">Classe do selo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesDescription">
+        <source>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</source>
+        <target state="translated">Quando um tipo não está acessível fora da sua assembly e não tem subtipos dentro da sua assemlby que o contém, ele pode ser selado com segurança. Tipos de selagem podem melhorar o desempenho.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesMessage">
+        <source>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</source>
+        <target state="translated">O tipo '{0}' pode ser selado porque não possui subtipos em sua assembly que o contém e não está visível externamente</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SealInternalTypesTitle">
+        <source>Seal internal types</source>
+        <target state="translated">Tipos internos de selo</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SetHttpOnlyForHttpCookie">
         <source>Set HttpOnly to true for HttpCookie</source>
         <target state="translated">Definir HttpOnly como true para HttpCookie</target>
@@ -2327,6 +2372,21 @@
         <target state="translated">A classe {0} derivada de System.Web.UI.Page não define a propriedade ViewStateUserKey no método OnInit ou Page_Init</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperDescription">
+        <source>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</source>
+        <target state="translated">Especifique a cultura para ajudar a evitar a dependência acidental implícita da cultura atual. O uso de uma versão invariante produz resultados consistentes, independentemente da cultura de um aplicativo.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperMessage">
+        <source>Specify a culture or use an invariant version to avoid implicit dependency on current culture</source>
+        <target state="translated">Especifique uma cultura ou use uma versão invariável para evitar a dependência implícita da cultura atual</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCultureForToLowerAndToUpperTitle">
+        <source>Specify a culture or use an invariant version</source>
+        <target state="translated">Especifique uma cultura ou use uma versão invariável</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyCultureInfoDescription">
         <source>A method or constructor calls a member that has an overload that accepts a System.Globalization.CultureInfo parameter, and the method or constructor does not call the overload that takes the CultureInfo parameter. When a CultureInfo or System.IFormatProvider object is not supplied, the default value that is supplied by the overloaded member might not have the effect that you want in all locales. If the result will be displayed to the user, specify 'CultureInfo.CurrentCulture' as the 'CultureInfo' parameter. Otherwise, if the result will be stored and accessed by software, such as when it is persisted to disk or to a database, specify 'CultureInfo.InvariantCulture'.</source>
         <target state="translated">Um método ou construtor chama um membro que tem uma sobrecarga que aceita um parâmetro System.Globalization.CultureInfo e o método ou o construtor não chama a sobrecarga que usa o parâmetro CultureInfo. Quando um objeto CultureInfo ou System.IFormatProvider não é fornecido, o valor padrão fornecido pelo membro sobrecarregado pode não ter o efeito que você deseja em todas as localidades. Se o resultado for exibido para o usuário, especifique 'CultureInfo.CurrentCulture' como o parâmetro 'CultureInfo'. Caso contrário, se o resultado for armazenado e acessado pelo software, assim como quando é persistido em disco ou em um banco de dados, especifique 'CultureInfo.InvariantCulture'.</target>
@@ -2340,6 +2400,11 @@
       <trans-unit id="SpecifyCultureInfoTitle">
         <source>Specify CultureInfo</source>
         <target state="translated">Especificar CultureInfo</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifyCurrentCulture">
+        <source>Specify current culture</source>
+        <target state="translated">Especifique a cultura atual</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderDescription">
@@ -2692,6 +2757,11 @@
         <target state="translated">Usar o indexador</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseInvariantVersion">
+        <source>Use an invariant version</source>
+        <target state="translated">Usar uma versão invariável</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
         <source>An operating system invoke method is defined and a method that has the equivalent functionality is located in the .NET Framework class library.</source>
         <target state="translated">Um método de invocação de sistema operacional é definido e um método que tem a funcionalidade equivalente está localizado na biblioteca de classes .NET Framework.</target>
@@ -2743,8 +2813,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySize">
-        <source>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</source>
-        <target state="translated">Usar o Algoritmo RSA (Rivest-Shamir-Adleman) com um Tamanho de Chave Suficiente</target>
+        <source>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</source>
+        <target state="translated">Use o algoritmo Rivest-Shamir-Adleman (RSA) com tamanho de chave suficiente</target>
         <note />
       </trans-unit>
       <trans-unit id="UseRSAWithSufficientKeySizeDescription">
@@ -2930,6 +3000,26 @@
       <trans-unit id="UsesPreviewTypeParameterMessageWithCustomMessagePlaceholder">
         <source>{3} '{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</source>
         <target state="translated">{3}“{0}” usa o tipo de visualização “{1}” e precisa aceitar os recursos de visualização. Consulte {2} para obter mais informações.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
+        <source>Use 'TryGetValue(TKey, out TValue)'</source>
+        <target state="translated">Usar 'TryGetValue(TKey, out TValue)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueTitle">
+        <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
+        <target state="translated">Prefira o método 'IDictionary.TryGetValue(TKey, out TValue)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueMessage">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
+        <target state="translated">Prefira uma chamada 'TryGetValue' em vez de um acesso ao indexador de dicionário protegido por uma verificação 'ContainsKey' para evitar pesquisa dupla</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferDictionaryTryGetValueDescription">
+        <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
+        <target state="translated">Prefira uma chamada 'TryGetValue' em vez de um acesso ao indexador de dicionário protegido por uma verificação 'ContainsKey'. 'ContainsKey' e o indexador pesquisariam a chave sob o capô, portanto, usar 'TryGetValue' remove a pesquisa extra.</target>
         <note />
       </trans-unit>
     </body>
