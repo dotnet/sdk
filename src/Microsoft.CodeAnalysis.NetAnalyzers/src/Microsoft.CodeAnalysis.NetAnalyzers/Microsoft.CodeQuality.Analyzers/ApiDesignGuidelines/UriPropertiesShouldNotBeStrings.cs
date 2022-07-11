@@ -98,6 +98,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
+                if (context.Options.IsConfiguredToSkipAnalysis(Rule, property, context.Compilation))
+                {
+                    // property is excluded from analysis
+                    return;
+                }
+
                 context.ReportDiagnostic(property.CreateDiagnostic(Rule, property.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
             }
         }
