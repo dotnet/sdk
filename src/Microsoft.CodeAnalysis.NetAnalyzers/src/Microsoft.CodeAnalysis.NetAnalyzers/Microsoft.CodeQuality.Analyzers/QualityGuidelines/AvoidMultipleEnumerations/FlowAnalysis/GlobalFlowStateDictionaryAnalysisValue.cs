@@ -116,6 +116,18 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             return new GlobalFlowStateDictionaryAnalysisValue(builder.ToImmutable(), GlobalFlowStateDictionaryAnalysisValueKind.Known);
         }
 
+        public GlobalFlowStateDictionaryAnalysisValue RemoveTrackedDeferredTypeEntity(IDeferredTypeEntity entity)
+        {
+            if (this.TrackedEntities.ContainsKey(entity))
+            {
+                return this.TrackedEntities.Count == 1
+                    ? Empty
+                    : new GlobalFlowStateDictionaryAnalysisValue(TrackedEntities.Remove(entity), GlobalFlowStateDictionaryAnalysisValueKind.Known);
+            }
+
+            return this;
+        }
+
         protected override bool ComputeEqualsByHashCodeParts(CacheBasedEquatable<GlobalFlowStateDictionaryAnalysisValue> obj)
         {
             var other = (GlobalFlowStateDictionaryAnalysisValue)obj;

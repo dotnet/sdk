@@ -88,6 +88,25 @@
             ]
           }
         },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1507": {
           "id": "CA1507",
           "shortDescription": "Use nameof to express symbol names",
@@ -249,7 +268,7 @@
         "CA1851": {
           "id": "CA1851",
           "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
-          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
           "properties": {
@@ -630,7 +649,6 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
               "CompilationEnd"
             ]
           }
@@ -1642,6 +1660,46 @@
             "category": "Interoperability",
             "isEnabledByDefault": true,
             "typeName": "ProvidePublicParameterlessSafeHandleConstructorAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1420": {
+          "id": "CA1420",
+          "shortDescription": "Property, type, or attribute requires runtime marshalling",
+          "fullDescription": "Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1421": {
+          "id": "CA1421",
+          "shortDescription": "This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied",
+          "fullDescription": "This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421",
+          "properties": {
+            "category": "Interoperability",
+            "isEnabledByDefault": true,
+            "typeName": "DisableRuntimeMarshallingAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -2761,6 +2819,67 @@
             ]
           }
         },
+        "CA1852": {
+          "id": "CA1852",
+          "shortDescription": "Seal internal types",
+          "fullDescription": "When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "SealInternalTypes",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode",
+              "CompilationEnd"
+            ]
+          }
+        },
+        "CA1853": {
+          "id": "CA1853",
+          "shortDescription": "Unnecessary call to 'Dictionary.ContainsKey(key)'",
+          "fullDescription": "Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "DoNotGuardDictionaryRemoveByContainsKey",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1854": {
+          "id": "CA1854",
+          "shortDescription": "Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method",
+          "fullDescription": "Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "PreferDictionaryTryGetValueAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2000": {
           "id": "CA2000",
           "shortDescription": "Dispose objects before losing scope",
@@ -2974,6 +3093,26 @@
             "category": "Reliability",
             "isEnabledByDefault": true,
             "typeName": "BufferBlockCopyLengthAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2019": {
+          "id": "CA2019",
+          "shortDescription": "Improper 'ThreadStatic' field initialization",
+          "fullDescription": "'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3732,7 +3871,7 @@
         "CA2255": {
           "id": "CA2255",
           "shortDescription": "The 'ModuleInitializer' attribute should not be used in libraries",
-          "fullDescription": "Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.",
+          "fullDescription": "Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2255",
           "properties": {
@@ -3798,6 +3937,26 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "DynamicInterfaceCastableImplementationAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2259": {
+          "id": "CA2259",
+          "shortDescription": "'ThreadStatic' only affects static fields",
+          "fullDescription": "'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "UseThreadStaticCorrectly",
             "languages": [
               "C#",
               "Visual Basic"
@@ -5030,7 +5189,7 @@
         "CA5380": {
           "id": "CA5380",
           "shortDescription": "Do Not Add Certificates To Root Store",
-          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
+          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5380",
           "properties": {
@@ -5052,7 +5211,7 @@
         "CA5381": {
           "id": "CA5381",
           "shortDescription": "Ensure Certificates Are Not Added To Root Store",
-          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
+          "fullDescription": "By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5381",
           "properties": {
@@ -5137,7 +5296,7 @@
         },
         "CA5385": {
           "id": "CA5385",
-          "shortDescription": "Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size",
+          "shortDescription": "Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size",
           "fullDescription": "Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5385",
@@ -5662,6 +5821,25 @@
             ]
           }
         },
+        "CA1311": {
+          "id": "CA1311",
+          "shortDescription": "Specify a culture or use an invariant version",
+          "fullDescription": "Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.",
+          "defaultLevel": "hidden",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311",
+          "properties": {
+            "category": "Globalization",
+            "isEnabledByDefault": true,
+            "typeName": "BasicSpecifyCultureForToLowerAndToUpperAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1507": {
           "id": "CA1507",
           "shortDescription": "Use nameof to express symbol names",
@@ -5823,7 +6001,7 @@
         "CA1851": {
           "id": "CA1851",
           "shortDescription": "Possible multiple enumerations of 'IEnumerable' collection",
-          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoid multiple enumerations.",
+          "fullDescription": "Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.",
           "defaultLevel": "warning",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851",
           "properties": {

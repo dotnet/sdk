@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Diagnostics;
@@ -12,6 +11,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             string title = MicrosoftNetCoreAnalyzersResources.ImplementSerializationConstructorsCodeActionTitle;
             if (symbol.Kind == SymbolKind.NamedType)
             {
-                context.RegisterCodeFix(new MyCodeAction(title,
+                context.RegisterCodeFix(CodeAction.Create(title,
                      async ct => await GenerateConstructorAsync(context.Document, node, (INamedTypeSymbol)symbol, notImplementedExceptionType, ct).ConfigureAwait(false),
                      equivalenceKey: title),
                 context.Diagnostics);
@@ -53,7 +53,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // There is a serialization constructor but with incorrect accessibility. Set that right.
             else if (symbol.Kind == SymbolKind.Method)
             {
-                context.RegisterCodeFix(new MyCodeAction(title,
+                context.RegisterCodeFix(CodeAction.Create(title,
                      async ct => await SetAccessibilityAsync(context.Document, (IMethodSymbol)symbol, ct).ConfigureAwait(false),
                      equivalenceKey: title),
                 context.Diagnostics);
@@ -97,15 +97,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }, cancellationToken).ConfigureAwait(false);
 
             return editor.GetChangedDocuments().First();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         public override FixAllProvider GetFixAllProvider()

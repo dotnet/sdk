@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
@@ -8,9 +7,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -74,7 +73,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     string title = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix1, symbolToChange.Name);
 
-                    context.RegisterCodeFix(new MyCodeAction(title,
+                    context.RegisterCodeFix(CodeAction.Create(title,
                          async ct => await MakeProtectedAsync(context.Document, symbolToChange, checkSetter, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix1),
                     context.Diagnostics);
@@ -87,14 +86,14 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 {
                     string title = string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix2, symbolToChange.Name);
 
-                    context.RegisterCodeFix(new MyCodeAction(title,
+                    context.RegisterCodeFix(CodeAction.Create(title,
                          async ct => await ChangeToPublicInterfaceImplementationAsync(context.Document, symbolToChange, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix2),
                     context.Diagnostics);
                 }
             }
 
-            context.RegisterCodeFix(new MyCodeAction(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3, methodSymbol.ContainingType.Name),
+            context.RegisterCodeFix(CodeAction.Create(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3, methodSymbol.ContainingType.Name),
                      async ct => await MakeContainingTypeSealedAsync(context.Document, methodSymbol, ct).ConfigureAwait(false),
                          equivalenceKey: MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3),
                 context.Diagnostics);
@@ -209,14 +208,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }, cancellationToken).ConfigureAwait(false);
 
             return editor.GetChangedDocuments().First();
-        }
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumerations.FlowAnalysis;
@@ -75,6 +76,31 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     parameterOrLocalReferenceOperation,
                     defaultValue,
                     enumerationCount);
+            }
+
+            protected override void SetAbstractValueForAssignment(
+                AnalysisEntity targetAnalysisEntity, IOperation? assignedValueOperation, GlobalFlowStateDictionaryAnalysisValue assignedValue)
+            {
+                if (assignedValueOperation is null || !IsDeferredType(assignedValueOperation.Type?.OriginalDefinition, _wellKnownSymbolsInfo.AdditionalDeferredTypes))
+                {
+                    return;
+                }
+
+                var deferredTypeCreationEntity = new DeferredTypeCreationEntity(assignedValueOperation);
+                if (GlobalState.TrackedEntities.ContainsKey(deferredTypeCreationEntity))
+                {
+                    // An operation create an 'IEnumerable' entity is visited again in an AssignmentOperation, this could happens in cases like
+                    // foreach (var x in collection)
+                    // {
+                    //     var a = CreateIEnumerable();
+                    //     a.Count();
+                    // }
+                    // where the 'CreateIEnumerable()' is visited again in the loop.
+                    // In this case, reset the linked 'IEnumerable' entity.
+                    SetAbstractValue(GlobalEntity, GlobalState.RemoveTrackedDeferredTypeEntity(deferredTypeCreationEntity));
+                }
+
+                base.SetAbstractValueForAssignment(targetAnalysisEntity, assignedValueOperation, assignedValue);
             }
 
             private EnumerationCount GetEnumerationCount(IOperation parameterOrLocalReferenceOperation, WellKnownSymbolsInfo wellKnownSymbolsInfo)
@@ -315,7 +341,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
             private void UpdateGlobalValue(GlobalFlowStateDictionaryAnalysisValue value)
             {
-                if (value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known)
+                if (value.Kind is GlobalFlowStateDictionaryAnalysisValueKind.Known)
                 {
                     var newState = GlobalFlowStateDictionaryAnalysisValue.Merge(GlobalState, value, false);
                     SetAbstractValue(GlobalEntity, newState);

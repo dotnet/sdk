@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
@@ -8,6 +7,7 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -44,14 +44,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             if (IsAttribute(node))
             {
-                context.RegisterCodeFix(new MyCodeAction(title,
+                context.RegisterCodeFix(CodeAction.Create(title,
                                                          async ct => await FixAttributeArgumentsAsync(context.Document, node, charSetType, dllImportType, marshalAsType, unmanagedType, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                         context.Diagnostics);
             }
             else if (IsDeclareStatement(node))
             {
-                context.RegisterCodeFix(new MyCodeAction(title,
+                context.RegisterCodeFix(CodeAction.Create(title,
                                                          async ct => await FixDeclareStatementAsync(context.Document, node, ct).ConfigureAwait(false),
                                                          equivalenceKey: title),
                                         context.Diagnostics);
@@ -106,15 +106,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
 
             return editor.GetChangedDocument();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

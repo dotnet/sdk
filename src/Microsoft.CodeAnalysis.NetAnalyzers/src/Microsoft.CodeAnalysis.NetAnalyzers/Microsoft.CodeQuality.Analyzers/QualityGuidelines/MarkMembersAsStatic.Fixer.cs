@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
@@ -48,9 +47,10 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             }
 
             context.RegisterCodeFix(
-                new MarkMembersAsStaticAction(
+                CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix,
-                    ct => MakeStaticAsync(context.Document, root, node, ct)),
+                    ct => MakeStaticAsync(context.Document, root, node, ct),
+                    nameof(MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix)),
                 context.Diagnostics);
         }
 
@@ -246,14 +246,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             var fixedDeclaration = root.GetAnnotatedNodes(s_annotationForFixedDeclaration).Single();
             var annotation = WarningAnnotation.Create(string.Format(CultureInfo.CurrentCulture, MicrosoftCodeQualityAnalyzersResources.MarkMembersAsStaticCodeFix_WarningAnnotation, symbolFromEarlierSnapshot.Name));
             return document.WithSyntaxRoot(root.ReplaceNode(fixedDeclaration, fixedDeclaration.WithAdditionalAnnotations(annotation)));
-        }
-
-        private class MarkMembersAsStaticAction : SolutionChangeAction
-        {
-            public MarkMembersAsStaticAction(string title, Func<CancellationToken, Task<Solution>> createChangedSolution)
-                : base(title, createChangedSolution, equivalenceKey: title)
-            {
-            }
         }
     }
 }

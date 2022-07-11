@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
@@ -56,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 context.RegisterCodeFix(
-                    new MyCodeAction(title,
+                    CodeAction.Create(title,
                     async cancellationToken =>
                     {
                         DocumentEditor editor = await DocumentEditor.CreateAsync(doc, cancellationToken).ConfigureAwait(false);
@@ -66,15 +65,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     },
                     equivalenceKey: title),
                     context.Diagnostics);
-            }
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private sealed class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey) :
-                base(title, createChangedDocument, equivalenceKey)
-            {
             }
         }
     }

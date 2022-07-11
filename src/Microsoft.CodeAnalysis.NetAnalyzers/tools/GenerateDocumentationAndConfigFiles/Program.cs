@@ -196,7 +196,14 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (generateAnalyzerRulesMissingDocumentationFile)
             {
-                await createAnalyzerRulesMissingDocumentationFileAsync().ConfigureAwait(false);
+                try
+                {
+                    await createAnalyzerRulesMissingDocumentationFileAsync().ConfigureAwait(false);
+                }
+                catch (TimeoutException)
+                {
+                    await Console.Out.WriteLineAsync($"Failed to create analyzer rules missing documentation file. Http response timed out").ConfigureAwait(false);
+                }
             }
 
             if (fileNamesWithValidationFailures.Count > 0)

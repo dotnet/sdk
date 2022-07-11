@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -10,6 +9,7 @@ using Microsoft.CodeAnalysis.Editing;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -33,7 +33,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             // Fix 1: Add a NonSerialized attribute to the field
-            context.RegisterCodeFix(new MyCodeAction(MicrosoftNetCoreAnalyzersResources.AddNonSerializedAttributeCodeActionTitle,
+            context.RegisterCodeFix(CodeAction.Create(MicrosoftNetCoreAnalyzersResources.AddNonSerializedAttributeCodeActionTitle,
                                         async ct => await AddNonSerializedAttributeAsync(context.Document, fieldNode, ct).ConfigureAwait(false),
                                         equivalenceKey: MicrosoftNetCoreAnalyzersResources.AddNonSerializedAttributeCodeActionTitle),
                                     context.Diagnostics);
@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ITypeSymbol? type = fieldSymbol?.Type;
             if (type != null && type.Locations.Any(l => l.IsInSource))
             {
-                context.RegisterCodeFix(new MyCodeAction(MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle,
+                context.RegisterCodeFix(CodeAction.Create(MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle,
                             async ct => await AddSerializableAttributeToTypeAsync(context.Document, type, ct).ConfigureAwait(false),
                             equivalenceKey: MicrosoftNetCoreAnalyzersResources.AddSerializableAttributeCodeActionTitle),
                         context.Diagnostics);
@@ -71,15 +71,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }, cancellationToken).ConfigureAwait(false);
 
             return editor.GetChangedDocuments().First();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
 
         public sealed override FixAllProvider GetFixAllProvider()

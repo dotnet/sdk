@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -29,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SyntaxNode node = root.FindNode(context.Span);
 
             string title = MicrosoftCodeQualityAnalyzersResources.AbstractTypesShouldNotHavePublicConstructorsCodeFix;
-            context.RegisterCodeFix(new MyCodeAction(title,
+            context.RegisterCodeFix(CodeAction.Create(title,
                                         async ct => await ChangeAccessibilityCodeFixAsync(context.Document, root, node, ct).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     context.Diagnostics);
@@ -53,15 +52,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override FixAllProvider GetFixAllProvider()
         {
             return WellKnownFixAllProviders.BatchFixer;
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }

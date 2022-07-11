@@ -3,8 +3,8 @@
 Imports System.Collections.Immutable
 Imports System.Composition
 Imports System.Threading
-Imports Analyzer.Utilities
 Imports Microsoft.CodeAnalysis
+Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Formatting
 Imports Microsoft.CodeAnalysis.VisualBasic
@@ -43,7 +43,7 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
             Dim classStatement = root.FindToken(span.Start).Parent?.FirstAncestorOrSelf(Of ClassStatementSyntax)
             If classStatement IsNot Nothing Then
                 Dim title As String = MicrosoftCodeQualityAnalyzersResources.MakeClassStatic
-                Dim fix = New MyCodeAction(title, Async Function(ct) Await AddNotInheritableKeywordAsync(document, root, classStatement).ConfigureAwait(False), equivalenceKey:=title)
+                Dim fix = CodeAction.Create(title, Async Function(ct) Await AddNotInheritableKeywordAsync(document, root, classStatement).ConfigureAwait(False), equivalenceKey:=title)
                 context.RegisterCodeFix(fix, context.Diagnostics)
             End If
         End Function
@@ -54,21 +54,5 @@ Namespace Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines
             Dim newRoot = root.ReplaceNode(classStatement, newClassStatement)
             Return Task.FromResult(document.WithSyntaxRoot(newRoot))
         End Function
-
-        ' Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        Private Class MyCodeAction
-            Inherits DocumentChangeAction
-
-            ' Workaround for https://github.com/dotnet/roslyn-analyzers/issues/1413
-            Public Overrides ReadOnly Property EquivalenceKey As String
-                Get
-                    Return MyBase.EquivalenceKey
-                End Get
-            End Property
-
-            Public Sub New(title As String, createChangedDocument As Func(Of CancellationToken, Task(Of Document)), equivalenceKey As String)
-                MyBase.New(title, createChangedDocument, equivalenceKey)
-            End Sub
-        End Class
     End Class
 End Namespace

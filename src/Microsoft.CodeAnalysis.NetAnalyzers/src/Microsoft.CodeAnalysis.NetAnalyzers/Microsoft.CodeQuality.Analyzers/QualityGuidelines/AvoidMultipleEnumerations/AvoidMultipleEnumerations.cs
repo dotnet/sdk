@@ -50,7 +50,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         /// <summary>
         /// All the types under System.Collections.Generic which constructor takes deferred type parameter.
         /// </summary>
-        private static readonly ImmutableArray<string> s_contructorsEnumeratedParameterTypes = ImmutableArray.Create(
+        private static readonly ImmutableArray<string> s_constructorsEnumeratedParameterTypes = ImmutableArray.Create(
             WellKnownTypeNames.SystemCollectionsGenericDictionary2,
             WellKnownTypeNames.SystemCollectionsGenericHashSet1,
             WellKnownTypeNames.SystemCollectionsGenericLinkedList1,
@@ -164,7 +164,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
             var wellKnownTypeProvider = WellKnownTypeProvider.GetOrCreate(compilation);
             var linqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_linqChainMethods);
             var noEnumerationMethods = GetLinqMethods(wellKnownTypeProvider, s_noEnumerationLinqMethods);
-            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods, s_contructorsEnumeratedParameterTypes);
+            var enumeratedMethods = GetEnumeratedMethods(wellKnownTypeProvider, s_immutableCollectionsTypeNamesAndConvensionMethods, s_enumeratedParametersLinqMethods, s_constructorsEnumeratedParameterTypes);
             var noEffectLinqChainMethods = GetLinqMethods(wellKnownTypeProvider, s_noEffectLinqChainMethods);
             var additionalDeferredTypes = GetTypes(compilation, s_additionalDeferredTypes);
 
@@ -210,9 +210,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     syntaxTree,
                     compilation);
 
-
-            var assumeMethodEnumeratesArguments = options.GetBoolOptionValue(
-                EditorConfigOptionNames.AssumeMethodEnumeratesArguments,
+            var assumeMethodEnumeratesParameters = options.GetBoolOptionValue(
+                EditorConfigOptionNames.AssumeMethodEnumeratesParameters,
                 MultipleEnumerableDescriptor,
                 syntaxTree,
                 compilation,
@@ -227,7 +226,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                 getEnumeratorSymbols,
                 customizedEnumerationMethods,
                 customizedLinqChainMethods,
-                assumeMethodEnumeratesArguments);
+                assumeMethodEnumeratesParameters);
 
             var potentialDiagnosticOperationsBuilder = PooledHashSet<IOperation>.GetInstance();
             context.RegisterOperationAction(

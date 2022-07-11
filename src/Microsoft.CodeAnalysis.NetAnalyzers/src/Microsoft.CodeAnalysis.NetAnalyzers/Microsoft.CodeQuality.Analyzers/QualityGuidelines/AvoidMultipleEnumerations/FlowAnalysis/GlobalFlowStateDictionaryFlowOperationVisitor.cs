@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         protected sealed override void SetAbstractValue(GlobalFlowStateDictionaryAnalysisData analysisData, AnalysisEntity analysisEntity, GlobalFlowStateDictionaryAnalysisValue value)
         {
-            if (value.Kind == GlobalFlowStateDictionaryAnalysisValueKind.Known)
+            if (value.Kind is GlobalFlowStateDictionaryAnalysisValueKind.Known or GlobalFlowStateDictionaryAnalysisValueKind.Empty)
             {
                 analysisData[analysisEntity] = value;
             }

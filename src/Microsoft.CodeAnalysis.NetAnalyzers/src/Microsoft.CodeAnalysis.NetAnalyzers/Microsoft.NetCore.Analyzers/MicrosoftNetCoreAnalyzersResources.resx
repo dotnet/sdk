@@ -859,7 +859,7 @@
     <value>Potential security vulnerability was found where '{0}' in method '{1}' may be tainted by hard-coded key from '{2}' in method '{3}'</value>
   </data>
   <data name="DoNotInstallRootCertDescription" xml:space="preserve">
-    <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack – and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
+    <value>By default, the Trusted Root Certification Authorities certificate store is configured with a set of public CAs that has met the requirements of the Microsoft Root Certificate Program. Since all trusted root CAs can issue certificates for any domain, an attacker can pick a weak or coercible CA that you install by yourself to target for an attack - and a single vulnerable, malicious or coercible CA undermines the security of the entire system. To make matters worse, these attacks can go unnoticed quite easily.</value>
   </data>
   <data name="PotentialReferenceCycleInDeserializedObjectGraphTitle" xml:space="preserve">
     <value>Potential reference cycle in deserialized object graph</value>
@@ -1057,7 +1057,7 @@
     <value>This overload of the '{0}.{1}' method is potentially unsafe. It may enable Document Type Definition (DTD) which can be vulnerable to denial of service attacks, or might use an XmlResolver which can be vulnerable to information disclosure. Use an overload that takes a XmlReader instance instead, with DTD processing disabled and no XmlResolver.</value>
   </data>
   <data name="UseRSAWithSufficientKeySize" xml:space="preserve">
-    <value>Use Rivest–Shamir–Adleman (RSA) Algorithm With Sufficient Key Size</value>
+    <value>Use Rivest-Shamir-Adleman (RSA) Algorithm With Sufficient Key Size</value>
   </data>
   <data name="UseRSAWithSufficientKeySizeDescription" xml:space="preserve">
     <value>Encryption algorithms are vulnerable to brute force attacks when too small a key size is used.</value>
@@ -1449,6 +1449,24 @@
   <data name="UseEnvironmentCurrentManagedThreadIdFix" xml:space="preserve">
     <value>Use 'Environment.CurrentManagedThreadId'</value>
   </data>
+  <data name="ThreadStaticOnNonStaticFieldDescription" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields. When applied to instance fields, it has no impact on behavior.</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldMessage" xml:space="preserve">
+    <value>Ensure 'ThreadStatic' is only used with static fields</value>
+  </data>
+  <data name="ThreadStaticOnNonStaticFieldTitle" xml:space="preserve">
+    <value>'ThreadStatic' only affects static fields</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineDescription" xml:space="preserve">
+    <value>'ThreadStatic' fields should be initialized lazily on use, not with inline initialization nor explicitly in a static constructor, which would only initialize the field on the thread that runs the type's static constructor.</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineMessage" xml:space="preserve">
+    <value>'ThreadStatic' fields should not use inline initialization</value>
+  </data>
+  <data name="ThreadStaticInitializedInlineTitle" xml:space="preserve">
+    <value>Improper 'ThreadStatic' field initialization</value>
+  </data>
   <data name="UseAsSpanInsteadOfRangeIndexerOnAStringCodeFixTitle" xml:space="preserve">
     <value>Use `{0}` instead of Range-based indexers on a string</value>
   </data>
@@ -1533,6 +1551,18 @@
   <data name="PlatformCompatibilityAllPlatforms" xml:space="preserve">
     <value>and all other platforms</value>
     <comment>This call site is reachable on: 'windows' 10.0.2000 and later, and all other platforms</comment>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyDescription" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'. The former already checks whether the key exists, and will not throw if it does not.</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyMessage" xml:space="preserve">
+    <value>Do not guard 'Dictionary.Remove(key)' with 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="DoNotGuardDictionaryRemoveByContainsKeyTitle" xml:space="preserve">
+    <value>Unnecessary call to 'Dictionary.ContainsKey(key)'</value>
+  </data>
+  <data name="RemoveRedundantGuardCallCodeFixTitle" xml:space="preserve">
+    <value>Remove unnecessary call</value>
   </data>
   <data name="BufferBlockCopyLengthMessage" xml:space="preserve">
     <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
@@ -1768,7 +1798,7 @@
     <value>{3} '{0}''s type contains the preview type '{1}' and requires opting into preview features. See {2} for more information.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription" xml:space="preserve">
-    <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a 'ModuleInitializer' method, it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Library code should therefore not utilize the 'ModuleInitializer' attribute, but instead expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
+    <value>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</value>
   </data>
   <data name="ModuleInitializerAttributeShouldNotBeUsedInLibrariesMessage" xml:space="preserve">
     <value>The 'ModuleInitializer' attribute is only intended to be used in application code or advanced source generator scenarios</value>
@@ -1833,5 +1863,86 @@
   </data>
   <data name="UsesPreviewTypeParameterMessage" xml:space="preserve">
     <value>'{0}' uses the preview type '{1}' and needs to opt into preview features. See {2} for more information.</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperTitle" xml:space="preserve">
+    <value>Specify a culture or use an invariant version</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperDescription" xml:space="preserve">
+    <value>Specify culture to help avoid accidental implicit dependency on current culture. Using an invariant version yields consistent results regardless of the culture of an application.</value>
+  </data>
+  <data name="SpecifyCultureForToLowerAndToUpperMessage" xml:space="preserve">
+    <value>Specify a culture or use an invariant version to avoid implicit dependency on current culture</value>
+  </data>
+  <data name="SpecifyCurrentCulture" xml:space="preserve">
+    <value>Specify current culture</value>
+  </data>
+  <data name="UseInvariantVersion" xml:space="preserve">
+    <value>Use an invariant version</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledDescription" xml:space="preserve">
+    <value>Using features that require runtime marshalling when runtime marshalling is disabled will result in runtime exceptions.</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledTitle" xml:space="preserve">
+    <value>Property, type, or attribute requires runtime marshalling</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledDescription" xml:space="preserve">
+    <value>This method uses runtime marshalling even when runtime marshalling is disabled, which can cause unexpected behavior differences at runtime due to different expectations of a type's native layout.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledMessage" xml:space="preserve">
+    <value>'{0}' uses runtime marshalling even when 'DisableRuntimeMarshallingAttribute' is applied. Use features like 'sizeof' and pointers directly to ensure accurate results.</value>
+  </data>
+  <data name="MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabledTitle" xml:space="preserve">
+    <value>This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied</value>
+  </data>
+  <data name="UseDisabledMarshallingEquivalentCodeFix" xml:space="preserve">
+    <value>Use equivalent code that works when marshalling is disabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageAutoLayoutTypes" xml:space="preserve">
+    <value>Types with '[StructLayout(LayoutKind.Auto)]' require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageByRefParameters" xml:space="preserve">
+    <value>By-ref parameters require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping" xml:space="preserve">
+    <value>HResult-swapping requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageLCIDConversionAttribute" xml:space="preserve">
+    <value>Using 'LCIDConversionAttribute' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageManagedParameterOrReturnTypes" xml:space="preserve">
+    <value>Managed parameter or return types require runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageSetLastError" xml:space="preserve">
+    <value>Setting SetLastError to 'true' requires runtime marshalling to be enabled</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageVarargPInvokes" xml:space="preserve">
+    <value>Varadic P/Invoke signatures require runtime marshalling to be enabled</value>
+  </data>
+  <data name="SealInternalTypesDescription" xml:space="preserve">
+    <value>When a type is not accessible outside its assembly and has no subtypes within its containing assembly, it can be safely sealed. Sealing types can improve performance.</value>
+  </data>
+  <data name="SealInternalTypesMessage" xml:space="preserve">
+    <value>Type '{0}' can be sealed because it has no subtypes in its containing assembly and is not externally visible</value>
+  </data>
+  <data name="SealInternalTypesTitle" xml:space="preserve">
+    <value>Seal internal types</value>
+  </data>
+  <data name="SealInternalTypesCodeFixTitle" xml:space="preserve">
+    <value>Seal class</value>
+  </data>
+  <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
+    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueCodeFixTitle" xml:space="preserve">
+    <value>Use 'TryGetValue(TKey, out TValue)'</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueTitle" xml:space="preserve">
+    <value>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueMessage" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</value>
+  </data>
+  <data name="PreferDictionaryTryGetValueDescription" xml:space="preserve">
+    <value>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</value>
   </data>
 </root>

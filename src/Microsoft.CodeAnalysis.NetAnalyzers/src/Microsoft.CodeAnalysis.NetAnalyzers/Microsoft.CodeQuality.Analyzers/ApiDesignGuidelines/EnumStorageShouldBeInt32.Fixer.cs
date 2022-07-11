@@ -6,8 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using System.Collections.Immutable;
-using Analyzer.Utilities;
-using System;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -36,7 +35,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             foreach (var diagnostic in context.Diagnostics)
             {
                 // Register fixer
-                context.RegisterCodeFix(new MyCodeAction(title,
+                context.RegisterCodeFix(CodeAction.Create(title,
                          c => ChangeEnumTypeToInt32Async(context.Document, diagnostic, root, c),
                          equivalenceKey: title), diagnostic);
             }
@@ -63,15 +62,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             editor.RemoveNode(targetNode, SyntaxRemoveOptions.KeepLeadingTrivia | SyntaxRemoveOptions.KeepTrailingTrivia | SyntaxRemoveOptions.KeepExteriorTrivia | SyntaxRemoveOptions.KeepEndOfLine);
 
             return editor.GetChangedDocument();
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }
