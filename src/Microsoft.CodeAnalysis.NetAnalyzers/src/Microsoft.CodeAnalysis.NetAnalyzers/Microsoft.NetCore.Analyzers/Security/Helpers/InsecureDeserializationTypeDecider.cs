@@ -286,7 +286,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
                                 && ((options.BinarySerialization
                                         && hasSerializableAttribute
                                         && !propertySymbol.HasAttribute(this.NonSerializedAttributeTypeSymbol)
-                                        && propertySymbol.IsPropertyWithBackingField()
+                                        && propertySymbol.IsPropertyWithBackingField(out _)
                                         )
                                     || (options.DataContractSerialization
                                         && ((hasDataContractAttribute && propertySymbol.HasAttribute(this.DataMemberAttributeTypeSymbol))

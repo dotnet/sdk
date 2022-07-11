@@ -52,6 +52,16 @@
         <target state="translated">무한 재귀 방지</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
+        <target state="translated">'IEnumerable' 컬렉션에 대해 여러 개의 열거형이 가능합니다. 여러 열거형을 방지하는 구현을 사용하는 것이 좋습니다.</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="translated">'IEnumerable' 컬렉션에 대해 여러 개의 열거 가능</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">'out' 또는 'ref'를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험, 값 형식과 참조 형식이 어떻게 다른지에 대한 이해 및 반환 값이 여러 개인 메서드 처리가 필요합니다. 또한 'out' 매개 변수와 'ref' 매개 변수의 차이점은 널리 이해되지 않습니다.</target>
@@ -65,6 +75,11 @@
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
         <target state="translated">out 매개 변수를 사용하지 마십시오.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMultipleMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">형식 '{0}'은(는) '{2}' 중 무엇도 구현하지 않고 직접 또는 간접적으로 '{1}'을(를) 상속합니다. 공개된 형식의 유용성을 확대하려면 제네릭 버전을 구현해야 합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -234,7 +249,7 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">밑줄 제거</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">

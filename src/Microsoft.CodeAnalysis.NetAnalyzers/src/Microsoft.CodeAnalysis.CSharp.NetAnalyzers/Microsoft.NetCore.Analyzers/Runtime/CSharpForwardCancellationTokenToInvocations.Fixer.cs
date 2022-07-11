@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.NetCore.Analyzers.Runtime;
-using NullableAnnotation = Analyzer.Utilities.Lightup.NullableAnnotation;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
@@ -67,24 +65,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         protected override SyntaxNode GetTypeSyntaxForArray(IArrayTypeSymbol type)
         {
-            var typeName = TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
-            if (type.ElementType.IsReferenceType)
-            {
-                var additionalAnnotation = type.NullableAnnotation() switch
-                {
-                    NullableAnnotation.None => NullableSyntaxAnnotationEx.Oblivious,
-                    NullableAnnotation.Annotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
-                    NullableAnnotation.NotAnnotated => NullableSyntaxAnnotationEx.AnnotatedOrNotAnnotated,
-                    _ => null,
-                };
-
-                if (additionalAnnotation is not null)
-                {
-                    typeName = typeName.WithAdditionalAnnotations(additionalAnnotation);
-                }
-            }
-
-            return typeName;
+            return TypeNameVisitor.GetTypeSyntaxForSymbol(type.ElementType);
         }
 
         protected override IEnumerable<SyntaxNode> GetExpressions(ImmutableArray<ArgumentSyntax> newArguments)

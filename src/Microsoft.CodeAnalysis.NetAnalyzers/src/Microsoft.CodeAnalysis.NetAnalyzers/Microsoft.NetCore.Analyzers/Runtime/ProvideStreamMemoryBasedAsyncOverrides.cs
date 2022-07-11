@@ -32,7 +32,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
         private const string ReadAsyncName = nameof(System.IO.Stream.ReadAsync);
         private const string WriteAsyncName = nameof(System.IO.Stream.WriteAsync);

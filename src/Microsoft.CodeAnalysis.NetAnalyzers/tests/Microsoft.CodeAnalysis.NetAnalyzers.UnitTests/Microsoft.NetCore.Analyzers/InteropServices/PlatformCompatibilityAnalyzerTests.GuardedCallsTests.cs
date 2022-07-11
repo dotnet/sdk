@@ -1066,6 +1066,41 @@ class Test
             await VerifyAnalyzerCSAsync(source);
         }
 
+        [Fact, WorkItem(5938, "https://github.com/dotnet/roslyn-analyzers/issues/5938")]
+        public async Task Guarded_TwoConditionalsAndReturns_WithCallSiteAttribute()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+using System;
+
+public class Test
+{
+    [SupportedOSPlatform(""ios"")]
+    public void M1()
+    {
+        [|M2()|];
+        if(OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0))
+        {
+            M2();
+            return;
+        }
+        M3(); // should not warn as ios 13.0 or below case returns with above condition
+    }
+
+    [SupportedOSPlatform(""ios"")]
+    [UnsupportedOSPlatform(""ios13.0"")]
+    [SupportedOSPlatform(""tvos"")]
+    [UnsupportedOSPlatform(""tvos13.0"")]
+    public void M2() { }
+
+    [SupportedOSPlatform(""ios13.0"")]
+    [SupportedOSPlatform(""tvos13.0"")]
+    public void M3() { }
+}
+";
+            await VerifyAnalyzerCSAsync(source);
+        }
+
         [Fact]
         public async Task GuardedWith_OperatingSystem_IsOSPlatform_SimpleIfElseAsync()
         {
@@ -1101,6 +1136,34 @@ class Test
 }";
 
             await VerifyAnalyzerCSAsync(source);
+        }
+
+        [Fact, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
+        public async Task IosGuardAttributeWithinMacCatalystTargetedAssembly()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""MacCatalyst13.1"")]
+
+public class Test
+{
+    [SupportedOSPlatformGuard(""ios14.0"")]
+	internal static bool IsiOS14OrNewer => true;
+
+    [SupportedOSPlatform(""ios13.4"")]
+    public static void iOS13Method() { }
+
+    static void M1()
+    {
+        [|iOS13Method()|]; // This call site is reachable on: 'MacCatalyst' 13.1 and later. 'Test.iOS13Method()' is only supported on: 'MacCatalyst' 13.4 and later.
+        if (IsiOS14OrNewer)
+            iOS13Method(); // Should not warn
+            
+    }
+}";
+            await VerifyAnalyzerCSAsync(csSource);
         }
 
         [Fact]
@@ -1505,7 +1568,7 @@ class Test
         }
         else
         {
-            [|M2()|];
+            M2();
             [|M3()|];
         }
 
@@ -1540,7 +1603,7 @@ Class Test
             [|M2()|]
             M3()
         Else
-            [|M2()|]
+            M2()
             [|M3()|]
         End If
 
@@ -3523,6 +3586,76 @@ End Class";
         }
 
         [Fact]
+        public async Task GuardedWith_DebugAssertWithMessage()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
+
+class Test
+{
+    void M1()
+    {
+        Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), ""Only supported on windows"", ""Detailed message"");
+        M3();
+        [|M2()|];
+        [|M4()|];
+
+        Debug.Assert(OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2), ""Only supported on windows"");
+        M2();
+        M3();
+
+        Debug.Assert(OperatingSystem.IsLinux(), ""{0}  is only supported on windows"", ""Detailed message"", nameof(M4));
+        M4();
+    }
+
+    [SupportedOSPlatform(""Windows10.1.2.3"")]
+    void M2() { }
+
+    [SupportedOSPlatform(""Windows"")]
+    void M3() { }
+
+    [SupportedOSPlatform(""linux"")]
+    void M4() { }
+}";
+            await VerifyAnalyzerCSAsync(source);
+
+            var vbSource = @"
+Imports System
+Imports System.Diagnostics
+Imports System.Runtime.Versioning
+
+Class Test
+    Private Sub M1()
+        Debug.Assert(OperatingSystem.IsWindows(), ""Only supported on windows"", ""Detailed message"")
+        M3()
+        [|M2()|]
+        [|M4()|]
+
+        Debug.Assert(OperatingSystem.IsOSPlatformVersionAtLeast(""Windows"", 10, 2), ""Only supported on windows"")
+        M2()
+        M3()
+
+        Debug.Assert(OperatingSystem.IsLinux(), ""{0}  is only supported on windows"", ""Detailed message"", nameof(M4))
+        M4()
+    End Sub
+
+    <SupportedOSPlatform(""Windows10.1.2.3"")>
+    Private Sub M2()
+    End Sub
+    <SupportedOSPlatform(""Windows"")>
+    Private Sub M3()
+    End Sub
+    <SupportedOSPlatform(""Linux"")>
+    Private Sub M4()
+    End Sub
+End Class";
+            await VerifyAnalyzerVBAsync(vbSource);
+        }
+
+        [Fact]
         public async Task GuardedWith_ResultSavedInLocalAsync()
         {
             var source = @"
@@ -3985,6 +4118,39 @@ class Test
 }";
 
             await VerifyAnalyzerCSAsync(source, "dotnet_code_quality.interprocedural_analysis_kind = ContextSensitive");
+        }
+
+        [Fact, WorkItem(5963, "https://github.com/dotnet/roslyn-analyzers/pull/5963")]
+        public async Task GuardCallingCachedValue_CallSiteHasAssemblyAttributeAsync()
+        {
+            var source = @"
+using System;
+using System.Diagnostics;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""ios10.0"")]
+class Test
+{
+    static bool s_isiOS11OrNewer => false;
+
+    [SupportedOSPlatformGuard(""ios11.0"")]
+    private bool IsIos11Supported() => s_isiOS11OrNewer; // should not warn
+
+    void M1()
+    {
+        [|SupportedOniOS11()|]; 
+
+        if (IsIos11Supported())
+        {
+            SupportedOniOS11();    
+        }
+    }
+
+    [SupportedOSPlatform(""ios11.0"")]
+    void SupportedOniOS11() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
         [Fact]

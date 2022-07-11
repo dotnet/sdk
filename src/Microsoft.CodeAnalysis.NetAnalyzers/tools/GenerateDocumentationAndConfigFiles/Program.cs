@@ -208,7 +208,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             if (fileNamesWithValidationFailures.Count > 0)
             {
-                await Console.Error.WriteLineAsync("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` for each solution at the root of the repo to automatically update them:").ConfigureAwait(false);
+                await Console.Error.WriteLineAsync("One or more auto-generated documentation files were either edited manually, or not updated. Please revert changes made to the following files (if manually edited) and run `msbuild /t:pack` at the root of the repo to automatically update them:").ConfigureAwait(false);
                 fileNamesWithValidationFailures.ForEach(fileName => Console.Error.WriteLine($"    {fileName}"));
                 return 1;
             }
@@ -252,7 +252,7 @@ namespace GenerateDocumentationAndConfigFiles
 
                 var fileContents =
 $@"<Project>
-  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsNotAsErrors()}{getCompilerVisibleProperties()}
+  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
 </Project>";
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
@@ -310,17 +310,17 @@ $@"<Project>
                 }
             }
 
-            string getCodeAnalysisTreatWarningsNotAsErrors()
+            string getCodeAnalysisTreatWarningsAsErrors()
             {
                 var allRuleIds = string.Join(';', allRulesById.Keys);
                 return $@"
   <!-- 
-    This property group prevents the rule ids implemented in this package to be bumped to errors when
-    the 'CodeAnalysisTreatWarningsAsErrors' = 'false'.
+    This property group handles 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
   -->
   <PropertyGroup>
     <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
     <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+    <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
   </PropertyGroup>";
             }
 
@@ -373,8 +373,8 @@ $@"<Project>
                     }
 
                     var title = descriptor.Title.ToString(CultureInfo.InvariantCulture).Trim();
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    title = Regex.Replace(title, "(<.+?>)", "\\$1");
+
+                    title = escapeMarkdown(title);
 
                     if (!isFirstEntry)
                     {
@@ -394,8 +394,7 @@ $@"<Project>
 
                     // Double the line breaks to ensure they are rendered properly in markdown
                     description = Regex.Replace(description, "(\r?\n)", "$1$1");
-                    // Escape generic arguments to ensure they are not considered as HTML elements
-                    description = Regex.Replace(description, "(<.+?>)", "\\$1");
+                    description = escapeMarkdown(description);
                     // Add angle brackets around links to prevent violating MD034:
                     // https://github.com/DavidAnson/markdownlint/blob/82cf68023f7dbd2948a65c53fc30482432195de4/doc/Rules.md#md034---bare-url-used
                     // Regex taken from: https://github.com/DavidAnson/markdownlint/blob/59eaa869fc749e381fe9d53d04812dfc759595c6/helpers/helpers.js#L24
@@ -424,6 +423,10 @@ $@"<Project>
                     File.WriteAllText(fileWithPath, builder.ToString());
                 }
             }
+
+            // Escape generic arguments to ensure they are not considered as HTML elements, and also escape asterisks.
+            static string escapeMarkdown(string text)
+                => Regex.Replace(text, "(<.+?>)", "\\$1").Replace("*", @"\*");
 
             // based on https://github.com/dotnet/roslyn/blob/main/src/Compilers/Core/Portable/CommandLine/ErrorLogger.cs
             void createAnalyzerSarifFile()
@@ -911,7 +914,7 @@ Rule ID | Missing Help Link | Title |
                 startRulesSection,
                 endRulesSection,
                 addRuleEntry,
-                getSeverityString,
+                GetSeverityString,
                 commentStart: "# ",
                 commentEnd: string.Empty,
                 category,
@@ -955,23 +958,6 @@ Rule ID | Missing Help Link | Title |
                 result.AppendLine();
                 result.AppendLine($"# {rule.Id}: {rule.Title}");
                 result.AppendLine($@"dotnet_diagnostic.{rule.Id}.severity = {severity}");
-            }
-
-            static string getSeverityString(DiagnosticSeverity? severity)
-            {
-                if (!severity.HasValue)
-                {
-                    return "none";
-                }
-
-                return severity.Value switch
-                {
-                    DiagnosticSeverity.Error => "error",
-                    DiagnosticSeverity.Warning => "warning",
-                    DiagnosticSeverity.Info => "suggestion",
-                    DiagnosticSeverity.Hidden => "silent",
-                    _ => throw new NotImplementedException(severity.Value.ToString()),
-                };
             }
         }
 
@@ -1180,11 +1166,11 @@ Rule ID | Missing Help Link | Title |
                     result.AppendLine();
 
                     // Append 'global_level' to ensure conflicts are properly resolved between different global configs:
-                    //   1. Lowest precedence (-2): Category-agnostic config generated by us.
-                    //   2. Higher precedence (-1): Category-specific config generated by us.
+                    //   1. Lowest precedence (-100): Category-agnostic config generated by us.
+                    //   2. Higher precedence (-99): Category-specific config generated by us.
                     //   3. Highest predence (non-negative integer): User provided config.
                     // See https://github.com/dotnet/roslyn/issues/48634 for further details.
-                    var globalLevel = category != null ? -1 : -2;
+                    var globalLevel = category != null ? -99 : -100;
                     result.AppendLine($@"global_level = {globalLevel}");
                     result.AppendLine();
                 }
@@ -1319,26 +1305,26 @@ Rule ID | Missing Help Link | Title |
                         {
                             return GetSeverityString(null);
                         }
-
-                        static string GetSeverityString(DiagnosticSeverity? severity)
-                        {
-                            if (!severity.HasValue)
-                            {
-                                return "none";
-                            }
-
-                            return severity.Value switch
-                            {
-                                DiagnosticSeverity.Error => "error",
-                                DiagnosticSeverity.Warning => "warning",
-                                DiagnosticSeverity.Info => "suggestion",
-                                DiagnosticSeverity.Hidden => "silent",
-                                _ => throw new NotImplementedException(severity.Value.ToString()),
-                            };
-                        }
                     }
                 }
             }
+        }
+
+        private static string GetSeverityString(DiagnosticSeverity? severity)
+        {
+            if (!severity.HasValue)
+            {
+                return "none";
+            }
+
+            return severity.Value switch
+            {
+                DiagnosticSeverity.Error => "error",
+                DiagnosticSeverity.Warning => "warning",
+                DiagnosticSeverity.Info => "suggestion",
+                DiagnosticSeverity.Hidden => "silent",
+                _ => throw new NotImplementedException(severity.Value.ToString()),
+            };
         }
 
         private static void CreateTargetsFile(string targetsFileDir, string targetsFileName, string packageName, IOrderedEnumerable<string> categories)
@@ -1555,13 +1541,14 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
             {
                 return $@"
   <!--
-    Design-time target to prevent the rule ids implemented in this package to be bumped to errors in the IDE
-    when 'CodeAnalysisTreatWarningsAsErrors' = 'false'. Note that a similar 'WarningsNotAsErrors'
-    property group is present in the generated props file to ensure this functionality on command line builds.
+    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors' for the CA rule ids implemented in this package.
+    Note that similar 'WarningsNotAsErrors' and 'WarningsAsErrors'
+    property groups are present in the generated props file to ensure this functionality on command line builds.
   -->
-  <Target Name=""_CodeAnalysisTreatWarningsNotAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false' AND ('$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true')"">
+  <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
     <PropertyGroup>
-      <WarningsNotAsErrors>$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+      <WarningsNotAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'false'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+	  <WarningsAsErrors Condition=""'$(CodeAnalysisTreatWarningsAsErrors)' == 'true' and '$(TreatWarningsAsErrors)' != 'true'"">$(WarningsAsErrors);$(CodeAnalysisRuleIds)</WarningsAsErrors>
     </PropertyGroup>
   </Target>
 ";

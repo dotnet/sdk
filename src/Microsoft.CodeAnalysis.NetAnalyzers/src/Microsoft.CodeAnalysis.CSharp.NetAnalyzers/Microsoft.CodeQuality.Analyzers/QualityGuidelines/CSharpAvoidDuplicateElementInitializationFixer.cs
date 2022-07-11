@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeQuality.Analyzers;
@@ -43,9 +41,10 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
             }
 
             context.RegisterCodeFix(
-                new MyCodeAction(
+                CodeAction.Create(
                     MicrosoftCodeQualityAnalyzersResources.RemoveRedundantElementInitializationCodeFixTitle,
-                    _ => Task.FromResult(RemoveElementInitializer(elementInitializer, objectInitializer, root, context.Document))),
+                    _ => Task.FromResult(RemoveElementInitializer(elementInitializer, objectInitializer, root, context.Document)),
+                    nameof(MicrosoftCodeQualityAnalyzersResources.RemoveRedundantElementInitializationCodeFixTitle)),
                 context.Diagnostics);
         }
 
@@ -58,14 +57,6 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
             var newElementInitializers = objectInitializer.Expressions.Remove(elementInitializer);
             var newRoot = root.ReplaceNode(objectInitializer, objectInitializer.WithExpressions(newElementInitializers));
             return document.WithSyntaxRoot(newRoot);
-        }
-
-        private sealed class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument)
-                : base(title, createChangedDocument, equivalenceKey: title)
-            {
-            }
         }
     }
 }

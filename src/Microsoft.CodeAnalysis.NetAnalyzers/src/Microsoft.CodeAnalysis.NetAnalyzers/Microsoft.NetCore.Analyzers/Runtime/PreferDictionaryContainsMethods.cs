@@ -44,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal const string KeysPropertyName = "Keys";
         internal const string ValuesPropertyName = "Values";
 
-        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
+        public sealed override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(ContainsKeyRule, ContainsValueRule);
 
         public sealed override void Initialize(AnalysisContext context)
         {
@@ -63,6 +63,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return;
             if (!compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1, out var ienumerableType))
                 return;
+
+            var linqExpressionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
             compilationContext.RegisterOperationAction(OnOperationAction, OperationKind.Invocation);
 
@@ -98,6 +100,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 var invocation = (IInvocationOperation)context.Operation;
                 IMethodSymbol containsMethod = invocation.TargetMethod;
+
+                // Check if we are in a Expression<Func<T...>> context, in which case it is possible
+                // that the underlying call doesn't have the comparison option so we want to bail-out.
+                if (invocation.IsWithinExpressionTree(linqExpressionType))
+                {
+                    return;
+                }
 
                 if (containsMethod.Name != ContainsMethodName
                     || containsMethod.ReturnType.SpecialType != SpecialType.System_Boolean

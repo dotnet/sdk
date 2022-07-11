@@ -501,6 +501,35 @@ public class C
 }");
         }
 
+        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        public async Task CA2214VirtualOnOtherSameClassesCSharp()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+class C
+{
+    public C(C d)
+    {
+        d.SomeMethod();
+    }
+    public virtual void SomeMethod() {}
+}
+");
+        }
+
+        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        public async Task CA2214VirtualOnOtherSameClassesBasic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Class C
+    Public Sub New(d As C)
+        d.SomeMethod()
+    End Sub
+    Public Overridable Sub SomeMethod()
+    End Sub
+End Class
+");
+        }
+
         private static DiagnosticResult GetCA2214CSharpResultAt(int line, int column)
 #pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()

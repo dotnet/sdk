@@ -52,6 +52,16 @@
         <target state="translated">避免无限递归</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
+        <target state="translated">“IEnumerable” 集合可能的多个枚举。请考虑使用避免多个枚举的实现。</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="translated">“IEnumerable”集合可能的多个枚举</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">按引用(使用 "out" 或 "ref")传递类型需要使用指针，了解值类型和引用类型有何不同，以及处理具有多个返回值的方法。此外，"out" 和 "ref" 参数之间的差异不太容易理解。</target>
@@ -65,6 +75,11 @@
       <trans-unit id="AvoidOutParametersTitle">
         <source>Avoid out parameters</source>
         <target state="translated">避免使用 out 参数</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CollectionsShouldImplementGenericInterfaceMultipleMessage">
+        <source>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</source>
+        <target state="translated">类型“{0}”会直接或间接继承“{1}”，而不实现任何“{2}”。公共可见的类型应实现通用版本以扩大可用性。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCatchGeneralExceptionTypesDescription">
@@ -234,7 +249,7 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">
         <source>Remove underscores</source>
-        <target state="new">Remove underscores</target>
+        <target state="translated">删除下划线</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementIDisposableCorrectlyMessageFinalizeOverride">
@@ -349,7 +364,7 @@
       </trans-unit>
       <trans-unit id="UriParametersShouldNotBeStringsCodeFixTitle">
         <source>Add 'System.Uri' overloads</source>
-        <target state="translated">添加 “System.Uri” 重载</target>
+        <target state="translated">添加 “System.Uri” 过载</target>
         <note>{Locked="System.Uri"}</note>
       </trans-unit>
       <trans-unit id="UseGenericEventHandlerInstancesTitle">

@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -14,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeQuality.Analyzers;
+using Microsoft.CodeAnalysis.CodeActions;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {
@@ -38,7 +37,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             if (classDeclaration != null)
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.MakeClassStatic;
-                var codeAction = new MyCodeAction(title,
+                var codeAction = CodeAction.Create(title,
                                                   async ct => await MakeClassStaticAsync(document, classDeclaration, ct).ConfigureAwait(false),
                                                   equivalenceKey: title);
                 context.RegisterCodeFix(codeAction, context.Diagnostics);
@@ -60,18 +59,6 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 
             return editor.GetChangedDocument();
         }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
-
-            // Workaround for https://github.com/dotnet/roslyn-analyzers/issues/1413
-            public override string EquivalenceKey => base.EquivalenceKey;
-        }
     }
 
     internal static class CA1052CSharpCodeFixProviderExtensions
@@ -84,7 +71,7 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
             }
 
             var constructor = (ConstructorDeclarationSyntax)member;
-            if (constructor.Modifiers.Any(m => m.Kind() == SyntaxKind.StaticKeyword))
+            if (constructor.Modifiers.Any(m => m.IsKind(SyntaxKind.StaticKeyword)))
             {
                 return false;
             }

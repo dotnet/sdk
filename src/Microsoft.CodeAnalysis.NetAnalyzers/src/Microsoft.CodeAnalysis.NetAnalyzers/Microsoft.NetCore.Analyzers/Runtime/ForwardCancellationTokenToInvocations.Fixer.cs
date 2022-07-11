@@ -7,8 +7,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
@@ -104,7 +104,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             context.RegisterCodeFix(
-                new MyCodeAction(
+                CodeAction.Create(
                     title: title,
                     CreateChangedDocumentAsync,
                     equivalenceKey: title),
@@ -154,15 +154,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             SyntaxNode newInvocationWithArguments = generator.InvocationExpression(expression, newArguments).WithTriviaFrom(invocation.Syntax);
 
             return generator.ReplaceNode(root, invocation.Syntax, newInvocationWithArguments);
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }

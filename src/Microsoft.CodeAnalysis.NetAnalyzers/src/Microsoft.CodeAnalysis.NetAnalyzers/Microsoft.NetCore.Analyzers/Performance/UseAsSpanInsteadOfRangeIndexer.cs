@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -113,7 +114,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         indexerArgument = elementReference.Indices[0];
                         containingType = elementReference.ArrayReference.Type;
                     }
-                    else if (operationContext.Operation.Kind == OperationKind.None)
+                    else if (operationContext.Operation.Kind == OperationKind.None
+                        || operationContext.Operation.Kind == OperationKindEx.ImplicitIndexerReference)
                     {
                         // The forward support via the "None" operation kind is only available for C#.
                         if (operationContext.Compilation.Language != LanguageNames.CSharp)
@@ -205,7 +207,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 },
                 OperationKind.PropertyReference,
                 OperationKind.ArrayElementReference,
-                OperationKind.None);
+                OperationKind.None,
+                OperationKindEx.ImplicitIndexerReference);
         }
     }
 }

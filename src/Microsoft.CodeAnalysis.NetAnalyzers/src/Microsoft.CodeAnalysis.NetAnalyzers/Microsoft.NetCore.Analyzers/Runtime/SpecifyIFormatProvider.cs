@@ -82,10 +82,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
             var stringType = context.Compilation.GetSpecialType(SpecialType.System_String);
-            if (objectType == null || stringType == null)
-            {
-                return;
-            }
 
             var charType = context.Compilation.GetSpecialType(SpecialType.System_Char);
             var boolType = context.Compilation.GetSpecialType(SpecialType.System_Boolean);
@@ -151,7 +147,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 targetMethod.ContainingType.IsErrorType() ||
                 (activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
                 (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)) ||
-                IsValidToStringCall(invocationExpression, invariantToStringTypes, dateTimeType, dateTimeOffsetType, timeSpanType))
+                IsValidToStringCall(invocationExpression, invariantToStringTypes, dateTimeType, dateTimeOffsetType, timeSpanType) ||
+                IsValidParseCall(invocationExpression, guidType))
                 {
                     return;
                 }
@@ -312,6 +309,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return nullableTypeArgument;
                 return typeSymbol;
             }
+        }
+
+        private static bool IsValidParseCall(IInvocationOperation invocationOperation, INamedTypeSymbol? guidType)
+        {
+            var targetMethod = invocationOperation.TargetMethod;
+
+            if (targetMethod.Name != "Parse")
+            {
+                return false;
+            }
+
+            if (targetMethod.ContainingType.Equals(guidType))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

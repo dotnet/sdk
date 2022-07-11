@@ -295,7 +295,7 @@ Namespace Microsoft.NetFramework.VisualBasic.Analyzers.Helpers
         End Function
 
         Public Overrides Function IsObjectCreationExpressionUnderFieldDeclaration(node As SyntaxNode) As Boolean
-            Return node IsNot Nothing And node.Kind() = SyntaxKind.ObjectCreationExpression _
+            Return node IsNot Nothing And node.IsKind(SyntaxKind.ObjectCreationExpression) _
                 And node.AncestorsAndSelf().OfType(Of FieldDeclarationSyntax)().FirstOrDefault() IsNot Nothing
         End Function
 

@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Rename;
 
@@ -59,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresCodeFixTitle;
-            context.RegisterCodeFix(new MyCodeAction(title,
+            context.RegisterCodeFix(CodeAction.Create(title,
                                         ct => Renamer.RenameSymbolAsync(context.Document.Project.Solution, symbol, newName, null, ct),
                                         equivalenceKey: title),
                                     context.Diagnostics);
@@ -82,14 +80,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             return builder.ToString();
-        }
-
-        private class MyCodeAction : SolutionChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Solution>> createChangedSolution, string equivalenceKey)
-                : base(title, createChangedSolution, equivalenceKey)
-            {
-            }
         }
     }
 }

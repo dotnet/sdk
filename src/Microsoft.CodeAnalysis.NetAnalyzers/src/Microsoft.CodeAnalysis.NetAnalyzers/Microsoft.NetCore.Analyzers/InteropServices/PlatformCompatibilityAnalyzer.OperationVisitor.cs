@@ -14,7 +14,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     public sealed partial class PlatformCompatibilityAnalyzer
     {
-        private sealed class OperationVisitor : GlobalFlowStateDataFlowOperationVisitor
+        private sealed class OperationVisitor : GlobalFlowStateValueSetFlowOperationVisitor
         {
             private readonly ImmutableArray<IMethodSymbol> _platformCheckMethods;
             private readonly INamedTypeSymbol? _osPlatformType;

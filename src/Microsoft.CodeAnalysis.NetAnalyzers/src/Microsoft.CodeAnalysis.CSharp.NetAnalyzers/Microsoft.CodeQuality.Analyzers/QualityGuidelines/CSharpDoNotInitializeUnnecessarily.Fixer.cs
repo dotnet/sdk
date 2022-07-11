@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
@@ -35,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.DoNotInitializeUnnecessarilyFix;
                 context.RegisterCodeFix(
-                    new MyCodeAction(title,
+                    CodeAction.Create(title,
                     async ct =>
                     {
                         // Simply delete the field or property initializer.
@@ -43,7 +42,16 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         if (node.Parent is PropertyDeclarationSyntax prop)
                         {
                             // For a property, we also need to get rid of the semicolon that follows the initializer.
-                            editor.ReplaceNode(prop, prop.WithInitializer(default).WithSemicolonToken(default).WithTrailingTrivia(prop.SemicolonToken.TrailingTrivia));
+                            var newProp = prop.TrackNodes(node);
+                            var newTrailingTrivia = newProp.Initializer.GetTrailingTrivia()
+                                                    .AddRange(newProp.SemicolonToken.LeadingTrivia)
+                                                    .AddRange(newProp.SemicolonToken.TrailingTrivia);
+                            newProp = newProp.WithSemicolonToken(default)
+                                        .WithTrailingTrivia(newTrailingTrivia)
+                                        .WithAdditionalAnnotations(Formatter.Annotation);
+
+                            newProp = newProp.RemoveNode(newProp.GetCurrentNode(node), SyntaxRemoveOptions.KeepExteriorTrivia);
+                            editor.ReplaceNode(prop, newProp);
                         }
                         else
                         {
@@ -55,15 +63,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     },
                     equivalenceKey: title),
                     context.Diagnostics);
-            }
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private sealed class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey) :
-                base(title, createChangedDocument, equivalenceKey)
-            {
             }
         }
     }
