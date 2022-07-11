@@ -1934,23 +1934,6 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.DataContractSerialization.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\build-gz\\[[_framework/System.Private.Runtime.InteropServices.JavaScript.dll.gz]]",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net5\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/System.Private.Runtime.InteropServices.JavaScript.dll.gz",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.Runtime.InteropServices.JavaScript.dll"
-    },
-    {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\net5\\build-gz\\[[_framework/System.Private.Uri.dll.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -5400,23 +5383,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.DataContractSerialization.dll"
-    },
-    {
-      "Identity": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.Runtime.InteropServices.JavaScript.dll",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\net5\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/System.Private.Runtime.InteropServices.JavaScript.dll",
-      "AssetKind": "Build",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.Runtime.InteropServices.JavaScript.dll"
     },
     {
       "Identity": "${RestorePath}\\microsoft.netcore.app.runtime.browser-wasm\\[[CustomPackageVersion]]\\runtimes\\browser-wasm\\lib\\net5.0\\System.Private.Uri.dll",
