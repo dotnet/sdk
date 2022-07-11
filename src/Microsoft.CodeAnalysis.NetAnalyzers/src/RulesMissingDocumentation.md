@@ -7,6 +7,5 @@ CA1420 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1421 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421> | This method uses runtime marshalling even when the 'DisableRuntimeMarshallingAttribute' is applied |
 CA1852 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852> | Seal internal types |
 CA1853 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853> | Unnecessary call to 'Dictionary.ContainsKey(key)' |
-CA1854 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854> | Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method |
 CA2019 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019> | Improper 'ThreadStatic' field initialization |
 CA2259 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259> | 'ThreadStatic' only affects static fields |
