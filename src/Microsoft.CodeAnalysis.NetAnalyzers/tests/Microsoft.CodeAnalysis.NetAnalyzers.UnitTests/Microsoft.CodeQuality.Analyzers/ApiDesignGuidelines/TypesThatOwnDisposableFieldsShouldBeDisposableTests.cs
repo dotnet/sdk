@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -44,25 +43,67 @@ using System.IO;
         [Fact]
         public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethodAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.IO;
 
-    public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
     }
+", @"
+using System.IO;
+
+    public class NoDisposeClass : System.IDisposable
+{
+        FileStream newFile1, newFile2 = new FileStream(""data.txt"", FileMode.Append);
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
+        }
+
+        [Fact]
+        [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
+        public async Task CA1001CSharpTestWithFieldInitAndNoDisposeMethod_TargetTypedNewAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.IO;
+
+public class [|NoDisposeClass|]
+{
+    FileStream newFile1, newFile2 = new(""data.txt"", FileMode.Append);
+}
 ",
-            GetCA1001CSharpResultAt(4, 18, "NoDisposeClass", "newFile2"));
+                FixedCode = @"
+using System.IO;
+
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream newFile1, newFile2 = new(""data.txt"", FileMode.Append);
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA1001CSharpTestWithCtorInitAndNoDisposeMethodAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.IO;
 
     // This class violates the rule.
-    public class NoDisposeClass
+    public class [|NoDisposeClass|]
     {
         FileStream newFile;
 
@@ -71,8 +112,25 @@ using System.IO;
             newFile = new FileStream(""data.txt"", FileMode.Append);
         }
     }
-",
-            GetCA1001CSharpResultAt(5, 18, "NoDisposeClass", "newFile"));
+", @"
+using System.IO;
+
+    // This class violates the rule.
+    public class NoDisposeClass : System.IDisposable
+{
+        FileStream newFile;
+
+        public NoDisposeClass()
+        {
+            newFile = new FileStream(""data.txt"", FileMode.Append);
+        }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
         }
 
         [Fact]
@@ -113,7 +171,7 @@ using System.IO;
         [Fact]
         public async Task CA1001CSharpTestWithNoDisposeMethodInScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.IO;
 
     // This class violates the rule.
@@ -126,13 +184,74 @@ using System.IO;
             newFile = new FileStream(""data.txt"", FileMode.Append);
         }
     }
+", @"
+using System.IO;
+
+    // This class violates the rule.
+    public class NoDisposeClass : System.IDisposable
+{
+        FileStream newFile;
+
+        public NoDisposeClass()
+        {
+            newFile = new FileStream(""data.txt"", FileMode.Append);
+        }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
 ");
+        }
+
+        [Fact]
+        [WorkItem(5834, "https://github.com/dotnet/roslyn-analyzers/issues/5834")]
+        public async Task CA1001CSharpTestWithNoDisposeMethodInScope_TargetTypedNewAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.IO;
+
+// This class violates the rule.
+public class [|NoDisposeClass|]
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new(""data.txt"", FileMode.Append);
+    }
+}
+",
+                FixedCode = @"
+using System.IO;
+
+// This class violates the rule.
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new(""data.txt"", FileMode.Append);
+    }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
+            }.RunAsync();
         }
 
         [Fact]
         public async Task CA1001CSharpScopedTestWithNoDisposeMethodOutOfScopeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 using System.IO;
 
@@ -144,6 +263,29 @@ public class [|NoDisposeClass|]
     public NoDisposeClass()
     {
         newFile = new FileStream(""data.txt"", FileMode.Append);
+    }
+}
+
+public class SomeClass
+{
+}
+", @"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public class NoDisposeClass : IDisposable
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new FileStream(""data.txt"", FileMode.Append);
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
     }
 }
 
@@ -192,19 +334,34 @@ public class HasDisposeMethod : IDisposable
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001CSharpTestWithIDisposableFieldAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System;
 using System.IO;
 
 namespace ClassLibrary1
 {
-    public class Class1
+    public class [|Class1|]
     {
         private readonly IDisposable _disp1 = new MemoryStream();
     }
 }
-",
-            GetCA1001CSharpResultAt(7, 18, "Class1", "_disp1"));
+", @"
+using System;
+using System.IO;
+
+namespace ClassLibrary1
+{
+    public class Class1 : IDisposable
+    {
+        private readonly IDisposable _disp1 = new MemoryStream();
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+}
+");
         }
 
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
@@ -270,47 +427,84 @@ Imports System.IO
         [Fact]
         public async Task CA1001BasicTestWithFieldInitAndNoDisposeMethodAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System.IO
+           
+   ' This class violates the rule. 
+    Public Class [|NoDisposeClass|]
+        Dim newFile As FileStream = New FileStream(""data.txt"", FileMode.Append)
+    End Class
+", @"
 Imports System.IO
            
    ' This class violates the rule. 
     Public Class NoDisposeClass
-        Dim newFile As FileStream = New FileStream(""data.txt"", FileMode.Append)
-    End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile"));
+    Implements System.IDisposable
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+    Dim newFile As FileStream = New FileStream(""data.txt"", FileMode.Append)
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+");
+
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System.IO
+      
+   ' This class violates the rule. 
+    Public Class [|NoDisposeClass|]
+        Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
+    End Class
+", @"
 Imports System.IO
       
    ' This class violates the rule. 
     Public Class NoDisposeClass
-        Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
-    End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
+    Implements System.IDisposable
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+    Dim newFile1 As FileStream, newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+");
+
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System.IO
+    
+   ' This class violates the rule. 
+    Public Class [|NoDisposeClass|]
+        Dim newFile1 As FileStream
+        Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
+    End Class
+", @"
 Imports System.IO
     
    ' This class violates the rule. 
     Public Class NoDisposeClass
-        Dim newFile1 As FileStream
+    Implements System.IDisposable
+
+    Dim newFile1 As FileStream
         Dim newFile2 As FileStream = New FileStream(""data.txt"", FileMode.Append)
-    End Class
-",
-            GetCA1001BasicResultAt(5, 18, "NoDisposeClass", "newFile2"));
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+");
         }
 
         [Fact]
         public async Task CA1001BasicTestWithCtorInitAndNoDisposeMethodAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
    Imports System
    Imports System.IO
 
    ' This class violates the rule. 
-   Public Class NoDisposeMethod
+   Public Class [|NoDisposeMethod|]
 
       Dim newFile As FileStream
 
@@ -319,8 +513,25 @@ Imports System.IO
       End Sub
 
    End Class
-",
-            GetCA1001BasicResultAt(6, 17, "NoDisposeMethod", "newFile"));
+", @"
+   Imports System
+   Imports System.IO
+
+   ' This class violates the rule. 
+   Public Class NoDisposeMethod
+    Implements IDisposable
+
+    Dim newFile As FileStream
+
+      Sub New()
+         newFile = New FileStream(Nothing, FileMode.Open)
+      End Sub
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        Throw New NotImplementedException()
+    End Sub
+End Class
+");
         }
 
         [Fact]
@@ -356,7 +567,7 @@ Imports System.IO
         [Fact]
         public async Task CA1001BasicTestWithNoDisposeMethodInScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
    Imports System.IO
 
    ' This class violates the rule.
@@ -369,13 +580,30 @@ Imports System.IO
       End Sub
 
    End Class
+", @"
+   Imports System.IO
+
+   ' This class violates the rule.
+   Public Class NoDisposeMethod
+    Implements System.IDisposable
+
+    Dim newFile As FileStream
+
+      Sub New()
+         newFile = New FileStream("""", FileMode.Append)
+      End Sub
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
 ");
         }
 
         [Fact]
         public async Task CA1001BasicTestWithNoDisposeMethodOutOfScopeAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
    Imports System.IO
 
    ' This class violates the rule.
@@ -388,6 +616,26 @@ Imports System.IO
       End Sub
 
    End Class
+
+   Public Class SomeClass
+   End Class
+", @"
+   Imports System.IO
+
+   ' This class violates the rule.
+   Public Class NoDisposeMethod
+    Implements System.IDisposable
+
+    Dim newFile As FileStream
+
+      Sub New()
+         newFile = New FileStream(Nothing, FileMode.Open)
+      End Sub
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
 
    Public Class SomeClass
    End Class
@@ -437,23 +685,37 @@ Imports System.IO
         [Fact, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001BasicTestWithIDisposableFieldAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Imports System.IO
+
+Namespace ClassLibrary1
+    Class [|Class1|]
+        Private Readonly _disp1 As IDisposable = new MemoryStream()
+    End Class
+End Namespace
+", @"
 Imports System
 Imports System.IO
 
 Namespace ClassLibrary1
     Class Class1
+        Implements IDisposable
+
         Private Readonly _disp1 As IDisposable = new MemoryStream()
+
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Throw New NotImplementedException()
+        End Sub
     End Class
 End Namespace
-",
-            GetCA1001BasicResultAt(6, 11, "Class1", "_disp1"));
+");
         }
 
         [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
         public async Task CA1001_OnlyListDisposableFieldsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.IO;
 
 public class {|#0:NoDisposeClass|}
@@ -468,9 +730,28 @@ public class {|#0:NoDisposeClass|}
     }
 }
 ",
-            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"), @"
+using System.IO;
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream _fs1;
+    FileStream _fs2;
+
+    public NoDisposeClass(FileStream fs)
+    {
+        _fs1 = new FileStream(""data.txt"", FileMode.Append);
+        _fs2 = fs;
+    }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
+
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.IO
 
 Public Class {|#0:NoDisposeClass|}
@@ -483,13 +764,31 @@ Public Class {|#0:NoDisposeClass|}
     End Sub
 End Class
 ",
-            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"));
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1"), @"
+Imports System.IO
+
+Public Class NoDisposeClass
+    Implements System.IDisposable
+
+    Private _fs1 As FileStream
+    Private _fs2 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs1 = New FileStream(""data.txt"", FileMode.Append)
+        _fs2 = fs
+    End Sub
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+");
         }
 
         [Fact, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
         public async Task CA1001_ListDisposableFieldsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyCodeFixAsync(@"
 using System.IO;
 
 public class {|#0:NoDisposeClass|}
@@ -505,9 +804,29 @@ public class {|#0:NoDisposeClass|}
     }
 }
 ",
-            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+            VerifyCS.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"), @"
+using System.IO;
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
+public class NoDisposeClass : System.IDisposable
+{
+    FileStream _fs1 = new FileStream(""data.txt"", FileMode.Append), _fs2 = new FileStream(""data.txt"", FileMode.Append);
+    FileStream _fs3;
+    FileStream _fs4;
+
+    public NoDisposeClass()
+    {
+        _fs3 = new FileStream(""data.txt"", FileMode.Append);
+        _fs4 = new FileStream(""data.txt"", FileMode.Append);
+    }
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
+
+            await VerifyVB.VerifyCodeFixAsync(@"
 Imports System.IO
 
 Public Class {|#0:NoDisposeClass|}
@@ -521,7 +840,26 @@ Public Class {|#0:NoDisposeClass|}
     End Sub
 End Class
 ",
-            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"));
+            VerifyVB.Diagnostic().WithLocation(0).WithArguments("NoDisposeClass", "_fs1', '_fs2', '_fs3', '_fs4"), @"
+Imports System.IO
+
+Public Class NoDisposeClass
+    Implements System.IDisposable
+
+    Private _fs1 As FileStream = new FileStream(""data.txt"", FileMode.Append), _fs2 As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _fs3 As FileStream
+    Private _fs4 As FileStream
+
+    Public Sub New(ByVal fs As FileStream)
+        _fs3 = new FileStream(""data.txt"", FileMode.Append)
+        _fs4 = new FileStream(""data.txt"", FileMode.Append)
+    End Sub
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+");
         }
 
         [Theory, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
@@ -557,6 +895,20 @@ public class {|#0:SomeClass|}
 "), },
                     ExpectedDiagnostics = { VerifyCS.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
+                FixedCode = @"
+using System.IO;
+
+public class SomeClass : System.IDisposable
+{
+    private FileStream _fs = new FileStream(""data.txt"", FileMode.Append);
+    private MemoryStream _ms = new MemoryStream();
+
+    public void Dispose()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
             }.RunAsync();
 
             await new VerifyVB.Test
@@ -581,21 +933,240 @@ End Class
 "), },
                     ExpectedDiagnostics = { VerifyVB.Diagnostic().WithLocation(0).WithArguments("SomeClass", args), },
                 },
+                FixedCode = @"
+Imports System.IO
+
+Public Class SomeClass
+    Implements System.IDisposable
+
+    Private _fs As FileStream = new FileStream(""data.txt"", FileMode.Append)
+    Private _ms As MemoryStream = new MemoryStream()
+
+    Public Sub Dispose() Implements System.IDisposable.Dispose
+        Throw New System.NotImplementedException()
+    End Sub
+End Class
+",
             }.RunAsync();
         }
 
-        private static DiagnosticResult GetCA1001CSharpResultAt(int line, int column, string objectName, string disposableFields)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyCS.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(objectName, disposableFields);
+        [Fact]
+        public async Task CA1001CSharpCodeFixNoDisposeAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+using System.IO;
 
-        private static DiagnosticResult GetCA1001BasicResultAt(int line, int column, string objectName, string disposableFields)
-#pragma warning disable RS0030 // Do not used banned APIs
-            => VerifyVB.Diagnostic()
-                .WithLocation(line, column)
-#pragma warning restore RS0030 // Do not used banned APIs
-                .WithArguments(objectName, disposableFields);
+// This class violates the rule.
+public class [|NoDisposeClass|]
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new FileStream("""", FileMode.Append);
+    }
+}
+",
+@"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public class NoDisposeClass : IDisposable
+{
+    FileStream newFile;
+
+    public NoDisposeClass()
+    {
+        newFile = new FileStream("""", FileMode.Append);
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task CA1001BasicCodeFixNoDisposeAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class [|NoDisposeMethod|]
+
+    Dim newFile As FileStream
+
+    Sub New()
+        newFile = New FileStream("""", FileMode.Append)
+    End Sub
+
+End Class
+",
+@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class NoDisposeMethod
+    Implements IDisposable
+
+    Dim newFile As FileStream
+
+    Sub New()
+        newFile = New FileStream("""", FileMode.Append)
+    End Sub
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        Throw New NotImplementedException()
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA1001CSharpCodeFixHasDisposeAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public class [|NoDisposeClass|]
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    void Dispose() {
+// Some content
+}
+}
+",
+@"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public class NoDisposeClass : IDisposable
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    public void Dispose() {
+// Some content
+}
+}
+");
+        }
+
+        [Fact]
+        public async Task CA1001CSharpCodeFixHasWrongDisposeAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public partial class [|NoDisposeClass|]
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    void Dispose(int x) {
+// Some content
+}
+}
+",
+@"
+using System;
+using System.IO;
+
+// This class violates the rule.
+public partial class NoDisposeClass : IDisposable
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    void Dispose(int x) {
+// Some content
+}
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+}
+");
+        }
+
+        [Fact]
+        public async Task CA1001BasicCodeFixHasDisposeAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class [|NoDisposeMethod|]
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Sub Dispose()
+
+    End Sub
+End Class
+",
+@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class NoDisposeMethod
+    Implements IDisposable
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+");
+        }
+
+        [Fact]
+        public async Task CA1001BasicCodeFixHasWrongDisposeAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class [|NoDisposeMethod|]
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Sub Dispose(x As Integer)
+    End Sub
+End Class
+",
+@"
+Imports System
+Imports System.IO
+
+' This class violates the rule. 
+Public Class NoDisposeMethod
+    Implements IDisposable
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Sub Dispose(x As Integer)
+    End Sub
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        Throw New NotImplementedException()
+    End Sub
+End Class
+");
+        }
     }
 }

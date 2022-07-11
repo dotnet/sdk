@@ -83,6 +83,7 @@ Configurable Rules:
 [CA1055](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1055),
 [CA1056](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1056),
 [CA1058](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1058),
+[CA1062](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1062),
 [CA1063](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1063),
 [CA1068](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1068),
 [CA1070](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1070),
@@ -761,7 +762,7 @@ Example: `dotnet_code_quality.CA1711.allowed_suffixes = Flag|Flags`
 
 Option Name: `enable_platform_analyzer_on_pre_net5_target`
 
-Configurable Rules: [CA14016](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416)
+Configurable Rules: [CA1416](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1416)
 
 Option Values: `true` or `false`
 
@@ -792,3 +793,78 @@ Option Values: `true` or `false`
 Default Value: `false`
 
 Example: `dotnet_code_quality.CA1826.exclude_ordefault_methods = true`
+
+### Additional enum `None` names
+
+Option Name: `additional_enum_none_names`
+
+Configurable Rules: [CA1008](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1008)
+
+Option Values: Names of additional enum None names (separated by `|`).
+
+Default Value: empty
+
+Example: `dotnet_code_quality.CA1008.additional_enum_none_names = Never` or `dotnet_code_quality.CA1008.additional_enum_none_names = Never|Nothing`
+
+### Enumeration methods
+
+Option Name: `enumeration_methods`
+
+Configurable Rules: [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1851)
+
+Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) of additional methods enumerating all parameters with IEnumerable type (separated by `|`).
+
+Default Value: empty
+
+Example: `dotnet_code_quality.CA1851.enumeration_methods = M:NS.Cls.SomeMethod(System.Collections.Generic.IEnumerable{System.Int32})` or `dotnet_code_quality.CA1851.enumeration_methods = M:NS.Cls.SomeMethod*` or `M:NS.Cls.SomeMethod``1(System.Collections.Generic.IEnumerable{System.Int32}) | M:NS.Cls.OtherMethod*`
+
+### Linq Chain methods
+
+Option Name: `linq_chain_methods`
+
+Configurable Rules: [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1851)
+
+Option Values: [Fully qualified names](https://github.com/dotnet/csharplang/blob/main/spec/documentation-comments.md#id-string-format) of additional methods accepting IEnumerable parameters and return a new IEnumerable type instance(separated by `|`). By default, the IEnumerable type parameters of the Linq Chain method are considered not enumerated. This behavior could be overridden by combining using the `enumeration_methods` option.
+
+Default Value: empty
+
+This option is used to include customized methods like [Select](https://docs.microsoft.com/en-us/dotnet/api/system.linq.enumerable.select?view=net-6.0) into the analysis scope.
+Consider the example:
+
+```csharp
+public static MyClass
+{
+  public static IEnumerable<int> MyNoEnumerationIncrementSelect(this IEnumerable<int> source)
+  {
+      return source.Select(i => i + 1);
+  } 
+}
+```
+
+In this example the options could be: `dotnet_code_quality.CA1851.linq_chain_methods = M:MyClass.MyNoEnumerationIncrementSelect*`.
+If the method enumerates the parameter, this option can be used with `enumeration_methods` for example:
+
+```csharp
+public static MyClass
+{
+  public static IEnumerable<int> MyEnumerationLinqChain(this IEnumerable<int> source)
+  {
+      return source.ElementAt(10).Concat(source);
+  } 
+}
+```
+
+In this example the options would be `dotnet_code_quality.CA1851.linq_chain_methods = M:MyClass.MyEnumerationLinqChain*` and `dotnet_code_quality.CA1851.enumeration_methods = M:MyClass.MyEnumerationLinqChain*`.
+
+### Assume method enumerates parameters
+
+Option Name: `assume_method_enumerates_parameters`
+
+Configurable Rules: [CA1851](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1851)
+
+Option Values: `true` or `false`
+If set to true, all IEnumerable type parameters would be assumed enumerated by the method invocation. This option does not affect methods specified in `linq_chain_methods`.
+
+Default Value: `false`
+
+Example: `dotnet_code_quality.CA1851.assume_method_enumerates_parameters = true`

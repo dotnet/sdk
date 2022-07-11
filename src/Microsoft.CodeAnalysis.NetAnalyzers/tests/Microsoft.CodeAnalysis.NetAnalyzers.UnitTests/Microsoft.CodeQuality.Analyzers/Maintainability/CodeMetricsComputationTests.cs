@@ -362,10 +362,10 @@ namespace N1
 }";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 7, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, CoupledTypes: {N1.C1, System.Attribute}, DepthInherit: 2)
-   N1: (Lines: 7, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, CoupledTypes: {N1.C1, System.Attribute}, DepthInherit: 2)
+Assembly: (Lines: 7, ExecutableLines: 2, MntIndex: 100, CycCxty: 2, CoupledTypes: {N1.C1, System.Attribute}, DepthInherit: 2)
+   N1: (Lines: 7, ExecutableLines: 2, MntIndex: 100, CycCxty: 2, CoupledTypes: {N1.C1, System.Attribute}, DepthInherit: 2)
       C1: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Attribute}, DepthInherit: 2)
-      C2: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {N1.C1}, DepthInherit: 1)
+      C2: (Lines: 2, ExecutableLines: 2, MntIndex: 100, CycCxty: 1, CoupledTypes: {N1.C1}, DepthInherit: 1)
 ";
 
             VerifyCSharp(source, expectedMetricsText);
@@ -656,8 +656,8 @@ public class C
 }";
 
             var expectedMetricsText = @"
-Assembly: (Lines: 13, ExecutableLines: 5, MntIndex: 93, CycCxty: 3, CoupledTypes: {System.CodeDom.Compiler.GeneratedCodeAttribute, System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
-    A: (Lines: 2, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
+Assembly: (Lines: 13, ExecutableLines: 7, MntIndex: 93, CycCxty: 3, CoupledTypes: {System.CodeDom.Compiler.GeneratedCodeAttribute, System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
+    A: (Lines: 2, ExecutableLines: 2, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.Runtime.CompilerServices.CompilerGeneratedAttribute}, DepthInherit: 1)
     B: (Lines: 2, ExecutableLines: 2, MntIndex: 100, CycCxty: 1, CoupledTypes: {System.CodeDom.Compiler.GeneratedCodeAttribute}, DepthInherit: 1)
     C: (Lines: 9, ExecutableLines: 3, MntIndex: 80, CycCxty: 1, DepthInherit: 1)
         C.M1(): (Lines: 6, ExecutableLines: 3, MntIndex: 80, CycCxty: 1)

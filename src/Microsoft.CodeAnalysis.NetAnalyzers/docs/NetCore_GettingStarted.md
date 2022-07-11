@@ -52,26 +52,22 @@
 
 1. Navigate to the root of the Roslyn-analyzers repo and run these commands:
     - `cd roslyn-analyzers`
-    - Set RUNTIMEPACKAGEVERSION variable with the version which ever the [runtime](https://github.com/dotnet/runtime/blob/main/eng/Analyzers.props#L9)/[roslyn-analyzers](https://github.com/dotnet/roslyn-analyzers/blob/main/eng/Versions.props#L26) repo is using: `set RUNTIMEPACKAGEVERSION=5.0.0`
-    - `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true`
-    - For testing against `dotnet/runtime`:
-        - `cd artifacts\bin\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Debug\netstandard2.0`
-    - For testing against `dotnet/roslyn-analyzers`:
-        - `cd artifacts\bin\Microsoft.NetCore.CSharp.Analyzers\Debug\netstandard2.0`
+    - Set RUNTIMEPACKAGEVERSION variable with a version value which major part is equal to the major part of the version of  [runtime](https://github.com/dotnet/runtime/blob/main/eng/Versions.props#L53)/[roslyn-analyzers](https://github.com/dotnet/roslyn-analyzers/blob/main/eng/Versions.props#L50) repo is using, example: `set RUNTIMEPACKAGEVERSION=7.0.0`
+    - `build.cmd -ci /p:AssemblyVersion=%RUNTIMEPACKAGEVERSION% /p:AutoGenerateAssemblyVersion=false /p:OfficialBuild=true -c Release`
+    - `cd artifacts\bin\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Release\netstandard2.0`
 2. Copy the two DLLs and replace the NuGet cache entries used by `dotnet/runtime` and `dotnet/roslyn-analyzers`. They might be in `"runtime/.packages/..."` or `"%USERPROFILE%/.nuget/packages/... "`. You can check the exact path by building something in runtime with /bl and checking the binlog file.
-    - Example for `dotnet/runtime`:
-        - `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.CodeAnalysis.NetAnalyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
-    - Example for `dotnet/roslyn-analyzers`:
-        - `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.NetCore.Analyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
+    - Example: `copy /y *.dll %USERPROFILE%\.nuget\packages\Microsoft.CodeAnalysis.NetAnalyzers\%RUNTIMEPACKAGEVERSION%\analyzers\dotnet\cs`
+    - Note that `RUNTIMEPACKAGEVERSION` value is different for runtime and roslyn-analyzers repo
 3. Build the roslyn-analyzers with `build.cmd`, now new analyzers will be used from updated nuget packages and you would see the warnings if diagnostics found.
 4. If failures found, review each of the failures and determine the course of action for each.
     - Improve analyzer to reduce false positives, fix valid warnings, in a very rare edge cases suppress them.
 5. Make sure all failures addressed and corresponding PR(s) merged.
 6. Switch to the runtime repo.
-7. Build the runtime repo, either do a complete build or build each repo separately (coreclr, libraries, mono).
-8. In case no any failure introduce an error somewhere to prove that the rule ran.
+7. Add a row for your new analyzer ID with a value of `warning` to make sure it would warn for findings in [CodeAnalysis.src.globalconfig](https://github.com/dotnet/runtime/blob/main/eng/CodeAnalysis.src.globalconfig) file. For example if you are authored a new analyzer with id `CA1234` add a row: `dotnet_diagnostic.CA1234.severity = warning`
+8. Build the runtime repo, either do a complete build or build each repo separately (coreclr, libraries, mono).
+9. In case no any failure introduce an error somewhere to prove that the rule ran.
     - Be careful about in which project you are producing an error, choose an API not having reference from other APIs, else all dependent API's will fail.
-9. If failures found, repeat step 4-5 to evaluate and address all warnings.
+10. If failures found, repeat step 4-5 to evaluate and address all warnings.
     - In case you want to [debug some failures](#debugging-analyzer-with-runtime-repo-projects).
 
 ## Testing against the Roslyn repo

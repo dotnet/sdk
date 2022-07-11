@@ -52,6 +52,16 @@
         <target state="translated">Unikaj nieskończonej rekursji</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
+        <target state="translated">Możliwe wielokrotne wyliczenia kolekcji „IEnumerable”. Rozważ użycie implementacji, która pozwala uniknąć wielu wyliczeń.</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="translated">Możliwe wielokrotne wyliczenia kolekcji „IEnumerable“</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">Przekazywanie typów przez odwołanie (zastosowanie parametrów „out” lub „ref”) wymaga doświadczenia w pracy ze wskaźnikami, rozumienia różnic między typami wartości i typami odwołań oraz umiejętności stosowania metod z wieloma wartościami zwracanymi. Ponadto różnice między parametrami „out” i „ref” nie są powszechnie zrozumiałe.</target>

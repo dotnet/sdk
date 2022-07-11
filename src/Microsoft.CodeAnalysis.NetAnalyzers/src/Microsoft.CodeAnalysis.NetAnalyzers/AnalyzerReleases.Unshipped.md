@@ -4,7 +4,16 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
+CA1311 | Globalization | Hidden | SpecifyCultureForToLowerAndToUpper, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1311)
+CA1420 | Interoperability | Warning | FeatureUnsupportedWhenRuntimeMarshallingDisabled, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1420)
+CA1421 | Interoperability | Info | MethodUsesRuntimeMarshallingEvenWhenMarshallingDisabled, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1421)
 CA1849 | Performance | Disabled | UseAsyncMethodInAsyncContext, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1849)
 CA1850 | Performance | Info | PreferHashDataOverComputeHashAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1850)
+CA1851 | Performance | Disabled | AvoidMultipleEnumerations, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1851)
+CA1852 | Performance | Hidden | SealInternalTypes, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852)
+CA1853 | Performance | Info | DoNotGuardDictionaryRemoveByContainsKey, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853)
+CA1854 | Performance | Info | PreferDictionaryTryGetValueAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854)
+CA2019 | Reliability | Info | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019)
+CA2259 | Usage | Warning | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259)
 CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5404)
 CA5405 | Security | Disabled | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5405)

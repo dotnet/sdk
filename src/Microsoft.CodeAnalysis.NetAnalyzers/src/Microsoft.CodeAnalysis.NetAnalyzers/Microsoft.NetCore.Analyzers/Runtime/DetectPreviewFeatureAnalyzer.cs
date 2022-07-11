@@ -942,7 +942,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             if (!requiresPreviewFeaturesSymbols.TryGetValue(symbol, out (bool isPreview, string? message, string? url) existing))
             {
-                Debug.Assert(true, $"Should never reach this line. This means the symbol {symbol.Name} was not processed in this analyzer");
+                Debug.Fail($"Should never reach this line. This means the symbol {symbol.Name} was not processed in this analyzer");
             }
             else
             {
@@ -969,7 +969,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             if (!requiresPreviewFeaturesSymbols.TryGetValue(previewSymbol, out (bool isPreview, string? message, string? url) existing))
             {
-                Debug.Assert(true, $"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
+                Debug.Fail($"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
             }
             else
             {
@@ -995,7 +995,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             if (!requiresPreviewFeaturesSymbols.TryGetValue(previewSymbol, out (bool isPreview, string? message, string? url) existing))
             {
-                Debug.Assert(true, $"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
+                Debug.Fail($"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
             }
             else
             {
@@ -1022,7 +1022,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             if (!requiresPreviewFeaturesSymbols.TryGetValue(previewSymbol, out (bool isPreview, string? message, string? url) existing))
             {
-                Debug.Assert(true, $"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
+                Debug.Fail($"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
             }
             else
             {

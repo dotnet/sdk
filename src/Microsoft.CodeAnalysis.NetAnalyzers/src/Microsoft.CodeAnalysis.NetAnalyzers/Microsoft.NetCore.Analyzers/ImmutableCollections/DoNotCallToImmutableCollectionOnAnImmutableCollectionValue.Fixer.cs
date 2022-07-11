@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -54,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
 
             var title = MicrosoftNetCoreAnalyzersResources.RemoveRedundantCall;
 
-            context.RegisterCodeFix(new MyCodeAction(title,
+            context.RegisterCodeFix(CodeAction.Create(title,
                                         async cancellationToken => await RemoveRedundantCallAsync(document, root, invocationNode, invocationOperation).ConfigureAwait(false),
                                         equivalenceKey: title),
                                     diagnostic);
@@ -66,15 +64,6 @@ namespace Microsoft.NetCore.Analyzers.ImmutableCollections
             var newRoot = root.ReplaceNode(invocationNode, instance);
             var newDocument = document.WithSyntaxRoot(newRoot);
             return Task.FromResult(newDocument);
-        }
-
-        // Needed for Telemetry (https://github.com/dotnet/roslyn-analyzers/issues/192)
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
-            }
         }
     }
 }

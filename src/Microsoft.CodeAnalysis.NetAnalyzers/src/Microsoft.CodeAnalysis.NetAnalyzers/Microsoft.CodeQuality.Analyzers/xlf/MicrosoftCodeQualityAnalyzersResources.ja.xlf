@@ -52,6 +52,16 @@
         <target state="translated">無限再帰の回避</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsMessage">
+        <source>Possible multiple enumerations of 'IEnumerable' collection. Consider using an implementation that avoids multiple enumerations.</source>
+        <target state="translated">'IEnumerable' コレクションを複数列挙している可能性があります。複数列挙を回避する実装を検討してください。</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
+      <trans-unit id="AvoidMultipleEnumerationsTitle">
+        <source>Possible multiple enumerations of 'IEnumerable' collection</source>
+        <target state="translated">'IEnumerable' コレクションの複数列挙の可能性</target>
+        <note>{Locked="IEnumerable"}</note>
+      </trans-unit>
       <trans-unit id="AvoidOutParametersDescription">
         <source>Passing types by reference (using 'out' or 'ref') requires experience with pointers, understanding how value types and reference types differ, and handling methods with multiple return values. Also, the difference between 'out' and 'ref' parameters is not widely understood.</source>
         <target state="translated">('out' または 'ref' を使用して) 型を参照によって渡すには、ポインターの使用経験、値型と参照型の違いの理解、および複数の戻り値を持つ処理メソッドが必要です。また、'out' と 'ref' のパラメーターの違いはあまり理解されていません。</target>

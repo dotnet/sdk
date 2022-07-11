@@ -5,6 +5,7 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.CSharp.Utilities.Lightup;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
@@ -20,11 +21,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpDynamicInterfaceCastableImplementationFixer : DynamicInterfaceCastableImplementationFixer
     {
-        // Manually define the InitKeyword and InitAccessorDeclaration values since we compile against too old of a Roslyn to use it directly.
-        // We only generate init accessors if they already exist, so we don't need to worry about these being unrecognized.
-        private const SyntaxKind InitKeyword = (SyntaxKind)8443;
-        private const SyntaxKind InitAccessorDeclaration = (SyntaxKind)9060;
-
         protected override async Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode declaration,
             Document document,
@@ -130,7 +126,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             foreach (var accessor in propDecl.AccessorList.Accessors)
             {
-                if (accessor.IsKind(InitAccessorDeclaration))
+                if (accessor.IsKind(SyntaxKindEx.InitAccessorDeclaration))
                 {
                     oldInitAccessor = accessor;
                     break;
@@ -144,10 +140,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             return propDecl.WithAccessorList(propDecl.AccessorList.AddAccessors(
                 SyntaxFactory.AccessorDeclaration(
-                        InitAccessorDeclaration,
+                        SyntaxKindEx.InitAccessorDeclaration,
                         setAccessor.AttributeLists,
                         setAccessor.Modifiers,
-                        SyntaxFactory.Token(InitKeyword),
+                        SyntaxFactory.Token(SyntaxKindEx.InitKeyword),
                         setAccessor.Body,
                         setAccessor.ExpressionBody,
                         setAccessor.SemicolonToken)));

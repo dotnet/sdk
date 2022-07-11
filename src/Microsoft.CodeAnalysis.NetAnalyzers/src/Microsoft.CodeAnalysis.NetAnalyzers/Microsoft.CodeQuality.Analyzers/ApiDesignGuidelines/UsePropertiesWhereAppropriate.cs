@@ -84,6 +84,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (methodSymbol.IsGenericMethod ||
                         methodSymbol.IsVirtual ||
                         methodSymbol.IsOverride ||
+                        methodSymbol.IsExtern ||
                         methodSymbol.Name is GetHashCodeName or GetEnumeratorName ||
                         (methodSymbol.Name == GetPinnableReferenceName && (methodSymbol.ReturnsByRef || methodSymbol.ReturnsByRefReadonly)) ||
                         methodSymbol.ContainingType.GetMembers(methodSymbol.Name).Length > 1 ||

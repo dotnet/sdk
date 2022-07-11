@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
@@ -110,39 +111,41 @@ namespace Preview_Feature_Scratch
             await test.RunAsync();
         }
 
-        [Fact]
-        public async Task TestAbstractClass()
+        [Theory]
+        [InlineData("class")]
+        [InlineData("record")]
+        public async Task TestAbstractType(string type)
         {
-            var csInput = @" 
+            var csInput = $@" 
         using System.Runtime.Versioning; using System;
         namespace Preview_Feature_Scratch
-        {
+        {{
 
-            class Program : {|#0:AbClass|}
-            {
+            {type} Program : {{|#0:AbClass|}}
+            {{
                 static void Main(string[] args)
-                {
+                {{
                     Program prog = new Program();
                     prog.Bar();
-                    {|#1:prog.FooBar()|};
-                    {|#2:prog.BarImplemented()|};
-                }
+                    {{|#1:prog.FooBar()|}};
+                    {{|#2:prog.BarImplemented()|}};
+                }}
 
-                public override void {|#3:Bar|}()
-                {
+                public override void {{|#3:Bar|}}()
+                {{
                     throw new NotImplementedException();
-                }
+                }}
 
                 [RequiresPreviewFeatures]
                 public override void FooBar()
-                {
+                {{
                     throw new NotImplementedException();
-                }
-            }
+                }}
+            }}
 
             [RequiresPreviewFeatures]
-            public abstract class AbClass
-            {
+            public abstract {type} AbClass
+            {{
                 [RequiresPreviewFeatures]
                 public abstract void Bar();
 
@@ -151,14 +154,34 @@ namespace Preview_Feature_Scratch
 
                 [RequiresPreviewFeatures]
                 public void BarImplemented() => throw new NotImplementedException();
-            }
-        }";
+            }}
+        }}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(0).WithArguments("Program", "AbClass", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("FooBar", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("BarImplemented", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.OverridesPreviewMethodRule).WithLocation(3).WithArguments("Bar", "AbClass.Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
+            await test.RunAsync();
+        }
+
+        [Fact, WorkItem(5802, "https://github.com/dotnet/roslyn-analyzers/issues/5802")]
+        public async Task TestPartialClassWithFirstDeclarationNotHavingBaseTypes()
+        {
+            var test = TestCS(@"
+using System;
+using System.Runtime.Versioning;
+
+partial class Program { }
+
+partial class Program : {|#0:AbClass|} { }
+
+[RequiresPreviewFeatures]
+public class AbClass
+{
+}
+");
+            test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(0).WithArguments("Program", "AbClass", DetectPreviewFeatureAnalyzer.DefaultURL));
             await test.RunAsync();
         }
 

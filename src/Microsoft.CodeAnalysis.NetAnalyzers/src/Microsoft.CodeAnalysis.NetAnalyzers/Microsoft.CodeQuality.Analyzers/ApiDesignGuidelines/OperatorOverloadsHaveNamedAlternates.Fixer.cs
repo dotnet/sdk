@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
@@ -9,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 
@@ -38,7 +38,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
-            context.RegisterCodeFix(new MyCodeAction(title, ct => FixAsync(context, ct), equivalenceKey: title), context.Diagnostics.First());
+            context.RegisterCodeFix(CodeAction.Create(title, ct => FixAsync(context, ct), equivalenceKey: title), context.Diagnostics.First());
         }
 
         private static async Task<Document> FixAsync(CodeFixContext context, CancellationToken cancellationToken)
@@ -171,14 +171,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 ReturnType = returnType;
                 Parameters = parameters;
                 IsStatic = isStatic;
-            }
-        }
-
-        private class MyCodeAction : DocumentChangeAction
-        {
-            public MyCodeAction(string title, Func<CancellationToken, Task<Document>> createChangedDocument, string equivalenceKey)
-                : base(title, createChangedDocument, equivalenceKey)
-            {
             }
         }
     }
