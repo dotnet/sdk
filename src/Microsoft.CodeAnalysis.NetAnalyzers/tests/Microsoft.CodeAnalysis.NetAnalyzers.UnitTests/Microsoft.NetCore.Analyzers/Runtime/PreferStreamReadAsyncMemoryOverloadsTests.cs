@@ -808,7 +808,7 @@ public class C
 {
     async void M(FileStream? stream, byte[]? buffer, bool condition)
     {
-        await (stream!).ReadAsync((buffer!).AsMemory(start: condition ? 0 : 1, length: buffer!.Length)).ConfigureAwait(false);
+        await stream!.ReadAsync(buffer!.AsMemory(start: condition ? 0 : 1, length: buffer!.Length)).ConfigureAwait(false);
     }
 }
 ";
@@ -851,7 +851,7 @@ public class C
 {
     async void M(FileStream? stream, byte[]? buffer, bool condition, CancellationToken ct)
     {
-        await (stream!).ReadAsync((buffer!).AsMemory(start: condition ? 0 : 1, length: buffer!.Length), ct).ConfigureAwait(false);
+        await stream!.ReadAsync(buffer!.AsMemory(start: condition ? 0 : 1, length: buffer!.Length), ct).ConfigureAwait(false);
     }
 }
 ";
