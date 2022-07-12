@@ -122,7 +122,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             SyntaxNode? oldInitAccessor = null;
 
-            foreach (var accessor in propDecl.AccessorList.Accessors)
+            foreach (var accessor in propertyDeclaration.AccessorList.Accessors)
             {
                 if (accessor.IsKind(SyntaxKindEx.InitAccessorDeclaration))
                 {
@@ -136,7 +136,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 propertyDeclaration = propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList.RemoveNode(oldInitAccessor, SyntaxRemoveOptions.KeepNoTrivia));
             }
 
-            return propertyDeclaration.WithAccessorList(propDecl.AccessorList.AddAccessors(
+            return propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList.AddAccessors(
                 SyntaxFactory.AccessorDeclaration(
                         SyntaxKindEx.InitAccessorDeclaration,
                         setAccessor.AttributeLists,
