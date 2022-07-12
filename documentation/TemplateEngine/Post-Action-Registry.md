@@ -174,6 +174,8 @@ Note: when using `targetFiles` argument it should contain the path to the file i
 
 ### Example
 
+Adds a reference `Microsoft.NET.Sdk.Functions` to the project file.
+
 ```
 "postActions": [{
   "Description": "Adding Reference to Microsoft.NET.Sdk.Functions NuGet package",
@@ -187,6 +189,24 @@ Note: when using `targetFiles` argument it should contain the path to the file i
     "reference": "Microsoft.NET.Sdk.Functions",
     "version": "1.0.0",
     "projectFileExtensions": ".csproj"
+  }
+}]
+```
+
+Includes a reference to `SomeDependency` into `MyProjectFile`. The referenced project file is in the `SomeDependency` folder.
+
+```
+"postActions": [{
+  "Description": "Adding a reference to another project",
+  "ActionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+  "ContinueOnError": "false",
+  "ManualInstructions": [{
+    "Text": "Manually add the reference to SomeDependency to MyProjectFile"
+  }],
+  "args": {
+    "targetFiles": ["MyProjectFile.csproj"]
+    "referenceType": "project",
+    "reference": "SomeDependency/SomeDependency.csproj"
   }
 }]
 ```
