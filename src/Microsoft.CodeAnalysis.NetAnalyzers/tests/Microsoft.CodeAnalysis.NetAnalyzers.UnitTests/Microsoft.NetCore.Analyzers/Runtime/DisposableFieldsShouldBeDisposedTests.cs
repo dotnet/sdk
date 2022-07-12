@@ -3469,5 +3469,88 @@ Class B
 End Class"
             }.RunAsync();
         }
+
+        [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
+        public async Task OwnDisposableButDoesNotOverrideDisposableMember_Dispose()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+
+class MyBase : IDisposable
+{
+    public virtual void Dispose()
+    {
+    }
+}
+
+class Sub : MyBase
+{
+}
+
+class SubSub : Sub
+{
+    private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
+}");
+        }
+
+        [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
+        public async Task OwnDisposableButDoesNotOverrideDisposableMember_DisposeBool()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+
+class MyBase : IDisposable
+{
+    public void Dispose()
+    {
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+    }
+}
+
+class Sub : MyBase
+{
+}
+
+class SubSub : Sub
+{
+    private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
+}");
+        }
+
+        [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
+        public async Task OwnDisposableButDoesNotOverrideDisposableMember_DisposeAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+class MyBase : IAsyncDisposable
+{
+    public virtual ValueTask DisposeAsync()
+    {
+        return default(ValueTask);
+    }
+}
+
+class Sub : MyBase
+{
+}
+
+class SubSub : Sub
+{
+    private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
+}"
+            }.RunAsync();
+        }
     }
 }
