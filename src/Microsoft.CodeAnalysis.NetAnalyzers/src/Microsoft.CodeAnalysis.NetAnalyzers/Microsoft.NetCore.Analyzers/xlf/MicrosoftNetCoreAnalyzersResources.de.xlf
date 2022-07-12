@@ -1144,7 +1144,7 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
         <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</target>
+        <target state="translated">Delegates mit verwalteten Typen als Parameter oder der Rückgabetyp erfordern, dass das Marshalling der Runtime in der Assembly aktiviert ist, in der das Delegat definiert ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -2764,7 +2764,7 @@
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
         <source>Use an invariant version</source>
-        <target state="new">Use an invariant version</target>
+        <target state="translated">Verwenden Sie eine unveränderliche Version</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
@@ -3009,22 +3009,22 @@
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
         <source>Use 'TryGetValue(TKey, out TValue)'</source>
-        <target state="new">Use 'TryGetValue(TKey, out TValue)'</target>
+        <target state="translated">„TryGetValue(TKey, out TValue)“ verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueTitle">
         <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</target>
+        <target state="translated">Methode „IDictionary.TryGetValue(TKey, out TValue)“ bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueMessage">
         <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
-        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</target>
+        <target state="translated">Ziehen Sie einen „TryGetValue“-Aufruf einem Wörterbuchindexerzugriff vor, der durch eine „ContainsKey“-Überprüfung geschützt wird, um eine doppelte Suche zu vermeiden</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueDescription">
         <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
-        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</target>
+        <target state="translated">Ziehen Sie einen „TryGetValue“-Aufruf einem Wörterbuchindexerzugriff vor, der durch eine „ContainsKey“-Überprüfung geschützt wird. „ContainsKey“ und der Indexer würden beide den Schlüssel im Hintergrund suchen; die Verwendung von „TryGetValue“ entfernt die zusätzliche Suche.</target>
         <note />
       </trans-unit>
     </body>

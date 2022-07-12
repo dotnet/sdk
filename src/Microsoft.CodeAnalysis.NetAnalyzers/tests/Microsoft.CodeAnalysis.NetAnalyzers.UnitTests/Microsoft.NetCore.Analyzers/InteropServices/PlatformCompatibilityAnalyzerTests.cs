@@ -3840,6 +3840,38 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [Fact, WorkItem(6015, "https://github.com/dotnet/roslyn-analyzers/issues/6015")]
+        public async Task TestGuardedCheckInsideLoopWithIfAsync()
+        {
+            var source = @"
+using System;
+using System.Collections.Generic;
+using System.Runtime.Versioning;
+
+class C
+{
+    void M(IEnumerable<D> list)
+    {
+        foreach (var d in list)
+        {
+            if ([|d.Flag|]) // This call site is reachable on all platforms. 'C.D.Flag' is only supported on: 'Windows'.
+            {
+                if (OperatingSystem.IsWindows() && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763, 0))
+                {
+                }
+            }
+        }
+    }
+
+    [SupportedOSPlatform(""Windows"")]
+    private class D
+    {
+        public bool Flag { get; }
+    }
+}";
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
 #if DEBUG
         [Fact]
         public async Task IosSupportedOnMacCatalystAsync()

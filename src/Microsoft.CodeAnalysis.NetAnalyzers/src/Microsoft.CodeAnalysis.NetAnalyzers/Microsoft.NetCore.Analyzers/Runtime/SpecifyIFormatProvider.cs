@@ -157,7 +157,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 targetMethod.ContainingType.IsErrorType() ||
                 (activatorType != null && activatorType.Equals(targetMethod.ContainingType)) ||
                 (resourceManagerType != null && resourceManagerType.Equals(targetMethod.ContainingType)) ||
-                IsValidToStringCall(invocationExpression, invariantToStringTypes, dateTimeType, dateTimeOffsetType, timeSpanType))
+                IsValidToStringCall(invocationExpression, invariantToStringTypes, dateTimeType, dateTimeOffsetType, timeSpanType) ||
+                IsValidParseCall(invocationExpression, guidType))
                 {
                     return;
                 }
@@ -336,6 +337,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return nullableTypeArgument;
                 return typeSymbol;
             }
+        }
+
+        private static bool IsValidParseCall(IInvocationOperation invocationOperation, INamedTypeSymbol? guidType)
+        {
+            var targetMethod = invocationOperation.TargetMethod;
+
+            if (targetMethod.Name != "Parse")
+            {
+                return false;
+            }
+
+            if (targetMethod.ContainingType.Equals(guidType))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

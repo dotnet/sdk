@@ -1144,7 +1144,7 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
         <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</target>
+        <target state="translated">Parametre veya dönüş türü olarak yönetilen türlere sahip temsilciler, temsilcinin tanımlandığı derlemede çalışma zamanı sıralamasının etkinleştirilmesini gerektirir.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -2764,7 +2764,7 @@
       </trans-unit>
       <trans-unit id="UseInvariantVersion">
         <source>Use an invariant version</source>
-        <target state="new">Use an invariant version</target>
+        <target state="translated">Sabit bir sürüm kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseManagedEquivalentsOfWin32ApiDescription">
@@ -3009,22 +3009,22 @@
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueCodeFixTitle">
         <source>Use 'TryGetValue(TKey, out TValue)'</source>
-        <target state="new">Use 'TryGetValue(TKey, out TValue)'</target>
+        <target state="translated">'TryGetValue(TKey, out TValue)' kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueTitle">
         <source>Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</source>
-        <target state="new">Prefer the 'IDictionary.TryGetValue(TKey, out TValue)' method</target>
+        <target state="translated">'IDictionary.TryGetValue(TKey, out TValue)' yöntemini tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueMessage">
         <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</source>
-        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check to avoid double lookup</target>
+        <target state="translated">Çift aramayı önlemek için 'ContainsKey' denetimi tarafından korunan Sözlük dizin oluşturucu erişimi yerine 'TryGetValue' çağrısı tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryGetValueDescription">
         <source>Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</source>
-        <target state="new">Prefer a 'TryGetValue' call over a Dictionary indexer access guarded by a 'ContainsKey' check. 'ContainsKey' and the indexer both would lookup the key under the hood, so using 'TryGetValue' removes the extra lookup.</target>
+        <target state="translated">'ContainsKey' denetimi tarafından korunan bir Sözlük dizin oluşturucu erişimi yerine 'TryGetValue' çağrısı tercih edin. 'ContainsKey' ve dizin oluşturucunun her ikisi de başlık altındaki anahtarı arayacağından 'TryGetValue' kullanmak, ek aramayı kaldırır.</target>
         <note />
       </trans-unit>
     </body>

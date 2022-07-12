@@ -947,6 +947,45 @@ End Class
         }
 
         [Fact]
+        [WorkItem(5999, "https://github.com/dotnet/roslyn-analyzers/issues/5999")]
+        public async Task CA1305_GuidParse_NoDiagnosticsAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = new ReferenceAssemblies(""), // workaround for lack of .NET 7 Preview 4 reference assemblies
+                TestCode = @"
+namespace System
+{
+    public class Object { }
+    public abstract class ValueType { }
+    public struct Void { }
+    public class String { }
+    public interface IFormatProvider { }
+    public struct Guid
+    {
+        public static Guid Parse(string s) => default;
+        public static Guid Parse(string s, IFormatProvider provider) => default;
+    }
+}
+namespace System.Globalization
+{
+    public class CultureInfo : IFormatProvider { }
+}
+namespace Test
+{
+    using System;
+    public class SomeClass
+    {
+        public Guid SomeMethod(string s)
+        {
+            return Guid.Parse(s);
+        }
+    }
+}",
+            }.RunAsync();
+        }
+
+        [Fact]
         public async Task CA1305_NullableInvariantTypes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

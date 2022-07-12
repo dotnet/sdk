@@ -159,6 +159,75 @@ End Class",
                 GetCA1056BasicResultAt(3, 14, "IPath.UrlPathSegment"));
         }
 
+        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = SampleUri")]
+        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = SampleUri")]
+        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = Sample*")]
+        public async Task CA1056_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+public class A
+{
+    public string SampleUri { get; set; }
+}
+"                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCA1056CSharpResultAt(6, 19, "A.SampleUri"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+
+Public Module A
+    Public ReadOnly Property SampleUri As String
+        Get
+            Return Nothing
+        End Get
+    End Property
+End Module"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                basicTest.ExpectedDiagnostics.Add(GetCA1056BasicResultAt(5, 30, "A.SampleUri"));
+            }
+
+            await basicTest.RunAsync();
+        }
+
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)
 #pragma warning disable RS0030 // Do not used banned APIs
             => VerifyCS.Diagnostic()
