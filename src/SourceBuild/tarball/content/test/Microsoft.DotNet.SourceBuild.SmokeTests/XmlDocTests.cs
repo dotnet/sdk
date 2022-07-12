@@ -18,7 +18,8 @@ public class XmlDocTests : SmokeTests
     /// Verifies every targeting pack assembly has a xml doc file.
     /// There are exceptions which are specified in baselines/XmlDocIgnore.*.txt.
     /// </Summary>
-    [Fact]
+    // TODO: Re-enable with https://github.com/orgs/dotnet/projects/101/views/1?filterQuery=doc
+    //[Fact]
     public void VerifyTargetingPacksHaveDoc()
     {
         List<string> missingXmlDoc = new();
