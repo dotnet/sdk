@@ -3526,7 +3526,10 @@ class SubSub : Sub
         [Fact, WorkItem(5099, "https://github.com/dotnet/roslyn-analyzers/issues/5099")]
         public async Task OwnDisposableButDoesNotOverrideDisposableMember_DisposeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAsyncInterfaces,
+                TestCode = @"
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -3546,7 +3549,8 @@ class Sub : MyBase
 class SubSub : Sub
 {
     private readonly FileStream [|disposableField|] = new FileStream("""", FileMode.Create);
-}");
+}"
+            }.RunAsync();
         }
     }
 }
