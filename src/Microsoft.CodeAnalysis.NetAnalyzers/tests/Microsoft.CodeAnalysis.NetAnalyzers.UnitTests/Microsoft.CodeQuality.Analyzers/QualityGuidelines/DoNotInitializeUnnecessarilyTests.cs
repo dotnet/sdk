@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpDoNotInitializeUnnecessarilyAnalyzer,
@@ -309,6 +310,167 @@ public class Test
                 VerifyCS.Diagnostic(DoNotInitializeUnnecessarilyAnalyzer.DefaultRule)
                     .WithArguments("SomeIntProp3")
                     .WithLocation(3));
+        }
+
+        [Fact, WorkItem(5750, "https://github.com/dotnet/roslyn-analyzers/issues/5750")]
+        public async Task ParameterlessValueTypeCtor()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = @"
+using System;
+
+struct S
+{
+    public static readonly S Value = new();
+    public static readonly TimeSpan Time [|= new()|];
+
+    public S() => throw null;
+}
+
+struct S2
+{
+    private readonly int _i;
+    public S2(int i) => _i = i;
+}
+
+class C
+{
+    private S s1 = new S();
+    private S s2 = new();
+
+    private S2 s3 [|= new S2()|];
+    private S2 s4 [|= new()|];
+}",
+                FixedCode = @"
+using System;
+
+struct S
+{
+    public static readonly S Value = new();
+    public static readonly TimeSpan Time;
+
+    public S() => throw null;
+}
+
+struct S2
+{
+    private readonly int _i;
+    public S2(int i) => _i = i;
+}
+
+class C
+{
+    private S s1 = new S();
+    private S s2 = new();
+
+    private S2 s3;
+    private S2 s4;
+}",
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        public async Task DoNotReportOnInstanceMembersForStructs()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestCode = @"
+public record struct MyRecord1
+{
+    private bool _x = false;
+    public MyRecord1() { }
+    public bool SomeBool { get; set; } = false;
+}
+
+public struct MyStruct1
+{
+    private bool _x = false;
+    public MyStruct1() { }
+    public bool SomeBool { get; set; } = false;
+}
+
+public record struct MyRecord2()
+{
+    private bool _x = false;
+    public bool SomeBool { get; set; } = false;
+}",
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(5887, "https://github.com/dotnet/roslyn-analyzers/issues/5887")]
+        public async Task ReportOnStaticMembersForStructs()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                TestCode = @"
+public record struct MyRecord
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public struct MyStruct
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public record struct MyRecord2()
+{
+    private static bool _x [|= false|];
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public record struct MyRecord3
+{
+    private static bool _x [|= false|];
+    public MyRecord3() { }
+    public static bool SomeBool { get; set; } [|= false|];
+}
+
+public struct MyStruct3
+{
+    private static bool _x [|= false|];
+    public MyStruct3() { }
+    public static bool SomeBool { get; set; } [|= false|];
+}",
+                FixedCode = @"
+public record struct MyRecord
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public struct MyStruct
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public record struct MyRecord2()
+{
+    private static bool _x;
+    public static bool SomeBool { get; set; }
+}
+
+public record struct MyRecord3
+{
+    private static bool _x;
+    public MyRecord3() { }
+    public static bool SomeBool { get; set; }
+}
+
+public struct MyStruct3
+{
+    private static bool _x;
+    public MyStruct3() { }
+    public static bool SomeBool { get; set; }
+}",
+            }.RunAsync();
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)

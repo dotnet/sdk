@@ -104,6 +104,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
+                if (context.Options.IsConfiguredToSkipAnalysis(Rule, method, context.Compilation))
+                {
+                    // property is excluded from analysis
+                    return;
+                }
+
                 // now we do more expensive word parsing to find exact parameter that contains url in parameter name
                 var indices = method.GetParameterIndices(stringParameters.GetParametersThatContainUriWords(context.CancellationToken), context.CancellationToken);
 

@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriReturnValuesShouldNotBeStringsAnalyzer,
@@ -123,6 +124,72 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         End Function
     End Module
 ", GetCA1055BasicResultAt(5, 18, "A.GetUrl()"));
+        }
+
+        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [InlineData("")]
+        [InlineData("dotnet_code_quality.excluded_symbol_names = GetUrl")]
+        [InlineData("dotnet_code_quality.CA1055.excluded_symbol_names = GetUrl")]
+        [InlineData("dotnet_code_quality.CA1055.excluded_symbol_names = GetUr*")]
+        public async Task CA1055_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
+        {
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+using System;
+
+public class A
+{
+    public string GetUrl() { throw new NotImplementedException(); }
+}
+"                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                csharpTest.ExpectedDiagnostics.Add(GetCA1055CSharpResultAt(6, 19, "A.GetUrl()"));
+            }
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Imports System
+
+Public Module A
+    Function GetUrl() As String
+    End Function
+End Module"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            if (editorConfigText.Length == 0)
+            {
+                basicTest.ExpectedDiagnostics.Add(GetCA1055BasicResultAt(5, 14, "A.GetUrl()"));
+            }
+
+            await basicTest.RunAsync();
         }
 
         private static DiagnosticResult GetCA1055CSharpResultAt(int line, int column, params string[] args)

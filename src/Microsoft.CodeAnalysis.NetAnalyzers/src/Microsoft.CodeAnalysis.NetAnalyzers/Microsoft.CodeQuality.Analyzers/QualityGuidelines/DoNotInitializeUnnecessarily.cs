@@ -42,11 +42,21 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var init = (IFieldInitializerOperation)context.Operation;
                 IFieldSymbol? field = init.InitializedFields.FirstOrDefault();
-                if (field != null &&
-                    !field.IsConst &&
-                    init.Value != null &&
-                    field.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, field.Type))
+                if (field == null
+                    || field.IsConst
+                    || init.Value == null
+                    || !field.GetAttributes().IsEmpty) // in case of attributes that impact nullability analysis
+                {
+                    return;
+                }
+
+                // Do not report on instance members of struct but report on static members.
+                if (field.ContainingType?.TypeKind == TypeKind.Struct && !field.IsStatic)
+                {
+                    return;
+                }
+
+                if (UsesKnownDefaultValue(init.Value, field.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, field.Name));
                 }
@@ -56,10 +66,20 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             {
                 var init = (IPropertyInitializerOperation)context.Operation;
                 IPropertySymbol? prop = init.InitializedProperties.FirstOrDefault();
-                if (prop != null &&
-                    init.Value != null &&
-                    prop.GetAttributes().IsEmpty && // in case of attributes that impact nullability analysis
-                    UsesKnownDefaultValue(init.Value, prop.Type))
+                if (prop == null
+                    || init.Value == null
+                    || !prop.GetAttributes().IsEmpty) // in case of attributes that impact nullability analysis
+                {
+                    return;
+                }
+
+                // Do not report on instance members of struct but report on static members.
+                if (prop.ContainingType?.TypeKind == TypeKind.Struct && !prop.IsStatic)
+                {
+                    return;
+                }
+
+                if (UsesKnownDefaultValue(init.Value, prop.Type))
                 {
                     context.ReportDiagnostic(init.CreateDiagnostic(DefaultRule, prop.Name));
                 }
@@ -83,7 +103,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             // If this is default(T) or new ValueType(), it's the default.
             if (value is IDefaultValueOperation ||
-                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null))
+                (type.IsValueType && value is IObjectCreationOperation oco && oco.Arguments.IsEmpty && oco.Initializer is null && oco.Constructor.IsImplicitlyDeclared))
             {
                 return !IsNullSuppressed(value);
             }
