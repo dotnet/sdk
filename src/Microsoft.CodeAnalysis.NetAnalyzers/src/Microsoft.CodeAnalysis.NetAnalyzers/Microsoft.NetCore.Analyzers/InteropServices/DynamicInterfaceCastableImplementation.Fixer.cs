@@ -41,7 +41,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(root, declaration, context.Document, generator, ct).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
                         diagnostic);
                 }
@@ -51,7 +51,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     context.RegisterCodeFix(
                         CodeAction.Create(
                             MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
-                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
+                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, ct).ConfigureAwait(false),
                             equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
                         diagnostic);
                 }
@@ -66,8 +66,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
         protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
+            SyntaxNode root,
             SyntaxNode declaration,
             Document document,
+            SyntaxGenerator generator,
             CancellationToken cancellationToken);
 
         protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(
