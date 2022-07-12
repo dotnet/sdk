@@ -31,7 +31,6 @@ target_link_libraries(Finalizer shell32.lib)
 target_link_libraries(Finalizer advapi32.lib)
 target_link_libraries(Finalizer version.lib)
 target_link_libraries(Finalizer msi.lib)
-target_link_libraries(Finalizer pathcch.lib)
 
 # Add WiX libraries
 target_link_libraries(Finalizer wcautil.lib)
