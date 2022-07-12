@@ -2422,6 +2422,11 @@
         <target state="translated">Il comportamento di '{0}' potrebbe variare a seconda delle impostazioni locali dell'utente corrente. Sostituire questa chiamata in '{1}' con una chiamata a '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">'{0}' passa '{1}' come parametro di 'IFormatProvider' a '{2}'. Questa proprietà restituisce impostazioni cultura non appropriate per i metodi di formattazione.</target>

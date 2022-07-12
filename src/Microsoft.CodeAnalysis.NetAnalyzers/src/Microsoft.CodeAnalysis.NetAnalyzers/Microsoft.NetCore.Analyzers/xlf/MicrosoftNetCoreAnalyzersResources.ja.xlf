@@ -2422,6 +2422,11 @@
         <target state="translated">'{0}' の動作は、現在のユーザーのロケール設定によって異なる場合があります。'{1}' 内のこの呼び出しを '{2}' への呼び出しに置き換えてください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">'{0}' は '{1}' を 'IFormatProvider' パラメーターとして '{2}' に渡します。このプロパティは、書式設定メソッドに不適切なカルチャを返します。</target>

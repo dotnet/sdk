@@ -2422,6 +2422,11 @@
         <target state="translated">'{0}' öğesinin davranışı, geçerli kullanıcının yerel ayarlarına göre farklılık gösterebilir. '{1}' öğesinde bu çağrıyı bir '{2}' çağrısıyla değiştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">'{0}', '{2}' öğesine 'IFormatProvider' parametresi olarak '{1}' değerini geçiriyor. Bu özellik, biçimlendirme yöntemleri için uygun olmayan bir kültür döndürüyor.</target>

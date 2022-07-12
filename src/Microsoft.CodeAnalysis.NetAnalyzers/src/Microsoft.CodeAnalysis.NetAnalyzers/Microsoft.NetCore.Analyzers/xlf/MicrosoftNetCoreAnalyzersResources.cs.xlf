@@ -2422,6 +2422,11 @@
         <target state="translated">Chování {0} se může lišit podle aktuálních nastavení národního prostředí uživatele. Nahraďte toto volání v {1} voláním {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">{0} předává {1} jako parametr IFormatProvider do {2}. Tato vlastnost vrací jazykovou verzi, která není vhodná pro metody formátování.</target>

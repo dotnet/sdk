@@ -2422,6 +2422,11 @@
         <target state="translated">“{0}”的行为可能因当前用户的区域设置而异。请将“{1}”中的此调用替换为对“{2}”的调用。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
+        <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
+        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
         <source>'{0}' passes '{1}' as the 'IFormatProvider' parameter to '{2}'. This property returns a culture that is inappropriate for formatting methods.</source>
         <target state="translated">“{0}”将“{1}”作为 "IFormatProvider" 参数传递给“{2}”。此属性返回一个区域性，但它不适合格式化方法。</target>

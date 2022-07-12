@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -1511,6 +1512,95 @@ End Namespace",
             }
 
             await vbTest.RunAsync();
+        }
+
+        [Fact]
+        [WorkItem(5843, "https://github.com/dotnet/roslyn-analyzers/issues/5843")]
+        public async Task IFormatProviderOptional()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+using System;
+public class C
+{
+    public void M(ReadOnlySpan<char> span)
+    {
+        // IFormatProvider is last argument
+        var d = {|#0:Decimal.Parse(span)|};
+
+        // IFormatProvider is not last argument
+        var date = {|#1:DateTime.Parse(span)|};
+
+        // This 'Parse' call doesn't have overloads
+        var c1 = {|#2:Parse("""")|};
+
+        // Based on other tests, passing null seems acceptable so do not raise here
+        var c2 = Parse("""", null);
+
+        // An overload with IFormatProvider exists.
+        var s = {|#3:MyMethod("""")|};
+    }
+
+    public C Parse(string s, IFormatProvider provider = null)
+    {
+        return null;
+    }
+
+    public string MyMethod(string s)
+    {
+        return null;
+    }
+
+    public string MyMethod(string s, IFormatProvider provider = null)
+    {
+        return null;
+    }
+}",
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(1),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(2),
+                    VerifyCS.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(3)
+                        .WithArguments("C.MyMethod(string)", "C.M(ReadOnlySpan<char>)", "C.MyMethod(string, [IFormatProvider])"),
+                },
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                TestCode = @"
+Imports System
+
+Public Class C
+    Public Sub M()
+        Dim c1 = {|#0:Parse("""")|}
+        Dim c2 = Parse("""", Nothing)
+        Dim s = {|#1:MyMethod("""")|}
+    End Sub
+
+    Public Function Parse(ByVal s As String, ByVal Optional provider As IFormatProvider = Nothing) As C
+        Return Nothing
+    End Function
+
+    Public Function MyMethod(ByVal s As String) As String
+        Return Nothing
+    End Function
+
+    Public Function MyMethod(ByVal s As String, ByVal Optional provider As IFormatProvider = Nothing) As String
+        Return Nothing
+    End Function
+End Class
+",
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderOptionalRule).WithLocation(0),
+                    VerifyVB.Diagnostic(SpecifyIFormatProviderAnalyzer.IFormatProviderAlternateRule).WithLocation(1)
+                        .WithArguments("C.MyMethod(String)", "C.M()", "C.MyMethod(String, [IFormatProvider])"),
+                },
+            }.RunAsync();
         }
 
         private DiagnosticResult GetIFormatProviderAlternateStringRuleCSharpResultAt(int line, int column, string arg1, string arg2, string arg3) =>

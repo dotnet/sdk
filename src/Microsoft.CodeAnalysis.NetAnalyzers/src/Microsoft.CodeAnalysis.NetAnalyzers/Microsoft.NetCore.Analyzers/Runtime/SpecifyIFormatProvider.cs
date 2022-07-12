@@ -45,6 +45,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
+        internal static readonly DiagnosticDescriptor IFormatProviderOptionalRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            s_localizableTitle,
+            CreateLocalizableResourceString(nameof(SpecifyIFormatProviderMessageIFormatProviderOptional)),
+            DiagnosticCategory.Globalization,
+            RuleLevel.IdeHidden_BulkConfigurable,
+            description: s_localizableDescription,
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
+
         internal static readonly DiagnosticDescriptor UICultureStringRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             s_localizableTitle,
@@ -67,7 +77,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static readonly ImmutableArray<string> s_dateInvariantFormats = ImmutableArray.Create("o", "O", "r", "R", "s", "u");
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, UICultureStringRule, UICultureRule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(IFormatProviderAlternateStringRule, IFormatProviderAlternateRule, IFormatProviderOptionalRule, UICultureStringRule, UICultureRule);
 
         protected override void InitializeWorker(CompilationStartAnalysisContext context)
         {
@@ -182,6 +192,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (!oaContext.Options.IsConfiguredToSkipAnalysis(iformatProviderAlternateRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                 {
+                    bool diagnosticReported = false;
                     IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>().WhereMethodDoesNotContainAttribute(obsoleteAttributeType);
                     if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                     {
@@ -201,6 +212,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                     targetMethod.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
                                     oaContext.ContainingSymbol.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat),
                                     correctOverload.ToDisplayString(SymbolDisplayFormats.ShortSymbolDisplayFormat)));
+                            diagnosticReported = true;
+                        }
+                    }
+
+                    // If we haven't found any overload with an extra parameter of type IFormatProvider or if the method doesn't have any overload,
+                    // we still want to check if the target method is not accepting an optional IFormatProvider, in which case we should report the
+                    // diagnostic.
+                    if (!diagnosticReported)
+                    {
+                        var currentCallHasNullFormatProvider = invocationExpression.Arguments.Any(x =>
+                            SymbolEqualityComparer.Default.Equals(x.Parameter.Type, iformatProviderType)
+                            && x.ArgumentKind == ArgumentKind.DefaultValue);
+
+                        if (currentCallHasNullFormatProvider)
+                        {
+                            oaContext.ReportDiagnostic(invocationExpression.CreateDiagnostic(IFormatProviderOptionalRule));
+                            diagnosticReported = true;
                         }
                     }
                 }
