@@ -768,7 +768,7 @@ public class C
 {
     async ValueTask M(Stream? stream, byte[]? buffer)
     {
-        await (stream!).WriteAsync((buffer!).AsMemory(start: 0, length: buffer?.Length ?? 0)).ConfigureAwait(false);
+        await stream!.WriteAsync(buffer!.AsMemory(start: 0, length: buffer?.Length ?? 0)).ConfigureAwait(false);
     }
 }
 ";
@@ -811,7 +811,7 @@ public class C
 {
     async ValueTask M(Stream? stream, byte[]? buffer, CancellationToken ct)
     {
-        await (stream!).WriteAsync((buffer!).AsMemory(start: 0, length: buffer?.Length ?? 0), ct).ConfigureAwait(false);
+        await stream!.WriteAsync(buffer!.AsMemory(start: 0, length: buffer?.Length ?? 0), ct).ConfigureAwait(false);
     }
 }
 ";

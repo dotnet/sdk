@@ -1168,7 +1168,7 @@ public class Test
 
     public static string Method()
     {
-        return (Strings!)[Strings.Count - 1];
+        return Strings![Strings.Count - 1];
     }
 }
 ";
