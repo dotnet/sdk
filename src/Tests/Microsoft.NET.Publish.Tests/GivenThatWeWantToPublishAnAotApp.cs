@@ -32,7 +32,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -73,7 +73,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_debug_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
@@ -123,7 +123,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_release_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
@@ -173,7 +173,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_builds_with_config_when_PublishAot_is_enabled(string targetFramework)
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
@@ -208,7 +208,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Requires_analyzers_produce_warnings_without_PublishAot_being_set(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -260,7 +260,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -299,7 +299,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_generated_even_with_analyzers_disabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotStaticLib_only_runs_when_switch_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -371,7 +371,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(LatestTfm)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotSharedLib_only_runs_when_switch_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
