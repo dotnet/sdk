@@ -99,8 +99,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 foreach (var member in iface.GetMembers())
                 {
-                    if (member.IsAbstract &&
-                        member.Kind != SymbolKind.NamedType
+                    if (member.IsAbstract
+                        && member.Kind != SymbolKind.NamedType
                         && context.Compilation.IsSymbolAccessibleWithin(member, targetType)
                         && targetType.FindImplementationForInterfaceMember(member) is null)
                     {
