@@ -15,7 +15,7 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/6.0.4xx')) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
@@ -77,13 +77,17 @@ jobs:
           BuildConfig: $(_BuildConfig)
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      - powershell: eng\runHelixAndNonHelixInParallel.ps1
+      - powershell: eng\common\build.ps1
               -configuration $(_BuildConfig)
-              -buildSourcesDirectory $(Build.SourcesDirectory)
-              -customHelixTargetQueue ${{ parameters.helixTargetQueue }}
+              -prepareMachine
+              -ci
+              -restore
               $(_Test)
-              -additionalMSBuildParameters "$(_InternalRuntimeDownloadArgs)"
-        displayName: Run Tests in Helix and non Helix in parallel
+              -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
+              /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
+              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+              $(_InternalRuntimeDownloadArgs)
+        displayName: Run Tests in Helix
         condition: succeededOrFailed()
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -103,13 +107,17 @@ jobs:
           TestFullMSBuild: 'true'
           SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      - powershell: eng\runHelixAndNonHelixInParallel.ps1
+      - powershell: eng\common\build.ps1
               -configuration $(_BuildConfig)
-              -buildSourcesDirectory $(Build.SourcesDirectory)
-              -customHelixTargetQueue ${{ parameters.helixTargetQueue }}
-              $(_Test)
-              -additionalMSBuildParameters "$(_InternalRuntimeDownloadArgs)"
-        displayName: Run Tests in Helix and non Helix in parallel
+              -prepareMachine
+              -ci
+              -restore
+              -test
+              -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
+              /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
+              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+              $(_InternalRuntimeDownloadArgs)
+        displayName: Run Tests in Helix
         condition: succeededOrFailed()
         env:
             TestFullMSBuild: 'true'
@@ -138,14 +146,17 @@ jobs:
         displayName: Build
         env:
           BuildConfig: $(_BuildConfig)
-      - powershell: eng/runHelixAndNonHelixInParallelNonWindows.ps1
-                -configuration $(_BuildConfig)
-                -buildSourcesDirectory $(Build.SourcesDirectory)
-                -customHelixTargetQueue ${{ parameters.helixTargetQueue }}
-                -officialBuildIdArgs "$(_OfficialBuildIdArgs)"
-                $(_Test)
-                -additionalMSBuildParameters "$(_InternalRuntimeDownloadArgs)"
-        displayName: Run Tests in Helix and non Helix in parallel
+      - powershell: eng/common/build.sh
+              -configuration $(_BuildConfig)
+              -prepareMachine
+              -ci
+              -restore
+              -test
+              -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+              /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
+              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+              $(_InternalRuntimeDownloadArgs)
+        displayName: Run Tests in Helix
         condition: succeededOrFailed()
         env:
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
