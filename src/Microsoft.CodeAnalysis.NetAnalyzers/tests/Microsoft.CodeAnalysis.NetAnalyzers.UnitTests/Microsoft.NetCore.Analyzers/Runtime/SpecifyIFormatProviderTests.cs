@@ -1520,6 +1520,7 @@ End Namespace",
         {
             await new VerifyCS.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 using System;
 public class C
@@ -1569,6 +1570,7 @@ public class C
 
             await new VerifyVB.Test
             {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 TestCode = @"
 Imports System
 
