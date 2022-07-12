@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Logan Bussell <loganbussell@microsoft.com>
+Date: Tue, 12 Jul 2022 13:50:55 -0700
+Subject: [PATCH] Revert "[Infrastructure] Update SDK version (#42571)"
+
+Temporarily rollback https://github.com/dotnet/aspnetcore/pull/42571
+(aefef28a51afd41d358eb0573e10cd858dcdc3e3) because source-build is still using an older
+toolset. This will be addressed by @crummel in https://github.com/dotnet/installer/pull/14089.
+---
+ src/Servers/Kestrel/Core/src/Internal/Http/HttpParser.cs | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/src/Servers/Kestrel/Core/src/Internal/Http/HttpParser.cs b/src/Servers/Kestrel/Core/src/Internal/Http/HttpParser.cs
+index 63fc8668d6..5e18ba0861 100644
+--- a/src/Servers/Kestrel/Core/src/Internal/Http/HttpParser.cs
++++ b/src/Servers/Kestrel/Core/src/Internal/Http/HttpParser.cs
+@@ -313,7 +313,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
+         }
+ 
+         SequencePosition lineEnd;
+-        scoped ReadOnlySpan<byte> headerSpan;
++        ReadOnlySpan<byte> headerSpan;
+         if (currentSlice.Slice(reader.Position, lineEndPosition.Value).Length == currentSlice.Length - 1)
+         {
+             // No enough data, so CRLF can't currently be there.
+@@ -321,8 +321,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
+ 
+             // Advance 1 to include CR/LF in lineEnd
+             lineEnd = currentSlice.GetPosition(1, lineEndPosition.Value);
+-            var header = currentSlice.Slice(reader.Position, lineEnd);
+-            headerSpan = header.IsSingleSegment ? header.FirstSpan : header.ToArray();
++            headerSpan = currentSlice.Slice(reader.Position, lineEnd).ToSpan();
+             if (headerSpan[^1] != ByteCR)
+             {
+                 RejectRequestHeader(headerSpan);
