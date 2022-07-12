@@ -70,33 +70,33 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                 {
                     return null;
                 }
-                var methodDecl = generator.MethodDeclaration(method);
-                methodDecl = generator.WithModifiers(methodDecl, generator.GetModifiers(methodDecl).WithIsAbstract(false));
-                return generator.WithStatements(methodDecl, defaultMethodBodyStatements);
+                var methodDeclaration = generator.MethodDeclaration(method);
+                methodDeclaration = generator.WithModifiers(methodDeclaration, generator.GetModifiers(methodDeclaration).WithIsAbstract(false));
+                return generator.WithStatements(methodDeclaration, defaultMethodBodyStatements);
             }
 
             SyntaxNode GeneratePropertyImplementation(IPropertySymbol property)
             {
-                var propertyDecl = property.IsIndexer
+                var propertyDeclaration = property.IsIndexer
                     ? generator.IndexerDeclaration(property)
                     : generator.PropertyDeclaration(property);
-                propertyDecl = generator.WithModifiers(propertyDecl, generator.GetModifiers(propertyDecl).WithIsAbstract(false));
+                propertyDeclaration = generator.WithModifiers(propertyDeclaration, generator.GetModifiers(propertyDeclaration).WithIsAbstract(false));
 
                 // Remove default property accessors.
-                propertyDecl = generator.WithAccessorDeclarations(propertyDecl);
+                propertyDeclaration = generator.WithAccessorDeclarations(propertyDeclaration);
 
                 if (property.GetMethod is not null
                     && model.Compilation.IsSymbolAccessibleWithin(property.GetMethod, type))
                 {
-                    propertyDecl = generator.WithGetAccessorStatements(propertyDecl, defaultMethodBodyStatements);
+                    propertyDeclaration = generator.WithGetAccessorStatements(propertyDeclaration, defaultMethodBodyStatements);
                 }
                 if (property.SetMethod is not null
                     && model.Compilation.IsSymbolAccessibleWithin(property.SetMethod, type))
                 {
-                    propertyDecl = AddSetAccessor(property, propertyDecl, generator, defaultMethodBodyStatements, includeAccessibility: false);
+                    propertyDeclaration = AddSetAccessor(property, propertyDeclaration, generator, defaultMethodBodyStatements, includeAccessibility: false);
                 }
 
-                return propertyDecl;
+                return propertyDeclaration;
             }
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             var setAccessor = (AccessorDeclarationSyntax)generator.SetAccessorDeclaration(setAccessorAccessibility, defaultMethodBodyStatements);
 
-            var propDecl = (PropertyDeclarationSyntax)declaration;
+            var propertyDeclaration = (PropertyDeclarationSyntax)declaration;
 
             SyntaxNode? oldInitAccessor = null;
 
@@ -133,10 +133,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
 
             if (oldInitAccessor is not null)
             {
-                propDecl = propDecl.WithAccessorList(propDecl.AccessorList.RemoveNode(oldInitAccessor, SyntaxRemoveOptions.KeepNoTrivia));
+                propertyDeclaration = propertyDeclaration.WithAccessorList(propertyDeclaration.AccessorList.RemoveNode(oldInitAccessor, SyntaxRemoveOptions.KeepNoTrivia));
             }
 
-            return propDecl.WithAccessorList(propDecl.AccessorList.AddAccessors(
+            return propertyDeclaration.WithAccessorList(propDecl.AccessorList.AddAccessors(
                 SyntaxFactory.AccessorDeclaration(
                         SyntaxKindEx.InitAccessorDeclaration,
                         setAccessor.AttributeLists,
@@ -152,19 +152,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             SyntaxGenerator generator,
             SyntaxNode[] defaultMethodBodyStatements)
         {
-            var eventDecl = generator.CustomEventDeclaration(evt);
-            eventDecl = generator.WithModifiers(eventDecl, generator.GetModifiers(eventDecl).WithIsAbstract(false));
+            var eventDeclaration = generator.CustomEventDeclaration(evt);
+            eventDeclaration = generator.WithModifiers(eventDeclaration, generator.GetModifiers(eventDeclaration).WithIsAbstract(false));
 
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53649
-            var eventDeclaration = (EventDeclarationSyntax)eventDecl;
-
-            return eventDeclaration.WithAccessorList(
+            return ((EventDeclarationSyntax)eventDeclaration).WithAccessorList(
                 SyntaxFactory.AccessorList(
                     SyntaxFactory.List(
                 new[]
                 {
-                        generator.WithStatements(generator.GetAccessor(eventDecl, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
-                        generator.WithStatements(generator.GetAccessor(eventDecl, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
+                        generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
+                        generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
                 })));
         }
 
