@@ -94,7 +94,7 @@
     <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
     
     <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(RedistLayoutPath)sdk-manifests/$(CliProductBandVersion)00/%(DestinationPath)"/>
+          DestinationFolder="$(RedistLayoutPath)sdk-manifests/%(FeatureBand)/%(DestinationPath)"/>
   
   </Target>
 </Project>
