@@ -100,12 +100,12 @@ détails : {1}</target>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">
         <source>Failed to evaluate bind symbol '{0}', it will be skipped.</source>
-        <target state="new">Failed to evaluate bind symbol '{0}', it will be skipped.</target>
+        <target state="translated">Échec de l’évaluation du symbole de liaison « {0} ». Il sera ignoré.</target>
         <note>{0} - name of the symbol in configuration that cannot be evaluated</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources">
         <source>Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</source>
-        <target state="new">Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</target>
+        <target state="translated">Échec de l’évaluation de la liaison « {0} ». Sa valeur est disponible à partir de plusieurs sources : {1}. Utilisez plutôt la valeur préfixée ({2}) dans la configuration du modèle.</target>
         <note>{0} - binding from template.json configuration
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</note>
@@ -167,7 +167,7 @@ détails : {1}</target>
       </trans-unit>
       <trans-unit id="SymbolModel_Error_MandatoryPropertyMissing">
         <source>The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</source>
-        <target state="new">The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</target>
+        <target state="translated">Le symbole « {0} » de type « {1} » est incorrect : la propriété obligatoire « {2} » n’est pas définie. Le symbole sera ignoré.</target>
         <note />
       </trans-unit>
     </body>
