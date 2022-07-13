@@ -9,46 +9,37 @@
     <!-- This package doesn't contain any lib or ref assemblies because it's a tooling package.-->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <Nullable>enable</Nullable>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
 
+  <!-- SDK's task infrastructure -->
   <ItemGroup>
-    <Compile Include="..\..\Tasks\Common\**\*.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\TaskBase.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\Logger.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\LogAdapter.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\BuildErrorException.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\Message.cs" LinkBase="Common" />
+    <Compile Include="..\..\Tasks\Common\MessageLevel.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jab" Version="$(JabVersion)" PrivateAssets="all" />
     <!-- ExcludeAssets="Runtime" is being set to avoid adding package references and dependencies of package and project references into the package. -->
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCoreVersion)" ExcludeAssets="Runtime" />
+    <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" ExcludeAssets="Runtime" />
+    <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" ExcludeAssets="Runtime" />
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" />
-    <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" ExcludeAssets="Runtime" />
-    <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" ExcludeAssets="Runtime" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
-    <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
-  </ItemGroup>
-
-  <!--
-    Default to including all *.props and *.targets files
-    from the project directory into the NuGet package root
-  -->
-  <ItemGroup>
-    <None Include="**/*.props;**/*.targets" Pack="true">
-      <PackagePath>%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
-    </None>
-    <None Include="..\..\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.Compatibility.Common.targets" Pack="true">
-      <Link>build/Microsoft.NET.Compatibility.Common.targets</Link>
-      <PackagePath>build/%(Filename)%(Extension)</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
+    <None Include="**/*.props;**/*.targets" Pack="true" PackagePath="%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\..\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.Common.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.Common.targets" PackagePath="build/%(Filename)%(Extension)" />
+    <None Include="..\..\Tasks\Microsoft.NET.Build.Tasks\targets\Microsoft.NET.ApiCompat.ValidatePackage.targets" Pack="true" Link="build/Microsoft.NET.ApiCompat.ValidatePackage.targets" PackagePath="build/%(Filename)%(Extension)" />
     <None Include="$(RepoRoot)LICENSE.txt" PackagePath="LICENSE.txt" Pack="true" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddBuildOutputToPackageCore;_AddBuildOutputToPackageDesktop</TargetsForTfmSpecificContentInPackage>
-  </PropertyGroup>
 
   <ItemGroup>
     <!--
@@ -90,6 +81,6 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="..\Microsoft.DotNet.Compatibility.Shared\Microsoft.DotNet.Compatibility.Shared.projitems" Label="Shared" />
+  <Import Project="..\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems" Label="Shared" />
 
 </Project>

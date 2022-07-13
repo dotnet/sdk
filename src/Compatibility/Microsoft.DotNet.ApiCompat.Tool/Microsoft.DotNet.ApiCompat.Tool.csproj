@@ -3,19 +3,16 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <StrongNameKeyId>Open</StrongNameKeyId>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>packagevalidation</ToolCommandName>
-    <!-- At the moment this project exists only for internal testing and debugging. -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <ToolCommandName>apicompat</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta3.22114.1" />
-    <PackageReference Include="System.CommandLine.DragonFruit" Version="0.4.0-alpha.22114.1" />
+    <PackageReference Include="Jab" Version="$(JabVersion)" PrivateAssets="all" />
+    <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +20,6 @@
     <ProjectReference Include="..\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
   </ItemGroup>
 
-  <Import Project="..\Microsoft.DotNet.Compatibility.Shared\Microsoft.DotNet.Compatibility.Shared.projitems" Label="Shared" />
+  <Import Project="..\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems" Label="Shared" />
 
 </Project>
