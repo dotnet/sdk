@@ -104,8 +104,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IEnumerable<IBindSymbolSource>? sourcesToSearch = null;
             if (string.IsNullOrWhiteSpace(prefix))
             {
-                _logger.LogDebug("Binding '{0}' does not define prefix. All the sources will be queried for this binding.", configuredBinding);
-                sourcesToSearch = _bindSymbolSources;
+                _logger.LogDebug("Binding '{0}' does not define prefix. All the sources that do not require prefix will be queried for this binding.", configuredBinding);
+                sourcesToSearch = _bindSymbolSources.Where(source => !source.RequiresPrefixMatch);
             }
             else
             {
@@ -116,15 +116,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     string.Join(", ", sourcesToSearch.Select(s => s.DisplayName)));
                 if (!sourcesToSearch.Any())
                 {
-                    _logger.LogDebug("No sources matches prefix '{0}' does not define prefix. All the sources will be queried for the binding '{1}'.", prefix, configuredBinding);
-                    sourcesToSearch = _bindSymbolSources;
+                    _logger.LogDebug("No sources matches prefix '{0}' does not define prefix. All the sources that do not require prefix will be queried for the binding '{1}'.", prefix, configuredBinding);
+                    sourcesToSearch = _bindSymbolSources.Where(source => !source.RequiresPrefixMatch);
                     binding = configuredBinding;
                 }
             }
 
             var successfulTasks = await RunEvaluationTasks(sourcesToSearch, binding, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            if (!successfulTasks.Any())
+            if (!successfulTasks.Any() && binding != configuredBinding)
             {
                 _logger.LogDebug(
                     "No values were retrieved for '{0}' for the sources matching the prefix. All the sources will be queried for the binding '{1}' now.",
@@ -132,7 +132,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     configuredBinding);
                 binding = configuredBinding;
                 //if nothing is found, try all sources with unparsed values from configuration
-                successfulTasks = await RunEvaluationTasks(_bindSymbolSources, configuredBinding, cancellationToken).ConfigureAwait(false);
+                sourcesToSearch = _bindSymbolSources.Where(source => !source.RequiresPrefixMatch);
+                successfulTasks = await RunEvaluationTasks(sourcesToSearch, configuredBinding, cancellationToken).ConfigureAwait(false);
             }
             cancellationToken.ThrowIfCancellationRequested();
 

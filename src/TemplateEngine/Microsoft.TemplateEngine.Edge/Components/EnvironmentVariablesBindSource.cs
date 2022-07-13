@@ -23,6 +23,8 @@ namespace Microsoft.TemplateEngine.Edge
 
         string? IBindSymbolSource.SourcePrefix => "env";
 
+        bool IBindSymbolSource.RequiresPrefixMatch => false;
+
         Guid IIdentifiedComponent.Id => Guid.Parse("{8420EB0D-2FD7-49A7-966D-0914C86A14E4}");
 
         string IBindSymbolSource.DisplayName => LocalizableStrings.EnvironmentVariablesBindSource_Name;

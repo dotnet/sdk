@@ -4,6 +4,7 @@ const Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo.BuiltIn.
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.DisplayName.get -> string!
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.GetBoundValueAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! settings, string! bindname, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string?>!
+Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.RequiresPrefixMatch.get -> bool
 Microsoft.TemplateEngine.Abstractions.Components.IBindSymbolSource.SourcePrefix.get -> string?
 Microsoft.TemplateEngine.Abstractions.Components.ISdkInfoProvider
 Microsoft.TemplateEngine.Abstractions.Components.ISdkInfoProvider.GetCurrentVersionAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<string!>!

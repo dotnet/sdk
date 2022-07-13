@@ -26,6 +26,11 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         public string? SourcePrefix { get; }
 
         /// <summary>
+        /// If set to true, the component required exact prefix match to be used.
+        /// </summary>
+        public bool RequiresPrefixMatch { get; }
+
+        /// <summary>
         /// Gets the value corresponding to <paramref name="bindname"/>.
         /// </summary>
         /// <param name="settings">template engine environment settings.</param>

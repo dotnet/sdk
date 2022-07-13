@@ -360,25 +360,102 @@ MyValue
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "testBindConflict"), warningMessages);
         }
 
+        [Fact]
+        public async void CreateAsyncTest_ForcedPrefixBinding()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    notPrefixed = new
+                    {
+                        type = "bind",
+                        binding = "Test",
+                        replaces = "%VAL%"
+                    },
+                }
+            };
+
+            string sourceSnippet = @"%VAL%";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+
+            //content
+            templateSourceFiles.Add("sourceFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            var symbolSource = new TestBindSymbolSource(Guid.NewGuid(), prefix: "test", requiresPrefixMatch: true);
+            var additionalComponents = new[]
+            {
+                (typeof(IBindSymbolSource), (IIdentifiedComponent)symbolSource),
+            };
+
+            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
+            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(settings);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(settings);
+
+            TestFileSystemHelper.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(settings, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
+            Assert.Equal("%VAL%", resultContent);
+
+            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
+            Assert.Equal(1, warningMessages.Count());
+            Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "notPrefixed"), warningMessages);
+            Assert.False(symbolSource.GetBoundValueAsync_WasCalled);
+        }
+
         private class TestBindSymbolSource : IBindSymbolSource
         {
             private readonly Guid _guid;
 
-            public TestBindSymbolSource(Guid guid)
+            public TestBindSymbolSource(Guid guid, string prefix = "test", bool requiresPrefixMatch = false)
             {
                 _guid = guid;
+                SourcePrefix = prefix;
+                RequiresPrefixMatch = requiresPrefixMatch;
             }
 
             public string DisplayName => "Test";
 
-            public string? SourcePrefix => "test";
+            public string? SourcePrefix { get; }
 
             public int Priority => 0;
 
             public Guid Id => _guid;
 
+            public bool RequiresPrefixMatch { get; }
+
+            public bool GetBoundValueAsync_WasCalled { get; private set; }
+
             public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
             {
+                GetBoundValueAsync_WasCalled = true;
                 return Task.FromResult((string?)("TestVal" + _guid.ToString()));
             }
         }

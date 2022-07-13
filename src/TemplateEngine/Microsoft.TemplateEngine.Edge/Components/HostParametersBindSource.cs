@@ -24,6 +24,8 @@ namespace Microsoft.TemplateEngine.Edge
 
         string? IBindSymbolSource.SourcePrefix => "host";
 
+        bool IBindSymbolSource.RequiresPrefixMatch => false;
+
         Guid IIdentifiedComponent.Id => Guid.Parse("{63AB8956-DBFA-4DA4-8089-93CC8272D7C5}");
 
         string IBindSymbolSource.DisplayName => LocalizableStrings.HostParametersBindSource_Name;
