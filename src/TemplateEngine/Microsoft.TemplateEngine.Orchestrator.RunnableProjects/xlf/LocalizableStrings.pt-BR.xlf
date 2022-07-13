@@ -100,12 +100,12 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_EvaluationError">
         <source>Failed to evaluate bind symbol '{0}', it will be skipped.</source>
-        <target state="new">Failed to evaluate bind symbol '{0}', it will be skipped.</target>
+        <target state="translated">Falha ao avaliar o símbolo de associação '{0}', ele será ignorado.</target>
         <note>{0} - name of the symbol in configuration that cannot be evaluated</note>
       </trans-unit>
       <trans-unit id="BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources">
         <source>Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</source>
-        <target state="new">Failed to evaluate binding '{0}', its value is available from multiple sources: {1}. Use the prefixed value ({2}) in template configuration instead.</target>
+        <target state="translated">Falha ao avaliar a associação '{0}', seu valor está disponível em várias fontes: {1}. Use o valor prefixado ({2}) na configuração do modelo.</target>
         <note>{0} - binding from template.json configuration
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</note>
@@ -167,7 +167,7 @@ Detalhes: {1}</target>
       </trans-unit>
       <trans-unit id="SymbolModel_Error_MandatoryPropertyMissing">
         <source>The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</source>
-        <target state="new">The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</target>
+        <target state="translated">O símbolo '{0}' do tipo '{1}' está incorreto: a propriedade obrigatória '{2}' não está definida. O símbolo será ignorado.</target>
         <note />
       </trans-unit>
     </body>
