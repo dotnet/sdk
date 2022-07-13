@@ -9,6 +9,7 @@
     <PackageReference Include="xunit.abstractions" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
   
 </Project>
