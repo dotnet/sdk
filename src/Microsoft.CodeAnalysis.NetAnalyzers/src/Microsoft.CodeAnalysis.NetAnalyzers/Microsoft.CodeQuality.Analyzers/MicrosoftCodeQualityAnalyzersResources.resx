@@ -709,8 +709,8 @@
   <data name="IdentifiersShouldHaveCorrectSuffixMessageDefault" xml:space="preserve">
     <value>Rename {0} to end in '{1}'</value>
   </data>
-  <data name="IdentifiersShouldHaveCorrectSuffixMessageSpecialCollection" xml:space="preserve">
-    <value>Rename {0} to end in either 'Collection' or '{1}'</value>
+  <data name="IdentifiersShouldHaveCorrectSuffixMessageMultiple" xml:space="preserve">
+    <value>Rename {0} to end in either '{1}' or '{2}'</value>
   </data>
   <data name="IdentifiersShouldNotHaveIncorrectSuffixTitle" xml:space="preserve">
     <value>Identifiers should not have incorrect suffix</value>
