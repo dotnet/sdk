@@ -5,15 +5,16 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(ToolsetTargetFramework)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Compatibility\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
+    <PackageReference Include="Jab" Version="$(JabVersion)" PrivateAssets="all" />
+    <ProjectReference Include="..\..\Compatibility\Microsoft.DotNet.PackageValidation\Microsoft.DotNet.PackageValidation.csproj" />
+    <ProjectReference Include="..\..\Compatibility\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
+
+  <Import Project="..\..\Compatibility\Microsoft.DotNet.ApiCompat.Shared\Microsoft.DotNet.ApiCompat.Shared.projitems" Label="Shared" />
 
 </Project>
