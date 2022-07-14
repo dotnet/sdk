@@ -1744,7 +1744,7 @@
       </trans-unit>
       <trans-unit id="AvoidUninstantiatedInternalClassesMessage">
         <source>'{0}' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic).</source>
-        <target state="needs-review-translation">{0} является внутренним классом, экземпляр которого никогда не создается. Если это так, удалите код из сборки. Если этот класс должен содержать только статические методы, сделайте его статическим (Shared в Visual Basic).</target>
+        <target state="new">'{0}' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic).</target>
         <note>{Locked="Module"}</note>
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsTitle">
