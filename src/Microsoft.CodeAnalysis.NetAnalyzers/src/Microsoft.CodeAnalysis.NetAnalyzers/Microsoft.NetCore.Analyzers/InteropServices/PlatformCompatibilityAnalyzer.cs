@@ -164,12 +164,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         m.Parameters[0].Type.Equals(osPlatformType));
 
                 var guardMethods = GetOperatingSystemGuardMethods(runtimeIsOSPlatformMethod, operatingSystemType, out var relatedPlatforms);
-#if DEBUG
-                if (context.Compilation.TryGetOrCreateTypeByMetadataName("System.MockOperatingSystem", out var mockOSType))
-                {
-                    guardMethods.AddRange(FilterPlatformCheckMethods(mockOSType, relatedPlatforms));
-                }
-#endif
                 var platformSpecificMembers = new ConcurrentDictionary<ISymbol, PlatformAttributes>();
                 var osPlatformCreateMethod = osPlatformType?.GetMembers("Create").OfType<IMethodSymbol>().FirstOrDefault(m =>
                     m.IsStatic &&

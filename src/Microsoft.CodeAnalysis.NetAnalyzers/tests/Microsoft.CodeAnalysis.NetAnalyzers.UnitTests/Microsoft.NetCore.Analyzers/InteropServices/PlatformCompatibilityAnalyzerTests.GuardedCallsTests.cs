@@ -4581,7 +4581,6 @@ class WindowsOnlyType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
-#if DEBUG
         [Fact]
         public async Task IosGuardsMacCatalystAsync()
         {
@@ -4614,7 +4613,7 @@ class Test
 
     void M1()
     {
-        if (MockOperatingSystem.IsIOS())
+        if (OperatingSystem.IsIOS())
         {
             SupportedOnIOSLinuxMacCatalyst();
             [|SupportsMacCatalyst()|]; // This call site is reachable on: 'IOS'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.
@@ -4624,7 +4623,7 @@ class Test
             [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'maccatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
         }
 
-        if (MockOperatingSystem.IsMacCatalyst())
+        if (OperatingSystem.IsMacCatalyst())
         {          
             SupportedOnIOSLinuxMacCatalyst();
             SupportsMacCatalyst();
@@ -4634,7 +4633,7 @@ class Test
             [|UnsupportsMacCatalyst()|];     // This call site is reachable on: 'MacCatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
         }
 
-        if (MockOperatingSystem.IsIOS() && !MockOperatingSystem.IsMacCatalyst())
+        if (OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst())
         {            
             SupportedOnIOSLinuxMacCatalyst();              
             [|SupportsMacCatalyst()|];       // This call site is reachable on: 'IOS'. 'Test.SupportsMacCatalyst()' is only supported on: 'maccatalyst'.     
@@ -4644,7 +4643,7 @@ class Test
             UnsupportsMacCatalyst();      
         }
     }
-}" + MockApisCsSource;
+}";
 
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
@@ -4735,7 +4734,7 @@ class Test
             UnsupportsMacCatalyst(); 
         }
     }
-}" + MockApisCsSource;
+}";
 
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
@@ -4811,7 +4810,7 @@ class Test
             UnsupportsMacCatalyst();     // This call site is reachable on: 'MacCatalyst'. 'Test.UnsupportsMacCatalyst()' is unsupported on: 'maccatalyst'.
         }
     }
-}" + MockApisCsSource;
+}";
 
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
@@ -4854,7 +4853,7 @@ class MyUsage
 [SupportedOSPlatform(""windows10.0.10240"")]
 [UnsupportedOSPlatform(""MacCatalyst13.0"")]
 class MyType { }
-" + MockApisCsSource;
+";
 
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
@@ -4976,26 +4975,10 @@ class MyUsage
 [UnsupportedOSPlatform(""windows8.1"")]
 [SupportedOSPlatform(""MacCatalyst13.0"")]
 class MyType { }
-" + MockApisCsSource;
+";
 
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
-
-        private readonly string MockApisCsSource = @"
-namespace System
-{
-    public class MockOperatingSystem
-    {
-        [SupportedOSPlatformGuard(""maccatalyst"")]
-        public static bool IsIOS() => true;
-        [SupportedOSPlatformGuard(""maccatalyst"")]
-        public static bool IsIOSVersionAtLeast(int major, int minor = 0, int build = 0) => false;
-        public static bool IsMacCatalyst() => false;
-        public static bool IsMacCatalystVersionAtLeast(int major, int minor = 0, int build = 0) => true;
-    }
-}
-";
-#endif
 
         private readonly string TargetTypesForTest = @"
 namespace PlatformCompatDemo.SupportedUnupported
