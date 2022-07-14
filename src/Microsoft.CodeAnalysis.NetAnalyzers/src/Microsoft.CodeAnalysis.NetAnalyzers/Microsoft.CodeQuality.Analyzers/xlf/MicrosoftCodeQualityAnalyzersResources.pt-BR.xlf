@@ -1743,9 +1743,9 @@
         <note />
       </trans-unit>
       <trans-unit id="AvoidUninstantiatedInternalClassesMessage">
-        <source>{0} is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).</source>
-        <target state="translated">{0} é uma classe interna cuja instância aparentemente nunca é criada. Caso seja, remova o código do assembly. Se essa classe destina-se a conter apenas membros estáticos, torne-a estática (Shared no Visual Basic).</target>
-        <note />
+        <source>'{0}' is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it 'static' (Module in Visual Basic).</source>
+        <target state="needs-review-translation">{0} é uma classe interna cuja instância aparentemente nunca é criada. Caso seja, remova o código do assembly. Se essa classe destina-se a conter apenas membros estáticos, torne-a estática (Shared no Visual Basic).</target>
+        <note>{Locked="Module"}</note>
       </trans-unit>
       <trans-unit id="AvoidUnusedPrivateFieldsTitle">
         <source>Avoid unused private fields</source>
