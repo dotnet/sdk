@@ -49,7 +49,7 @@
       </trans-unit>
       <trans-unit id="EnvironmentVariablesBindSource_Name">
         <source>Environment variables</source>
-        <target state="new">Environment variables</target>
+        <target state="translated">Zmienne środowiskowe</target>
         <note />
       </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
@@ -116,7 +116,7 @@
       </trans-unit>
       <trans-unit id="HostParametersBindSource_Name">
         <source>Host defined parameters</source>
-        <target state="new">Host defined parameters</target>
+        <target state="translated">Parametry zdefiniowane przez hosta</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
