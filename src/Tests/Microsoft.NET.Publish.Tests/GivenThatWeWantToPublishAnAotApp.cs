@@ -42,6 +42,13 @@ namespace Microsoft.NET.Publish.Tests
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
+                // Linux symbol files are embedded and require additional steps to be stripped to a separate file
+                // assumes /bin (or /usr/bin) are in the PATH
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    testProject.AdditionalProperties["StripSymbols"] = "true";
+                    testProject.AdditionalProperties["ObjCopyName"] = "objcopy";
+                }
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -87,6 +94,13 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
                 testProject.AdditionalProperties["Configuration"] = projectConfiguration;
+                // Linux symbol files are embedded and require additional steps to be stripped to a separate file
+                // assumes /bin (or /usr/bin) are in the PATH
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    testProject.AdditionalProperties["StripSymbols"] = "true";
+                    testProject.AdditionalProperties["ObjCopyName"] = "objcopy";
+                }
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject)
                     // populate a runtime config file with a key value pair
@@ -137,6 +151,13 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
                 testProject.AdditionalProperties["Configuration"] = projectConfiguration;
+                // Linux symbol files are embedded and require additional steps to be stripped to a separate file
+                // assumes /bin (or /usr/bin) are in the PATH
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    testProject.AdditionalProperties["StripSymbols"] = "true";
+                    testProject.AdditionalProperties["ObjCopyName"] = "objcopy";
+                }
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject)
                     // populate a runtime config file with a key value pair
