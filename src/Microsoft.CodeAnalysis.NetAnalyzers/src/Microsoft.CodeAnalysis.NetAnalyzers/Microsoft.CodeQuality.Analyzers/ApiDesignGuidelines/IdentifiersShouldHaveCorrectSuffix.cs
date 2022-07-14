@@ -27,6 +27,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private const string SetSuffix = "Set";
         private const string QueueSuffix = "Queue";
         private const string StackSuffix = "Stack";
+        private const string EventHandlerString = "EventHandler";
+
+        private static readonly ImmutableArray<string> s_setCollectionSuffixes = ImmutableArray.Create(SetSuffix, CollectionSuffix);
+        private static readonly ImmutableArray<string> s_queueCollectionSuffixes = ImmutableArray.Create(QueueSuffix, CollectionSuffix);
+        private static readonly ImmutableArray<string> s_stackCollectionSuffixes = ImmutableArray.Create(StackSuffix, CollectionSuffix);
+        private static readonly ImmutableArray<string> s_dictionaryCollectionSuffixes = ImmutableArray.Create(DictionarySuffix, CollectionSuffix);
+        private static readonly ImmutableArray<string> s_collectionDictionarySetStackQueueSuffixes = ImmutableArray.Create(CollectionSuffix, DictionarySuffix, SetSuffix, StackSuffix, QueueSuffix);
 
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixTitle));
         private static readonly LocalizableString s_localizableMessageDefault = CreateLocalizableResourceString(nameof(IdentifiersShouldHaveCorrectSuffixMessageDefault));
@@ -67,23 +74,23 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 (WellKnownTypeNames.SystemAttribute, ImmutableArray.Create("Attribute")),
                 (WellKnownTypeNames.SystemEventArgs, ImmutableArray.Create("EventArgs")),
                 (WellKnownTypeNames.SystemException, ImmutableArray.Create("Exception")),
-                (WellKnownTypeNames.SystemCollectionsQueue, ImmutableArray.Create(QueueSuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsStack, ImmutableArray.Create(StackSuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericQueue1, ImmutableArray.Create(QueueSuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericStack1, ImmutableArray.Create(StackSuffix, CollectionSuffix)),
+                (WellKnownTypeNames.SystemCollectionsQueue, s_queueCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsStack, s_stackCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericQueue1, s_queueCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericStack1, s_stackCollectionSuffixes),
                 (WellKnownTypeNames.SystemDataDataSet, ImmutableArray.Create("DataSet")),
                 (WellKnownTypeNames.SystemDataDataTable, ImmutableArray.Create("DataTable", CollectionSuffix)),
                 (WellKnownTypeNames.SystemIOStream, ImmutableArray.Create("Stream")),
                 // interfaces
-                (WellKnownTypeNames.SystemCollectionsGenericIDictionary2, ImmutableArray.Create(DictionarySuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyDictionary2, ImmutableArray.Create(DictionarySuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericISet1, ImmutableArray.Create(SetSuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlySet1, ImmutableArray.Create(SetSuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericICollection1, ImmutableArray.Create(CollectionSuffix, DictionarySuffix, SetSuffix, StackSuffix, QueueSuffix)),
-                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyCollection1, ImmutableArray.Create(CollectionSuffix, DictionarySuffix, SetSuffix, StackSuffix, QueueSuffix)),
-                (WellKnownTypeNames.SystemCollectionsIDictionary, ImmutableArray.Create(DictionarySuffix, CollectionSuffix)),
-                (WellKnownTypeNames.SystemCollectionsICollection, ImmutableArray.Create(CollectionSuffix, DictionarySuffix, SetSuffix, StackSuffix, QueueSuffix)),
-                (WellKnownTypeNames.SystemCollectionsIEnumerable, ImmutableArray.Create(CollectionSuffix, DictionarySuffix, SetSuffix, StackSuffix, QueueSuffix)),
+                (WellKnownTypeNames.SystemCollectionsGenericIDictionary2, s_dictionaryCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyDictionary2, s_dictionaryCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericISet1, s_setCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlySet1, s_setCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericICollection1, s_collectionDictionarySetStackQueueSuffixes),
+                (WellKnownTypeNames.SystemCollectionsGenericIReadOnlyCollection1, s_collectionDictionarySetStackQueueSuffixes),
+                (WellKnownTypeNames.SystemCollectionsIDictionary, s_dictionaryCollectionSuffixes),
+                (WellKnownTypeNames.SystemCollectionsICollection, s_collectionDictionarySetStackQueueSuffixes),
+                (WellKnownTypeNames.SystemCollectionsIEnumerable, s_collectionDictionarySetStackQueueSuffixes),
                 (WellKnownTypeNames.SystemSecurityIPermission, ImmutableArray.Create("Permission")),
                 (WellKnownTypeNames.SystemSecurityPolicyIMembershipCondition, ImmutableArray.Create("Condition"))
             );
@@ -105,8 +112,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             foreach (var (typeName, suffixes) in s_baseTypesAndTheirSuffix)
             {
-                var wellKnownNamedType = wellKnownTypeProvider.GetOrCreateTypeByMetadataName(typeName);
-                if (wellKnownNamedType?.OriginalDefinition == null)
+                if (!wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(typeName, out var wellKnownNamedType)
+                    || wellKnownNamedType.OriginalDefinition == null)
                 {
                     continue;
                 }
@@ -177,16 +184,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            context.RegisterSymbolAction((saContext) =>
+            context.RegisterSymbolAction(context =>
             {
-                const string eventHandlerString = "EventHandler";
-                var eventSymbol = (IEventSymbol)saContext.Symbol;
-                if (!eventSymbol.Type.Name.EndsWith(eventHandlerString, StringComparison.Ordinal) &&
+                var eventSymbol = (IEventSymbol)context.Symbol;
+                if (!eventSymbol.Type.Name.EndsWith(EventHandlerString, StringComparison.Ordinal) &&
                     eventSymbol.Type.IsInSource() &&
                     eventSymbol.Type.TypeKind == TypeKind.Delegate &&
                     ((INamedTypeSymbol)eventSymbol.Type).DelegateInvokeMethod?.HasEventHandlerSignature(eventArgsType) == true)
                 {
-                    saContext.ReportDiagnostic(eventSymbol.CreateDiagnostic(OneSuffixRule, eventSymbol.Type.Name, eventHandlerString));
+                    context.ReportDiagnostic(eventSymbol.CreateDiagnostic(OneSuffixRule, eventSymbol.Type.Name, EventHandlerString));
                 }
             },
             SymbolKind.Event);
