@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Microsoft.TemplateEngine.Utils
@@ -38,7 +39,82 @@ namespace Microsoft.TemplateEngine.Utils
         /// </summary>
         public IReadOnlyList<string> Values { get; private init; }
 
+        public static bool TryPerformMultiValueEqual(object x, object y, out bool result)
+        {
+            bool isxMv = x is MultiValueParameter;
+            bool isyMv = y is MultiValueParameter;
+
+            if (!isxMv && !isyMv)
+            {
+                result = false;
+                return false;
+            }
+
+            {
+                if (x is MultiValueParameter mv && y is string sv)
+                {
+                    result = MultivalueEquals(mv, sv);
+                    return true;
+                }
+            }
+
+            {
+                if (y is MultiValueParameter mv && x is string sv)
+                {
+                    result = MultivalueEquals(mv, sv);
+                    return true;
+                }
+            }
+
+            result = Equals(x, y);
+            return true;
+        }
+
         /// <inheritdoc/>
         public override string ToString() => string.Join(MultiValueSeparator.ToString(), Values);
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
+        {
+            if (obj is null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != this.GetType())
+            {
+                return false;
+            }
+
+            return Equals((MultiValueParameter)obj);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode() => Values.OrderBy(v => v).ToCsvString().GetHashCode();
+
+        protected bool Equals(MultiValueParameter other)
+        {
+            var set1 = new HashSet<string>(Values);
+            var set2 = new HashSet<string>(other.Values);
+            return set1.SetEquals(set2);
+        }
+
+        private static bool MultivalueEquals(MultiValueParameter mv, string comparand)
+        {
+            foreach (string s in mv.Values)
+            {
+                if (string.Equals(s, comparand, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

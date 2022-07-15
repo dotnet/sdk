@@ -21,4 +21,6 @@ static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.set ->
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream! runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec!
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetBufferSize(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int bufferSize) -> bool
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int threshold) -> bool
+~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, object value) -> void
+~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> object
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool

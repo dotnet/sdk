@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             //Is it a variable?
                             else if (_knownTokensCount <= token)
                             {
-                                string value = (_symbolValues[token - _knownTokensCount] ?? "null").ToString();
+                                object value = _symbolValues[token - _knownTokensCount] ?? null;
                                 Token<TToken> t = new Token<TToken>(_literal, value);
                                 TokenScope<TToken> scope = new TokenScope<TToken>(isolator.Active, t);
 

@@ -331,8 +331,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.Build(ref int bufferLength, ref int bufferPosition, System.Action<System.Collections.Generic.IReadOnlyList<byte>> onFault) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
 ~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.ScopeBuilder(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals) -> void
 ~Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>
-~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, string value) -> void
-~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> string
 ~Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Evaluate() -> object
 ~Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Parent.get -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
 ~Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Parent.set -> void

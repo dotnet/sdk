@@ -7,6 +7,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Util;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 {
@@ -79,6 +80,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return AttemptNumericComparison(left, right)
                    ?? AttemptBooleanComparison(left, right)
                    ?? AttemptVersionComparison(left, right)
+                   ?? AttemptMultiValueComparison(left, right)
                    ?? AttemptLexographicComparison(left, right)
                    ?? AttemptComparableComparison(left, right)
                    ?? 0;
@@ -114,7 +116,17 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return ls.CompareTo(rs);
         }
 
-        private static int? AttemptLexographicComparison(object left, object right)
+        private static int? AttemptMultiValueComparison(object left, object right)
+        {
+            if (MultiValueParameter.TryPerformMultiValueEqual(left, right, out bool result))
+            {
+                return result ? 0 : -1;
+            }
+
+            return null;
+        }
+
+    private static int? AttemptLexographicComparison(object left, object right)
         {
             string ls = left as string;
             string rs = right as string;

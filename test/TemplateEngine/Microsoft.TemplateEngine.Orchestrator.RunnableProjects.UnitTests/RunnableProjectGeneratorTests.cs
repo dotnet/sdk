@@ -323,6 +323,153 @@ THIRD
         }
 
         [Fact]
+        public async void CreateAsyncTest_MultiChoiceParamAndConditionMacro()
+        {
+            //
+            // Template content preparation
+            //
+
+            string templateConfig = @"
+{
+  ""$schema"": ""https://json.schemastore.org/template.json"",
+  ""author"": ""Test Asset"",
+  ""classifications"": [
+    ""Test Asset""
+  ],
+  ""name"": ""MultiSelect.Template"",
+  ""generatorVersions"": ""[1.0.0.0-*)"",
+  ""tags"": {
+    ""type"": ""project"",
+    ""language"": ""C#""
+  },
+  ""groupIdentity"": ""MultiSelect.Template"",
+  ""precedence"": ""100"",
+  ""identity"": ""MultiSelect.Template"",
+  ""shortName"": ""MultiSelect.Template"",
+  ""sourceName"": ""bar"",
+  ""symbols"": {
+    ""Platform"": {
+      ""type"": ""parameter"",
+      ""description"": ""The target platform for the project."",
+      ""datatype"": ""choice"",
+      ""allowMultipleValues"": true,
+      ""enableQuotelessLiterals"": true,
+      ""choices"": [
+        {
+          ""choice"": ""Windows"",
+          ""description"": ""Windows Desktop""
+        },
+        {
+          ""choice"": ""WindowsPhone"",
+          ""description"": ""Windows Phone""
+        },
+        {
+          ""choice"": ""MacOS"",
+          ""description"": ""Macintosh computers""
+        },
+        {
+          ""choice"": ""iOS"",
+          ""description"": ""iOS mobile""
+        },
+        {
+          ""choice"": ""android"",
+          ""description"": ""android mobile""
+        },
+        {
+          ""choice"": ""nix"",
+          ""description"": ""Linux distributions""
+        }
+      ],
+      ""defaultValue"": ""MacOS|iOS""
+    },
+    ""IsMobile"": {
+      ""type"": ""computed"",
+      ""value"": ""((Platform == android || Platform == iOS || Platform == WindowsPhone) && Platform != Windows && Platform != MacOS && Platform != nix)""
+    },
+    ""IsAndroidOnly"": {
+      ""type"": ""computed"",
+      ""value"": ""(Platform == android && Platform != iOS && Platform != WindowsPhone && Platform != Windows && Platform != MacOS && Platform != nix)""
+    },
+    ""joinedRename"": {
+      ""type"": ""generated"",
+      ""generator"": ""join"",
+      ""replaces"": ""SupportedPlatforms"",
+      ""parameters"": {
+        ""symbols"": [
+          {
+            ""type"": ""ref"",
+            ""value"": ""Platform""
+          }
+        ],
+        ""separator"": "", "",
+        ""removeEmptyValues"": true
+      }
+    }
+  }
+}
+";
+
+            string sourceSnippet = @"
+//#if IsAndroidOnly
+This renders for android only
+//#elseif IsMobile
+This renders for rest of mobile platforms
+//#else
+This renders for desktop platforms
+//#endif
+Console.WriteLine(""Hello, World!"");
+
+// Plats: SupportedPlatforms
+";
+
+            string expectedSnippet = @"
+This renders for rest of mobile platforms
+Console.WriteLine(""Hello, World!"");
+
+// Plats: android, iOS
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
+
+            //content
+            templateSourceFiles.Add("sourcFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+
+            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            ITemplateParameter choiceParameter;
+            Assert.True(parameters.TryGetParameterDefinition("Platform", out choiceParameter), "ChoiceParam expected to be extracted from template config");
+            parameters.ResolvedValues[choiceParameter] = new MultiValueParameter(new[] { "android", "iOS" });
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(environment, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
+
+        [Fact]
         public async void CreateAsyncTest_MultiChoiceParamJoining()
         {
             //

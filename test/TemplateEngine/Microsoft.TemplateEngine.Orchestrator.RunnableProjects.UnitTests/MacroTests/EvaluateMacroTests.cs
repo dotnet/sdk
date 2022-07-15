@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 using static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator;
 
@@ -33,6 +34,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, predicate, evaluator);
 
             IVariableCollection variables = new VariableCollection();
+
+            EvaluateMacro macro = new EvaluateMacro();
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            Assert.Equal(variables[variableName], expectedResult);
+        }
+
+        [Theory(DisplayName = nameof(TestEvaluateConfig))]
+        [InlineData("(Param == A)", "C++", "A|B", true)]
+        [InlineData("(Param == C)", "C++", "A|B", false)]
+        [InlineData("((Param == A) || (Param == B))", "C++", "A|B", true)]
+        [InlineData("((Param == A) && (Param == B))", "C++", "A|B", true)]
+        [InlineData("((Param == A) && (Param != B))", "C++", "A|B", false)]
+        [InlineData("((Param == A) && (Param == C))", "C++", "A|B", false)]
+        [InlineData("(Param == A)", "C++2", "A|B", true)]
+        [InlineData("(Param == C)", "C++2", "A|B", false)]
+        [InlineData("((Param == A) || (Param == B))", "C++2", "A|B", true)]
+        [InlineData("((Param == A) && (Param == B))", "C++2", "A|B", true)]
+        [InlineData("((Param == A) && (Param != B))", "C++2", "A|B", false)]
+        [InlineData("((Param == A) && (Param == C))", "C++2", "A|B", false)]
+        public void TestEvaluateMultichoice(string condition, string evaluator, string multichoiceValues, bool expectedResult)
+        {
+            string variableName = "myPredicate";
+            EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, condition, evaluator);
+
+            IVariableCollection variables = new VariableCollection();
+            variables["A"] = "A";
+            variables["B"] = "B";
+            variables["C"] = "C";
+            variables["Param"] = new MultiValueParameter(multichoiceValues.TokenizeMultiValueParameter());
 
             EvaluateMacro macro = new EvaluateMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
