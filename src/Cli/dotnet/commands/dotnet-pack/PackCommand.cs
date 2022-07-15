@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using System;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Tools.Pack
@@ -33,7 +34,8 @@ namespace Microsoft.DotNet.Tools.Pack
 
             var msbuildArgs = new List<string>()
             {
-                "-target:pack"
+                "-target:pack",
+                "-property:_IsPacking=true"
             };
 
             msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()));

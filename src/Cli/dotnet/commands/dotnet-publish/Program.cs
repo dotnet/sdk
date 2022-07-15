@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -30,12 +31,13 @@ namespace Microsoft.DotNet.Tools.Publish
         public static PublishCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
         {
             parseResult.HandleDebugSwitch();
-
-            var msbuildArgs = new List<string>();
-
             parseResult.ShowHelpOrErrorIfAppropriate();
 
-            msbuildArgs.Add("-target:Publish");
+            var msbuildArgs = new List<string>()
+            {
+                "-target:Publish",
+                "-property:_IsPublishing=true"
+            };
 
             CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
                 parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
