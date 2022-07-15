@@ -61,6 +61,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets the friendly name of the parameter to be displayed to the user.
         /// This property is localized if localizations are provided.
+        /// May contain accelerator key (_) which should be processed or removed.
         /// </summary>
         string? DisplayName { get; }
 
