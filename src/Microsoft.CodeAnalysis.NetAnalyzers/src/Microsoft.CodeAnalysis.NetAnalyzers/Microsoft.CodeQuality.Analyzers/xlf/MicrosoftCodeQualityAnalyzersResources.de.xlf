@@ -249,7 +249,7 @@
       </trans-unit>
       <trans-unit id="IdentifiersShouldHaveCorrectSuffixMessageMultiple">
         <source>Rename {0} to end in either '{1}' or '{2}'</source>
-        <target state="new">Rename {0} to end in either '{1}' or '{2}'</target>
+        <target state="translated">Umbenennen{0}, um entweder auf '{1}' oder '{2}' zu enden</target>
         <note />
       </trans-unit>
       <trans-unit id="IdentifiersShouldNotContainUnderscoresCodeFixTitle">

@@ -2424,7 +2424,7 @@
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageIFormatProviderOptional">
         <source>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</source>
-        <target state="new">The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</target>
+        <target state="translated">“{0}”的行为可能因当前用户的区域设置而异。为 “IFormatProvider” 参数提供值。</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyIFormatProviderMessageUICulture">
