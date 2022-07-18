@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Verify.XUnit" />
   </ItemGroup>
 
   <ItemGroup>
@@ -13,5 +14,9 @@
     <ProjectReference Include="$(SrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Approvals\" />
   </ItemGroup>
 </Project>
