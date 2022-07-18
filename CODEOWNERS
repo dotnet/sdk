@@ -62,10 +62,11 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/src/Assets/TestProjects/Watch*/     @captainsafia @mkArtakMSFT
-/src/Tests/dotnet-watch.Tests/       @captainsafia @mkArtakMSFT
-/src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @captainsafia @mkArtakMSFT
-/src/BuiltInTools/   @captainsafia @mkArtakMSFT
+/src/Assets/TestProjects/Watch*/     @tmat @mkArtakMSFT
+/src/Tests/dotnet-watch.Tests/       @tmat @mkArtakMSFT
+/src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @mkArtakMSFT
+/src/BuiltInTools/*   @tmat @mkArtakMSFT
+/src/BuiltInTools/BrowserRefresh   @mkArtakMSFT
 
 # Compatibility tools owned by runtime team
 # Area-Compatibility
