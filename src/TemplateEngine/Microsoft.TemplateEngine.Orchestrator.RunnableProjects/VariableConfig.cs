@@ -11,32 +11,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class VariableConfig : IVariableConfig
     {
-        private VariableConfig(JObject configData)
-        {
-            Dictionary<string, string> sourceFormats = new Dictionary<string, string>();
-            List<string> order = new List<string>();
-
-            if (configData.TryGetValue("sources", System.StringComparison.OrdinalIgnoreCase, out JToken? sourcesData))
-            {
-                foreach (JObject source in (JArray)sourcesData)
-                {
-                    string? name = source.ToString("name");
-                    string? format = source.ToString("format");
-
-                    if (!string.IsNullOrWhiteSpace(name) && !string.IsNullOrWhiteSpace(format))
-                    {
-                        sourceFormats[name!] = format!;
-                        order.Add(name!);
-                    }
-                }
-            }
-
-            Sources = sourceFormats;
-            Order = order;
-            FallbackFormat = configData.ToString(nameof(FallbackFormat));
-            Expand = configData.ToBool(nameof(Expand));
-        }
-
         private VariableConfig(
             IReadOnlyDictionary<string, string> sources,
             IReadOnlyList<string> order,
@@ -57,21 +31,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool Expand { get; private init; }
 
-        internal static IVariableConfig DefaultVariableSetup(string fallbackFormat = "{0}")
+        internal static IVariableConfig DefaultVariableSetup()
         {
             return new VariableConfig(
                 new Dictionary<string, string>
                 {
-                    { "environment", "env_{0}" },
-                    { "user", "usr_{0}" }
+                    { "user", "{0}" }
                 },
-                new List<string>() { "environment", "user" },
-                fallbackFormat ?? "{0}");
-        }
-
-        internal static IVariableConfig FromJObject(JObject configData)
-        {
-            return new VariableConfig(configData);
+                new[] { "user" },
+                null);
         }
     }
 }

@@ -392,11 +392,6 @@ But since there can be many instances of the SpecialCustomOperations, each appli
 
 The `configuration details` options are identical in both situations, they only differ in the scopes they're applied in. The below sections are labelled CustomOperations.<Item>, but are equally applicable to SpecialCustomOperations.<fileglob>.<Item>
 
-
-### CustomOperations.VariableFormat (optional)
-Defines the format of variable names, and general processing infomation.
-Need help documenting this!!!
-
 ### CustomOperations.FlagPrefix (optional)
 Overrides the default prefix to indicate a flag option in a file being processed.
 

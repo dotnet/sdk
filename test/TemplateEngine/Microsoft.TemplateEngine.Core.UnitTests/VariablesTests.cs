@@ -24,15 +24,20 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyVariables))]
         public void VerifyVariables()
         {
-            string value = @"test %PATH% test";
-            string expected = @"test " + _engineEnvironmentSettings.Environment.GetEnvironmentVariable("PATH") + " test";
+            string value = @"test VAL test";
+            string expected = @"test testValue test";
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);
             MemoryStream output = new MemoryStream();
 
+            VariableCollection vc = new VariableCollection
+            {
+                ["VAL"] = "testValue"
+            };
+
             IOperationProvider[] operations = { new ExpandVariables(null, true) };
-            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, VariableCollection.Environment(_engineEnvironmentSettings), "%{0}%");
+            EngineConfig cfg = new EngineConfig(_engineEnvironmentSettings.Host.Logger, vc);
             IProcessor processor = Processor.Create(cfg, operations);
 
             //Changes should be made

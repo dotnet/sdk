@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
             }
 
-            IVariableCollection variables = SetupVariables(environmentSettings, parameters, templateConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(parameters, templateConfig.OperationConfig.VariableSetup);
             await templateConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             ProcessMacros(environmentSettings, templateConfig.OperationConfig, variables);
@@ -482,7 +482,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            IVariableCollection variables = SetupVariables(environmentSettings, parameters, runnableProjectConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(parameters, runnableProjectConfig.OperationConfig.VariableSetup);
             await runnableProjectConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -504,9 +504,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return GetCreationResult(environmentSettings.Host.Logger, runnableProjectConfig, variables);
         }
 
-        private static IVariableCollection SetupVariables(IEngineEnvironmentSettings environmentSettings, IParameterSet parameters, IVariableConfig variableConfig)
+        private static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig)
         {
-            IVariableCollection variables = VariableCollection.SetupVariables(environmentSettings, parameters, variableConfig);
+            IVariableCollection variables = VariableCollection.SetupVariables(parameters, variableConfig);
 
             foreach (Parameter param in parameters.ParameterDefinitions.OfType<Parameter>())
             {
@@ -666,7 +666,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
 
-            public IDictionary<ITemplateParameter, object> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object>();
+            public IDictionary<ITemplateParameter, object?> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object?>();
 
             public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
             {

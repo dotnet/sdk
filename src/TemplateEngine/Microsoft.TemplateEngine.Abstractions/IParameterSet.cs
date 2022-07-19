@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets a collection of template parameters and their values.
         /// </summary>
-        IDictionary<ITemplateParameter, object> ResolvedValues { get; }
+        IDictionary<ITemplateParameter, object?> ResolvedValues { get; }
 
         /// <summary>
         /// Gets a parameter definition with the specified <paramref name="name"/>.

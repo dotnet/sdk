@@ -23,15 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal static CustomFileGlobModel FromJObject(JObject globData, string globName)
         {
             // setup the variable config
-            IVariableConfig variableConfig;
-            if (globData.TryGetValue(nameof(VariableFormat), System.StringComparison.OrdinalIgnoreCase, out JToken variableData))
-            {
-                variableConfig = VariableConfig.FromJObject((JObject)variableData);
-            }
-            else
-            {
-                variableConfig = VariableConfig.DefaultVariableSetup(null);
-            }
+            IVariableConfig variableConfig = VariableConfig.DefaultVariableSetup();
 
             // setup the custom operations
             List<ICustomOperationModel> customOpsForGlob = new List<ICustomOperationModel>();

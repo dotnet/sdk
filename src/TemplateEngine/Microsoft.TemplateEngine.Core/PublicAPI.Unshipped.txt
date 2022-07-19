@@ -12,15 +12,37 @@ Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.Templat
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! fileSystem) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Add(string! key, object! value) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Contains(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.ContainsKey(string! key) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.CopyTo(System.Collections.Generic.KeyValuePair<string!, object!>[]! array, int arrayIndex) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, object!>>!
+Microsoft.TemplateEngine.Core.VariableCollection.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.TemplateEngine.Core.VariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander?
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection?
+Microsoft.TemplateEngine.Core.VariableCollection.Parent.set -> void
+Microsoft.TemplateEngine.Core.VariableCollection.Remove(string! key) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.Remove(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.this[string! key].get -> object!
+Microsoft.TemplateEngine.Core.VariableCollection.this[string! key].set -> void
+Microsoft.TemplateEngine.Core.VariableCollection.TryGetValue(string! key, out object! value) -> bool
+Microsoft.TemplateEngine.Core.VariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander?
+Microsoft.TemplateEngine.Core.VariableCollection.Values.get -> System.Collections.Generic.ICollection<object!>!
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.Contracts.IVariableCollection? parent, System.Collections.Generic.IDictionary<string!, object!>! values) -> void
+Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.VariableCollection? parent) -> void
 static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.EvaluateFromString(Microsoft.Extensions.Logging.ILogger! logger, string! text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
 static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultLineEndings.set -> void
 static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
 static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.set -> void
+static Microsoft.TemplateEngine.Core.VariableCollection.Root() -> Microsoft.TemplateEngine.Core.VariableCollection!
+static Microsoft.TemplateEngine.Core.VariableCollection.Root(System.Collections.Generic.IDictionary<string!, object!>! values) -> Microsoft.TemplateEngine.Core.VariableCollection!
+static Microsoft.TemplateEngine.Core.VariableCollection.SetupVariables(Microsoft.TemplateEngine.Abstractions.IParameterSet! parameters, Microsoft.TemplateEngine.Core.Contracts.IVariableConfig! variableConfig) -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream! runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec!
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetBufferSize(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int bufferSize) -> bool
 virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Microsoft.TemplateEngine.Abstractions.Mount.IFile! sourceFile, out int threshold) -> bool
+~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, object value) -> void
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> object
-~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool

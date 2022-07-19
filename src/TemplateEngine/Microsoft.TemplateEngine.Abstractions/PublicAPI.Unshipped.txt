@@ -53,6 +53,7 @@ Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Identity.get -> strin
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Locale.get -> string!
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Name.get -> string!
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
+Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!, object?>!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!>!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile!>!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo!>!
@@ -100,7 +101,6 @@ Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.UpdateRequest(Micr
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.Version.get -> string!
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.UpdateRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest!
 Microsoft.TemplateEngine.Abstractions.IParameterSet.ParameterDefinitions.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
-Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!, object!>!
 Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string! name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
 Microsoft.TemplateEngine.Abstractions.ISearchPackFilter.ShouldPackBeFiltered(string! candidatePackName, string! candidatePackVersion) -> bool
 Microsoft.TemplateEngine.Abstractions.ISettingsLoader.AddMountPoint(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! mountPoint) -> void

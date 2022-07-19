@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Utils
         public static bool TryGetRuntimeValue(this IParameterSet parameters, IEngineEnvironmentSettings environmentSettings, string name, out object? value, bool skipEnvironmentVariableSearch = false)
         {
             if (parameters.TryGetParameterDefinition(name, out ITemplateParameter param)
-                && parameters.ResolvedValues.TryGetValue(param, out object newValueObject)
+                && parameters.ResolvedValues.TryGetValue(param, out object? newValueObject)
                 && newValueObject != null)
             {
                 value = newValueObject;

@@ -251,8 +251,6 @@ Microsoft.TemplateEngine.Core.VariableCollection
 Microsoft.TemplateEngine.Core.VariableCollection.Clear() -> void
 Microsoft.TemplateEngine.Core.VariableCollection.Count.get -> int
 Microsoft.TemplateEngine.Core.VariableCollection.IsReadOnly.get -> bool
-Microsoft.TemplateEngine.Core.VariableCollection.KeysChanged -> Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
-Microsoft.TemplateEngine.Core.VariableCollection.ValueRead -> Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection() -> void
 override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.DereferenceInLiterals.get -> bool
 override Microsoft.TemplateEngine.Core.Expressions.MSBuild.MSBuildStyleEvaluatorDefinition.DereferenceInLiterals.get -> bool
@@ -495,23 +493,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object
 ~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.set -> void
 ~Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string key, object value) -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.Add(string key, object value) -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.Add(System.Collections.Generic.KeyValuePair<string, object> item) -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.Contains(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
-~Microsoft.TemplateEngine.Core.VariableCollection.ContainsKey(string key) -> bool
-~Microsoft.TemplateEngine.Core.VariableCollection.CopyTo(System.Collections.Generic.KeyValuePair<string, object>[] array, int arrayIndex) -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>
-~Microsoft.TemplateEngine.Core.VariableCollection.Keys.get -> System.Collections.Generic.ICollection<string>
-~Microsoft.TemplateEngine.Core.VariableCollection.Parent.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
-~Microsoft.TemplateEngine.Core.VariableCollection.Parent.set -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.Remove(string key) -> bool
-~Microsoft.TemplateEngine.Core.VariableCollection.Remove(System.Collections.Generic.KeyValuePair<string, object> item) -> bool
-~Microsoft.TemplateEngine.Core.VariableCollection.this[string key].get -> object
-~Microsoft.TemplateEngine.Core.VariableCollection.this[string key].set -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.TryGetValue(string key, out object value) -> bool
-~Microsoft.TemplateEngine.Core.VariableCollection.Values.get -> System.Collections.Generic.ICollection<object>
-~Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.Contracts.IVariableCollection parent, System.Collections.Generic.IDictionary<string, object> values) -> void
-~Microsoft.TemplateEngine.Core.VariableCollection.VariableCollection(Microsoft.TemplateEngine.Core.VariableCollection parent) -> void
 ~override Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.ToString() -> string
 ~override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens>
 ~override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
@@ -554,17 +535,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static Microsoft.TemplateEngine.Core.Util.EngineConfig.DefaultWhitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
 ~static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, params Microsoft.TemplateEngine.Core.Contracts.IOperationProvider[] operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~static Microsoft.TemplateEngine.Core.Util.Processor.Create(Microsoft.TemplateEngine.Core.Util.EngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, bool changeCase, bool upperCase, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent, bool changeCase, bool upperCase, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Core.VariableCollection parent, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Environment(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, string formatString) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Root() -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.Root(System.Collections.Generic.IDictionary<string, object> values) -> Microsoft.TemplateEngine.Core.VariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.SetupVariables(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, Microsoft.TemplateEngine.Core.Contracts.IVariableConfig variableConfig) -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
-~static Microsoft.TemplateEngine.Core.VariableCollection.VariableCollectionFromParameters(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings environmentSettings, Microsoft.TemplateEngine.Abstractions.IParameterSet parameters, string format) -> Microsoft.TemplateEngine.Core.VariableCollection
 ~static readonly Microsoft.TemplateEngine.Core.Operations.BalancedNesting.OperationName -> string
 ~static readonly Microsoft.TemplateEngine.Core.Operations.Conditional.OperationName -> string
 ~static readonly Microsoft.TemplateEngine.Core.Operations.ExpandVariables.OperationName -> string
