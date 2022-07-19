@@ -71,7 +71,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -100,7 +100,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -125,7 +125,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -149,7 +149,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -174,7 +174,7 @@ namespace BinaryFormatterTests
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
             testProject.AdditionalProperties["EnableUnsafeBinaryFormatterSerialization"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
