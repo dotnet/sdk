@@ -572,8 +572,7 @@
                             RetargetTools;
                             CrossgenLayout;
                             LayoutAppHostTemplate;
-                            GeneratePrecomputedRarCache;
-                            SignLayout"
+                            GeneratePrecomputedRarCache"
           BeforeTargets="AfterBuild">
 
   </Target>

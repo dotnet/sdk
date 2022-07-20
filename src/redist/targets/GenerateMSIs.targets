@@ -307,7 +307,7 @@
   </Target>
 
   <Target Name="GenerateSdkBundle"
-          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs;SignTemplatesMsis"
+          DependsOnTargets="GenerateLayout;AcquireWix;MsiTargetsSetupInputOutputs;GenerateSdkMsi;GenerateTemplatesMsis;GenerateWorkloadManifestsWxs"
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkMSIInstallerFile);
                     $(DownloadedSharedFrameworkInstallerFile);
@@ -376,7 +376,7 @@
   </Target>
 
   <Target Name="GenerateToolsetNupkg"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkMsi;SignSdkMsi"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateSdkMsi"
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkMSIInstallerFile);
                     $(ToolsetInstallerNuspecFile);
@@ -394,7 +394,7 @@
   </Target>
 
   <Target Name="GenerateSdkPlaceholderNupkg"
-          DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateSdkPlaceholderMsi;SignSdkPlaceholderMsi"
+          DependsOnTargets="MsiTargetsSetupInputOutputs;GenerateSdkPlaceholderMsi"
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkPlaceholderMSIInstallerFile);
                     $(SdkPlaceholderInstallerNuspecFile);
@@ -412,7 +412,7 @@
   </Target>
 
   <Target Name="GenerateTemplatesNupkgs"
-          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SignTemplatesMsis;SetupTemplatesNupkgs"
+          DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs;GenerateTemplatesMsis;SetupTemplatesNupkgs"
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm' "
           Inputs="@(TemplatesNupkgComponent->'%(MSIInstallerFile)');
                     $(TemplatesInstallerNuspecFile);
@@ -518,13 +518,9 @@
                             MsiTargetsSetupInputOutputs;
                             AcquireWix;
                             GenerateSdkMsi;
-                            SignSdkMsi;
                             GenerateTemplatesMsis;
-                            SignTemplatesMsis;
                             GenerateSdkBundle;
-                            SignSdkBundle;
                             GenerateSdkPlaceholderMsi;
-                            SignSdkPlaceholderMsi;
                             GenerateToolsetNupkg;
                             GenerateTemplatesNupkgs;
                             GenerateSdkPlaceholderNupkg;
