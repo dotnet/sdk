@@ -108,7 +108,9 @@ namespace BinaryFormatterTests
                 .Should()
                 .Pass()
                 .And
-                .NotHaveStdOutContaining("SYSLIB0011");
+                .NotHaveStdOutContaining("warning SYSLIB0011")
+                .And
+                .NotHaveStdOutContaining("error SYSLIB0011");
         }
 
         [Theory]
@@ -133,7 +135,9 @@ namespace BinaryFormatterTests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("SYSLIB0011");
+                .HaveStdOutContaining("warning SYSLIB0011")
+                .And
+                .NotHaveStdOutContaining("error SYSLIB0011");
         }
 
         [Theory]
@@ -157,7 +161,9 @@ namespace BinaryFormatterTests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining("SYSLIB0011");
+                .NotHaveStdOutContaining("warning SYSLIB0011")
+                .And
+                .HaveStdOutContaining("error SYSLIB0011");
         }
 
         [Theory]
@@ -182,7 +188,9 @@ namespace BinaryFormatterTests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("SYSLIB0011");
+                .HaveStdOutContaining("warning SYSLIB0011")
+                .And
+                .NotHaveStdOutContaining("error SYSLIB0011");
         }
     }
 }
