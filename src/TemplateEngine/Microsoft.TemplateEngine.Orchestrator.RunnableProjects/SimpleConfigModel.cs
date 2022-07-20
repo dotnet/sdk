@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -156,6 +157,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         // last in wins (in the odd case where a template.json defined a symbol multiple times)
                         symbols[prop.Name] = modelForSymbol;
                     }
+                }
+            }
+            foreach (var symbol in ImplicitBindSymbols)
+            {
+                if (!symbols.ContainsKey(symbol.Name))
+                {
+                    symbols[symbol.Name] = symbol;
                 }
             }
             _symbols = symbols;
@@ -325,6 +333,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 _symbols = value.ToDictionary(s => s.Name, s => s);
                 _symbols[NameSymbolName] = NameSymbol;
+                foreach (var symbol in ImplicitBindSymbols)
+                {
+                    if (!_symbols.ContainsKey(symbol.Name))
+                    {
+                        _symbols[symbol.Name] = symbol;
+                    }
+                }
             }
         }
 
@@ -337,6 +352,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal IReadOnlyList<ICustomFileGlobModel> SpecialCustomOperations { get; init; } = Array.Empty<ICustomFileGlobModel>();
 
         internal BaseSymbol NameSymbol { get; private set; } = SetupDefaultNameSymbol(null);
+
+        private static IReadOnlyList<BindSymbol> ImplicitBindSymbols { get; } = SetupImplicitBindSymbols();
 
         internal static SimpleConfigModel FromJObject(JObject source, ILogger? logger = null, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
         {
@@ -446,6 +463,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return allBaselines;
+        }
+
+        private static IReadOnlyList<BindSymbol> SetupImplicitBindSymbols()
+        {
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            if (!isWindows)
+            {
+                return Array.Empty<BindSymbol>();
+            }
+            //on Windows we implicitly bind OS to avoid likely breaking change.
+            //this environment variable is commonly used in conditions when using run script post action.
+            return new[] { new BindSymbol("OS", "env:OS") };
         }
     }
 }

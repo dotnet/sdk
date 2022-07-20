@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
@@ -878,6 +879,75 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
+        }
+
+        [Fact]
+        public void DefaultSymbolsaAreSetup()
+        {
+            SimpleConfigModel configModel = new SimpleConfigModel();
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            Assert.Single(configModel.Symbols, s => s.Name == "name");
+            if (isWindows)
+            {
+                Assert.Equal(2, configModel.Symbols.Count());
+                Assert.Single(configModel.Symbols, s => s.Name == "OS");
+            }
+            else
+            {
+                Assert.Equal(1, configModel.Symbols.Count());
+            }
+        }
+
+        [Fact]
+        public void DefaultSymbolsaAreSetup_OnReadingFromJson()
+        {
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    other = new
+                    {
+                        type = "bind",
+                        binding = "host:HostIdentifier",
+                    },
+                }
+            };
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            Assert.Single(configModel.Symbols, s => s.Name == "name");
+            Assert.Single(configModel.Symbols, s => s.Name == "other");
+            if (isWindows)
+            {
+                Assert.Equal(3, configModel.Symbols.Count());
+                Assert.Single(configModel.Symbols, s => s.Name == "OS");
+            }
+            else
+            {
+                Assert.Equal(2, configModel.Symbols.Count());
+            }
+        }
+
+        [Fact]
+        public void DefaultSymbolsaAreSetup_ImplicitBindWillNotOverwrite()
+        {
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    OS = new
+                    {
+                        type = "bind",
+                        binding = "smth",
+                    },
+                }
+            };
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            Assert.Equal(2, configModel.Symbols.Count());
+            Assert.Single(configModel.Symbols, s => s.Name == "name");
+            Assert.Single(configModel.Symbols, s => s.Name == "OS");
+            Assert.Equal("smth", (configModel.Symbols.Single(s => s.Name == "OS") as BindSymbol).Binding);
         }
     }
 }

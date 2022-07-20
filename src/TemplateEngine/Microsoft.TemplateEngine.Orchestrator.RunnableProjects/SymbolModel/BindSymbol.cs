@@ -27,6 +27,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             Binding = binding!;
         }
 
+        internal BindSymbol(string name, string binding) : base(name, null)
+        {
+            Binding = binding;
+        }
+
         /// <summary>
         /// Gets the name of the host property or the environment variable which will provide the value of this symbol.
         /// </summary>
