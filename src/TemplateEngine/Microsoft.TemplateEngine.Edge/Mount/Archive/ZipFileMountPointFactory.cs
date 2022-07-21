@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Mount.Archive
 {
-    public class ZipFileMountPointFactory : IMountPointFactory
+    public sealed class ZipFileMountPointFactory : IMountPointFactory
     {
         internal static readonly Guid FactoryId = new Guid("94E92610-CF4C-4F6D-AEB6-9E42DDE1899D");
 

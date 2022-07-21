@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge
     /// <summary>
     /// The component allows to bind environment variables.
     /// </summary>
-    public class EnvironmentVariablesBindSource : IBindSymbolSource
+    public sealed class EnvironmentVariablesBindSource : IBindSymbolSource
     {
         int IPrioritizedComponent.Priority => 0;
 

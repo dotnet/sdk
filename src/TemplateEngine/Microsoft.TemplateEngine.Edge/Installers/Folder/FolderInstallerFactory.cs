@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
-    public class FolderInstallerFactory : IInstallerFactory
+    public sealed class FolderInstallerFactory : IInstallerFactory
     {
         internal static readonly Guid FactoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
 

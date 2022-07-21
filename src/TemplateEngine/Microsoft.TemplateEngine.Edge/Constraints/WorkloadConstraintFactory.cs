@@ -18,7 +18,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
-    public class WorkloadConstraintFactory : ITemplateConstraintFactory
+    public sealed class WorkloadConstraintFactory : ITemplateConstraintFactory
     {
         Guid IIdentifiedComponent.Id { get; } = Guid.Parse("{F8BA5B13-7BD6-47C8-838C-66626526817B}");
 

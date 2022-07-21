@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Edge
     /// <summary>
     /// The component allows custom host parameters.
     /// </summary>
-    public class HostParametersBindSource : IBindSymbolSource
+    public sealed class HostParametersBindSource : IBindSymbolSource
     {
         int IPrioritizedComponent.Priority => 100;
 

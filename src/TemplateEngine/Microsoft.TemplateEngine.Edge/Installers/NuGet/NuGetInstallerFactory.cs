@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 
 namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
-    public class NuGetInstallerFactory : IInstallerFactory
+    public sealed class NuGetInstallerFactory : IInstallerFactory
     {
         internal static readonly Guid FactoryId = new Guid("{015DCBAC-B4A5-49EA-94A6-061616EB60E2}");
 

@@ -16,7 +16,7 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
-    public class SdkVersionConstraintFactory : ITemplateConstraintFactory
+    public sealed class SdkVersionConstraintFactory : ITemplateConstraintFactory
     {
         Guid IIdentifiedComponent.Id { get; } = Guid.Parse("{4E9721EF-0C02-4C09-A5A4-56C3D29BFC8E}");
 

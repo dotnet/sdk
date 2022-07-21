@@ -17,7 +17,7 @@ using NuGet.Configuration;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
-    public class HostConstraintFactory : ITemplateConstraintFactory
+    public sealed class HostConstraintFactory : ITemplateConstraintFactory
     {
         Guid IIdentifiedComponent.Id { get; } = Guid.Parse("{93721B30-6890-403F-BAE7-5925990865A2}");
 

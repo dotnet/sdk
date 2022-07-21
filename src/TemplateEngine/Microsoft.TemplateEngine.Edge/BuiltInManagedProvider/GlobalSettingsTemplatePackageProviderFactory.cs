@@ -7,7 +7,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
-    public class GlobalSettingsTemplatePackageProviderFactory : ITemplatePackageProviderFactory, IPrioritizedComponent
+    public sealed class GlobalSettingsTemplatePackageProviderFactory : ITemplatePackageProviderFactory, IPrioritizedComponent
     {
         internal static readonly Guid FactoryId = new Guid("{3AACE22E-E978-4BAF-8BC1-568B290A238C}");
 

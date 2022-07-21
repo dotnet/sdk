@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {
-    public class OSConstraintFactory : ITemplateConstraintFactory
+    public sealed class OSConstraintFactory : ITemplateConstraintFactory
     {
         private static readonly Dictionary<string, OSPlatform> _platformMap = new Dictionary<string, OSPlatform>(StringComparer.OrdinalIgnoreCase)
         {
