@@ -1,4 +1,6 @@
 ﻿Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Description.get -> string?
 Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.IconUrl.get -> string?
+Microsoft.TemplateSearch.Common.Providers.NuGetMetadataSearchProviderFactory
+Microsoft.TemplateSearch.Common.Providers.NuGetMetadataSearchProviderFactory.NuGetMetadataSearchProviderFactory() -> void
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Description.get -> string?
 Microsoft.TemplateSearch.Common.TemplatePackageSearchData.IconUrl.get -> string?
