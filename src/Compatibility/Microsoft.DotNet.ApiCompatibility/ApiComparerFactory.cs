@@ -8,18 +8,6 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// <summary>
     /// Factory to create an ApiComparer
     /// </summary>
-    public interface IApiComparerFactory
-    {
-        /// <summary>
-        /// Create an ApiComparer
-        /// </summary>
-        /// <returns>Returns an ApiComparer instance</returns>
-        IApiComparer Create();
-    }
-
-    /// <summary>
-    /// Factory to create an ApiComparer
-    /// </summary>
     public sealed class ApiComparerFactory : IApiComparerFactory
     {
         /// <inheritdoc />

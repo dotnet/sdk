@@ -6,11 +6,14 @@
 namespace Microsoft.DotNet.ApiCompatibility
 {
     /// <summary>
-    /// Factory to create an AssemblySymbolLoader
+    /// Factory to create an ApiComparer
     /// </summary>
-    public sealed class AssemblySymbolLoaderFactory : IAssemblySymbolLoaderFactory
+    public interface IApiComparerFactory
     {
-        /// <inheritdoc />
-        public IAssemblySymbolLoader Create(bool shouldResolveReferences) => new AssemblySymbolLoader(shouldResolveReferences);
+        /// <summary>
+        /// Create an ApiComparer
+        /// </summary>
+        /// <returns>Returns an ApiComparer instance</returns>
+        IApiComparer Create();
     }
 }

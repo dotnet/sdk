@@ -11,7 +11,9 @@ using Microsoft.DotNet.ApiCompatibility.Logging;
 
 namespace Microsoft.DotNet.ApiCompatibility.Runner
 {
-    /// <inheritdoc />
+    /// <summary>
+    /// Enqueues work items and performs api compatibility checks on them.
+    /// </summary>
     public class ApiCompatRunner : IApiCompatRunner
     {
         private readonly HashSet<ApiCompatRunnerWorkItem> _workItems = new();

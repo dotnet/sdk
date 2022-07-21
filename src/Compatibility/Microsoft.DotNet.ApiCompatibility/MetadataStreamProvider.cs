@@ -16,11 +16,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     {
         private readonly HashSet<string> _knownArchiveExtensions = new(new string[] { ".zip", ".nupkg" });
 
-        /// <summary>
-        /// Get the stream from a <see cref="MetadataInformation"/>.
-        /// </summary>
-        /// <param name="metadata">Pass in a <see cref="MetadataInformation"/> to be read.</param>
-        /// <returns>Returns the stream from a provided <see cref="MetadataInformation"/> object.</returns>
+        /// <inheritdoc />
         public Stream GetStream(MetadataInformation metadata)
         {
             string fileExtension = Path.GetExtension(metadata.FullPath);
