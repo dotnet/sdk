@@ -20,7 +20,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             ApiCompatRunnerWorkItem workItem = new(left, apiCompatOptions, right);
 
             Assert.Equal(apiCompatOptions, workItem.Options);
-            //Assert.Equal(metadata, workItem.Left);
+            Assert.Equal(new MetadataInformation[] { left }, workItem.Lefts);
+            Assert.Equal(new MetadataInformation[] { right }, workItem.Rights);
         }
 
         [Fact]

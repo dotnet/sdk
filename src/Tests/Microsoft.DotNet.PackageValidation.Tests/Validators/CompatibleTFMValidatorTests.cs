@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.ApiCompatibility.Runner;
 using Microsoft.DotNet.PackageValidation.Tests;
+using Microsoft.NET.TestFramework;
 using Moq;
 using Xunit;
 
