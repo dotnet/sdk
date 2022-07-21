@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
-            var templates = generator.GetTemplatesAndLangpacksFromDir(mountPoint, out _);
+            var templates = (generator as IGenerator).GetTemplatesAndLangpacksFromDir(mountPoint, out _);
 
             Assert.Single(templates);
             var template = templates[0];

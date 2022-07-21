@@ -1,1 +1,3 @@
 ﻿Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.EvaluateConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! vars, Microsoft.TemplateEngine.Core.Contracts.IMacroConfig! config) -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator.RunnableProjectGenerator() -> void
