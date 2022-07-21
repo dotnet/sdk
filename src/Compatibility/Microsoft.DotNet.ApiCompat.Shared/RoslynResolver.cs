@@ -66,6 +66,7 @@ namespace Microsoft.DotNet.ApiCompat
         {
             const string codeAnalysisName = "Microsoft.CodeAnalysis";
             const string codeAnalysisCsharpName = "Microsoft.CodeAnalysis.CSharp";
+
             if (name.Name == codeAnalysisName || name.Name == codeAnalysisCsharpName)
             {
                 Assembly asm = loadFromPath(Path.Combine(s_roslynAssembliesPath!, $"{name.Name}.dll"));
@@ -77,8 +78,9 @@ namespace Microsoft.DotNet.ApiCompat
 
                 // Being extra defensive but we want to avoid that we accidentally load two different versions of either
                 // of the roslyn assemblies from a different location, so let's load them both on the first request.
-                Assembly _ = name.Name == codeAnalysisName ?
-                    loadFromPath(Path.Combine(s_roslynAssembliesPath!, $"{codeAnalysisCsharpName}.dll")) :
+                if (name.Name == codeAnalysisName)
+                    loadFromPath(Path.Combine(s_roslynAssembliesPath!, $"{codeAnalysisCsharpName}.dll"));
+                else
                     loadFromPath(Path.Combine(s_roslynAssembliesPath!, $"{codeAnalysisName}.dll"));
 
                 return asm;
