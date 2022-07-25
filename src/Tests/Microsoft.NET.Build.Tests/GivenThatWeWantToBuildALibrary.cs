@@ -29,7 +29,7 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("netstandard1.5")]
         [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp3.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_the_library_successfully(string targetFramework)
         {
             var testAsset = _testAssetsManager
@@ -573,9 +573,9 @@ class Program
         }
 
         [WindowsOnlyRequiresMSBuildVersionTheory("16.7.0-preview-20310-07")]
-        [InlineData("net5.0", "", false)]
-        [InlineData("net5.0", "UseWPF", true)]
-        [InlineData("net5.0", "UseWindowsForms", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "UseWPF", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "UseWindowsForms", true)]
         [InlineData("netcoreapp3.1", "", true)]
         public void It_defines_target_platform_defaults_correctly(string targetFramework, string propertyName, bool defaultsDefined)
         {
@@ -609,7 +609,7 @@ class Program
         }
 
         [Theory]
-        [InlineData("net5.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         [InlineData("netcoreapp3.1")]
         public void It_defines_windows_version_default_correctly(string targetFramework)
         {
@@ -898,10 +898,10 @@ class Program
 
         [Theory]
         [InlineData("netcoreapp2.2", null, false, null, false)]
-        [InlineData("netcoreapp3.0", null, true, null, true)]
-        [InlineData("netcoreapp3.0", "LatestMajor", true, null, true)]
-        [InlineData("netcoreapp3.0", null, true, false, false)]
-        [InlineData("netcoreapp3.0", "LatestMajor", true, false, false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, null, true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, false, false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, false, false)]
         public void It_can_build_with_dynamic_loading_enabled(string targetFramework, string rollForwardValue, bool shouldSetRollForward, bool? copyLocal, bool shouldCopyLocal)
         {
             var testProject = new TestProject()
@@ -936,7 +936,7 @@ class Program
             var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
             outputDirectory.Should().HaveFiles(new[] {
                 runtimeConfigName,
-                $"{testProject.Name}.runtimeconfig.dev.json"
+                $"{testProject.Name}.runtimeconfig.json"
             });
 
             if (shouldCopyLocal)
@@ -1025,7 +1025,7 @@ namespace ProjectNameWithSpaces
             var testProjectA = new TestProject()
             {
                 Name = "ProjA",
-                TargetFrameworks = "net5.0-windows10.0.19041"
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041"
             };
             //  Use a previous version of the Microsoft.Windows.SDK.NET.Ref package, to
             //  simulate the scenario where a project is compiling against a library from NuGet
@@ -1042,7 +1042,7 @@ namespace ProjectNameWithSpaces
             var testProjectB = new TestProject()
             {
                 Name = "ProjB",
-                TargetFrameworks = "net5.0-windows10.0.19041",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041",
             };
             testProjectB.SourceFiles.Add("ProjB.cs", @"namespace ProjB
 {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -23,6 +24,7 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.DotNet.Cli.Utils;
 using System.Text.Json;
+using Microsoft.DotNet.Workloads.Workload.List;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -158,6 +160,52 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string.Join(" ", _reporter.Lines).Should().Contain("Failing garbage collection");
         }
 
+        [Fact]
+        public void GivenInfoOptionWorkloadBaseCommandAcceptsThatOption()
+        {
+            var command = new DotnetCommand(Log);
+            var commandResult = command
+                .WithEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", string.Empty)
+                .WithEnvironmentVariable("PATH", "fake")
+                .Execute("workload", "--info");
+
+            commandResult.Should().Pass();
+        }
+
+        [Fact]
+        public void GivenNoWorkloadsInstalledInfoOptionRemarksOnThat()
+        {
+            // We can't easily mock the end to end process of installing a workload and testing --info on it so we are adding that to the manual testing document.
+            // However, we can test a setup where no workloads are installed and --info is provided. 
+
+            _reporter.Clear();
+            var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            var installer = new MockPackWorkloadInstaller();
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android"});
+
+            IWorkloadInfoHelper workloadInfoHelper = new WorkloadInfoHelper(workloadResolver: workloadResolver);
+            WorkloadCommandParser.ShowWorkloadsInfo(workloadInfoHelper: workloadInfoHelper, reporter:_reporter);
+            _reporter.Lines.Should().Contain("There are no installed workloads to display.");
+        }
+
+        [Fact]
+        public void GivenBadOptionWorkloadBaseInformsRequiredCommandWasNotProvided()
+        {
+            _reporter.Clear();
+            var command = new DotnetCommand(Log);
+            command
+                .WithEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", string.Empty)
+                .WithEnvironmentVariable("PATH", "fake")
+                .Execute("workload", "--infoz")
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining("Required command was not provided.");
+        }
+
         [Theory]
         [InlineData(true, "6.0.100")]
         [InlineData(true, "6.0.101")]
@@ -226,16 +274,18 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path, "mockCachePath");
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--download-to-cache", cachePath });
-            (_, var installManager, var installer, _, var manifestUpdater, _) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath);
+            (_, var installManager, var installer, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath);
 
             installManager.Execute();
 
             // Manifest packages should have been 'downloaded' and used for pack resolution
-            manifestUpdater.DownloadManifestPackagesCallCount.Should().Be(1);
-            manifestUpdater.ExtractManifestPackagesToTempDirCallCount.Should().Be(1);
-            // 8 android pack packages
-            installer.CachedPacks.Count.Should().Be(8);
-            installer.CachePath.Should().Be(cachePath);
+            manifestUpdater.GetManifestPackageDownloadsCallCount.Should().Be(1);
+            // 8 android pack packages, plus 1 manifest
+            packageDownloader.DownloadCallParams.Count.Should().Be(9);
+            foreach (var downloadParams in packageDownloader.DownloadCallParams)
+            {
+                downloadParams.downloadFolder.Value.Value.Should().Be(cachePath);
+            }
         }
 
         [Theory]
@@ -273,8 +323,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installManager.Execute();
 
             _reporter.Lines.Should().Contain("==allPackageLinksJsonOutputStart==");
-            string.Join(" ", _reporter.Lines).Should().Contain("mock-url-xamarin.android.sdk");
-            string.Join(" ", _reporter.Lines).Should().Contain("mock-manifest-url");
+            string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.sdk.8.4.7.nupkg");
+            string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/mock-manifest-package.1.0.5.nupkg");
         }
 
         [Fact]
@@ -406,8 +456,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory(testName: testName, identifier: (userLocal ? "userlocal" : "default") + sdkVersion).Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             var userProfileDir = Path.Combine(testDirectory, "user-profile");
-            var installer = new MockPackWorkloadInstaller(failingWorkload);
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var installer = new MockPackWorkloadInstaller(failingWorkload)
+            {
+                WorkloadResolver = workloadResolver
+            };
+            
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates, tempDirManifestPath);
             if (userLocal)

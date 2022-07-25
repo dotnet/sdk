@@ -29,3 +29,4 @@ REM call dotnet new so the first run message doesn't interfere with the first te
 dotnet new --debug:ephemeral-hive
 REM avoid potetial cocurrency issues when nuget is creating nuget.config
 dotnet nuget list source
+dir /B %DOTNET_ROOT%\.nuget

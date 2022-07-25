@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
 using System;
 using System.Collections.Generic;
@@ -58,8 +59,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _reporter = reporter ?? Reporter.Output;
             _verboseLogger = verboseLogger ?? new NuGetConsoleLogger();
             _firstPartyNuGetPackageSigningVerifier = firstPartyNuGetPackageSigningVerifier ??
-                                                     new FirstPartyNuGetPackageSigningVerifier(
-                                                         tempDirectory: packageInstallDir, logger: _verboseLogger);
+                                                     new FirstPartyNuGetPackageSigningVerifier();
             _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
             _restoreActionConfig = restoreActionConfig ?? new RestoreActionConfig();
             _retryTimer = timer;
