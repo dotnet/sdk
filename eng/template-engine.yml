@@ -64,7 +64,7 @@ jobs:
               _PublishArgs: ''
               _SignType: test
               _Test: -test
-            Build_Release:
+            Build_Debug:
               _BuildConfig: Debug
               _PublishArgs: ''
               _SignType: test
