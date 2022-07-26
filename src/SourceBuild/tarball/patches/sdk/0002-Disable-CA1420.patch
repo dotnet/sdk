@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Mon, 25 Jul 2022 19:15:47 +0000
+Subject: [PATCH] Disable CA1420
+
+Workaround until NuGet updates to build with latest .NET toolset.
+---
+ Directory.Build.props | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 8ee962ab1d..ce999a306f 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -13,9 +13,11 @@
+     <SdkTargetFramework>net7.0</SdkTargetFramework>
+     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+ 
+-    <!-- Disable implict package target fallback, and disable warning for when we explicitly add it (currently needed for
+-         Microsoft.ApplicationInsights) -->
+-    <NoWarn>$(NoWarn);NU1701</NoWarn>
++    <!--
++      NU1701 - Disable implict package target fallback, and disable warning for when we explicitly add it (currently needed forMicrosoft.ApplicationInsights)
++      CA1420 - Temporarily disable for source-build until SDK builds with latest toolset.
++    -->
++    <NoWarn>$(NoWarn);NU1701;CA1420</NoWarn>
+     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
+ 
+     <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
