@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit.Abstractions;
@@ -44,6 +45,11 @@ namespace Dotnet_new3.IntegrationTests
                   .And
                   .NotHaveStdErr();
             return Path.GetFullPath(testTemplate);
+        }
+
+        internal static string FormatOutputStreams(this CommandResult commandResult)
+        {
+            return "StdErr:" + Environment.NewLine + commandResult.StdErr + Environment.NewLine + "StdOut:" + Environment.NewLine + commandResult.StdOut;
         }
     }
 }
