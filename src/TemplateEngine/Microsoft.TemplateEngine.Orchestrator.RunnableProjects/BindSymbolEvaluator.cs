@@ -49,6 +49,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 "Configured bind sources are: {0}.",
                 string.Join(", ", _bindSymbolSources.Select(s => $"{s.DisplayName}({s.GetType().Name})")));
 
+            //set default values for symbols that have them defined
+            foreach (var bindSymbol in symbols)
+            {
+                if (!variableCollection.ContainsKey(bindSymbol.Name) && bindSymbol.DefaultValue != null)
+                {
+                    variableCollection[bindSymbol.Name] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindSymbol.DefaultValue);
+                }
+            }
+
             var bindSymbols = symbols.Where(bs => !string.IsNullOrWhiteSpace(bs.Binding));
             if (!bindSymbols.Any())
             {

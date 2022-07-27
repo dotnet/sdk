@@ -25,6 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             }
 
             Binding = binding!;
+            DefaultValue = jObject.ToString(nameof(DefaultValue));
         }
 
         internal BindSymbol(string name, string binding) : base(name, null)
@@ -38,5 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         public string Binding { get; }
 
         internal override string Type => TypeName;
+
+        internal string? DefaultValue { get; init; }
     }
 }

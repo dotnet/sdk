@@ -449,6 +449,7 @@ It is also posible to bind the parameter without the prefix as the fallback beha
 |`binding`| Mandatory. The name of the source and parameter in the source to take the value from. The syntax follows: `<source prefix>:<parameter name>`.|
 |`replaces`|The text to be replaced by the symbol value in the template files content.|
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| 	 
+|`defaultValue`|The value assigned to the symbol if no value was provided from external source(s).|
 
  
 ##### Example  

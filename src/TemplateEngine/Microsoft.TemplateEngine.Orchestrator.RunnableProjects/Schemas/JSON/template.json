@@ -1010,12 +1010,20 @@
             "required": ["binding"],
             "properties": {
               "type": {
-                "description": "Defines a symbol that has its value provided by the host",
-                "enum": ["bind"]
+                "description": "The symbol binds value from external sources.",
+                "enum": [ "bind" ]
               },
               "binding": {
-                "description": "The name of the host property to take the value from",
+                "description": "The source and the name of parameter to take the value from. The syntax is: <external source>:<parameter name>. Well known external sources are: host - a value that is defined by the template engine host; env - environment variable.",
                 "type": "string"
+              },
+              "defaultValue": {
+                "description": "The value assigned to the symbol if no value was provided from external source(s).",
+                "type": "string"
+              },
+              "fileRename": {
+                "type": "string",
+                "description": "Defines the portion of file names which will be replaced by symbol value."
               }
             }
           },

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -96,8 +97,8 @@ MyValue
             // Dependencies preparation and mounting
             //
 
-            IEnvironment environment = A.Fake<IEnvironment>();
-            A.CallTo(() => environment.GetEnvironmentVariable("MYENVVAR")).Returns("MyValue");
+            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
+            IEnvironment environment = new DefaultEnvironment();
 
             IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
@@ -165,8 +166,8 @@ MyValue
             // Dependencies preparation and mounting
             //
 
-            IEnvironment environment = A.Fake<IEnvironment>();
-            A.CallTo(() => environment.GetEnvironmentVariable("MYENVVAR")).Returns("MyValue");
+            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
+            IEnvironment environment = new DefaultEnvironment();
 
             IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
@@ -428,6 +429,95 @@ MyValue
             Assert.Equal(1, warningMessages.Count());
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "notPrefixed"), warningMessages);
             Assert.False(symbolSource.GetBoundValueAsync_WasCalled);
+        }
+
+        [Fact]
+        public async void CreateAsyncTest_CanUseDefaultValue()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    hostPrefixed = new
+                    {
+                        type = "bind",
+                        binding = "host:HostIdentifier",
+                        replaces = "%R1%",
+                        defaultValue = "hostDefault"
+                    },
+                    envPrefixed = new
+                    {
+                        type = "bind",
+                        binding = "env:MYENVVAR",
+                        replaces = "%R2%",
+                        defaultValue = "envDefault"
+                    },
+                    hostUnprefixed = new
+                    {
+                        type = "bind",
+                        binding = "unknown",
+                        replaces = "%R3%",
+                        defaultValue = "expectedDefValue"
+                    },
+                }
+            };
+
+            string sourceSnippet = @"
+%R1%
+%R2%
+%R3%
+";
+
+            string expectedSnippet = @"
+TestHost
+MyValue
+expectedDefValue
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+
+            //content
+            templateSourceFiles.Add("sourceFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+
+            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
+            IEnvironment environment = new DefaultEnvironment();
+
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
+            ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(settings);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(settings);
+
+            TestFileSystemHelper.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(settings, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            IRunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            IParameterSet parameters = new ParameterSet(runnableConfig);
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
+            Assert.Equal(expectedSnippet, resultContent);
         }
 
         private class TestBindSymbolSource : IBindSymbolSource
