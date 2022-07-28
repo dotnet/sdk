@@ -43,10 +43,13 @@ namespace Microsoft.Extensions.Tools.Internal
             {
                 while (true)
                 {
-                    var key = Console.ReadKey(intercept: true);
-                    for (var i = 0; i < _keyPressedListeners.Count; i++)
+                    if (Console.KeyAvailable)
                     {
-                        _keyPressedListeners[i](key);
+                        var key = Console.ReadKey(intercept: true);
+                        for (var i = 0; i < _keyPressedListeners.Count; i++)
+                        {
+                            _keyPressedListeners[i](key);
+                        }
                     }
                 }
             }, TaskCreationOptions.LongRunning);
