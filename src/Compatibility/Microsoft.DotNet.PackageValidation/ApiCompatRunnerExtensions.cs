@@ -9,6 +9,10 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.PackageValidation
 {
+    /// <summary>
+    /// <see cref="ApiCompatRunner"/> extension methods that are specific to package validation
+    /// and rely on NuGet API.
+    /// </summary>
     internal static class ApiCompatRunnerExtensions
     {
         public static void QueueApiCompatFromContentItem(this IApiCompatRunner apiCompatRunner,

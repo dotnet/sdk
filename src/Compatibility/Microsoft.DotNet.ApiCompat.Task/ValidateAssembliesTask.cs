@@ -11,33 +11,72 @@ namespace Microsoft.DotNet.ApiCompat.Task
 {
     public class ValidateAssembliesTask : TaskBase
     {
-        [Required]
-        public string? RoslynAssembliesPath { get; set; }
-
+        /// <summary>
+        /// The assemblies that represent the contract.
+        /// </summary>
         [Required]
         public string[]? LeftAssemblies { get; set; }
 
+        /// <summary>
+        /// The assemblies that act as the implementation.
+        /// </summary>
         [Required]
         public string[]? RightAssemblies { get; set; }
 
+        /// <summary>
+        /// The path to the roslyn assemblies that should be loaded.
+        /// </summary>
+        [Required]
+        public string? RoslynAssembliesPath { get; set; }
+
+        /// <summary>
+        /// If true, generates a compatibility suppression file that contains the api compatibility errors.
+        /// </summary>
         public bool GenerateCompatibilitySuppressionFile { get; set; }
 
+        /// <summary>
+        /// The path to a compatibility suppression file. If provided, the suppressions are read and stored.
+        /// </summary>
         public string? CompatibilitySuppressionFilePath { get; set; }
 
+        /// <summary>
+        /// A NoWarn string contains the error codes that should be ignored.
+        /// </summary>
         public string? NoWarn { get; set; }
 
+        /// <summary>
+        /// Performs api comparison checks in strict mode.
+        /// </summary>
         public bool EnableStrictMode { get; set; }
 
+        /// <summary>
+        /// The left assemblies' references. The index in the array maps to the index of the passed in left assembly.
+        /// </summary>
         public string[]? LeftAssembliesReferences { get; set; }
 
+        /// <summary>
+        /// The right assemblies' references. The index in the array maps to the index of the passed in right assembly.
+        /// </summary>
         public string[]? RightAssembliesReferences { get; set; }
 
+        /// <summary>
+        /// The path to a semaphore file that acts as the touched output which is useful for incremental invocation of this task.
+        /// </summary>
         public string? SemaphoreFile { get; set; }
 
+        /// <summary>
+        /// Create dedicated api compatibility checks for each left and right assembly tuples.
+        /// </summary>
         public bool CreateWorkItemPerAssembly { get; set; }
 
+        /// <summary>
+        /// Regex transformation patterns (regex + replacement string) that transform left assemblies paths to (i.e. relative) paths that can be encoded into the suppression file.
+        /// </summary>
         public ITaskItem[]? LeftAssembliesTransformationPattern { get; set; }
 
+        /// <summary>
+        /// Regex transformation patterns (regex + replacement string) that transform right assemblies paths to (i.e. relative) paths that can be encoded into the suppression file.
+        /// </summary>
         public ITaskItem[]? RightAssembliesTransformationPattern { get; set; }
 
         public override bool Execute()
@@ -103,6 +142,8 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         private static (string CaptureGroupPattern, string ReplacementString)[]? ParseTransformationPattern(ITaskItem[]? transformationPatterns)
         {
+            const string ReplacementStringMetadataName = "ReplacementString";
+
             if (transformationPatterns == null)
                 return null;
 
@@ -110,7 +151,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
             for (int i = 0; i < transformationPatterns.Length; i++)
             {
                 string captureGroupPattern = transformationPatterns[i].ItemSpec;
-                string replacementString = transformationPatterns[i].GetMetadata("ReplacementString");
+                string replacementString = transformationPatterns[i].GetMetadata(ReplacementStringMetadataName);
 
                 if (string.IsNullOrWhiteSpace(replacementString))
                 {

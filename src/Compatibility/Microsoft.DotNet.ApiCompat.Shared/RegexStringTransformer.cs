@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace Microsoft.DotNet.ApiCompat
 {
     /// <summary>
-    /// A regex string transformer that transforms an input string via a regex pattern to a replacement string.
+    /// A regex string transformer that transforms an input string via a set of regex patterns and replacement strings.
     /// </summary>
     internal class RegexStringTransformer
     {
@@ -43,9 +43,9 @@ namespace Microsoft.DotNet.ApiCompat
         public string Transform(string input)
         {
             string current = input;
-            foreach ((Regex Regex, string ReplacementString) pattern in _patterns)
+            foreach ((Regex regex, string replacementString) in _patterns)
             {
-                current = pattern.Regex.Replace(current, pattern.ReplacementString);
+                current = regex.Replace(current, replacementString);
             }
 
             return current;
