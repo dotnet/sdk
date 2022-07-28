@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         public string? NoWarn { get; set; }
 
-        public bool RunApiCompat { get; set; }
+        public bool RunApiCompat { get; set; } = true;
 
         public bool EnableStrictModeForCompatibleTfms { get; set; }
 

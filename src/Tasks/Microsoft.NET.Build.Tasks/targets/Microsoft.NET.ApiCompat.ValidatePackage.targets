@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       PackageTargetPath="$([MSBuild]::ValueOrDefault('$(PackageTargetPath)', '$([MSBuild]::NormalizePath('$(PackageOutputPath)', '$(PackageId).$(PackageVersion).nupkg'))'))"
       RuntimeGraph="$(RuntimeIdentifierGraphPath)"
       NoWarn="$(NoWarn)"
-      RunApiCompat="$([MSBuild]::ValueOrDefault('$(RunApiCompat)', 'true'))"
+      RunApiCompat="$(RunApiCompat)"
       EnableStrictModeForCompatibleTfms="$([MSBuild]::ValueOrDefault('$(EnableStrictModeForCompatibleTfms)', 'true'))"
       EnableStrictModeForCompatibleFrameworksInPackage="$(EnableStrictModeForCompatibleFrameworksInPackage)"
       GenerateCompatibilitySuppressionFile="$(GenerateCompatibilitySuppressionFile)"
