@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.ApiCompat
             return LoadRoslyn(assemblyName, path => context.LoadFromAssemblyPath(path));
         }
 #else
-        private static Assembly? Resolve(object sender, ResolveEventArgs args)
+        private Assembly? Resolve(object sender, ResolveEventArgs args)
         {
             AssemblyName name = new(args.Name);
             return LoadRoslyn(name, path => Assembly.LoadFrom(path));

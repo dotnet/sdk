@@ -104,7 +104,11 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
             rootCommand.SetHandler((InvocationContext context) =>
             {
-                RoslynResolver.Register(context.ParseResult.GetValueForOption(roslynAssembliesPathOption));
+                string? roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption);
+                if (roslynAssembliesPath != null)
+                {
+                    RoslynResolver.Register(roslynAssembliesPath);
+                }
 
                 MessageImportance verbosity = context.ParseResult.GetValueForOption(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValueForOption(generateSuppressionFileOption);
@@ -185,7 +189,11 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             packageCommand.AddOption(baselinePackageAssemblyReferencesOption);
             packageCommand.SetHandler((InvocationContext context) =>
             {
-                RoslynResolver.Register(context.ParseResult.GetValueForOption(roslynAssembliesPathOption));
+                string? roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption);
+                if (roslynAssembliesPath != null)
+                {
+                    RoslynResolver.Register(roslynAssembliesPath);
+                }
 
                 MessageImportance verbosity = context.ParseResult.GetValueForOption(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValueForOption(generateSuppressionFileOption);
