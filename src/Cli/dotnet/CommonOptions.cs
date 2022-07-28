@@ -233,15 +233,11 @@ namespace Microsoft.DotNet.Cli
 
         public static string GetDotnetExeDirectory()
         {
-            // Alternatively we could use Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory here
-            //  (while injecting env resolver so that DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR is being returned as null)
-            // However - it first looks on PATH - which can be problematic in environment (e.g. dev) where we have installed and xcopy dotnet versions
-
-            var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
-            // When running under test the path does not always contain "dotnet".
-			// The sdk folder is /d/ when run on helix because of space issues
-            dotnetRootPath = Path.GetFileName(dotnetRootPath).Contains("dotnet") || Path.GetFileName(dotnetRootPath).Contains("x64") || Path.GetFileName(dotnetRootPath).Equals("d") ? dotnetRootPath : Path.Combine(dotnetRootPath, "dotnet");
-            return dotnetRootPath;
+            // Get the dotnet directory, while ignoring custom msbuild resolvers
+            return Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+                    key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
+                        ? null
+                        : Environment.GetEnvironmentVariable(key));
         }
 
         public static string GetCurrentRuntimeId()
