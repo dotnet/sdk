@@ -6,7 +6,7 @@ using Microsoft.DotNet.ApiCompatibility.Logging;
 
 namespace Microsoft.DotNet.ApiCompat
 {
-    internal static class Helper
+    internal static class SuppressionFileHelper
     {
         /// <summary>
         /// Write the suppression file to disk and throw if a path isn't provided.

@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.ApiCompat
 
             if (generateSuppressionFile)
             {
-                Helper.GenerateSuppressionFile(serviceProvider.GetService<ISuppressionEngine>(),
+                SuppressionFileHelper.GenerateSuppressionFile(serviceProvider.GetService<ISuppressionEngine>(),
                     serviceProvider.GetService<ICompatibilityLogger>(),
                     suppressionFile);
             }
