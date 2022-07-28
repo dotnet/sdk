@@ -27,8 +27,8 @@
     <Bundled60Templates Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled60Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0" PackageVersion="$(AspNetCorePackageVersionFor60Templates)" />
 
-    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <Bundled60Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
 
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <Bundled60Templates Include="Microsoft.DotNet.Test.ProjectTemplates.6.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates60PackageVersion)" />
