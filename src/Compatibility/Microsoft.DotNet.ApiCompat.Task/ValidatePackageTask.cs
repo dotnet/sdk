@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         public override bool Execute()
         {
-            RoslynResolver.Register(RoslynAssembliesPath);
+            RoslynResolver roslynResolver = RoslynResolver.Register(RoslynAssembliesPath!);
 
             try
             {
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
             }
             finally
             {
-                RoslynResolver.Unregister();
+                roslynResolver.Unregister();
             }
         }
 
