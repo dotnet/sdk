@@ -79,8 +79,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                 apiComparer.StrictMode = workItem.Options.EnableStrictMode;
                 apiComparer.WarnOnMissingReferences = runWithReferences;
 
-                
-
                 // TODO: Support passing in multiple lefts in ApiComparer: https://github.com/dotnet/sdk/issues/17364.
 
                 // Invoke the api comparer for the work item and operate on the difference result
