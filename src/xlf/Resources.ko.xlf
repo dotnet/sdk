@@ -48,7 +48,7 @@
         <note />
       </trans-unit>
       <trans-unit id="Both_a_MSBuild_project_file_and_solution_file_found_in_0_Specify_which_to_use_with_the_workspace_argument">
-        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; agrument.</source>
+        <source>Both a MSBuild project file and solution file found in '{0}'. Specify which to use with the &lt;workspace&gt; argument.</source>
         <target state="translated">'{0}'에 MSBuild 프로젝트 파일 및 솔루션 파일이 모두 있습니다. &lt;workspace&gt; 인수를 사용하여 사용할 파일을 지정하세요.</target>
         <note />
       </trans-unit>
