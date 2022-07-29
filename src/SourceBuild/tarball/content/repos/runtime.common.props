@@ -40,4 +40,8 @@
     <EnvironmentVariables Include="BuildInParallel=false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
+  </ItemGroup>
+
 </Project>
