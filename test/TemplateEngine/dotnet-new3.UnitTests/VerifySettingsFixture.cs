@@ -11,6 +11,7 @@ namespace Dotnet_new3.IntegrationTests
         {
             Settings = new VerifySettings();
             Settings.UseDirectory("Approvals");
+            VerifyDiffPlex.Initialize(OutputType.Compact);
         }
 
         internal VerifySettings Settings { get; }

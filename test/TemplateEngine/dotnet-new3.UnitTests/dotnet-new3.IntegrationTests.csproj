@@ -10,6 +10,7 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Cli.TestHelper\Microsoft.TemplateEngine.Cli.TestHelper.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     <PackageReference Include="Verify.XUnit" />
+    <PackageReference Include="Verify.DiffPlex" />
     <PackageReference Include="Wcwidth.Sources" />
   </ItemGroup>
 
