@@ -14,6 +14,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
     {
         static int Main(string[] args)
         {
+            // CLI frontend for ApiCompat's ValidateAssemblies and ValidatePackage features.
+            // Important: Keep parameters exposed in sync with the msbuild task frontend.
+
             // Global options
             Option<string?> suppressionFileOption = new("--suppression-file",
                 "The path to a compatibility suppression file.")

@@ -10,10 +10,13 @@ using Microsoft.DotNet.ApiCompatibility.Logging;
 namespace Microsoft.DotNet.ApiCompat.Task
 {
     /// <summary>
+    /// ApiCompat's ValidatePackage msbuild frontend.
     /// This task provides the functionality to compare package assets based on given inputs.
     /// </summary>
     public class ValidatePackageTask : TaskBase
     {
+        // Important: Keep properties exposed in sync with the CLI frontend.
+
         /// <summary>
         /// The path to the package to inspect.
         /// </summary>

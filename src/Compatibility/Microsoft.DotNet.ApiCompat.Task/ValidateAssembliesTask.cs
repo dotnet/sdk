@@ -9,8 +9,13 @@ using Microsoft.DotNet.ApiCompatibility.Logging;
 
 namespace Microsoft.DotNet.ApiCompat.Task
 {
+    /// <summary>
+    /// ApiCompat's ValidateAssemblies msbuild frontend.
+    /// </summary>
     public class ValidateAssembliesTask : TaskBase
     {
+        // Important: Keep properties exposed in sync with the CLI frontend.
+
         /// <summary>
         /// The assemblies that represent the contract.
         /// </summary>
