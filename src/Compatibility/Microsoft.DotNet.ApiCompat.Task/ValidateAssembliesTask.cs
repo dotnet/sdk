@@ -24,9 +24,8 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public string[]? RightAssemblies { get; set; }
 
         /// <summary>
-        /// The path to the roslyn assemblies that should be loaded.
+        /// If provided, the path to the roslyn assemblies that should be loaded.
         /// </summary>
-        [Required]
         public string? RoslynAssembliesPath { get; set; }
 
         /// <summary>
@@ -81,8 +80,12 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         public override bool Execute()
         {
-            RoslynResolver roslynResolver = RoslynResolver.Register(RoslynAssembliesPath!);
+            if (RoslynAssembliesPath == null)
+            {
+                return base.Execute();
+            }
 
+            RoslynResolver roslynResolver = RoslynResolver.Register(RoslynAssembliesPath);
             try
             {
                 return base.Execute();
