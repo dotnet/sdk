@@ -33,6 +33,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RunApiCompat="$(RunApiCompat)"
       EnableStrictModeForCompatibleTfms="$([MSBuild]::ValueOrDefault('$(EnableStrictModeForCompatibleTfms)', 'true'))"
       EnableStrictModeForCompatibleFrameworksInPackage="$(EnableStrictModeForCompatibleFrameworksInPackage)"
+      EnableStrictModeForBaselineValidation="$(EnableStrictModeForBaselineValidation)"
       GenerateCompatibilitySuppressionFile="$(GenerateCompatibilitySuppressionFile)"
       CompatibilitySuppressionFilePath="$(CompatibilitySuppressionFilePath)"
       BaselinePackageTargetPath="$(_packageValidationBaselinePath)"
