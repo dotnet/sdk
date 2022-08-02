@@ -25,6 +25,12 @@ Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.OnPotentiallyDestructiv
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.RegisterDiagnosticLogger(string! category, System.Action<string!, string![]!>! messageHandler) -> void
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.DirectedGraph(System.Collections.Generic.Dictionary<T, System.Collections.Generic.HashSet<T>!>! dependenciesMap) -> void
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetDependands(System.Collections.Generic.IEnumerable<T>! vertices) -> System.Collections.Generic.IEnumerable<T>!
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetSubGraphDependandOnVertices(System.Collections.Generic.IReadOnlyList<T>! vertices, bool includeSeedVertices = false) -> Microsoft.TemplateEngine.Utils.DirectedGraph<T>!
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.HasCycle(out System.Collections.Generic.IReadOnlyList<T>! cycle) -> bool
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.TryGetTopologicalSort(out System.Collections.Generic.IReadOnlyList<T>! sortedElements) -> bool
 Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string! message, string! settingsItem) -> void
 Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string! message, string! settingsItem, System.Exception! innerException) -> void
 Microsoft.TemplateEngine.Utils.EngineInitializationException.SettingsItem.get -> string!
@@ -36,19 +42,29 @@ Microsoft.TemplateEngine.Utils.MultiValueParameter
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Equals(Microsoft.TemplateEngine.Utils.MultiValueParameter! other) -> bool
 Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueParameter(System.Collections.Generic.IReadOnlyList<string!>! values) -> void
 Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Utils.ParameterSetDataExtensions
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
+Microsoft.TemplateEngine.Utils.RuntimeValueUtil
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string! configItem) -> void
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string! configItem, System.Exception! innerException) -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.get -> bool
-Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority = Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority.Required, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, bool allowMultipleValues = false, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
+Microsoft.TemplateEngine.Utils.TemplateParameter.Equals(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! other) -> bool
+Microsoft.TemplateEngine.Utils.TemplateParameter.Precedence.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!
+Microsoft.TemplateEngine.Utils.TemplateParameter.TemplateParameter(string! name, string! type, string! datatype, Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence? precedence = null, bool isName = false, string? defaultValue = null, string? defaultIfOptionWithoutValue = null, string? description = null, string? displayName = null, bool allowMultipleValues = false, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ParameterChoice!>? choices = null) -> void
 Microsoft.TemplateEngine.Utils.Timing.Timing(Microsoft.Extensions.Logging.ILogger! logger, string! label) -> void
 override Microsoft.TemplateEngine.Utils.ExactVersionSpecification.ToString() -> string!
 override Microsoft.TemplateEngine.Utils.MultiValueParameter.Equals(object? obj) -> bool
 override Microsoft.TemplateEngine.Utils.MultiValueParameter.GetHashCode() -> int
 override Microsoft.TemplateEngine.Utils.MultiValueParameter.ToString() -> string!
+override Microsoft.TemplateEngine.Utils.TemplateParameter.Equals(object! obj) -> bool
+override Microsoft.TemplateEngine.Utils.TemplateParameter.GetHashCode() -> int
+override Microsoft.TemplateEngine.Utils.TemplateParameter.ToString() -> string!
 static Microsoft.TemplateEngine.Utils.ArrayExtensions.CombineArrays<T>(params T[]![]! arrayList) -> T[]!
 static Microsoft.TemplateEngine.Utils.DictionaryExtensions.CloneIfDifferentComparer<T>(this System.Collections.Generic.IReadOnlyDictionary<string!, T>! source, System.StringComparer! comparer) -> System.Collections.Generic.IReadOnlyDictionary<string!, T>!
+static Microsoft.TemplateEngine.Utils.DirectedGraph<T>.implicit operator Microsoft.TemplateEngine.Utils.DirectedGraph<T>!(System.Collections.Generic.Dictionary<T, System.Collections.Generic.HashSet<T>!>! dependenciesMap) -> Microsoft.TemplateEngine.Utils.DirectedGraph<T>!
+static Microsoft.TemplateEngine.Utils.EnumerableExtensions.AddRange<T>(this System.Collections.Generic.Queue<T>! queue, System.Collections.Generic.IEnumerable<T>! elements) -> void
+static Microsoft.TemplateEngine.Utils.EnumerableExtensions.ForEach<T>(this System.Collections.Generic.IEnumerable<T>! sequence, System.Action<T>! action) -> void
 static Microsoft.TemplateEngine.Utils.EnumerableExtensions.GetDuplicates<T>(this System.Collections.Generic.IEnumerable<T>? sequence, System.Collections.Generic.IEqualityComparer<T>? comparer = null) -> System.Collections.Generic.IEnumerable<T>!
 static Microsoft.TemplateEngine.Utils.EnumerableExtensions.HasDuplicates<T>(this System.Collections.Generic.IEnumerable<T>? sequence, System.Collections.Generic.IEqualityComparer<T>? comparer = null) -> bool
 static Microsoft.TemplateEngine.Utils.EnumerableExtensions.ToCsvString<T>(this System.Collections.Generic.IEnumerable<T>? source, bool useSpace = true) -> string!
@@ -67,6 +83,7 @@ static Microsoft.TemplateEngine.Utils.Glob.Parse(string! pattern, bool canBeName
 static Microsoft.TemplateEngine.Utils.ListExtensions.GroupBy<TElement, TKey>(this System.Collections.Generic.IEnumerable<TElement>! elements, System.Func<TElement, TKey?>! grouper, System.Func<TElement, bool>! hasGroupKey, System.Collections.Generic.IEqualityComparer<TKey?>? comparer = null) -> System.Collections.Generic.IEnumerable<System.Linq.IGrouping<TKey?, TElement>!>!
 static Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparators.get -> char[]!
 static Microsoft.TemplateEngine.Utils.MultiValueParameter.TryPerformMultiValueEqual(object! x, object! y, out bool result) -> bool
+static Microsoft.TemplateEngine.Utils.ParameterSetDataExtensions.ToParameterSetData(this Microsoft.TemplateEngine.Abstractions.IParameterSet! parameterSet) -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData!
 static Microsoft.TemplateEngine.Utils.ParserExtensions.ConvertToDoubleCurrentOrInvariant(object! value) -> double
 static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string? stringValue, out double doubleValue) -> bool
 static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet! parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, string! name, out object? value, bool skipEnvironmentVariableSearch = false) -> bool

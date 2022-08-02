@@ -170,6 +170,16 @@ Details: {1}</source>
         <target state="translated">類型 '{1}' 的符號 '{0}' 不正確: 未設定強制屬性 '{2}'。將略過符號。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABool">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

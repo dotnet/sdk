@@ -8,8 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Internal;
+using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
@@ -71,10 +74,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("", "UNKNOWN", false)]
         public async void InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
         {
-            //
-            // Template content preparation
-            //
-
             string sourceSnippet = @"
 //#if( ChoiceParam == FirstChoice )
 FIRST
@@ -86,9 +85,333 @@ THIRD
 UNKNOWN
 //#endif
 ";
+            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            {
+                { "ChoiceParam", parameterValue }
+            };
+
+            await InstantiateAsyncHelper(
+                TemplateConfigQuotelessLiteralsEnabled,
+                sourceSnippet,
+                expectedOutput,
+                "ChoiceParam",
+                instantiateShouldFail,
+                parameters);
+        }
+
+        private const string TemplateConfigCyclicParamsDependency = @"
+{
+    ""identity"": ""test.template"",
+    ""name"": ""tst"",
+    ""shortName"": ""tst"",
+    ""symbols"": {
+	    ""A"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool"",
+          ""isEnabled"": ""!C && B != false"",
+	    },
+        ""B"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool"",
+          ""isEnabled"": ""A != true || C"",
+	    },
+        ""C"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+    }
+}
+";
+
+        [Theory]
+        [InlineData(false, true, false, "B,", false)]
+        [InlineData(true, false, false, "A,", true)]
+        // Theoretically the result is deterministic, but we'd need to understand the expression tree as well (and purge it)
+        [InlineData(true, false, true, "B,C", true)]
+        public async void InstantiateAsync_ConditionalParametersCycleEvaluation(bool a_val, bool b_val, bool c_val, string expectedOutput, bool instantiateShouldFail)
+        {
+            //
+            // Template content preparation
+            //
+
+            string sourceSnippet = @"
+//#if( A )
+A,
+//#endif
+
+//#if( B )
+B,
+//#endif
+
+//#if( C )
+C
+//#endif
+";
+            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            {
+                { "A", a_val.ToString() },
+                { "B", b_val.ToString() },
+                { "C", c_val.ToString() }
+            };
+
+            await InstantiateAsyncHelper(
+                TemplateConfigCyclicParamsDependency,
+                sourceSnippet,
+                expectedOutput,
+                @"Failed to create template.
+Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preventing deterministic evaluation.",
+                instantiateShouldFail,
+                parameters);
+        }
+
+        private const string TemplateConfigIsRequiredCondition = @"
+{
+    ""identity"": ""test.template"",
+    ""name"": ""tst"",
+    ""shortName"": ""tst"",
+    ""symbols"": {
+	    ""A"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool"",
+          ""isRequired"": ""!C && B != false"",
+          ""defaultValue"": ""false"",
+	    },
+        ""B"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool"",
+          ""isRequired"": ""A != true || C"",
+          ""defaultValue"": ""true"",
+	    },
+        ""C"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool"",
+          ""defaultValue"": ""false"",
+	    },
+    }
+}
+";
+
+        [Theory]
+        [InlineData(false, true, false, "B,", false, null)]
+        [InlineData(true, false, false, "A,", false, null)]
+        [InlineData(null, null, true, "C", true, "B")]
+        [InlineData(null, true, false, "C", true, "A")]
+        [InlineData(null, null, false, "C", true, "A, B")]
+        [InlineData(null, null, null, "B,", true, "A, B")]
+        [InlineData(null, true, null, "B,", true, "A")]
+        [InlineData(null, false, null, "", false, null)]
+        [InlineData(false, false, false, "", false, null)]
+        [InlineData(true, false, true, "A,C", false, null)]
+        public async void InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string expectedErrorMessage)
+        {
+            //
+            // Template content preparation
+            //
+
+            string sourceSnippet = @"
+//#if( A )
+A,
+//#endif
+
+//#if( B )
+B,
+//#endif
+
+//#if( C )
+C
+//#endif
+";
+            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            {
+                { "A", a_val == null ? null : a_val.ToString() },
+                { "B", b_val == null ? null : b_val.ToString() },
+                { "C", c_val == null ? null : c_val.ToString() }
+            }
+                .Where(p => p.Value != null)
+                .ToDictionary(p => p.Key, p => p.Value);
+
+            await InstantiateAsyncHelper(
+                TemplateConfigIsRequiredCondition,
+                sourceSnippet,
+                // To make the test data more compact we have left out the newlines - let's add them back here
+                expectedOutput.Length <= 2 ? expectedOutput : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}"),
+                expectedErrorMessage,
+                instantiateShouldFail,
+                parameters);
+        }
+
+        private const string TemplateConfigEnabledAndRequiredConditionsTogether = @"
+{
+    ""identity"": ""test.template"",
+    ""name"": ""tst"",
+    ""shortName"": ""tst"",
+    ""symbols"": {
+	    ""A"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""string"",
+          ""isEnabled"": ""A_enable"",
+          ""isRequired"": ""true"",
+	    },
+        ""B"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""string"",
+          ""isEnabled"": ""B_enable"",
+          ""isRequired"": true
+	    },
+        ""A_enable"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+        ""B_enable"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+    }
+}
+";
+
+        [Theory]
+        [InlineData(false, false, "", false, null)]
+        [InlineData(true, false, "", true, "A")]
+        [InlineData(false, true, "", true, "B")]
+        [InlineData(true, true, "", true, "A, B")]
+        public async void InstantiateAsync_ConditionalParametersRequiredOverwrittenByDisabled(bool a_enable_val, bool b_enable_val, string expectedOutput, bool instantiateShouldFail, string expectedErrorMessage)
+        {
+            //
+            // Template content preparation
+            //
+
+            string sourceSnippet = @"
+//#if( A )
+A,
+//#endif
+
+//#if( B )
+B,
+//#endif
+
+//#if( C )
+C
+//#endif
+";
+            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            {
+                { "A_enable", a_enable_val.ToString() },
+                { "B_enable", b_enable_val.ToString() }
+            };
+
+            await InstantiateAsyncHelper(
+                TemplateConfigEnabledAndRequiredConditionsTogether,
+                sourceSnippet,
+                expectedOutput,
+                expectedErrorMessage,
+                instantiateShouldFail,
+                parameters);
+        }
+
+        private const string TemplateConfigForExternalConditionsEvaluation = @"
+{
+    ""identity"": ""test.template"",
+    ""name"": ""tst"",
+    ""shortName"": ""tst"",
+    ""symbols"": {
+	    ""parA"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""string"",
+          ""isEnabled"": ""A_enable"",
+          ""isRequired"": ""true || true"",
+	    },
+        ""parB"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""string"",
+          ""isEnabled"": ""B_enable"",
+          ""isRequired"": true
+	    },
+        ""C"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+        ""A_enable"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+        ""B_enable"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    },
+    }
+}
+";
+
+        [Theory]
+        [InlineData(null, true, false, null, false, null, /*c_val*/ true,  "C", false, "")]
+        [InlineData(true, true, true, null, false, null, /*c_val*/ false, "parA,", false, "")]
+        [InlineData(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
+        [InlineData(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]
+        [InlineData(null, true, false, null, false, false, /*c_val*/ false, "", true, @"Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition): B (parameter)")]
+        public async void InstantiateAsync_ConditionalParametersWithExternalEvaluation(
+            bool? a_val,
+            bool? a_enabled,
+            bool? a_required,
+            bool? b_val,
+            bool? b_enabled,
+            bool? b_required,
+            bool c_val,
+            string expectedOutput,
+            bool instantiateShouldFail,
+            string expectedErrorMessage)
+        {
+            //
+            // Template content preparation
+            //
+
+            string sourceSnippet = @"
+//#if( parA )
+parA,
+//#endif
+
+//#if( parB )
+parB,
+//#endif
+
+//#if( C )
+C
+//#endif
+";
+
+            List<InputDataBag> parameters = new List<InputDataBag>(
+                new[]
+                {
+                    new InputDataBag("parA", a_val, a_enabled, a_required),
+                    new InputDataBag("parB", b_val, b_enabled, b_required),
+                    new InputDataBag("C", c_val),
+                });
+
+            await InstantiateAsyncHelper(
+                TemplateConfigForExternalConditionsEvaluation,
+                sourceSnippet,
+                expectedOutput,
+                expectedErrorMessage,
+                instantiateShouldFail,
+                parameters2: parameters);
+        }
+
+        private async Task InstantiateAsyncHelper(
+            string templateSnippet,
+            string sourceSnippet,
+            string expectedOutput,
+            string expectedErrorMessage,
+            bool instantiateShouldFail,
+            IReadOnlyDictionary<string, string?>? parameters1 = null,
+            IReadOnlyList<InputDataBag>? parameters2 = null)
+        {
+            //
+            // Template content preparation
+            //
+
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, TemplateConfigQuotelessLiteralsEnabled);
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet);
 
             //content
             templateSourceFiles.Add("sourceFile", sourceSnippet);
@@ -104,38 +427,95 @@ UNKNOWN
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             // cannot use SimpleConfigModel dirrectly - due to missing easy way of creating ParameterSymbols
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(TemplateConfigQuotelessLiteralsEnabled));
+            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateSnippet));
             var runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
 
             TemplateCreator creator = new TemplateCreator(_engineEnvironmentSettings);
 
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            ITemplateCreationResult res;
+            if (parameters1 != null)
             {
-                { "ChoiceParam", parameterValue }
-            };
-
-            var res = await creator.InstantiateAsync(
-                templateInfo: runnableConfig,
-                name: "tst",
-                fallbackName: "tst2",
-                inputParameters: parameters,
-                outputPath: targetDir);
-
-            if (instantiateShouldFail)
-            {
-                Assert.NotNull(res.ErrorMessage);
-                Assert.Null(res.OutputBaseDirectory);
+                res = await creator.InstantiateAsync(
+                    templateInfo: runnableConfig,
+                    name: "tst",
+                    fallbackName: "tst2",
+                    inputParameters: parameters1!,
+                    outputPath: targetDir);
             }
             else
             {
-                Assert.Null(res.ErrorMessage);
-                Assert.NotNull(res.OutputBaseDirectory);
+                var parameters = runnableConfig.ParameterDefinitions;
+
+                InputDataSet data;
+                try
+                {
+                    data = new InputDataSet(
+                        parameters,
+                        parameters2!.Select(p => new EvaluatedInputParameterData(
+                            parameters[p.Name],
+                            p.Value,
+                            DataSource.User,
+                            p.IsEnabledConditionResult,
+                            p.IsRequiredConditionResult,
+                            p.IsNull ? InputDataState.Unset : InputDataState.Set)).ToList())
+                    {
+                        ContinueOnMismatchedConditionsEvaluation = true
+                    };
+
+                    res = await creator.InstantiateAsync(
+                        templateInfo: runnableConfig,
+                        name: "tst",
+                        fallbackName: "tst2",
+                        inputParameters: data,
+                        outputPath: targetDir);
+                }
+                catch (Exception e)
+                {
+                    Assert.True(instantiateShouldFail);
+                    e.Message.Should().BeEquivalentTo(e.Message);
+                    return;
+                }
+            }
+
+            if (instantiateShouldFail)
+            {
+                res.ErrorMessage.Should().NotBeNullOrEmpty();
+                res.ErrorMessage.Should().BeEquivalentTo(expectedErrorMessage);
+                res.OutputBaseDirectory.Should().Match(s =>
+                    s.IsNullOrEmpty() || !_engineEnvironmentSettings.Host.FileSystem.FileExists(s));
+            }
+            else
+            {
+                res.ErrorMessage.Should().BeNull();
+                res.OutputBaseDirectory.Should().NotBeNullOrEmpty();
                 string resultContent = _engineEnvironmentSettings.Host.FileSystem
                     .ReadAllText(Path.Combine(res.OutputBaseDirectory!, "sourceFile")).Trim();
-                Assert.Equal(expectedOutput, resultContent);
+                resultContent.Should().BeEquivalentTo(expectedOutput);
             }
+        }
+
+        private class InputDataBag
+        {
+            public InputDataBag(string name, bool? value, bool? isEnabledConditionResult = null, bool? isRequiredConditionResult = null)
+            {
+                Name = name;
+                Value = value == null ? null : value.ToString();
+                IsEnabledConditionResult = isEnabledConditionResult;
+                IsRequiredConditionResult = isRequiredConditionResult;
+                IsNull = value == null;
+            }
+
+            public string Name { get; }
+
+            public string? Value { get; }
+
+            public bool? IsEnabledConditionResult { get; }
+
+            public bool? IsRequiredConditionResult { get; }
+
+            public bool IsNull { get; }
         }
     }
 }

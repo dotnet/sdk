@@ -4,7 +4,9 @@
 #nullable enable
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,8 +17,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Utils;
 
@@ -40,13 +44,42 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         object? IGenerator.ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
         {
-            return InternalConvertParameterValueToType(environmentSettings, parameter, untypedValue, out valueResolutionError);
+            return ParameterConverter.ConvertParameterValueToType(environmentSettings.Host, parameter, untypedValue, out valueResolutionError);
+        }
+
+        bool IGenerator.TryEvaluateFromString(ILogger logger, string text, IDictionary<string, object> variables, out bool result, out string evaluationError, HashSet<string>? referencedVariablesKeys)
+        {
+            VariableCollection variableCollection = new VariableCollection(null, variables);
+            result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, text, variableCollection, out evaluationError, referencedVariablesKeys);
+            return string.IsNullOrEmpty(evaluationError);
+        }
+
+        [Obsolete("Replaced by CreateAsync with IEvaluatedParameterSetData", false)]
+        Task<ICreationResult> IGenerator.CreateAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate template,
+            IParameterSet parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken)
+        {
+            return ((IGenerator)this).CreateAsync(environmentSettings, template, parameters.ToParameterSetData(), targetDirectory, cancellationToken);
+        }
+
+        [Obsolete("Replaced by GetCreationEffectsAsync with IEvaluatedParameterSetData", false)]
+        Task<ICreationEffects> IGenerator.GetCreationEffectsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate template,
+            IParameterSet parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken)
+        {
+            return ((IGenerator)this).GetCreationEffectsAsync(environmentSettings, template, parameters.ToParameterSetData(), targetDirectory, cancellationToken);
         }
 
         Task<ICreationResult> IGenerator.CreateAsync(
             IEngineEnvironmentSettings environmentSettings,
             ITemplate templateData,
-            IParameterSet parameters,
+            IParameterSetData parameters,
             string targetDirectory,
             CancellationToken cancellationToken)
         {
@@ -77,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         async Task<ICreationEffects> IGenerator.GetCreationEffectsAsync(
             IEngineEnvironmentSettings environmentSettings,
             ITemplate templateData,
-            IParameterSet parameters,
+            IParameterSetData parameters,
             string targetDirectory,
             CancellationToken cancellationToken)
         {
@@ -123,10 +156,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return new CreationEffects2(changes, GetCreationResult(environmentSettings.Host.Logger, templateConfig, variables));
         }
 
+        [Obsolete("Replaced by ParameterSetBuilder.CreateWithDefaults", true)]
         IParameterSet IGenerator.GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template)
         {
-            RunnableProjectConfig templateConfig = (RunnableProjectConfig)template;
-            return new ParameterSet(templateConfig);
+            throw new NotImplementedException("Replaced by ParameterSetBuilder.CreateWithDefaults");
         }
 
         /// <summary>
@@ -268,215 +301,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return false;
         }
 
-        /// <summary>
-        /// For explicitly data-typed variables, attempt to convert the variable value to the specified type.
-        /// Data type names:
-        ///     - choice
-        ///     - bool
-        ///     - float
-        ///     - int
-        ///     - hex
-        ///     - text
-        /// The data type names are case insensitive.
-        /// </summary>
-        /// <returns>Returns the converted value if it can be converted, throw otherwise.</returns>
-        internal static object? DataTypeSpecifiedConvertLiteral(IEngineEnvironmentSettings environmentSettings, ITemplateParameter param, string literal, out bool valueResolutionError)
-        {
-            valueResolutionError = false;
-
-            if (string.Equals(param.DataType, "bool", StringComparison.OrdinalIgnoreCase))
-            {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-                else if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-                else
-                {
-                    bool boolVal = false;
-                    // Note: if the literal is ever null, it is probably due to a problem in TemplateCreator.Instantiate()
-                    // which takes care of making null bool -> true as appropriate.
-                    // This else can also happen if there is a value but it can't be converted.
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (environmentSettings.Host.OnParameterError(param, string.Empty, "ParameterValueNotSpecified", out val) && !bool.TryParse(val, out boolVal))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !bool.TryParse(val, out boolVal);
-                    return boolVal;
-                }
-            }
-            else if (param.IsChoice())
-            {
-                if (param.AllowMultipleValues)
-                {
-                    List<string> val =
-                        literal
-                            .TokenizeMultiValueParameter()
-                            .Select(t => ResolveChoice(environmentSettings, t, param))
-                            .Where(r => !string.IsNullOrEmpty(r))
-                            .Select(r => r!)
-                            .ToList();
-                    if (val.Count <= 1)
-                    {
-                        return val.Count == 0 ? string.Empty : val[0];
-                    }
-
-                    return new MultiValueParameter(val);
-                }
-                else
-                {
-                    string? val = ResolveChoice(environmentSettings, literal, param);
-                    valueResolutionError = val == null;
-                    return val;
-                }
-            }
-            else if (string.Equals(param.DataType, "float", StringComparison.OrdinalIgnoreCase))
-            {
-                if (ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double convertedFloat))
-                {
-                    return convertedFloat;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeFloat", out val) && (val == null || !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat)))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !ParserExtensions.DoubleTryParseСurrentOrInvariant(val, out convertedFloat);
-                    return convertedFloat;
-                }
-            }
-            else if (string.Equals(param.DataType, "int", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "integer", StringComparison.OrdinalIgnoreCase))
-            {
-                if (long.TryParse(literal, out long convertedInt))
-                {
-                    return convertedInt;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeInteger", out val) && (val == null || !long.TryParse(val, out convertedInt)))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !long.TryParse(val, out convertedInt);
-                    return convertedInt;
-                }
-            }
-            else if (string.Equals(param.DataType, "hex", StringComparison.OrdinalIgnoreCase))
-            {
-                if (long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex))
-                {
-                    return convertedHex;
-                }
-                else
-                {
-                    string? val;
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                    while (environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValidMustBeHex", out val) && (val == null || val.Length < 3 || !long.TryParse(val.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex)))
-#pragma warning restore CS0618 // Type or member is obsolete
-                    {
-                    }
-
-                    valueResolutionError = !long.TryParse(val?.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out convertedHex);
-                    return convertedHex;
-                }
-            }
-            else if (string.Equals(param.DataType, "text", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(param.DataType, "string", StringComparison.OrdinalIgnoreCase))
-            {
-                // "text" is a valid data type, but doesn't need any special handling.
-                return literal;
-            }
-            else
-            {
-                return literal;
-            }
-        }
-
-        internal static object? InferTypeAndConvertLiteral(string literal)
-        {
-            if (literal == null)
-            {
-                return null;
-            }
-
-            if (!literal.Contains("\""))
-            {
-                if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-
-                if (string.Equals(literal, "false", StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                if (string.Equals(literal, "null", StringComparison.OrdinalIgnoreCase))
-                {
-                    return null;
-                }
-
-                if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
-                    || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
-                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
-                {
-                    return literalDouble;
-                }
-
-                if (long.TryParse(literal, out long literalLong))
-                {
-                    return literalLong;
-                }
-
-                if (literal.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                    && long.TryParse(literal.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out literalLong))
-                {
-                    return literalLong;
-                }
-            }
-
-            return literal;
-        }
-
-        internal static object? InternalConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError)
-        {
-            if (untypedValue == null)
-            {
-                valueResolutionError = false;
-                return null;
-            }
-
-            if (!string.IsNullOrEmpty(parameter.DataType))
-            {
-                object? convertedValue = DataTypeSpecifiedConvertLiteral(environmentSettings, parameter, untypedValue, out valueResolutionError);
-                return convertedValue;
-            }
-            else
-            {
-                valueResolutionError = false;
-                return InferTypeAndConvertLiteral(untypedValue);
-            }
-        }
-
         internal async Task<ICreationResult> CreateAsync(
             IEngineEnvironmentSettings environmentSettings,
             IRunnableProjectConfig runnableProjectConfig,
             IDirectory templateSourceRoot,
-            IParameterSet parameters,
+            IParameterSetData parameters,
             string targetDirectory,
             CancellationToken cancellationToken)
         {
@@ -504,14 +333,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return GetCreationResult(environmentSettings.Host.Logger, runnableProjectConfig, variables);
         }
 
-        private static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig)
+        private static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)
         {
             IVariableCollection variables = VariableCollection.SetupVariables(parameters, variableConfig);
 
-            foreach (Parameter param in parameters.ParameterDefinitions.OfType<Parameter>())
+            foreach (Parameter param in parameters.ParametersDefinition.OfType<Parameter>())
             {
                 // Add choice values to variables - to allow them to be recognizable unquoted
-                if (param.EnableQuotelessLiterals && param.IsChoice())
+                if (param.EnableQuotelessLiterals && param.IsChoice() && param.Choices != null)
                 {
                     foreach (string choiceKey in param.Choices.Keys)
                     {
@@ -557,67 +386,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 primaryOutputs: CreationPath.ListFromModel(logger, runnableProjectConfig.PrimaryOutputs, variables));
         }
 
-        private static string? ResolveChoice(IEngineEnvironmentSettings environmentSettings, string? literal, ITemplateParameter param)
-        {
-            if (TryResolveChoiceValue(literal, param, out string? match))
-            {
-                return match;
-            }
-
-            if (literal == null && param.Priority != TemplateParameterPriority.Required)
-            {
-                return param.DefaultValue;
-            }
-
-#pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-            if (
-                environmentSettings.Host.OnParameterError(param, string.Empty, "ValueNotValid:" + string.Join(",", param.Choices!.Keys), out string? val)
-                && TryResolveChoiceValue(val, param, out string? match2))
-            {
-                return match2;
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            return literal == string.Empty ? string.Empty : null;
-        }
-
-        private static bool TryResolveChoiceValue(string? literal, ITemplateParameter param, out string? match)
-        {
-            if (literal == null || param.Choices == null)
-            {
-                match = null;
-                return false;
-            }
-
-            string? partialMatch = null;
-
-            foreach (string choiceValue in param.Choices.Keys)
-            {
-                if (string.Equals(choiceValue, literal, StringComparison.OrdinalIgnoreCase))
-                {
-                    // exact match is good, regardless of partial matches
-                    match = choiceValue;
-                    return true;
-                }
-                else if (choiceValue.StartsWith(literal, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (partialMatch == null)
-                    {
-                        partialMatch = choiceValue;
-                    }
-                    else
-                    {
-                        // multiple partial matches, can't take one.
-                        match = null;
-                        return false;
-                    }
-                }
-            }
-
-            match = partialMatch;
-            return match != null;
-        }
-
         private IFile? FindBestHostTemplateConfigFile(IEngineEnvironmentSettings engineEnvironment, IFile config)
         {
             IDictionary<string, IFile> allHostFilesForTemplate = new Dictionary<string, IFile>();
@@ -649,47 +417,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return null;
-        }
-
-        internal class ParameterSet : IParameterSet
-        {
-            private readonly IDictionary<string, ITemplateParameter> _parameters = new Dictionary<string, ITemplateParameter>(StringComparer.OrdinalIgnoreCase);
-
-            internal ParameterSet(IRunnableProjectConfig config)
-            {
-                foreach (KeyValuePair<string, Parameter> p in config.Parameters)
-                {
-                    p.Value.Name = p.Key;
-                    _parameters[p.Key] = p.Value;
-                }
-            }
-
-            public IEnumerable<ITemplateParameter> ParameterDefinitions => _parameters.Values;
-
-            public IDictionary<ITemplateParameter, object?> ResolvedValues { get; } = new Dictionary<ITemplateParameter, object?>();
-
-            public bool TryGetParameterDefinition(string name, out ITemplateParameter parameter)
-            {
-                if (_parameters.TryGetValue(name, out parameter))
-                {
-                    return true;
-                }
-
-                parameter = new Parameter
-                {
-                    Name = name,
-                    Priority = TemplateParameterPriority.Optional,
-                    IsVariable = true,
-                    Type = "string"
-                };
-
-                return true;
-            }
-
-            internal void AddParameter(ITemplateParameter param)
-            {
-                _parameters[param.Name] = param;
-            }
         }
     }
 }

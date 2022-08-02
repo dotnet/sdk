@@ -104,7 +104,6 @@ Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WriteAllText(string! path, str
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsEndInclusive.get -> bool
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsStartInclusive.get -> bool
-Microsoft.TemplateEngine.Utils.RuntimeValueUtil
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException
 Microsoft.TemplateEngine.Utils.TemplateInfoExtensions
 Microsoft.TemplateEngine.Utils.TemplateMatchInfoExtensions

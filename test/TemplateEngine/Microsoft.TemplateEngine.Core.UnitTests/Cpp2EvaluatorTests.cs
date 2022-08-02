@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
@@ -50,6 +52,30 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             };
             bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF", vc);
             Assert.True(result);
+        }
+
+        [Fact(DisplayName = nameof(VerifyCpp2EvaluatorUsedVariablesSet))]
+        public void VerifyCpp2EvaluatorUsedVariablesSet()
+        {
+            VariableCollection vc = new VariableCollection
+            {
+                ["FIRST_IF2"] = false,
+                ["FIRST_IF3"] = false,
+                ["FIRST_IF0"] = false,
+                ["FIRST_IF"] = false,
+                ["BB"] = false,
+                ["0SECOND_IF"] = false,
+                ["SECOND_IF"] = false,
+                ["5SECOND_IF"] = false,
+                ["BB2"] = false,
+                ["BB3"] = false,
+                
+            };
+            HashSet<string> keys = new HashSet<string>();
+            bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF", vc, out string _, keys);
+            Assert.True(result);
+            Assert.Equal(2, keys.Count);
+            Assert.True(keys.SequenceEqual(new[] { "FIRST_IF", "SECOND_IF" }));
         }
 
         [Fact(DisplayName = nameof(VerifyCpp2EvaluatorBitShiftAddEquals))]

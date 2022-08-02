@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <returns> first <see cref="ITemplateParameter"/> with <paramref name="parameterName"/> or null if the parameter with such name does not exist.</returns>
         public static ITemplateParameter? GetParameter(this ITemplateInfo template, string parameterName)
         {
-            return template.Parameters.FirstOrDefault(
+            return template.ParameterDefinitions.FirstOrDefault(
                 param => param.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <returns> first choice <see cref="ITemplateParameter"/> with <paramref name="parameterName"/> or null if the parameter with such name does not exist.</returns>
         public static ITemplateParameter? GetChoiceParameter(this ITemplateInfo template, string parameterName)
         {
-            return template.Parameters.FirstOrDefault(
+            return template.ParameterDefinitions.FirstOrDefault(
  param => param.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase)
                                   && param.IsChoice());
         }

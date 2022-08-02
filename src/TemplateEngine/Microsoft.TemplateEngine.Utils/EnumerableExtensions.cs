@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -56,6 +57,34 @@ namespace Microsoft.TemplateEngine.Utils
         public static string ToCsvString<T>(this IEnumerable<T>? source, bool useSpace = true)
         {
             return source == null ? "<NULL>" : string.Join("," + (useSpace ? " " : string.Empty), source);
+        }
+
+        /// <summary>
+        /// Enqueue elements of given sequence to a queue.
+        /// </summary>
+        /// <param name="queue"></param>
+        /// <param name="elements"></param>
+        /// <typeparam name="T"></typeparam>
+        public static void AddRange<T>(this Queue<T> queue, IEnumerable<T> elements)
+        {
+            foreach (T item in elements)
+            {
+                queue.Enqueue(item);
+            }
+        }
+
+        /// <summary>
+        /// Performs an action for each element in given sequence.
+        /// </summary>
+        /// <param name="sequence"></param>
+        /// <param name="action"></param>
+        /// <typeparam name="T"></typeparam>
+        public static void ForEach<T>(this IEnumerable<T> sequence, Action<T> action)
+        {
+            foreach (T element in sequence)
+            {
+                action(element);
+            }
         }
     }
 }

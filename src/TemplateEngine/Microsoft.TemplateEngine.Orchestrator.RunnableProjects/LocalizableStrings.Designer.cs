@@ -341,6 +341,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Found disallowed value for IsRequired property: [{0}], expected boolean value..
+        /// </summary>
+        internal static string Symbol_Error_IsRequiredNotABool {
+            get {
+                return ResourceManager.GetString("Symbol_Error_IsRequiredNotABool", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value.
+        /// </summary>
+        internal static string Symbol_Error_IsRequiredNotABoolOrString {
+            get {
+                return ResourceManager.GetString("Symbol_Error_IsRequiredNotABoolOrString", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The symbol &apos;{0}&apos; of type &apos;{1}&apos; is incorrect: mandatory property &apos;{2}&apos; is not set. The symbol will be skipped..
         /// </summary>
         internal static string SymbolModel_Error_MandatoryPropertyMissing {

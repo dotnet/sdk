@@ -1,0 +1,21 @@
+﻿The template "TestAssets.PostActions.AddPackageReference.Basic" was created successfully.
+
+Processing post-creation actions...
+Adding a package reference Newtonsoft.Json (version: 13.0.1) to project file {TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj:
+Running 'dotnet add {TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj package Newtonsoft.Json --version 13.0.1':
+Command succeeded.
+Output from command:
+StdOut:
+  Determining projects to restore...
+  Writing {TempPath}tmpD5B4.tmp
+info : Adding PackageReference for package 'Newtonsoft.Json' into project '{TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj'.
+info : Restoring packages for {TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj...
+info : Package 'Newtonsoft.Json' is compatible with all the specified frameworks in project '{TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj'.
+info : PackageReference for package 'Newtonsoft.Json' version '13.0.1' added to file '{TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj'.
+info : Generating MSBuild file {TempPath}TemplateEngine.Tests\Guid_1\obj\Basic.csproj.nuget.g.props.
+info : Generating MSBuild file {TempPath}TemplateEngine.Tests\Guid_1\obj\Basic.csproj.nuget.g.targets.
+info : Writing assets file to disk. Path: {TempPath}TemplateEngine.Tests\Guid_1\obj\project.assets.json
+log  : Restored {TempPath}TemplateEngine.Tests\Guid_1\Basic.csproj (in 228 ms).
+StdErr:
+(empty)
+Successfully added a reference to the project file.

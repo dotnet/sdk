@@ -59,6 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IFile? _sourceFile;
         private readonly IFile? _localeConfigFile;
         private readonly IFile? _hostConfigFile;
+        private readonly IReadOnlyDictionary<string, Parameter> _parameters;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
         private IGlobalRunConfig? _operationConfig;
@@ -88,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             CheckGeneratorVersionRequiredByTemplate();
             PerformTemplateValidation();
             Identity = _configuration.Identity!;
-            Parameters = ExtractParameters(_configuration);
+            _parameters = ExtractParameters(_configuration);
 
             if (_localeConfigFile != null)
             {
@@ -98,7 +99,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (VerifyLocalizationModel(locModel))
                     {
                         _configuration.Localize(locModel);
-                        Parameters = LocalizeParameters(locModel, Parameters);
+                        _parameters = LocalizeParameters(locModel, _parameters);
                     }
                 }
                 catch (Exception ex)
@@ -120,7 +121,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _configuration = configuration;
             Identity = configuration.Identity ?? throw new ArgumentException($"{nameof(configuration)} should have identity set.");
             _sourceFile = configurationFile;
-            Parameters = ExtractParameters(configuration);
+            _parameters = ExtractParameters(configuration);
         }
 
         public string Identity { get; }
@@ -341,9 +342,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyDictionary<string, Parameter> Parameters { get; private init; }
-
-        internal Parameter NameParameter => Parameters.Values.First(p => p.IsName);
+        internal Parameter NameParameter => _parameters.Values.First(p => p.IsName);
 
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
@@ -500,20 +499,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 bool isName = baseSymbol == configuration.NameSymbol;
 
-                Parameter parameter = new Parameter
+                Parameter parameter = new Parameter(baseSymbol.Name, baseSymbol.Type, baseSymbol.DataType!)
                 {
                     DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
                     IsName = isName,
                     IsVariable = true,
                     Name = baseSymbol.Name,
-                    Priority = baseSymbol.IsRequired ? TemplateParameterPriority.Required : isName ? TemplateParameterPriority.Implicit : TemplateParameterPriority.Optional,
-                    Type = baseSymbol.Type,
-                    DataType = baseSymbol.DataType
+                    Precedence = new TemplateParameterPrecedence(baseSymbol.IsRequired ? PrecedenceDefinition.Required : isName ? PrecedenceDefinition.Implicit : PrecedenceDefinition.Optional),
                 };
 
                 if (baseSymbol is ParameterSymbol parameterSymbol)
                 {
-                    parameter.Priority = parameterSymbol.IsTag ? TemplateParameterPriority.Implicit : parameter.Priority;
+                    parameter.Precedence = parameterSymbol.Precedence;
                     parameter.Description = parameterSymbol.Description;
                     parameter.Choices = parameterSymbol.Choices;
                     parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
@@ -561,19 +558,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                 }
 
-                Parameter localizedParameter = new Parameter()
+                Parameter localizedParameter = new Parameter(parameter.Name, parameter.Type, parameter.DataType)
                 {
-                    Name = parameter.Name,
                     DisplayName = localization?.DisplayName ?? parameter.DisplayName,
                     Description = localization?.Description ?? parameter.Description,
                     DefaultValue = parameter.DefaultValue,
                     DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
-                    DataType = parameter.DataType,
-                    Priority = parameter.Priority,
-                    Type = parameter.Type,
+                    Precedence = parameter.Precedence,
                     AllowMultipleValues = parameter.AllowMultipleValues,
                     EnableQuotelessLiterals = parameter.EnableQuotelessLiterals,
-                    Choices = localizedChoices ?? parameter.Choices
+                    Choices = localizedChoices ?? parameter.Choices,
                 };
 
                 localizedParameters.Add(parameterPair.Key, localizedParameter);

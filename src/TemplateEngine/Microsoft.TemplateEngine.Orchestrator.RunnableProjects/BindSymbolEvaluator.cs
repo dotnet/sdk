@@ -15,6 +15,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -54,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (!variableCollection.ContainsKey(bindSymbol.Name) && bindSymbol.DefaultValue != null)
                 {
-                    variableCollection[bindSymbol.Name] = RunnableProjectGenerator.InferTypeAndConvertLiteral(bindSymbol.DefaultValue);
+                    variableCollection[bindSymbol.Name] = ParameterConverter.InferTypeAndConvertLiteral(bindSymbol.DefaultValue);
                 }
             }
 
@@ -85,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             var successfulTasks = tasksToRun.Where(t => t.Task.IsCompleted && t.Task.Result != null);
             foreach (var task in successfulTasks)
             {
-                variableCollection[task.Symbol.Name] = RunnableProjectGenerator.InferTypeAndConvertLiteral(task.Task.Result!);
+                variableCollection[task.Symbol.Name] = ParameterConverter.InferTypeAndConvertLiteral(task.Task.Result!);
                 _logger.LogDebug("Variable '{0}' was set to '{1}'.", task.Symbol.Name, variableCollection[task.Symbol.Name]);
             }
         }

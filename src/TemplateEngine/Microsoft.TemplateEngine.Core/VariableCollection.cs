@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Utils;
 
@@ -97,7 +98,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public static VariableCollection Root(IDictionary<string, object> values) => new VariableCollection(null, values);
 
-        public static IVariableCollection SetupVariables(IParameterSet parameters, IVariableConfig variableConfig)
+        public static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)
         {
             IVariableCollection variables = Root();
 
@@ -229,30 +230,17 @@ namespace Microsoft.TemplateEngine.Core
             return _parent?.TryGetValue(key, out value) ?? false;
         }
 
-        private static VariableCollection VariableCollectionFromParameters(IParameterSet parameters, string format)
+        private static VariableCollection VariableCollectionFromParameters(IParameterSetData parameters, string format)
         {
             VariableCollection vc = new VariableCollection();
-            foreach (ITemplateParameter param in parameters.ParameterDefinitions)
+            foreach (ITemplateParameter param in parameters.ParametersDefinition)
             {
                 string key = string.Format(format ?? "{0}", param.Name);
 
-                if (!parameters.ResolvedValues.TryGetValue(param, out object? value))
+                if (parameters.TryGetValue(param, out ParameterData value) &&
+                    value.IsEnabled && value.Value != null)
                 {
-                    if (param.Priority != TemplateParameterPriority.Optional)
-                    {
-                        parameters.ResolvedValues[param] = value;
-                    }
-                }
-                else if (value == null)
-                {
-                    if (param.Priority != TemplateParameterPriority.Optional)
-                    {
-                        parameters.ResolvedValues[param] = value;
-                    }
-                }
-                else
-                {
-                    vc[key] = value;
+                    vc[key] = value.Value;
                 }
             }
 

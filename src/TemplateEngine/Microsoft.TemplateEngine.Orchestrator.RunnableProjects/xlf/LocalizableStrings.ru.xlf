@@ -170,6 +170,16 @@ Details: {1}</source>
         <target state="translated">Неверный символ "{0}" типа "{1}": обязательное свойство "{2}" не настроено. Символ будет пропущен.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABool">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

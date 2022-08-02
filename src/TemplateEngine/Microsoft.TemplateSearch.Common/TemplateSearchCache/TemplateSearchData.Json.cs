@@ -121,11 +121,13 @@ namespace Microsoft.TemplateSearch.Common
                     writer.WriteEndObject();
                 }
 
-                if (value.TemplateInfo.Parameters.Any())
+                if (value.TemplateInfo.ParameterDefinitions.Any())
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     writer.WritePropertyName(nameof(ITemplateInfo.Parameters));
+#pragma warning restore CS0618 // Type or member is obsolete
                     writer.WriteStartArray();
-                    foreach (ITemplateParameter param in value.TemplateInfo.Parameters)
+                    foreach (ITemplateParameter param in value.TemplateInfo.ParameterDefinitions)
                     {
                         writer.WriteStartObject();
                         writer.WritePropertyName(nameof(ITemplateParameter.Name));
@@ -145,11 +147,7 @@ namespace Microsoft.TemplateSearch.Common
                             writer.WritePropertyName(nameof(ITemplateParameter.DefaultIfOptionWithoutValue));
                             writer.WriteValue(param.DefaultIfOptionWithoutValue);
                         }
-                        if (param.Priority != default)
-                        {
-                            writer.WritePropertyName(nameof(ITemplateParameter.Priority));
-                            writer.WriteValue(param.Priority);
-                        }
+
                         if (param.Choices != null && param.Choices.Any())
                         {
                             writer.WritePropertyName(nameof(ITemplateParameter.Choices));

@@ -238,4 +238,12 @@ Details: {1}</value>
   <data name="SymbolModel_Error_MandatoryPropertyMissing" xml:space="preserve">
     <value>The symbol '{0}' of type '{1}' is incorrect: mandatory property '{2}' is not set. The symbol will be skipped.</value>
   </data>
+  <data name="Symbol_Error_IsRequiredNotABool" xml:space="preserve">
+    <value>Found disallowed value for IsRequired property: [{0}], expected boolean value.</value>
+    <comment>{0} - the json property</comment>
+  </data>
+  <data name="Symbol_Error_IsRequiredNotABoolOrString" xml:space="preserve">
+    <value>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</value>
+    <comment>{0} - the json property</comment>
+  </data>
 </root>

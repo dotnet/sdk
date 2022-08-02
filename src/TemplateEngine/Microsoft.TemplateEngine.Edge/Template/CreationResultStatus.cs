@@ -53,6 +53,11 @@ namespace Microsoft.TemplateEngine.Edge.Template
         /// <summary>
         /// The operation is cancelled due to destructive changes to existing files are detected.
         /// </summary>
-        DestructiveChangesDetected = unchecked((int)0x8002000D)
+        DestructiveChangesDetected = unchecked((int)0x8002000D),
+
+        /// <summary>
+        /// The host supplied conditions evaluation results did not match internal evaluation.
+        /// </summary>
+        CondtionsEvaluationMismatch = unchecked((int)0x80029C83)
     }
 }

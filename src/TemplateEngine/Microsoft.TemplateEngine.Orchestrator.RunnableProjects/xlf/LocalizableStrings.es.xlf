@@ -170,6 +170,16 @@ Detalles: {1}</target>
         <target state="translated">El símbolo '{0}' de tipo '{1}' no es correcto: no se ha establecido la propiedad obligatoria '{2}'. Se omitirá el símbolo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABool">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

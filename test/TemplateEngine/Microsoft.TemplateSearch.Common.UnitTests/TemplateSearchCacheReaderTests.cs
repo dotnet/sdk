@@ -40,7 +40,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
 
             //can read parameters
-            Assert.Equal(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Parameters.Count);
+            Assert.Equal(5, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
         }
 
         [Fact]
@@ -61,11 +61,11 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).TagsCollection.Count);
 
             //can read parameters: 2 tags + 3 cache parameters
-            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).Parameters.Count);
+            Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
 
-            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).Parameters.Count);
-            Assert.Equal(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).Parameters.Where(p => p.DataType == "choice").Count());
-            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).Parameters.Single(p => p.DataType == "choice").Choices?.Count);
+            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count);
+            Assert.Equal(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Where(p => p.DataType == "choice").Count());
+            Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
         }
 
         [Fact]
@@ -168,11 +168,11 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal("my test description", templateToTest.Description);
             Assert.Equal("CSharp", templateToTest.TagsCollection["language"]);
 
-            Assert.Equal(3, templateToTest.Parameters.Count);
+            Assert.Equal(3, templateToTest.ParameterDefinitions.Count);
 
-            Assert.Single(templateToTest.Parameters.Where(p => p.DataType == "choice"));
-            Assert.Equal(3, templateToTest.Parameters.Single(p => p.DataType == "choice").Choices?.Count);
-            Assert.True(templateToTest.Parameters.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
+            Assert.Single(templateToTest.ParameterDefinitions.Where(p => p.DataType == "choice"));
+            Assert.Equal(3, templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
+            Assert.True(templateToTest.ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.ContainsKey("var1"));
 
             Assert.Equal(2, ((ITemplateInfo)templateToTest).PostActions.Count);
             Assert.Equal(new[] { postAction1, postAction2 }, ((ITemplateInfo)templateToTest).PostActions);

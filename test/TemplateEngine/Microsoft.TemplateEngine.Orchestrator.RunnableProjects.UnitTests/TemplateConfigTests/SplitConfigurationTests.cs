@@ -167,8 +167,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFileSystemInfo templateConfigFileInfo = setup.InfoForSourceFile("templateSource/.template.config/template.json");
             generator.TryGetTemplateFromConfigInfo(templateConfigFileInfo, out ITemplate template, null, null);
 
-            IDictionary<string, ITemplateParameter> parameters = template.Parameters.ToDictionary(p => p.Name, p => p);
-            Assert.Equal(5, parameters.Count);  // 5 in the configs + 1 for 'name' (implicit)
+            IDictionary<string, ITemplateParameter> parameters = template.ParameterDefinitions.ToDictionary(p => p.Name, p => p);
+            Assert.Equal(6, parameters.Count);  // 5 in the configs + 1 for 'name' (implicit)
             Assert.True(parameters.ContainsKey("type"));
             Assert.True(parameters.ContainsKey("language"));
             Assert.True(parameters.ContainsKey("RuntimeFrameworkVersion"));

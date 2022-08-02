@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 
 namespace Microsoft.TemplateEngine.Edge
 {
@@ -50,7 +51,10 @@ namespace Microsoft.TemplateEngine.Edge
 
         public IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; private set; }
 
-        public IReadOnlyList<ITemplateParameter> Parameters { get; private set; }
+        public IParameterDefinitionSet ParameterDefinitions { get; private set; }
+
+        [Obsolete("Use ParameterDefinitionSet instead.")]
+        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         public string MountPointUri { get; private set; }
 
@@ -90,7 +94,7 @@ namespace Microsoft.TemplateEngine.Edge
                 ShortName = source.ShortName,
                 Tags = source.Tags,
                 CacheParameters = source.CacheParameters,
-                Parameters = source.Parameters,
+                ParameterDefinitions = source.ParameterDefinitions,
                 MountPointUri = source.MountPointUri,
                 ConfigPlace = source.ConfigPlace,
                 LocaleConfigPlace = source.LocaleConfigPlace,

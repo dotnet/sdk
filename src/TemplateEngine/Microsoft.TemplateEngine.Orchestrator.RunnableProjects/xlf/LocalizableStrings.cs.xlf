@@ -170,6 +170,16 @@ Podrobnosti: {1}</target>
         <target state="translated">Symbol {0} typu {1} není správný: není nastavena povinná vlastnost {2}. Symbol se přeskočí.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABool">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

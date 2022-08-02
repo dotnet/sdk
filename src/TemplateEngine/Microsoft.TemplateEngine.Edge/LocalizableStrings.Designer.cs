@@ -61,6 +61,42 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation..
+        /// </summary>
+        internal static string ConditionEvaluation_Error_CyclicDependency {
+            get {
+                return ResourceManager.GetString("ConditionEvaluation_Error_CyclicDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed..
+        /// </summary>
+        internal static string ConditionEvaluation_Error_MismatchedCondition {
+            get {
+                return ResourceManager.GetString("ConditionEvaluation_Error_MismatchedCondition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unexpected internal error - unable to perform topological sort of parameter dependencies that do not appear to have a cyclic dependencies..
+        /// </summary>
+        internal static string ConditionEvaluation_Error_TopologicalSort {
+            get {
+                return ResourceManager.GetString("ConditionEvaluation_Error_TopologicalSort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it&apos;s possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error..
+        /// </summary>
+        internal static string ConditionEvaluation_Warning_CyclicDependency {
+            get {
+                return ResourceManager.GetString("ConditionEvaluation_Warning_CyclicDependency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; should not contain empty items.
         /// </summary>
         internal static string Constaint_Error_ArgumentHasEmptyString {
@@ -147,6 +183,24 @@ namespace Microsoft.TemplateEngine.Edge {
         internal static string EnvironmentVariablesBindSource_Name {
             get {
                 return ResourceManager.GetString("EnvironmentVariablesBindSource_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: {0}..
+        /// </summary>
+        internal static string EvaluatedInputDataSet_Error_MismatchedConditions {
+            get {
+                return ResourceManager.GetString("EvaluatedInputDataSet_Error_MismatchedConditions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameter(s): {0}..
+        /// </summary>
+        internal static string EvaluatedInputParameterData_Error_ConditionsInvalid {
+            get {
+                return ResourceManager.GetString("EvaluatedInputParameterData_Error_ConditionsInvalid", resourceCulture);
             }
         }
         

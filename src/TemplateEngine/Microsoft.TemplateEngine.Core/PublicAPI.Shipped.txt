@@ -326,7 +326,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TryConvert<T>(object sender, out T result) -> bool
 ~Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.TypeConverter<TSelf>(System.Action<Microsoft.TemplateEngine.Core.Expressions.ITypeConverter> configureConverter) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
 ~Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>.Xor(TToken token, System.Func<Microsoft.TemplateEngine.Core.Expressions.Operators, bool> precedesOperator = null, System.Func<object, object, object> evaluate = null) -> Microsoft.TemplateEngine.Core.Expressions.OperatorSetBuilder<TToken>
-~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.Build(ref int bufferLength, ref int bufferPosition, System.Action<System.Collections.Generic.IReadOnlyList<byte>> onFault) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
 ~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.ScopeBuilder(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals) -> void
 ~Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>
 ~Microsoft.TemplateEngine.Core.Expressions.TokenScope<TToken>.Evaluate() -> object
@@ -518,7 +517,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.Decode(string arg) -> string
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.CppStyleConverters.Encode(string arg) -> string
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Compare(object left, object right) -> int
-~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.VisualBasicStyleConverters.ConfigureConverters(Microsoft.TemplateEngine.Core.Expressions.ITypeConverter obj) -> void
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlDecode(string arg) -> string
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.XmlStyleConverters.XmlEncode(string arg) -> string

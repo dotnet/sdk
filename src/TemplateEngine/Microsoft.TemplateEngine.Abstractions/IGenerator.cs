@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -23,6 +26,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="targetDirectory">target output directory to generate template to.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns><see cref="ICreationResult"/> containing post actions and primary outputs after template generation.</returns>
+        [Obsolete("Replaced by CreateAsync with IParameterSetData", false)]
         Task<ICreationResult> CreateAsync(
             IEngineEnvironmentSettings environmentSettings,
             ITemplate template,
@@ -39,6 +43,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="targetDirectory">target output directory to generate template to.</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns><see cref="ICreationEffects"/> containing file changes, post actions and primary outputs that would have been done after template generation.</returns>
+        [Obsolete("Replaced by GetCreationEffectsAsync with IParameterSetData", false)]
         Task<ICreationEffects> GetCreationEffectsAsync(
             IEngineEnvironmentSettings environmentSettings,
             ITemplate template,
@@ -55,7 +60,40 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="environmentSettings">template engine environment settings.</param>
         /// <param name="template">template to get parameters from.</param>
         /// <returns><see cref="IParameterSet"/> with parameters available in <paramref name="template"/>.</returns>
+        [Obsolete("Replaced by ParameterSetBuilder.CreateWithDefaults", true)]
         IParameterSet GetParametersForTemplate(IEngineEnvironmentSettings environmentSettings, ITemplate template);
+
+        /// <summary>
+        /// Generates the <paramref name="template"/> with given parameters.
+        /// </summary>
+        /// <param name="environmentSettings">template engine environment settings.</param>
+        /// <param name="template">template to generate.</param>
+        /// <param name="parameters">template parameters.</param>
+        /// <param name="targetDirectory">target output directory to generate template to.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns><see cref="ICreationResult"/> containing post actions and primary outputs after template generation.</returns>
+        Task<ICreationResult> CreateAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate template,
+            IParameterSetData parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Dry runs the <paramref name="template"/> with given parameters.
+        /// </summary>
+        /// <param name="environmentSettings">template engine environment settings.</param>
+        /// <param name="template">template to dry run.</param>
+        /// <param name="parameters">template parameters.</param>
+        /// <param name="targetDirectory">target output directory to generate template to.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
+        /// <returns><see cref="ICreationEffects"/> containing file changes, post actions and primary outputs that would have been done after template generation.</returns>
+        Task<ICreationEffects> GetCreationEffectsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            ITemplate template,
+            IParameterSetData parameters,
+            string targetDirectory,
+            CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets an <see cref="ITemplate"/> from the given <see cref="IFileSystemInfo" /> configuration entry.
@@ -85,5 +123,19 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <param name="valueResolutionError">true if value could not be converted, false otherwise.</param>
         /// <returns>the converted <paramref name="untypedValue"/> value to the type of <paramref name="parameter"/> or null if the value cannot be converted.</returns>
         object? ConvertParameterValueToType(IEngineEnvironmentSettings environmentSettings, ITemplateParameter parameter, string untypedValue, out bool valueResolutionError);
+
+        /// <summary>
+        /// Attempts to evaluate expression string with the provided variables and returns the result.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="text"></param>
+        /// <param name="variables">Dictionary of variables to be substituted within the expression.</param>
+        /// <param name="result">The evaluation result (false in case evaluation failed).</param>
+        /// <param name="evaluationError">Evaluation error message in case evaluation failed.</param>
+        /// <param name="referencedVariablesKeys">
+        /// Keys of variables that have been substituted within the expression.
+        /// If passed as null, the referenced variable keys are not obtained and stored anywhere.</param>
+        /// <returns></returns>
+        bool TryEvaluateFromString(ILogger logger, string text, IDictionary<string, object> variables, out bool result, out string evaluationError, HashSet<string>? referencedVariablesKeys = null);
     }
 }

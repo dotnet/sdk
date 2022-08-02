@@ -10,6 +10,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Defines the priority of a template parameter.
     /// </summary>
+    [Obsolete("Use Precedence instead.")]
     public enum TemplateParameterPriority
     {
         /// <summary>

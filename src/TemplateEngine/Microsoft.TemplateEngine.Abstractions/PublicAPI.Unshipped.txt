@@ -38,13 +38,21 @@ Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.Statu
 Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.Status.NotEvaluated = 0 -> Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.Status
 Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.Status.Restricted = 2 -> Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.Status
 Microsoft.TemplateEngine.Abstractions.Components.WorkloadInfo
+Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence
+Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence.Disabled = 3 -> Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence
+Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence.Implicit = 2 -> Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence
+Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence.Optional = 1 -> Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence
+Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence.Required = 0 -> Microsoft.TemplateEngine.Abstractions.EvaluatedPrecedence
 Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.get -> string?
 Microsoft.TemplateEngine.Abstractions.IAllowDefaultIfOptionWithoutValue.DefaultIfOptionWithoutValue.set -> void
 Microsoft.TemplateEngine.Abstractions.IGenerator.ConvertParameterValueToType(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! untypedValue, out bool valueResolutionError) -> object?
 Microsoft.TemplateEngine.Abstractions.IGenerator.CreateAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.IParameterSet! parameters, string! targetDirectory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ICreationResult!>!
+Microsoft.TemplateEngine.Abstractions.IGenerator.CreateAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! parameters, string! targetDirectory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ICreationResult!>!
 Microsoft.TemplateEngine.Abstractions.IGenerator.GetCreationEffectsAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.IParameterSet! parameters, string! targetDirectory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ICreationEffects!>!
+Microsoft.TemplateEngine.Abstractions.IGenerator.GetCreationEffectsAsync(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate! template, Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData! parameters, string! targetDirectory, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.TemplateEngine.Abstractions.ICreationEffects!>!
 Microsoft.TemplateEngine.Abstractions.IGenerator.GetParametersForTemplate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.ITemplate! template) -> Microsoft.TemplateEngine.Abstractions.IParameterSet!
 Microsoft.TemplateEngine.Abstractions.IGenerator.GetTemplatesAndLangpacksFromDir(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! source, out System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ILocalizationLocator!>! localizations) -> System.Collections.Generic.IList<Microsoft.TemplateEngine.Abstractions.ITemplate!>!
+Microsoft.TemplateEngine.Abstractions.IGenerator.TryEvaluateFromString(Microsoft.Extensions.Logging.ILogger! logger, string! text, System.Collections.Generic.IDictionary<string!, object!>! variables, out bool result, out string! evaluationError, System.Collections.Generic.HashSet<string!>? referencedVariablesKeys = null) -> bool
 Microsoft.TemplateEngine.Abstractions.IGenerator.TryGetTemplateFromConfigInfo(Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo! config, out Microsoft.TemplateEngine.Abstractions.ITemplate? template, Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo? localeConfig, Microsoft.TemplateEngine.Abstractions.Mount.IFile? hostTemplateConfigFile, string? baselineName = null) -> bool
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Author.get -> string!
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ConfigPlace.get -> string!
@@ -53,7 +61,11 @@ Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Identity.get -> strin
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Locale.get -> string!
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.Name.get -> string!
 Microsoft.TemplateEngine.Abstractions.ILocalizationLocator.ParameterSymbols.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.IParameterSymbolLocalizationModel!>!
+Microsoft.TemplateEngine.Abstractions.IParameterSet.ParameterDefinitions.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
 Microsoft.TemplateEngine.Abstractions.IParameterSet.ResolvedValues.get -> System.Collections.Generic.IDictionary<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!, object?>!
+Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string! name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
+Microsoft.TemplateEngine.Abstractions.ITemplateInfo.ParameterDefinitions.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
+Microsoft.TemplateEngine.Abstractions.ITemplateParameter.Precedence.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateDirectories(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!>!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFiles(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFile!>!
 Microsoft.TemplateEngine.Abstractions.Mount.IDirectory.EnumerateFileSystemInfos(string! pattern, System.IO.SearchOption searchOption) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo!>!
@@ -71,6 +83,56 @@ Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint.Root.get -> Microsoft.Te
 Microsoft.TemplateEngine.Abstractions.Mount.IMountPointFactory.TryMount(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint? parent, string! mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint? mountPoint) -> bool
 Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager.EnvironmentSettings.get -> Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings!
 Microsoft.TemplateEngine.Abstractions.Mount.IMountPointManager.TryDemandMountPoint(string! mountPointUri, out Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! mountPoint) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.Default = 4 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.DefaultIfNoValue = 5 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.HostDefault = 2 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.HostOnError = 3 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.HostOther = 7 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.NameParameter = 6 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.NoSource = 0 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.DataSource.User = 1 -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.AsReadonlyDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.ContainsKey(string! key) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.Keys.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.this[string! key].get -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter!
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.TryGetValue(string! key, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter! value) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet.Values.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData
+Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData.ParametersDefinition.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.DataSource.get -> Microsoft.TemplateEngine.Abstractions.Parameters.DataSource
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.IsEnabled.get -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.ParameterData(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameterDefinition, object? value, Microsoft.TemplateEngine.Abstractions.Parameters.DataSource source, bool isEnabled = true) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.ParameterDefinition.get -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.Value.get -> object?
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.AsReadonlyDictionary() -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.ContainsKey(string! key) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Count.get -> int
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.GetEnumerator() -> System.Collections.Generic.IEnumerator<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Keys.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.ParameterDefinitionSet(Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet! other) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.ParameterDefinitionSet(System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>? parameters) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.ParameterDefinitionSet(System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>? parameters) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.this[int index].get -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.this[string! key].get -> Microsoft.TemplateEngine.Abstractions.ITemplateParameter!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.TryGetValue(string! key, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter! value) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Values.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ContainsKey(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! key) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Count.get -> int
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!, Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!>>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Keys.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ParametersDefinition.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ParameterSetData(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ParameterSetData(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo, System.Collections.Generic.IReadOnlyDictionary<string!, object?>? inputParameters) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ParameterSetData(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo, System.Collections.Generic.IReadOnlyDictionary<string!, string?>? inputParameters) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.ParameterSetData(Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet! parameters, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!>! parameterData) -> void
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.this[Microsoft.TemplateEngine.Abstractions.ITemplateParameter! key].get -> Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.TryGetValue(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! key, out Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData! value) -> bool
+Microsoft.TemplateEngine.Abstractions.Parameters.ParameterSetData.Values.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData!>!
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.GetLastWriteTimeUtc(string! file) -> System.DateTime
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IFileLastWriteTimeSource.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
 Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
@@ -100,8 +162,6 @@ Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.TemplatePackage.ge
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.UpdateRequest(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage, string! targetVersion) -> void
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest.Version.get -> string!
 Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.UpdateRequest.get -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest!
-Microsoft.TemplateEngine.Abstractions.IParameterSet.ParameterDefinitions.get -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateParameter!>!
-Microsoft.TemplateEngine.Abstractions.IParameterSet.TryGetParameterDefinition(string! name, out Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter) -> bool
 Microsoft.TemplateEngine.Abstractions.ISearchPackFilter.ShouldPackBeFiltered(string! candidatePackName, string! candidatePackVersion) -> bool
 Microsoft.TemplateEngine.Abstractions.ISettingsLoader.AddMountPoint(Microsoft.TemplateEngine.Abstractions.Mount.IMountPoint! mountPoint) -> void
 Microsoft.TemplateEngine.Abstractions.ISettingsLoader.AddProbingPath(string! probeIn) -> void
@@ -129,6 +189,13 @@ Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Micro
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintInfo!>!
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.PostActions.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.ConditionalyDisabled = 4 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.ConditionalyRequired = 1 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.Disabled = 5 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.Implicit = 3 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.Optional = 2 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition.Required = 0 -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.DisplayName.get -> string!
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.GetDetails() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage.Identifier.get -> string!
@@ -149,8 +216,17 @@ Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProviderFa
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.MountPointUri.get -> string!
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.Provider.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider!
 Microsoft.TemplateEngine.Abstractions.TemplatePackage.TemplatePackage.TemplatePackage(Microsoft.TemplateEngine.Abstractions.TemplatePackage.ITemplatePackageProvider! provider, string! mountPointUri, System.DateTime lastChangeTime) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.CanBeRequired.get -> bool
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.IsEnabledCondition.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.IsRequired.get -> bool
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.IsRequiredCondition.get -> string?
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.PrecedenceDefinition.get -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.TemplateParameterPrecedence(Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition precedenceDefinition, string? isRequiredCondition = null, string? isEnabledCondition = null, bool isRequired = false) -> void
+Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedenceExtensions
 override Microsoft.TemplateEngine.Abstractions.Installer.CheckUpdateResult.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage!
 override Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage!
+override Microsoft.TemplateEngine.Abstractions.Parameters.ParameterData.ToString() -> string!
 static Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.CreateAllowed(Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint! constraint) -> Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!
 static Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.CreateEvaluationFailure(Microsoft.TemplateEngine.Abstractions.Constraints.ITemplateConstraint! constraint, string! localizedErrorMessage, string? cta = null) -> Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!
 static Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult.CreateInitializationFailure(string! type, string! localizedErrorMessage, string? cta = null) -> Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintResult!
@@ -164,5 +240,10 @@ static Microsoft.TemplateEngine.Abstractions.Installer.UninstallResult.CreateSuc
 static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateFailure(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallerErrorCode error, string! localizedFailureMessage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
 static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.CreateSuccess(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage! templatePackage) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
 static Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult.FromInstallResult(Microsoft.TemplateEngine.Abstractions.Installer.UpdateRequest! request, Microsoft.TemplateEngine.Abstractions.Installer.InstallResult! installResult) -> Microsoft.TemplateEngine.Abstractions.Installer.UpdateResult!
+static Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedenceExtensions.ToPrecedenceDefinition(this Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority) -> Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition
+static Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedenceExtensions.ToTemplateParameterPrecedence(this Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority priority) -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!
+static Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedenceExtensions.ToTemplateParameterPriority(this Microsoft.TemplateEngine.Abstractions.PrecedenceDefinition precedenceDefinition) -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPriority
+static readonly Microsoft.TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Empty -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
+static readonly Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence.Default -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!
 virtual Microsoft.TemplateEngine.Abstractions.Installer.InstallerOperationResult.TemplatePackage.get -> Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage?
 override Microsoft.TemplateEngine.Abstractions.Installer.InstallRequest.ToString() -> string!

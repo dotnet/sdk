@@ -13,8 +13,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal interface IRunnableProjectConfig
     {
-        IReadOnlyDictionary<string, Parameter> Parameters { get; }
-
         IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> SpecialOperationConfig { get; }
 
         IGlobalRunConfig OperationConfig { get; }

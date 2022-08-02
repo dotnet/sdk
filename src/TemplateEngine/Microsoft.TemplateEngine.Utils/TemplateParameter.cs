@@ -32,11 +32,6 @@ namespace Microsoft.TemplateEngine.Utils
             DataType = jObject.ToString(nameof(DataType)) ?? "string";
             Description = jObject.ToString(nameof(Description));
 
-            int priority = jObject.ToInt32(nameof(Priority));
-            Priority = Enum.IsDefined(typeof(TemplateParameterPriority), priority) ? (TemplateParameterPriority)priority : default;
-
-            Priority = (TemplateParameterPriority)jObject.ToInt32(nameof(Priority));
-
             DefaultValue = jObject.ToString(nameof(DefaultValue));
             DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
             DisplayName = jObject.ToString(nameof(DisplayName));
@@ -62,13 +57,14 @@ namespace Microsoft.TemplateEngine.Utils
                 Choices = choices;
             }
 
+            Precedence = jObject.ToTemplateParameterPrecedence(nameof(Precedence));
         }
 
         public TemplateParameter(
             string name,
             string type,
             string datatype,
-            TemplateParameterPriority priority = default,
+            TemplateParameterPrecedence? precedence = default,
             bool isName = false,
             string? defaultValue = null,
             string? defaultIfOptionWithoutValue = null,
@@ -80,13 +76,13 @@ namespace Microsoft.TemplateEngine.Utils
             Name = name;
             Type = type;
             DataType = datatype;
-            Priority = priority;
             IsName = isName;
             DefaultValue = defaultValue;
             DefaultIfOptionWithoutValue = defaultIfOptionWithoutValue;
             Description = description;
             DisplayName = displayName;
             AllowMultipleValues = allowMultipleValues;
+            Precedence = precedence ?? TemplateParameterPrecedence.Default;
 
             if (this.IsChoice())
             {
@@ -100,8 +96,11 @@ namespace Microsoft.TemplateEngine.Utils
         [JsonProperty]
         public string Name { get; }
 
-        [JsonProperty]
-        public TemplateParameterPriority Priority { get; }
+        [JsonIgnore]
+        [Obsolete("Use Precedence instead.")]
+        public TemplateParameterPriority Priority => Precedence.PrecedenceDefinition.ToTemplateParameterPriority();
+
+        public TemplateParameterPrecedence Precedence { get; }
 
         [JsonProperty]
         public string Type { get; }
@@ -129,6 +128,30 @@ namespace Microsoft.TemplateEngine.Utils
 
         [JsonProperty]
         public bool AllowMultipleValues { get; }
+
+        public override string ToString()
+        {
+            return $"{Name} ({Type})";
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj is ITemplateParameter parameter)
+            {
+                return Equals(parameter);
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode() => (Name != null ? Name.GetHashCode() : 0);
+
+        public bool Equals(ITemplateParameter other) => !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(other.Name) && Name == other.Name;
     }
 
 }

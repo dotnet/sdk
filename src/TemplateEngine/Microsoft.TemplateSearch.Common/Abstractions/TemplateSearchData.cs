@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateSearch.Common
@@ -60,7 +61,11 @@ namespace Microsoft.TemplateSearch.Common
         public IReadOnlyDictionary<string, string> TagsCollection => TemplateInfo.TagsCollection;
 
         /// <inheritdoc/>
-        public IReadOnlyList<ITemplateParameter> Parameters => TemplateInfo.Parameters;
+        public IParameterDefinitionSet ParameterDefinitions => TemplateInfo.ParameterDefinitions;
+
+        /// <inheritdoc/>
+        [Obsolete("Use ParameterDefinitionSet instead.")]
+        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         /// <inheritdoc/>
         public int Precedence => TemplateInfo.Precedence;

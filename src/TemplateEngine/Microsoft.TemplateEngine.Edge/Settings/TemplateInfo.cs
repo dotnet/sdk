@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -103,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Description = localizationInfo?.Description ?? template.Description;
 
             Name = localizationInfo?.Name ?? template.Name;
-            Parameters = LocalizeParameters(template, localizationInfo);
+            ParameterDefinitions = LocalizeParameters(template, localizationInfo);
 
             if (template.GeneratorId == RunnableProjectGeneratorId && HostConfigPlace != null)
             {
@@ -133,8 +134,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
         }
 
-        [JsonProperty]
-        public IReadOnlyList<ITemplateParameter> Parameters { get; private set; } = new List<ITemplateParameter>();
+#pragma warning disable CS0618 // Type or member is obsolete
+        [JsonProperty(nameof(Parameters))]
+#pragma warning restore CS0618 // Type or member is obsolete
+        public IParameterDefinitionSet ParameterDefinitions { get; private set; } = Abstractions.Parameters.ParameterDefinitionSet.Empty;
+
+        [JsonIgnore]
+        [Obsolete("Use ParameterDefinitionSet instead.")]
+        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         [JsonProperty]
         public string MountPointUri { get; }
@@ -196,7 +203,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         tags[tag.Key] = new CacheTag(null, null, new Dictionary<string, ParameterChoice> { { tag.Value, new ParameterChoice(null, null) } }, tag.Value);
                     }
-                    foreach (ITemplateParameter parameter in Parameters.Where(TemplateParameterExtensions.IsChoice))
+                    foreach (ITemplateParameter parameter in ParameterDefinitions.Where(TemplateParameterExtensions.IsChoice))
                     {
                         IReadOnlyDictionary<string, ParameterChoice> choices = parameter.Choices ?? new Dictionary<string, ParameterChoice>();
                         tags[parameter.Name] = new CacheTag(parameter.DisplayName, parameter.Documentation, choices, parameter.DefaultValue);
@@ -216,7 +223,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (_cacheParameters == null)
                 {
                     Dictionary<string, ICacheParameter> cacheParameters = new Dictionary<string, ICacheParameter>();
-                    foreach (ITemplateParameter parameter in Parameters.Where(p => !p.IsChoice()))
+                    foreach (ITemplateParameter parameter in ParameterDefinitions.Where(p => !p.IsChoice()))
                     {
                         cacheParameters[parameter.Name] = new CacheParameter()
                         {
@@ -268,12 +275,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return TemplateInfoReader.FromJObject(entry);
         }
 
-        private static IReadOnlyList<ITemplateParameter> LocalizeParameters(ITemplateInfo template, ILocalizationLocator? localizationInfo)
+        private static IParameterDefinitionSet LocalizeParameters(ITemplateInfo template, ILocalizationLocator? localizationInfo)
         {
             //we would like to copy the parameters to format supported for serialization as we cannot be sure that ITemplateInfo supports serialization in needed format.
             List<ITemplateParameter> localizedParameters = new List<ITemplateParameter>();
 
-            foreach (ITemplateParameter parameter in template.Parameters)
+            foreach (ITemplateParameter parameter in template.ParameterDefinitions)
             {
                 IParameterSymbolLocalizationModel? localization = null;
                 Dictionary<string, ParameterChoice>? localizedChoices = null;
@@ -310,14 +317,14 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     defaultValue: parameter.DefaultValue,
                     defaultIfOptionWithoutValue: parameter.DefaultIfOptionWithoutValue,
                     datatype: parameter.DataType,
-                    priority: parameter.Priority,
+                    precedence: parameter.Precedence,
                     type: parameter.Type,
                     allowMultipleValues: parameter.AllowMultipleValues,
                     choices: localizedChoices ?? parameter.Choices);
 
                 localizedParameters.Add(localizedParameter);
             }
-            return localizedParameters;
+            return new ParameterDefinitionSet(localizedParameters);
         }
     }
 }

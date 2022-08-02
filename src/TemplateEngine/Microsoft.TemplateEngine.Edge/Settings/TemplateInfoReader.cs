@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -68,7 +69,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
 
                 //read parameters
+#pragma warning disable CS0618 // Type or member is obsolete
                 JArray? parametersArray = entry.Get<JArray>(nameof(Parameters));
+#pragma warning restore CS0618 // Type or member is obsolete
                 if (parametersArray != null)
                 {
                     List<ITemplateParameter> templateParameters = new List<ITemplateParameter>();
@@ -76,7 +79,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         templateParameters.Add(new TemplateParameter(item));
                     }
-                    info.Parameters = templateParameters;
+                    info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);
                 }
 
                 //read tags

@@ -170,6 +170,16 @@ Details: {1}</source>
         <target state="translated">'{1}' 형식의 기호 '{0}'이(가) 잘못되었습니다. 필수 속성 '{2}'이(가) 설정되지 않았습니다. 기호를 건너뜁니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABool">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
+      <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
+        <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
+        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <note>{0} - the json property</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>

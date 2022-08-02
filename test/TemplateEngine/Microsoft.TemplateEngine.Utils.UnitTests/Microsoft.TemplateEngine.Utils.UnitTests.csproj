@@ -10,4 +10,10 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" /> 
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.abstractions" />
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
 </Project>

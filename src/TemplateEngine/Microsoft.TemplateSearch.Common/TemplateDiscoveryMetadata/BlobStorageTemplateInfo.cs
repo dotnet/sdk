@@ -9,6 +9,7 @@ using System.Linq;
 using Microsoft.TemplateEngine;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -42,7 +43,7 @@ namespace Microsoft.TemplateSearch.Common
             Identity = templateInfo.Identity;
             Name = templateInfo.Name;
             ShortNameList = templateInfo.ShortNameList;
-            Parameters = templateInfo.Parameters?.Select(p => new BlobTemplateParameter(p)).ToArray() ?? Array.Empty<BlobTemplateParameter>();
+            ParameterDefinitions = new ParameterDefinitionSet(templateInfo.ParameterDefinitions?.Select(p => new BlobTemplateParameter(p)));
             Author = templateInfo.Author;
             Classifications = templateInfo.Classifications ?? Array.Empty<string>();
             Description = templateInfo.Description;
@@ -77,9 +78,13 @@ namespace Microsoft.TemplateSearch.Common
             ShortNameList = shortNameList.ToList();
         }
 
-        [JsonProperty]
+        [JsonProperty(nameof(Parameters))]
         //reading manually now to support old format
-        public IReadOnlyList<ITemplateParameter> Parameters { get; private set; } = new List<ITemplateParameter>();
+        public IParameterDefinitionSet ParameterDefinitions { get; private set; } = TemplateEngine.Abstractions.Parameters.ParameterDefinitionSet.Empty;
+
+        [JsonIgnore]
+        [Obsolete("Use ParameterDefinitionSet instead.")]
+        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         [JsonIgnore]
         string ITemplateInfo.MountPointUri => throw new NotImplementedException();
@@ -305,7 +310,7 @@ namespace Microsoft.TemplateSearch.Common
             }
 
             info.TagsCollection = tags;
-            info.Parameters = templateParameters;
+            info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);
             return info;
 
         }
@@ -341,16 +346,17 @@ namespace Microsoft.TemplateSearch.Common
                     Choices = new Dictionary<string, ParameterChoice>();
                 }
 
-                Priority = parameter.Priority;
                 DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue;
                 Description = parameter.Description;
                 AllowMultipleValues = parameter.AllowMultipleValues;
+                Precedence = parameter.Precedence;
             }
 
             internal BlobTemplateParameter(string name, string dataType)
             {
                 Name = name;
                 DataType = dataType;
+                Precedence = TemplateParameterPrecedence.Default;
             }
 
             internal BlobTemplateParameter(JObject jObject)
@@ -381,10 +387,13 @@ namespace Microsoft.TemplateSearch.Common
                     }
                     Choices = choices;
                 }
-                Priority = jObject.ToEnum<TemplateParameterPriority>(nameof(Priority));
                 DefaultIfOptionWithoutValue = jObject.ToString(nameof(DefaultIfOptionWithoutValue));
                 Description = jObject.ToString(nameof(Description));
                 AllowMultipleValues = jObject.ToBool(nameof(AllowMultipleValues));
+
+                //We currently do not write the precedence to cache - so this code is redundant.
+                // However should we decide in future to populate it, this way the client code can consume it without the need to be updated
+                Precedence = jObject.ToTemplateParameterPrecedence(nameof(Precedence));
             }
 
             [JsonProperty]
@@ -396,11 +405,15 @@ namespace Microsoft.TemplateSearch.Common
             [JsonProperty]
             public IReadOnlyDictionary<string, ParameterChoice>? Choices { get; internal set; }
 
-            [JsonProperty]
-            public TemplateParameterPriority Priority { get; internal set; }
+            [JsonIgnore]
+            [Obsolete("Use Precedence instead.")]
+            public TemplateParameterPriority Priority => Precedence.PrecedenceDefinition.ToTemplateParameterPriority();
 
             [JsonIgnore]
-            //Parameters have only "parameter" symbols.
+            public TemplateParameterPrecedence Precedence { get; }
+
+            [JsonIgnore]
+            //ParameterDefinitionSet have only "parameter" symbols.
             string ITemplateParameter.Type => "parameter";
 
             [JsonIgnore]
@@ -424,6 +437,25 @@ namespace Microsoft.TemplateSearch.Common
 
             [JsonProperty]
             public bool AllowMultipleValues { get; internal set; }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(this, obj))
+                {
+                    return true;
+                }
+
+                if (obj is ITemplateParameter parameter)
+                {
+                    return Equals(parameter);
+                }
+
+                return false;
+            }
+
+            public override int GetHashCode() => (Name != null ? Name.GetHashCode() : 0);
+
+            public bool Equals(ITemplateParameter other) => !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(other.Name) && Name == other.Name;
         }
 
         private class BlobLegacyCacheTag : ICacheTag

@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             string variableName = "myPredicate";
             string evaluator = "C++";
-            EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, predicate, evaluator);
+            EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, "bool", predicate, evaluator);
 
             IVariableCollection variables = new VariableCollection();
 

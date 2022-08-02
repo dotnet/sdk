@@ -30,6 +30,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <None Update="SchemaTests\ConditionalParametersTest.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
       <None Update="SchemaTests\ConstraintsTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
@@ -39,7 +42,7 @@
       <None Update="SchemaTests\GeneratorTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
-      <None Update="SchemaTests\MultiValueChoice.json">
+      <None Update="SchemaTests\MultiValueChoiceTest.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
       <None Update="SchemaTests\PostActionTest.json">

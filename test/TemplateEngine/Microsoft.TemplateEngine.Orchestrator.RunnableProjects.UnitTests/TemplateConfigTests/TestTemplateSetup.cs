@@ -89,13 +89,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestFileSystemHelper.WriteTemplateSource(_environmentSettings, _sourceBaseDir, _sourceFiles);
         }
 
-        public void InstantiateTemplate(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)
+        public void InstantiateTemplate(string targetBaseDir, IVariableCollection variables = null)
         {
-            if (parameters == null)
-            {
-                parameters = new MockParameterSet();
-            }
-
             if (variables == null)
             {
                 variables = new VariableCollection();
@@ -120,13 +115,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
         }
 
-        public IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> GetFileChanges(string targetBaseDir, IParameterSet parameters = null, IVariableCollection variables = null)
+        public IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> GetFileChanges(string targetBaseDir, IVariableCollection variables = null)
         {
-            if (parameters == null)
-            {
-                parameters = new MockParameterSet();
-            }
-
             if (variables == null)
             {
                 variables = new VariableCollection();

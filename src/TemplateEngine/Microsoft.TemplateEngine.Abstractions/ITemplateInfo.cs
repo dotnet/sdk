@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 
 namespace Microsoft.TemplateEngine.Abstractions
 {
@@ -68,7 +69,7 @@ namespace Microsoft.TemplateEngine.Abstractions
         [Obsolete("Templates support multiple short names, use ShortNameList instead")]
         string ShortName { get; }
 
-        [Obsolete("For choice parameters, use Parameters instead. For template tags, use IReadOnlyDictionary<string, string> TagsCollection instead.")]
+        [Obsolete("For choice parameters, use ParameterDefinitionSet instead. For template tags, use IReadOnlyDictionary<string, string> TagsCollection instead.")]
         IReadOnlyDictionary<string, ICacheTag> Tags { get; }
 
         /// <summary>
@@ -76,12 +77,18 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// </summary>
         IReadOnlyDictionary<string, string> TagsCollection { get; }
 
-        [Obsolete("Use Parameters instead.")]
+        [Obsolete("Use ParameterDefinitionSet instead.")]
         IReadOnlyDictionary<string, ICacheParameter> CacheParameters { get; }
 
         /// <summary>
         /// Gets the list of template parameters.
         /// </summary>
+        IParameterDefinitionSet ParameterDefinitions { get; }
+
+        /// <summary>
+        /// Gets the list of template parameters.
+        /// </summary>
+        [Obsolete("Use ParameterDefinitionSet instead.", false)]
         IReadOnlyList<ITemplateParameter> Parameters { get; }
 
         /// <summary>

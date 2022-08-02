@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -27,14 +29,25 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted)
         {
+            bool result = Evaluate(processor, ref bufferLength, ref currentBufferPosition, out string faultedMessage, null);
+            faulted = !string.IsNullOrEmpty(faultedMessage);
+            return result;
+        }
+
+        public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out string faultedMessage, HashSet<string> referencedVariablesKeys)
+        {
             ITokenTrie tokens = Instance.GetSymbols(processor);
             ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
-            bool isFaulted = false;
-            IEvaluable result = builder.Build(ref bufferLength, ref currentBufferPosition, x => isFaulted = true);
+            string faultedSection = null;
+            IEvaluable result = builder.Build(
+                ref bufferLength,
+                ref currentBufferPosition,
+                x => faultedSection = Encoding.UTF8.GetString(x.ToArray()),
+                referencedVariablesKeys);
 
-            if (isFaulted)
+            if (faultedSection != null)
             {
-                faulted = true;
+                faultedMessage = faultedSection;
                 return false;
             }
 
@@ -42,17 +55,41 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             {
                 object evalResult = result.Evaluate();
                 bool r = (bool)Convert.ChangeType(evalResult, typeof(bool));
-                faulted = false;
+                faultedMessage = null;
                 return r;
             }
-            catch
+            catch (Exception e)
             {
-                faulted = true;
+                faultedMessage = e.Message;
                 return false;
             }
         }
 
+        /// <summary>
+        /// Inspect the passed string, creates the expression, substitutes parameters within expression, evaluates substituted expression and returns result.
+        /// If non-null bag for variable references is passed, it will be populated with references of variables used within the evaluable expression.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="text">The string to be inspected and turned into expression.</param>
+        /// <param name="variables">Variables to be substituted within the expression.</param>
+        /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
+        /// <returns></returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
+        {
+            return EvaluateFromString(logger, text, variables, out string _, null);
+        }
+
+        /// <summary>
+        /// Inspect the passed string, creates the expression, substitutes parameters within expression, evaluates substituted expression and returns result.
+        /// If non-null bag for variable references is passed, it will be populated with references of variables used within the evaluable expression.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="text">The string to be inspected and turned into expression.</param>
+        /// <param name="variables">Variables to be substituted within the expression.</param>
+        /// <param name="faultedMessage">Error message detailing failing evaluation, should it fail.</param>
+        /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
+        /// <returns></returns>
+        public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string faultedMessage, HashSet<string> referencedVariablesKeys = null)
         {
             using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
             using (MemoryStream res = new MemoryStream())
@@ -61,7 +98,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
-                return Evaluate(state, ref len, ref pos, out bool faulted);
+                return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys);
             }
         }
 

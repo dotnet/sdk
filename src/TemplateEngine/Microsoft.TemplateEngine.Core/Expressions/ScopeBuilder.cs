@@ -24,6 +24,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
         private readonly IReadOnlyDictionary<TOperator, Func<IEvaluable, IEvaluable>> _operatorScopeFactory;
         private readonly IProcessorState _processor;
         private readonly IReadOnlyList<object> _symbolValues;
+        private readonly IReadOnlyList<string> _symbolKeys;
         private readonly ISet<TToken> _terminators;
         private readonly ITokenTrie _tokens;
         private readonly IReadOnlyDictionary<TToken, TOperator> _tokenToOperatorMap;
@@ -50,20 +51,32 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             _valueDecoder = operatorMap.Decode;
 
             List<object> symbolValues = new List<object>();
+            List<string> symbolKeys = new List<string>();
 
             foreach (KeyValuePair<string, object> variable in processor.Config.Variables)
             {
                 trie.AddToken(processor.Encoding.GetBytes(string.Format(processor.Config.VariableFormatString, variable.Key)));
                 symbolValues.Add(variable.Value);
+                symbolKeys.Add(variable.Key);
             }
 
             _symbolValues = symbolValues;
+            _symbolKeys = symbolKeys;
             _tokenToOperatorMap = operatorMap.TokensToOperatorsMap;
             _operatorScopeFactory = operatorMap.OperatorScopeLookupFactory;
             _tokens = trie;
         }
 
-        public IEvaluable Build(ref int bufferLength, ref int bufferPosition, Action<IReadOnlyList<byte>> onFault)
+        /// <summary>
+        /// Traverses the given buffer position and creates an evaluable expression.
+        /// If non-null bag for variable references is passed, it will be populated with references of variables used within the evaluable expression.
+        /// </summary>
+        /// <param name="bufferLength"></param>
+        /// <param name="bufferPosition"></param>
+        /// <param name="onFault"></param>
+        /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
+        /// <returns></returns>
+        public IEvaluable Build(ref int bufferLength, ref int bufferPosition, Action<IReadOnlyList<byte>> onFault, HashSet<string> referencedVariablesKeys = null)
         {
             Stack<ScopeIsolator> parents = new Stack<ScopeIsolator>();
             ScopeIsolator isolator = new ScopeIsolator
@@ -165,6 +178,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             if (_knownTokensCount <= token && _isSymbolDereferenceInLiteralSequenceRequired)
                             {
                                 object val = _symbolValues[token - _knownTokensCount];
+                                referencedVariablesKeys?.Add(_symbolKeys[token - _knownTokensCount]);
                                 string valText = (val ?? "null").ToString();
                                 valText = _valueEncoder(valText);
                                 byte[] data = _processor.Encoding.GetBytes(valText);
@@ -221,6 +235,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                             else if (_knownTokensCount <= token)
                             {
                                 object value = _symbolValues[token - _knownTokensCount] ?? null;
+                                referencedVariablesKeys?.Add(_symbolKeys[token - _knownTokensCount]);
                                 Token<TToken> t = new Token<TToken>(_literal, value);
                                 TokenScope<TToken> scope = new TokenScope<TToken>(isolator.Active, t);
 

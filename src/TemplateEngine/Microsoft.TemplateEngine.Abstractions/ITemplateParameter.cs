@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Template parameter definition.
     /// </summary>
-    public interface ITemplateParameter
+    public interface ITemplateParameter : IEquatable<ITemplateParameter>
     {
         [Obsolete("Use Description instead.")]
         string? Documentation { get; }
@@ -29,7 +29,13 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets parameter priority.
         /// </summary>
+        [Obsolete("Use Precedence instead.")]
         TemplateParameterPriority Priority { get; }
+
+        /// <summary>
+        /// Indicates the precedence of the parameter.
+        /// </summary>
+        TemplateParameterPrecedence Precedence { get; }
 
         /// <summary>
         /// Gets parameter type.

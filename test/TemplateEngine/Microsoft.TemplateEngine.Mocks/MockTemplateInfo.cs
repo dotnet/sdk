@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Xunit.Abstractions;
@@ -107,13 +108,13 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<string> ShortNameList => _shortNameList;
 
-        [Obsolete("Use Parameters instead.")]
+        [Obsolete("Use ParameterDefinitionSet instead.")]
         IReadOnlyDictionary<string, ICacheTag> ITemplateInfo.Tags => throw new NotImplementedException();
 
-        [Obsolete("Use Parameters instead.")]
+        [Obsolete("Use ParameterDefinitionSet instead.")]
         IReadOnlyDictionary<string, ICacheParameter> ITemplateInfo.CacheParameters => throw new NotImplementedException();
 
-        public IReadOnlyList<ITemplateParameter> Parameters
+        public IParameterDefinitionSet ParameterDefinitions
         {
             get
             {
@@ -122,9 +123,12 @@ namespace Microsoft.TemplateEngine.Mocks
                 {
                     parameters.Add(param.Value);
                 }
-                return parameters;
+                return new ParameterDefinitionSet(parameters);
             }            
         }
+
+        [Obsolete("Use ParameterDefinitionSet instead.")]
+        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
 
         public string MountPointUri => "FakeMountPoint";
 
@@ -158,7 +162,9 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             foreach (var param in parameters)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 _parameters[param] = new TemplateParameter(param, "parameter", "string", priority: TemplateParameterPriority.Optional);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
             return this;
         }
@@ -171,17 +177,20 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithChoiceParameter(string name, params string[] values)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             _parameters.Add(name, new TemplateParameter(
                 name,
                 type: "parameter",
                 datatype: "choice",
                 priority: TemplateParameterPriority.Optional,
                 choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
+#pragma warning restore CS0618 // Type or member is obsolete
             return this;
         }
 
         public MockTemplateInfo WithMultiChoiceParameter(string name, params string[] values)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             _parameters.Add(name, new TemplateParameter(
                 name,
                 type: "parameter",
@@ -189,11 +198,14 @@ namespace Microsoft.TemplateEngine.Mocks
                 priority: TemplateParameterPriority.Optional,
                 allowMultipleValues: true,
                 choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
+#pragma warning restore CS0618 // Type or member is obsolete
             return this;
         }
 
         public MockTemplateInfo WithChoiceParameter(string name, string[] values, bool isRequired = false, string? defaultValue = null, string? defaultIfNoOptionValue = null, string? description = null, bool allowMultipleValues = false)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             _parameters.Add(name, new TemplateParameter(
                 name,
                 type: "parameter",
@@ -204,6 +216,8 @@ namespace Microsoft.TemplateEngine.Mocks
                 defaultIfOptionWithoutValue: defaultIfNoOptionValue,
                 allowMultipleValues: allowMultipleValues,
                 choices: values.ToDictionary(v => v, v => new ParameterChoice(null, null))));
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
             return this;
         }
 
@@ -241,6 +255,8 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithParameter(string paramName, string paramType = "string", bool isRequired = false, string? defaultValue = null, string? defaultIfNoOptionValue = null, string? description = null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             _parameters[paramName] = new TemplateParameter(
                 paramName,
                 "parameter",
@@ -249,6 +265,8 @@ namespace Microsoft.TemplateEngine.Mocks
                 description: description,
                 defaultValue: defaultValue,
                 defaultIfOptionWithoutValue: defaultIfNoOptionValue);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
             return this;
         }
         
@@ -344,7 +362,7 @@ namespace Microsoft.TemplateEngine.Mocks
             }
             if (_parameters.Any())
             {
-                _ = sb.Append("Parameters:" + string.Join(",", _parameters) + ";");
+                _ = sb.Append("ParameterDefinitionSet:" + string.Join(",", _parameters) + ";");
             }
             if (_baselineInfo.Any())
             {
@@ -366,7 +384,9 @@ namespace Microsoft.TemplateEngine.Mocks
                 string name,
                 string type,
                 string datatype,
+#pragma warning disable CS0618 // Type or member is obsolete
                 TemplateParameterPriority priority = default,
+#pragma warning restore CS0618 // Type or member is obsolete
                 bool isName = false,
                 string? defaultValue = null,
                 string? defaultIfOptionWithoutValue = null,
@@ -385,6 +405,9 @@ namespace Microsoft.TemplateEngine.Mocks
                 Description = description;
                 DisplayName = displayName;
                 AllowMultipleValues = allowMultipleValues;
+#pragma warning disable CS0618 // Type or member is obsolete
+                Precedence = priority.ToTemplateParameterPrecedence();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 if (this.IsChoice())
                 {
@@ -399,7 +422,11 @@ namespace Microsoft.TemplateEngine.Mocks
             public string Name { get; }
 
             [JsonProperty]
+#pragma warning disable CS0618 // Type or member is obsolete
             public TemplateParameterPriority Priority { get; }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            public TemplateParameterPrecedence Precedence { get; }
 
             [JsonProperty]
             public string Type { get; }
@@ -427,6 +454,25 @@ namespace Microsoft.TemplateEngine.Mocks
 
             [JsonProperty]
             public bool AllowMultipleValues { get; }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(this, obj))
+                {
+                    return true;
+                }
+
+                if (obj is ITemplateParameter parameter)
+                {
+                    return Equals(parameter);
+                }
+
+                return false;
+            }
+
+            public override int GetHashCode() => Name.GetHashCode();
+
+            public bool Equals(ITemplateParameter other) => !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(other.Name) && Name == other.Name;
         }
     }
 
