@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         private readonly string[] ConsoleLoggerOutputDetailed = new[] { "--logger", "console;verbosity=detailed" };
 
-        [Fact]
+        [WindowsOnlyFact]
         public void ShouldForwardDotnetRootEnvironmentVariablesIfNotProvided()
         {
             var testAsset = _testAssetsManager.CopyTestAsset(TestAppName)

@@ -217,9 +217,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         void It_can_publish_readytorun_using_crossgen2(string targetFramework)
         {
-            // In .NET 5 Crossgen2 supported Linux/Windows x64 only
+            // In .NET 5 Crossgen2 supported Windows x64 only
             if (targetFramework == "net5.0" &&
-                (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64))
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.OSArchitecture != Architecture.X64))
                 return;
 
             TestProjectPublishing_Internal("Crossgen2TestApp", targetFramework, isSelfContained: true, emitNativeSymbols: true, useCrossgen2: true, composite: false, identifier: targetFramework);
@@ -230,9 +230,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         void It_can_publish_readytorun_using_crossgen2_composite_mode(string targetFramework)
         {
-            // In .NET 5 Crossgen2 supported Linux/Windows x64 only
+            // In .NET 5 Crossgen2 supported Windows x64 only
             if (targetFramework == "net5.0" &&
-                (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64))
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.OSArchitecture != Architecture.X64))
                 return;
 
             TestProjectPublishing_Internal("Crossgen2TestApp", targetFramework, isSelfContained: true, emitNativeSymbols: false, useCrossgen2: true, composite: true, identifier: targetFramework);
@@ -243,9 +243,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_supports_libraries_when_using_crossgen2(string targetFramework)
         {
-            // In .NET 5 Crossgen2 supported Linux/Windows x64 only
+            // In .NET 5 Crossgen2 supported Windows x64 only
             if (targetFramework == "net5.0" &&
-                (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || RuntimeInformation.OSArchitecture != Architecture.X64))
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.windows) || RuntimeInformation.OSArchitecture != Architecture.X64))
                 return;
 
             var projectName = "FrameworkDependentUsingCrossgen2";
