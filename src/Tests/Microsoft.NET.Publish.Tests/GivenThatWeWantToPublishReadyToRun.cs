@@ -245,7 +245,7 @@ namespace Microsoft.NET.Publish.Tests
         {
             // In .NET 5 Crossgen2 supported Windows x64 only
             if (targetFramework == "net5.0" &&
-                (!RuntimeInformation.IsOSPlatform(OSPlatform.windows) || RuntimeInformation.OSArchitecture != Architecture.X64))
+                (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.OSArchitecture != Architecture.X64))
                 return;
 
             var projectName = "FrameworkDependentUsingCrossgen2";
