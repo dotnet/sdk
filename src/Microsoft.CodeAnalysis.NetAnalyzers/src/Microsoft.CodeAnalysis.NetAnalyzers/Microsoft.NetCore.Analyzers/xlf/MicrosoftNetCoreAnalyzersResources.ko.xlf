@@ -1832,6 +1832,11 @@
         <target state="translated">P/Invokes를 표시하지 않아야 합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ParenthesisWithPlaceHolder">
+        <source> ({0})</source>
+        <target state="new"> ({0})</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
         <source>and all other platforms</source>
         <target state="translated">및 다른 모든 플랫폼</target>
@@ -1851,6 +1856,16 @@
         <source>'{0}' from version {1} to {2}</source>
         <target state="translated">'{0}' 버전 {1}~{2}</target>
         <note>'SupportedOnWindows1903UnsupportedOn2004()' is supported on: 'windows' from version 10.0.1903 to 10.0.2004.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityObsoletedCsAllPlatformMessage">
+        <source>This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</source>
+        <target state="new">This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</target>
+        <note>This call site is reachable on all platforms. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
+      </trans-unit>
+      <trans-unit id="PlatformCompatibilityObsoletedCsReachableMessage">
+        <source>This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</source>
+        <target state="new">This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</target>
+        <note>This call site is reachable on 'macos', 'linux'. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is only supported on: {1}.</source>
@@ -1884,12 +1899,12 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</source>
-        <target state="translated">이 호출 사이트에는 모든 플랫폼에서 연결할 수 있습니다. '{0}'은(는) {1}에서 지원되지 않습니다.</target>
+        <target state="new">This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</target>
         <note>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</source>
-        <target state="translated">이 호출 사이트에는 {2}에서 연결할 수 있습니다. '{0}'은(는) {1}에서 지원되지 않습니다.</target>
+        <target state="new">This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</target>
         <note>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndBefore">

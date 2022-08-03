@@ -768,6 +768,18 @@ This method uses runtime marshalling even when runtime marshalling is disabled, 
 |CodeFix|True|
 ---
 
+## [CA1422](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1422): Validate platform compatibility
+
+Using platform dependent API on a component makes the code no longer work across all platforms.
+
+|Item|Value|
+|-|-|
+|Category|Interoperability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA1501](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1501): Avoid excessive inheritance
 
 Deeply nested type hierarchies can be difficult to follow, understand, and maintain. This rule limits analysis to hierarchies in the same module. To fix a violation of this rule, derive the type from a base type that is less deep in the inheritance hierarchy or eliminate some of the intermediate base types.
