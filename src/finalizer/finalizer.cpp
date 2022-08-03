@@ -38,6 +38,39 @@ LExit:
     return hr;
 }
 
+extern "C" HRESULT StrTrimBackslash(LPWSTR* ppwz, LPCWSTR wzSource)
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczResult = NULL;
+
+    int i = lstrlenW(wzSource);
+
+    if (0 < i)
+    {
+        for (i = i - 1; i > 0; --i)
+        {
+            if (L'\\' != wzSource[i])
+            {
+                break;
+            }
+        }
+
+        ++i;
+    }
+
+    hr = StrAllocString(&sczResult, wzSource, i);
+    ExitOnFailure(hr, "Failed to copy result string");
+
+    // Output result
+    *ppwz = sczResult;
+    sczResult = NULL;
+
+LExit:
+    ReleaseStr(sczResult);
+
+    return hr;
+}
+
 extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitecture)
 {
     HRESULT hr = S_OK;
@@ -112,7 +145,7 @@ extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR
         ExitOnFailure(hr, "Failed to get size of key name.");
 
         // Need to remove trailing backslash otherwise PathFile returns an empty string.
-        hr = PathCchRemoveBackslash(sczKeyName, cbKeyName);
+        hr = StrTrimBackslash(&sczKeyName, sczKeyName);
         ExitOnFailure(hr, "Failed to remove backslash.");
 
         hr = StrAllocString(&sczSubKey, PathFile(sczKeyName), 0);
