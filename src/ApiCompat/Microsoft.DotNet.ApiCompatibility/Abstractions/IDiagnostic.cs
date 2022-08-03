@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable enable
+
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// String representing the ID for the object that the diagnostic was created for.
         /// </summary>
-        string ReferenceId { get; }
+        string? ReferenceId { get; }
 
         /// <summary>
         /// String describing the diagnostic.
