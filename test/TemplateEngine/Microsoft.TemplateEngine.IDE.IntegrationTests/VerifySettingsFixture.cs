@@ -10,11 +10,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     {
         public VerifySettingsFixture()
         {
-            Settings = new VerifySettings();
-            Settings.UseDirectory("Approvals");
-        }
+            VerifierSettings.DerivePathInfo(
+                (_, _, type, method) => new(
+                    directory: "Approvals",
+                    typeName: type.Name,
+                    methodName: method.Name));
 
-        internal VerifySettings Settings { get; }
+            // Customize diff output of verifier
+            VerifyDiffPlex.Initialize(OutputType.Compact);
+        }
 
         public void Dispose() { }
     }

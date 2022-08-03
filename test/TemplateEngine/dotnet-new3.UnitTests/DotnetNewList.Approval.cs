@@ -30,7 +30,7 @@ namespace Dotnet_new3.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verifier.Verify(commandResult.StdOut, _verifySettings)
+            return Verify(commandResult.StdOut)
                 .UseTextForParameters("common")
                 .DisableRequireUniquePrefix();
         }
@@ -47,7 +47,7 @@ namespace Dotnet_new3.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verifier.Verify(commandResult.StdOut, _verifySettings);
+            return Verify(commandResult.StdOut);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Dotnet_new3.IntegrationTests
                 .Should()
                 .Fail();
 
-            return Verifier.Verify(commandResult.StdErr, _verifySettings);
+            return Verify(commandResult.StdErr);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Dotnet_new3.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verifier.Verify(commandResult.StdOut, _verifySettings);
+            return Verify(commandResult.StdOut);
         }
     }
 }

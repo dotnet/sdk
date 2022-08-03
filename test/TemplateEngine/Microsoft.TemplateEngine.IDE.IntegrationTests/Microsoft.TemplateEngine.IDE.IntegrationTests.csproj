@@ -6,6 +6,7 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Verify.XUnit" />
+    <PackageReference Include="Verify.DiffPlex" />
   </ItemGroup>
 
   <ItemGroup>

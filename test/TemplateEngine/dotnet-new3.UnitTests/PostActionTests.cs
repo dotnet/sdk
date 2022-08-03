@@ -13,14 +13,12 @@ using Xunit.Abstractions;
 
 namespace Dotnet_new3.IntegrationTests
 {
-    public partial class PostActionTests : IClassFixture<VerifySettingsFixture>
+    public partial class PostActionTests
     {
-        private readonly VerifySettings _verifySettings;
         private readonly ITestOutputHelper _log;
 
-        public PostActionTests(VerifySettingsFixture verifySettings, ITestOutputHelper log)
+        public PostActionTests(ITestOutputHelper log)
         {
-            _verifySettings = verifySettings.Settings;
             _log = log;
         }
 

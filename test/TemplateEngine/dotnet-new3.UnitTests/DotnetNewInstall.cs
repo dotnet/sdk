@@ -14,15 +14,13 @@ using Xunit.Sdk;
 
 namespace Dotnet_new3.IntegrationTests
 {
-    public partial class DotnetNewInstallTests : IClassFixture<DiagnosticFixture>, IClassFixture<VerifySettingsFixture>
+    public partial class DotnetNewInstallTests : IClassFixture<DiagnosticFixture>
     {
-        private readonly VerifySettings _verifySettings;
         private readonly ITestOutputHelper _log;
         private readonly IMessageSink _messageSink;
 
-        public DotnetNewInstallTests(DiagnosticFixture diagnosisFixture, VerifySettingsFixture verifySettings, ITestOutputHelper log)
+        public DotnetNewInstallTests(DiagnosticFixture diagnosisFixture, ITestOutputHelper log)
         {
-            _verifySettings = verifySettings.Settings;
             _log = log;
             _messageSink = diagnosisFixture.DiagnosticSink;
         }
@@ -82,7 +80,7 @@ namespace Dotnet_new3.IntegrationTests
             }
 
             // Install command are expected to output the requested version literaly as they got it on input,
-            //  but otherwise the outputs are expected to be equal 
+            //  but otherwise the outputs are expected to be equal
             string command3Out = command3.StdOut.Replace(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0::*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");
@@ -141,7 +139,7 @@ namespace Dotnet_new3.IntegrationTests
             }
 
             // Install command are expected to output the requested version literaly as they got it on input,
-            //  but otherwise the outputs are expected to be equal 
+            //  but otherwise the outputs are expected to be equal
             string command1Out = command1.StdOut.Replace(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0::5.*",
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0");

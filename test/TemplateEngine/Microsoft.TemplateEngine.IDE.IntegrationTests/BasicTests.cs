@@ -19,15 +19,14 @@ using Xunit;
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     [UsesVerify]
-    public class BasicTests : IClassFixture<PackageManager>, IClassFixture<VerifySettingsFixture>
+    [Collection("Verify Tests")]
+    public class BasicTests : IClassFixture<PackageManager>
     {
         private PackageManager _packageManager;
-        private readonly VerifySettings _verifySettings;
 
-        public BasicTests(PackageManager packageManager, VerifySettingsFixture verifySettings)
+        public BasicTests(PackageManager packageManager)
         {
             _packageManager = packageManager;
-            _verifySettings = verifySettings.Settings;
         }
 
         [Fact]
@@ -197,7 +196,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             string targetFile2 = Path.Combine(output, "MyApp.1.cs");
             Assert.True(File.Exists(targetFile2));
 
-            await Verifier.Verify(File.ReadAllText(targetFile2), _verifySettings);
+            await Verifier.Verify(File.ReadAllText(targetFile2));
         }
     }
 }
