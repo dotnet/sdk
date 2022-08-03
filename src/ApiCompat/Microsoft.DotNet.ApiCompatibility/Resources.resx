@@ -227,10 +227,13 @@
   <data name="CannotAddAttribute" xml:space="preserve">
     <value>Cannot add attribute '{0}' to '{1}'.</value>
   </data>
-  <data name="CannotChangeAttribute" xml:space="preserve">
-    <value>Cannot change argument '{0}' on attribute '{1}'.</value>
+  <data name="CannotChangeAttributeFrom" xml:space="preserve">
+    <value>Cannot change arguments of attribute '{0}' on '{1}' from '{2}'.</value>
   </data>
   <data name="CannotRemoveAttribute" xml:space="preserve">
     <value>Cannot remove attribute '{0}' from '{1}'.</value>
+  </data>
+  <data name="CannotChangeAttributeTo" xml:space="preserve">
+    <value>Cannot change arguments of attribute '{0}' on '{1}' to '{2}'.</value>
   </data>
 </root>

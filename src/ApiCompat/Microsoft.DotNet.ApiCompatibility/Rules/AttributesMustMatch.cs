@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -96,12 +97,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             var leftAttr = new AttributeSet(Settings, left.GetAttributes());
             var rightAttr = new AttributeSet(Settings, right.GetAttributes());
-            reportTwo(left, left.GetAttributes(), right.GetAttributes(), differences);
+            // commenting this out changes the list of differences.
             // reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
         }
 
         private CompatDifference removedDifference(ISymbol containing, AttributeData attr)
         {
+            // TODO: It should say F() not First.
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
             return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, attr.AttributeClass);
         }
@@ -112,9 +114,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, attr.AttributeClass);
         }
 
-        private CompatDifference changedDifference(string arg, AttributeData attr)
+        private CompatDifference changedDifference(string rsc, ISymbol containing, AttributeData attr)
         {
-            string msg = string.Format(Resources.CannotChangeAttribute, arg, attr);
+            var args = attr.ToString();
+            args = args.Substring(args.IndexOf('('));
+            string msg = string.Format(rsc, attr.AttributeClass, containing, args);
             return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, attr.AttributeClass);
         }
 
@@ -132,89 +136,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         private void reportAttributeDifferences(ISymbol containing,
-                                                ImmutableArray<AttributeData> leftAttr,
-                                                ImmutableArray<AttributeData> rightAttr,
-                                                IList<CompatDifference> differences)
-        {
-            // TODO: For duplicate sole names.
-            // TODO: message "expected args _"
-            var len = Math.Min(leftAttr.Length, rightAttr.Length);
-            for (int i = 0; i < len; i++)
-            {
-                if (!Settings.SymbolComparer.Equals(leftAttr[i].AttributeClass, rightAttr[i].AttributeClass))
-                {
-                    differences.Add(removedDifference(containing, leftAttr[i]));
-                    differences.Add(addedDifference(containing, rightAttr[i]));
-                    continue;
-                }
-                var leftArgs = leftAttr[i].ConstructorArguments;
-                var rightArgs = rightAttr[i].ConstructorArguments;
-                var argLen = Math.Min(leftArgs.Length, rightArgs.Length);
-                for (int j = 0; j < argLen; j++)
-                {
-                    if (!leftArgs[j].Equals(rightArgs[j]))
-                    {
-                        differences.Add(changedDifference(j.ToString(), leftAttr[i]));
-                    }
-                }
-                if (leftArgs.Length > rightArgs.Length)
-                {
-                    for (int j = argLen; j < leftArgs.Length; j++)
-                    {
-                        differences.Add(changedDifference(j.ToString(), leftAttr[i]));
-                    }
-                }
-                else if (leftArgs.Length < rightArgs.Length)
-                {
-                    for (int j = argLen; j < rightArgs.Length; j++)
-                    {
-                        differences.Add(changedDifference(j.ToString(), rightAttr[i]));
-                    }
-                }
-                var leftNamed = leftAttr[i].NamedArguments;
-                var rightNamed = rightAttr[i].NamedArguments;
-                var namedLen = Math.Min(leftNamed.Length, rightNamed.Length);
-                for (int j = 0; j < namedLen; j++)
-                {
-                    if (!leftNamed[j].Equals(rightNamed[j]))
-                    {
-                        differences.Add(changedDifference(leftNamed[j].Key, leftAttr[i]));
-                    }
-                }
-                if (leftNamed.Length > rightNamed.Length)
-                {
-                    for (int j = namedLen; j < leftNamed.Length; j++)
-                    {
-                        // Named argument removed
-                        differences.Add(changedDifference(leftNamed[j].Key, leftAttr[i]));
-                    }
-                }
-                else if (leftNamed.Length < rightNamed.Length)
-                {
-                    for (int j = namedLen; j < rightNamed.Length; j++)
-                    {
-                        // Named argument added
-                        differences.Add(changedDifference(rightNamed[j].Key, rightAttr[i]));
-                    }
-                }
-            }
-            if (leftAttr.Length > rightAttr.Length)
-            {
-                for (int j = len; j < leftAttr.Length; j++)
-                {
-                    differences.Add(removedDifference(containing, leftAttr[j]));
-                }
-            }
-            else if (leftAttr.Length < rightAttr.Length)
-            {
-                for (int j = len; j < rightAttr.Length; j++)
-                {
-                    differences.Add(addedDifference(containing, rightAttr[j]));
-                }
-            }
-        }
-
-        private void reportTwo(ISymbol containing,
                                                 ImmutableArray<AttributeData> left,
                                                 ImmutableArray<AttributeData> right,
                                                 IList<CompatDifference> differences)
@@ -242,21 +163,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         var seen = false;
                         for (int j = 0; j < rgrp._attributes.Count; j++)
                         {
-                            if (!rgrp._seen[j])
+                            var rem = rgrp._attributes[j];
+                            if (attributeEquals(lem, rem))
                             {
-                                var rem = rgrp._attributes[j];
-                                if (attributeEquals(lem, rem))
-                                {
-                                    rgrp._seen[j] = true;
-                                    seen = true;
-                                    break;
-                                }
+                                rgrp._seen[j] = true;
+                                seen = true;
+                                break;
                             }
                         }
                         if (!seen)
                         {
+                            differences.Add(changedDifference(Resources.CannotChangeAttributeFrom, containing, lem));
                             // issue lem exists on left but not right.
-                            differences.Add(new CompatDifference(DiagnosticIds.CannotChangeAttribute, "LEM exists on left but not right", DifferenceType.Changed, lem.AttributeClass));
                         }
                     }
                     for (int i = 0; i < rgrp._attributes.Count; i++)
@@ -265,7 +183,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // issue rem exists on right but not left.
                             var rem = rgrp._attributes[i];
-                            differences.Add(new CompatDifference(DiagnosticIds.CannotChangeAttribute, "REM exists on right but not left", DifferenceType.Changed, rem.AttributeClass));
+                            differences.Add(changedDifference(Resources.CannotChangeAttributeTo, containing, rem));
                         }
                     }
                 }
@@ -288,8 +206,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private void RunOnMemberSymbol(ISymbol left, ISymbol right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, string leftName, string rightName, IList<CompatDifference> differences)
         {
-            reportTwo(left, left.GetAttributes(), right.GetAttributes(), differences);
-            // reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
+            reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
         }
     }
 }

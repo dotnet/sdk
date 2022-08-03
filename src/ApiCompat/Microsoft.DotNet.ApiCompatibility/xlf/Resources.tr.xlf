@@ -72,9 +72,14 @@
         <target state="translated">Sanal anahtar sözcük, '{0}' üyesine eklenemiyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotChangeAttribute">
-        <source>Cannot change argument '{0}' on attribute '{1}'.</source>
-        <target state="new">Cannot change argument '{0}' on attribute '{1}'.</target>
+      <trans-unit id="CannotChangeAttributeFrom">
+        <source>Cannot change arguments of attribute '{0}' on '{1}' from '{2}'.</source>
+        <target state="new">Cannot change arguments of attribute '{0}' on '{1}' from '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotChangeAttributeTo">
+        <source>Cannot change arguments of attribute '{0}' on '{1}' to '{2}'.</source>
+        <target state="new">Cannot change arguments of attribute '{0}' on '{1}' to '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveAttribute">

@@ -52,6 +52,7 @@ namespace CompatTests
 
     [DllImport(""user32.dll"", SetLastError=true, ExactSpelling=false)]
     public static extern void G();
+
     [Foo]
     [Bar]
     [Bar]
@@ -71,6 +72,7 @@ namespace CompatTests
 
     [DllImport(""user32.dll"", SetLastError=true, ExactSpelling=true)]
     public static extern void G();
+
     [Bar]
     public void F() {}
   }
