@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p == _packageExecutablePath.Path);
+                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithHome);
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()

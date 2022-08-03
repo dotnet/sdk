@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.ShellShim
                 return;
             }
 
-            var script = $"export PATH=\"$PATH:{_packageExecutablePath.PathWithDollar}\"";
+            var script = $"export PATH=\"$PATH:{_packageExecutablePath.PathWithHome}\"";
             _fileSystem.WriteAllText(DotnetCliToolsProfilePath, script);
         }
 

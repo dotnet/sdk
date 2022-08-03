@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .File
                 .ReadAllText(LinuxEnvironmentPath.DotnetCliToolsProfilePath)
                 .Should()
-                .Be($"export PATH=\"$PATH:{toolsPath.PathWithDollar}\"");
+                .Be($"export PATH=\"$PATH:{toolsPath.PathWithHome}\"");
         }
     }
 }

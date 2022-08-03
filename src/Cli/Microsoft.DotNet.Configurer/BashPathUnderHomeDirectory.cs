@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Configurer
 
         public string PathWithTilde => $"~/{_pathRelativeToHome}";
 
-        public string PathWithDollar => $"$HOME/{_pathRelativeToHome}";
+        public string PathWithHome => $"$HOME/{_pathRelativeToHome}";
 
         public string Path => $"{_fullHomeDirectoryPath}/{_pathRelativeToHome}";
     }

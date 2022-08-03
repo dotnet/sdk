@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Tests
 
             File.Exists(profiled).Should().BeTrue();
             File.ReadAllText(profiled).Should().Be(
-                $"export PATH=\"$PATH:{CliFolderPathCalculator.ToolsShimPathInUnix.PathWithDollar}\"");
+                $"export PATH=\"$PATH:{CliFolderPathCalculator.ToolsShimPathInUnix.PathWithHome}\"");
         }
 
         [MacOsOnlyFact]
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Tests
             command.Execute("internal-reportinstallsuccess", "test").Should().Pass();
 
             File.Exists(pathsd).Should().BeTrue();
-            File.ReadAllText(pathsd).Should().Be(CliFolderPathCalculator.ToolsShimPathInUnix.PathWithTilde);
+            File.ReadAllText(pathsd).Should().Be(CliFolderPathCalculator.ToolsShimPathInUnix.PathWithHome);
         }
 
         private string GetDotnetVersion()
