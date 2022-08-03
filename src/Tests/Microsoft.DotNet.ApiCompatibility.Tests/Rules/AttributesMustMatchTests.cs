@@ -43,6 +43,8 @@ namespace CompatTests
   using System;
   using System.Runtime.InteropServices;
   internal class FooAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   internal class BarAttribute : Attribute { }
   [Foo]
   [Bar]
@@ -51,6 +53,7 @@ namespace CompatTests
     [DllImport(""user32.dll"", SetLastError=true, ExactSpelling=false)]
     public static extern void G();
     [Foo]
+    [Bar]
     [Bar]
     public void F() {}
   }
