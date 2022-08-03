@@ -64,7 +64,7 @@
 # Area-Watch
 /src/Assets/TestProjects/Watch*/     @tmat @mkArtakMSFT
 /src/Tests/dotnet-watch.Tests/       @tmat @mkArtakMSFT
-/src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @mkArtakMSFT
+/src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/*   @tmat @mkArtakMSFT
 /src/BuiltInTools/BrowserRefresh   @mkArtakMSFT
 
