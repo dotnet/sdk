@@ -411,7 +411,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
             Dictionary<string, ITaskItem> updatedAssets)
         {
             var processed = new List<string>();
-            var additionalAssetsToUpdate = new List<ITaskItem>();
+            var runtimeAssetsToUpdate = new List<ITaskItem>();
             foreach (var kvp in compressedRepresentations)
             {
                 var compressedAsset = kvp.Value;
@@ -423,7 +423,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         Log.LogMessage(MessageImportance.Low, "Related assembly for '{0}' was not updated and the compressed asset can be reused.", relatedAsset);
                         var newCompressedAsset = new TaskItem(compressedAsset);
                         ApplyPublishProperties(newCompressedAsset);
-                        additionalAssetsToUpdate.Add(newCompressedAsset);
+                        runtimeAssetsToUpdate.Add(newCompressedAsset);
                     }
                     else
                     {
@@ -440,7 +440,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 compressedRepresentations.Remove(element);
             }
 
-            return additionalAssetsToUpdate;
+            return runtimeAssetsToUpdate;
         }
 
         private static void UpdateRelatedAssetProperty(ITaskItem asset, TaskItem newAsset, Dictionary<string, ITaskItem> updatedAssetsMap)

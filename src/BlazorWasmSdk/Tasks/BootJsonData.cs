@@ -104,7 +104,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// is up to the user.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public Dictionary<string,AdditionalAsset> additionalAssets { get; set; }
+        public Dictionary<string,AdditionalAsset> runtimeAssets { get; set; }
 
     }
 

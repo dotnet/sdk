@@ -205,8 +205,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
                     if (!string.IsNullOrEmpty(behavior))
                     {
-                        resourceData.additionalAssets ??= new Dictionary<string, AdditionalAsset>();
-                        AddToAdditionalResources(resource, resourceData.additionalAssets, resourceName, behavior);
+                        resourceData.runtimeAssets ??= new Dictionary<string, AdditionalAsset>();
+                        AddToAdditionalResources(resource, resourceData.runtimeAssets, resourceName, behavior);
                     }
                 }
 
