@@ -1899,12 +1899,12 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">Ce site d'appel est accessible sur toutes les plateformes. '{0}' n'est pas pris en charge sur {1}.</target>
         <note>This call site is reachable on all platforms. 'UnsupportedOnWindows()' is unsupported on: 'windows'</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityUnsupportedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is unsupported on: {1}.</target>
+        <target state="translated">Ce site d'appel est accessible sur {2}. '{0}' n'est pas pris en charge sur {1}.</target>
         <note>This call site is reachable on: 'windows', 'browser'. 'UnsupportedOnBrowser()' is unsupported on: 'browser'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityVersionAndBefore">
