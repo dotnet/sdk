@@ -72,14 +72,9 @@
         <target state="translated">Impossible d'ajouter le mot-clé virtuel au membre '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotChangeAttributeFrom">
-        <source>Cannot change arguments of attribute '{0}' on '{1}' from '{2}'.</source>
-        <target state="new">Cannot change arguments of attribute '{0}' on '{1}' from '{2}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CannotChangeAttributeTo">
-        <source>Cannot change arguments of attribute '{0}' on '{1}' to '{2}'.</source>
-        <target state="new">Cannot change arguments of attribute '{0}' on '{1}' to '{2}'.</target>
+      <trans-unit id="CannotChangeAttribute">
+        <source>Cannot change arguments of attribute '{0}' on '{1}'.</source>
+        <target state="new">Cannot change arguments of attribute '{0}' on '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveAttribute">

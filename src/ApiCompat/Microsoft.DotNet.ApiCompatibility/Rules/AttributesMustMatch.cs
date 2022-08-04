@@ -103,23 +103,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private CompatDifference removedDifference(ISymbol containing, AttributeData attr)
         {
-            // TODO: It should say F() not First.
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
+            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
         private CompatDifference addedDifference(ISymbol containing, AttributeData attr)
         {
             string msg = string.Format(Resources.CannotAddAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
+            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
-        private CompatDifference changedDifference(string rsc, ISymbol containing, AttributeData attr)
+        private CompatDifference changedDifference(ISymbol containing, AttributeData attr)
         {
-            var args = attr.ToString();
-            args = args.Substring(args.IndexOf('('));
-            string msg = string.Format(rsc, attr.AttributeClass, containing, args);
-            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
+            string msg = string.Format(Resources.CannotChangeAttribute, attr.AttributeClass, containing);
+            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
         private bool attributeEquals(AttributeData left, AttributeData right)
@@ -173,7 +170,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         }
                         if (!seen)
                         {
-                            differences.Add(changedDifference(Resources.CannotChangeAttributeFrom, containing, lem));
+                            differences.Add(changedDifference(containing, lem));
                             // issue lem exists on left but not right.
                         }
                     }
@@ -183,7 +180,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // issue rem exists on right but not left.
                             var rem = rgrp._attributes[i];
-                            differences.Add(changedDifference(Resources.CannotChangeAttributeTo, containing, rem));
+                            differences.Add(changedDifference(containing, rem));
                         }
                     }
                 }
