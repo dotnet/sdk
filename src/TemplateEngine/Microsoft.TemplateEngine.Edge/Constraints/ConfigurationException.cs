@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints

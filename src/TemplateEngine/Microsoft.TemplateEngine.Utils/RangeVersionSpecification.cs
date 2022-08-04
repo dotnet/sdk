@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System.Text;
-
 namespace Microsoft.TemplateEngine.Utils
 {
     public class RangeVersionSpecification : IVersionSpecification

@@ -4,7 +4,6 @@
 #nullable enable
 
 using FluentAssertions;
-using FluentAssertions.Common;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests

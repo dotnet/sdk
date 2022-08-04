@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Dotnet_new3.IntegrationTests

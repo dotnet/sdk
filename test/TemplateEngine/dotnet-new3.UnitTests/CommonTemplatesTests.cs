@@ -7,7 +7,6 @@ using System.Xml.Linq;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Dotnet_new3.IntegrationTests

@@ -7,8 +7,6 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyTests;
-using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 

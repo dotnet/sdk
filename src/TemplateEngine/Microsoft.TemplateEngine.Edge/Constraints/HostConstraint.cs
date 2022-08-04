@@ -6,14 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-using NuGet.Configuration;
 
 namespace Microsoft.TemplateEngine.Edge.Constraints
 {

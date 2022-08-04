@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 

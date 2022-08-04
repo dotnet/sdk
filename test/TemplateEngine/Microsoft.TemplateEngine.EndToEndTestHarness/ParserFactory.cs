@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.EndToEndTestHarness

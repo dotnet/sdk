@@ -3,12 +3,9 @@
 
 using System.Runtime.InteropServices;
 using FluentAssertions;
-using Microsoft.Build.Evaluation;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyTests;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Dotnet_new3.IntegrationTests

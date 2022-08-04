@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

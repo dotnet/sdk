@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.IDE.IntegrationTests.Utils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using VerifyTests;
 using VerifyXunit;
 using Xunit;
 

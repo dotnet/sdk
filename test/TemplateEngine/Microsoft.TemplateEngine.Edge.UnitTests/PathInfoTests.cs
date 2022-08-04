@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;

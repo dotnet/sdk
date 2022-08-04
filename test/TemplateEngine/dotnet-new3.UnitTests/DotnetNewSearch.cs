@@ -3,9 +3,6 @@
 
 using System.Text;
 using Microsoft.NET.TestFramework.Assertions;
-using VerifyTests;
-using VerifyXunit;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Dotnet_new3.IntegrationTests

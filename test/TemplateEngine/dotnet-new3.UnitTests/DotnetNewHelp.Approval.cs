@@ -4,8 +4,6 @@
 using FluentAssertions;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyXunit;
-using Xunit;
 
 namespace Dotnet_new3.IntegrationTests
 {

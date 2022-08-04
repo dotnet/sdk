@@ -5,8 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
-using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Edge;
 
 namespace Dotnet_new3
 {

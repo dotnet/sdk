@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Help;
-using System.CommandLine.Parsing;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;

@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using NuGet.Packaging;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {

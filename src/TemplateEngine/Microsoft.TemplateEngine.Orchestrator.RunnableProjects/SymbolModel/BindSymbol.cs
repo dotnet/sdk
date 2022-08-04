@@ -3,10 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
-using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 

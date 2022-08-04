@@ -3,9 +3,6 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.TemplateEngine.Utils;
 using NuGet.Versioning;
 
