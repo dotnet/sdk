@@ -66,7 +66,7 @@
 /src/Tests/dotnet-watch.Tests/       @tmat @mkArtakMSFT
 /src/Tests/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/       @dotnet/aspnet-blazor-eng
 /src/BuiltInTools/*   @tmat @mkArtakMSFT
-/src/BuiltInTools/BrowserRefresh   @mkArtakMSFT
+/src/BuiltInTools/BrowserRefresh   @dotnet/aspnet-blazor-eng
 
 # Compatibility tools owned by runtime team
 # Area-Compatibility
