@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         private Dictionary<ISymbol, MemberMapper>? _members;
 
         /// <summary>
-        /// The containg type of this type. Null if the type isn't nested.
+        /// The containing type of this type. Null if the type isn't nested.
         /// </summary>
         internal TypeMapper? ContainingType { get; }
 
