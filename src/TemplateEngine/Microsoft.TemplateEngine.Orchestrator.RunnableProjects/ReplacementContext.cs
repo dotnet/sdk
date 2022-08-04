@@ -3,7 +3,7 @@
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class ReplacementContext : IReplacementContext
+    internal class ReplacementContext
     {
         internal ReplacementContext(string before, string after)
         {

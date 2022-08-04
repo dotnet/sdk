@@ -1,5 +1,4 @@
-﻿Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.EvaluateCondition(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> bool
-Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
+﻿Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
 Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Logger.get -> Microsoft.Extensions.Logging.ILogger!
 Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.VariableFormatString.get -> string!

@@ -41,13 +41,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal static IReadOnlyList<IReplacementContext> ReadReplacementContexts(JObject jObject)
+        internal static IReadOnlyList<ReplacementContext> ReadReplacementContexts(JObject jObject)
         {
             JArray onlyIf = jObject.Get<JArray>("onlyIf");
 
             if (onlyIf != null)
             {
-                List<IReplacementContext> contexts = new List<IReplacementContext>();
+                List<ReplacementContext> contexts = new List<ReplacementContext>();
                 foreach (JToken entry in onlyIf.Children())
                 {
                     if (!(entry is JObject x))
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             else
             {
-                return Array.Empty<IReplacementContext>();
+                return Array.Empty<ReplacementContext>();
             }
         }
     }

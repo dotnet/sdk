@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<PostActionModel> PostActionModels { get; }
 
-        IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; }
+        IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; }
 
         void Evaluate(IVariableCollection rootVariableCollection);
 

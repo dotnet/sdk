@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         public BaseReplaceSymbol(string name, string? replaces) : base(name)
         {
-            ReplacementContexts = Array.Empty<IReplacementContext>();
+            ReplacementContexts = Array.Empty<ReplacementContext>();
             Replaces = replaces;
         }
 
@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         /// <summary>
         /// Gets the replacement contexts that determine when this symbol is allowed to do replacement operations.
         /// </summary>
-        internal IReadOnlyList<IReplacementContext> ReplacementContexts { get; }
+        internal IReadOnlyList<ReplacementContext> ReplacementContexts { get; }
 
         /// <summary>
         /// Gets the part of the file name that should be replaced with the value of this symbol.

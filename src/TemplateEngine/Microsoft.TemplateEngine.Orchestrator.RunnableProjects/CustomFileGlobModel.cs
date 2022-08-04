@@ -8,11 +8,11 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class CustomFileGlobModel : ConditionedConfigurationElementBase, ICustomFileGlobModel
+    internal class CustomFileGlobModel : ConditionedConfigurationElementBase
     {
         public string Glob { get; set; }
 
-        public IReadOnlyList<ICustomOperationModel> Operations { get; set; }
+        public IReadOnlyList<CustomOperationModel> Operations { get; set; }
 
         // TODO: reference to built-in conditional config ???
 
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IVariableConfig variableConfig = VariableConfig.DefaultVariableSetup();
 
             // setup the custom operations
-            List<ICustomOperationModel> customOpsForGlob = new List<ICustomOperationModel>();
+            List<CustomOperationModel> customOpsForGlob = new List<CustomOperationModel>();
             if (globData.TryGetValue(nameof(Operations), StringComparison.OrdinalIgnoreCase, out JToken operationData))
             {
                 foreach (JObject operationConfig in (JArray)operationData)

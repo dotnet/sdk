@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
-namespace Microsoft.TemplateEngine.Core.Contracts
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IGlobalRunConfig
+    internal interface IGlobalRunConfig
     {
         IReadOnlyList<IOperationProvider> Operations { get; }
 
@@ -17,6 +19,6 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IReadOnlyList<IReplacementTokens> Replacements { get; }
 
-        IReadOnlyList<ICustomOperationModel> CustomOperations { get; }
+        IReadOnlyList<CustomOperationModel> CustomOperations { get; }
     }
 }

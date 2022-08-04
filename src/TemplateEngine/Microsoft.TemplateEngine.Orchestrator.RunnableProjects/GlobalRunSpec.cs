@@ -152,20 +152,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<ICustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
+        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<CustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
         {
             ITemplateEngineHost host = templateRoot.MountPoint.EnvironmentSettings.Host;
             List<IOperationProvider> customOperations = new List<IOperationProvider>();
 
-            foreach (ICustomOperationModel opModelUntyped in customModel)
+            foreach (CustomOperationModel opModel in customModel)
             {
-                CustomOperationModel opModel = opModelUntyped as CustomOperationModel;
-                if (opModel == null)
-                {
-                    host.Logger.LogWarning($"Operation type = [{opModelUntyped.Type}] could not be cast as a CustomOperationModel");
-                    continue;
-                }
-
                 string opType = opModel.Type;
                 string condition = opModel.Condition;
 

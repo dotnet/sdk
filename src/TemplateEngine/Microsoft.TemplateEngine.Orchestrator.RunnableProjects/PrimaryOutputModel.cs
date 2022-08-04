@@ -7,15 +7,15 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class CreationPathModel : ConditionedConfigurationElementBase, ICreationPathModel
+    internal class PrimaryOutputModel : ConditionedConfigurationElementBase
     {
         public string PathOriginal { get; set; }
 
         public string PathResolved { get; set; }
 
-        internal static IReadOnlyList<ICreationPathModel> ListFromJArray(JArray jsonData)
+        internal static IReadOnlyList<PrimaryOutputModel> ListFromJArray(JArray jsonData)
         {
-            List<ICreationPathModel> modelList = new List<ICreationPathModel>();
+            List<PrimaryOutputModel> modelList = new List<PrimaryOutputModel>();
 
             if (jsonData == null)
             {
@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             foreach (JToken pathInfo in jsonData)
             {
-                ICreationPathModel pathModel = new CreationPathModel()
+                PrimaryOutputModel pathModel = new PrimaryOutputModel()
                 {
                     PathOriginal = pathInfo.ToString("path").NormalizePath(),
                     Condition = pathInfo.ToString("condition")

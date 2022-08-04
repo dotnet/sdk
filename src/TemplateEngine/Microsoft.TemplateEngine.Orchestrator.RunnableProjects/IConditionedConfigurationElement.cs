@@ -3,12 +3,13 @@
 
 #nullable enable
 
+using System;
 using Microsoft.Extensions.Logging;
-using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Core.Contracts;
 
-namespace Microsoft.TemplateEngine.Core.Contracts
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    public interface IConditionedConfigurationElement
+    internal interface IConditionedConfigurationElement
     {
         /// <summary>
         /// Gets the condition string to be evaluated.
@@ -17,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         /// <summary>
         /// Gets the cached result of the evaluation.
-        /// Make sure <see cref="EvaluateCondition(IEngineEnvironmentSettings, IVariableCollection)"/> is called
+        /// Make sure <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> is called
         /// at least once before accessing this variable. Otherwise, <see cref="InvalidOperationException"/> will be thrown.
         /// </summary>
         bool ConditionResult { get; }

@@ -17,6 +17,7 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
@@ -126,7 +127,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<PostActionModel> PostActionModels => _configuration.PostActionModels;
 
-        public IReadOnlyList<ICreationPathModel> PrimaryOutputs => _configuration.PrimaryOutputs;
+        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs => _configuration.PrimaryOutputs;
 
         public IFile SourceFile => _sourceFile ?? throw new InvalidOperationException("Source file is not initialized, are you using test constructor?");
 
@@ -299,7 +300,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     // put the custom configs first in the list
                     HashSet<string> processedGlobs = new HashSet<string>();
 
-                    foreach (ICustomFileGlobModel customGlobModel in _configuration.SpecialCustomOperations)
+                    foreach (CustomFileGlobModel customGlobModel in _configuration.SpecialCustomOperations)
                     {
                         if (customGlobModel.ConditionResult)
                         {
@@ -375,7 +376,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // evaluate the file glob (specials) conditions
             // the result is needed for SpecialOperationConfig
-            foreach (ICustomFileGlobModel fileGlobModel in _configuration.SpecialCustomOperations)
+            foreach (CustomFileGlobModel fileGlobModel in _configuration.SpecialCustomOperations)
             {
                 fileGlobModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
             }
@@ -385,7 +386,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sources = EvaluateSources(rootVariableCollection, resolvedNameParamValue);
 
             // evaluate the conditions and resolve the paths for the PrimaryOutputs
-            foreach (ICreationPathModel pathModel in _configuration.PrimaryOutputs)
+            foreach (PrimaryOutputModel pathModel in _configuration.PrimaryOutputs)
             {
                 pathModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
 
@@ -683,7 +684,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return filenameReplacements;
         }
 
-        private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, ICustomFileGlobModel? customGlobModel = null)
+        private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, CustomFileGlobModel? customGlobModel = null)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
 
@@ -777,14 +778,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            IReadOnlyList<ICustomOperationModel> customOperationConfig;
+            IReadOnlyList<CustomOperationModel> customOperationConfig;
             if (customGlobModel != null && customGlobModel.Operations != null)
             {
                 customOperationConfig = customGlobModel.Operations;
             }
             else
             {
-                customOperationConfig = new List<ICustomOperationModel>();
+                customOperationConfig = new List<CustomOperationModel>();
             }
 
             foreach (IOperationProvider p in operations.ToList())
@@ -817,7 +818,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             TokenConfig replacementConfig = replaces.TokenConfigBuilder();
             if (symbol.ReplacementContexts.Count > 0)
             {
-                foreach (IReplacementContext context in symbol.ReplacementContexts)
+                foreach (ReplacementContext context in symbol.ReplacementContexts)
                 {
                     TokenConfig builder = replacementConfig;
                     if (!string.IsNullOrEmpty(context.OnlyIfAfter))

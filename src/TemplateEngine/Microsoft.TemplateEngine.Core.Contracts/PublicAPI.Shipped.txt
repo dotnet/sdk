@@ -1,16 +1,8 @@
 ﻿#nullable enable
-Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement
-Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.Condition.get -> string?
-Microsoft.TemplateEngine.Core.Contracts.IConditionedConfigurationElement.ConditionResult.get -> bool
-Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel
-Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel
 Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
 Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
-Microsoft.TemplateEngine.Core.Contracts.IEnvironmentInfo
-Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig
 Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
 Microsoft.TemplateEngine.Core.Contracts.IKeysChangedEventArgs
-Microsoft.TemplateEngine.Core.Contracts.IMacroConfig
 Microsoft.TemplateEngine.Core.Contracts.IOperation
 Microsoft.TemplateEngine.Core.Contracts.IOperation.IsInitialStateOn.get -> bool
 Microsoft.TemplateEngine.Core.Contracts.IOperationProvider
@@ -45,12 +37,6 @@ Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
 Microsoft.TemplateEngine.Core.Contracts.IVariableConfig.Expand.get -> bool
 Microsoft.TemplateEngine.Core.Contracts.KeysChangedEventHander
 Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
-~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.FlagPrefix.get -> string
-~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.Glob.get -> string
-~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel>
-~Microsoft.TemplateEngine.Core.Contracts.ICustomFileGlobModel.VariableFormat.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
-~Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel.Condition.get -> string
-~Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel.Type.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.Encoding.get -> System.Text.Encoding
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.LineEndings.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig.this[int index].get -> object
@@ -64,12 +50,6 @@ Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.VariableFormatString.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IEngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.ComputedMacros.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IMacroConfig>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.CustomOperations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.ICustomOperationModel>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Macros.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IMacroConfig>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Operations.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.Replacements.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens>
-~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunConfig.VariableSetup.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableConfig
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.CopyOnly.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Exclude.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.IgnoreFileNames.get -> System.Collections.Generic.IReadOnlyList<string>
@@ -78,8 +58,6 @@ Microsoft.TemplateEngine.Core.Contracts.ValueReadEventHander
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.RootVariableCollection.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Special.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher, Microsoft.TemplateEngine.Core.Contracts.IRunSpec>>
 ~Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.TryGetTargetRelPath(string sourceRelPath, out string targetRelPath) -> bool
-~Microsoft.TemplateEngine.Core.Contracts.IMacroConfig.Type.get -> string
-~Microsoft.TemplateEngine.Core.Contracts.IMacroConfig.VariableName.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, System.IO.Stream target) -> int
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.Id.get -> string
 ~Microsoft.TemplateEngine.Core.Contracts.IOperation.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>

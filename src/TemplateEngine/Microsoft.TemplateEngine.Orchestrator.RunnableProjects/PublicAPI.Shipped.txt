@@ -1,6 +1,5 @@
 ﻿#nullable enable
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMacro
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMacro.CreateConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IMacroConfig! rawConfig) -> Microsoft.TemplateEngine.Core.Contracts.IMacroConfig!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.Type.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig

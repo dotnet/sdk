@@ -10,9 +10,9 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
-using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
+using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             // Custom operations for specials
             IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(SpecialCustomOperations));
-            List<ICustomFileGlobModel> specialCustomSetup = new List<ICustomFileGlobModel>();
+            List<CustomFileGlobModel> specialCustomSetup = new List<CustomFileGlobModel>();
 
             foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
             {
