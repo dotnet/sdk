@@ -98,20 +98,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             var leftAttr = new AttributeSet(Settings, left.GetAttributes());
             var rightAttr = new AttributeSet(Settings, right.GetAttributes());
             // commenting this out changes the list of differences.
-            // reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
+            reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
         }
 
         private CompatDifference removedDifference(ISymbol containing, AttributeData attr)
         {
             // TODO: It should say F() not First.
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, attr.AttributeClass);
+            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
         }
 
         private CompatDifference addedDifference(ISymbol containing, AttributeData attr)
         {
             string msg = string.Format(Resources.CannotAddAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, attr.AttributeClass);
+            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
         }
 
         private CompatDifference changedDifference(string rsc, ISymbol containing, AttributeData attr)
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             var args = attr.ToString();
             args = args.Substring(args.IndexOf('('));
             string msg = string.Format(rsc, attr.AttributeClass, containing, args);
-            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, attr.AttributeClass);
+            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, containing.GetDocumentationCommentId() + ":" + attr.AttributeClass.GetDocumentationCommentId());
         }
 
         private bool attributeEquals(AttributeData left, AttributeData right)
