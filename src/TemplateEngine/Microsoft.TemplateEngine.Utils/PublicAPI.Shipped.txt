@@ -1,6 +1,5 @@
 ﻿#nullable enable
 Microsoft.TemplateEngine.Utils.ArrayExtensions
-Microsoft.TemplateEngine.Utils.BaselineCacheInfo
 Microsoft.TemplateEngine.Utils.CacheParameter
 Microsoft.TemplateEngine.Utils.CacheParameter.CacheParameter() -> void
 Microsoft.TemplateEngine.Utils.CacheParameter.DataType.get -> string?

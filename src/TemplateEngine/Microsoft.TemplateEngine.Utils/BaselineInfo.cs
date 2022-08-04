@@ -6,9 +6,9 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Utils
 {
-    public class BaselineCacheInfo : IBaselineInfo
+    public class BaselineInfo : IBaselineInfo
     {
-        public BaselineCacheInfo(IReadOnlyDictionary<string, string> defaultOverrides, string? description = null)
+        public BaselineInfo(IReadOnlyDictionary<string, string> defaultOverrides, string? description = null)
         {
             DefaultOverrides = defaultOverrides;
             Description = description;

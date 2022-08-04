@@ -1,7 +1,8 @@
 ﻿const Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparator = '|' -> char
-Microsoft.TemplateEngine.Utils.BaselineCacheInfo.BaselineCacheInfo(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! defaultOverrides, string? description = null) -> void
-Microsoft.TemplateEngine.Utils.BaselineCacheInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
-Microsoft.TemplateEngine.Utils.BaselineCacheInfo.Description.get -> string?
+Microsoft.TemplateEngine.Utils.BaselineInfo
+Microsoft.TemplateEngine.Utils.BaselineInfo.BaselineInfo(System.Collections.Generic.IReadOnlyDictionary<string!, string!>! defaultOverrides, string? description = null) -> void
+Microsoft.TemplateEngine.Utils.BaselineInfo.DefaultOverrides.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Utils.BaselineInfo.Description.get -> string?
 Microsoft.TemplateEngine.Utils.CombinedList<T>.CombinedList(System.Collections.Generic.IReadOnlyList<T>! first, System.Collections.Generic.IReadOnlyList<T>! second) -> void
 Microsoft.TemplateEngine.Utils.CombinedList<T>.GetEnumerator() -> System.Collections.Generic.IEnumerator<T>!
 Microsoft.TemplateEngine.Utils.ContentGenerationException.ContentGenerationException(string! message) -> void

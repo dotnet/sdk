@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                             continue;
                         }
 
-                        IBaselineInfo baseline = new BaselineCacheInfo(defaultOverrides, item.Value.ToString(nameof(IBaselineInfo.Description)));
+                        IBaselineInfo baseline = new BaselineInfo(defaultOverrides, item.Value.ToString(nameof(IBaselineInfo.Description)));
                         baselineInfo.Add(item.Name, baseline);
                     }
                     info.BaselineInfo = baselineInfo;

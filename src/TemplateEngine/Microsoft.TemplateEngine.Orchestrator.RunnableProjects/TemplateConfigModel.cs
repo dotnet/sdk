@@ -448,11 +448,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                BaselineInfo baseline = new BaselineInfo
-                {
-                    Description = obj.ToString(nameof(baseline.Description)),
-                    DefaultOverrides = obj.Get<JObject>(nameof(baseline.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>()
-                };
+                var defaultOverrides = obj.Get<JObject>(nameof(Utils.BaselineInfo.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>();
+
+                BaselineInfo baseline = new BaselineInfo(defaultOverrides, obj.ToString(nameof(baseline.Description)));
 
                 allBaselines[property.Name] = baseline;
             }
