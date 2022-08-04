@@ -57,7 +57,7 @@ This allows for easier authoring of nested generated conditions.
 
 Information about multi-choice symbols can be found in [Reference for `template.json`](Reference-for-template.json.md#multichoice-symbols-specifics)
 
-Comparison to multichoice symbol results in operation checking of a presence of any value of a multichoice parameter (meaning `==` operator behaves as `contains()` operation):
+Comparison to multichoice symbol results in operation checking of a presence of any value of a multichoice parameter - meaning `==` operator behaves as `contains()` operation. Example (sourced from [integration test](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.TestTemplates/test_templates/TemplateWithMultiValueChoice)):
 
 `template.json`:
 ```json

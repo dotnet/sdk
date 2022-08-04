@@ -75,15 +75,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async void InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
         {
             string sourceSnippet = @"
-//#if( ChoiceParam == FirstChoice )
+#if( ChoiceParam == FirstChoice )
 FIRST
-//#elseif (ChoiceParam == SecondChoice )
+#elseif (ChoiceParam == SecondChoice )
 SECOND
-//#elseif (ChoiceParam == ThirdChoice )
+#elseif (ChoiceParam == ThirdChoice )
 THIRD
-//#else
+#else
 UNKNOWN
-//#endif
+#endif
 ";
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
@@ -135,17 +135,17 @@ UNKNOWN
             //
 
             string sourceSnippet = @"
-//#if( A )
+#if( A )
 A,
-//#endif
+#endif
 
-//#if( B )
+#if( B )
 B,
-//#endif
+#endif
 
-//#if( C )
+#if( C )
 C
-//#endif
+#endif
 ";
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
@@ -209,17 +209,17 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             //
 
             string sourceSnippet = @"
-//#if( A )
+#if( A )
 A,
-//#endif
+#endif
 
-//#if( B )
+#if( B )
 B,
-//#endif
+#endif
 
-//#if( C )
+#if( C )
 C
-//#endif
+#endif
 ";
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
@@ -282,17 +282,17 @@ C
             //
 
             string sourceSnippet = @"
-//#if( A )
+#if( A )
 A,
-//#endif
+#endif
 
-//#if( B )
+#if( B )
 B,
-//#endif
+#endif
 
-//#if( C )
+#if( C )
 C
-//#endif
+#endif
 ";
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
@@ -366,17 +366,17 @@ C
             //
 
             string sourceSnippet = @"
-//#if( parA )
+#if( parA )
 parA,
-//#endif
+#endif
 
-//#if( parB )
+#if( parB )
 parB,
-//#endif
+#endif
 
-//#if( C )
+#if( C )
 C
-//#endif
+#endif
 ";
 
             List<InputDataBag> parameters = new List<InputDataBag>(
@@ -414,7 +414,7 @@ C
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet);
 
             //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+            templateSourceFiles.Add("sourceFile.cs", sourceSnippet);
 
             //
             // Dependencies preparation and mounting
@@ -491,7 +491,7 @@ C
                 res.ErrorMessage.Should().BeNull();
                 res.OutputBaseDirectory.Should().NotBeNullOrEmpty();
                 string resultContent = _engineEnvironmentSettings.Host.FileSystem
-                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, "sourceFile")).Trim();
+                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, "sourceFile.cs")).Trim();
                 resultContent.Should().BeEquivalentTo(expectedOutput);
             }
         }
