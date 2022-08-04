@@ -17,8 +17,8 @@ using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
@@ -27,7 +27,7 @@ using Newtonsoft.Json.Linq;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     /// <summary>
-    /// The class maps template.json configuration read in <see cref="SimpleConfigModel"/> to runnable configuration.
+    /// The class maps template.json configuration read in <see cref="TemplateConfigModel"/> to runnable configuration.
     /// </summary>
     internal partial class RunnableProjectConfig : IRunnableProjectConfig
     {
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger<RunnableProjectConfig> _logger;
 
-        private readonly SimpleConfigModel _configuration;
+        private readonly TemplateConfigModel _configuration;
         private readonly Dictionary<Guid, string> _guidToGuidPrefixMap = new Dictionary<Guid, string>();
 
         private readonly IGenerator _generator;
@@ -78,9 +78,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 configModifiers = new SimpleConfigModifiers(baselineName!);
             }
-            _configuration = SimpleConfigModel.FromJObject (
+            _configuration = TemplateConfigModel.FromJObject (
                 MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile),
-                _settings.Host.LoggerFactory.CreateLogger<SimpleConfigModel>(),
+                _settings.Host.LoggerFactory.CreateLogger<TemplateConfigModel>(),
                 configModifiers,
                 templateFile.GetDisplayPath());
 
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Test constructor.
         /// </summary>
-        internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, SimpleConfigModel configuration, IFile? configurationFile = null)
+        internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, TemplateConfigModel configuration, IFile? configurationFile = null)
         {
             _settings = settings;
             _logger = _settings.Host.LoggerFactory.CreateLogger<RunnableProjectConfig>();
@@ -354,7 +354,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal SimpleConfigModel ConfigurationModel => _configuration;
+        internal TemplateConfigModel ConfigurationModel => _configuration;
 
         public void Evaluate(IVariableCollection rootVariableCollection)
         {
@@ -490,7 +490,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return validModel;
         }
 
-        private static IReadOnlyDictionary<string, Parameter> ExtractParameters(SimpleConfigModel configuration)
+        private static IReadOnlyDictionary<string, Parameter> ExtractParameters(TemplateConfigModel configuration)
         {
             Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
             foreach (BaseValueSymbol baseSymbol in configuration.Symbols.OfType<BaseValueSymbol>())

@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void SourceConfigExcludesAreOverriddenByIncludes()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
@@ -64,7 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CopyOnlyWithParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
@@ -154,7 +154,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
@@ -198,7 +198,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void IncludeModifierOverridesPreviousExcludeModifierTemplateTest()
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
@@ -248,7 +248,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
 
-            SimpleConfigModel config = new SimpleConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel()
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()

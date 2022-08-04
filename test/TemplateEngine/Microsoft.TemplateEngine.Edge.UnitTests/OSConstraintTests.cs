@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = SimpleConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             var constraintManager = new TemplateConstraintManager(_sharedSettings);
             var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
 
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = SimpleConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             var constraintManager = new TemplateConstraintManager(_sharedSettings);
             var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
 

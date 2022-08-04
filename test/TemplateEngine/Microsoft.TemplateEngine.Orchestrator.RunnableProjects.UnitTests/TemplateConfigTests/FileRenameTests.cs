@@ -97,7 +97,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   }
 }
 ";
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(configContent));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =
                 new RunnableProjectConfig(environment, A.Fake<IGenerator>(), configModel);
@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     }
   }
 }";
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(configContent));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =
                 new RunnableProjectConfig(environment, A.Fake<IGenerator>(), configModel);

@@ -319,7 +319,7 @@ false,
 
             using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
 
-            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel()
             {
                 Identity = "Test",
                 PostActionModels = new List<PostActionModel>
@@ -351,7 +351,7 @@ false,
         [Fact]
         public void CanValidatePostActionWithDefaultInstructionLocalization()
         {
-            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel()
             {
                 Identity = "Test",
                 PostActionModels = new List<PostActionModel>
@@ -387,7 +387,7 @@ false,
         [Fact]
         public void CannotValidatePostActionWithExtraInstructionLocalization()
         {
-            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel()
             {
                 Identity = "Test",
                 PostActionModels = new List<PostActionModel>
@@ -435,7 +435,7 @@ false,
         [Fact]
         public void CannotValidateExtraPostActionLocalization()
         {
-            SimpleConfigModel baseConfig = new SimpleConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel()
             {
                 Identity = "Test",
                 PostActionModels = new List<PostActionModel>

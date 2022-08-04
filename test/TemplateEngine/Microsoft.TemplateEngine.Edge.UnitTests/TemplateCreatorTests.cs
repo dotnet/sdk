@@ -421,7 +421,7 @@ C
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             // cannot use SimpleConfigModel dirrectly - due to missing easy way of creating ParameterSymbols
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.Parse(templateSnippet));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateSnippet));
             var runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
 
             TemplateCreator creator = new TemplateCreator(_engineEnvironmentSettings);

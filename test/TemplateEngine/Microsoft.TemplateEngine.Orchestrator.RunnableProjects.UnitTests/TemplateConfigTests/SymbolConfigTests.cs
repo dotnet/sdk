@@ -574,7 +574,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolGetsAddedWithDefaultValueForms))]
         public void NameSymbolGetsAddedWithDefaultValueForms()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -594,7 +594,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst))]
         public void ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -611,7 +611,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst))]
         public void ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsButNotIdentity);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -628,7 +628,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
         public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsWithIdentity);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsWithIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -645,7 +645,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -662,7 +662,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -679,7 +679,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue))]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -697,7 +697,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse))]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -714,7 +714,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
         public void NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -732,7 +732,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
         public void NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -750,7 +750,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolWithNoValueFormsGetsIdentityFormAdded))]
         public void ParameterSymbolWithNoValueFormsGetsIdentityFormAdded()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ConfigForSymbolWithoutValueForms);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigForSymbolWithoutValueForms);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
@@ -766,7 +766,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified))]
         public void ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ArrayConfigForSymbolWithValueFormsIncludingIdentity);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithValueFormsIncludingIdentity);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -783,7 +783,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
         public void ObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityTrue);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityTrue);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -800,7 +800,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityFalse))]
         public void ObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityFalse);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityFalse);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -816,7 +816,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -832,7 +832,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -848,7 +848,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
         public void ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -865,7 +865,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
         public void ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
@@ -882,7 +882,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact]
         public void DefaultSymbolsaAreSetup()
         {
-            SimpleConfigModel configModel = new SimpleConfigModel();
+            TemplateConfigModel configModel = new TemplateConfigModel();
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             if (isWindows)
@@ -911,7 +911,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     },
                 }
             };
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             Assert.Single(configModel.Symbols, s => s.Name == "other");
@@ -941,7 +941,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     },
                 }
             };
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
             Assert.Equal(2, configModel.Symbols.Count());
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             Assert.Single(configModel.Symbols, s => s.Name == "OS");

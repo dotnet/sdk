@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(configObj);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
             IGlobalRunConfig runConfig = null;
 
             try
@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 }
 ";
             JObject configObj = JObject.Parse(templateJson);
-            SimpleConfigModel configModel = SimpleConfigModel.FromJObject(configObj);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
             IGlobalRunConfig runConfig = null;
 
             try

@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData("src/content/.template.config/template.json", true)]
         public void CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson, bool shouldAllPathsBeValid)
         {
-            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(BasicTemplateConfig));
+            TemplateConfigModel baseConfig = TemplateConfigModel.FromJObject(JObject.Parse(BasicTemplateConfig));
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CheckTemplateSourcesRelativeToTemplateRoot(bool shouldAllPathsBeValid, string source)
         {
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
-            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel baseConfig = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             const string pathToTemplateConfig = ".template.config/template.json";
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CheckTemplateSourcesRelativeToTemplateRootMultipleDirsUnderMountPoint(bool shouldAllPathsBeValid, string source)
         {
             string templateConfig = string.Format(TemplateConfigWithSourcePlaceholder, source);
-            SimpleConfigModel baseConfig = SimpleConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel baseConfig = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             const string pathFromMountPointRootToTemplateRoot = "MountRoot/Stuff/TemplateRoot/";

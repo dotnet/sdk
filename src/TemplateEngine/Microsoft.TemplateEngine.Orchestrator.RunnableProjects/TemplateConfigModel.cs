@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     /// <summary>
     /// The class represents model of template.json.
     /// </summary>
-    internal class SimpleConfigModel
+    internal class TemplateConfigModel
     {
         private const string NameSymbolName = "name";
         private readonly ILogger? _logger;
@@ -32,12 +32,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private string? _description;
         private string? _sourceName;
 
-        internal SimpleConfigModel()
+        internal TemplateConfigModel()
         {
             Symbols = Array.Empty<BaseSymbol>();
         }
 
-        private SimpleConfigModel(JObject source, ILogger? logger, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
+        private TemplateConfigModel(JObject source, ILogger? logger, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
         {
             _logger = logger;
 
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             _symbols = symbols;
             _postActions = PostActionModel.LoadListFromJArray(source.Get<JArray>("PostActions"), _logger, filename);
-            PrimaryOutputs = CreationPathModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
+            PrimaryOutputs = PrimaryOutputModel.ListFromJArray(source.Get<JArray>(nameof(PrimaryOutputs)));
 
             // Custom operations at the global level
             JToken? globalCustomConfigData = source[nameof(GlobalCustomOperations)];
@@ -284,7 +284,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyList<ICreationPathModel> PrimaryOutputs { get; init; } = Array.Empty<ICreationPathModel>();
+        public IReadOnlyList<PrimaryOutputModel> PrimaryOutputs { get; init; } = Array.Empty<PrimaryOutputModel>();
 
         public string? GeneratorVersions { get; init; }
 
@@ -341,17 +341,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         internal string? PlaceholderFilename { get; init; }
 
-        internal ICustomFileGlobModel? GlobalCustomOperations { get; init; }
+        internal CustomFileGlobModel? GlobalCustomOperations { get; init; }
 
-        internal IReadOnlyList<ICustomFileGlobModel> SpecialCustomOperations { get; init; } = Array.Empty<ICustomFileGlobModel>();
+        internal IReadOnlyList<CustomFileGlobModel> SpecialCustomOperations { get; init; } = Array.Empty<CustomFileGlobModel>();
 
         internal BaseSymbol NameSymbol { get; private set; } = SetupDefaultNameSymbol(null);
 
         private static IReadOnlyList<BindSymbol> ImplicitBindSymbols { get; } = SetupImplicitBindSymbols();
 
-        internal static SimpleConfigModel FromJObject(JObject source, ILogger? logger = null, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
+        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
         {
-            return new SimpleConfigModel(source, logger, configModifiers, filename);
+            return new TemplateConfigModel(source, logger, configModifiers, filename);
         }
 
         //TODO: create convertors to get proper json format if needed.
@@ -361,7 +361,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         /// <summary>
-        /// Localizes this <see cref="SimpleConfigModel"/> with given localization model.
+        /// Localizes this <see cref="TemplateConfigModel"/> with given localization model.
         /// </summary>
         /// <param name="locModel">Localization model containing the localized strings.</param>
         /// <remarks>This method works on a best-effort basis. If the given model is invalid or incompatible,

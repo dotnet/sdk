@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = SimpleConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             ISdkInfoProvider sdkInfoProvider = new SdkInfoProviderMock(sdkVersion); //A.Fake<ISdkInfoProvider>();
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Components.OfType<ISdkInfoProvider>()).Returns(new[] { sdkInfoProvider });
@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = SimpleConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             ISdkInfoProvider sdkInfoProvider = new SdkInfoProviderMock(sdkVersion); //A.Fake<ISdkInfoProvider>();
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Components.OfType<ISdkInfoProvider>()).Returns(new[] { sdkInfoProvider });
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
             };
 
-            var configModel = SimpleConfigModel.FromJObject(JObject.FromObject(config));
+            var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             ISdkInfoProvider sdkInfoProvider = new SdkInfoProviderMock(sdkVersion, installedVersions); //A.Fake<ISdkInfoProvider>();
             IEngineEnvironmentSettings settings = A.Fake<IEngineEnvironmentSettings>();
             A.CallTo(() => settings.Components.OfType<ISdkInfoProvider>()).Returns(new[] { sdkInfoProvider });
