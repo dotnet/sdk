@@ -12,8 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     internal class SymbolValueFormsModel
     {
-        private const string IdentityValueFormName = IdentityValueForm.FormName;
-
         private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
         {
             GlobalForms = globalForms;
@@ -22,15 +20,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Array.Empty<string>());
 
         // by default, symbols get the "identity" value form, for a direct replacement
-        internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new[] { IdentityValueFormName });
+        internal static SymbolValueFormsModel Default { get; } = new SymbolValueFormsModel(new[] { IdentityValueFormFactory.FormIdentifier });
 
         internal static SymbolValueFormsModel NameForms { get; } = new SymbolValueFormsModel(new[]
         {
-            IdentityValueFormName,
-            DefaultSafeNameValueFormModel.FormName,
-            DefaultLowerSafeNameValueFormModel.FormName,
-            DefaultSafeNamespaceValueFormModel.FormName,
-            DefaultLowerSafeNamespaceValueFormModel.FormName
+            IdentityValueFormFactory.FormIdentifier,
+            DefaultSafeNameValueFormFactory.FormIdentifier,
+            DefaultLowerSafeNameValueFormFactory.FormIdentifier,
+            DefaultSafeNamespaceValueFormFactory.FormIdentifier,
+            DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier
         });
 
         internal IReadOnlyList<string> GlobalForms { get; }
@@ -81,9 +79,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
                 throw new Exception("Malformed global value forms.");
             }
 
-            if (addIdentity && !globalForms.Contains(IdentityValueFormName, StringComparer.OrdinalIgnoreCase))
+            if (addIdentity && !globalForms.Contains(IdentityValueFormFactory.FormIdentifier, StringComparer.OrdinalIgnoreCase))
             {
-                globalForms.Insert(0, IdentityValueFormName);
+                globalForms.Insert(0, IdentityValueFormFactory.FormIdentifier);
             }
 
             return new SymbolValueFormsModel(globalForms);

@@ -1,34 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+#nullable enable
+
 using System.Linq;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    internal class KebabCaseValueFormModel : IValueForm
+    internal class KebabCaseValueFormFactory : ActionableValueFormFactory
     {
-        internal KebabCaseValueFormModel()
-        {
-        }
+        internal const string FormIdentifier = "kebabCase";
 
-        internal KebabCaseValueFormModel(string name)
-        {
-            Name = name;
-        }
+        internal KebabCaseValueFormFactory() : base(FormIdentifier) { }
 
-        public string Identifier => "kebabCase";
-
-        public string Name { get; }
-
-        public IValueForm FromJObject(string name, JObject configuration)
-        {
-            return new KebabCaseValueFormModel(name);
-        }
-
-        public string Process(IReadOnlyDictionary<string, IValueForm> forms, string value)
+        protected override string? Process(string? value)
         {
             if (value is null)
             {

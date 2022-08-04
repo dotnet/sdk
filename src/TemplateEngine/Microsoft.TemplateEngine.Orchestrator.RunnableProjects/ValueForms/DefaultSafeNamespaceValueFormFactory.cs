@@ -4,39 +4,25 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    internal class DefaultSafeNamespaceValueFormModel : IValueForm
+    internal class DefaultSafeNamespaceValueFormFactory : ActionableValueFormFactory
     {
-        internal const string FormName = "safe_namespace";
-        private readonly string? _name;
+        internal const string FormIdentifier = "safe_namespace";
 
-        internal DefaultSafeNamespaceValueFormModel()
-            : this(null)
+        internal DefaultSafeNamespaceValueFormFactory()
+            : base(FormIdentifier) { }
+
+        internal static string? ToSafeNamespace(string? value)
         {
-        }
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
 
-        internal DefaultSafeNamespaceValueFormModel(string? name)
-        {
-            _name = name;
-        }
-
-        public virtual string Identifier => _name ?? FormName;
-
-        public string Name => Identifier;
-
-        public virtual IValueForm FromJObject(string name, JObject configuration)
-        {
-            return new DefaultSafeNamespaceValueFormModel(name);
-        }
-
-        public virtual string Process(IReadOnlyDictionary<string, IValueForm>? forms, string value)
-        {
             const char invalidCharacterReplacement = '_';
 
             value = value ?? throw new ArgumentNullException(nameof(value));
@@ -79,5 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
             return safeValueStr.ToString();
         }
+
+        protected override string? Process(string? value) => ToSafeNamespace(value);
     }
 }

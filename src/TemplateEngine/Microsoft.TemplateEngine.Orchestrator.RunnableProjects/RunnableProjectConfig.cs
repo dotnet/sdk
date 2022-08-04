@@ -664,8 +664,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (_configuration.Forms.TryGetValue(formName, out IValueForm valueForm))
                         {
                             string symbolName = symbol.Name + "{-VALUE-FORMS-}" + formName;
-                            string processedFileReplacement = valueForm.Process(_configuration.Forms, p.FileRename);
-                            GenerateFileReplacementsForSymbol(processedFileReplacement, symbolName, filenameReplacements);
+                            string? processedFileReplacement = valueForm.Process(p.FileRename, _configuration.Forms);
+                            if (!string.IsNullOrEmpty(processedFileReplacement))
+                            {
+                                GenerateFileReplacementsForSymbol(processedFileReplacement!, symbolName, filenameReplacements);
+                            }
                         }
                         else
                         {
@@ -746,8 +749,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 string symbolName = sourceVariable + "{-VALUE-FORMS-}" + formName;
                                 if (!string.IsNullOrWhiteSpace(replaceSymbol.Replaces))
                                 {
-                                    string processedReplacement = valueForm.Process(_configuration.Forms, baseValueSymbol.Replaces);
-                                    GenerateReplacementsForSymbol(replaceSymbol, processedReplacement, symbolName, macroGeneratedReplacements);
+                                    string? processedReplacement = valueForm.Process(baseValueSymbol.Replaces, _configuration.Forms);
+                                    if (!string.IsNullOrEmpty(processedReplacement))
+                                    {
+                                        GenerateReplacementsForSymbol(replaceSymbol, processedReplacement!, symbolName, macroGeneratedReplacements);
+                                    }
                                 }
                                 if (generateMacros)
                                 {

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -579,15 +581,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(5, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
-            Assert.Equal(DefaultSafeNameValueFormModel.FormName, configuredValueFormNames[1]);
-            Assert.Equal(DefaultLowerSafeNameValueFormModel.FormName, configuredValueFormNames[2]);
-            Assert.Equal(DefaultSafeNamespaceValueFormModel.FormName, configuredValueFormNames[3]);
-            Assert.Equal(DefaultLowerSafeNamespaceValueFormModel.FormName, configuredValueFormNames[4]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.Equal(DefaultSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[1]);
+            Assert.Equal(DefaultLowerSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.Equal(DefaultSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.Equal(DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[4]);
         }
 
         // Test that when a symbol doesn't explicitly include the "identity" value form, it gets added as the first form.
@@ -599,11 +602,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.Single(paramSymbol.Forms.GlobalForms.ToList()
-                                                .Where(x => string.Equals(x, IdentityValueForm.FormName, StringComparison.OrdinalIgnoreCase))
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            Assert.Single(paramSymbol!.Forms.GlobalForms.ToList()
+                                                .Where(x => string.Equals(x, IdentityValueFormFactory.FormIdentifier, StringComparison.OrdinalIgnoreCase))
 );
-            Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueForm.FormName));
+            Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueFormFactory.FormIdentifier));
         }
 
         // Tests that a name symbol with explicitly defined value forms but no identity form
@@ -616,10 +620,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
@@ -633,13 +638,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
             Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
         [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
@@ -650,12 +656,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
@@ -667,12 +674,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
@@ -684,11 +692,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
@@ -702,8 +711,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(3, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
@@ -719,11 +729,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
@@ -737,14 +748,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
             Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
         [Fact(DisplayName = nameof(ParameterSymbolWithNoValueFormsGetsIdentityFormAdded))]
@@ -755,11 +767,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(1, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
         }
 
         // Test that when a symbol explicitly includes the "identity" value form, the value forms for the symbol remain unmodified.
@@ -770,14 +783,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
             Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
         [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
@@ -787,11 +801,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
@@ -804,8 +819,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(3, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
@@ -820,12 +836,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
@@ -836,12 +853,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol nameSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = nameSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(nameSymbol);
+            IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[2]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
         }
 
@@ -852,14 +870,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
             Assert.Equal("foo", configuredValueFormNames[0]);
             Assert.Equal("bar", configuredValueFormNames[1]);
             Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[3]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
         [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
@@ -869,11 +888,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
             Assert.True(symbolInfo is ParameterSymbol);
 
-            ParameterSymbol paramSymbol = symbolInfo as ParameterSymbol;
-            IList<string> configuredValueFormNames = paramSymbol.Forms.GlobalForms.ToList();
+            ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
+            Assert.NotNull(paramSymbol);
+            IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
             Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueForm.FormName, configuredValueFormNames[0]);
+            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
             Assert.Equal("foo", configuredValueFormNames[1]);
             Assert.Equal("bar", configuredValueFormNames[2]);
             Assert.Equal("baz", configuredValueFormNames[3]);
@@ -945,7 +965,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal(2, configModel.Symbols.Count());
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             Assert.Single(configModel.Symbols, s => s.Name == "OS");
-            Assert.Equal("smth", (configModel.Symbols.Single(s => s.Name == "OS") as BindSymbol).Binding);
+            Assert.Equal("smth", (configModel.Symbols.Single(s => s.Name == "OS") as BindSymbol)?.Binding);
         }
     }
 }

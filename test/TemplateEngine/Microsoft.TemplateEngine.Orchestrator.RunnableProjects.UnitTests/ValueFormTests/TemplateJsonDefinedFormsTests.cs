@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Linq;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
@@ -41,7 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 ";
             JObject configObj = JObject.Parse(templateJson);
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
-            IGlobalRunConfig runConfig = null;
+            IGlobalRunConfig? runConfig = null;
 
             try
             {
@@ -53,12 +55,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
 
             Assert.NotNull(runConfig);
-            Assert.Equal(1, runConfig.Macros.Count(m => m.VariableName.StartsWith("mySymbol")));
+            Assert.Equal(1, runConfig!.Macros.Count(m => m.VariableName.StartsWith("mySymbol")));
             var mySymbolMacro = runConfig.Macros.Single(m => m.VariableName.StartsWith("mySymbol"));
 
             Assert.True(mySymbolMacro is ProcessValueFormMacroConfig);
-            ProcessValueFormMacroConfig identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;
-            Assert.Equal("identity", identityFormConfig.FormName);
+            ProcessValueFormMacroConfig? identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;
+            Assert.NotNull(identityFormConfig);
+            Assert.Equal("identity", identityFormConfig!.FormName);
         }
 
         [Fact(DisplayName = nameof(UnknownFormNameForDerivedSymbolValueDoesNotThrow))]
@@ -84,7 +87,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 ";
             JObject configObj = JObject.Parse(templateJson);
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
-            IGlobalRunConfig runConfig = null;
+            IGlobalRunConfig? runConfig = null;
 
             try
             {

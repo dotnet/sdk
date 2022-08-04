@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Xunit;
 
@@ -38,8 +41,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("НоваяПеременная", "новая-переменная")]
         public void KebabCaseWorksAsExpected(string input, string expected)
         {
-            var model = new KebabCaseValueFormModel();
-            string actual = model.Process(null, input);
+            var model = new KebabCaseValueFormFactory().Create("test");
+            string? actual = model.Process(input, new Dictionary<string, IValueForm>());
             Assert.Equal(expected, actual);
         }
     }

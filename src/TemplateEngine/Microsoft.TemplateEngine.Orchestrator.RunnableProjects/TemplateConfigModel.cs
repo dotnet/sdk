@@ -415,9 +415,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
 
             // setup all the built-in default forms.
-            foreach (KeyValuePair<string, IValueForm> builtInForm in ValueFormRegistry.AllForms)
+            // name of the form is form identifier
+            // this is only possible for the forms that don't need configuration
+            foreach (KeyValuePair<string, IValueFormFactory> builtInForm in ValueFormRegistry.FormLookup)
             {
-                formMap[builtInForm.Key] = builtInForm.Value;
+                formMap[builtInForm.Key] = builtInForm.Value.Create();
             }
 
             // setup the forms defined by the template configuration.
