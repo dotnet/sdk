@@ -6,8 +6,6 @@ using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 
-#nullable enable
-
 namespace Microsoft.TemplateEngine.Edge.Template
 {
     [Obsolete("Use " + nameof(Microsoft.TemplateEngine.Utils.WellKnownSearchFilters) + " instead")]

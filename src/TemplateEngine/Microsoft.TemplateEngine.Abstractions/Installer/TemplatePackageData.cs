@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
-#nullable enable
-
 namespace Microsoft.TemplateEngine.Abstractions.Installer
 {
     /// <summary>

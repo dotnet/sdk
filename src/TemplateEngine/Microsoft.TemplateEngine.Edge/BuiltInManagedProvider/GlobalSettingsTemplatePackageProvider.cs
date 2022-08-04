@@ -13,8 +13,6 @@ using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Utils;
 
-#nullable enable
-
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     internal class GlobalSettingsTemplatePackageProvider : IManagedTemplatePackageProvider, IDisposable

@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
-#nullable enable
-
 namespace Microsoft.TemplateEngine.Utils
 {
     /// <summary>
