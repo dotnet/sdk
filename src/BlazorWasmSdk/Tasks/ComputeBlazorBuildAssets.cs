@@ -121,7 +121,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     else if(candidate.GetMetadata("FileName") == "dotnet-crypto-worker" && candidate.GetMetadata("Extension") == ".js")
                     {
                         var itemHash = FileHasher.GetFileHash(candidate.ItemSpec);
-                        var cacheBustedDotNetCryptoWorkerJSFileName = $"dotnet-crypto-worker.{itemHash}.js";
+                        var cacheBustedDotNetCryptoWorkerJSFileName = $"dotnet-crypto-worker.{candidate.GetMetadata("NuGetPackageVersion")}.{itemHash}.js";
 
                         var originalFileFullPath = Path.GetFullPath(candidate.ItemSpec);
                         var originalFileDirectory = Path.GetDirectoryName(originalFileFullPath);
@@ -302,6 +302,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 ".dat" when invariantGlobalization && fileName.StartsWith("icudt") => "invariant globalization is enabled",
                 ".json" when fromMonoPackage && (fileName == "emcc-props" || fileName == "package") => $"{fileName}{extension} is not used by Blazor",
                 ".ts" when fromMonoPackage && fileName == "dotnet.d" => "dotnet type definition is not used by Blazor",
+                ".ts" when fromMonoPackage && fileName == "dotnet-legacy.d" => "dotnet type definition is not used by Blazor",
                 ".js" when assetType == "native" && fileName != "dotnet" && fileName != "dotnet-crypto-worker" => $"{fileName}{extension} is not used by Blazor",
                 ".pdb" when !copySymbols => "copying symbols is disabled",
                 ".symbols" when fromMonoPackage => "extension .symbols is not required.",

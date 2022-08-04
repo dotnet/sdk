@@ -406,6 +406,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <_DotNetJsItem Include="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.DestinationSubPath)' == 'dotnet.js' AND '%(ResolvedFileToPublish.AssetType)' == 'native'" />
+      <_DotNetJsItem Include="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.DestinationSubPath)' == 'dotnet-crypto-worker.js' AND '%(ResolvedFileToPublish.AssetType)' == 'native'" />
     </ItemGroup>
 
     <PropertyGroup>
