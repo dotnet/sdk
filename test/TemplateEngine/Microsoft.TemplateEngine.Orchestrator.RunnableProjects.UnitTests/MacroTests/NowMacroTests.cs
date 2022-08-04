@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             NowMacro macro = new NowMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
             Assert.IsType<string>(variables[variableName]);
-            string macroNowString = (string)variables[variableName];
+            string macroNowString = (string)variables[variableName]!;
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.UtcNow);
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
             Assert.IsType<string>(variables[variableName]);
-            string macroNowString = (string)variables[variableName];
+            string macroNowString = (string)variables[variableName]!;
             DateTime macroNowTime = Convert.ToDateTime(macroNowString);
 
             TimeSpan difference = macroNowTime.Subtract(DateTime.Now);

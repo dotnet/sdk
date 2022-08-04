@@ -340,7 +340,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     foreach (string choiceKey in param.Choices.Keys)
                     {
                         if (
-                            variables.TryGetValue(choiceKey, out object existingValueObj) &&
+                            variables.TryGetValue(choiceKey, out object? existingValueObj) &&
                             existingValueObj is string existingValue &&
                             !string.Equals(choiceKey, existingValue, StringComparison.CurrentCulture)
                         )

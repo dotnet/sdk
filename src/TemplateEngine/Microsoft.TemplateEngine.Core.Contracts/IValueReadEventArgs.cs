@@ -5,8 +5,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface IValueReadEventArgs
     {
-        string Key { get; set; }
+        string Key { get; }
 
-        object Value { get; set; }
+        object Value { get; }
     }
 }

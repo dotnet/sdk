@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         IReadOnlyList<string> Order { get; }
 
-        string FallbackFormat { get; }
+        string? FallbackFormat { get; }
 
         bool Expand { get; }
     }

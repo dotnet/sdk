@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             string primaryOutputPath,
             IEngineEnvironmentSettings environmentSettings,
             string? sourceName,
-            object resolvedNameParamValue,
+            object? resolvedNameParamValue,
             IVariableCollection variables,
             IReadOnlyList<IReplacementTokens>? symbolBasedFileRenames = null)
         {
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (variables.TryGetValue (fileRenameToken.VariableName, out object? newValueObject))
                     {
-                        string newValue = newValueObject.ToString();
+                        string newValue = newValueObject?.ToString() ?? string.Empty;
                         operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));
                     }
                 }

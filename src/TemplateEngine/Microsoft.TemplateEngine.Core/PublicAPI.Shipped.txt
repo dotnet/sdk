@@ -487,11 +487,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Util.TokenTrie.TokenLength.get -> System.Collections.Generic.IReadOnlyList<int>
 ~Microsoft.TemplateEngine.Core.Util.TokenTrie.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
 ~Microsoft.TemplateEngine.Core.Util.TokenTrieEvaluator.TokenTrieEvaluator(Microsoft.TemplateEngine.Core.Matching.Trie<Microsoft.TemplateEngine.Core.Util.Token> trie) -> void
-~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.get -> string
-~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.set -> void
-~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object
-~Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.set -> void
-~Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string key, object value) -> void
 ~override Microsoft.TemplateEngine.Core.Expressions.BinaryScope<TOperator>.ToString() -> string
 ~override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GenerateMap() -> Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<Microsoft.TemplateEngine.Core.Expressions.Operators, Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.Tokens>
 ~override Microsoft.TemplateEngine.Core.Expressions.Cpp2.Cpp2StyleEvaluatorDefinition.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie

@@ -381,7 +381,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
             }
 
-            rootVariableCollection.TryGetValue(NameParameter.Name, out object resolvedNameParamValue);
+            rootVariableCollection.TryGetValue(NameParameter.Name, out object? resolvedNameParamValue);
 
             _sources = EvaluateSources(rootVariableCollection, resolvedNameParamValue);
 
@@ -895,7 +895,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return generatedMacroConfigs;
         }
 
-        private List<FileSourceMatchInfo> EvaluateSources(IVariableCollection rootVariableCollection, object resolvedNameParamValue)
+        private List<FileSourceMatchInfo> EvaluateSources(IVariableCollection rootVariableCollection, object? resolvedNameParamValue)
         {
             if (SourceFile == null)
             {
@@ -978,7 +978,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return sources;
         }
 
-        private IReadOnlyDictionary<string, string> AugmentRenames(IFileSystemInfo configFile, string sourceDirectory, ref string targetDirectory, object resolvedNameParamValue, IVariableCollection variables, Dictionary<string, string> fileRenames)
+        private IReadOnlyDictionary<string, string> AugmentRenames(
+            IFileSystemInfo configFile,
+            string sourceDirectory,
+            ref string targetDirectory,
+            object? resolvedNameParamValue,
+            IVariableCollection variables,
+            Dictionary<string, string> fileRenames)
         {
             return FileRenameGenerator.AugmentFileRenames(_settings, _configuration.SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, variables, fileRenames, SymbolFilenameReplacements);
         }

@@ -12,6 +12,9 @@ Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.Templat
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! fileSystem) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.get -> string!
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object!
+Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string! key, object! value) -> void
 Microsoft.TemplateEngine.Core.VariableCollection.Add(string! key, object! value) -> void
 Microsoft.TemplateEngine.Core.VariableCollection.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
 Microsoft.TemplateEngine.Core.VariableCollection.Contains(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool

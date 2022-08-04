@@ -53,7 +53,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (!variableCollection.ContainsKey(bindSymbol.Name) && bindSymbol.DefaultValue != null)
                 {
-                    variableCollection[bindSymbol.Name] = ParameterConverter.InferTypeAndConvertLiteral(bindSymbol.DefaultValue);
+                    object? value = ParameterConverter.InferTypeAndConvertLiteral(bindSymbol.DefaultValue);
+                    if (value != null)
+                    {
+                        variableCollection[bindSymbol.Name] = value;
+                    }
                 }
             }
 
@@ -84,8 +88,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             var successfulTasks = tasksToRun.Where(t => t.Task.IsCompleted && t.Task.Result != null);
             foreach (var task in successfulTasks)
             {
-                variableCollection[task.Symbol.Name] = ParameterConverter.InferTypeAndConvertLiteral(task.Task.Result!);
-                _logger.LogDebug("Variable '{0}' was set to '{1}'.", task.Symbol.Name, variableCollection[task.Symbol.Name]);
+                object? value = ParameterConverter.InferTypeAndConvertLiteral(task.Task.Result!);
+
+                if (value != null)
+                {
+                    variableCollection[task.Symbol.Name] = value;
+                    _logger.LogDebug("Variable '{0}' was set to '{1}'.", task.Symbol.Name, value);
+                }
+                else
+                {
+                    _logger.LogDebug("Variable '{0}' was not set due to its value is null.", task.Symbol.Name);
+                }
             }
         }
 

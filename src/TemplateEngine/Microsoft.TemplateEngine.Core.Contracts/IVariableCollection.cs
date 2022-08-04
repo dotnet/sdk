@@ -11,6 +11,6 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         event ValueReadEventHander ValueRead;
 
-        IVariableCollection Parent { get; set; }
+        IVariableCollection? Parent { get; set; }
     }
 }
