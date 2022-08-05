@@ -116,7 +116,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         resourceData.lazyAssembly ??= new ResourceHashesByNameDictionary();
                         resourceList = resourceData.lazyAssembly;
                     }
-                    else if (string.Equals("Culture", assetTraitName))
+                    else if (string.Equals("Culture", assetTraitName, StringComparison.OrdinalIgnoreCase))
                     {
                         Log.LogMessage(MessageImportance.Low, "Candidate '{0}' is defined as satellite assembly with culture '{1}'.", resource.ItemSpec, assetTraitValue);
                         resourceData.satelliteResources ??= new Dictionary<string, ResourceHashesByNameDictionary>(StringComparer.OrdinalIgnoreCase);
