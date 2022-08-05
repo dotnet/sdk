@@ -1,3 +1,20 @@
+# Conditions
+
+## Table of contents
+
+* [Overview](#overview)
+  * [Generated Conditions](#generated-conditions)
+  * [Example](#example)
+* [Choice symbols](#choice-symbols)
+  * [Quoteless literals](#quoteless-literals)
+  * [Multichoice symbols](#multichoice-symbols)
+  * [Using Computed Conditions to work with Multichoice Symbols](#using-computed-conditions-to-work-with-multichoice-symbols)
+* [Conditional parameters](#conditional-parameters)
+  * [Evaluation](#evaluation)
+  * [Performing evaluation externally](#performing-evaluation-externally)
+
+## Overview
+
 Conditions are used to drive [dynamic content genarating or replacing](Conditional-processing-and-comment-syntax.md).
 
 Conditions use C++ style of [conditional preprocessor expressions](https://docs.microsoft.com/en-us/cpp/preprocessor/hash-if-hash-elif-hash-else-and-hash-endif-directives-c-cpp?view=msvc-170). Expressions are composed from constant literals (strings, numbers, `true`, `false`), [operators](https://github.com/dotnet/templating/blob/main/src/Microsoft.TemplateEngine.Core/Expressions/Cpp/Operator.cs), [symbols](https://github.com/dotnet/templating/blob/main/docs/Available-Symbols-Generators.md), brackets and whitespaces. Only single line expressions are supported. Boolean and numerical expressions are supported (nonzero value is interpreted as `true`)
@@ -7,7 +24,8 @@ Conditions use C++ style of [conditional preprocessor expressions](https://docs.
 ### Generated Conditions
 Unlike C++ preprocessor conditions, template engine allows ability for using conditional expressions that are based on results of other expressions. Specifically [Evaluate](Available-Symbols-Generators.md#evaluate) and [Computed](Reference-for-template.json.md#computed-symbol) symbols can be leveraged for this purpose.
 
-### Simplified extraction from [C# Console Application template](https://github.com/dotnet/templating/tree/main/template_feed/Microsoft.DotNet.Common.ProjectTemplates.7.0/content/ConsoleApplication-CSharp)
+### Example 
+(other related sample in [GeneratorTest.json](https://github.com/dotnet/templating/blob/main/test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/GeneratorTest.json#L82-L84)):
 
 `template.json`:
 ```json
@@ -43,7 +61,9 @@ using System;
 #endif
 ```
 
-### Choice literals
+## Choice symbols
+
+### Quoteless literals
 
 [Choice Symbol](Reference-for-template.json.md#examples) can have one of N predefined values. Those predefined values can be referenced in the conditions as quoted literals. Unquoted literals are as well supported as opt-in feature via [`enableQuotelessLiterals`](Reference-for-template.json.md#enableQuotelessLiterals). Following 2 expressions are equivalent when opted in:
 
@@ -53,7 +73,7 @@ using System;
 
 This allows for easier authoring of nested generated conditions.
 
-### Multichoice literals
+### Multichoice symbols
 
 Information about multi-choice symbols can be found in [Reference for `template.json`](Reference-for-template.json.md#multichoice-symbols-specifics)
 
@@ -192,3 +212,45 @@ Usage can then look as following:
 // This renders for desktop platforms
 #endif
 ```
+
+## Conditional Parameters
+
+[Parameter symbols in template](Reference-for-template.json.md#parameter-symbol) can be specified together with optional conditions:
+* [`IsEnabled Condition`](Reference-for-template.json.md#isEnabled) - Used to determine when (or if) this symbol should be used. If this condition is specified and evaluates to `false` (or a `false` constant is passed), then this parameter is treated as if it does not exist. This applies to the use of [conditional processing of sources](Conditional-processing-and-comment-syntax.md) and [replacements](Reference-for-template.json.md#replaces). [Verification of mandatory parameters](Reference-for-template.json.md#isRequired) does not consider disabled parameters (even if marked as required).
+* [`IsRequired Condition`](Reference-for-template.json.md#isRequired) - defines if parameter is required or optional.
+
+### Evaluation
+
+**Input** - currently only other parameter symbols from the template configuration are supported within the parameter conditions. Any other variables are not bound and replaced (they are considered part of literal string).
+
+**Evaluation order** - Dependencies between parameters are detected and evaluation is peformed in order that guarantees that all dependencies are evaluated prior their dependant (see [Topological Sorting](https://en.wikipedia.org/wiki/Topological_sorting) for details).
+
+ In case of cyclic dependency the evaluation proceeds only if current input values of parameters do not lead to indeterministic result (and the cycle is indicated in warning log message). That means order of evaluation or number of reevaluations should not have impact on the result of evaluation. Otherwise an error is reported, indicating the cycle.
+
+ Example `template.json` with cyclic dependency:
+```json
+  "symbols": {
+    "A": {
+      "type": "parameter",
+      "datatype": "bool",
+      "isEnabled": "B != false",
+      "defaultValue": false
+    },
+    "B": {
+      "type": "parameter",
+      "datatype": "bool",
+      "isEnabled": "A != true",
+      "defaultValue": true
+    }
+}
+```
+
+Following input parameter values can (and will) be evaluated deterministically: `--A false --B true`
+
+Following input parameter values cannot be evaluated deterministically (and will lead to error): `--A true --B false`
+
+**Applying user, host and default values** - All user-provided, host-provided and default values are applied before the conditions are evaluated. After the evaluation default values are reapplied to parameters that were evaluated as optional and that do not have user-/host-provided values. After this an evaluation of presence of required values takes place.
+
+### Performing evaluation externally
+
+Users of Edge API can supply evaluation results of parameters conditions when instantiating template via `TemplateCreator`. More details are in [Inside the Template Engine](api/Inside-the-Template-Engine.md#supplying-parameters-conditions-results) document.

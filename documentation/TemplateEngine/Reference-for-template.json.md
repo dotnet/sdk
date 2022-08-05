@@ -135,11 +135,13 @@ A symbol for which the config provides literal and/or default values.
 |---|---|
 |`type`|`parameter`|
 |`dataType`|	Supported values: <br />- `bool`: boolean type, possible values: `true`/`false`. <br />- `choice`: enumeration, possible values are defined in `choices` property.<br />- `float`: double-precision floating format number. Accepts any value that can be parsed by `double.TryParse()`.<br />- `int`/`integer`: 64-bit signed integer. Accepts any value that can be parsed by `long.TryParse()`.<br />- `hex`: hex number. Accepts any value that can be parsed by `long.TryParse(value.Substring(2), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out long convertedHex)`.<br />- `text`/`string`: string type.<br />- `<any other>`: treated as string.
-|`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host.|
-|`replaces`|The text to be replaced by the symbol value in the template files content|	 
+|<a name="defaultValue"></a>`defaultValue`|The value assigned to the symbol if no parameter is provided by the user or host. The default is *not applied* if [`isRequired`](#isRequired) configuration is set to `true` for a parameter (or is set to condition that evals to `true`), as that is an indication that user specified value is required.  |
+|`defaultIfOptionWithoutValue`|The value assigned to the symbol if explicit `null` parameter value is provided by the user or host.|
+|<a name="replaces"></a>`replaces`|The text to be replaced by the symbol value in the template files content|	 
 |`fileRename`|The portion of template filenames to be replaced by the symbol value.| 
 |`description`|Human readable text describing the meaning of the symbol. This has no effect on template generation.|
-|<a name="isRequired"></a>`isRequired`|Indicates if the parameter is required or not.|
+|<a name="isRequired"></a>`isRequired`|Optional. Indicates if the user supplied value is required or not. Might be a fixed boolean value or a condition string that evals based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).<br/>If set to `true` (or condition that evals to `true`) and user has not specified the value on input, validation error occurs - even if [`defaultValue`](#defaultValue) is present.|
+|<a name="isEnabled"></a>`isEnabled`| Optional condition indicating whether parameter should be processed. Might be a fixed boolean value or a condition string that evals based on passed parameters - more details in [Conditions documentation](Conditions.md#conditional-parameters).|
 |`choices`|Applicable only when `datatype=choice.`<br />List of available choices. Contains array of the elements: <br />- `choice`: possible value of the symbol.<br />- `description`: human readable text describing the meaning of the choice. This has no effect on template generation. <br /> If not provided, there are no valid choices for the symbol, so it can never be assigned a value.|
 |`allowMultipleValues`|Applicable only when `datatype=choice.`<br />. Enables ability to specify multiple values for single symbol.|
 |<a id="enableQuotelessLiterals"></a>`enableQuotelessLiterals`|Applicable only when `datatype=choice.`<br />. Enables ability to specify choice literals in conditions without quotation.|
