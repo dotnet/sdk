@@ -100,8 +100,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         public Dictionary<string, ResourceHashesByNameDictionary> extensions { get; set; }
 
         /// <summary>
-        /// Extensions created by users customizing the initialization process. The format of the file(s)
-        /// is up to the user.
+        /// Additional assets that the runtime consumes as part of the boot process.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public Dictionary<string, AdditionalAsset> RuntimeAssets { get; set; }

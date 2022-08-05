@@ -218,25 +218,25 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
                 if (isDotNetCryptoJs)
                 {
-                    var aotDotNetJs = WasmAotAssets.SingleOrDefault(a => $"{a.GetMetadata("FileName")}{a.GetMetadata("Extension")}" == "dotnet-crypto-worker.js");
-                    ITaskItem newDotNetJs = null;
-                    if (aotDotNetJs != null)
+                    var aotDotNetCryptoJs = WasmAotAssets.SingleOrDefault(a => $"{a.GetMetadata("FileName")}{a.GetMetadata("Extension")}" == "dotnet-crypto-worker.js");
+                    ITaskItem newDotNetCryptoJs = null;
+                    if (aotDotNetCryptoJs != null)
                     {
-                        newDotNetJs = new TaskItem(Path.GetFullPath(aotDotNetJs.ItemSpec), asset.CloneCustomMetadata());
-                        newDotNetJs.SetMetadata("OriginalItemSpec", aotDotNetJs.ItemSpec);
-                        newDotNetJs.SetMetadata("RelativePath", $"_framework/{$"dotnet-crypto-worker.{DotNetJsVersion}.{FileHasher.GetFileHash(aotDotNetJs.ItemSpec)}.js"}");
+                        newDotNetCryptoJs = new TaskItem(Path.GetFullPath(aotDotNetCryptoJs.ItemSpec), asset.CloneCustomMetadata());
+                        newDotNetCryptoJs.SetMetadata("OriginalItemSpec", aotDotNetCryptoJs.ItemSpec);
+                        newDotNetCryptoJs.SetMetadata("RelativePath", $"_framework/{$"dotnet-crypto-worker.{DotNetJsVersion}.{FileHasher.GetFileHash(aotDotNetCryptoJs.ItemSpec)}.js"}");
 
-                        updateMap.Add(asset.ItemSpec, newDotNetJs);
-                        Log.LogMessage(MessageImportance.Low, "Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetJs.ItemSpec);
+                        updateMap.Add(asset.ItemSpec, newDotNetCryptoJs);
+                        Log.LogMessage(MessageImportance.Low, "Replacing asset '{0}' with AoT version '{1}'", asset.ItemSpec, newDotNetCryptoJs.ItemSpec);
                     }
                     else
                     {
-                        newDotNetJs = new TaskItem(asset);
+                        newDotNetCryptoJs = new TaskItem(asset);
                         Log.LogMessage(MessageImportance.Low, "Promoting asset '{0}' to Publish asset.", asset.ItemSpec);
                     }
 
-                    ApplyPublishProperties(newDotNetJs);
-                    nativeStaticWebAssets.Add(newDotNetJs);
+                    ApplyPublishProperties(newDotNetCryptoJs);
+                    nativeStaticWebAssets.Add(newDotNetCryptoJs);
                     if (resolvedNativeAssetToPublish.TryGetValue("dotnet-crypto-worker.js", out var resolved))
                     {
                         filesToRemove.Add(resolved);
