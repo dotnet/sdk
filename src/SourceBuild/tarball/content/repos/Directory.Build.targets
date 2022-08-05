@@ -621,12 +621,6 @@
       Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
       WorkingDirectory="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
 
-    <ReplaceTextInFile
-      Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
-      InputFile="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/SourceBuildArcadeTools.targets"
-      OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
-      NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
-
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->
     <PropertyGroup>
