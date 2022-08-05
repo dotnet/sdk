@@ -47,11 +47,12 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             // Union all package sources to get the distinct list.  These will get added to the source-build sources.
-            IEnumerable<string> packagePatterns = pkgSrcMappingElement.Descendants()
+            string[] packagePatterns = pkgSrcMappingElement.Descendants()
                 .Where(e => e.Name == "packageSource")
                 .SelectMany(e => e.Descendants().Where(e => e.Name == "package"))
                 .Select(e => e.Attribute("pattern").Value)
-                .Distinct();
+                .Distinct()
+                .ToArray();
 
             if (!BuildWithOnlineSources)
             {
@@ -60,6 +61,11 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             XElement pkgSrcMappingClearElement = pkgSrcMappingElement.Descendants().FirstOrDefault(e => e.Name == "clear");
+            if (pkgSrcMappingClearElement == null)
+            {
+                pkgSrcMappingClearElement = new XElement("clear");
+                pkgSrcMappingElement.AddFirst(pkgSrcMappingClearElement);
+            }
 
             foreach (string packageSource in SourceBuildSources)
             {
@@ -69,15 +75,7 @@ namespace Microsoft.DotNet.Build.Tasks
                     pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
                 }
 
-                if (pkgSrcMappingClearElement != null)
-                {
-                    pkgSrcMappingClearElement.AddAfterSelf(pkgSrc);
-                }
-                else
-                {
-                    pkgSrcMappingElement.AddFirst(pkgSrc);
-                    pkgSrcMappingElement.AddFirst(new XElement("clear"));
-                }
+                pkgSrcMappingClearElement.AddAfterSelf(pkgSrc);
             }
 
             using (var writer = XmlWriter.Create(NuGetConfigFile, new XmlWriterSettings { NewLineChars = newLineChars, Indent = true }))
