@@ -3298,12 +3298,12 @@
       "OriginalItemSpec": "obj\\Debug\\${Tfm}\\blazorwasm-minimal.pdb"
     },
     {
-      "Identity": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.[[hash]].js",
+      "Identity": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet-crypto-worker.[[hash]].js",
+      "RelativePath": "_framework/dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -6732,21 +6732,21 @@
       "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.pdb"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet-crypto-worker.[[hash]].js.gz]]",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js.gz]]",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet-crypto-worker.[[hash]].js.gz",
+      "RelativePath": "_framework/dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
-      "RelatedAsset": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.[[hash]].js",
+      "RelatedAsset": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.[[hash]].js"
+      "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet-crypto-worker.${RuntimeVersion}.[[hash]].js"
     },
     {
       "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.[[hash]].js.gz]]",
