@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var hostDir = Path.Combine(userProfileDir, ".templateengine", nameof(PhysicalConfigurationTest).ToString());
             try
             {
-                var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: false);
+                var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: true);
                 var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
 
                 Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true);
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var userProfileDir = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
             var hostDir = Path.Combine(userProfileDir, ".templateengine", nameof(VirtualConfigurationTest).ToString());
 
-            var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: false);
+            var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: true);
             var host = new DefaultTemplateEngineHost(nameof(VirtualConfigurationTest).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var unexpectedHostDir = Path.Combine(userProfileDir, ".templateengine", nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString());
             var expectedHostDir = TestUtils.CreateTemporaryFolder();
 
-            var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: false);
+            var builtIns = BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: true);
             var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString(), "1.0.0", null, builtIns, Array.Empty<string>());
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true, hostSettingsLocation: expectedHostDir);
