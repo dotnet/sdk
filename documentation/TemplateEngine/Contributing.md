@@ -28,71 +28,12 @@ The steps required are outlined below.
 - Run the build script appropriate for your environment.
      - **Windows:** [build.cmd](https://github.com/dotnet/templating/blob/main/build.cmd)
      - **Mac/Linux**: [build.sh](https://github.com/dotnet/templating/blob/main/build.sh) 
-- The changes you build will not change how `dotnet new` behaves. Instead, they will be available through `dotnet new3`. To run `dotnet new3`, run 
-  ```
-  dotnet <your repo location>\artifacts\bin\dotnet-new3\<configuration>\<target framework>\dotnet-new3.dll
-  ```
-  Root path to `dotnet-new3.dll` is skipped in all the commands below.
-
-For example, here is the result of running `dotnet .\dotnet-new3.dll --help` (_truncated to save space here_).
-
-```bash
-$ dotnet .\dotnet-new3.dll --help
-Usage: new3 [options]
-
-Options:
-  -h, --help          Displays help for this command.
-  -l, --list          Lists templates containing the specified template name. If no name is specified, lists all templates.
-  -n, --name          The name for the output being created. If no name is specified, the name of the output directory is used.
-...
-```
-After the first run, there are no templates installed. See [Installing templates](../README.md#Installing-templates) on how to install the templates and [Available templates](../README.md#Available-templates) for the list of available templates.
-
-This repository features "Class Library" and "Console App" templates. After you build and run, the package containing these two templates will be available in the following location:
-  ```
-  <local_repo_root>\artifacts\packages\Debug\Shipping\Microsoft.DotNet.Common.ProjectTemplates.*.nupkg
-  ```
-
-[Top](#top)
 
 # Debugging
-Debugging code requires your current `dotnet new3` session to have its active build session configured to DEBUG, and a debugger from your application of choice to be attached to the currently running `dotnet new3` process. The steps required to accomplish this are outlined below.
 
-    When working with the source inside Visual Studio, it is recommended you use the latest available version.
-
-- Open the **Microsoft.TemplatingEngine.sln** solution in the application you will use to attach your debugger. This solution contains the projects needed to run, modify & debug the Template Engine.
-
-- Run the following command:
-  ```bash
-  dotnet .\dotnet-new3.dll --debug:attach {{additonal args}}
-  ```
-  By supplying the `--debug:attach` argument, you are triggering a ` Console.  ReadLine();` request which pauses the execution of the Template Engine at an early point in its execution.
-  
-  Once the engine is "paused", you have the opportunity to attach a debugger to the running `dotnet new3` process. 
-
-- Switch to your debugger application.
-
-- Open the **Microsoft.TemplateEngine.Cli.New3Command** class and locate the following function.
-  - `New3Command.Run()`
-- Set a breakpoint at any point after the following block of code.
-
-```csharp
-if (args.Any(x => string.Equals(x, "--debug:attach", StringComparison.Ordinal)))
-{
-    // This is the line that is executed when --debug:attach is passed as 
-    // an argument. 
-    Console.ReadLine();
-}
-```
-- Attach the debugger to the current running 'dotnet new 3' process.
-  For example, if you are using **Visual Studio** you can perform the following.
-  - Execute the keyboard shortcut - `ctrl + alt + p`.
-  - This will open up a dialog that allows you to search for the **dotnet-new3.exe** process.
-  - Locate the desired process, select it and hit the **Attach** button.
-    
-- Now that you have a debug session attached to your properly configured `dotnet new3` process, head back to the command line and hit `enter`.  This will trigger `Console.Readline()` to execute and your proceeding breakpoint to be hit inside the application you are using to debug. 
-
-[Top](#top)
+This repo doesn't contain an executable application anymore. We recommend to do debugging using tests.
+Add your test scenario to the [test project](https://github.com/dotnet/templating/tree/main/test/Microsoft.TemplateEngine.IDE.IntegrationTests) and debug it from IDE.
+To build, run and debug `dotnet new`, see the [instuctions in dotnet/sdk repo](https://github.com/dotnet/sdk#how-do-i-build-the-sdk).
 
 # Coding Style #
 
