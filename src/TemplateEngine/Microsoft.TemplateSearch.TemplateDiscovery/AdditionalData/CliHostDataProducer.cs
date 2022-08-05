@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
@@ -13,13 +12,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     {
         private const string CliHostDataName = "cliHostData";
 
-        private Dictionary<string, HostSpecificTemplateData> _hostDataForPackByTemplate = new(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, CliHostTemplateData> _hostDataForPackByTemplate = new(StringComparer.OrdinalIgnoreCase);
 
-        private Dictionary<ITemplatePackageInfo, Dictionary<string, HostSpecificTemplateData>> _hostDataForPack = new(new ITemplatePackageInfoComparer());
+        private Dictionary<ITemplatePackageInfo, Dictionary<string, CliHostTemplateData>> _hostDataForPack = new(new ITemplatePackageInfoComparer());
 
         internal CliHostDataProducer()
         {
-            _hostDataForPackByTemplate = new Dictionary<string, HostSpecificTemplateData>();
+            _hostDataForPackByTemplate = new Dictionary<string, CliHostTemplateData>();
         }
 
         public string DataUniqueName => CliHostDataName;
@@ -28,8 +27,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public object? CreateDataForTemplate(ITemplateInfo template, IEngineEnvironmentSettings environment)
         {
-            IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment);
-            HostSpecificTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
+            CliHostTemplateDataLoader hostDataLoader = new CliHostTemplateDataLoader(environment);
+            CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
             // store the host data if it has any info that could affect searching for this template.
             if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)
             {
@@ -40,12 +39,12 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
-            IHostSpecificDataLoader hostDataLoader = new HostSpecificDataLoader(environment);
-            Dictionary<string, HostSpecificTemplateData> dataForPack = new Dictionary<string, HostSpecificTemplateData>(StringComparer.OrdinalIgnoreCase);
+            CliHostTemplateDataLoader hostDataLoader = new CliHostTemplateDataLoader(environment);
+            Dictionary<string, CliHostTemplateData> dataForPack = new Dictionary<string, CliHostTemplateData>(StringComparer.OrdinalIgnoreCase);
 
             foreach (ITemplateInfo template in templateList)
             {
-                HostSpecificTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
+                CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
 
                 // store the host data if it has any info that could affect searching for this template.
                 if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)

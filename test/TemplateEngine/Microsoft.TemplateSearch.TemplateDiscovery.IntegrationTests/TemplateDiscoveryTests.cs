@@ -1,6 +1,5 @@
-﻿using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.TemplateEngine.TestHelper;
+﻿using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.TestHelper.Commands;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,7 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
                 .Execute()
                 .Should()
@@ -46,7 +45,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             foreach (var cacheFilePath in cacheFilePaths)
             {
                 Assert.True(File.Exists(cacheFilePath));
-                new DotnetNew3Command(_log)
+                new DotnetCommand(_log, "new")
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -55,7 +54,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetNew3Command(_log, "func", "--search")
+                new DotnetCommand(_log, "new", "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -66,7 +65,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .And.NotHaveStdOutContaining("Exception")
                     .And.HaveStdOutContaining("Microsoft.Azure.WebJobs.ProjectTemplates");
 
-                new DotnetNew3Command(_log)
+                new DotnetCommand(_log, "new")
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -75,7 +74,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetNew3Command(_log, "func", "--search")
+                new DotnetCommand(_log, "new", "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -101,7 +100,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
                 .Execute()
                 .Should()
@@ -126,7 +125,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
                 .Execute()
                 .Should()
@@ -149,7 +148,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
                 .Execute()
                 .Should()
@@ -174,7 +173,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "false")
@@ -213,7 +212,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "true",
@@ -262,7 +261,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "false")
@@ -299,7 +298,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "true",
@@ -349,7 +348,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "false")
@@ -386,7 +385,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "true",
@@ -440,7 +439,7 @@ Package Test.Templates was unlisted."
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v")
                 .Execute()
                 .Should()
@@ -470,7 +469,7 @@ Package Test.Templates was unlisted."
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "false")
@@ -493,7 +492,7 @@ Package Test.Templates was unlisted."
                 "--basePath",
                 testDir2,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation),
+                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
                 "-v",
                 "--diff",
                 "true",
@@ -517,7 +516,7 @@ Package Test.Templates was unlisted."
             foreach (var cacheFilePath in cacheFilePaths)
             {
                 Assert.True(File.Exists(cacheFilePath));
-                new DotnetNew3Command(_log)
+                new DotnetCommand(_log, "new")
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                       .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -526,7 +525,7 @@ Package Test.Templates was unlisted."
                       .ExitWith(0)
                       .And.NotHaveStdErr();
 
-                new DotnetNew3Command(_log, "CliHostFile", "--search")
+                new DotnetCommand(_log, "new", "CliHostFile", "--search")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -538,7 +537,7 @@ Package Test.Templates was unlisted."
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNew3Command(_log, "--search", "--param")
+                new DotnetCommand(_log, "new", "--search", "--param")
                      .WithCustomHive(settingsPath)
                      .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                      .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -550,7 +549,7 @@ Package Test.Templates was unlisted."
                      .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                      .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNew3Command(_log, "--search", "-p")
+                new DotnetCommand(_log, "new", "--search", "-p")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
@@ -562,7 +561,7 @@ Package Test.Templates was unlisted."
                     .And.HaveStdOutContaining("TestAssets.TemplateWithCliHostFile")
                     .And.HaveStdOutContaining("Microsoft.TemplateEngine.TestTemplates");
 
-                new DotnetNew3Command(_log, "--search", "--test-param")
+                new DotnetCommand(_log, "new", "--search", "--test-param")
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")

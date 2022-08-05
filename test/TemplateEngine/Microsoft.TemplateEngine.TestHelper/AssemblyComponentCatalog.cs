@@ -67,7 +67,11 @@ namespace Microsoft.TemplateEngine.TestHelper
                         continue;
                     }
 
-                    IIdentifiedComponent instance = (IIdentifiedComponent)Activator.CreateInstance(type);
+                    IIdentifiedComponent? instance = (IIdentifiedComponent?)Activator.CreateInstance(type);
+                    if (instance == null)
+                    {
+                        continue;
+                    }
                     foreach (var interfaceType in registerFor)
                     {
                         builder.Add((interfaceType, instance));

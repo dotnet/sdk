@@ -4,9 +4,7 @@
 #nullable enable
 
 using System.Globalization;
-using FluentAssertions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.TestHelper.Commands;
 using Xunit;
 using Xunit.Abstractions;
 

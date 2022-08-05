@@ -41,8 +41,12 @@ namespace Microsoft.TemplateEngine.TestHelper
             get
             {
                 string codebase = typeof(TestUtils).GetTypeInfo().Assembly.Location;
-                string codeBaseRoot = new FileInfo(codebase).Directory.Parent.Parent.Parent.Parent.Parent.FullName;
-                return codeBaseRoot;
+                string? codeBaseRoot = new FileInfo(codebase).Directory?.Parent?.Parent?.Parent?.Parent?.Parent?.FullName;
+                if (string.IsNullOrEmpty(codeBaseRoot))
+                {
+                    throw new InvalidOperationException("The codebase root was not found");
+                }
+                return codeBaseRoot!;
             }
         }   
 

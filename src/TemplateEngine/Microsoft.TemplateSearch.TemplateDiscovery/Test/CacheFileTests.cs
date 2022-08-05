@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.TestHelper.Commands;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {

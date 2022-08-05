@@ -3,7 +3,6 @@
 
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.TemplateEngine.Cli.TemplateSearch;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
 using Microsoft.TemplateSearch.TemplateDiscovery.Filters;
