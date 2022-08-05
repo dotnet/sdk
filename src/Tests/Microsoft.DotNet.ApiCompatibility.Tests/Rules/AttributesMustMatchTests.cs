@@ -31,59 +31,476 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
          * - Type
          * - Member
          */
-        [Fact]
-        public static void EnsureDiagnosticIsReported()
+
+        public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
-            // TODO: Interesting behavior from Roslyn. It attaches an attribute
-            // to a class even if it is used inside it. This is why we have a newline
-            // after the class declaration.
-            string leftSyntax = @"
+            {
+                @"
 namespace CompatTests
 {
   using System;
-  using System.Runtime.InteropServices;
-  internal class FooAttribute : Attribute { }
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+new CompatDifference[] {}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:System.SerializableAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = false, B = 4)]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First:[T:System.SerializableAttribute]")
+}
+            }
+        };
+
+        public static TheoryData<string, string, CompatDifference[]> MembersCases => new() {
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   internal class BarAttribute : Attribute { }
-  [Foo]
-  [Bar]
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
   public class First {
 
-    [DllImport(""user32.dll"", SetLastError=true, ExactSpelling=false)]
-    public static extern void G();
-
-    [Foo]
-    [Bar]
+    [Foo(""S"", A = true, B = 3)]
     [Bar]
     public void F() {}
   }
 }
-";
-            string rightSyntax = @"
+",
+                @"
 namespace CompatTests
 {
   using System;
-  using System.Runtime.InteropServices;
-  internal class FooAttribute : Attribute { }
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
   internal class BarAttribute : Attribute { }
-  [Bar]
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
   public class First {
 
-    [DllImport(""user32.dll"", SetLastError=true, ExactSpelling=true)]
-    public static extern void G();
-
-    [Bar]
+    [Foo(""T"")]
+    [Baz]
     public void F() {}
   }
 }
-";
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [Foo(""S"", A = true, B = 3)]
+    [Bar]
+    public int F { get; }
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [Foo(""T"")]
+    [Baz]
+    public int F { get; }
+  }
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "P:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "P:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "P:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    public delegate void EventHandler(object sender, object e);
+
+    [Foo(""S"", A = true, B = 3)]
+    [Bar]
+    public event EventHandler F;
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    public delegate void EventHandler(object sender, object e);
+
+    [Foo(""T"")]
+    [Baz]
+    public event EventHandler F;
+  }
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "E:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "E:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "E:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [Foo(""S"", A = true, B = 3)]
+    [Bar]
+    public First() {}
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [Foo(""T"")]
+    [Baz]
+    public First() {}
+  }
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.#ctor:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.#ctor:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.#ctor:[T:CompatTests.BazAttribute]")
+}
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [return: Foo(""S"", A = true, B = 3)]
+    [return: Bar]
+    public int F() => 0;
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    [return: Foo(""T"")]
+    [return: Baz]
+    public int F() => 0;
+  }
+}
+",
+new CompatDifference[] {
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+}
+            }
+        };
+
+        [Theory]
+        [MemberData(nameof(TypesCases))]
+        [MemberData(nameof(MembersCases))]
+        public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] want)
+        {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new();
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
-            CompatDifference[] expected = new CompatDifference[] { };
-            Assert.Equal(expected, differences);
+            IEnumerable<CompatDifference> got = differ.GetDifferences(new[] { left }, new[] { right });
+            Assert.Equal(want, got);
         }
     }
+
 }

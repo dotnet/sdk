@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             foreach (var rgrp in rightAttr)
             {
                 var lgrp = leftAttr.contains(rgrp._repr);
-                if (rgrp == null)
+                if (lgrp == null)
                 {
                     // exists on right but not left.
                     // loop over right and issue "added" diagnostic for each one.
@@ -203,6 +203,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private void RunOnMemberSymbol(ISymbol left, ISymbol right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, string leftName, string rightName, IList<CompatDifference> differences)
         {
+            var leftMethod = left as IMethodSymbol;
+            var rightMethod = right as IMethodSymbol;
+            if (leftMethod != null && rightMethod != null)
+            {
+                reportAttributeDifferences(left, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
+            }
             reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
         }
     }
