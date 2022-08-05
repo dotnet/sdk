@@ -284,6 +284,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                 var fileName = Path.GetFileName(key);
                 return fileName.StartsWith("dotnet.", StringComparison.Ordinal) && fileName.EndsWith(".js", StringComparison.Ordinal) && !fileName.Contains("worker");
             }
+
             static bool IsDotNetCryptoJs(string key)
             {
                 var fileName = Path.GetFileName(key);
@@ -640,7 +641,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         private static bool IsNativeAsset(string traitValue) => string.Equals(traitValue, "native", StringComparison.Ordinal) || string.Equals(traitValue, "js-module-crypto", StringComparison.Ordinal);
 
         private static bool IsRuntimeAsset(string traitValue) => string.Equals(traitValue, "runtime", StringComparison.Ordinal);
-        
         private static bool IsSymbolAsset(string traitValue) => string.Equals(traitValue, "symbol", StringComparison.Ordinal);
 
         private static bool IsAlternative(ITaskItem asset) => string.Equals(asset.GetMetadata("AssetRole"), "Alternative", StringComparison.Ordinal);

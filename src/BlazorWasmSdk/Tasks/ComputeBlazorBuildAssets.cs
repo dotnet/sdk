@@ -118,7 +118,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         assetCandidates.Add(newDotNetJs);
                         continue;
                     }
-                    else if(candidate.GetMetadata("FileName") == "dotnet-crypto-worker" && candidate.GetMetadata("Extension") == ".js")
+                    else if (candidate.GetMetadata("FileName") == "dotnet-crypto-worker" && candidate.GetMetadata("Extension") == ".js")
                     {
                         var itemHash = FileHasher.GetFileHash(candidate.ItemSpec);
                         var cacheBustedDotNetCryptoWorkerJSFileName = $"dotnet-crypto-worker.{candidate.GetMetadata("NuGetPackageVersion")}.{itemHash}.js";

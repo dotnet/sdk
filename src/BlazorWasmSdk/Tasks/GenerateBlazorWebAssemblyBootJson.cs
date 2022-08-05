@@ -170,7 +170,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                         Debug.Assert(!string.IsNullOrEmpty(targetPath), "Target path for '{0}' must exist.", resource.ItemSpec);
                         AddResourceToList(resource, resourceList, targetPath);
                         continue;
-                    }else if(string.Equals(assetTraitName, "BlazorWebAssemblyResource", StringComparison.OrdinalIgnoreCase) &&
+                    } 
+                    else if(string.Equals(assetTraitName, "BlazorWebAssemblyResource", StringComparison.OrdinalIgnoreCase) &&
                             string.Equals(assetTraitValue, "js-module-crypto", StringComparison.OrdinalIgnoreCase))
                     {
                         behavior = assetTraitValue;
