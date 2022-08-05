@@ -103,7 +103,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
         /// Additional assets that the runtime consumes as part of the boot process.
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
-        public Dictionary<string, AdditionalAsset> RuntimeAssets { get; set; }
+        public Dictionary<string, AdditionalAsset> runtimeAssets { get; set; }
 
     }
 
