@@ -1,3 +1,0 @@
-﻿File actions would have been taken:
-  Create: folderF/Custom/Path/%FILENAME%
-  Create: folderF/Custom/Path/%FILENAME%
