@@ -483,6 +483,7 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
+    // TODO: maybe these should point to the return type, and have a more specific message?
     new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
     new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
@@ -502,5 +503,7 @@ new CompatDifference[] {
             Assert.Equal(want, got);
         }
     }
+    // TODO: method parameter attributes
+    // TODO: generic type parameter
 
 }
