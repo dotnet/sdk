@@ -1948,4 +1948,15 @@
   <data name="SpecifyIFormatProviderMessageIFormatProviderOptional" xml:space="preserve">
     <value>The behavior of '{0}' could vary based on the current user's locale settings. Provide a value for the 'IFormatProvider' argument.</value>
   </data>
+  <data name="PlatformCompatibilityObsoletedCsAllPlatformMessage" xml:space="preserve">
+    <value>This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</value>
+    <comment>This call site is reachable on all platforms. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</comment>
+  </data>
+  <data name="PlatformCompatibilityObsoletedCsReachableMessage" xml:space="preserve">
+    <value>This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</value>
+    <comment>This call site is reachable on 'macos', 'linux'. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</comment>
+  </data>
+  <data name="ParenthesisWithPlaceHolder" xml:space="preserve">
+    <value> ({0})</value>
+  </data>
 </root>
