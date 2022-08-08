@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime;
@@ -48,11 +49,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             private HashSet<AttributeGroup> _set;
             private RuleSettings _Settings;
 
-            public AttributeSet(RuleSettings Settings, ImmutableArray<AttributeData> attributes)
+            public AttributeSet(RuleSettings Settings, IList<AttributeData> attributes)
             {
                 _set = new HashSet<AttributeGroup>(new AttributeGroup(Settings));
                 _Settings = Settings;
-                for (int i = 0; i < attributes.Length; i++)
+                for (int i = 0; i < attributes.Count; i++)
                 {
                     add(attributes[i]);
                 }
@@ -93,18 +94,42 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
+        private OrderedDictionary fromTypeParams(ImmutableArray<ITypeParameterSymbol> arr)
+        {
+            // We use OrderedDictionary to preserve the order of insertion.
+            var result = new OrderedDictionary();
+            foreach (var tp in arr)
+            {
+                if (result.Contains(tp.Name))
+                {
+                    var attrData = (List<AttributeData>)result[tp.Name];
+                    attrData.AddRange(tp.GetAttributes());
+                }
+                else
+                {
+                    result.Add(tp.Name, new List<AttributeData>(tp.GetAttributes()));
+                }
+            }
+            return result;
+        }
+
         private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             var leftNamed = left as INamedTypeSymbol;
             var rightNamed = right as INamedTypeSymbol;
             if (leftNamed != null && rightNamed != null)
             {
-                for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
+                var leftParams = fromTypeParams(leftNamed.TypeParameters);
+                var rightParams = fromTypeParams(rightNamed.TypeParameters);
+                foreach (DictionaryEntry kvp in leftParams)
                 {
-                    reportAttributeDifferences(left,
-                    leftNamed.TypeParameters[i].GetAttributes(),
-                    rightNamed.TypeParameters[i].GetAttributes(),
-                    differences);
+                    if (rightParams.Contains(kvp.Key))
+                    {
+                        reportAttributeDifferences(left,
+                            (List<AttributeData>)kvp.Value,
+                            (List<AttributeData>)rightParams[kvp.Key],
+                            differences);
+                    }
                 }
             }
             var leftAttr = new AttributeSet(Settings, left.GetAttributes());
@@ -145,8 +170,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         private void reportAttributeDifferences(ISymbol containing,
-                                                ImmutableArray<AttributeData> left,
-                                                ImmutableArray<AttributeData> right,
+                                                IList<AttributeData> left,
+                                                IList<AttributeData> right,
                                                 IList<CompatDifference> differences)
         {
             var leftAttr = new AttributeSet(Settings, left);
@@ -226,6 +251,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMethod.Parameters[i].GetAttributes(),
                     rightMethod.Parameters[i].GetAttributes(),
                     differences);
+                }
+                var leftParams = fromTypeParams(leftMethod.TypeParameters);
+                var rightParams = fromTypeParams(rightMethod.TypeParameters);
+                foreach (DictionaryEntry kvp in leftParams)
+                {
+                    if (rightParams.Contains(kvp.Key))
+                    {
+                        reportAttributeDifferences(left,
+                            (List<AttributeData>)kvp.Value,
+                            (List<AttributeData>)rightParams[kvp.Key],
+                            differences);
+                    }
                 }
             }
             reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
