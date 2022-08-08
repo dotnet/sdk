@@ -488,6 +488,63 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
+            },
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    public void F([Bar] int v, [Foo(""S"", A = true, B = 0)] string s) {}
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A = false;
+    public int B = 0;
+  }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BarAttribute : Attribute { }
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class BazAttribute : Attribute { }
+
+  public class First {
+
+    public void F([Baz] int v, [Foo(""T"")] string s) {}
+  }
+}
+",
+new CompatDifference[] {
+    // TODO: maybe these should point to the parameter, and have a more specific message?
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.BazAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.FooAttribute]"),
+
+}
             }
         };
 
@@ -503,7 +560,6 @@ new CompatDifference[] {
             Assert.Equal(want, got);
         }
     }
-    // TODO: method parameter attributes
     // TODO: generic type parameter
 
 }

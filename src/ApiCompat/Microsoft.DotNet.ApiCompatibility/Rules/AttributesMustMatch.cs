@@ -208,6 +208,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (leftMethod != null && rightMethod != null)
             {
                 reportAttributeDifferences(left, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
+                for (int i = 0; i < leftMethod.Parameters.Length; i++)
+                {
+                    reportAttributeDifferences(left,
+                    leftMethod.Parameters[i].GetAttributes(),
+                    rightMethod.Parameters[i].GetAttributes(),
+                    differences);
+                }
             }
             reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
         }
