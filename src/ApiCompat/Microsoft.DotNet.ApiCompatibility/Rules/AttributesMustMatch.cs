@@ -16,6 +16,9 @@ using Microsoft.DotNet.ApiCompatibility.Abstractions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
+    /// <summary>
+    /// This class implements a rule to check that the attributes between public members do not change.
+    /// </summary>
     public class AttributesMustMatch : IRule
     {
         private readonly RuleSettings _settings;
@@ -49,12 +52,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         private class AttributeSet : IEnumerable<AttributeGroup>
         {
             private HashSet<AttributeGroup> _set;
-            private RuleSettings _Settings;
+            private readonly RuleSettings _settings;
 
             public AttributeSet(RuleSettings Settings, IList<AttributeData> attributes)
             {
                 _set = new HashSet<AttributeGroup>(new AttributeGroup(Settings));
-                _Settings = Settings;
+                _settings = Settings;
                 for (int i = 0; i < attributes.Count; i++)
                 {
                     add(attributes[i]);
@@ -63,7 +66,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             public void add(AttributeData attr)
             {
-                var grp = new AttributeGroup(_Settings, attr);
+                var grp = new AttributeGroup(_settings, attr);
                 if (_set.TryGetValue(grp, out AttributeGroup? g))
                 {
                     g.add(attr);
@@ -76,7 +79,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             public AttributeGroup? contains(AttributeData? attr)
             {
-                var grp = new AttributeGroup(_Settings, attr);
+                var grp = new AttributeGroup(_settings, attr);
                 if (_set.TryGetValue(grp, out AttributeGroup? g))
                 {
                     return g;

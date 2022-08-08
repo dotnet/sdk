@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
         public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
+            // No change to type's attributes
             {
                 @"
 namespace CompatTests
@@ -71,6 +72,7 @@ namespace CompatTests
 ",
 new CompatDifference[] {}
             },
+            // Attribute removed from type
             {
                 @"
 namespace CompatTests
@@ -109,6 +111,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:System.SerializableAttribute]")
 }
             },
+            // Attribute changed on type
             {
                 @"
 namespace CompatTests
@@ -148,6 +151,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
 }
             },
+            // Attribute added to type
             {
                 @"
 namespace CompatTests
@@ -189,6 +193,7 @@ new CompatDifference[] {
         };
 
         public static TheoryData<string, string, CompatDifference[]> MembersCases => new() {
+            // Attributes on method
             {
                 @"
 namespace CompatTests
@@ -248,6 +253,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
+            // Attributes on property
             {
                 @"
 namespace CompatTests
@@ -307,6 +313,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "P:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
+            // Attributes on event
             {
                 @"
 namespace CompatTests
@@ -370,6 +377,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "E:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
+            // Attributes on constructor
             {
                 @"
 namespace CompatTests
@@ -429,6 +437,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.#ctor:[T:CompatTests.BazAttribute]")
 }
             },
+            // Attributes on return type
             {
                 @"
 namespace CompatTests
@@ -488,6 +497,7 @@ new CompatDifference[] {
     new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F->int:[T:CompatTests.BazAttribute]")
 }
             },
+            // Attributes on method parameter
             {
                 @"
 namespace CompatTests
@@ -544,6 +554,7 @@ new CompatDifference[] {
 
 }
             },
+            // Attributes on type parameter of class
             {
                 @"
 namespace CompatTests
@@ -594,7 +605,8 @@ new CompatDifference[] {
 
 }
             },
-{
+            // Attributes on type parameter of method
+            {
                 @"
 namespace CompatTests
 {
