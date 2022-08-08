@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be("99.99.98");
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory, SolutionFilePath = solutionFilePath },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be(version);
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFilePath = projectFilePath, SolutionFilePath = solutionFilePath },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be(version);
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Should().BeNull();
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
             result.AdditionalPaths.Should().BeNull();
             result.PropertiesToAdd.Count.Should().Be(2);
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be("99.99.99");
@@ -374,7 +374,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be("999.99.99");
@@ -401,7 +401,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be(disallowPreviewsByDefault ? "10.0.0" : "11.0.0-preview1");
@@ -429,7 +429,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be(disallowPreviews ? "10.0.0" : "11.0.0-preview1");
@@ -503,7 +503,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(preview.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be("11.0.0-preview1");
@@ -532,7 +532,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
                 new MockFactory());
 
-            result.Success.Should().BeTrue();
+            result.Success.Should().BeTrue(string.Join(Environment.NewLine, result.Errors));
             result.Path.Should().Be(expected.FullName);
             result.AdditionalPaths.Should().BeNull();
             result.Version.Should().Be(vsSettings.DisallowPrerelease() ? "10.0.0" : "11.0.0-preview1");
@@ -582,7 +582,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 
                 DeleteMinimumVSDefinedSDKVersionFile();
 
-                PathEnvironmentVariable = string.Empty;
+                string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                PathEnvironmentVariable = dotnetRootUnderTest;
             }
 
             public SdkResolver CreateResolver(bool useAmbientSettings = false)
