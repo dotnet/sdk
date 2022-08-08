@@ -94,66 +94,42 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private OrderedDictionary fromTypeParams(ImmutableArray<ITypeParameterSymbol> arr)
-        {
-            // We use OrderedDictionary to preserve the order of insertion.
-            var result = new OrderedDictionary();
-            foreach (var tp in arr)
-            {
-                if (result.Contains(tp.Name))
-                {
-                    var attrData = (List<AttributeData>)result[tp.Name];
-                    attrData.AddRange(tp.GetAttributes());
-                }
-                else
-                {
-                    result.Add(tp.Name, new List<AttributeData>(tp.GetAttributes()));
-                }
-            }
-            return result;
-        }
-
         private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
             var leftNamed = left as INamedTypeSymbol;
             var rightNamed = right as INamedTypeSymbol;
             if (leftNamed != null && rightNamed != null)
             {
-                var leftParams = fromTypeParams(leftNamed.TypeParameters);
-                var rightParams = fromTypeParams(rightNamed.TypeParameters);
-                foreach (DictionaryEntry kvp in leftParams)
+                if (leftNamed.TypeParameters.Length == rightNamed.TypeParameters.Length)
                 {
-                    if (rightParams.Contains(kvp.Key))
+                    for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
                     {
-                        reportAttributeDifferences(left,
-                            (List<AttributeData>)kvp.Value,
-                            (List<AttributeData>)rightParams[kvp.Key],
-                            differences);
+                        reportAttributeDifferences(left, left.GetDocumentationCommentId() + $"<{i}>", leftNamed.TypeParameters[i].GetAttributes(), rightNamed.TypeParameters[i].GetAttributes(), differences);
                     }
                 }
             }
             var leftAttr = new AttributeSet(Settings, left.GetAttributes());
             var rightAttr = new AttributeSet(Settings, right.GetAttributes());
             // commenting this out changes the list of differences.
-            reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
+            reportAttributeDifferences(left, left.GetDocumentationCommentId(), left.GetAttributes(), right.GetAttributes(), differences);
         }
 
-        private CompatDifference removedDifference(ISymbol containing, AttributeData attr)
+        private CompatDifference removedDifference(ISymbol containing, string itemRef, AttributeData attr)
         {
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
+            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, itemRef + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
-        private CompatDifference addedDifference(ISymbol containing, AttributeData attr)
+        private CompatDifference addedDifference(ISymbol containing, string itemRef, AttributeData attr)
         {
             string msg = string.Format(Resources.CannotAddAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
+            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, itemRef + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
-        private CompatDifference changedDifference(ISymbol containing, AttributeData attr)
+        private CompatDifference changedDifference(ISymbol containing, string itemRef, AttributeData attr)
         {
             string msg = string.Format(Resources.CannotChangeAttribute, attr.AttributeClass, containing);
-            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, containing.GetDocumentationCommentId() + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
+            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, itemRef + ":[" + attr.AttributeClass.GetDocumentationCommentId() + "]");
         }
 
         private bool attributeEquals(AttributeData left, AttributeData right)
@@ -170,6 +146,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         private void reportAttributeDifferences(ISymbol containing,
+                                                string itemRef,
                                                 IList<AttributeData> left,
                                                 IList<AttributeData> right,
                                                 IList<CompatDifference> differences)
@@ -186,7 +163,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     for (int i = 0; i < lgrp._attributes.Count; i++)
                     {
                         var lem = lgrp._attributes[i];
-                        differences.Add(removedDifference(containing, lem));
+                        differences.Add(removedDifference(containing, itemRef, lem));
                     }
                 }
                 else
@@ -207,7 +184,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         }
                         if (!seen)
                         {
-                            differences.Add(changedDifference(containing, lem));
+                            differences.Add(changedDifference(containing, itemRef, lem));
                             // issue lem exists on left but not right.
                         }
                     }
@@ -217,7 +194,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // issue rem exists on right but not left.
                             var rem = rgrp._attributes[i];
-                            differences.Add(changedDifference(containing, rem));
+                            differences.Add(changedDifference(containing, itemRef, rem));
                         }
                     }
                 }
@@ -232,7 +209,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     for (int i = 0; i < rgrp._attributes.Count; i++)
                     {
                         var rem = rgrp._attributes[i];
-                        differences.Add(addedDifference(containing, rem));
+                        differences.Add(addedDifference(containing, itemRef, rem));
                     }
                 }
             }
@@ -244,28 +221,27 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             var rightMethod = right as IMethodSymbol;
             if (leftMethod != null && rightMethod != null)
             {
-                reportAttributeDifferences(left, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
-                for (int i = 0; i < leftMethod.Parameters.Length; i++)
+                reportAttributeDifferences(left, left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
+                if (leftMethod.Parameters.Length == rightMethod.Parameters.Length)
                 {
-                    reportAttributeDifferences(left,
-                    leftMethod.Parameters[i].GetAttributes(),
-                    rightMethod.Parameters[i].GetAttributes(),
-                    differences);
-                }
-                var leftParams = fromTypeParams(leftMethod.TypeParameters);
-                var rightParams = fromTypeParams(rightMethod.TypeParameters);
-                foreach (DictionaryEntry kvp in leftParams)
-                {
-                    if (rightParams.Contains(kvp.Key))
+                    for (int i = 0; i < leftMethod.Parameters.Length; i++)
                     {
                         reportAttributeDifferences(left,
-                            (List<AttributeData>)kvp.Value,
-                            (List<AttributeData>)rightParams[kvp.Key],
-                            differences);
+                        left.GetDocumentationCommentId() + $"${i}",
+                        leftMethod.Parameters[i].GetAttributes(),
+                        rightMethod.Parameters[i].GetAttributes(),
+                        differences);
+                    }
+                }
+                if (leftMethod.TypeParameters.Length == rightMethod.TypeParameters.Length)
+                {
+                    for (int i = 0; i < leftMethod.TypeParameters.Length; i++)
+                    {
+                        reportAttributeDifferences(left, left.GetDocumentationCommentId() + $"<{i}>", leftMethod.TypeParameters[i].GetAttributes(), rightMethod.TypeParameters[i].GetAttributes(), differences);
                     }
                 }
             }
-            reportAttributeDifferences(left, left.GetAttributes(), right.GetAttributes(), differences);
+            reportAttributeDifferences(left, left.GetDocumentationCommentId(), left.GetAttributes(), right.GetAttributes(), differences);
         }
     }
 }

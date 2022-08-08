@@ -483,10 +483,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    // TODO: maybe these should point to the return type, and have a more specific message?
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F->int:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F->int:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F->int:[T:CompatTests.BazAttribute]")
 }
             },
             {
@@ -539,10 +538,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    // TODO: maybe these should point to the parameter, and have a more specific message?
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String):[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BazAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$1:[T:CompatTests.FooAttribute]"),
 
 }
             },
@@ -590,10 +588,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    // TODO: maybe these should point to the type parameter, and have a more specific message?
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First`2:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First`2:[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First`2:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First`2<0>:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First`2<0>:[T:CompatTests.BazAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First`2<1>:[T:CompatTests.FooAttribute]"),
 
 }
             },
@@ -647,10 +644,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    // TODO: maybe these should point to the parameter, and have a more specific message?
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F``2:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F``2:[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F``2:[T:CompatTests.FooAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F``2<0>:[T:CompatTests.BarAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F``2<0>:[T:CompatTests.BazAttribute]"),
+    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F``2<1>:[T:CompatTests.FooAttribute]"),
 
 }
             }
