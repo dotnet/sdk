@@ -95,6 +95,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private void RunOnTypeSymbol(ITypeSymbol left, ITypeSymbol right, string leftName, string rightName, IList<CompatDifference> differences)
         {
+            var leftNamed = left as INamedTypeSymbol;
+            var rightNamed = right as INamedTypeSymbol;
+            if (leftNamed != null && rightNamed != null)
+            {
+                for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
+                {
+                    reportAttributeDifferences(left,
+                    leftNamed.TypeParameters[i].GetAttributes(),
+                    rightNamed.TypeParameters[i].GetAttributes(),
+                    differences);
+                }
+            }
             var leftAttr = new AttributeSet(Settings, left.GetAttributes());
             var rightAttr = new AttributeSet(Settings, right.GetAttributes());
             // commenting this out changes the list of differences.
