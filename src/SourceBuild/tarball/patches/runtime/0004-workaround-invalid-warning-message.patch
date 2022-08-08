@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Fri, 5 Aug 2022 15:26:42 +0000
+Subject: [PATCH] workaround invalid warning message
+
+Temporary fix to unblock work until runtime provides a fix.
+
+Backport: https://github.com/dotnet/runtime/issues/73463
+---
+ eng/packaging.targets | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/packaging.targets b/eng/packaging.targets
+index ac639efe49c..1929f2f1251 100644
+--- a/eng/packaging.targets
++++ b/eng/packaging.targets
+@@ -200,7 +200,7 @@
+ <![CDATA[<Project InitialTargets="$(_NETStandardCompatErrorFileTarget)">
+   <Target Name="$(_NETStandardCompatErrorFileTarget)"
+           Condition="'%24(SuppressTfmSupportBuildWarnings)' == ''">
+-    <Warning Text="$(PackageId) $(PackageVersion) doesn't support %24(TargetFramework) and has not been tested with it. Consider upgrading your TargetFramework to %(NETStandardCompatError.Supported) or later. You may also set &lt;SuppressTfmSupportBuildWarnings&gt;true&lt;/SuppressTfmSupportBuildWarnings&gt; in the project file to ignore this warning and attempt to run in this unsupported configuration at your own risk." />
++    <Warning Text="$(PackageId) $(PackageVersion) doesn't support %24(TargetFramework) and has not been tested with it." />
+   </Target>
+ </Project>]]>
+       </_NETStandardCompatErrorFileContent>
