@@ -104,9 +104,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 return;
             }
-            var leftNamed = left as INamedTypeSymbol;
-            var rightNamed = right as INamedTypeSymbol;
-            if (leftNamed != null && rightNamed != null)
+            if (left is INamedTypeSymbol leftNamed && right is INamedTypeSymbol rightNamed)
             {
                 if (leftNamed.TypeParameters.Length == rightNamed.TypeParameters.Length)
                 {
@@ -119,19 +117,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             reportAttributeDifferences(left, left.GetDocumentationCommentId() ?? "", left.GetAttributes(), right.GetAttributes(), differences);
         }
 
-        private CompatDifference removedDifference(ISymbol containing, string itemRef, AttributeData? attr)
+        private static CompatDifference removedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
             return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
         }
 
-        private CompatDifference addedDifference(ISymbol containing, string itemRef, AttributeData? attr)
+        private static CompatDifference addedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotAddAttribute, attr, containing);
             return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
         }
 
-        private CompatDifference changedDifference(ISymbol containing, string itemRef, AttributeData? attr)
+        private static CompatDifference changedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotChangeAttribute, attr?.AttributeClass, containing);
             return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
@@ -162,17 +160,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             var leftAttr = new AttributeSet(_settings, left);
             var rightAttr = new AttributeSet(_settings, right);
-            foreach (var lgrp in leftAttr)
+            foreach (AttributeGroup lgrp in leftAttr)
             {
-                var rgrp = rightAttr.contains(lgrp._repr);
+                AttributeGroup? rgrp = rightAttr.contains(lgrp._repr);
                 if (rgrp == null)
                 {
                     // exists on left but not on right.
                     // loop over left and issue "removed" diagnostic for each one.
                     for (int i = 0; i < lgrp._attributes?.Count; i++)
                     {
-                        var lem = lgrp._attributes[i];
-                        differences.Add(removedDifference(containing, itemRef, lem));
+                        AttributeData? lem = lgrp._attributes[i];
+                        differences.Add(AttributesMustMatch.removedDifference(containing, itemRef, lem));
                     }
                 }
                 else
@@ -187,11 +185,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     }
                     for (int i = 0; i < lgrp._attributes.Count; i++)
                     {
-                        var lem = lgrp._attributes[i];
-                        var seen = false;
+                        AttributeData? lem = lgrp._attributes[i];
+                        bool seen = false;
                         for (int j = 0; j < rgrp._attributes.Count; j++)
                         {
-                            var rem = rgrp._attributes[j];
+                            AttributeData? rem = rgrp._attributes[j];
                             if (attributeEquals(lem, rem))
                             {
                                 rgrp._seen[j] = true;
@@ -201,7 +199,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         }
                         if (!seen)
                         {
-                            differences.Add(changedDifference(containing, itemRef, lem));
+                            differences.Add(AttributesMustMatch.changedDifference(containing, itemRef, lem));
                             // issue lem exists on left but not right.
                         }
                     }
@@ -210,23 +208,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         if (!rgrp._seen[i])
                         {
                             // issue rem exists on right but not left.
-                            var rem = rgrp._attributes[i];
-                            differences.Add(changedDifference(containing, itemRef, rem));
+                            AttributeData? rem = rgrp._attributes[i];
+                            differences.Add(AttributesMustMatch.changedDifference(containing, itemRef, rem));
                         }
                     }
                 }
             }
             foreach (var rgrp in rightAttr)
             {
-                var lgrp = leftAttr.contains(rgrp._repr);
+                AttributeGroup? lgrp = leftAttr.contains(rgrp._repr);
                 if (lgrp == null)
                 {
                     // exists on right but not left.
                     // loop over right and issue "added" diagnostic for each one.
                     for (int i = 0; i < rgrp._attributes?.Count; i++)
                     {
-                        var rem = rgrp._attributes[i];
-                        differences.Add(addedDifference(containing, itemRef, rem));
+                        AttributeData? rem = rgrp._attributes[i];
+                        differences.Add(AttributesMustMatch.addedDifference(containing, itemRef, rem));
                     }
                 }
             }
@@ -238,20 +236,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 return;
             }
-            var leftMethod = left as IMethodSymbol;
-            var rightMethod = right as IMethodSymbol;
-            if (leftMethod != null && rightMethod != null)
+            if (left is IMethodSymbol leftMethod && right is IMethodSymbol rightMethod)
             {
                 reportAttributeDifferences(left, left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
                 if (leftMethod.Parameters.Length == rightMethod.Parameters.Length)
                 {
                     for (int i = 0; i < leftMethod.Parameters.Length; i++)
                     {
-                        reportAttributeDifferences(left,
-                        left.GetDocumentationCommentId() + $"${i}",
-                        leftMethod.Parameters[i].GetAttributes(),
-                        rightMethod.Parameters[i].GetAttributes(),
-                        differences);
+                        reportAttributeDifferences(left, left.GetDocumentationCommentId() + $"${i}", leftMethod.Parameters[i].GetAttributes(), rightMethod.Parameters[i].GetAttributes(), differences);
                     }
                 }
                 if (leftMethod.TypeParameters.Length == rightMethod.TypeParameters.Length)
