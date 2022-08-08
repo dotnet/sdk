@@ -52,18 +52,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 {
                     if (mm.ShouldDiffElement(rightIndex))
                     {
-                        ITypeSymbol? leftContainingType = mm.ContainingType.Left;
-                        ITypeSymbol? rightContainingType = mm.ContainingType.Right[rightIndex];
-                    
                         // ContainingType Left and Right cannot be null, as otherwise, the above condition would be false.
-                        Debug.Assert(leftContainingType != null);
-                        Debug.Assert(rightContainingType != null);
+                        Debug.Assert(mm.ContainingType.Left != null);
+                        Debug.Assert(mm.ContainingType.Right[rightIndex] != null);
 
                         _context.RunOnMemberSymbolActions(
                             mm.Left,
                             mm.Right[rightIndex],
-                            leftContainingType,
-                            rightContainingType,
+                            mm.ContainingType.Left!,
+                            mm.ContainingType.Right[rightIndex]!,
                             leftName,
                             rightName,
                             differences);
