@@ -269,8 +269,6 @@
          Remove them. -->
     <ItemGroup>
       <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\humanizer\samples\**\*.js" />
-      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*nuget-client\**\EndToEnd\**\jquery-validation-unobtrusive\*.js" />
-      <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*nuget-client\**\EndToEnd\**\jquery-validation-unobtrusive\.bower.json" />
       <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*aspnetcore\**\samples\**\jquery-validation-unobtrusive\.bower.json" />
       <TarballSrcNonOpenSourceFiles Include="$(TarballSourceDir)**\*aspnetcore\**\samples\**\jquery-validation-unobtrusive\*.js" />
     </ItemGroup>
