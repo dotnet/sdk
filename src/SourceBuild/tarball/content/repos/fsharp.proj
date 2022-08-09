@@ -21,13 +21,20 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="msbuild" /> 
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
   </ItemGroup>
+
+  <Target Name="SetArcadeSdkDir"
+          BeforeTargets="Build">
+    <ItemGroup>
+      <EnvironmentVariables Include="ArcadeSdkDir=$(ToolPackageExtractDir)%(UseSourceBuiltSdkOverride.Identity)/" />
+    </ItemGroup>
+  </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

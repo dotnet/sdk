@@ -31,13 +31,17 @@
     <UseSourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
-    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkSdkOverride)" />
+    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkOverride)" />
     <UseSourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 
   <!-- Environment Variables -->
   <ItemGroup>
     <EnvironmentVariables Include="BuildInParallel=false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
 
 </Project>

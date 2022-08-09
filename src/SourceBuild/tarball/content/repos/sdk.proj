@@ -32,7 +32,7 @@
     <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />
