@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         bool StrictMode { get; set; }
 
         /// <summary>
-        /// Flag indicating whether the api comparison should warn when references are missing.
+        /// Flag indicating whether the API comparison should warn when references are missing.
         /// </summary>
         bool WarnOnMissingReferences { get; set; }
 
