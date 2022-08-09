@@ -1,5 +1,5 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Çözüm Dosyası",
-  "description": "Hiçbir proje içermeyen boş bir çözüm oluştur"
+  "name": "Solution File",
+  "description": "Create an empty solution containing no projects"
 }
