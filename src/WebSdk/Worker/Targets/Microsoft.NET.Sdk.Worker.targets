@@ -20,18 +20,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets" 
          Condition="Exists('$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets')" />
 
-  <Choose>
-    <When Condition="!Exists('$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets')" >
-      <ItemGroup>
-        <ProjectCapability Include="DotNetCoreWorker" />
-        <ProjectCapability Include="SupportHierarchyContextSvc" />
-        <ProjectCapability Include="DynamicDependentFile" />
-        <ProjectCapability Include="DynamicFileNesting" />
-        <ProjectCapability Include="LocalUserSecrets" />
-        <ProjectCapability Include="WebNestingDefaults" />
-        <ProjectCapability Include="DynamicFileNestingEnabled" />
-      </ItemGroup>
-    </When>
-  </Choose>
+  <ItemGroup>
+    <ProjectCapability Include="DotNetCoreWorker" />
+    <ProjectCapability Include="SupportHierarchyContextSvc" />
+    <ProjectCapability Include="DynamicDependentFile" />
+    <ProjectCapability Include="DynamicFileNesting" />
+    <ProjectCapability Include="LocalUserSecrets" />
+    <ProjectCapability Include="WebNestingDefaults" />
+    <ProjectCapability Include="DynamicFileNestingEnabled" />
+  </ItemGroup>
 
 </Project>
