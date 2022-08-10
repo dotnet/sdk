@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="ConditionEvaluation_Error_CyclicDependency">
         <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</target>
+        <target state="translated">Podmínky parametru obsahují cyklickou závislost: [{0}], která brání deterministickému vyhodnocení.</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_MismatchedCondition">
         <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</source>
-        <target state="new">Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</target>
+        <target state="translated">Nepovedlo se vyhodnotit podmínku {0} na {1} parametru (text podmínky: {2}, chyba vyhodnocení: {3}) – podmínka může být poškozená.</target>
         <note>{0} is the condition type
 {1} is parameter name
 {2} is condition text
@@ -17,12 +17,12 @@
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_TopologicalSort">
         <source>Unexpected internal error - unable to perform topological sort of parameter dependencies that do not appear to have a cyclic dependencies.</source>
-        <target state="new">Unexpected internal error - unable to perform topological sort of parameter dependencies that do not appear to have a cyclic dependencies.</target>
+        <target state="translated">Neočekávaná vnitřní chyba : Nelze provést topologické řazení závislostí parametrů, které pravděpodobně nemají cyklické závislosti.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Warning_CyclicDependency">
         <source>Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it's possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it's possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error.</target>
+        <target state="translated">Podmínky parametru obsahují cyklickou závislost: [{0}]. S aktuálními hodnotami parametrů je možné deterministicky vyhodnotit parametry, takže pokračujeme dále. Šablona by se ale měla zkontrolovat, protože vytvoření instance s různými parametry může vést k chybě.</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
@@ -77,12 +77,12 @@
       </trans-unit>
       <trans-unit id="EvaluatedInputDataSet_Error_MismatchedConditions">
         <source>Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: {0}.</source>
-        <target state="new">Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: {0}.</target>
+        <target state="translated">Pokus o předání výsledku externího vyhodnocení podmínek parametrů pro parametry, které nemají v šabloně nastavenou odpovídající podmínku (atributy IsEnabled nebo IsRequired nejsou vyplněné podmínkou) nebo selhání předání výsledků podmínky pro parametry s podmínkami v šabloně. Parametry s chybou: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="EvaluatedInputParameterData_Error_ConditionsInvalid">
         <source>Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameter(s): {0}.</source>
-        <target state="new">Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameter(s): {0}.</target>
+        <target state="translated">Pokus o předání výsledku externího vyhodnocení podmínek parametrů pro parametry, které nemají v šabloně nastavenou odpovídající podmínku (atributy IsEnabled nebo IsRequired nejsou vyplněné podmínkou) nebo selhání předání výsledků podmínky pro parametry s podmínkami v šabloně. Urážecí parametry: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">

@@ -172,12 +172,12 @@ Details: {1}</source>
       </trans-unit>
       <trans-unit id="Symbol_Error_IsRequiredNotABool">
         <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
-        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <target state="translated">IsRequired 속성 [{0}]에 대해 허용되지 않는 값을 찾았습니다. 부울 값이 필요합니다.</target>
         <note>{0} - the json property</note>
       </trans-unit>
       <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
         <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
-        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <target state="translated">IsRequired 속성 [{0}]에 대해 허용되지 않는 값을 찾았습니다. 부울 또는 문자열(조건) 값이 필요합니다.</target>
         <note>{0} - the json property</note>
       </trans-unit>
     </body>

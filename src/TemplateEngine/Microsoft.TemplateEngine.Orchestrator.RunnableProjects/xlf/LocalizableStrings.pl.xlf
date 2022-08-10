@@ -172,12 +172,12 @@ Szczegóły: {1}</target>
       </trans-unit>
       <trans-unit id="Symbol_Error_IsRequiredNotABool">
         <source>Found disallowed value for IsRequired property: [{0}], expected boolean value.</source>
-        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean value.</target>
+        <target state="translated">Znaleziono niedozwoloną wartość właściwości IsRequired: [{0}], oczekiwano wartości logicznej.</target>
         <note>{0} - the json property</note>
       </trans-unit>
       <trans-unit id="Symbol_Error_IsRequiredNotABoolOrString">
         <source>Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</source>
-        <target state="new">Found disallowed value for IsRequired property: [{0}], expected boolean or string (condition) value</target>
+        <target state="translated">Znaleziono niedozwoloną wartość właściwości IsRequired: [{0}], oczekiwano wartości logicznej lub wartość ciągu (warunek).</target>
         <note>{0} - the json property</note>
       </trans-unit>
     </body>

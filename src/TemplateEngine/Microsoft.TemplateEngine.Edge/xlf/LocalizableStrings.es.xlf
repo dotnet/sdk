@@ -4,12 +4,12 @@
     <body>
       <trans-unit id="ConditionEvaluation_Error_CyclicDependency">
         <source>Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}] that is preventing deterministic evaluation.</target>
+        <target state="translated">Las condiciones del parámetro contienen una dependencia cíclica: [{0}] que impide la evaluación determinista.</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_MismatchedCondition">
         <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</source>
-        <target state="new">Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</target>
+        <target state="translated">No se ha podido evaluar la condición {0} en el parámetro {1} (texto de condición: {2}, error de evaluación: {3}): la condición podría tener un formato incorrecto.</target>
         <note>{0} is the condition type
 {1} is parameter name
 {2} is condition text
@@ -17,12 +17,12 @@
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_TopologicalSort">
         <source>Unexpected internal error - unable to perform topological sort of parameter dependencies that do not appear to have a cyclic dependencies.</source>
-        <target state="new">Unexpected internal error - unable to perform topological sort of parameter dependencies that do not appear to have a cyclic dependencies.</target>
+        <target state="translated">Error interno inesperado: no se puede realizar un orden topológico de dependencias de parámetros que no parecen tener dependencias cíclicas.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Warning_CyclicDependency">
         <source>Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it's possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error.</source>
-        <target state="new">Parameter conditions contain cyclic dependency: [{0}]. With current values of parameters it's possible to deterministically evaluate parameters - so proceeding further. However template should be reviewed as instantiation with different parameters can lead to error.</target>
+        <target state="translated">Las condiciones del parámetro contienen una dependencia cíclica: [{0}]. Con los valores actuales de los parámetros, es posible evaluar los parámetros de forma determinista, por lo que es posible continuar. Sin embargo, la plantilla debe revisarse porque la creación de una instancia con diferentes parámetros puede dar lugar a un error.</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
@@ -77,12 +77,12 @@
       </trans-unit>
       <trans-unit id="EvaluatedInputDataSet_Error_MismatchedConditions">
         <source>Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: {0}.</source>
-        <target state="new">Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameters: {0}.</target>
+        <target state="translated">Se ha intentado pasar el resultado de la evaluación externa de condiciones de parámetros para los parámetros que no tienen establecida una condición adecuada en la plantilla (atributos IsEnabled o IsRequired no rellenados con condición), o ha habido un error al pasar los resultados de la condición para los parámetros con condiciones en la plantilla. Parámetros incorrectos: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="EvaluatedInputParameterData_Error_ConditionsInvalid">
         <source>Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameter(s): {0}.</source>
-        <target state="new">Attempt to pass result of external evaluation of parameters conditions for parameter(s) that do not have appropriate condition set in template (IsEnabled or IsRequired attributes not populated with condition) or a failure to pass the condition results for parameters with condition(s) in template. Offending parameter(s): {0}.</target>
+        <target state="translated">Se ha intentado pasar el resultado de la evaluación externa de condiciones de parámetros para los parámetros que no tienen establecida una condición adecuada en la plantilla (atributos IsEnabled o IsRequired no rellenados con condición), o ha habido un error al pasar los resultados de la condición para los parámetros con condiciones en la plantilla. Parámetro(s) incorrecto(s): {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
