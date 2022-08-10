@@ -29,9 +29,7 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsSingle(o => $"-property:VSTestSetting={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public static readonly Option<bool> ListTestsOption = new ForwardedOption<bool>(new string[] { "-t", "--list-tests" }, LocalizableStrings.CmdListTestsDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestListTests=true");
+              .ForwardAs("-property:VSTestListTests=true");
 
         public static readonly Option<IEnumerable<string>> EnvOption = new Option<IEnumerable<string>>(new string[] { "-e", "--environment" }, LocalizableStrings.CmdEnvironmentVariableDescription)
         {
@@ -72,9 +70,7 @@ namespace Microsoft.DotNet.Cli
         .ForwardAsSingle(o => $"-property:VSTestDiag={SurroundWithDoubleQuotes(CommandDirectoryContext.GetFullPath(o))}");
 
         public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build", LocalizableStrings.CmdNoBuildDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestNoBuild=true");
+            .ForwardAs("-property:VSTestNoBuild=true");
 
         public static readonly Option<string> ResultsOption = new ForwardedOption<string>(new string[] { "--results-directory" }, LocalizableStrings.CmdResultsDirectoryDescription)
         {
@@ -88,33 +84,25 @@ namespace Microsoft.DotNet.Cli
         .AllowSingleArgPerToken();
 
         public static readonly Option<bool> BlameOption = new ForwardedOption<bool>("--blame", LocalizableStrings.CmdBlameDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestBlame=true");
+            .ForwardAs("-property:VSTestBlame=true");
 
         public static readonly Option<bool> BlameCrashOption = new ForwardedOption<bool>("--blame-crash", LocalizableStrings.CmdBlameCrashDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestBlameCrash=true");
+            .ForwardAs("-property:VSTestBlameCrash=true");
 
-        public static readonly Option<string> BlameCrashDumpTypeOption = new ForwardedOption<string>("--blame-crash-dump-type", LocalizableStrings.CmdBlameCrashDumpTypeDescription)
+        public static readonly Option<string> BlameCrashDumpOption = new ForwardedOption<string>("--blame-crash-dump-type", LocalizableStrings.CmdBlameCrashDumpTypeDescription)
         {
             ArgumentHelpName = LocalizableStrings.CrashDumpTypeArgumentName,
         }
         .FromAmong(new string[] { "full", "mini" })
         .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
 
-        public static readonly Option<bool> BlameCrashDumpAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always", LocalizableStrings.CmdBlameCrashCollectAlwaysDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
+        public static readonly Option<bool> BlameCrashAlwaysOption = new ForwardedOption<bool>("--blame-crash-collect-always", LocalizableStrings.CmdBlameCrashCollectAlwaysDescription)
+            .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
 
         public static readonly Option<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang", LocalizableStrings.CmdBlameHangDescription)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestBlameHang=true");
+            .ForwardAs("-property:VSTestBlameHang=true");
 
-        public static readonly Option<string> BlameHangDumpTypeOption = new ForwardedOption<string>("--blame-hang-dump-type", LocalizableStrings.CmdBlameHangDumpTypeDescription)
+        public static readonly Option<string> BlameHangDumpOption = new ForwardedOption<string>("--blame-hang-dump-type", LocalizableStrings.CmdBlameHangDumpTypeDescription)
         {
             ArgumentHelpName = LocalizableStrings.HangDumpTypeArgumentName
         }
@@ -127,9 +115,7 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}" });
 
         public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo", LocalizableStrings.CmdNoLogo)
-        {
-            Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:VSTestNoLogo=nologo");
+            .ForwardAs("-property:VSTestNoLogo=nologo");
 
         public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
@@ -163,10 +149,10 @@ namespace Microsoft.DotNet.Cli
             command.AddOption(CollectOption);
             command.AddOption(BlameOption);
             command.AddOption(BlameCrashOption);
-            command.AddOption(BlameCrashDumpTypeOption);
-            command.AddOption(BlameCrashDumpAlwaysOption);
+            command.AddOption(BlameCrashDumpOption);
+            command.AddOption(BlameCrashAlwaysOption);
             command.AddOption(BlameHangOption);
-            command.AddOption(BlameHangDumpTypeOption);
+            command.AddOption(BlameHangDumpOption);
             command.AddOption(BlameHangTimeoutOption);
             command.AddOption(NoLogoOption);
             command.AddOption(ConfigurationOption);
