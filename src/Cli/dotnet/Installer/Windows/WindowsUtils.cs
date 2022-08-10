@@ -55,14 +55,18 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Queries the Windows Update Agent registry key to determine if there is a pending reboot.
+        /// Queries the Windows Update Agent, Component Based Servicing (CBS), and pending file rename registry keys to determine if there is a pending reboot.
         /// </summary>
         /// <returns><see langword="true"/> if there is a pending reboot; <see langword="false"> otherwise.</see></returns>
         public static bool RebootRequired()
         {
             using RegistryKey auKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired");
+            using RegistryKey cbsKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending");
+            using RegistryKey sessionKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager");
 
-            return auKey != null;
+            string[] pendingFileRenameOperations = (string[])sessionKey?.GetValue("PendingFileRenameOperations") ?? new string[0];
+            
+            return (auKey != null || cbsKey != null || pendingFileRenameOperations.Length > 0);
         }
     }
 }
