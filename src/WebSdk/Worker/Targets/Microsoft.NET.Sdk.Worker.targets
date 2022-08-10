@@ -14,15 +14,24 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
     <RunWorkingDirectory Condition=" '$(RunWorkingDirectory)' == '' and '$(EnableDefaultRunWorkingDirectory)' != 'false' ">$(MSBuildProjectDirectory)</RunWorkingDirectory>
+    <MSBuildWorkerTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Worker\</MSBuildWorkerTargetsPath>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectCapability Include="DotNetCoreWorker" />
-    <ProjectCapability Include="SupportHierarchyContextSvc" />
-    <ProjectCapability Include="DynamicDependentFile" />
-    <ProjectCapability Include="DynamicFileNesting" />
-    <ProjectCapability Include="LocalUserSecrets" />
-    <ProjectCapability Include="WebNestingDefaults" />
-  </ItemGroup>
+  <Import Project="$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets" 
+         Condition="Exists('$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets')" />
+
+  <Choose>
+    <When Condition="!Exists('$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets')" >
+      <ItemGroup>
+        <ProjectCapability Include="DotNetCoreWorker" />
+        <ProjectCapability Include="SupportHierarchyContextSvc" />
+        <ProjectCapability Include="DynamicDependentFile" />
+        <ProjectCapability Include="DynamicFileNesting" />
+        <ProjectCapability Include="LocalUserSecrets" />
+        <ProjectCapability Include="WebNestingDefaults" />
+        <ProjectCapability Include="DynamicFileNestingEnabled" />
+      </ItemGroup>
+    </When>
+  </Choose>
 
 </Project>
