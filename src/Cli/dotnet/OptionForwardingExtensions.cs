@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Linq;
+using Sprache;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -18,10 +19,45 @@ namespace Microsoft.DotNet.Cli
 
         public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T, string> format) => option.SetForwardingFunction(format);
 
+        private static Parser<(string key, string value)[]> KeyValueParser {
+            get {
+                bool IsValidMSBuildPropertyChar (char c) => Char.IsLetterOrDigit(c) || (c == '_') || (c == '-');
+            var keyParser = 
+                Parse.Char(IsValidMSBuildPropertyChar, "Any alphanumeric character or '_'").AtLeastOnce().Text().Named("key");
+
+                var unquotedValueParser = Parse.CharExcept('"').Named("unquoted value");
+            
+                var quoteParser = Parse.Char('"').Named("quote");
+                var semiParser = Parse.Char(';').Named("tick");
+                var quotedValueParser = 
+                    Parse.Contained(unquotedValueParser.AtLeastOnce(), quoteParser, quoteParser).Text().Select(s => $"\"{s}\"").Named("quoted value");
+                var valueParser = 
+                    Parse.XOr(quotedValueParser, Parse.CharExcept(';').AtLeastOnce().Text()).Named("value");
+                var keyValueParser = 
+                    from key in keyParser
+                    from _equals in Parse.Char('=')
+                    from value in valueParser
+                    select (key, value);
+                var semiOrCommaParser = Parse.Chars(new[]{';', ','});
+                var keyValues = Parse.DelimitedBy(keyValueParser.Named("key/value"), Parse.Char(';')).Select(pairs => pairs.ToArray()).Named("key/value list");
+                return keyValues;
+            }
+        }
+        public static IResult<(string key, string value)[]> ParseKeyValues(string msbuildKeyValue) => KeyValueParser.TryParse(msbuildKeyValue);
+
         public static ForwardedOption<string[]> ForwardAsProperty(this ForwardedOption<string[]> option) => option
             .SetForwardingFunction((optionVals) =>
                 optionVals
-                    .Select(optionVal => optionVal.Replace(";", "%3B")) // must escape semicolon-delimited property values when forwarding them to MSBuild
+                    .Select(ParseKeyValues)
+                    .SelectMany(result => {
+                        if (result.WasSuccessful && result.Remainder.AtEnd) {
+                            return result.Value;
+                        } else {
+                            return Array.Empty<(string key, string value)>();
+                        }
+                    })
+                    .Select(optionVal => (optionVal.key, value: optionVal.value.Replace(";", "%3B"))) // must escape semicolon-delimited property values when forwarding them to MSBuild
+                    .Select(optionVal => $"{optionVal.key}={optionVal.value}")
                     .Select(optionVal => $"{option.Aliases.FirstOrDefault()}:{optionVal}")
                 );
 
