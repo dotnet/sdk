@@ -37,6 +37,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7bc07c2433edf8ea9ef2c62505c13bba182c9a7f</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0-rc.1.22410.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>7bc07c2433edf8ea9ef2c62505c13bba182c9a7f</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="7.0.0-rc.1.22410.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7bc07c2433edf8ea9ef2c62505c13bba182c9a7f</Sha>
