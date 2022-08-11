@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text;
 
 #nullable enable
 
@@ -9,14 +10,14 @@ namespace Microsoft.DotNet.Cli.Utils;
 public static class MSBuildPropertyParser {
     public static IEnumerable<(string key, string value)> ParseProperties(string input) {
         var currentPos = 0;
-        string? currentKey = null;
-        string? currentValue = null;
+        StringBuilder currentKey = new StringBuilder();
+        StringBuilder currentValue = new StringBuilder();
         
         (string key, string value) EmitAndReset() {
-            var key = currentKey!;
-            var value= currentValue!;
-            currentKey = null;
-            currentValue = null;
+            var key = currentKey.ToString();
+            var value= currentValue.ToString();
+            currentKey = currentKey.Clear();
+            currentValue = currentValue.Clear();
             return (key, value);
         }
 
@@ -35,32 +36,31 @@ public static class MSBuildPropertyParser {
         
         void ParseKey() {
             while (TryConsume(out var c) && c != '=') {
-                currentKey += c;
+                currentKey.Append(c);
             }
         }
 
         void ParseQuotedValue() {
             TryConsume(out var leadingQuote); // consume the leading quote, which we know is there
-            currentValue += leadingQuote;
+            currentValue.Append(leadingQuote);
             while(TryConsume(out char? c)) {
+                currentValue.Append(c);
                 if (c == '"') {
-                    currentValue += c;
                     // we're done
                     return;
                 }
-                currentValue += c;
                 if (c == '\\' && Peek() == '"')
                 {
                     // consume the escaped quote
                     TryConsume(out var c2); 
-                    currentValue += c2;
+                    currentValue.Append(c2);
                 }
             }
         }
 
         void ParseUnquotedValue() {
             while(TryConsume(out char? c) && c != ';') {
-                currentValue += c;
+                currentValue.Append(c);
             }
         }
 
