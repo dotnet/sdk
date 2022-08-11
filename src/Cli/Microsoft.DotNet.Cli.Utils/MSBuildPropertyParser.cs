@@ -16,8 +16,8 @@ public static class MSBuildPropertyParser {
         (string key, string value) EmitAndReset() {
             var key = currentKey.ToString();
             var value= currentValue.ToString();
-            currentKey = currentKey.Clear();
-            currentValue = currentValue.Clear();
+            currentKey.Clear();
+            currentValue.Clear();
             return (key, value);
         }
 
