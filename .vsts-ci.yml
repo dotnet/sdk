@@ -15,12 +15,6 @@ trigger:
 variables:
   - name: teamName
     value: Roslyn-Project-System
-  - name: _DotNetPublishToBlobFeed
-    value: false
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCore
   - name: PostBuildSign
     value: true
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
@@ -29,8 +23,6 @@ variables:
     - name: _OfficialBuildArgs
       value: ''
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    - name: _DotNetPublishToBlobFeed
-      value: true
     - name: _OfficialBuildArgs
       value: /p:OfficialBuilder=Microsoft
     - group: DotNetBuilds storage account read tokens
