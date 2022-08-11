@@ -14,12 +14,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <summary>
         /// The element that the container is holding.
         /// </summary>
-        public T Element { get; private set; }
+        public readonly T Element;
 
         /// <summary>
         /// The metadata associated to the element.
         /// </summary>
-        public MetadataInformation MetadataInformation { get; private set; }
+        public readonly MetadataInformation MetadataInformation;
 
         /// <summary>
         /// Instantiates a new object with the <paramref name="element"/> and <paramref name="metadataInformation"/> used.
