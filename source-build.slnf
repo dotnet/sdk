@@ -17,7 +17,6 @@
       "src\\Cli\\Microsoft.DotNet.Configurer\\Microsoft.DotNet.Configurer.csproj",
       "src\\Cli\\Microsoft.DotNet.InternalAbstractions\\Microsoft.DotNet.InternalAbstractions.csproj",
       "src\\Cli\\Microsoft.TemplateEngine.Cli\\Microsoft.TemplateEngine.Cli.csproj",
-      "src\\Cli\\dotnet-new3\\dotnet-new3.csproj",
       "src\\Cli\\dotnet\\dotnet.csproj",
       "src\\Layout\\redist\\redist.csproj",
       "src\\Layout\\tool_fsharp\\tool_fsc.csproj",
