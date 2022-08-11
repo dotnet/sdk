@@ -1,6 +1,6 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Web Config",
-  "description": "A file used to configure Web Application settings",
-  "postActions/open-file/description": "Opens web.config in the editor"
+  "name": "Web 配置",
+  "description": "用于配置 Web 应用程序设置的文件",
+  "postActions/open-file/description": "在编辑器中打开 web.config"
 }
