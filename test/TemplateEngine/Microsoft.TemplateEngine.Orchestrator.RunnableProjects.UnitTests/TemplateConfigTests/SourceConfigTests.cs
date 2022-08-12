@@ -1,10 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -30,12 +33,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Exclude = "**/*.config",
+                        Exclude = new [] { "**/*.config" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                Include = "core.config"
+                                Include = new [] { "core.config" }
 
                             }
                         }
@@ -43,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             // config
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             // content
@@ -71,19 +74,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = "**/*.txt",
+                        Include = new [] { "**/*.txt" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = "copy.me"
+                                CopyOnly = new [] { "copy.me" },
                             }
                         }
                     }
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("something.txt", null);
             templateSourceFiles.Add("copy.me", null);
@@ -96,14 +99,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             // one source, should cause one set of changes
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
-            Assert.Equal(1, changes.Count);
-            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
-            Assert.True(string.Equals(changes[0].TargetRelativePath, "something.txt"), "didn't copy the correct file");
+            Assert.Equal(1, changes?.Count);
+            Assert.Equal(ChangeKind.Create, changes?[0].ChangeKind);
+            Assert.True(string.Equals(changes?[0].TargetRelativePath, "something.txt"), "didn't copy the correct file");
         }
 
         [Fact(DisplayName = nameof(CopyOnlyWithParentIncludeActuallyCopiesFile))]
@@ -117,19 +120,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = "**/*.me",
+                        Include = new [] { "**/*.me" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = "copy.me"
+                                CopyOnly = new [] { "copy.me" }
                             }
                         }
                     }
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
@@ -140,14 +143,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
-            Assert.Equal(1, changes.Count);
-            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
-            Assert.True(string.Equals(changes[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
+            Assert.Equal(1, changes?.Count);
+            Assert.Equal(ChangeKind.Create, changes?[0].ChangeKind);
+            Assert.True(string.Equals(changes?[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
         }
 
         [Fact(DisplayName = nameof(CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile))]
@@ -161,19 +164,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = "*copy.me",
+                        Include = new [] { "*copy.me" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = "**/*.me"
+                                CopyOnly = new [] { "**/*.me" }
                             }
                         }
                     }
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("copy.me", null);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
@@ -184,14 +187,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
-            Assert.Equal(1, changes.Count);
-            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
-            Assert.True(string.Equals(changes[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
+            Assert.Equal(1, changes?.Count);
+            Assert.Equal(ChangeKind.Create, changes?[0].ChangeKind);
+            Assert.True(string.Equals(changes?[0].TargetRelativePath, "copy.me"), "didn't copy the correct file");
         }
 
         [Fact(DisplayName = nameof(IncludeModifierOverridesPreviousExcludeModifierTemplateTest))]
@@ -209,18 +212,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         {
                             new SourceModifier()
                             {
-                                Exclude = "*.xyz",
+                                Exclude = new [] { "*.xyz" }
                             },
                             new SourceModifier()
                             {
-                                Include = "include.xyz"
+                                Include = new [] { "include.xyz" }
                             }
                         }
                     }
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("other.xyz", null);
             templateSourceFiles.Add("include.xyz", null);
@@ -233,14 +236,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
-            Assert.Equal(1, changes.Count);
-            Assert.Equal(ChangeKind.Create, changes[0].ChangeKind);
-            Assert.True(string.Equals(changes[0].TargetRelativePath, "include.xyz"), "include modifier didn't properly override exclude modifier");
+            Assert.Equal(1, changes?.Count);
+            Assert.Equal(ChangeKind.Create, changes?[0].ChangeKind);
+            Assert.True(string.Equals(changes?[0].TargetRelativePath, "include.xyz"), "include modifier didn't properly override exclude modifier");
         }
 
         [Fact(DisplayName = nameof(ExcludeModifierOverridesPreviousIncludeModifierTemplateTest))]
@@ -259,18 +262,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         {
                             new SourceModifier()
                             {
-                                Include = "*.xyz"
+                                Include = new [] { "*.xyz" }
                             },
                             new SourceModifier()
                             {
-                                Exclude = "exclude.xyz",
+                                Exclude = new [] { "exclude.xyz" }
                             },
                         }
                     }
                 }
             };
 
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
             templateSourceFiles.Add("other.xyz", null);
             templateSourceFiles.Add("include.xyz", null);
@@ -283,20 +286,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             Assert.Equal(1, allChanges.Count);
 
-            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2> changes))
+            if (!allChanges.TryGetValue("./", out IReadOnlyList<IFileChange2>? changes))
             {
                 Assert.True(false, "no changes for source './'");
             }
 
-            Assert.Equal(2, changes.Count);
+            Assert.Equal(2, changes?.Count);
 
-            IFileChange2 includeXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "include.xyz"));
+            IFileChange2? includeXyzChangeInfo = changes?.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "include.xyz"));
             Assert.NotNull(includeXyzChangeInfo);
-            Assert.Equal(ChangeKind.Create, includeXyzChangeInfo.ChangeKind);
+            Assert.Equal(ChangeKind.Create, includeXyzChangeInfo?.ChangeKind);
 
-            IFileChange2 otherXyzChangeInfo = changes.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "other.xyz"));
+            IFileChange2? otherXyzChangeInfo = changes?.FirstOrDefault(x => string.Equals(x.TargetRelativePath, "other.xyz"));
             Assert.NotNull(otherXyzChangeInfo);
-            Assert.Equal(ChangeKind.Create, otherXyzChangeInfo.ChangeKind);
+            Assert.Equal(ChangeKind.Create, otherXyzChangeInfo?.ChangeKind);
         }
     }
 }

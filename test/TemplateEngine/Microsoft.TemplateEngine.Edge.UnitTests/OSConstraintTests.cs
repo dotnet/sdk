@@ -6,7 +6,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;

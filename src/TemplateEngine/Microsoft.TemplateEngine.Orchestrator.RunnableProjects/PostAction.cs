@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {

@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
+using FakeItEasy;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
@@ -82,14 +86,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(TestCustomConditionalSetupNoStyleSpecification))]
         public void TestCustomConditionalSetupNoStyleSpecification()
         {
-            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJObject(CustomConditionalSetupNoStyleSpecification, null);
+            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupNoStyleSpecification.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
             Assert.Equal(1, operations.Count);
             Assert.True(operations[0] is Conditional);
 
-            Conditional conditionalOp = operations[0] as Conditional;
-            Assert.Equal(1, conditionalOp.Tokens.ActionableIfTokens.Count);
+            Conditional? conditionalOp = operations[0] as Conditional;
+            Assert.NotNull(conditionalOp);
+            Assert.Equal(1, conditionalOp!.Tokens.ActionableIfTokens.Count);
             Assert.Equal("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
             Assert.Equal(2, conditionalOp.Tokens.ActionableElseTokens.Count);
@@ -111,14 +116,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(TestCustomConditionalSetupExplicitStyleSpecification))]
         public void TestCustomConditionalSetupExplicitStyleSpecification()
         {
-            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJObject(CustomConditionalSetupExplicitStyleSpecification, null);
+            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(CustomConditionalSetupExplicitStyleSpecification.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
             Assert.Equal(1, operations.Count);
             Assert.True(operations[0] is Conditional);
 
-            Conditional conditionalOp = operations[0] as Conditional;
-            Assert.Equal(1, conditionalOp.Tokens.ActionableIfTokens.Count);
+            Conditional? conditionalOp = operations[0] as Conditional;
+            Assert.NotNull(conditionalOp);
+            Assert.Equal(1, conditionalOp!.Tokens.ActionableIfTokens.Count);
             Assert.Equal("<!--#if", conditionalOp.Tokens.ActionableIfTokens[0].Value);
 
             Assert.Equal(2, conditionalOp.Tokens.ActionableElseTokens.Count);
@@ -140,15 +146,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(TestLineCommentConditionalSetup))]
         public void TestLineCommentConditionalSetup()
         {
-            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJObject(LineConditionalSetup, null);
+            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(LineConditionalSetup.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
             Assert.Equal(3, operations.Count);
             Assert.True(operations[0] is Conditional);
 
-            Conditional conditionalOp = operations[0] as Conditional;
+            Conditional? conditionalOp = operations[0] as Conditional;
+            Assert.NotNull(conditionalOp);
 
-            Assert.Equal(1, conditionalOp.Tokens.IfTokens.Count);
+            Assert.Equal(1, conditionalOp!.Tokens.IfTokens.Count);
             Assert.Equal("//#if", conditionalOp.Tokens.IfTokens[0].Value);
 
             Assert.Equal(2, conditionalOp.Tokens.ElseIfTokens.Count);
@@ -179,15 +186,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(TestBlockCommentConditionalSetup))]
         public void TestBlockCommentConditionalSetup()
         {
-            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJObject(BlockConditionalSetup, null);
+            IEnumerable<IOperationProvider> ops = new ConditionalConfig().ConfigureFromJson(BlockConditionalSetup.ToString(), A.Fake<IDirectory>());
             IList<IOperationProvider> operations = new List<IOperationProvider>(ops);
 
             Assert.Equal(2, operations.Count);  // conditional & pseudo comment balancer
             Assert.True(operations[0] is Conditional);
 
-            Conditional conditionalOp = operations[0] as Conditional;
+            Conditional? conditionalOp = operations[0] as Conditional;
+            Assert.NotNull(conditionalOp);
 
-            Assert.Equal(2, conditionalOp.Tokens.EndIfTokens.Count);
+            Assert.Equal(2, conditionalOp!.Tokens.EndIfTokens.Count);
             Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "#endif");
             Assert.Contains(conditionalOp.Tokens.EndIfTokens, x => x.Value == "/*#endif");
 

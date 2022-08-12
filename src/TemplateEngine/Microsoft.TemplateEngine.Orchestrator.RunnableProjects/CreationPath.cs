@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
@@ -42,8 +43,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (string.IsNullOrEmpty(model.Condition)
                     || Cpp2StyleEvaluatorDefinition.EvaluateFromString(logger, model.Condition, rootVariableCollection))
                 {
-                    ICreationPath path = new CreationPath(model.PathResolved);
-                    pathList.Add(path);
+                    if (model.PathResolved != null)
+                    {
+                        ICreationPath path = new CreationPath(model.PathResolved);
+                        pathList.Add(path);
+                    }
                 }
             }
 

@@ -3,21 +3,21 @@
 
 #nullable enable
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
     /// <summary>
     /// Represents an instruction that should be manually performed by the user
     /// as part of a post action.
     /// </summary>
-    internal sealed class ManualInstructionModel : ConditionedConfigurationElementBase
+    public sealed class ManualInstructionModel : ConditionedConfigurationElement
     {
-        public ManualInstructionModel(string? id, string text)
+        internal ManualInstructionModel(string? id, string text)
         {
             Id = id;
             Text = text;
         }
 
-        public ManualInstructionModel(string? id, string text, string? condition)
+        internal ManualInstructionModel(string? id, string text, string? condition)
         {
             Id = id;
             Text = text;
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Localizes this manual instruction by replacing the value of the <see cref="Text"/> property the given text.
         /// </summary>
         /// <param name="localizedText">Localized <see cref="Text"/>.</param>
-        public void Localize(string localizedText)
+        internal void Localize(string localizedText)
         {
             Text = localizedText;
         }

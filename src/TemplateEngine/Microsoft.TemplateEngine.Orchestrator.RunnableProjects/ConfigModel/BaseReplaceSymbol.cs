@@ -7,43 +7,45 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
-    internal abstract class BaseReplaceSymbol : BaseSymbol
+    public abstract class BaseReplaceSymbol : BaseSymbol
     {
-        public BaseReplaceSymbol(string name, string? replaces) : base(name)
+        private protected BaseReplaceSymbol(string name, string? replaces) : base(name)
         {
             ReplacementContexts = Array.Empty<ReplacementContext>();
             Replaces = replaces;
         }
 
-        protected BaseReplaceSymbol(BaseReplaceSymbol clone) : base(clone)
+        private protected BaseReplaceSymbol(BaseReplaceSymbol clone) : base(clone)
         {
             FileRename = clone.FileRename;
             Replaces = clone.Replaces;
             ReplacementContexts = clone.ReplacementContexts;
         }
 
-        protected BaseReplaceSymbol(JObject jObject, string name) : base(name)
+        private protected BaseReplaceSymbol(JObject jObject, string name) : base(name)
         {
             FileRename = jObject.ToString(nameof(FileRename));
             Replaces = jObject.ToString(nameof(Replaces));
-            ReplacementContexts = SymbolModelConverter.ReadReplacementContexts(jObject);
+            ReplacementContexts = ReplacementContext.FromJObject(jObject);
         }
 
         /// <summary>
         /// Gets the text that should be replaced by the value of this symbol.
+        /// Corresponds to "replaces" JSON property.
         /// </summary>
-        internal string? Replaces { get; }
+        public string? Replaces { get; }
 
         /// <summary>
         /// Gets the replacement contexts that determine when this symbol is allowed to do replacement operations.
         /// </summary>
-        internal IReadOnlyList<ReplacementContext> ReplacementContexts { get; }
+        public IReadOnlyList<ReplacementContext> ReplacementContexts { get; }
 
         /// <summary>
         /// Gets the part of the file name that should be replaced with the value of this symbol.
+        /// Corresponds to "fileRename" JSON property.
         /// </summary>
-        internal string? FileRename { get; }
+        public string? FileRename { get; }
     }
 }

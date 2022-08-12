@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,13 +16,14 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class GlobalRunSpec : IGlobalRunSpec
     {
-        private static IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
+        private readonly IReadOnlyDictionary<string, IOperationConfig> _operationConfigLookup;
 
         internal GlobalRunSpec(
             IDirectory templateRoot,
@@ -30,7 +33,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
             IReadOnlyList<string> ignoreFileNames)
         {
-            EnsureOperationConfigs(componentManager);
+            List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
+            Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
+
+            foreach (IOperationConfig opConfig in operationConfigReaders)
+            {
+                operationConfigLookup[opConfig.Key] = opConfig;
+            }
+
+            _operationConfigLookup = operationConfigLookup;
 
             RootVariableCollection = variables;
             IgnoreFileNames = ignoreFileNames;
@@ -41,14 +52,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (KeyValuePair<string, IGlobalRunConfig> specialEntry in fileGlobConfigs)
                 {
-                    IReadOnlyList<IOperationProvider> specialOps = null;
+                    IReadOnlyList<IOperationProvider> specialOps = Array.Empty<IOperationProvider>();
 
                     if (specialEntry.Value != null)
                     {
                         specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables);
                     }
 
-                    RunSpec spec = new RunSpec(specialOps, specialEntry.Value.VariableSetup.FallbackFormat);
+                    RunSpec spec = new RunSpec(specialOps, specialEntry.Value?.VariableSetup.FallbackFormat);
                     specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(specialEntry.Key), spec));
                 }
             }
@@ -56,11 +67,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Special = specials;
         }
 
-        public IReadOnlyList<IPathMatcher> Include { get; private set; }
+        public IReadOnlyList<IPathMatcher> Include { get; private set; } = Array.Empty<IPathMatcher>();
 
-        public IReadOnlyList<IPathMatcher> Exclude { get; private set; }
+        public IReadOnlyList<IPathMatcher> Exclude { get; private set; } = Array.Empty<IPathMatcher>();
 
-        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; }
+        public IReadOnlyList<IPathMatcher> CopyOnly { get; private set; } = Array.Empty<IPathMatcher>();
 
         public IReadOnlyList<IOperationProvider> Operations { get; }
 
@@ -70,7 +81,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> IgnoreFileNames { get; }
 
-        internal IReadOnlyDictionary<string, string> Rename { get; private set; }
+        internal IReadOnlyDictionary<string, string> Rename { get; private set; } = new Dictionary<string, string>();
 
         public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
         {
@@ -86,27 +97,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Rename = source.Renames ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
-        private static void EnsureOperationConfigs(IComponentManager componentManager)
-        {
-            if (_operationConfigLookup == null)
-            {
-                List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
-                Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
-
-                foreach (IOperationConfig opConfig in operationConfigReaders)
-                {
-                    operationConfigLookup[opConfig.Key] = opConfig;
-                }
-
-                _operationConfigLookup = operationConfigLookup;
-            }
-        }
-
         // Returns a list of operations which contains the custom operations and the default operations.
         // If there are custom Conditional operations, don't include the default Conditionals.
         //
         // Note: we may need a more robust filtering mechanism in the future.
-        private static IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables)
         {
             IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, templateRoot, variables);
             IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(templateRoot.MountPoint.EnvironmentSettings, variables, runConfig);
@@ -125,7 +120,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGlobalRunConfig runConfig)
+        private IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGlobalRunConfig runConfig)
         {
             // default operations
             List<IOperationProvider> operations = new List<IOperationProvider>();
@@ -136,7 +131,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens replaceSetup in runConfig.Replacements)
                 {
-                    IOperationProvider replacement = ReplacementConfig.Setup(environmentSettings, replaceSetup, variables);
+                    IOperationProvider? replacement = ReplacementConfig.Setup(environmentSettings, replaceSetup, variables);
                     if (replacement != null)
                     {
                         operations.Add(replacement);
@@ -146,30 +141,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (runConfig.VariableSetup.Expand)
             {
-                operations?.Add(new ExpandVariables(null, true));
+                operations.Add(new ExpandVariables(null, true));
             }
 
             return operations;
         }
 
-        private static IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<CustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
+        private IReadOnlyList<IOperationProvider> SetupCustomOperations(IReadOnlyList<CustomOperationModel> customModel, IDirectory templateRoot, IVariableCollection variables)
         {
             ITemplateEngineHost host = templateRoot.MountPoint.EnvironmentSettings.Host;
             List<IOperationProvider> customOperations = new List<IOperationProvider>();
 
             foreach (CustomOperationModel opModel in customModel)
             {
-                string opType = opModel.Type;
-                string condition = opModel.Condition;
+                string? opType = opModel.Type;
+                string? condition = opModel.Condition;
 
                 if (string.IsNullOrEmpty(condition)
                     || Cpp2StyleEvaluatorDefinition.EvaluateFromString(host.Logger, condition, variables))
                 {
                     IOperationConfig realConfigObject;
+                    if (opType == null)
+                    {
+                        continue;
+                    }
+                    if (opModel.Configuration == null)
+                    {
+                        continue;
+                    }
                     if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
                     {
                         customOperations.AddRange(
-                            realConfigObject.ConfigureFromJObject(opModel.Configuration, templateRoot));
+                            realConfigObject.ConfigureFromJson(opModel.Configuration, templateRoot));
                     }
                     else
                     {

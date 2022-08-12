@@ -8,22 +8,22 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
-    internal class PostActionModel : ConditionedConfigurationElementBase
+    public sealed class PostActionModel : ConditionedConfigurationElement
     {
         /// <summary>
         /// Default id to be used when post action contains only one manual instruction
         /// and the author has not explicitly specified an id.
         /// </summary>
-        public const string DefaultIdForSingleManualInstruction = "default";
+        internal const string DefaultIdForSingleManualInstruction = "default";
 
         private string? _description;
 
-        public PostActionModel()
+        internal PostActionModel()
             : this(new Dictionary<string, string>(), new List<ManualInstructionModel>()) { }
 
-        public PostActionModel(IReadOnlyDictionary<string, string> args, IReadOnlyList<ManualInstructionModel> manualInstructions)
+        internal PostActionModel(IReadOnlyDictionary<string, string> args, IReadOnlyList<ManualInstructionModel> manualInstructions)
         {
             Args = args;
             ManualInstructionInfo = manualInstructions;
@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Gets a string that uniquely identifies this post action within a template.
         /// </summary>
-        public string? Id { get; init; }
+        public string? Id { get; internal init; }
 
         /// <summary>
         /// Gets the description of the post action.
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return _description;
             }
 
-            init
+            internal init
             {
                 _description = value;
             }
@@ -54,42 +54,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Gets the identifier of the action that will be performed.
         /// Note that this is not an identifier for the post action itself.
         /// </summary>
-        public Guid ActionId { get; init; }
+        public Guid ActionId { get; internal init; }
 
         /// <summary>
         /// Gets a value indicating wheather the template instantiation should continue
         /// in case of an error with this post action.
         /// </summary>
-        public bool ContinueOnError { get; init; }
+        public bool ContinueOnError { get; internal init; }
 
         /// <summary>
         /// Gets the arguments for this post action.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Args { get; init; } = new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, string> Args { get; internal init; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Gets the list of instructions that should be manually performed by the user.
         /// "instruction" contains the text that explains the steps to be taken by the user.
         /// An instruction is only considered if the "condition" evaluates to true.
         /// </summary>
-        public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; init; } = new List<ManualInstructionModel>();
-
-        public void Localize(IPostActionLocalizationModel locModel)
-        {
-            _description = locModel.Description ?? Description;
-
-            foreach (var manualInstruction in ManualInstructionInfo)
-            {
-                string localizedInstruction = string.Empty;
-                bool exactIdMatch = manualInstruction.Id != null && locModel.Instructions.TryGetValue(manualInstruction.Id, out localizedInstruction);
-                bool defaultIdMatch = manualInstruction.Id == null && ManualInstructionInfo.Count == 1 && locModel.Instructions.TryGetValue(DefaultIdForSingleManualInstruction, out localizedInstruction);
-
-                if (exactIdMatch || defaultIdMatch)
-                {
-                    manualInstruction.Localize(localizedInstruction);
-                }
-            }
-        }
+        public IReadOnlyList<ManualInstructionModel> ManualInstructionInfo { get; internal init; } = new List<ManualInstructionModel>();
 
         internal static IReadOnlyList<PostActionModel> LoadListFromJArray(JArray? jArray, ILogger? logger, string? filename)
         {
@@ -144,6 +127,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return localizedPostActions;
+        }
+
+        internal void Localize(IPostActionLocalizationModel locModel)
+        {
+            _description = locModel.Description ?? Description;
+
+            foreach (var manualInstruction in ManualInstructionInfo)
+            {
+                string localizedInstruction = string.Empty;
+                bool exactIdMatch = manualInstruction.Id != null && locModel.Instructions.TryGetValue(manualInstruction.Id, out localizedInstruction);
+                bool defaultIdMatch = manualInstruction.Id == null && ManualInstructionInfo.Count == 1 && locModel.Instructions.TryGetValue(DefaultIdForSingleManualInstruction, out localizedInstruction);
+
+                if (exactIdMatch || defaultIdMatch)
+                {
+                    manualInstruction.Localize(localizedInstruction);
+                }
+            }
         }
 
         private static IReadOnlyList<ManualInstructionModel> LoadManualInstructionsFromJArray(JArray? jArray, ILogger? logger)

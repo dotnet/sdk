@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -75,12 +78,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(pathToTemplateJson, BasicTemplateConfig);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
-            IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateJson);
+            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateJson);
             RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
             if (shouldAllPathsBeValid)
@@ -108,12 +111,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             const string pathToTemplateConfig = ".template.config/template.json";
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
             templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
-            IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
+            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
 
             RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
@@ -152,7 +155,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string> templateSourceFiles = new Dictionary<string, string>();
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
             templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
@@ -162,7 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
-            IFile templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
+            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
             RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
 
             if (shouldAllPathsBeValid)

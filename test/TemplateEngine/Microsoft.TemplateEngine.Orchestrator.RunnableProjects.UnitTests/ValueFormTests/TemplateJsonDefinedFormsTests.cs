@@ -6,7 +6,7 @@
 using System.Linq;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;

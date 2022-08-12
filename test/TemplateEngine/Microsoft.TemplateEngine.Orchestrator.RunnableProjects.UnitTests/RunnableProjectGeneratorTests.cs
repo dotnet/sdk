@@ -11,10 +11,10 @@ using System.Threading;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
@@ -198,7 +198,7 @@ UNKNOWN
             TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
@@ -294,7 +294,7 @@ THIRD
             TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
@@ -440,7 +440,7 @@ Console.WriteLine(""Hello, World!"");
             TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
@@ -550,7 +550,7 @@ Console.WriteLine(""Hello, World!"");
             TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateConfig));
+            TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
             RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,

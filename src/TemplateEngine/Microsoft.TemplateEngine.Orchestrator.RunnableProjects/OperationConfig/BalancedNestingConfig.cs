@@ -18,8 +18,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         public Guid Id => new Guid("3147965A-08E5-4523-B869-02C8E9A8AAA1");
 
-        public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
+        public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
+            JObject rawConfiguration = JObject.Parse(configuration);
             string startToken = rawConfiguration.ToString("startToken");
             string realEndToken = rawConfiguration.ToString("realEndToken");
             string pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");

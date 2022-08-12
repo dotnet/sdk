@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;

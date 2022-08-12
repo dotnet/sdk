@@ -6,16 +6,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
-    internal class SymbolValueFormsModel
+    public class SymbolValueFormsModel
     {
         private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
         {
             GlobalForms = globalForms;
         }
+
+        public IReadOnlyList<string> GlobalForms { get; }
 
         internal static SymbolValueFormsModel Empty { get; } = new SymbolValueFormsModel(Array.Empty<string>());
 
@@ -30,8 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             DefaultSafeNamespaceValueFormFactory.FormIdentifier,
             DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier
         });
-
-        internal IReadOnlyList<string> GlobalForms { get; }
 
         // Sets up the value forms for a symbol, based on configuration from template.json
         // There are two acceptable configuration formats for each forms specification.

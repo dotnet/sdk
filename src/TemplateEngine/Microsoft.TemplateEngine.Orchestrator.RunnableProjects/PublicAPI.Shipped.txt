@@ -3,7 +3,6 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMac
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.Type.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig.ConfigureFromJObject(Newtonsoft.Json.Linq.JObject! rawConfiguration, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! templateRoot) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig.Key.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components
 static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!

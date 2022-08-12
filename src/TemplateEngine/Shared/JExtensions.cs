@@ -152,6 +152,24 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
+        /// <summary>
+        /// Reads <paramref name="propertyName"/> as read only string list/>.
+        /// Property value may be string or array.
+        /// </summary>
+        internal static IReadOnlyList<string> ToStringReadOnlyList(this JObject jObject, string propertyName, IReadOnlyList<string>? defaultValue = null)
+        {
+            if (defaultValue == null)
+            {
+                defaultValue = Array.Empty<string>();
+            }
+            JToken? token = jObject.Get<JToken>(propertyName);
+            if (token == null)
+            {
+                return defaultValue;
+            }
+            return token.JTokenStringOrArrayToCollection(defaultValue) ?? defaultValue;
+        }
+
         internal static IEnumerable<JProperty> PropertiesOf(this JToken? token, string? key = null)
         {
             JObject? obj = token as JObject;
@@ -216,7 +234,10 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        // Leaves the values as JTokens.
+        /// <summary>
+        /// Converts properties of <paramref name="token"/> to dictionary.
+        /// Leaves the values as JToken.
+        /// </summary>
         internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
         {
             Dictionary<string, JToken> result = new Dictionary<string, JToken>(comparaer ?? StringComparer.Ordinal);
@@ -224,6 +245,22 @@ namespace Microsoft.TemplateEngine
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {
                 result[property.Name] = property.Value;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts properties of <paramref name="token"/> to dictionary.
+        /// Values are serialized to string (as JToken). Strings are serialized as <see cref="JToken"/>, i.e. needs to be parsed prior to be used.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, string> ToJTokenStringDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>(comparaer ?? StringComparer.Ordinal);
+
+            foreach (JProperty property in token.PropertiesOf(propertyName))
+            {
+                result[property.Name] = property.Value.ToString(Formatting.None);
             }
 
             return result;
@@ -359,7 +396,7 @@ namespace Microsoft.TemplateEngine
             }
         }
 
-        internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JToken? token, string[] defaultSet)
+        internal static IReadOnlyList<string> JTokenStringOrArrayToCollection(this JToken? token, IReadOnlyList<string> defaultSet)
         {
             if (token == null)
             {

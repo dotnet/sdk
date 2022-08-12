@@ -7,12 +7,25 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    internal interface IValueForm
+    public interface IValueForm
     {
+        /// <summary>
+        /// Gets value form identifier.
+        /// Identifier determines the transformation to be run.
+        /// </summary>
         string Identifier { get; }
 
+        /// <summary>
+        /// Gets value form name.
+        /// </summary>
         string Name { get; }
 
+        /// <summary>
+        /// Transforms <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="otherForms">other forms defined in the template.</param>
+        /// <returns>transformed value.</returns>
         string? Process(string? value, IReadOnlyDictionary<string, IValueForm> otherForms);
     }
 }

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
@@ -12,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal static class EvaluatorSelector
     {
-        internal static ConditionEvaluator Select(string name, ConditionEvaluator @default = null)
+        internal static ConditionEvaluator Select(string? name, ConditionEvaluator? @default = null)
         {
             @default = @default ?? CppStyleEvaluatorDefinition.Evaluate;
             string evaluatorName = name ?? string.Empty;

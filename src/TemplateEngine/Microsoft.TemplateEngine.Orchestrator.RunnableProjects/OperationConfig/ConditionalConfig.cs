@@ -19,8 +19,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         public Guid Id => new Guid("3E8BCBF0-D631-45BA-A12D-FBF1DE03AA38");
 
-        public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
+        public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
+            JObject rawConfiguration = JObject.Parse(configuration);
             string commentStyle = rawConfiguration.ToString("style");
             IEnumerable<IOperationProvider> operations = null;
 

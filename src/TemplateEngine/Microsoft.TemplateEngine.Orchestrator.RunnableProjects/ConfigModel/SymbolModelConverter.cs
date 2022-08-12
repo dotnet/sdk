@@ -1,20 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+#nullable enable
+
 using Microsoft.Extensions.Logging;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
-    internal class SymbolModelConverter
+    internal sealed class SymbolModelConverter
     {
         // Note: Only ParameterSymbol has a Description property, this it's the only one that gets localization
         // TODO: change how localization gets merged in, don't do it here.
-        internal static BaseSymbol GetModelForObject(string name, JObject jObject, ILogger logger, string defaultOverride)
+        internal static BaseSymbol? GetModelForObject(string name, JObject jObject, ILogger? logger, string? defaultOverride)
         {
             try
             {
@@ -36,35 +35,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             catch (TemplateAuthoringException ex)
             {
-                logger.LogWarning(ex.Message);
+                logger?.LogWarning(ex.Message);
                 return null;
-            }
-        }
-
-        internal static IReadOnlyList<ReplacementContext> ReadReplacementContexts(JObject jObject)
-        {
-            JArray onlyIf = jObject.Get<JArray>("onlyIf");
-
-            if (onlyIf != null)
-            {
-                List<ReplacementContext> contexts = new List<ReplacementContext>();
-                foreach (JToken entry in onlyIf.Children())
-                {
-                    if (!(entry is JObject x))
-                    {
-                        continue;
-                    }
-
-                    string before = entry.ToString("before");
-                    string after = entry.ToString("after");
-                    contexts.Add(new ReplacementContext(before, after));
-                }
-
-                return contexts;
-            }
-            else
-            {
-                return Array.Empty<ReplacementContext>();
             }
         }
     }

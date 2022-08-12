@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Newtonsoft.Json.Linq;
 using Xunit;

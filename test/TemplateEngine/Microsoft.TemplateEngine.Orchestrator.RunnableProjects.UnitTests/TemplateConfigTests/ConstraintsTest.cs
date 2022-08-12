@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;

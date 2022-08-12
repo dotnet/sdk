@@ -11,6 +11,7 @@ using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 

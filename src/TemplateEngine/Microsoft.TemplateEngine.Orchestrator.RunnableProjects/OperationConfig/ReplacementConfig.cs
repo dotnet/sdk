@@ -20,8 +20,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
         public Guid Id => new Guid("62DB7F1F-A10E-46F0-953F-A28A03A81CD1");
 
-        public IEnumerable<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration, IDirectory templateRoot)
+        public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
+            JObject rawConfiguration = JObject.Parse(configuration);
             string original = rawConfiguration.ToString("original");
             string replacement = rawConfiguration.ToString("replacement");
             string id = rawConfiguration.ToString("id");

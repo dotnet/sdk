@@ -132,7 +132,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, templateData.TemplateSourceRoot.DirectoryInfo(source.Source), target);
+                IDirectory? sourceDirectory = templateData.TemplateSourceRoot.DirectoryInfo(source.Source);
+                if (sourceDirectory == null)
+                {
+                    throw new InvalidOperationException($"Cannot access the source directory of the template: {source.Source}.");
+                }
+
+                IReadOnlyList<IFileChange2> fileChanges = orchestrator.GetFileChanges(runSpec, sourceDirectory, target);
 
                 //source and target paths in the file changes are returned relative to source passed
                 //GetCreationEffects method should return the source paths relative to template source root (location of .template.config folder) and target paths relative to output path and not relative to certain source
@@ -322,7 +328,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
-                orchestrator.Run(runSpec, templateSourceRoot.DirectoryInfo(source.Source), target);
+                IDirectory? sourceDirectory = templateSourceRoot.DirectoryInfo(source.Source);
+                if (sourceDirectory == null)
+                {
+                    throw new InvalidOperationException($"Cannot access the source directory of the template: {source.Source}.");
+                }
+
+                orchestrator.Run(runSpec, sourceDirectory, target);
             }
 
             return GetCreationResult(environmentSettings.Host.Logger, runnableProjectConfig, variables);
