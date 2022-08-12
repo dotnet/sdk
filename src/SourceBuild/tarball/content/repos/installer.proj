@@ -62,7 +62,6 @@
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="templating" />
     <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="xliff-tasks" />
