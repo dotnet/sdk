@@ -38,10 +38,6 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            /* If TFM is net5 */
-
-            ///
-
             List<ITaskItem> knownFrameworkReferences = new List<ITaskItem>();
 
             if (!string.IsNullOrEmpty(WindowsSdkPackageVersion))
