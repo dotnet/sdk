@@ -40,7 +40,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         public string? IconUrl { get; private set; }
 
         //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
-        internal static NuGetPackageSourceInfo FromJObject (JObject entry)
+        internal static NuGetPackageSourceInfo FromJObject(JObject entry)
         {
             string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
             string version = entry.ToString("version") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"version\"  property.", nameof(entry));

@@ -338,7 +338,7 @@ C
 ";
 
         [Theory]
-        [InlineData(null, true, false, null, false, null, /*c_val*/ true,  "C", false, "")]
+        [InlineData(null, true, false, null, false, null, /*c_val*/ true, "C", false, "")]
         [InlineData(true, true, true, null, false, null, /*c_val*/ false, "parA,", false, "")]
         [InlineData(null, true, false, null, true, null, /*c_val*/ true, "", true, "parB")]
         [InlineData(null, true, true, null, false, null, /*c_val*/ true, "", true, "parA")]

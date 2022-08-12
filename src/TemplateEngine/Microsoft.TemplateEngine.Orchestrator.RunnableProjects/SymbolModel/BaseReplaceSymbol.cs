@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
             ReplacementContexts = clone.ReplacementContexts;
         }
 
-        protected BaseReplaceSymbol(JObject jObject, string name) : base (name)
+        protected BaseReplaceSymbol(JObject jObject, string name) : base(name)
         {
             FileRename = jObject.ToString(nameof(FileRename));
             Replaces = jObject.ToString(nameof(Replaces));

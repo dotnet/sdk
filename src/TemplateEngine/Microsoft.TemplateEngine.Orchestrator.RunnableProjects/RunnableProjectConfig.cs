@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 configModifiers = new SimpleConfigModifiers(baselineName!);
             }
-            _configuration = TemplateConfigModel.FromJObject (
+            _configuration = TemplateConfigModel.FromJObject(
                 MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile),
                 _settings.Host.LoggerFactory.CreateLogger<TemplateConfigModel>(),
                 configModifiers,

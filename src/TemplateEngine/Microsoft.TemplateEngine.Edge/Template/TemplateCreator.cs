@@ -277,9 +277,9 @@ namespace Microsoft.TemplateEngine.Edge.Template
             foreach (InputParameterData inputParam in inputParameters
                          .Where(p => p.Value.InputDataState != InputDataState.Unset &&
                                      !(p.Value is EvaluatedInputParameterData
-                                         {
-                                             IsEnabledConditionResult: false
-                                         })
+                                     {
+                                         IsEnabledConditionResult: false
+                                     })
                                      )
                          .Select(p => p.Value))
             {

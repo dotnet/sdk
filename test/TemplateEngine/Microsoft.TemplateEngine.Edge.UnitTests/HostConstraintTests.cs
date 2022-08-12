@@ -14,7 +14,7 @@ using Xunit;
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class HostConstraintTests
-    {   
+    {
         [Fact]
         public async Task CanReadConfiguration_WithoutVersion()
         {
@@ -248,7 +248,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("host1", "fallback|other", "2.1", false)]
         [InlineData("host2", "fallback|other", "2.1", true)]
         [InlineData("host2", "fallback|other", "3.1", false)]
-        public async Task CanProcessDifferentHostNames(string hostName, string fallbackHostNames, string hostVersion,  bool expectedResult)
+        public async Task CanProcessDifferentHostNames(string hostName, string fallbackHostNames, string hostVersion, bool expectedResult)
         {
             var config = new
             {

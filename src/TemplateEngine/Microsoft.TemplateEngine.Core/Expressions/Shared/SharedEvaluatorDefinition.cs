@@ -163,7 +163,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return null;
         }
 
-    private static int? AttemptLexographicComparison(object left, object right)
+        private static int? AttemptLexographicComparison(object left, object right)
         {
             string ls = left as string;
             string rs = right as string;

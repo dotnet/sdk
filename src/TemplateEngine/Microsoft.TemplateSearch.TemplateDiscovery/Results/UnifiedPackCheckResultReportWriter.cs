@@ -31,7 +31,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
             string metadataFilePath = Path.GetFullPath(Path.Combine(reportPath, SearchMetadataFilenameVer2));
 
             WriteNonTemplatePackList(reportPath, packSourceCheckResults.FilteredPackages);
-            #pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
             LegacyMetadataWriter.WriteLegacySearchMetadata(packSourceCheckResults, legacyMetadataFilePath);
 #pragma warning restore CS0612 // Type or member is obsolete
             WriteSearchMetadata(packSourceCheckResults, metadataFilePath);

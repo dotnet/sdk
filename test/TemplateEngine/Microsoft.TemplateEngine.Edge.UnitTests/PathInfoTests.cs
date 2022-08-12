@@ -51,10 +51,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [Theory]
-        [InlineData ("global", "host", "version")]
-        [InlineData (null, "host", "version")]
-        [InlineData ("global", null, "version")]
-        [InlineData ("global", "host", null)]
+        [InlineData("global", "host", "version")]
+        [InlineData(null, "host", "version")]
+        [InlineData("global", null, "version")]
+        [InlineData("global", "host", null)]
         public void CustomLocationTest(string? global, string? hostDir, string? hostVersion)
         {
             var environment = A.Fake<IEnvironment>();

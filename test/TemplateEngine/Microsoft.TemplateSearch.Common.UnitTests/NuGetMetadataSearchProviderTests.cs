@@ -47,7 +47,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 }
                 return result!;
             };
-            
+
             var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
 
             Assert.NotNull(searchResult);
@@ -379,7 +379,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 else
                 {
                     _envVars.Remove(name);
-                }    
+                }
             }
 
             //not supported as the mock, but not needed.

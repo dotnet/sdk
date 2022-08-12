@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         /// <param name="jObject"></param>
         /// <param name="defaultOverride"></param>
         /// <param name="symbolConditionsSupported"></param>
-        protected BaseValueSymbol(string name, JObject jObject, string? defaultOverride, bool symbolConditionsSupported = false) : base (jObject, name)
+        protected BaseValueSymbol(string name, JObject jObject, string? defaultOverride, bool symbolConditionsSupported = false) : base(jObject, name)
         {
             DefaultValue = defaultOverride ?? jObject.ToString(nameof(DefaultValue));
             IsRequired = ParseIsRequiredField(jObject, !symbolConditionsSupported);

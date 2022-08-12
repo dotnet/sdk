@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 foreach (IReplacementTokens fileRenameToken in symbolBasedFileRenames)
                 {
-                    if (variables.TryGetValue (fileRenameToken.VariableName, out object? newValueObject))
+                    if (variables.TryGetValue(fileRenameToken.VariableName, out object? newValueObject))
                     {
                         string newValue = newValueObject?.ToString() ?? string.Empty;
                         operations.Add(new Replacement(fileRenameToken.OriginalValue, newValue, null, true));

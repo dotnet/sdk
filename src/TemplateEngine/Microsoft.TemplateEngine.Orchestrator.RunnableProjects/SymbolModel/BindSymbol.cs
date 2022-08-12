@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
     {
         internal const string TypeName = "bind";
 
-        internal BindSymbol(string name, JObject jObject) : base (jObject, name)
+        internal BindSymbol(string name, JObject jObject) : base(jObject, name)
         {
             string? binding = jObject.ToString(nameof(Binding));
             if (string.IsNullOrWhiteSpace(binding))

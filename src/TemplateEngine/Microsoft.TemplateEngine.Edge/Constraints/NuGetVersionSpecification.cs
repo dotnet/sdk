@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
     {
         private readonly NuGetVersion _version;
 
-        internal NuGetVersionSpecification (NuGetVersion version)
+        internal NuGetVersionSpecification(NuGetVersion version)
         {
             _version = version;
         }

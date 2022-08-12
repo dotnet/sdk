@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 Identity = "test",
                 Sources = new List<ExtendedFileSource>()
-                { 
+                {
                     new ExtendedFileSource()
                     {
                         Exclude = "**/*.config",

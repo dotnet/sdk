@@ -39,7 +39,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
         }
 
-        public MockTemplateInfo(string shortName, string? name = null, string?identity = null, string? groupIdentity = null, int precedence = 0, string? author = null)
+        public MockTemplateInfo(string shortName, string? name = null, string? identity = null, string? groupIdentity = null, int precedence = 0, string? author = null)
             : this(new string[] { shortName }, name, identity, groupIdentity, precedence, author)
         {
         }
@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Mocks
                     parameters.Add(param.Value);
                 }
                 return new ParameterDefinitionSet(parameters);
-            }            
+            }
         }
 
         [Obsolete("Use ParameterDefinitionSet instead.")]
@@ -169,7 +169,7 @@ namespace Microsoft.TemplateEngine.Mocks
             return this;
         }
 
-        public MockTemplateInfo WithTag(string tagName,  string value)
+        public MockTemplateInfo WithTag(string tagName, string value)
         {
             _tags.Add(tagName, value);
             return this;
@@ -269,7 +269,7 @@ namespace Microsoft.TemplateEngine.Mocks
 #pragma warning restore CS0618 // Type or member is obsolete
             return this;
         }
-        
+
         public MockTemplateInfo WithPostActions(params Guid[] postActions)
         {
             if (_postActions.Length == 0)

@@ -58,7 +58,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             return new PackSourceChecker(providers, preFilterer, additionalDataProducers, config.SaveCandidatePacks, existingCache, knownPackages);
         }
 
-        private static async Task<IEnumerable<FilteredPackageInfo>?> LoadKnownPackagesListAsync (CommandArgs config, CancellationToken cancellationToken)
+        private static async Task<IEnumerable<FilteredPackageInfo>?> LoadKnownPackagesListAsync(CommandArgs config, CancellationToken cancellationToken)
         {
             Verbose.WriteLine($"Loading existing non-packages information.");
             const string uri = "https://dotnettemplating.blob.core.windows.net/search/nonTemplatePacks.json";
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             }
         }
 
-        private static async Task DownloadUriToFileAsync (string uri, string filePath, CancellationToken cancellationToken)
+        private static async Task DownloadUriToFileAsync(string uri, string filePath, CancellationToken cancellationToken)
         {
             try
             {

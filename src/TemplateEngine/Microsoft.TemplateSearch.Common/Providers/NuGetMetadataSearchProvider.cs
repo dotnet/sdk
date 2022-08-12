@@ -56,7 +56,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
             ITemplateSearchProviderFactory factory,
             IEngineEnvironmentSettings environmentSettings,
             IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders,
-            IEnumerable<string> searchCacheUri) : this (factory, environmentSettings, additionalDataReaders)
+            IEnumerable<string> searchCacheUri) : this(factory, environmentSettings, additionalDataReaders)
         {
             _searchMetadataUris = searchCacheUri.Select(s => new Uri(s)).ToArray();
         }

@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _environmentSettingsHelper = environmentSettingsHelper;
         }
-    
+
         [Theory]
         [InlineData("en-US", "en")]
         [InlineData("zh-CN", "zh-Hans")]
@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("pt", null)]
         [InlineData("uk-UA", null)]
         [InlineData("invariant", null)]
-        public void PicksCorrectLocator (string currentCulture, string? expectedLocator)
+        public void PicksCorrectLocator(string currentCulture, string? expectedLocator)
         {
             CultureInfo persistedCulture = CultureInfo.CurrentUICulture;
             try
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(2, readTemplate.Constraints.Count);
             Assert.Equal("t1", readTemplate.Constraints[0].Type);
             Assert.Equal("t1", readTemplate.Constraints[1].Type);
-            Assert.Null( readTemplate.Constraints[0].Args);
+            Assert.Null(readTemplate.Constraints[0].Args);
             Assert.Equal(constraintInfo2.Args, readTemplate.Constraints[1].Args);
         }
 

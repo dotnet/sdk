@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 ["5SECOND_IF"] = false,
                 ["BB2"] = false,
                 ["BB3"] = false,
-                
+
             };
             HashSet<string> keys = new HashSet<string>();
             bool result = Cpp2StyleEvaluatorDefinition.EvaluateFromString(_logger, "FIRST_IF == SECOND_IF && !FIRST_IF", vc, out string _, keys);

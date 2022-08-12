@@ -417,7 +417,7 @@ namespace Microsoft.TemplateEngine.IDE
         [Obsolete("Use Task<TemplateCreationResult> GetCreationEffectsAsync(ITemplateInfo info, string? name, string outputPath, IReadOnlyDictionary<string, string> parameters, string? baselineName = null, CancellationToken cancellationToken = default) instead.")]
         public async Task<ICreationEffects?> GetCreationEffectsAsync(ITemplateInfo info, string name, string outputPath, IReadOnlyDictionary<string, string?> parameters, string baselineName)
         {
-            ITemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters,  false, baselineName, true).ConfigureAwait(false);
+            ITemplateCreationResult instantiateResult = await _templateCreator.InstantiateAsync(info, name, name, outputPath, parameters, false, baselineName, true).ConfigureAwait(false);
             return instantiateResult.CreationEffects;
         }
 

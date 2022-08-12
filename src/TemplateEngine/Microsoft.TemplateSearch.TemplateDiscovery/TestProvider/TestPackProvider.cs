@@ -29,7 +29,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             return Task.FromResult((IDownloadedPackInfo)packinfo);
         }
 
-        public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation]CancellationToken token)
+        public async IAsyncEnumerable<ITemplatePackageInfo> GetCandidatePacksAsync([EnumeratorCancellation] CancellationToken token)
         {
             foreach (FileInfo package in _folder.EnumerateFiles("*.nupkg", SearchOption.AllDirectories))
             {

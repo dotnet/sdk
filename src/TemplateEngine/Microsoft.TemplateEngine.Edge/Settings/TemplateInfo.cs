@@ -225,11 +225,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     {
                         cacheParameters[parameter.Name] = new CacheParameter()
                         {
-                             DataType = parameter.DataType,
-                             DefaultValue = parameter.DefaultValue,
-                             Description = parameter.Documentation,
-                             DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
-                             DisplayName = parameter.DisplayName
+                            DataType = parameter.DataType,
+                            DefaultValue = parameter.DefaultValue,
+                            Description = parameter.Documentation,
+                            DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
+                            DisplayName = parameter.DisplayName
 
                         };
                     }

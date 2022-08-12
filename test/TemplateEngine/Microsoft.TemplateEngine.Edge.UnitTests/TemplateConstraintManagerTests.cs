@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                     constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default).ConfigureAwait(false);
                 }
             );
-            var completedTask = await Task.WhenAny (constraintsTask, Task.Delay(10000)).ConfigureAwait(false);
+            var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000)).ConfigureAwait(false);
 
             Assert.Equal(completedTask, constraintsTask);
             Assert.Equal(1, constraints?.Count);
@@ -190,7 +190,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             ITemplateInfo template = A.Fake<ITemplateInfo>();
             A.CallTo(() => template.Constraints).Returns(new[] { new TemplateConstraintInfo("test-1", "yes"), new TemplateConstraintInfo("test-2", "no") });
 
-            var result = await constraintManager.EvaluateConstraintsAsync(new [] { template }, default).ConfigureAwait(false);
+            var result = await constraintManager.EvaluateConstraintsAsync(new[] { template }, default).ConfigureAwait(false);
 
             Assert.Equal(2, result.Single().Result.Count);
             Assert.Equal(template, result.Single().Template);

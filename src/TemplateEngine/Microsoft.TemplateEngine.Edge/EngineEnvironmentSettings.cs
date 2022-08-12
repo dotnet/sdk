@@ -67,9 +67,9 @@ namespace Microsoft.TemplateEngine.Edge
 
         public ITemplateEngineHost Host { get; }
 
-        public IEnvironment Environment { get;  }
+        public IEnvironment Environment { get; }
 
-        public IPathInfo Paths { get;  }
+        public IPathInfo Paths { get; }
 
         public IComponentManager Components { get; }
 

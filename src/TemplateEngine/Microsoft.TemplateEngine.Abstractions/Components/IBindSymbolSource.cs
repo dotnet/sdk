@@ -34,6 +34,6 @@ namespace Microsoft.TemplateEngine.Abstractions.Components
         /// <param name="bindname">the value to retrieve (without prefix).</param>
         /// <param name="cancellationToken">cancellation token.</param>
         /// <returns></returns>
-        public Task<string?> GetBoundValueAsync (IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken);
+        public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken);
     }
 }

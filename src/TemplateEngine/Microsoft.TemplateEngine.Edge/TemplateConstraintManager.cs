@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge
             _logger.LogDebug($"Found {constraintFactories.Count()} constraints factories, initializing.");
             foreach (var constraintFactory in constraintFactories)
             {
-                _templateConstrains[constraintFactory.Type] = Task.Run (() => constraintFactory.CreateTemplateConstraintAsync(engineEnvironmentSettings, _cancellationTokenSource.Token));
+                _templateConstrains[constraintFactory.Type] = Task.Run(() => constraintFactory.CreateTemplateConstraintAsync(engineEnvironmentSettings, _cancellationTokenSource.Token));
             }
 
         }

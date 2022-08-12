@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             IRunnableProjectConfig runnableConfig = GetConfig();
 
-            runnableConfig.Evaluate( variables);
+            runnableConfig.Evaluate(variables);
 
             MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
             runSpec.RootVariableCollection = variables;

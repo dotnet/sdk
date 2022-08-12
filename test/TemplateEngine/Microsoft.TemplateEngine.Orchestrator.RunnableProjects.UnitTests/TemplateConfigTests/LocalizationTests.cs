@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             else
             {
                 Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
-            }    
+            }
         }
 
         [Theory]
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                     Assert.True(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
                     Assert.Equal(expectedDisplayNames[i] == "(null)" ? null : expectedDisplayNames[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
                     Assert.Equal(expectedDescriptions[i] == "(null)" ? null : expectedDescriptions[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
-                }    
+                }
             }
             else
             {
@@ -363,7 +363,7 @@ false,
                          ActionId = Guid.NewGuid(),
                          ManualInstructionInfo = new List<ManualInstructionModel>()
                          {
-                              new ManualInstructionModel(null, "my text") 
+                              new ManualInstructionModel(null, "my text")
                          }
                     },
                 }

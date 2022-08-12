@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             else
             {
                 Assert.NotEmpty(templateModel.ValidateTemplateSourcePaths());
-            }    
+            }
         }
 
         // Tests source paths when the mount point root is the same as the template root.

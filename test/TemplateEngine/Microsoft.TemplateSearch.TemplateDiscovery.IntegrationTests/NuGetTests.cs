@@ -38,7 +38,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     Assert.True(packageInfo.TotalDownloads > 0);
                     Assert.True(packageInfo.Verified);
                     Assert.Contains("Microsoft", packageInfo.Owners);
-                    Assert.NotEmpty (packageInfo.Description);
+                    Assert.NotEmpty(packageInfo.Description);
                     Assert.NotEmpty(packageInfo.IconUrl);
                 }
                 else

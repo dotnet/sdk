@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     internal class SimpleConfigModifiers : ISimpleConfigModifiers
     {
-        internal SimpleConfigModifiers (string baseline)
+        internal SimpleConfigModifiers(string baseline)
         {
             BaselineName = baseline;
         }

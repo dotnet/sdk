@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 }
                 return codeBaseRoot!;
             }
-        }   
+        }
 
         private static string GetTestArtifactLocation(string artifactLocation)
         {

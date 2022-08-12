@@ -8,7 +8,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 {
     internal static class AdditionalDataExtensions
     {
-        internal static IDictionary<string, object>? ProduceAdditionalData (this ITemplatePackageInfo package, IReadOnlyList<IAdditionalDataProducer> producers)
+        internal static IDictionary<string, object>? ProduceAdditionalData(this ITemplatePackageInfo package, IReadOnlyList<IAdditionalDataProducer> producers)
         {
             Dictionary<string, object>? additionalData = new Dictionary<string, object>();
             foreach (var producer in producers)

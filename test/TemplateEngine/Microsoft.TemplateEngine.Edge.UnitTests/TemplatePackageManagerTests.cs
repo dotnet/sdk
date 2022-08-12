@@ -244,7 +244,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanSkipFaultedProvider()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
-            FakeFactory.SetNuPkgsAndFolders(folders: new [] { GetTestTemplateFolder() });
+            FakeFactory.SetNuPkgsAndFolders(folders: new[] { GetTestTemplateFolder() });
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FaultFakeFactory());
 

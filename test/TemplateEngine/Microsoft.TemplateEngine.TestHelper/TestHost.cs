@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.TestHelper
         {
             TestHost host = new TestHost(hostIdentifier: hostIdentifier, additionalComponents: additionalComponents);
             environment = environment ?? new DefaultEnvironment();
-            
+
             if (defaultParameters != null)
             {
                 foreach (var parameter in defaultParameters)

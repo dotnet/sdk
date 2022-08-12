@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             return basePath;
         }
 
-        public static IMountPoint MountPath (this IEngineEnvironmentSettings environmentSettings, string path)
+        public static IMountPoint MountPath(this IEngineEnvironmentSettings environmentSettings, string path)
         {
             foreach (var factory in environmentSettings.Components.OfType<IMountPointFactory>())
             {

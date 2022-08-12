@@ -98,10 +98,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             {
                 Identity = "test",
                 Name = "name",
-                ShortNameList = new [] { "shortName" },
-                Symbols = new[] 
+                ShortNameList = new[] { "shortName" },
+                Symbols = new[]
                 {
-                    new ParameterSymbol( "ParamA", choiceParam, null) 
+                    new ParameterSymbol( "ParamA", choiceParam, null)
                 }
             };
 
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new [] { loggerProvider });
+            IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();

@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             using Bootstrapper bootstrapper = BootstrapperFactory.GetBootstrapper();
             string templateLocation = TestUtils.GetTestTemplateLocation("TemplateWithBinaryFile");
             await bootstrapper.InstallTemplateAsync(templateLocation).ConfigureAwait(false);
-   
+
             string output = TestUtils.CreateTemporaryFolder();
 
             var foundTemplates = await bootstrapper.GetTemplatesAsync(new[] { WellKnownSearchFilters.NameFilter("TestAssets.TemplateWithBinaryFile") }).ConfigureAwait(false);

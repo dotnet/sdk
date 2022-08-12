@@ -45,7 +45,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
         [Fact]
         public void CanReadSearchMetadata_V2()
-        { 
+        {
             var environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string content = File.ReadAllText("NuGetTemplateSearchInfo_v2.json");
             JObject cache = JObject.Parse(content);

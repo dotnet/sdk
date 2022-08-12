@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 string? localizedText = null;
                 if (!forceUpdate && (existingStrings?.TryGetValue(templateString.LocalizationKey, out localizedText) ?? false))
                 {
-                    logger.LogDebug( LocalizableStrings.stringUpdater_log_localizedStringAlreadyExists, templateString.LocalizationKey);
+                    logger.LogDebug(LocalizableStrings.stringUpdater_log_localizedStringAlreadyExists, templateString.LocalizationKey);
                 }
                 else
                 {

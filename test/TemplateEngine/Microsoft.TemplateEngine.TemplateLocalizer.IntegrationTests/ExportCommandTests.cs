@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
         public async Task LocFilesAreExportedFirstTime()
         {
             string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
-            int runResult = await Program.Main(new [] { "export", testTemplate }).ConfigureAwait(false);
+            int runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
             Assert.Equal(0, runResult);
             string[] exportedFiles;
             string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");

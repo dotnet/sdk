@@ -93,14 +93,14 @@ namespace Microsoft.TemplateEngine.Edge
         /// </summary>
         public string HostVersionSettingsDir { get; }
 
-        private static string GetUserProfileDir (IEnvironment environment)
+        private static string GetUserProfileDir(IEnvironment environment)
         {
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             return environment.GetEnvironmentVariable(isWindows ? "USERPROFILE" : "HOME")
                 ?? throw new NotSupportedException("HOME or USERPROFILE environment variable is not defined, the environment is not supported");
         }
 
-        private static string GetDefaultGlobalSettingsDir (string userDir)
+        private static string GetDefaultGlobalSettingsDir(string userDir)
         {
             return Path.Combine(userDir, ".templateengine");
         }

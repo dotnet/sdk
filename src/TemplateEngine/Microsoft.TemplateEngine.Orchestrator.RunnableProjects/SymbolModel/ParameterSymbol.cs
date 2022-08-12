@@ -73,7 +73,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.SymbolModel
         /// <param name="cloneFrom">The symbol to copy the values from.</param>
         /// <param name="formsFallback">The value to be used for <see cref="BaseValueSymbol.Forms"/> in the case
         /// that the <paramref name="cloneFrom"/> does not specify a value for <see cref="BaseValueSymbol.Forms"/>.</param>
-        public ParameterSymbol(ParameterSymbol cloneFrom, SymbolValueFormsModel formsFallback) : base (cloneFrom, formsFallback)
+        public ParameterSymbol(ParameterSymbol cloneFrom, SymbolValueFormsModel formsFallback) : base(cloneFrom, formsFallback)
         {
             Description = cloneFrom.Description;
             IsTag = cloneFrom.IsTag;

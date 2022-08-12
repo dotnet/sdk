@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.Common
         /// <inheritdoc/>
         public string? ThirdPartyNotices => TemplateInfo.ThirdPartyNotices;
 
-#region implicit ITemplateInfo implementation
+        #region implicit ITemplateInfo implementation
         string? ITemplateInfo.DefaultName => TemplateInfo.DefaultName;
 
         Guid ITemplateInfo.GeneratorId => TemplateInfo.GeneratorId;

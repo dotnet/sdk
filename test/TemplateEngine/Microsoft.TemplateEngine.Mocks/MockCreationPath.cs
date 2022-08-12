@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockCreationPath : ICreationPath
     {
-        public MockCreationPath (string path)
+        public MockCreationPath(string path)
         {
             if (string.IsNullOrWhiteSpace(path))
             {

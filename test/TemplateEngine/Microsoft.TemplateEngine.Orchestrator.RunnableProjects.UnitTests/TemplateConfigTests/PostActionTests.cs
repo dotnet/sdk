@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, false, 0, null, null)]
         public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[] firstResult, string[] secondResult)
         {
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject( TestTemplateJson);
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
             IVariableCollection vc = new VariableCollection
             {
                 ["ActionOneCondition"] = condition1,
