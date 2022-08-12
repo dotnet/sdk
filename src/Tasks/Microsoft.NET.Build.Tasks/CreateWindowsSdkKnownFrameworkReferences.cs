@@ -38,6 +38,10 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
+            /* If TFM is net5 */
+
+            ///
+
             List<ITaskItem> knownFrameworkReferences = new List<ITaskItem>();
 
             if (!string.IsNullOrEmpty(WindowsSdkPackageVersion))
@@ -55,12 +59,19 @@ namespace Microsoft.NET.Build.Tasks
             else
             {
                 var normalizedTargetFrameworkVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(TargetFrameworkVersion));
+
                 foreach (var supportedWindowsVersion in WindowsSdkSupportedTargetPlatformVersions)
                 {
                     var windowsSdkPackageVersion = supportedWindowsVersion.GetMetadata("WindowsSdkPackageVersion");
 
                     if (!string.IsNullOrEmpty(windowsSdkPackageVersion))
                     {
+                        var lockedNET5Version = supportedWindowsVersion.GetMetadata("NETVersion");
+                        if (lockedNET5Version == "5.0")
+                        {
+                            knownFrameworkReferences.Add(CreateKnownFrameworkReference(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec));
+                        }
+
                         var minimumNETVersion = supportedWindowsVersion.GetMetadata("MinimumNETVersion");
                         if (!string.IsNullOrEmpty(minimumNETVersion))
                         {
