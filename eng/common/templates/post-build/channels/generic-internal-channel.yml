@@ -24,7 +24,8 @@ stages:
     variables:
       - group: DotNet-Symbol-Server-Pats
     pool:
-      vmImage: 'windows-2019'
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
     steps:
       # This is necessary whenever we want to publish/restore to an AzDO private feed
       - task: NuGetAuthenticate@0
@@ -53,7 +54,6 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
-            /p:CheckEolTargetFramework=false
             ${{ parameters.symbolPublishingAdditionalParameters }}
 
   - job: publish_assets
@@ -68,7 +68,8 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
     condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
     pool:
-      vmImage: 'windows-2019'
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Server.Amd64.VS2019
     steps:
       - task: DownloadBuildArtifacts@0
         displayName: Download Package Artifacts
@@ -133,7 +134,6 @@ stages:
             /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:PublishToMSDL=false
-            /p:CheckEolTargetFramework=false
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/promote-build.yml
