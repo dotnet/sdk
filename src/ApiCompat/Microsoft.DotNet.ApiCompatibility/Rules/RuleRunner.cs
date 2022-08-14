@@ -71,6 +71,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                             differences);
                     }
                 }
+                else
+                {
+                    throw new ArgumentOutOfRangeException(nameof(mapper));
+                }
 
                 result[rightIndex] = differences;
             }
