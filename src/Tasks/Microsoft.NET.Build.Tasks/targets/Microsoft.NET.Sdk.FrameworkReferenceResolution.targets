@@ -121,6 +121,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
       <Output TaskParameter="Crossgen2Packs" ItemName="Crossgen2Pack" />
       <Output TaskParameter="ILCompilerPacks" ItemName="ILCompilerPack" />
+      <Output TaskParameter="ILCompilerPacks2" ItemName="ILCompilerPack2" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
 
     </ProcessFrameworkReferences>
@@ -257,7 +258,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <Output TaskParameter="Output" ItemName="ResolvedILCompilerPack" />
     </GetPackageDirectory>
-    
+
+    <GetPackageDirectory
+      Items="@(ILCompilerPack2)"
+      PackageFolders="@(AssetsFilePackageFolder)">
+
+      <Output TaskParameter="Output" ItemName="ResolvedILCompilerPack2" />
+    </GetPackageDirectory>
+
     <GetPackageDirectory
       Items="@(PackAsToolShimAppHostPack)"
       PackageFolders="@(AssetsFilePackageFolder)">

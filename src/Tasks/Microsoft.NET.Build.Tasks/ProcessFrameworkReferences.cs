@@ -99,7 +99,10 @@ namespace Microsoft.NET.Build.Tasks
         public ITaskItem[] Crossgen2Packs { get; set; }
 
         [Output]
-        public ITaskItem[] ILCompilerPacks { get; set; }        
+        public ITaskItem[] ILCompilerPacks { get; set; }
+
+        [Output]
+        public ITaskItem[] ILCompilerPacks2 { get; set; }
 
         //  Runtime packs which aren't available for the specified RuntimeIdentifier
         [Output]
@@ -618,6 +621,20 @@ namespace Microsoft.NET.Build.Tasks
             else
             {
                 ILCompilerPacks = new[] { newItem };
+                // ILCompiler supports cross target compilation. If there is a cross-target request, we need to download that package as well
+                var targetsRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
+                if (!hostRuntimeIdentifier.Equals(targetsRuntimeIdentifier))
+                {
+                    var runtimeIlcPackName = packPattern.Replace("**RID**", targetsRuntimeIdentifier);
+                    TaskItem runtime2PackToDownload = new TaskItem(runtimeIlcPackName);
+                    runtime2PackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                    packagesToDownload.Add(runtime2PackToDownload);
+
+                    var newItem2 = new TaskItem(runtimeIlcPackName);
+                    newItem2.SetMetadata(MetadataKeys.NuGetPackageId, runtimeIlcPackName);
+                    newItem2.SetMetadata(MetadataKeys.NuGetPackageVersion, packVersion);
+                    ILCompilerPacks2 = new[] { newItem2 };
+                }
             }            
 
             return true;
