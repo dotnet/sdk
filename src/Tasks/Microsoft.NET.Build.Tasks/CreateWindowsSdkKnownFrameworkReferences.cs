@@ -62,10 +62,15 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (!string.IsNullOrEmpty(windowsSdkPackageVersion))
                     {
-                        var lockedNET5Version = supportedWindowsVersion.GetMetadata("NETVersion");
-                        if (lockedNET5Version == "5.0")
+                        var NETVersion = supportedWindowsVersion.GetMetadata("NETVersion");
+                        if (!string.IsNullOrEmpty(NETVersion))
                         {
-                            knownFrameworkReferences.Add(CreateKnownFrameworkReference(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec));
+                            var normalizedNETVersion = ProcessFrameworkReferences.NormalizeVersion(new Version(NETVersion));
+                            if (normalizedNETVersion == normalizedTargetFrameworkVersion)
+                            {
+                                knownFrameworkReferences.Add(CreateKnownFrameworkReference(windowsSdkPackageVersion, TargetFrameworkVersion, supportedWindowsVersion.ItemSpec));
+                            }
+                            continue;
                         }
 
                         var minimumNETVersion = supportedWindowsVersion.GetMetadata("MinimumNETVersion");
