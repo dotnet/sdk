@@ -630,7 +630,7 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         return false;
                     }
-                    if (!hostRuntimeIdentifier.Equals(targetsRuntimeIdentifier))
+                    if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
                     {
                         var runtimeIlcPackName = packPattern.Replace("**RID**", targetsRuntimeIdentifier);
                         TaskItem runtime2PackToDownload = new TaskItem(runtimeIlcPackName);
