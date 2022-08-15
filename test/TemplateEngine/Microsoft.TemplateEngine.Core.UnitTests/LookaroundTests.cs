@@ -291,7 +291,7 @@ color:red;";
             Verify(Encoding.UTF8, output, changed, value, expected);
         }
 
-        private static int ReadaheadOneByte(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+        private static int ReadaheadOneByte(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
         {
             ++currentBufferPosition;
             return 0;

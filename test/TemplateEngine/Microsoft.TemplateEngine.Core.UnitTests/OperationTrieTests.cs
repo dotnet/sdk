@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class OperationTrieTests
     {
-        private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
+        private delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token);
 
         [Fact(DisplayName = nameof(VerifyOperationTrieFindsTokenAtStart))]
         public void VerifyOperationTrieFindsTokenAtStart()
@@ -114,9 +114,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             public bool IsInitialStateOn { get; }
 
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
-                return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
+                return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token) ?? 0;
             }
         }
 

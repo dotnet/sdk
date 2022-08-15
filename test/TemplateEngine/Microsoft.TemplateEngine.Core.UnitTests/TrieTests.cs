@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(
                             null,
-                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) =>
+                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) =>
                             {
                                 testActivated = true;
                                 return 0;
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(
                             null,
-                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) =>
+                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) =>
                             {
                                 testActivated = true;
                                 return 0;
@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(
                             null,
-                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) =>
+                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) =>
                             {
                                 testActivated = true;
                                 return 0;
@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                     new MockOperationProvider(
                         new MockOperation(
                             null,
-                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target) =>
+                            (IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) =>
                             {
                                 testActivated = true;
                                 return 0;

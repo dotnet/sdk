@@ -36,6 +36,8 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         void SeekBackWhile(ITokenTrie match);
 
+        void Write(byte[] buffer, int offset, int count);
+
         void Inject(Stream staged);
     }
 }

@@ -396,7 +396,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Evaluator.get -> Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Id.get -> string
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, System.IO.Stream target) -> int
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Id.get -> string
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Impl(Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional definition, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken> tokens, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie structureTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie closeConditionTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie scanBackTrie, Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping mapping, string id, bool initialState) -> void
 ~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
@@ -462,18 +461,18 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target) -> bool
 ~Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize) -> bool
 ~Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold) -> bool
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.Config.get -> Microsoft.TemplateEngine.Core.Contracts.IEngineConfig
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBuffer.get -> byte[]
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.get -> System.Text.Encoding
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.Inject(System.IO.Stream staged) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.ProcessorState(System.IO.Stream source, System.IO.Stream target, int bufferSize, int flushThreshold, Microsoft.TemplateEngine.Core.Contracts.IEngineConfig config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> operationProviders) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match, bool consume) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie match) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
-~Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Config.get -> Microsoft.TemplateEngine.Core.Contracts.IEngineConfig!
+Microsoft.TemplateEngine.Core.Util.ProcessorState.CurrentBuffer.get -> byte[]!
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.get -> System.Text.Encoding!
+Microsoft.TemplateEngine.Core.Util.ProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig!
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Inject(System.IO.Stream! staged) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.ProcessorState(System.IO.Stream! source, System.IO.Stream! target, int bufferSize, int flushThreshold, Microsoft.TemplateEngine.Core.Contracts.IEngineConfig! config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>! operationProviders) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, bool consume) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
 ~Microsoft.TemplateEngine.Core.Util.Token.Token(byte[] token, int index, int start = 0, int end = -1) -> void
 ~Microsoft.TemplateEngine.Core.Util.Token.Value.get -> byte[]
 ~Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(byte[] literalToken) -> int

@@ -45,12 +45,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public bool IsInitialStateOn { get; }
 
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 bool flag;
                 if (processor.Config.Flags.TryGetValue("expandVariables", out flag) && !flag)
                 {
-                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 string output = result?.ToString() ?? "null";
 
                 byte[] outputBytes = processor.Encoding.GetBytes(output);
-                target.Write(outputBytes, 0, outputBytes.Length);
+                processor.Write(outputBytes, 0, outputBytes.Length);
                 return outputBytes.Length;
             }
         }

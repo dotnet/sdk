@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.IO;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
 {
@@ -14,6 +13,6 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         bool IsInitialStateOn { get; }
 
-        int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
+        int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token);
     }
 }

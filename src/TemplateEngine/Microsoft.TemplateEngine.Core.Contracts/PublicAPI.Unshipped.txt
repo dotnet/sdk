@@ -20,7 +20,7 @@ Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Operations.get -> System.
 Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.RootVariableCollection.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
 Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.Special.get -> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<Microsoft.TemplateEngine.Core.Contracts.IPathMatcher!, Microsoft.TemplateEngine.Core.Contracts.IRunSpec!>>!
 Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec.TryGetTargetRelPath(string! sourceRelPath, out string! targetRelPath) -> bool
-Microsoft.TemplateEngine.Core.Contracts.IOperation.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, int bufferLength, ref int currentBufferPosition, int token, System.IO.Stream! target) -> int
+Microsoft.TemplateEngine.Core.Contracts.IOperation.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processor, int bufferLength, ref int currentBufferPosition, int token) -> int
 Microsoft.TemplateEngine.Core.Contracts.IOperation.Id.get -> string!
 Microsoft.TemplateEngine.Core.Contracts.IOperation.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken!>!
 Microsoft.TemplateEngine.Core.Contracts.IOperationProvider.GetOperation(System.Text.Encoding! encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation!
@@ -46,6 +46,7 @@ Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekBackWhile(Microsoft.
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
+Microsoft.TemplateEngine.Core.Contracts.IProcessorState.Write(byte[]! buffer, int offset, int count) -> void
 Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.OriginalValue.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
 Microsoft.TemplateEngine.Core.Contracts.IReplacementTokens.VariableName.get -> string!
 Microsoft.TemplateEngine.Core.Contracts.IRunSpec.GetOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>! sourceOperations) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>!

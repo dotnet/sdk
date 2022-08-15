@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.Util
     {
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
         private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>>();
-        private readonly Stream _target;
+        private readonly StreamProxy _target;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private readonly int _flushThreshold;
         private readonly int _bomSize;
@@ -65,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
 
             _source = source;
-            _target = target;
+            _target = new StreamProxy(target, bufferSize);
             Config = config;
             _flushThreshold = flushThreshold;
             CurrentBuffer = new byte[bufferSize];
@@ -76,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             _bomSize = bom.Length;
             CurrentBufferPosition = _bomSize;
             CurrentSequenceNumber = _bomSize;
-            target.Write(bom, 0, _bomSize);
+            this.Write(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
@@ -226,7 +228,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                             CurrentSequenceNumber += handoffBufferPosition - CurrentBufferPosition;
                             CurrentBufferPosition = handoffBufferPosition;
                             posedPosition = handoffBufferPosition;
-                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token, _target);
+                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token);
                             bytesWrittenSinceLastFlush += bytesWritten;
 
                             CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
@@ -313,7 +315,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                             CurrentSequenceNumber += handoffBufferPosition - CurrentBufferPosition;
                             CurrentBufferPosition = handoffBufferPosition;
                             posedPosition = handoffBufferPosition;
-                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token, _target);
+                            int bytesWritten = operation.HandleMatch(this, CurrentBufferLength, ref posedPosition, terminal.Terminal.Token);
                             bytesWrittenSinceLastFlush += bytesWritten;
 
                             CurrentSequenceNumber += posedPosition - CurrentBufferPosition;
@@ -345,7 +347,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                 _target.Write(CurrentBuffer, CurrentBufferLength - toWrite, toWrite);
             }
 
-            _target.Flush();
+            _target.FlushToTarget();
             return anyOperationsExecuted;
         }
 
@@ -458,6 +460,8 @@ namespace Microsoft.TemplateEngine.Core.Util
                 _target.SetLength(_bomSize);
             }
         }
+
+        public void Write(byte[] buffer, int offset, int count) => _target.Write(buffer, offset, count);
 
         public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
         {

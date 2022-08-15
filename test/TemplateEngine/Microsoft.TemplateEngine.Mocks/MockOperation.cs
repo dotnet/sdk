@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Mocks
             IsInitialStateOn = initialState;
         }
 
-        public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target);
+        public delegate int MatchHandler(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token);
 
         public IReadOnlyList<IToken> Tokens { get; }
 
@@ -36,9 +36,9 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public bool IsInitialStateOn { get; }
 
-        public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+        public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
         {
-            return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token, target) ?? 0;
+            return _onMatch?.Invoke(processor, bufferLength, ref currentBufferPosition, token) ?? 0;
         }
     }
 }

@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public bool IsInitialStateOn { get; }
 
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 // check if this operation has been reset. If so, set _depth = 0
                 // this fixes the reset problem, but not the trailing unbalanced pseduo comment problem, i.e. it won't turn this:
@@ -114,12 +114,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (_depth == 0 && token == PseudoEndTokenIndex)
                 {
-                    target.Write(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
+                    processor.Write(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
                     return _psuedoEndToken.Length;  // the source buffer needs to skip over this token.
                 }
                 else
                 {
-                    target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 }
 
                 return 0;

@@ -230,6 +230,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new NotImplementedException();
             }
 
+            public void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+
             public void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
             {
                 throw new NotImplementedException();

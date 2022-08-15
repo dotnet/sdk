@@ -12,6 +12,7 @@ Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.Templat
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! fileSystem) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
+Microsoft.TemplateEngine.Core.Util.ProcessorState.Write(byte[]! buffer, int offset, int count) -> void
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.get -> string!
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object!
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string! key, object! value) -> void
@@ -49,6 +50,7 @@ virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Mic
 ~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.Build(ref int bufferLength, ref int bufferPosition, System.Action<System.Collections.Generic.IReadOnlyList<byte>> onFault, System.Collections.Generic.HashSet<string> referencedVariablesKeys = null) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, object value) -> void
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> object
+~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) -> int
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out string faultedMessage, System.Collections.Generic.HashSet<string> referencedVariablesKeys) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool

@@ -110,7 +110,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public bool IsInitialStateOn { get; }
 
-            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token, Stream target)
+            public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 IReadOnlyList<SpecializedPhase> nextPhases = _currentPhase?.Next ?? _entryPoints;
                 SpecializedPhase match = nextPhases.FirstOrDefault(x => x.Match == token);
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (match != null)
                 {
                     _currentPhase = match.Next.Count > 0 ? match : null;
-                    target.Write(match.Replacement, 0, match.Replacement.Length);
+                    processor.Write(match.Replacement, 0, match.Replacement.Length);
                     return match.Replacement.Length;
                 }
 
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     _currentPhase = null;
                 }
 
-                target.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 return Tokens[token].Length;
             }
         }

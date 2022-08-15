@@ -41,6 +41,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             processor.Run(input, output, 1024);
             Assert.Equal(input.Length, output.Length);
 
+            input.Position = 0;
+            output.Position = 0;
+
             int file1byte;
             int file2byte;
             do
@@ -61,7 +64,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             StringBuilder valueBuilder = new StringBuilder();
             StringBuilder expectedBuilder = new StringBuilder();
 
-            for (int i = 0; i < 1024; i++)
+            int repetitionsInMaxInMemoryBuffer = StreamProxy.MaxRecommendedBufferedFileSize / expected.Length;
+
+            for (int i = 0; i < repetitionsInMaxInMemoryBuffer + 1; i++)
             {
                 valueBuilder.Append(value);
                 expectedBuilder.Append(expected);
@@ -91,7 +96,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             StringBuilder valueBuilder = new StringBuilder();
             StringBuilder expectedBuilder = new StringBuilder();
 
-            for (int i = 0; i < 1024; i++)
+            int repetitionsInMaxInMemoryBuffer = StreamProxy.MaxRecommendedBufferedFileSize / expected.Length;
+
+            for (int i = 0; i < repetitionsInMaxInMemoryBuffer + 1; i++)
             {
                 valueBuilder.Append(value);
                 expectedBuilder.Append(expected);
@@ -121,7 +128,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token, Stream target) =>
+                (IProcessorState state, int length, ref int position, int token) =>
                 {
                     state.ConsumeWholeLine(ref length, ref position);
                     return 0;
