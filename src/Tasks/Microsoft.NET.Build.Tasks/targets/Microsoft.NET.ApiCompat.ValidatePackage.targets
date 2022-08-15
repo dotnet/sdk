@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           AfterTargets="Pack"
           Inputs="@(NuGetPackInput);$(CompatibilitySuppressionFilePath)"
           Outputs="$(ApiCompatValidatePackageSemaphoreFile)"
-          Condition="'$(EnablePackageValidation)' == 'true' and '$(IsPackable)' == 'true'">   
+          Condition="'$(EnablePackageValidation)' == 'true' and '$(IsPackable)' == 'true'">
     <PropertyGroup>
       <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(PackageId)</PackageValidationBaselineName>
       <PackageValidationBaselinePath Condition="'$(PackageValidationBaselinePath)' == '' and '$(PackageValidationBaselineVersion)' != ''">$([MSBuild]::NormalizePath('$(NuGetPackageRoot)', '$(PackageValidationBaselineName.ToLower())', '$(PackageValidationBaselineVersion)', '$(PackageValidationBaselineName.ToLower()).$(PackageValidationBaselineVersion).nupkg'))</PackageValidationBaselinePath>
