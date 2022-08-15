@@ -469,6 +469,10 @@ namespace Microsoft.NET.Build.Tasks
                     // for the same project configured with the same intermediate directory. This can
                     // (for example) happen when design-time builds and real builds overlap.
                     //
+                    // There can be the case that two ore more projects have a project reference to a common
+                    // project through symbolic links with different paths.
+                    // https://github.com/dotnet/sdk/issues/22538
+                    //
                     // If there is an I/O error, then we fall back to the same in-memory approach below
                     // as when DisablePackageAssetsCache is set to true.
                     try
@@ -476,6 +480,7 @@ namespace Microsoft.NET.Build.Tasks
                         _reader = CreateReaderFromDisk(task, settingsHash);
                     }
                     catch (IOException) { }
+                    catch (InvalidDataException) { }
                     catch (UnauthorizedAccessException) { }
                 }
 
