@@ -625,17 +625,17 @@ namespace Microsoft.NET.Build.Tasks
                 // We expect RuntimeIdentifier to be defined during publish but can allow during build
                 if (RuntimeIdentifier != null)
                 {
-                    var targetsRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
-                    if (targetsRuntimeIdentifier == null)
+                    var targetRuntimeIdentifier = NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeIdentifier, packSupportedRuntimeIdentifiers, out bool wasInGraph2);
+                    if (targetRuntimeIdentifier == null)
                     {
                         return false;
                     }
                     if (!hostRuntimeIdentifier.Equals(targetRuntimeIdentifier))
                     {
-                        var runtimeIlcPackName = packPattern.Replace("**RID**", targetsRuntimeIdentifier);
-                        TaskItem runtime2PackToDownload = new TaskItem(runtimeIlcPackName);
-                        runtime2PackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
-                        packagesToDownload.Add(runtime2PackToDownload);
+                        var runtimeIlcPackName = packPattern.Replace("**RID**", targetRuntimeIdentifier);
+                        TaskItem targetIlcPackToDownload = new TaskItem(runtimeIlcPackName);
+                        targetIlcPackToDownload.SetMetadata(MetadataKeys.Version, packVersion);
+                        packagesToDownload.Add(targetIlcPackToDownload);
 
                         var newItem2 = new TaskItem(runtimeIlcPackName);
                         newItem2.SetMetadata(MetadataKeys.NuGetPackageId, runtimeIlcPackName);
