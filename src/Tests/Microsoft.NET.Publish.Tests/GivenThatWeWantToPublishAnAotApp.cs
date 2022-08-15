@@ -280,7 +280,6 @@ namespace Microsoft.NET.Publish.Tests
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                    testProject.AdditionalProperties["StripSymbols"] = "true";
-                   testProject.AdditionalProperties["ObjCopyName"] = "objcopy";
                 }
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -328,7 +327,6 @@ namespace Microsoft.NET.Publish.Tests
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     testProject.AdditionalProperties["StripSymbols"] = "true";
-                    testProject.AdditionalProperties["ObjCopyName"] = "objcopy";
                 }
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 

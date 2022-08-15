@@ -120,8 +120,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetingPacks" ItemName="TargetingPack" />
       <Output TaskParameter="RuntimePacks" ItemName="RuntimePack" />
       <Output TaskParameter="Crossgen2Packs" ItemName="Crossgen2Pack" />
-      <Output TaskParameter="ILCompilerPacks" ItemName="ILCompilerPack" />
-      <Output TaskParameter="ILCompilerPacks2" ItemName="ILCompilerPack2" />
+      <Output TaskParameter="HostILCompilerPacks" ItemName="HostILCompilerPack" />
+      <Output TaskParameter="TargetILCompilerPacks" ItemName="TargetILCompilerPack" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
 
     </ProcessFrameworkReferences>
@@ -253,17 +253,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GetPackageDirectory>
 
     <GetPackageDirectory
-      Items="@(ILCompilerPack)"
+      Items="@(HostILCompilerPack)"
       PackageFolders="@(AssetsFilePackageFolder)">
 
       <Output TaskParameter="Output" ItemName="ResolvedILCompilerPack" />
     </GetPackageDirectory>
 
     <GetPackageDirectory
-      Items="@(ILCompilerPack2)"
+      Items="@(TargetILCompilerPack)"
       PackageFolders="@(AssetsFilePackageFolder)">
 
-      <Output TaskParameter="Output" ItemName="ResolvedILCompilerPack2" />
+      <Output TaskParameter="Output" ItemName="ResolvedTargetILCompilerPack" />
     </GetPackageDirectory>
 
     <GetPackageDirectory
