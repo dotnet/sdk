@@ -44,3 +44,10 @@ Microsoft.TemplateSearch.Common.TemplateSearchData.TagsCollection.get -> System.
 Microsoft.TemplateSearch.Common.TemplateSearchData.TemplateSearchData(Microsoft.TemplateEngine.Abstractions.ITemplateInfo! templateInfo, System.Collections.Generic.IDictionary<string!, object!>? data = null) -> void
 Microsoft.TemplateSearch.Common.TemplateSearchData.ThirdPartyNotices.get -> string?
 static Microsoft.TemplateSearch.Common.Components.AllComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
+Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.Description.get -> string?
+Microsoft.TemplateSearch.Common.Abstractions.ITemplatePackageInfo.IconUrl.get -> string?
+Microsoft.TemplateSearch.Common.Providers.NuGetMetadataSearchProviderFactory
+Microsoft.TemplateSearch.Common.Providers.NuGetMetadataSearchProviderFactory.NuGetMetadataSearchProviderFactory() -> void
+Microsoft.TemplateSearch.Common.TemplatePackageSearchData.Description.get -> string?
+Microsoft.TemplateSearch.Common.TemplatePackageSearchData.IconUrl.get -> string?
+Microsoft.TemplateSearch.Common.TemplateSearchData.ParameterDefinitions.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet!
