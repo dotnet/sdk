@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -36,6 +36,17 @@ namespace Microsoft.DotNet.ApiCompat
 
     internal static class ValidateAssemblies
     {
+        // The set of extensions that we probe for if a directory path is passed in as a left or right.
+        private static readonly string[] s_probingExtensions =
+        {
+            ".dll",
+            ".ildll",
+            ".ni.dll",
+            ".winmd",
+            ".exe",
+            ".ilexe"
+        };
+
         public static void Run(Func<ISuppressionEngine, ICompatibilityLogger> logFactory,
             bool generateSuppressionFile,
             string? suppressionFile,
@@ -73,8 +84,8 @@ namespace Microsoft.DotNet.ApiCompat
 
                 for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    MetadataInformation leftMetadataInformation = GetMetadataInformation(leftAssemblies, leftAssembliesReferences, leftAssembliesStringTransformer, i);
-                    MetadataInformation rightMetadataInformation = GetMetadataInformation(rightAssemblies, rightAssembliesReferences, rightAssembliesStringTransformer, i);
+                    IEnumerable<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
+                    IEnumerable<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
 
                     // Enqueue the work item
                     ApiCompatRunnerWorkItem workItem = new(leftMetadataInformation, apiCompatOptions, rightMetadataInformation);
@@ -84,17 +95,16 @@ namespace Microsoft.DotNet.ApiCompat
             else
             {
                 // Create the work item that corresponds to the passed in left assembly.
-                var leftAssembliesMetadataInformation = new MetadataInformation[leftAssemblies.Length];
+                List<MetadataInformation> leftAssembliesMetadataInformation = new(leftAssemblies.Length);
                 for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    leftAssembliesMetadataInformation[i] = GetMetadataInformation(leftAssemblies, leftAssembliesReferences, leftAssembliesStringTransformer, i);
+                    leftAssembliesMetadataInformation.AddRange(GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer));
                 }
 
-                var rightAssembliesMetadataInformation = new MetadataInformation[rightAssemblies.Length];
+                List<MetadataInformation> rightAssembliesMetadataInformation = new(rightAssemblies.Length);
                 for (int i = 0; i < rightAssemblies.Length; i++)
                 {
-                    string rightAssembly = rightAssemblies[i];
-                    rightAssembliesMetadataInformation[i] = GetMetadataInformation(rightAssemblies, rightAssembliesReferences, rightAssembliesStringTransformer, i);
+                    rightAssembliesMetadataInformation.AddRange(GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer));
                 }
 
                 // Enqueue the work item
@@ -128,18 +138,60 @@ namespace Microsoft.DotNet.ApiCompat
             return assemblyReferences[0];
         }
 
-        private static MetadataInformation GetMetadataInformation(string[] assemblies,
-            string[][]? assemblyReferences,
-            RegexStringTransformer? regexStringTransformer,
-            int counter)
+        private static IEnumerable<MetadataInformation> GetMetadataInformation(string path,
+            IEnumerable<string>? assemblyReferences,
+            RegexStringTransformer? regexStringTransformer)
         {
-            string assembly = assemblies[counter];
+            foreach (string assembly in GetFilesFromPath(path))
+            {
+                yield return new MetadataInformation(
+                    assemblyName: Path.GetFileNameWithoutExtension(assembly),
+                    assemblyId: regexStringTransformer?.Transform(assembly) ?? assembly,
+                    fullPath: assembly,
+                    references: assemblyReferences);
+            }
+        }
 
-            return new MetadataInformation(
-                assemblyName: Path.GetFileNameWithoutExtension(assembly),
-                assemblyId: regexStringTransformer?.Transform(assembly) ?? assembly,
-                fullPath: assembly,
-                references: GetAssemblyReferences(assemblyReferences, counter));
+        private static IEnumerable<string> GetFilesFromPath(string path)
+        {
+            // Check if the given path is a directory
+            if (Directory.Exists(path))
+            {
+                List<string> files = new();
+                // Probe for a set of file extensions
+                foreach (string probingExtension in s_probingExtensions)
+                {
+                    string searchPattern = "*" + probingExtension;
+                    files.AddRange(Directory.EnumerateFiles(path, searchPattern));
+                }
+
+                return files;
+            }
+            // If the path isn't a directory, see if it's a glob expression.
+            else
+            {
+                string filename = Path.GetFileName(path);
+#if NETCOREAPP
+                if (filename.Contains('*'))
+#else
+                if (filename.Contains("*"))
+#endif
+                {
+                    string? directoryName = Path.GetDirectoryName(path);
+                    if (directoryName != null)
+                    {
+                        try
+                        {
+                            return Directory.EnumerateFiles(directoryName, filename);
+                        }
+                        catch (ArgumentException)
+                        {
+                        }
+                    }
+                }
+            }
+
+            return new string[] { path };
         }
     }
 }
