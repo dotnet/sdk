@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             builder.AppendLine("-o");
-            builder.AppendLine(TagHelperManifest);
+            builder.AppendLine(Quote(TagHelperManifest));
 
             builder.AppendLine("-p");
-            builder.AppendLine(ProjectRoot);
+            builder.AppendLine(Quote(ProjectRoot));
 
             builder.AppendLine("-v");
             builder.AppendLine(Version);
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 builder.AppendLine(Extensions[i].GetMetadata(Identity));
 
                 builder.AppendLine("-e");
-                builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
+                builder.AppendLine(Quote(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath))));
             }
 
             return builder.ToString();

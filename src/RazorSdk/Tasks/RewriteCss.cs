@@ -37,17 +37,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
 
                 builder.AppendLine("-s");
-                builder.AppendLine(inputFullPath);
+                builder.AppendLine(Quote(inputFullPath));
 
                 builder.AppendLine("-o");
-                builder.AppendLine(outputPath);
+                builder.AppendLine(Quote(outputPath));
 
                 // Create the directory for the output file in case it doesn't exist.
                 // Its easier to do it here than on MSBuild. Alternatively the tool could have taken care of it.
                 Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
 
                 builder.AppendLine("-c");
-                builder.AppendLine(cssScope);
+                builder.AppendLine(Quote(cssScope));
             }
 
             return builder.ToString();
