@@ -1,12 +1,13 @@
 ﻿using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.TestHelper.Commands;
+using Microsoft.TemplateEngine.Tests;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 {
-    public class TemplateDiscoveryTests
+    public class TemplateDiscoveryTests : TestBase
     {
         private readonly ITestOutputHelper _log;
 
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
             packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates").ConfigureAwait(false);
 
             new DotnetCommand(
@@ -92,7 +93,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
                 _log,
@@ -117,7 +118,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
                 _log,
@@ -140,7 +141,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
                 _log,
@@ -163,7 +164,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg"));
 
@@ -250,7 +251,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             string testFileName = Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg");
             File.Move(packageLocation, testFileName);
@@ -337,7 +338,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             string testFileName = Path.Combine(Path.GetDirectoryName(packageLocation)!, "Test.Templates##1.0.0.nupkg");
             File.Move(packageLocation, testFileName);
@@ -431,7 +432,7 @@ Package Test.Templates was unlisted."
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
                 _log,
@@ -461,7 +462,7 @@ Package Test.Templates was unlisted."
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = packageManager.PackTestTemplatesNuGetPackage();
+            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
 
             new DotnetCommand(
                 _log,

@@ -89,21 +89,23 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         private void RecordDirectoryScan(string directoryName, string pattern, SearchOption searchOption)
         {
-            _directoriesScanned.Add(new DirectoryScanParameters
-            {
-                DirectoryName = directoryName,
-                Pattern = pattern,
-                SearchOption = searchOption
-            });
+            _directoriesScanned.Add(new DirectoryScanParameters(directoryName, pattern, searchOption));
         }
 
         public class DirectoryScanParameters
         {
-            public string? DirectoryName { get; set; }
+            public DirectoryScanParameters(string directoryName, string pattern, SearchOption searchOption)
+            {
+                DirectoryName = directoryName;
+                Pattern = pattern;
+                SearchOption = searchOption;
+            }
 
-            public string? Pattern { get; set; }
+            public string DirectoryName { get; }
 
-            public SearchOption SearchOption { get; set; }
+            public string Pattern { get; }
+
+            public SearchOption SearchOption { get; }
         }
     }
 }

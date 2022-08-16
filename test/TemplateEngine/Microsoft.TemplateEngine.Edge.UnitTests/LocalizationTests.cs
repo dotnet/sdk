@@ -3,16 +3,15 @@
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.TestHelper;
-using Microsoft.TemplateEngine.Utils;
+using Microsoft.TemplateEngine.Tests;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class LocalizationTests : IClassFixture<EnvironmentSettingsHelper>
+    public class LocalizationTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
 
@@ -51,9 +50,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            ITemplateParameter symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == symbolName);
+            ITemplateParameter? symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == symbolName);
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDisplayName, symbol.DisplayName);
+            Assert.Equal(expectedDisplayName, symbol?.DisplayName);
         }
 
         [Theory]
@@ -64,9 +63,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            ITemplateParameter symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == symbolName);
+            ITemplateParameter? symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == symbolName);
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDisplayName, symbol.DisplayName);
+            Assert.Equal(expectedDisplayName, symbol?.DisplayName);
         }
 
         [Theory]
@@ -77,9 +76,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            ITemplateParameter symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == "someSymbol");
+            ITemplateParameter? symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == "someSymbol");
             Assert.NotNull(symbol);
-            Assert.Equal(expectedDescription, symbol.Description);
+            Assert.Equal(expectedDescription, symbol!.Description);
         }
 
         [Theory]
@@ -95,18 +94,18 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             _ = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
 
-            ITemplateParameter symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == "someChoice");
+            ITemplateParameter? symbol = localizationTemplate.ParameterDefinitions?.FirstOrDefault(p => p.Name == "someChoice");
             Assert.NotNull(symbol);
-            Assert.Equal(symbolDesc, symbol.Description);
+            Assert.Equal(symbolDesc, symbol!.Description);
 
             var choices = symbol.Choices;
             Assert.NotNull(choices);
-            Assert.True(choices.TryGetValue("choice0", out ParameterChoice choice0), "Template symbol should contain a choice with name 'choice0'.");
-            Assert.Equal(choice0Desc, choice0.Description);
-            Assert.True(choices.TryGetValue("choice1", out ParameterChoice choice1), "Template symbol should contain a choice with name 'choice1'.");
-            Assert.Equal(choice1Desc, choice1.Description);
-            Assert.True(choices.TryGetValue("choice2", out ParameterChoice choice2), "Template symbol should contain a choice with name 'choice2'.");
-            Assert.Equal(choice2Desc, choice2.Description);
+            Assert.True(choices!.TryGetValue("choice0", out ParameterChoice? choice0), "Template symbol should contain a choice with name 'choice0'.");
+            Assert.Equal(choice0Desc, choice0?.Description);
+            Assert.True(choices.TryGetValue("choice1", out ParameterChoice? choice1), "Template symbol should contain a choice with name 'choice1'.");
+            Assert.Equal(choice1Desc, choice1?.Description);
+            Assert.True(choices.TryGetValue("choice2", out ParameterChoice? choice2), "Template symbol should contain a choice with name 'choice2'.");
+            Assert.Equal(choice2Desc, choice2?.Description);
         }
 
         [Theory]
@@ -124,9 +123,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var environmentSettings = LoadHostWithLocalizationTemplates(locale, out var templatePackageManager, out ITemplateInfo localizationTemplate);
             var templateCreator = new TemplateCreator(environmentSettings);
-            ITemplate template = templateCreator.LoadTemplate(localizationTemplate, null);
+            ITemplate? template = templateCreator.LoadTemplate(localizationTemplate, null);
             Assert.NotNull(template);
-            Assert.NotNull(template.Generator);
+            Assert.NotNull(template!.Generator);
 
             ICreationEffects effects = await template.Generator.GetCreationEffectsAsync(
                 environmentSettings,
@@ -159,39 +158,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private IEngineEnvironmentSettings LoadHostWithLocalizationTemplates(string locale, out TemplatePackageManager templatePackageManager, out ITemplateInfo localizationTemplate)
         {
-            var env = _environmentSettingsHelper.CreateEnvironment(locale);
-            env.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new TemplatesFactory());
-            templatePackageManager = new Settings.TemplatePackageManager(env);
+            var builtins = BuiltInTemplatePackagesProviderFactory.GetComponents(GetTestTemplateLocation("TemplateWithLocalization"));
+            var env = _environmentSettingsHelper.CreateEnvironment(locale: locale, additionalComponents: builtins);
+            templatePackageManager = new TemplatePackageManager(env);
             IReadOnlyList<ITemplateInfo> localizedTemplates = templatePackageManager.GetTemplatesAsync(default).Result;
 
             Assert.True(localizedTemplates.Count != 0, "Test template couldn't be loaded.");
-            localizationTemplate = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
-            Assert.NotNull(localizationTemplate);
+            var template = localizedTemplates.FirstOrDefault(t => t.Identity == "TestAssets.TemplateWithLocalization");
+            Assert.NotNull(template);
+            localizationTemplate = template!;
 
             return env;
-        }
-
-        private class TemplatesFactory : ITemplatePackageProviderFactory
-        {
-            public string DisplayName => nameof(LocalizationTests);
-
-            public Guid Id => new Guid("{3DB0E733-6411-4898-B500-65B122309A9B}");
-
-            public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings) =>
-                new DefaultTemplatePackageProvider(this, settings, null, new[]
-                {
-                    Path.Combine(
-                        Path.GetDirectoryName(typeof(LocalizationTests).Assembly.Location),
-                        "..",
-                        "..",
-                        "..",
-                        "..",
-                        "..",
-                        "test",
-                        "Microsoft.TemplateEngine.TestTemplates",
-                        "test_templates",
-                        "TemplateWithLocalization")
-                });
         }
     }
 }

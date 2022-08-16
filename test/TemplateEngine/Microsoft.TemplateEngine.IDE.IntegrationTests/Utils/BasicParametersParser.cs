@@ -33,9 +33,9 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return TestUtils.CreateTemporaryFolder();
         }
 
-        internal static Dictionary<string, string> ParseParameterString(string parameters)
+        internal static Dictionary<string, string?> ParseParameterString(string parameters)
         {
-            Dictionary<string, string> parsedParameters = new Dictionary<string, string>();
+            Dictionary<string, string?> parsedParameters = new Dictionary<string, string?>();
             string[] parametersArray = parameters.Split(null);
             int i = 0;
 

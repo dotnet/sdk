@@ -4,12 +4,13 @@
 using FluentAssertions;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.TestHelper.Commands;
+using Microsoft.TemplateEngine.Tests;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
 {
-    public class LocalizeTemplateTests
+    public class LocalizeTemplateTests : TestBase
     {
         private readonly ITestOutputHelper _log;
 
@@ -23,7 +24,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/BasicTemplatePackage", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
@@ -51,7 +52,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/TemplatePackageEnDe", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
@@ -80,7 +81,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/TemplatePackagePartiallyLocalized", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)
@@ -110,7 +111,7 @@ namespace Microsoft.TemplateEngine.Tasks.IntegrationTests
         {
             string tmpDir = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy("Resources/InvalidTemplatePackage", tmpDir, true);
-            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir);
+            TestUtils.SetupNuGetConfigForPackagesLocation(tmpDir, ShippingPackagesLocation);
 
             new DotnetCommand(_log, "add", "TemplatePackage.csproj", "package", "Microsoft.TemplateEngine.Tasks", "--prerelease")
               .WithWorkingDirectory(tmpDir)

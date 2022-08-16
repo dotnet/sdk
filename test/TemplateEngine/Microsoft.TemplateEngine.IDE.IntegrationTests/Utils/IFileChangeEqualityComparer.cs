@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
 {
     internal class IFileChangeComparer : IEqualityComparer<IFileChange>, IComparer<IFileChange>
     {
-        public int Compare(IFileChange x, IFileChange y)
+        public int Compare(IFileChange? x, IFileChange? y)
         {
             if (Equals(x, y))
             {
@@ -41,7 +38,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return ComparePaths((x as IFileChange2)?.SourceRelativePath, (y as IFileChange2)?.SourceRelativePath);
         }
 
-        public bool Equals(IFileChange x, IFileChange y)
+        public bool Equals(IFileChange? x, IFileChange? y)
         {
             if (x == null && y == null)
             {
@@ -67,7 +64,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests.Utils
             return (GetHashValue(obj.TargetRelativePath), obj.ChangeKind, obj is IFileChange2 obj2 ? GetHashValue(obj2.SourceRelativePath) : null).GetHashCode();
         }
 
-        private static int ComparePaths(string x, string y)
+        private static int ComparePaths(string? x, string? y)
         {
             if (string.IsNullOrWhiteSpace(x))
             {

@@ -24,12 +24,6 @@ namespace Microsoft.TemplateEngine.TestHelper
         private string _packageLocation = TestUtils.CreateTemporaryFolder("packages");
         private ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        public string PackTestTemplatesNuGetPackage()
-        {
-            string projectToPack = Path.Combine(TestUtils.CodeBaseRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "Microsoft.TemplateEngine.TestTemplates.csproj");
-            return PackNuGetPackage(projectToPack);
-        }
-
         public async Task<string> GetNuGetPackage(string templatePackName, string? version = null, NuGetVersion? minimumVersion = null, ILogger? logger = null)
         {
             logger = logger ?? NullLogger.Instance;

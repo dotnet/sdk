@@ -19,4 +19,8 @@
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <Exec Command="dotnet pack $(SolutionDir)src\Microsoft.TemplateEngine.Tasks" />
   </Target>
+  
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
 </Project>

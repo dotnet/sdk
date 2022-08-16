@@ -62,7 +62,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var exception = await Assert.ThrowsAsync<PackageNotFoundException>(() => packageManager.DownloadPackageAsync(installPath, "Microsoft.DotNet.NotCommon.ProjectTemplates.5.0", "5.0.0")).ConfigureAwait(false);
 
             exception.PackageIdentifier.Should().Be("Microsoft.DotNet.NotCommon.ProjectTemplates.5.0");
-            exception.PackageVersion.ToString().Should().Be("5.0.0");
+            exception.PackageVersion.Should().NotBeNull();
+            exception.PackageVersion!.ToString().Should().Be("5.0.0");
             exception.Message.Should().NotBeNullOrEmpty();
         }
 

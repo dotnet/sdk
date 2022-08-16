@@ -5,12 +5,13 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Tests;
 using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class TemplatePackageManagerTests : IClassFixture<EnvironmentSettingsHelper>
+    public class TemplatePackageManagerTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
 
@@ -81,7 +82,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
-            var nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
@@ -99,7 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
             var monitoredFileSystem = (MonitoredFileSystem)engineEnvironmentSettings.Host.FileSystem;
 
-            var nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
@@ -133,7 +134,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task RebuildCacheSkipsNonAccessibleMounts()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
-            string nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var validAndInvalidNuPkg = new[] { Directory.GetFiles(nupkgFolder, "*.nupkg")[0], Path.Combine(nupkgFolder, $"{default(Guid)}.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(validAndInvalidNuPkg);
@@ -150,7 +151,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
-            var nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
@@ -185,7 +186,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment("en-GB");
 
-            var nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var nupkgsWildcard = new[] { Path.Combine(nupkgFolder, "*.nupkg") };
 
             FakeFactory.SetNuPkgsAndFolders(nupkgsWildcard);
@@ -212,7 +213,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
 
-            var nupkgFolder = GetNupkgsFolder();
+            var nupkgFolder = TestTemplatePackagesLocation;
             var allNupkgs = Directory.GetFiles(nupkgFolder).Select(Path.GetFullPath).ToList();
 
             FakeFactory.SetNuPkgsAndFolders(allNupkgs);
@@ -244,25 +245,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanSkipFaultedProvider()
         {
             var engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment();
-            FakeFactory.SetNuPkgsAndFolders(folders: new[] { GetTestTemplateFolder() });
+            FakeFactory.SetNuPkgsAndFolders(folders: new[] { TestTemplatesLocation });
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FakeFactory());
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplatePackageProviderFactory), new FaultFakeFactory());
 
             TemplatePackageManager templatePackageManager = new TemplatePackageManager(engineEnvironmentSettings);
             var templates = await templatePackageManager.GetTemplatesAsync(default).ConfigureAwait(false);
             Assert.NotEmpty(templates);
-        }
-
-        private static string GetNupkgsFolder()
-        {
-            var thisDir = Path.GetDirectoryName(typeof(TemplatePackageManagerTests).Assembly.Location);
-            return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates", "nupkg_templates");
-        }
-
-        private static string GetTestTemplateFolder()
-        {
-            var thisDir = Path.GetDirectoryName(typeof(TemplatePackageManagerTests).Assembly.Location);
-            return Path.Combine(thisDir, "..", "..", "..", "..", "..", "test", "Microsoft.TemplateEngine.TestTemplates");
         }
 
         private void AssertMountPointsWereScanned(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
@@ -309,11 +298,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public Guid Id { get; } = new Guid("{61CFA828-97B6-44EB-A44D-0AE673D6DF52}");
 
-            private static IEnumerable<string> Folders { get; set; }
+            private static IEnumerable<string>? Folders { get; set; }
 
-            private static IEnumerable<string> NuPkgs { get; set; }
+            private static IEnumerable<string>? NuPkgs { get; set; }
 
-            public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
+            public static void SetNuPkgsAndFolders(IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
             {
                 NuPkgs = nupkgs;
                 Folders = folders;
@@ -358,7 +347,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 public ITemplatePackageProviderFactory Factory { get; }
 
-                public event Action TemplatePackagesChanged
+                public event Action? TemplatePackagesChanged
                 {
                     add { }
                     remove { }
@@ -376,11 +365,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public Guid Id { get; } = new Guid("{D98CAC97-2474-48B2-AE8D-B665D9E79C66}");
 
-            private static IEnumerable<string> Folders { get; set; }
+            private static IEnumerable<string>? Folders { get; set; }
 
-            private static IEnumerable<string> NuPkgs { get; set; }
+            private static IEnumerable<string>? NuPkgs { get; set; }
 
-            public static void SetNuPkgsAndFolders(IEnumerable<string> nupkgs = null, IEnumerable<string> folders = null)
+            public static void SetNuPkgsAndFolders(IEnumerable<string>? nupkgs = null, IEnumerable<string>? folders = null)
             {
                 NuPkgs = nupkgs;
                 Folders = folders;

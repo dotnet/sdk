@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using FakeItEasy;
 using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Edge.Installers.Folder;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
@@ -41,8 +43,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
 
-            var source = (FolderManagedTemplatePackage)result.TemplatePackage;
-            source.MountPointUri.Should().Be(installPath);
+            var source = result.TemplatePackage as FolderManagedTemplatePackage;
+            Assert.NotNull(source);
+            source!.MountPointUri.Should().Be(installPath);
             source.Version.Should().BeNullOrEmpty();
             source.DisplayName.Should().Be(installPath);
             source.Identifier.Should().Be(installPath);
@@ -123,7 +126,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.GetLatestVersionAsync(null, provider, CancellationToken.None)).ConfigureAwait(false);
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.GetLatestVersionAsync(null!, provider, CancellationToken.None)).ConfigureAwait(false);
         }
 
         [Fact]
@@ -144,8 +147,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.True(result.Success);
             Assert.Equal(updateRequest, result.UpdateRequest);
             Assert.Equal(InstallerErrorCode.Success, result.Error);
-            Assert.Equal(source.MountPointUri, result.TemplatePackage.MountPointUri);
-            Assert.NotEqual(source.LastChangeTime, result.TemplatePackage.LastChangeTime);
+            Assert.Equal(source.MountPointUri, result.TemplatePackage?.MountPointUri);
+            Assert.NotEqual(source.LastChangeTime, result.TemplatePackage?.LastChangeTime);
         }
 
         [Fact]
@@ -155,7 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.UpdateAsync(null, provider, CancellationToken.None)).ConfigureAwait(false);
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.UpdateAsync(null!, provider, CancellationToken.None)).ConfigureAwait(false);
         }
 
         [Fact]
@@ -177,9 +180,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(InstallerErrorCode.Success, result.Error);
             result.ErrorMessage.Should().BeNullOrEmpty();
 
-            var source = (FolderManagedTemplatePackage)result.TemplatePackage;
+            var source = result.TemplatePackage as FolderManagedTemplatePackage;
             source.Should().NotBeNull();
-            source.MountPointUri.Should().Be(installPath);
+            source!.MountPointUri.Should().Be(installPath);
             Directory.Exists(installPath);
 
             UninstallResult uninstallResult = await folderInstaller.UninstallAsync(source, provider, CancellationToken.None).ConfigureAwait(false);

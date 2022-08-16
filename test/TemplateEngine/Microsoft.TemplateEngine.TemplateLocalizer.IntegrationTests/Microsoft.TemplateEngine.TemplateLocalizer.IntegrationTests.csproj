@@ -3,6 +3,7 @@
     <TargetFramework>$(NETCoreTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,4 +11,9 @@
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestTemplates\Microsoft.TemplateEngine.TestTemplates.csproj" />
     <ProjectReference Include="$(TestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  
 </Project>

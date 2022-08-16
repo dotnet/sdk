@@ -14,37 +14,37 @@ namespace Microsoft.TemplateEngine.TestHelper
 {
     public class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
     {
-        public static List<(Type, IIdentifiedComponent)> GetComponents(bool includeTestTemplates = true)
+        public static List<(Type, IIdentifiedComponent)> GetComponents(params string[] pathsToProbe)
         {
-            return new() { (typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackagesProviderFactory(includeTestTemplates)) };
+            return new() { (typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackagesProviderFactory(pathsToProbe)) };
         }
 
         public static readonly Guid FactoryId = new Guid("{B9EE7CC5-D3AD-4982-94A4-CDF9E1C7FFCA}");
-        private readonly bool _includeTestTemplates;
+        private readonly IReadOnlyList<string> _pathsToProbe;
 
-        public string DisplayName => "new3 BuiltIn";
+        public string DisplayName => "BuiltIn";
 
         public Guid Id => FactoryId;
 
-        private BuiltInTemplatePackagesProviderFactory(bool includeTestTemplates = true)
+        public BuiltInTemplatePackagesProviderFactory(params string[] pathsToProbe)
         {
-            _includeTestTemplates = includeTestTemplates;
+            _pathsToProbe = pathsToProbe;
         }
 
         public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
         {
-            return new BuiltInTemplatePackagesProvider(this, settings, _includeTestTemplates);
+            return new BuiltInTemplatePackagesProvider(this, settings, _pathsToProbe);
         }
 
         private class BuiltInTemplatePackagesProvider : ITemplatePackageProvider
         {
             private readonly IEngineEnvironmentSettings _settings;
-            private readonly bool _includeTestTemplates;
+            private readonly IReadOnlyList<string> _pathsToProbe;
 
-            public BuiltInTemplatePackagesProvider(BuiltInTemplatePackagesProviderFactory factory, IEngineEnvironmentSettings settings, bool includeTestTemplates = true)
+            public BuiltInTemplatePackagesProvider(BuiltInTemplatePackagesProviderFactory factory, IEngineEnvironmentSettings settings, IReadOnlyList<string> pathsToProbe)
             {
                 _settings = settings;
-                _includeTestTemplates = includeTestTemplates;
+                _pathsToProbe = pathsToProbe;
                 Factory = factory;
             }
 
@@ -58,34 +58,16 @@ namespace Microsoft.TemplateEngine.TestHelper
 
             public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
             {
-                List<ITemplatePackage> templatePackages = new List<ITemplatePackage>();
-
                 List<ITemplatePackage> toInstallList = new List<ITemplatePackage>();
-                var repoRoot = Path.GetDirectoryName(typeof(BuiltInTemplatePackagesProviderFactory).Assembly.Location);
-                while (repoRoot != null && !File.Exists(Path.Combine(repoRoot, "Microsoft.TemplateEngine.sln")))
+                foreach (string location in _pathsToProbe)
                 {
-                    repoRoot = Path.GetDirectoryName(repoRoot);
-                }
-                if (repoRoot == null)
-                {
-                    _settings.Host.Logger.LogDebug("Couldn't the setup package location, because \"Microsoft.TemplateEngine.sln\" is not in any of parent directories.");
-                    return Task.FromResult((IReadOnlyList<ITemplatePackage>)templatePackages);
-                }
-                List<string> locations = new List<string>()
-                {
-                    Path.Combine(repoRoot, "template_feed"),
-                };
-
-                if (_includeTestTemplates)
-                {
-                    locations.Add(Path.Combine(repoRoot, "test", "Microsoft.TemplateEngine.TestTemplates", "test_templates"));
-                }
-
-                foreach (string location in locations)
-                {
-                    if (Directory.Exists(location))
+                    if (_settings.Host.FileSystem.DirectoryExists(location))
                     {
                         toInstallList.Add(new TemplatePackage(this, new DirectoryInfo(location).FullName, File.GetLastWriteTime(location)));
+                    }
+                    else
+                    {
+                        _settings.Host.Logger.LogWarning($"{location} doesn't exist.");
                     }
                 }
                 return Task.FromResult((IReadOnlyList<ITemplatePackage>)toInstallList);

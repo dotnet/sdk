@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             private readonly string _res;
             private readonly IEnumerable<string> _installed;
 
-            public SdkInfoProviderMock(string res, IEnumerable<string> installed = null)
+            public SdkInfoProviderMock(string res, IEnumerable<string>? installed = null)
             {
                 _res = res;
                 _installed = installed ?? new[] { _res };

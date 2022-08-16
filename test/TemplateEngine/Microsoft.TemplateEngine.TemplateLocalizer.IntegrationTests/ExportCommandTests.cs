@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Tests;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
 {
-    public class ExportCommandTests : IDisposable
+    public class ExportCommandTests : TestBase, IDisposable
     {
         private string _workingDirectory;
 
@@ -77,13 +78,14 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             Assert.True(File.Exists(deLocFile));
             var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
             var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
 
             //modify author property
             string baseConfig = Path.Combine(testTemplate, ".template.config", "template.json");
             var templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
-            templateJsonContent.Property("author").Value = "New Author";
+            Assert.NotNull(templateJsonContent.Property("author"));
+            templateJsonContent.Property("author")!.Value = "New Author";
             File.WriteAllText(baseConfig, templateJsonContent.ToString());
 
             runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
@@ -92,8 +94,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             Assert.True(File.Exists(deLocFile));
             engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
             deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("New Author", engJsonContent.Property("author").Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+            Assert.Equal("New Author", engJsonContent.Property("author")?.Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
         }
 
         [Fact]
@@ -114,12 +116,13 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             Assert.True(File.Exists(deLocFile));
             var engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
             var deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
-            Assert.Equal("Test Asset", deJsonContent.Property("author").Value.ToString());
+            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
+            Assert.Equal("Test Asset", deJsonContent.Property("author")?.Value.ToString());
 
             //modify author property
             templateJsonContent = JObject.Parse(File.ReadAllText(baseConfig));
-            templateJsonContent.Property("author").Value = "New Author";
+            Assert.NotNull(templateJsonContent.Property("author"));
+            templateJsonContent.Property("author")!.Value = "New Author";
             File.WriteAllText(baseConfig, templateJsonContent.ToString());
 
             runResult = await Program.Main(new[] { "export", testTemplate }).ConfigureAwait(false);
@@ -128,8 +131,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
             Assert.True(File.Exists(deLocFile));
             engJsonContent = JObject.Parse(File.ReadAllText(enLocFile));
             deJsonContent = JObject.Parse(File.ReadAllText(deLocFile));
-            Assert.Equal("New Author", deJsonContent.Property("author").Value.ToString());
-            Assert.Equal("Test Asset", engJsonContent.Property("author").Value.ToString());
+            Assert.Equal("New Author", deJsonContent.Property("author")?.Value.ToString());
+            Assert.Equal("Test Asset", engJsonContent.Property("author")?.Value.ToString());
         }
 
         [Fact]
@@ -234,7 +237,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
 
         private static string GetTestTemplateInTempDir(string templateName)
         {
-            string templateLocation = TestUtils.GetTestTemplateLocation(templateName);
+            string templateLocation = GetTestTemplateLocation(templateName);
             string tmpLocation = TestUtils.CreateTemporaryFolder();
             TestUtils.DirectoryCopy(templateLocation, tmpLocation, true);
             return tmpLocation;
@@ -242,9 +245,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
 
         private static string GetTestTemplateJsonContent()
         {
-            string thisDir = Path.GetDirectoryName(typeof(ExportCommandTests).Assembly.Location);
+            string? thisDir = Path.GetDirectoryName(typeof(ExportCommandTests).Assembly.Location);
+            Assert.NotNull(thisDir);
             string templateJsonPath = Path.GetFullPath(Path.Combine(
-                thisDir,
+                thisDir!,
                 "..",
                 "..",
                 "..",

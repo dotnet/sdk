@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using Microsoft.TemplateEngine.Edge.Installers.NuGet;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -12,14 +10,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
     {
         internal const string DefaultFeed = "test_feed";
         private PackageManager? _packageManager;
+        private readonly string? _packageToPack;
 
         internal MockPackageManager()
         {
         }
 
-        internal MockPackageManager(PackageManager packageManager)
+        internal MockPackageManager(PackageManager packageManager, string packageToPack)
         {
             _packageManager = packageManager;
+            _packageToPack = packageToPack;
         }
 
         public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default)
@@ -33,7 +33,16 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                 case nameof(Exception): throw new Exception("Generic error");
             }
 
-            string testPackageLocation = _packageManager?.PackTestTemplatesNuGetPackage() ?? throw new Exception("Package Manager was not initialized");
+            if (_packageManager == null)
+            {
+                throw new InvalidOperationException($"{nameof(_packageManager)} was not initialized");
+            }
+            if (_packageToPack == null)
+            {
+                throw new InvalidOperationException($"{nameof(_packageToPack)} was not initialized");
+            }
+
+            string testPackageLocation = _packageManager.PackNuGetPackage(_packageToPack);
             string targetFileName;
             if (string.IsNullOrWhiteSpace(version))
             {
