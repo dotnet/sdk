@@ -204,16 +204,8 @@ Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
 Microsoft.TemplateEngine.Core.Operations.ExpandVariables
 Microsoft.TemplateEngine.Core.Operations.Include
 Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional
-Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl
-Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.IsInitialStateOn.get -> bool
 Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.TrimWhitespace.get -> bool
 Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.WholeLine.get -> bool
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.CloseElementTagToken.get -> int
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.MarkupTokenMapping(int openOpenElementToken, int openCloseElementToken, int closeCloseElementToken, int selfClosingElementEndToken) -> void
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.OpenCloseElementToken.get -> int
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.OpenOpenElementToken.get -> int
-Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping.SelfClosingElementEndToken.get -> int
 Microsoft.TemplateEngine.Core.Operations.MarkupTokens
 Microsoft.TemplateEngine.Core.Operations.Phase
 Microsoft.TemplateEngine.Core.Operations.PhasedOperation
@@ -393,21 +385,18 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Operations.Include.Include(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig startToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig endToken, System.Func<string, System.IO.Stream> sourceStreamOpener, string id, bool initialState) -> void
 ~Microsoft.TemplateEngine.Core.Operations.Include.SourceStreamOpener.get -> System.Func<string, System.IO.Stream>
 ~Microsoft.TemplateEngine.Core.Operations.Include.StartToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Evaluator.get -> Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.GetOperation(System.Text.Encoding encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Id.get -> string
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Id.get -> string
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Impl(Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional definition, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken> tokens, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie structureTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie closeConditionTrie, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie scanBackTrie, Microsoft.TemplateEngine.Core.Operations.MarkupTokenMapping mapping, string id, bool initialState) -> void
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.Tokens.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IToken>
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.InlineMarkupConditional(Microsoft.TemplateEngine.Core.Operations.MarkupTokens tokens, bool wholeLine, bool trimWhitespace, Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator evaluator, string variableFormat, string id, bool initialState) -> void
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Tokens.get -> Microsoft.TemplateEngine.Core.Operations.MarkupTokens
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.VariableFormat.get -> string
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseElementTagToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.MarkupTokens(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openOpenElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openCloseElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig closeElementTagToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig selfClosingElementEndToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig openConditionExpression, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig closeConditionExpression) -> void
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenCloseElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
-~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenOpenElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Evaluator.get -> Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator!
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.GetOperation(System.Text.Encoding! encoding, Microsoft.TemplateEngine.Core.Contracts.IProcessorState! processorState) -> Microsoft.TemplateEngine.Core.Contracts.IOperation!
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Id.get -> string!
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.InlineMarkupConditional(Microsoft.TemplateEngine.Core.Operations.MarkupTokens! tokens, bool wholeLine, bool trimWhitespace, Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator! evaluator, string! variableFormat, string! id, bool initialState) -> void
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Tokens.get -> Microsoft.TemplateEngine.Core.Operations.MarkupTokens!
+Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.VariableFormat.get -> string!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseElementTagToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenCloseElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenCommentToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenConditionExpression.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.OpenOpenElementToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
 ~Microsoft.TemplateEngine.Core.Operations.MarkupTokens.SelfClosingElementEndToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
 ~Microsoft.TemplateEngine.Core.Operations.Phase.Match.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig
 ~Microsoft.TemplateEngine.Core.Operations.Phase.Next.get -> System.Collections.Generic.List<Microsoft.TemplateEngine.Core.Operations.Phase>
@@ -451,11 +440,15 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.VariableValues.get -> System.Collections.Generic.IReadOnlyList<System.Func<object>>
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.Whitespace.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~Microsoft.TemplateEngine.Core.Util.EncodingConfig.WhitespaceOrLineEnding.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string, bool>
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string>
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection
-~Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string>
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString) -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, System.Collections.Generic.IReadOnlyList<string!>! whitespaces, System.Collections.Generic.IReadOnlyList<string!>! lineEndings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString = "{0}") -> void
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Logger.get -> Microsoft.Extensions.Logging.ILogger!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
+Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
 ~Microsoft.TemplateEngine.Core.Util.Processor.CloneAndAppendOperations(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider> tempOperations) -> Microsoft.TemplateEngine.Core.Contracts.IProcessor
 ~Microsoft.TemplateEngine.Core.Util.Processor.Config.get -> Microsoft.TemplateEngine.Core.Util.EngineConfig
 ~Microsoft.TemplateEngine.Core.Util.Processor.Run(System.IO.Stream source, System.IO.Stream target) -> bool
@@ -535,15 +528,6 @@ Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.Tem
 ~static readonly Microsoft.TemplateEngine.Core.Operations.Replacement.OperationName -> string
 ~static readonly Microsoft.TemplateEngine.Core.Operations.SetFlag.OperationName -> string
 ~virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.RunSpecLoader(System.IO.Stream runSpec) -> Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec
-Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables) -> void
-Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString) -> void
-Microsoft.TemplateEngine.Core.Util.EngineConfig.EngineConfig(Microsoft.Extensions.Logging.ILogger! logger, System.Collections.Generic.IReadOnlyList<string!>! whitespaces, System.Collections.Generic.IReadOnlyList<string!>! lineEndings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, string! variableFormatString = "{0}") -> void
-Microsoft.TemplateEngine.Core.Util.EngineConfig.Flags.get -> System.Collections.Generic.IDictionary<string!, bool>!
-Microsoft.TemplateEngine.Core.Util.EngineConfig.LineEndings.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.TemplateEngine.Core.Util.EngineConfig.Logger.get -> Microsoft.Extensions.Logging.ILogger!
-Microsoft.TemplateEngine.Core.Util.EngineConfig.VariableFormatString.get -> string!
-Microsoft.TemplateEngine.Core.Util.EngineConfig.Variables.get -> Microsoft.TemplateEngine.Core.Contracts.IVariableCollection!
-Microsoft.TemplateEngine.Core.Util.EngineConfig.Whitespaces.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
 Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.IFileChange2!>!
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
@@ -587,9 +571,10 @@ virtual Microsoft.TemplateEngine.Core.Util.Orchestrator.TryGetFlushThreshold(Mic
 ~Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>.Build(ref int bufferLength, ref int bufferPosition, System.Action<System.Collections.Generic.IReadOnlyList<byte>> onFault, System.Collections.Generic.HashSet<string> referencedVariablesKeys = null) -> Microsoft.TemplateEngine.Core.Expressions.IEvaluable
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Token(TToken family, object value) -> void
 ~Microsoft.TemplateEngine.Core.Expressions.Token<TToken>.Value.get -> object
-~Microsoft.TemplateEngine.Core.Operations.InlineMarkupConditional.Impl.HandleMatch(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token) -> int
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.CloseCommentToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.MarkupTokens(Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! openOpenElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! openCloseElementToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! closeElementTagToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! selfClosingElementEndToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! openConditionExpression, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! closeConditionExpression, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! openCommentToken, Microsoft.TemplateEngine.Core.Contracts.ITokenConfig! closeCommentToken) -> void
+Microsoft.TemplateEngine.Core.Operations.MarkupTokens.SelfClosingElementEndToken.get -> Microsoft.TemplateEngine.Core.Contracts.ITokenConfig!
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out string faultedMessage, System.Collections.Generic.HashSet<string> referencedVariablesKeys) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Shared.SharedEvaluatorDefinition<TSelf, TTokens>.EvaluateFromString(Microsoft.Extensions.Logging.ILogger logger, string text, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection variables, out string faultedMessage, System.Collections.Generic.HashSet<string> referencedVariablesKeys = null) -> bool
-

@@ -123,7 +123,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorType);
             IOperationProvider conditional = new InlineMarkupConditional(
-                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                new MarkupTokens(
+                    "<".TokenConfig(),
+                    "</".TokenConfig(),
+                    ">".TokenConfig(),
+                    "/>".TokenConfig(),
+                    "Condition=\"".TokenConfig(),
+                    "\"".TokenConfig(),
+                    "<!--".TokenConfig(),
+                    "-->".TokenConfig()),
                 wholeLine,
                 trimWhiteSpace,
                 evaluator,

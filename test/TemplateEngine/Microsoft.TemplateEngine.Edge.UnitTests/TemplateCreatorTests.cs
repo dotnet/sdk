@@ -26,6 +26,99 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
         }
 
+        private const string TemplateConfigBooleanParam = @"
+{
+    ""identity"": ""test.template"",
+    ""name"": ""tst"",
+    ""shortName"": ""tst"",
+    ""symbols"": {
+	    ""paramA"": {
+	      ""type"": ""parameter"",
+	      ""datatype"": ""bool""
+	    }
+    }
+}
+";
+
+        const string? XmlConditionWithinMsBuildConditionSource = @"
+<Project>
+    <ItemGroup Condition=""'$(paramA)' == 'True'"">
+        <!-- X -->
+        <!--#if (paramA)-->
+        <Item name=""a"" />
+        <!--#endif-->
+        <!--#if (!paramA)-->
+        <Item name=""b"" />
+        <!--#endif-->
+    </ItemGroup>
+</Project>
+";
+
+        const string XmlConditionWithinMsBuildConditionOutputOnFalse = @"
+<Project>
+</Project>
+";
+
+        const string XmlConditionWithinMsBuildConditionOutputOnTrue = @"
+<Project>
+    <ItemGroup>
+        <!-- X -->
+        <Item name=""a"" />
+    </ItemGroup>
+</Project>
+";
+
+        const string? MsBuildConditionWithinXmlConditionSource = @"
+<Project>
+    <!-- X -->
+    <!--#if (paramA)-->
+    <ItemGroup Condition=""'$(paramA)' == 'True'"">
+        <Item name=""a"" />
+    </ItemGroup>
+    <ItemGroup Condition=""'$(paramA)' == 'False'"">
+        <Item name=""b"" />
+    </ItemGroup>
+    <!--#endif-->
+</Project>
+";
+
+        const string MsBuildConditionWithinXmlConditionOutputOnFalse = @"
+<Project>
+    <!-- X -->
+</Project>
+";
+
+        const string MsBuildConditionWithinXmlConditionOutputOnTrue = @"
+<Project>
+    <!-- X -->
+    <ItemGroup>
+        <Item name=""a"" />
+    </ItemGroup>
+</Project>
+";
+
+        [Theory]
+        [InlineData(false, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnFalse)]
+        [InlineData(true, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnTrue)]
+        [InlineData(false, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnFalse)]
+        [InlineData(true, MsBuildConditionWithinXmlConditionSource, MsBuildConditionWithinXmlConditionOutputOnTrue)]
+        public async void InstantiateAsync_XmlConditionsAndComments(bool paramA, string sourceSnippet, string expectedOutput)
+        {
+            IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
+            {
+                { "paramA", paramA.ToString() }
+            };
+
+            await InstantiateAsyncHelper(
+                TemplateConfigBooleanParam,
+                sourceSnippet,
+                expectedOutput,
+                string.Empty,
+                false,
+                sourceExtension: ".csproj",
+                parameters1: parameters);
+        }
+
         private const string TemplateConfigQuotelessLiteralsEnabled = @"
 {
     ""identity"": ""test.template"",
@@ -91,7 +184,7 @@ UNKNOWN
                 expectedOutput,
                 "ChoiceParam",
                 instantiateShouldFail,
-                parameters);
+                parameters1: parameters);
         }
 
         private const string TemplateConfigCyclicParamsDependency = @"
@@ -156,7 +249,7 @@ C
                 @"Failed to create template.
 Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preventing deterministic evaluation.",
                 instantiateShouldFail,
-                parameters);
+                parameters1: parameters);
         }
 
         private const string TemplateConfigIsRequiredCondition = @"
@@ -232,7 +325,7 @@ C
                 expectedOutput.Length <= 2 ? expectedOutput : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}"),
                 expectedErrorMessage,
                 instantiateShouldFail,
-                parameters);
+                parameters1: parameters);
         }
 
         private const string TemplateConfigEnabledAndRequiredConditionsTogether = @"
@@ -301,7 +394,7 @@ C
                 expectedOutput,
                 expectedErrorMessage,
                 instantiateShouldFail,
-                parameters);
+                parameters1: parameters);
         }
 
         private const string TemplateConfigForExternalConditionsEvaluation = @"
@@ -397,6 +490,7 @@ C
             string expectedOutput,
             string expectedErrorMessage,
             bool instantiateShouldFail,
+            string sourceExtension = ".cs",
             IReadOnlyDictionary<string, string?>? parameters1 = null,
             IReadOnlyList<InputDataBag>? parameters2 = null)
         {
@@ -408,8 +502,10 @@ C
             // template.json
             templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet);
 
+            string sourceFileName = "sourceFile" + sourceExtension;
+
             //content
-            templateSourceFiles.Add("sourceFile.cs", sourceSnippet);
+            templateSourceFiles.Add(sourceFileName, sourceSnippet);
 
             //
             // Dependencies preparation and mounting
@@ -469,6 +565,7 @@ C
                 catch (Exception e)
                 {
                     Assert.True(instantiateShouldFail);
+                    Assert.True(instantiateShouldFail);
                     e.Message.Should().BeEquivalentTo(e.Message);
                     return;
                 }
@@ -486,8 +583,8 @@ C
                 res.ErrorMessage.Should().BeNull();
                 res.OutputBaseDirectory.Should().NotBeNullOrEmpty();
                 string resultContent = _engineEnvironmentSettings.Host.FileSystem
-                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, "sourceFile.cs")).Trim();
-                resultContent.Should().BeEquivalentTo(expectedOutput);
+                    .ReadAllText(Path.Combine(res.OutputBaseDirectory!, sourceFileName)).Trim();
+                resultContent.Should().BeEquivalentTo(expectedOutput.Trim());
             }
         }
 

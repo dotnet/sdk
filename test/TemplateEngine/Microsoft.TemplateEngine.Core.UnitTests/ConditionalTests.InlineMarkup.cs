@@ -316,7 +316,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             EngineConfig cfg = new EngineConfig(_logger, vc, "$({0})");
             return Processor.Create(cfg, new InlineMarkupConditional(
-                new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                new MarkupTokens(
+                    "<".TokenConfig(),
+                    "</".TokenConfig(),
+                    ">".TokenConfig(),
+                    "/>".TokenConfig(),
+                    "Condition=\"".TokenConfig(),
+                    "\"".TokenConfig(),
+                    "<!--".TokenConfig(),
+                    "-->".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,
@@ -332,7 +340,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return Processor.Create(
                 cfg,
                 new InlineMarkupConditional(
-                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                    new MarkupTokens(
+                        "<".TokenConfig(),
+                        "</".TokenConfig(),
+                        ">".TokenConfig(),
+                        "/>".TokenConfig(),
+                        "Condition=\"".TokenConfig(),
+                        "\"".TokenConfig(),
+                        "<!--".TokenConfig(),
+                        "-->".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,
@@ -348,7 +364,15 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             return Processor.Create(
                 cfg,
                 new InlineMarkupConditional(
-                    new MarkupTokens("<".TokenConfig(), "</".TokenConfig(), ">".TokenConfig(), "/>".TokenConfig(), "Condition=\"".TokenConfig(), "\"".TokenConfig()),
+                    new MarkupTokens(
+                        "<".TokenConfig(),
+                        "</".TokenConfig(),
+                        ">".TokenConfig(),
+                        "/>".TokenConfig(),
+                        "Condition=\"".TokenConfig(),
+                        "\"".TokenConfig(),
+                        "<!--".TokenConfig(),
+                        "-->".TokenConfig()),
                 true,
                 true,
                 MSBuildStyleEvaluatorDefinition.Evaluate,

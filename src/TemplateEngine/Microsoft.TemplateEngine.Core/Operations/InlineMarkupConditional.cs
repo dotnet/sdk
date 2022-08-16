@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +52,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
             int openOpenElementToken = structureTrie.AddToken(openOpenElementTokenBytes);
             int openCloseElementToken = structureTrie.AddToken(Tokens.OpenCloseElementToken.ToToken(processorState.Encoding));
             int closeCloseElementToken = structureTrie.AddToken(Tokens.CloseElementTagToken.ToToken(processorState.Encoding));
+            int openCommentToken = structureTrie.AddToken(Tokens.OpenCommentToken.ToToken(processorState.Encoding));
+            int closeCommentToken = structureTrie.AddToken(Tokens.CloseCommentToken.ToToken(processorState.Encoding));
 
             int selfClosingElementEndToken = -1;
             if (Tokens.SelfClosingElementEndToken != null)
@@ -62,14 +66,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 openOpenElementToken,
                 openCloseElementToken,
                 closeCloseElementToken,
-                selfClosingElementEndToken
+                selfClosingElementEndToken,
+                openCommentToken,
+                closeCommentToken
             );
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
             return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
         }
 
-        public class Impl : IOperation
+        private class Impl : IOperation
         {
             private readonly ITokenTrie _closeConditionTrie;
             private readonly InlineMarkupConditional _definition;
@@ -77,7 +83,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _scanBackTrie;
             private readonly ITokenTrie _structureTrie;
 
-            public Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string id, bool initialState)
+            internal Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string id, bool initialState)
             {
                 _definition = definition;
                 Id = id;
@@ -145,6 +151,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             {
                 int depth = 1;
                 bool inElement = true;
+                bool inComment = false;
 
                 while (bufferLength >= _structureTrie.MinLength)
                 {
@@ -169,7 +176,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
                         int token;
                         if (_structureTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
                         {
-                            if (token == _mapping.OpenOpenElementToken)
+                            if (inComment)
+                            {
+                                // When in comment keep skipping everything else until comment closed
+                                if (token == _mapping.CloseCommentToken)
+                                {
+                                    inComment = false;
+                                }
+                            }
+                            else if (token == _mapping.OpenCommentToken)
+                            {
+                                inComment = true;
+                            }
+                            else if (token == _mapping.OpenOpenElementToken)
                             {
                                 ++depth;
                                 inElement = true;

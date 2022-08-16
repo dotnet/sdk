@@ -1,13 +1,23 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core.Operations
 {
     public class MarkupTokens
     {
-        public MarkupTokens(ITokenConfig openOpenElementToken, ITokenConfig openCloseElementToken, ITokenConfig closeElementTagToken, ITokenConfig selfClosingElementEndToken, ITokenConfig openConditionExpression, ITokenConfig closeConditionExpression)
+        public MarkupTokens(
+            ITokenConfig openOpenElementToken,
+            ITokenConfig openCloseElementToken,
+            ITokenConfig closeElementTagToken,
+            ITokenConfig selfClosingElementEndToken,
+            ITokenConfig openConditionExpression,
+            ITokenConfig closeConditionExpression,
+            ITokenConfig openCommentToken,
+            ITokenConfig closeCommentToken)
         {
             OpenOpenElementToken = openOpenElementToken;
             OpenCloseElementToken = openCloseElementToken;
@@ -15,6 +25,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
             SelfClosingElementEndToken = selfClosingElementEndToken;
             OpenConditionExpression = openConditionExpression;
             CloseConditionExpression = closeConditionExpression;
+            OpenCommentToken = openCommentToken;
+            CloseCommentToken = closeCommentToken;
         }
 
         public ITokenConfig CloseConditionExpression { get; }
@@ -28,5 +40,9 @@ namespace Microsoft.TemplateEngine.Core.Operations
         public ITokenConfig OpenOpenElementToken { get; }
 
         public ITokenConfig SelfClosingElementEndToken { get; }
+
+        public ITokenConfig OpenCommentToken { get; }
+
+        public ITokenConfig CloseCommentToken { get; }
     }
 }
