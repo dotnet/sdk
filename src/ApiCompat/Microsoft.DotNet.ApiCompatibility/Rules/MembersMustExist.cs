@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 differences.Add(new CompatDifference(
                     DiagnosticIds.TypeMustExist,
-                    string.Format(Resources.TypeExistsOnLeft, left.ToDisplayString(), leftName, rightName),
+                    string.Format(Resources.TypeMissingOnSide, left.ToDisplayString(), leftName, rightName),
                     DifferenceType.Removed,
                     left));
             }
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 differences.Add(new CompatDifference(
                     DiagnosticIds.TypeMustExist,
-                    string.Format(Resources.TypeExistsOnRight, right.ToDisplayString(), leftName, rightName),
+                    string.Format(Resources.TypeMissingOnSide, right.ToDisplayString(), leftName, rightName),
                     DifferenceType.Added,
                     right));
             }

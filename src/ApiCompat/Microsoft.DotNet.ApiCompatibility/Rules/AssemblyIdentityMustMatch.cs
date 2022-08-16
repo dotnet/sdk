@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (leftAssemblyCulture != rightAssemblyCulture)
             {
                 differences.Add(CreateIdentityDifference(
-                    Resources.AssembyCultureDoesNotMatch,
+                    Resources.AssemblyCultureDoesNotMatch,
                     leftAssemblyCulture,
                     rightAssemblyCulture,
                     leftName,
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (rightAssemblyVersion < leftAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
-                    Resources.AssembyVersionIsNotCompatible,
+                    Resources.AssemblyVersionIsNotCompatible,
                     rightAssemblyVersion.ToString(),
                     leftAssemblyVersion.ToString(),
                     rightName,
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             else if (_settings.StrictMode && leftAssemblyVersion < rightAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
-                    Resources.AssembyVersionDoesNotMatch,
+                    Resources.AssemblyVersionDoesNotMatch,
                     leftAssemblyVersion.ToString(),
                     rightAssemblyVersion.ToString(),
                     leftName,
