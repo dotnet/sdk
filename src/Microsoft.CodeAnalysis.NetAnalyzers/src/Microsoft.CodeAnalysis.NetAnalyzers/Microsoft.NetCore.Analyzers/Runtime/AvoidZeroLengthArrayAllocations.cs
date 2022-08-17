@@ -66,13 +66,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             AnalyzeOperation(context, arrayEmptyMethodSymbol, IsAttributeSyntax);
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, Func<SyntaxNode, bool> isAttributeSytnax)
+        private static void AnalyzeOperation(OperationAnalysisContext context, IMethodSymbol arrayEmptyMethodSymbol, Func<SyntaxNode, bool> isAttributeSyntax)
         {
             IArrayCreationOperation arrayCreationExpression = (IArrayCreationOperation)context.Operation;
 
             // We can't replace array allocations in attributes, as they're persisted to metadata
             // TODO: Once we have operation walkers, we can replace this syntactic check with an operation-based check.
-            if (arrayCreationExpression.Syntax.Ancestors().Any(isAttributeSytnax))
+            if (arrayCreationExpression.Syntax.AncestorsAndSelf().Any(isAttributeSyntax))
             {
                 return;
             }
