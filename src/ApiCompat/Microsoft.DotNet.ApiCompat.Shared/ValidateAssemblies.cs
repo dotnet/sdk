@@ -36,17 +36,6 @@ namespace Microsoft.DotNet.ApiCompat
 
     internal static class ValidateAssemblies
     {
-        // The set of extensions that we probe for if a directory path is passed in as a left or right.
-        private static readonly string[] s_probingExtensions =
-        {
-            ".dll",
-            ".ildll",
-            ".ni.dll",
-            ".winmd",
-            ".exe",
-            ".ilexe"
-        };
-
         public static void Run(Func<ISuppressionEngine, ICompatibilityLogger> logFactory,
             bool generateSuppressionFile,
             string? suppressionFile,
@@ -157,15 +146,7 @@ namespace Microsoft.DotNet.ApiCompat
             // Check if the given path is a directory
             if (Directory.Exists(path))
             {
-                List<string> files = new();
-                // Probe for a set of file extensions
-                foreach (string probingExtension in s_probingExtensions)
-                {
-                    string searchPattern = "*" + probingExtension;
-                    files.AddRange(Directory.EnumerateFiles(path, searchPattern));
-                }
-
-                return files;
+                return Directory.EnumerateFiles(path, "*.dll");
             }
             // If the path isn't a directory, see if it's a glob expression.
             else
