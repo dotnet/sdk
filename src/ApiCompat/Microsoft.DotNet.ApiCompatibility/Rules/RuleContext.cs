@@ -14,9 +14,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     public class RuleContext : IRuleContext
     {
         private readonly List<Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>>> _onAssemblySymbolActions = new();
-        private readonly List<Action<ITypeSymbol?, ITypeSymbol?, string, string, IList<CompatDifference>>> _onTypeSymbolActions = new();
-        private readonly List<Action<ISymbol?, ISymbol?, string, string, IList<CompatDifference>>> _onMemberSymbolActions = new();
-        private readonly List<Action<ISymbol?, ISymbol?, ITypeSymbol, ITypeSymbol, string, string, IList<CompatDifference>>> _onMemberSymbolWithContainingTypeActions = new();
+        private readonly List<Action<ITypeSymbol?, ITypeSymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onTypeSymbolActions = new();
+        private readonly List<Action<ISymbol?, ISymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolActions = new();
+        private readonly List<Action<ISymbol?, ISymbol?, ITypeSymbol, ITypeSymbol, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolWithContainingTypeActions = new();
 
         /// <inheritdoc> />
         public void RegisterOnAssemblySymbolAction(Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>> action)
