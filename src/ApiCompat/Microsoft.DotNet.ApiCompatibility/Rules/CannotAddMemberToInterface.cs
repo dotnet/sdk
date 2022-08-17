@@ -1,8 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable enable
-
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -11,9 +9,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     public class CannotAddMemberToInterface : IRule
     {
-        public CannotAddMemberToInterface(RuleSettings settings, RuleRunnerContext context)
+        public CannotAddMemberToInterface(RuleSettings settings, IRuleRegistrationContext context)
         {
-            // StrictMode scenario should be handled by MembersMustExist rule.
+            // StrictMode scenario are handled by the MembersMustExist rule.
             if (!settings.StrictMode)
             {
                 context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
@@ -36,7 +34,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // If there is a default implementation provided is not a breaking change to add an interface member.
                 if (right.ContainingType.FindImplementationForInterfaceMember(right) == null)
                 {
-                    differences.Add(new CompatDifference(DiagnosticIds.CannotAddMemberToInterface, string.Format(Resources.CannotAddMemberToInterface, right.ToDisplayString(), rightName, leftName), DifferenceType.Added, right));
+                    differences.Add(new CompatDifference(
+                        DiagnosticIds.CannotAddMemberToInterface,
+                        string.Format(Resources.CannotAddMemberToInterface, right.ToDisplayString(), rightName, leftName),
+                        DifferenceType.Added,
+                        right));
                 }
             }
         }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -20,14 +19,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             // Mock the api comparer's GetDifferences method so that it returns items.
             Mock<IApiComparer> apiComparerMock = new();
             apiComparerMock
-                .Setup(y => y.GetDifferences(It.IsAny<ElementContainer<IAssemblySymbol>>(), It.IsAny<IList<ElementContainer<IAssemblySymbol>>>()))
+                .Setup(y => y.GetDifferences(It.IsAny<ElementContainer<IAssemblySymbol>>(), It.IsAny<IReadOnlyList<ElementContainer<IAssemblySymbol>>>()))
                 .Returns(new (MetadataInformation, MetadataInformation, IEnumerable<CompatDifference>)[]
                 {
                     new ( left, right, new CompatDifference[] { new CompatDifference("CP0001", "Invalid", DifferenceType.Removed, "X01") } )
                 });
             Mock<IApiComparerFactory> apiComparerFactoryMock = new();
             apiComparerFactoryMock
-                .Setup(x => x.Create())
+                .Setup(x => x.Create(null))
                 .Returns(apiComparerMock.Object);
 
             // Mock the suppression engine
