@@ -73,8 +73,8 @@ namespace Microsoft.DotNet.ApiCompat
 
                 for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    IEnumerable<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
-                    IEnumerable<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
+                    IReadOnlyList<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
+                    IReadOnlyList<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
 
                     // Enqueue the work item
                     ApiCompatRunnerWorkItem workItem = new(leftMetadataInformation, apiCompatOptions, rightMetadataInformation);
@@ -127,18 +127,21 @@ namespace Microsoft.DotNet.ApiCompat
             return assemblyReferences[0];
         }
 
-        private static IEnumerable<MetadataInformation> GetMetadataInformation(string path,
+        private static IReadOnlyList<MetadataInformation> GetMetadataInformation(string path,
             IEnumerable<string>? assemblyReferences,
             RegexStringTransformer? regexStringTransformer)
         {
+            List<MetadataInformation> metadataInformation = new();
             foreach (string assembly in GetFilesFromPath(path))
             {
-                yield return new MetadataInformation(
+                metadataInformation.Add(new MetadataInformation(
                     assemblyName: Path.GetFileNameWithoutExtension(assembly),
                     assemblyId: regexStringTransformer?.Transform(assembly) ?? assembly,
                     fullPath: assembly,
-                    references: assemblyReferences);
+                    references: assemblyReferences));
             }
+
+            return metadataInformation;
         }
 
         private static IEnumerable<string> GetFilesFromPath(string path)
