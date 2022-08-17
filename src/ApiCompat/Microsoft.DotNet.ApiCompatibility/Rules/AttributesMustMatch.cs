@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     {
         private readonly RuleSettings _settings;
 
-        public AttributesMustMatch(RuleSettings settings, RuleRunnerContext context)
+        public AttributesMustMatch(RuleSettings settings, RuleRunnerContext context, IEnumerable<string>? excludeAttributesFiles)
         {
             _settings = settings;
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
