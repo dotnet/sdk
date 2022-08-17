@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.TypeMustExist,
-                    string.Format(Resources.TypeMissingOnSide, right.ToDisplayString(), leftMetadata, rightMetadata),
+                    string.Format(Resources.TypeMissingOnSide, right.ToDisplayString(), rightMetadata, leftMetadata),
                     DifferenceType.Added,
                     right));
             }
