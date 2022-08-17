@@ -44,8 +44,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
             return new(Mock.Of<ICompatibilityLogger>(),
                 suppressionEngineMock.Object,
                 apiComparerFactoryMock.Object,
-                assemblyLoaderFactoryMock.Object,
-                Mock.Of<IMetadataStreamProvider>());
+                assemblyLoaderFactoryMock.Object);
         }
 
         [Fact]
