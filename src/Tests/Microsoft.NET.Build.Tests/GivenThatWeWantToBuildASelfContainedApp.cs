@@ -95,7 +95,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_errors_out_when_RuntimeIdentifier_architecture_and_PlatformTarget_do_not_match()
         {
-            const string RuntimeIdentifier = "win10-x64";
+            const string RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             const string PlatformTarget = "x86";
 
             var testAsset = _testAssetsManager
@@ -368,7 +368,6 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
                 IsSdkProject = true
             };
-            appProject.AdditionalProperties["NoWarn"] = "NU1505";
             appProject.ReferencedProjects.Add(libProject);
             var createdAppProject = _testAssetsManager.CreateTestProject(appProject);
             var publishCommand = new PublishCommand(createdAppProject);

@@ -2,10 +2,12 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.NET.TestFramework;
 using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -88,7 +90,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResult = Parser.Instance.Parse(
                 new[]
                 {
-                    "dotnet", "tool", "install", PackageId, "--framework", "netcoreapp2.1"
+                    "dotnet", "tool", "install", PackageId, "--framework", ToolsetInfo.CurrentTargetFramework
                 });
 
             var toolInstallCommand = new ToolInstallCommand(
