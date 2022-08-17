@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             if (left == null && right != null)
             {
-                string message = string.Format(Resources.AssemblyNameDoesNotExist, leftName, right.Identity.Name);
+                string message = string.Format(Resources.AssemblyNameDoesNotExist, leftMetadata, right.Identity.Name);
 
                 // When operating in strict mode or when comparing a single assembly only, left must not be null.
                 if (_settings.StrictMode || singleAssembly)
