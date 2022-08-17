@@ -23,14 +23,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     {
         private readonly RuleSettings _settings;
 
-        public AttributesMustMatch(RuleSettings settings, RuleRunnerContext context, IEnumerable<string>? excludeAttributesFiles)
+        public AttributesMustMatch(RuleSettings settings, IRuleRegistrationContext context, IEnumerable<string>? excludeAttributesFiles)
         {
             _settings = settings;
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private void RunOnTypeSymbol(ITypeSymbol? left, ITypeSymbol? right, string leftName, string rightName, IList<CompatDifference> differences)
+        private void RunOnTypeSymbol(ITypeSymbol? left, ITypeSymbol? right, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
         {
             if (left is null || right is null)
             {
@@ -52,19 +52,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         private static CompatDifference RemovedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotRemoveAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            return CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, msg, DifferenceType.Removed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
         }
 
         private static CompatDifference AddedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotAddAttribute, attr, containing);
-            return new CompatDifference(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            return CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, msg, DifferenceType.Added, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
         }
 
         private static CompatDifference ChangedDifference(ISymbol containing, string itemRef, AttributeData? attr)
         {
             string msg = string.Format(Resources.CannotChangeAttribute, attr?.AttributeClass, containing);
-            return new CompatDifference(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            return CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, msg, DifferenceType.Changed, itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
         }
 
         private bool AttributeEquals(AttributeData? left, AttributeData? right)
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
         }
 
-        private void RunOnMemberSymbol(ISymbol? left, ISymbol? right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, string leftName, string rightName, IList<CompatDifference> differences)
+        private void RunOnMemberSymbol(ISymbol? left, ISymbol? right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
         {
             if (left is null || right is null)
             {

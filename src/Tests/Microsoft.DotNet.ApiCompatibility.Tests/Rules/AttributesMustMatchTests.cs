@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class AttributesMustMatchTests
     {
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, null));
+
         /*
          * Tests for:
          * - Types
@@ -108,7 +110,7 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:System.SerializableAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:System.SerializableAttribute]")
 }
             },
             // Attribute changed on type
@@ -148,7 +150,7 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
 }
             },
             // Attribute added to type
@@ -187,7 +189,7 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First:[T:System.SerializableAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First:[T:System.SerializableAttribute]")
 }
             }
         };
@@ -248,9 +250,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
             // Attributes on property
@@ -308,9 +310,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "P:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "P:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "P:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "P:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "P:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "P:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
             // Attributes on event
@@ -372,9 +374,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "E:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "E:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "E:CompatTests.First.F:[T:CompatTests.BazAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "E:CompatTests.First.F:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "E:CompatTests.First.F:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "E:CompatTests.First.F:[T:CompatTests.BazAttribute]")
 }
             },
             // Attributes on constructor
@@ -432,9 +434,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.#ctor:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.#ctor:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.#ctor:[T:CompatTests.BazAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.#ctor:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.#ctor:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.#ctor:[T:CompatTests.BazAttribute]")
 }
             },
             // Attributes on return type
@@ -492,9 +494,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F->int:[T:CompatTests.FooAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F->int:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F->int:[T:CompatTests.BazAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F->int:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F->int:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F->int:[T:CompatTests.BazAttribute]")
 }
             },
             // Attributes on method parameter
@@ -548,9 +550,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$1:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F(System.Int32,System.String)$0:[T:CompatTests.BazAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$1:[T:CompatTests.FooAttribute]"),
 
 }
             },
@@ -599,9 +601,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First`2<0>:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First`2<0>:[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First`2<1>:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First`2<0>:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First`2<0>:[T:CompatTests.BazAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First`2<1>:[T:CompatTests.FooAttribute]"),
 
 }
             },
@@ -656,9 +658,9 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    new CompatDifference(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F``2<0>:[T:CompatTests.BarAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F``2<0>:[T:CompatTests.BazAttribute]"),
-    new CompatDifference(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F``2<1>:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "M:CompatTests.First.F``2<0>:[T:CompatTests.BarAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "M:CompatTests.First.F``2<0>:[T:CompatTests.BazAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "M:CompatTests.First.F``2<1>:[T:CompatTests.FooAttribute]"),
 
 }
             }
@@ -671,7 +673,7 @@ new CompatDifference[] {
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new();
+            ApiComparer differ = new(s_ruleFactory);
             IEnumerable<CompatDifference> got = differ.GetDifferences(new[] { left }, new[] { right });
             Assert.Equal(want, got);
         }
