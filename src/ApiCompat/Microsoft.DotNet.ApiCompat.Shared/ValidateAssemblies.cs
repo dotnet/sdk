@@ -151,26 +151,24 @@ namespace Microsoft.DotNet.ApiCompat
             {
                 return Directory.EnumerateFiles(path, "*.dll");
             }
+
             // If the path isn't a directory, see if it's a glob expression.
-            else
-            {
-                string filename = Path.GetFileName(path);
+            string filename = Path.GetFileName(path);
 #if NETCOREAPP
-                if (filename.Contains('*'))
+            if (filename.Contains('*'))
 #else
-                if (filename.Contains("*"))
+            if (filename.Contains("*"))
 #endif
+            {
+                string? directoryName = Path.GetDirectoryName(path);
+                if (directoryName != null)
                 {
-                    string? directoryName = Path.GetDirectoryName(path);
-                    if (directoryName != null)
+                    try
                     {
-                        try
-                        {
-                            return Directory.EnumerateFiles(directoryName, filename);
-                        }
-                        catch (ArgumentException)
-                        {
-                        }
+                        return Directory.EnumerateFiles(directoryName, filename);
+                    }
+                    catch (ArgumentException)
+                    {
                     }
                 }
             }
