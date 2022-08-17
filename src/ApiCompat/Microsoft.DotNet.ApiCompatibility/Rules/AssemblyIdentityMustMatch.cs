@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnAssemblySymbolAction(RunOnAssemblySymbol);
         }
 
-        private void RunOnAssemblySymbol(IAssemblySymbol? left, IAssemblySymbol? right, string leftName, string rightName, bool singleAssembly, IList<CompatDifference> differences)
+        private void RunOnAssemblySymbol(IAssemblySymbol? left, IAssemblySymbol? right, MetadataInformation leftMetadata, MetadataInformation rightMetadata, bool singleAssembly, IList<CompatDifference> differences)
         {
             if (left == null && right != null)
             {
@@ -34,6 +34,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 if (_settings.StrictMode || singleAssembly)
                 {
                     differences.Add(new CompatDifference(
+                        leftMetadata,
+                        rightMetadata,
                         DiagnosticIds.MatchingAssemblyDoesNotExist,
                         message,
                         DifferenceType.Removed,
@@ -51,8 +53,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (left != null && right == null)
             {
                 differences.Add(new CompatDifference(
+                    leftMetadata,
+                    rightMetadata,
                     DiagnosticIds.MatchingAssemblyDoesNotExist,
-                    string.Format(Resources.AssemblyNameDoesNotExist, rightName, left.Identity.Name),
+                    string.Format(Resources.AssemblyNameDoesNotExist, rightMetadata, left.Identity.Name),
                     DifferenceType.Added,
                     left.Identity.GetDisplayName()));
                 return;
@@ -75,64 +79,76 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (leftAssemblyName != rightAssemblyName)
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssemblyNameDoesNotMatch,
                     leftAssemblyName,
                     rightAssemblyName,
-                    leftName,
-                    rightName,
+                    leftMetadata.DisplayString,
+                    rightMetadata.DisplayString,
                     rightIdentity));
             }
 
             if (leftAssemblyCulture != rightAssemblyCulture)
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssembyCultureDoesNotMatch,
                     leftAssemblyCulture,
                     rightAssemblyCulture,
-                    leftName,
-                    rightName,
+                    leftMetadata.DisplayString,
+                    rightMetadata.DisplayString,
                     rightIdentity));
             }
  
             if (rightAssemblyVersion < leftAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssembyVersionIsNotCompatible,
                     rightAssemblyVersion.ToString(),
                     leftAssemblyVersion.ToString(),
-                    rightName,
-                    leftName,
+                    rightMetadata.DisplayString,
+                    leftMetadata.DisplayString,
                     rightIdentity));
             }
             else if (_settings.StrictMode && leftAssemblyVersion < rightAssemblyVersion)
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssembyVersionDoesNotMatch,
                     leftAssemblyVersion.ToString(),
                     rightAssemblyVersion.ToString(),
-                    leftName,
-                    rightName,
+                    leftMetadata.DisplayString,
+                    rightMetadata.DisplayString,
                     leftIdentity));
             }
 
             if (!leftAssemblyPublicKeyToken.IsEmpty && !leftIdentity.IsRetargetable && !leftAssemblyPublicKeyToken.SequenceEqual(rightAssemblyPublicKeyToken))
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
                     GetStringRepresentation(leftAssemblyPublicKeyToken), 
-                    GetStringRepresentation(rightAssemblyPublicKeyToken), 
-                    leftName, 
-                    rightName,
+                    GetStringRepresentation(rightAssemblyPublicKeyToken),
+                    leftMetadata.DisplayString,
+                    rightMetadata.DisplayString,
                     rightIdentity));
             }
             else if (_settings.StrictMode && !rightAssemblyPublicKeyToken.IsEmpty && !rightIdentity.IsRetargetable && !rightAssemblyPublicKeyToken.SequenceEqual(leftAssemblyPublicKeyToken))
             {
                 differences.Add(CreateIdentityDifference(
+                    leftMetadata,
+                    rightMetadata,
                     Resources.AssemblyPublicKeyTokenDoesNotMatch,
                     GetStringRepresentation(rightAssemblyPublicKeyToken), 
-                    GetStringRepresentation(leftAssemblyPublicKeyToken), 
-                    rightName,
-                    leftName,
+                    GetStringRepresentation(leftAssemblyPublicKeyToken),
+                    rightMetadata.DisplayString,
+                    leftMetadata.DisplayString,
                     leftIdentity));
             }
         }
@@ -150,8 +166,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             return sb.ToString();
         }
 
-        private static CompatDifference CreateIdentityDifference(string format, string leftProperty, string rightProperty, string leftName, string rightName, AssemblyIdentity identity) =>
-            new(DiagnosticIds.AssemblyIdentityMustMatch,
+        private static CompatDifference CreateIdentityDifference(MetadataInformation left, MetadataInformation right, string format, string leftProperty, string rightProperty, string leftName, string rightName, AssemblyIdentity identity) =>
+            new(left,
+                right,
+                DiagnosticIds.AssemblyIdentityMustMatch,
                 string.Format(format, leftProperty, rightProperty, leftName, rightName),
                 DifferenceType.Changed,
                 identity.GetDisplayName());
