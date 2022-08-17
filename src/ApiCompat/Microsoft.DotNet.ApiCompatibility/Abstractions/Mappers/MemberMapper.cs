@@ -1,9 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable disable
-
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiCompatibility.Rules;
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
@@ -13,17 +12,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     public class MemberMapper : ElementMapper<ISymbol>
     {
         /// <summary>
+        /// The containg type of this member.
+        /// </summary>
+        public TypeMapper ContainingType { get; }
+
+        /// <summary>
         /// Instantiates an object with the provided <see cref="ComparingSettings"/>.
         /// </summary>
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        public MemberMapper(ComparingSettings settings, TypeMapper containingType, int rightSetSize = 1)
-            : base(settings, rightSetSize)
+        public MemberMapper(IRuleRunner ruleRunner,
+            TypeMapper containingType,
+            MapperSettings settings = default,
+            int rightSetSize = 1)
+            : base(ruleRunner, settings, rightSetSize)
         {
             ContainingType = containingType;
         }
-
-        internal TypeMapper ContainingType { get; }
 
         // If we got to this point it means that ContainingType.Left is not null.
         // Because of that we can only check ContainingType.Right.

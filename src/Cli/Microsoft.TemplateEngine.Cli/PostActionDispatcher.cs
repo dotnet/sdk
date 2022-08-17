@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Edge.Template;
@@ -39,19 +40,16 @@ namespace Microsoft.TemplateEngine.Cli
     internal class PostActionDispatcher
     {
         private readonly IEngineEnvironmentSettings _environment;
-        private readonly NewCommandCallbacks _callbacks;
         private readonly Func<string> _inputGetter;
 
         /// <summary>
         /// Creates the instance.
         /// </summary>
         /// <param name="environment">template engine environment settings.</param>
-        /// <param name="callbacks">callbacks that can be used for post actions.</param>
         /// <param name="inputGetter">the predicate to get user input whether to run the post action.</param>
-        internal PostActionDispatcher(IEngineEnvironmentSettings environment, NewCommandCallbacks callbacks, Func<string> inputGetter)
+        internal PostActionDispatcher(IEngineEnvironmentSettings environment, Func<string> inputGetter)
         {
             _environment = environment ?? throw new ArgumentNullException(nameof(environment));
-            _callbacks = callbacks ?? throw new ArgumentNullException(nameof(callbacks));
             _inputGetter = inputGetter ?? throw new ArgumentNullException(nameof(inputGetter));
         }
 
@@ -216,11 +214,6 @@ namespace Microsoft.TemplateEngine.Cli
             IPostAction action,
             IPostActionProcessor actionProcessor)
         {
-            if (actionProcessor is PostActionProcessor2Base actionProcessor2Base)
-            {
-                actionProcessor2Base.Callbacks = _callbacks;
-            }
-
             //catch all exceptions on post action execution
             //post actions can be added using components and it's not sure if they handle exceptions properly
             try

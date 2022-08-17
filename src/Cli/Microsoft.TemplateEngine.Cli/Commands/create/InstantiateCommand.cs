@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using System.Linq;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -19,9 +19,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         internal InstantiateCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            Func<ParseResult, ITelemetryLogger> telemetryLoggerBuilder,
-            NewCommandCallbacks callbacks)
-            : base(hostBuilder, telemetryLoggerBuilder, callbacks, "create", SymbolStrings.Command_Instantiate_Description)
+            Func<ParseResult, ITelemetryLogger> telemetryLoggerBuilder)
+            : base(hostBuilder, telemetryLoggerBuilder, "create", SymbolStrings.Command_Instantiate_Description)
         {
             this.AddArgument(ShortNameArgument);
             this.AddArgument(RemainingArguments);
@@ -227,7 +226,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static NewCommandStatus HandleAmbiguousLanguage(
             IEngineEnvironmentSettings environmentSettings,
             IEnumerable<CliTemplateInfo> templates,
-            Reporter reporter)
+            IReporter reporter)
         {
             reporter.WriteLine(HelpStrings.TableHeader_AmbiguousTemplatesList);
             TemplateGroupDisplay.DisplayTemplateList(
@@ -242,7 +241,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private static NewCommandStatus HandleAmbiguousType(
             IEngineEnvironmentSettings environmentSettings,
             IEnumerable<CliTemplateInfo> templates,
-            Reporter reporter)
+            IReporter reporter)
         {
             reporter.WriteLine(HelpStrings.TableHeader_AmbiguousTemplatesList);
             TemplateGroupDisplay.DisplayTemplateList(

@@ -1,11 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable disable
-
-using Microsoft.CodeAnalysis;
-using System;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiCompatibility.Rules;
 
 namespace Microsoft.DotNet.ApiCompatibility.Abstractions
 {
@@ -16,9 +14,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
     /// </summary>
     public class NamespaceMapper : ElementMapper<INamespaceSymbol>
     {
-        private Dictionary<ITypeSymbol, TypeMapper> _types;
+        private readonly Dictionary<ITypeSymbol, TypeMapper> _types;
         private bool _expandedTree = false;
         private readonly bool _typeforwardsOnly;
+
+        /// <summary>
+        /// The containing assembly of this namespace.
+        /// </summary>
+        public AssemblyMapper ContainingAssembly { get; }
 
         /// <summary>
         /// Instantiates an object with the provided <see cref="ComparingSettings"/>.
@@ -26,9 +29,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="settings">The settings used to diff the elements in the mapper.</param>
         /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
         /// <param name="typeforwardsOnly">Indicates if <see cref="GetTypes"/> should only return typeforwards.</param>
-        public NamespaceMapper(ComparingSettings settings, int rightSetSize = 1, bool typeforwardsOnly = false)
-            : base(settings, rightSetSize)
+        public NamespaceMapper(IRuleRunner ruleRunner,
+            AssemblyMapper containingAssembly,
+            MapperSettings settings = default,
+            int rightSetSize = 1,
+            bool typeforwardsOnly = false)
+            : base(ruleRunner, settings, rightSetSize)
         {
+            ContainingAssembly = containingAssembly;
+            _types = new Dictionary<ITypeSymbol, TypeMapper>(Settings.EqualityComparer);
             _typeforwardsOnly = typeforwardsOnly;
         }
 
@@ -40,8 +49,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         {
             if (!_expandedTree)
             {
-                EnsureTypesInitialized();
-
                 // if the typeforwardsOnly flag is specified it means this namespace is already
                 // populated with the resolved typeforwards by the assembly mapper and that we 
                 // didn't find this namespace in the initial assembly. So we avoid getting the types
@@ -50,17 +57,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                 if (!_typeforwardsOnly)
                 {
                     AddOrCreateMappers(Left, ElementSide.Left);
-
-                    if (Right.Length == 1)
+                    for (int i = 0; i < Right.Length; i++)
                     {
-                        AddOrCreateMappers(Right[0], ElementSide.Right);
-                    }
-                    else
-                    {
-                        for (int i = 0; i < Right.Length; i++)
-                        {
-                            AddOrCreateMappers(Right[i], ElementSide.Right, i);
-                        }
+                        AddOrCreateMappers(Right[i], ElementSide.Right, i);
                     }
                 }
 
@@ -76,19 +75,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
         /// <param name="forwardedTypes">List containing the <see cref="INamedTypeSymbol"/> that represents the forwarded types.</param>
         /// <param name="side">Side to add the forwarded types into, 0 (Left) or 1 (Right).</param>
         /// <param name="setIndex">Value representing the index on the set of elements corresponding to the compared side.</param>
-        public void AddForwardedTypes(IEnumerable<INamedTypeSymbol> forwardedTypes, ElementSide side, int setIndex)
+        public void AddForwardedTypes(IEnumerable<INamedTypeSymbol>? forwardedTypes, ElementSide side, int setIndex)
         {
-            EnsureTypesInitialized();
             AddOrCreateMappers(forwardedTypes, side, setIndex);
         }
 
-        private void EnsureTypesInitialized()
-        {
-            if (_types == null)
-                _types = new Dictionary<ITypeSymbol, TypeMapper>(Settings.EqualityComparer);
-        }
-
-        private void AddOrCreateMappers(INamespaceSymbol symbol, ElementSide side, int setIndex = 0)
+        private void AddOrCreateMappers(INamespaceSymbol? symbol, ElementSide side, int setIndex = 0)
         {
             if (symbol == null)
             {
@@ -98,8 +90,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             AddOrCreateMappers(symbol.GetTypeMembers(), side, setIndex);
         }
 
-        private void AddOrCreateMappers(IEnumerable<ITypeSymbol> types, ElementSide side, int setIndex)
+        private void AddOrCreateMappers(IEnumerable<ITypeSymbol>? types, ElementSide side, int setIndex)
         {
+            // Silently return if the element hasn't been added yet.
             if (types == null)
                 return;
 
@@ -107,9 +100,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
             {
                 if (Settings.Filter.Include(type))
                 {
-                    if (!_types.TryGetValue(type, out TypeMapper mapper))
+                    if (!_types.TryGetValue(type, out TypeMapper? mapper))
                     {
-                        mapper = new TypeMapper(Settings, null, Right.Length);
+                        mapper = new TypeMapper(RuleRunner, this, Settings, null, Right.Length);
                         _types.Add(type, mapper);
                     }
 

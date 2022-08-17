@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     {
         private readonly RuleSettings _settings;
 
-        public CannotAddOrRemoveVirtualKeyword(RuleSettings settings, RuleRunnerContext context)
+        public CannotAddOrRemoveVirtualKeyword(RuleSettings settings, IRuleRegistrationContext context)
         {
             _settings = settings;
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
@@ -43,8 +43,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 if (!right.IsVirtual)
                 {
                     differences.Add(new CompatDifference(
-                    DiagnosticIds.CannotRemoveVirtualFromMember, string.Format(
-                        Resources.CannotRemoveVirtualFromMember, left), DifferenceType.Removed, right));
+                        DiagnosticIds.CannotRemoveVirtualFromMember,
+                        string.Format(Resources.CannotRemoveVirtualFromMember, left),
+                        DifferenceType.Removed,
+                        right));
                 }
             }
             // If the left member is not virtual, ensure that we're in strict mode.
@@ -57,8 +59,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 if (right.IsVirtual)
                 {
                     differences.Add(new CompatDifference(
-                    DiagnosticIds.CannotAddVirtualToMember, string.Format(
-                        Resources.CannotAddVirtualToMember, right), DifferenceType.Added, right));
+                        DiagnosticIds.CannotAddVirtualToMember,
+                        string.Format(Resources.CannotAddVirtualToMember, right),
+                        DifferenceType.Added,
+                        right));
                 }
             }
         }
