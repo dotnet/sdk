@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             foreach (Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>> action in _onAssemblySymbolActions)
             {
-                action(left, right, leftName, rightName, singleAssembly, differences);
+                action(left, right, leftMetadata, rightMetadata, singleAssembly, differences);
             }
         }
 
