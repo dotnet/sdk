@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Abstractions
                                     DiagnosticIds.AssemblyReferenceNotFound,
                                     string.Format(Resources.MatchingAssemblyNotFound, $"{symbol.ContainingAssembly.Name}.dll"),
                                     DifferenceType.Changed,
-                                    $"{symbol.ContainingAssembly.Name}.dll"));
+                                    symbol.ContainingAssembly.Identity.GetDisplayName()));
                             }
                         }
                     }
