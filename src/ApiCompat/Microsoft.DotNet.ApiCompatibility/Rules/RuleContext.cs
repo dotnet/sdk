@@ -13,13 +13,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class RuleContext : IRuleContext
     {
-        private readonly List<Action<IAssemblySymbol?, IAssemblySymbol?, string, string, IList<CompatDifference>>> _onAssemblySymbolActions = new();
+        private readonly List<Action<IAssemblySymbol?, IAssemblySymbol?, string, string, bool, IList<CompatDifference>>> _onAssemblySymbolActions = new();
         private readonly List<Action<ITypeSymbol?, ITypeSymbol?, string, string, IList<CompatDifference>>> _onTypeSymbolActions = new();
         private readonly List<Action<ISymbol?, ISymbol?, string, string, IList<CompatDifference>>> _onMemberSymbolActions = new();
         private readonly List<Action<ISymbol?, ISymbol?, ITypeSymbol, ITypeSymbol, string, string, IList<CompatDifference>>> _onMemberSymbolWithContainingTypeActions = new();
 
         /// <inheritdoc> />
-        public void RegisterOnAssemblySymbolAction(Action<IAssemblySymbol?, IAssemblySymbol?, string, string, IList<CompatDifference>> action)
+        public void RegisterOnAssemblySymbolAction(Action<IAssemblySymbol?, IAssemblySymbol?, string, string, bool, IList<CompatDifference>> action)
         {
             _onAssemblySymbolActions.Add(action);
         }
@@ -43,11 +43,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         /// <inheritdoc> />
-        public void RunOnAssemblySymbolActions(IAssemblySymbol? left, IAssemblySymbol? right, string leftName, string rightName, IList<CompatDifference> differences)
+        public void RunOnAssemblySymbolActions(IAssemblySymbol? left, IAssemblySymbol? right, string leftName, string rightName, bool singleAssembly, IList<CompatDifference> differences)
         {
-            foreach (Action<IAssemblySymbol?, IAssemblySymbol?, string, string, IList<CompatDifference>> action in _onAssemblySymbolActions)
+            foreach (Action<IAssemblySymbol?, IAssemblySymbol?, string, string, bool, IList<CompatDifference>> action in _onAssemblySymbolActions)
             {
-                action(left, right, leftName, rightName, differences);
+                action(left, right, leftName, rightName, singleAssembly, differences);
             }
         }
 

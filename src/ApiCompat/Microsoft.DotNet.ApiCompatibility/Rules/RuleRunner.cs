@@ -44,10 +44,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 if (mapper is AssemblyMapper am)
                 {
+                    /* Some assembly symbol actions need to know if the passed in assembly is the only one being visited.
+                       This is true if the assembly set only contains a single assembly or if there is no assembly set and
+                       the assembly mapper is directly visited. */
+                    bool containsSingleAssembly = am.ContainingAssemblySet == null || am.ContainingAssemblySet.AssemblyCount < 2;
+
                     _context.RunOnAssemblySymbolActions(am.Left?.Element,
                         am.Right[rightIndex]?.Element,
                         GetAssemblyName(am.Left, ElementSide.Left),
                         GetAssemblyName(am.Right[rightIndex], ElementSide.Right),
+                        containsSingleAssembly,
                         differences);
                 }
                 else if (mapper is TypeMapper tm)
