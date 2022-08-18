@@ -2067,7 +2067,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (i > 0 && Version.TryParse(osString[i..], out Version? parsedVersion))
                     {
-                        osPlatformName = GetNameAsMacOsWhenOSX(osString.Substring(0, i));
+                        osPlatformName = GetNameAsMacOsWhenOSX(osString[..i]);
                         version = parsedVersion;
                         return true;
                     }

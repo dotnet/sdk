@@ -227,7 +227,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var indexOfNewLine = argument.IndexOf(Environment.NewLine, StringComparison.Ordinal);
                     if (indexOfNewLine > 0)
                     {
-                        argument = argument.Substring(0, indexOfNewLine);
+                        argument = argument[..indexOfNewLine];
                     }
 
                     var diagnostic = syntax.CreateDiagnostic(rule, argument);
