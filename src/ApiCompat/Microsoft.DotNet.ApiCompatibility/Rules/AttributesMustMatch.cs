@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -97,29 +98,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             foreach (AttributeGroup lgrp in leftAttr)
             {
-                AttributeGroup? rgrp = rightAttr.Contains(lgrp.Representative);
-                if (rgrp == null)
+                if (rightAttr.TryGetValue(lgrp.Representative, out AttributeGroup? rgrp))
                 {
-                    // exists on left but not on right.
-                    // loop over left and issue "removed" diagnostic for each one.
-                    for (int i = 0; i < lgrp.Attributes?.Count; i++)
-                    {
-                        AttributeData? lem = lgrp.Attributes[i];
-                        differences.Add(AttributesMustMatch.RemovedDifference(containing, itemRef, lem));
-                    }
-                }
-                else
-                {
-                    if (lgrp.Attributes == null || lgrp.Seen == null || lgrp.Representative == null)
-                    {
-                        continue;
-                    }
-
-                    if (rgrp.Attributes == null || rgrp.Seen == null || rgrp.Representative == null)
-                    {
-                        continue;
-                    }
-
                     for (int i = 0; i < lgrp.Attributes.Count; i++)
                     {
                         AttributeData? lem = lgrp.Attributes[i];
@@ -152,20 +132,31 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         }
                     }
                 }
+                else
+                {
+                    // exists on left but not on right.
+                    // loop over left and issue "removed" diagnostic for each one.
+                    for (int i = 0; i < lgrp.Attributes?.Count; i++)
+                    {
+                        AttributeData? lem = lgrp.Attributes[i];
+                        differences.Add(AttributesMustMatch.RemovedDifference(containing, itemRef, lem));
+                    }
+                }
             }
 
-            foreach (var rgrp in rightAttr)
+            foreach (AttributeGroup rgrp in rightAttr)
             {
-                AttributeGroup? lgrp = leftAttr.Contains(rgrp.Representative);
-                if (lgrp == null)
+                if (leftAttr.TryGetValue(rgrp.Representative, out _))
                 {
-                    // exists on right but not left.
-                    // loop over right and issue "added" diagnostic for each one.
-                    for (int i = 0; i < rgrp.Attributes?.Count; i++)
-                    {
-                        AttributeData? rem = rgrp.Attributes[i];
-                        differences.Add(AttributesMustMatch.AddedDifference(containing, itemRef, rem));
-                    }
+                    continue;
+                }
+
+                // exists on right but not left.
+                // loop over right and issue "added" diagnostic for each one.
+                for (int i = 0; i < rgrp.Attributes?.Count; i++)
+                {
+                    AttributeData? rem = rgrp.Attributes[i];
+                    differences.Add(AttributesMustMatch.AddedDifference(containing, itemRef, rem));
                 }
             }
         }
@@ -203,40 +194,39 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private class AttributeGroup : IEqualityComparer<AttributeGroup>
         {
-            public readonly AttributeData? Representative;
-            public readonly List<AttributeData?>? Attributes;
-            public readonly List<bool>? Seen;
+            public readonly AttributeData Representative;
+            public readonly List<AttributeData> Attributes = new();
+            public readonly List<bool> Seen = new();
             private readonly RuleSettings _settings;
 
-            public AttributeGroup(RuleSettings Settings) { _settings = Settings; }
-
-            public AttributeGroup(RuleSettings Settings, AttributeData? attr)
+            public AttributeGroup(RuleSettings Settings, AttributeData attr)
             {
                 _settings = Settings;
                 Representative = attr;
-                Attributes = new List<AttributeData?>();
                 Seen = new List<bool>();
                 Add(attr);
             }
 
-            public void Add(AttributeData? attr)
+            public void Add(AttributeData attr)
             {
-                Attributes?.Add(attr);
-                Seen?.Add(false);
+                Attributes.Add(attr);
+                Seen.Add(false);
             }
 
-            public bool Equals(AttributeGroup? x, AttributeGroup? y) => _settings.SymbolComparer.Equals(x?.Representative?.AttributeClass!, y?.Representative?.AttributeClass!);
+            public bool Equals(AttributeGroup? x, AttributeGroup? y) =>
+                _settings.SymbolComparer.Equals(x?.Representative.AttributeClass, y?.Representative.AttributeClass);
 
-            public int GetHashCode(AttributeGroup? obj) => _settings.SymbolComparer.GetHashCode(obj?.Representative?.AttributeClass!);
+            public int GetHashCode([DisallowNull] AttributeGroup obj) =>
+                _settings.SymbolComparer.GetHashCode(obj.Representative.AttributeClass!);
         }
         private class AttributeSet : IEnumerable<AttributeGroup>
         {
-            private HashSet<AttributeGroup> _set;
+            private readonly List<AttributeGroup> _set;
             private readonly RuleSettings _settings;
 
             public AttributeSet(RuleSettings Settings, IList<AttributeData> attributes)
             {
-                _set = new HashSet<AttributeGroup>(new AttributeGroup(Settings));
+                _set = new List<AttributeGroup>();
                 _settings = Settings;
                 for (int i = 0; i < attributes.Count; i++)
                 {
@@ -246,28 +236,29 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             public void Add(AttributeData attr)
             {
-                var grp = new AttributeGroup(_settings, attr);
-                if (_set.TryGetValue(grp, out AttributeGroup? g))
+                foreach (AttributeGroup group in _set)
                 {
-                    g.Add(attr);
-                }
-                else
-                {
-                    _set.Add(grp);
+                    if (group.Representative.Equals(attr))
+                    {
+                        group.Add(attr);
+                        return;
+                    }
                 }
             }
 
-            public AttributeGroup? Contains(AttributeData? attr)
+            public bool TryGetValue(AttributeData attr, [MaybeNullWhen(false)] out AttributeGroup attributeGroup)
             {
-                var grp = new AttributeGroup(_settings, attr);
-                if (_set.TryGetValue(grp, out AttributeGroup? g))
+                foreach (AttributeGroup group in _set)
                 {
-                    return g;
+                    if (group.Representative.Equals(attr))
+                    {
+                        attributeGroup = group;
+                        return true;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
+
+                attributeGroup = null;
+                return false;
             }
 
             public IEnumerator<AttributeGroup> GetEnumerator() => ((IEnumerable<AttributeGroup>)_set).GetEnumerator();
