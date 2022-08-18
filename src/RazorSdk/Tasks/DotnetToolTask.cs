@@ -77,17 +77,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return "@\"" + responseFilePath + "\"";
         }
 
-        protected string Quote(string path)
-        {
-            if (string.IsNullOrEmpty(path) || (path[0] == '\"' && path[path.Length - 1] == '\"'))
-            {
-                // it's already quoted
-                return path;
-            }
-
-            return $"\"{path}\"";
-        }
-
         protected abstract override string GenerateResponseFileCommands();
 
         public override bool Execute()

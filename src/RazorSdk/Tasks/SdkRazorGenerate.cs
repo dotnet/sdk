@@ -109,14 +109,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 var input = Sources[i];
                 builder.AppendLine("-s");
-                builder.AppendLine(Quote(input.GetMetadata(FullPath)));
+                builder.AppendLine(input.GetMetadata(FullPath));
 
                 builder.AppendLine("-r");
-                builder.AppendLine(Quote(input.GetMetadata(TargetPath)));
+                builder.AppendLine(input.GetMetadata(TargetPath));
 
                 builder.AppendLine("-o");
                 var outputPath = Path.Combine(ProjectRoot, input.GetMetadata(GeneratedOutput));
-                builder.AppendLine(Quote(outputPath));
+                builder.AppendLine(outputPath);
 
                 // Added in 3.0
                 if (parsedVersion.Major >= 3)
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     if (!string.IsNullOrEmpty(cssScope))
                     {
                         builder.AppendLine("-cssscopedinput");
-                        builder.AppendLine(Quote(input.GetMetadata(FullPath)));
+                        builder.AppendLine(input.GetMetadata(FullPath));
                         builder.AppendLine("-cssscopevalue");
                         builder.AppendLine(cssScope);
                     }
@@ -151,10 +151,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             builder.AppendLine("-p");
-            builder.AppendLine(Quote(ProjectRoot));
+            builder.AppendLine(ProjectRoot);
 
             builder.AppendLine("-t");
-            builder.AppendLine(Quote(TagHelperManifest));
+            builder.AppendLine(TagHelperManifest);
 
             builder.AppendLine("-v");
             builder.AppendLine(Version);
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 builder.AppendLine(Extensions[i].GetMetadata(Identity));
 
                 builder.AppendLine("-e");
-                builder.AppendLine(Quote(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath))));
+                builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
             }
 
             return builder.ToString();
