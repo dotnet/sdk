@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private void readExclusions(IEnumerable<string> excludeAttributesFiles)
+        private void ReadExclusions(IEnumerable<string> excludeAttributesFiles)
         {
             foreach (string filePath in excludeAttributesFiles)
             {
