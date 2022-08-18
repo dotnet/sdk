@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
+            // Compare type parameter attributes.
             if (left is INamedTypeSymbol leftNamed && right is INamedTypeSymbol rightNamed)
             {
                 if (leftNamed.TypeParameters.Length == rightNamed.TypeParameters.Length)
@@ -93,6 +94,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
+            // Build a set of attributes for both sides, grouped by their names.
+            // For example,
+            //   [Foo("a")]
+            //   [Foo("b")]
+            //   [Bar]
+            //   public void F() {}
+            // would give you a set like
+            //   { { Foo("a"), Foo("b") }, { Bar } }
             AttributeSet leftAttributeSet = new(_settings, left);
             AttributeSet rightAttributeSet = new(_settings, right);
 
@@ -100,9 +109,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 if (rightAttributeSet.TryGetValue(leftGroup.Representative, out AttributeGroup? rightGroup))
                 {
-                    for (int i = 0; i < leftGroup.Attributes.Count; i++)
+                    // If attribute exists on left and the right, compare their arguments.
+                    foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
-                        AttributeData leftAttribute = leftGroup.Attributes[i];
                         bool seen = false;
                         for (int j = 0; j < rightGroup.Attributes.Count; j++)
                         {
@@ -137,9 +146,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 {
                     // Attribute exists on left but not on right.
                     // Loop over left and issue "removed" diagnostic for each one.
-                    for (int i = 0; i < leftGroup.Attributes.Count; i++)
+                    foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
-                        AttributeData leftAttribute = leftGroup.Attributes[i];
                         differences.Add(RemovedDifference(containing, itemRef, leftAttribute));
                     }
                 }
@@ -154,15 +162,21 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 // Attribute exists on right but not left.
                 // Loop over right and issue "added" diagnostic for each one.
-                for (int i = 0; i < rightGroup.Attributes.Count; i++)
+                foreach (AttributeData rightAttribute in rightGroup.Attributes)
                 {
-                    AttributeData rightAttribute = rightGroup.Attributes[i];
                     differences.Add(AddedDifference(containing, itemRef, rightAttribute));
                 }
             }
         }
 
-        private void RunOnMemberSymbol(ISymbol? left, ISymbol? right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
+        private void RunOnMemberSymbol(
+            ISymbol? left,
+            ISymbol? right,
+            ITypeSymbol leftContainingType,
+            ITypeSymbol rightContainingType,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences)
         {
             if (left is null || right is null)
             {
@@ -171,26 +185,50 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             if (left is IMethodSymbol leftMethod && right is IMethodSymbol rightMethod)
             {
-                ReportAttributeDifferences(left, left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType, leftMethod.GetReturnTypeAttributes(), rightMethod.GetReturnTypeAttributes(), differences);
+                // If member is a method,
+                // compare return type attributes,
+                ReportAttributeDifferences(
+                    left,
+                    left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType,
+                    leftMethod.GetReturnTypeAttributes(),
+                    rightMethod.GetReturnTypeAttributes(),
+                    differences);
 
+                // parameter attributes,
                 if (leftMethod.Parameters.Length == rightMethod.Parameters.Length)
                 {
                     for (int i = 0; i < leftMethod.Parameters.Length; i++)
                     {
-                        ReportAttributeDifferences(left, left.GetDocumentationCommentId() + $"${i}", leftMethod.Parameters[i].GetAttributes(), rightMethod.Parameters[i].GetAttributes(), differences);
+                        ReportAttributeDifferences(
+                            left,
+                            left.GetDocumentationCommentId() + $"${i}",
+                            leftMethod.Parameters[i].GetAttributes(),
+                            rightMethod.Parameters[i].GetAttributes(),
+                            differences);
                     }
                 }
 
+                // and type parameter attributes.
                 if (leftMethod.TypeParameters.Length == rightMethod.TypeParameters.Length)
                 {
                     for (int i = 0; i < leftMethod.TypeParameters.Length; i++)
                     {
-                        ReportAttributeDifferences(left, left.GetDocumentationCommentId() + $"<{i}>", leftMethod.TypeParameters[i].GetAttributes(), rightMethod.TypeParameters[i].GetAttributes(), differences);
+                        ReportAttributeDifferences(
+                            left,
+                            left.GetDocumentationCommentId() + $"<{i}>",
+                            leftMethod.TypeParameters[i].GetAttributes(),
+                            rightMethod.TypeParameters[i].GetAttributes(),
+                            differences);
                     }
                 }
             }
 
-            ReportAttributeDifferences(left, left.GetDocumentationCommentId() ?? "", left.GetAttributes(), right.GetAttributes(), differences);
+            ReportAttributeDifferences(
+                left,
+                left.GetDocumentationCommentId() ?? "",
+                left.GetAttributes(),
+                right.GetAttributes(),
+                differences);
         }
 
         private class AttributeGroup
