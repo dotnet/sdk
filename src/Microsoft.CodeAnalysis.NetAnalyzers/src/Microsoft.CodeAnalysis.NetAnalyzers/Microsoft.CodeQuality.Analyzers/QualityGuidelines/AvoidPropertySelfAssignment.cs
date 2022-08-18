@@ -101,7 +101,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                     return Equals(targetArg.ConstantValue.Value, valueArg.ConstantValue.Value);
                 }
 
-#pragma warning disable IDE0055 // Fix formatting - Does not seem to be handling switch expressions.
                 return targetArg switch
                 {
                     ILocalReferenceOperation targetLocalReference =>
@@ -110,7 +109,6 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                         Equals(targetParameterReference.Parameter, ((IParameterReferenceOperation)valueArg).Parameter),
                     _ => false,
                 };
-#pragma warning restore IDE0055 // Fix formatting
             }
         }
     }
