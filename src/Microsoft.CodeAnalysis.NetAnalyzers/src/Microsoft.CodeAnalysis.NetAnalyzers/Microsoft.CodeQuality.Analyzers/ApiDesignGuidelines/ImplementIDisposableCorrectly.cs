@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -532,7 +533,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 foreach (IOperation operation in operations)
                 {
-                    if (!operation.IsImplicit && !ValidateOperation(operation))
+                    if (!operation.IsImplicit && operation.Kind != OperationKindEx.Attribute && !ValidateOperation(operation))
                     {
                         return false;
                     }
@@ -660,7 +661,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // call to the base finalizer in the finally section. We need to validate the contents
                     // of the try block
                     // Also analyze the implicit expression statement created for expression bodied implementation.
-                    var shouldAnalyze = !operation.IsImplicit || operation.Kind == OperationKind.Try || operation.Kind == OperationKind.ExpressionStatement;
+                    var shouldAnalyze = (!operation.IsImplicit && operation.Kind != OperationKindEx.Attribute) || operation.Kind == OperationKind.Try || operation.Kind == OperationKind.ExpressionStatement;
                     if (shouldAnalyze && !ValidateOperation(operation))
                     {
                         return false;
