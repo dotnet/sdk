@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var currentSolution = workspace.CurrentSolution;
 
                 var hotReloadCapabilities = await GetHotReloadCapabilitiesAsync(hotReloadCapabilitiesTask, reporter);
-                var hotReloadService = new WatchHotReloadService(workspace.Services, await hotReloadCapabilitiesTask);
+                var hotReloadService = new WatchHotReloadService(currentSolution.Services, await hotReloadCapabilitiesTask);
 
                 await hotReloadService.StartSessionAsync(currentSolution, cancellationToken);
 
