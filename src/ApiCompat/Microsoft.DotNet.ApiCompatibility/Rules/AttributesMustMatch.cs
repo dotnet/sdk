@@ -45,22 +45,22 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             ReportAttributeDifferences(left, left.GetDocumentationCommentId() ?? "", left.GetAttributes(), right.GetAttributes(), differences);
         }
 
-        private static CompatDifference RemovedDifference(ISymbol containing, string itemRef, AttributeData? attr) => CompatDifference.CreateWithDefaultMetadata(
+        private static CompatDifference RemovedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(
             DiagnosticIds.CannotRemoveAttribute,
             string.Format(Resources.CannotRemoveAttribute, attr, containing),
             DifferenceType.Removed,
-            itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]");
 
-        private static CompatDifference AddedDifference(ISymbol containing, string itemRef, AttributeData? attr) => CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute,
+        private static CompatDifference AddedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute,
             string.Format(Resources.CannotAddAttribute, attr, containing),
             DifferenceType.Added,
-            itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]");
 
-        private static CompatDifference ChangedDifference(ISymbol containing, string itemRef, AttributeData? attr) => CompatDifference.CreateWithDefaultMetadata(
+        private static CompatDifference ChangedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(
             DiagnosticIds.CannotChangeAttribute,
-            string.Format(Resources.CannotChangeAttribute, attr?.AttributeClass, containing),
+            string.Format(Resources.CannotChangeAttribute, attr.AttributeClass, containing),
             DifferenceType.Changed,
-            itemRef + ":[" + attr?.AttributeClass?.GetDocumentationCommentId() + "]");
+            itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]");
 
         private bool AttributeEquals(AttributeData? left, AttributeData? right)
         {
@@ -93,23 +93,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            var leftAttr = new AttributeSet(_settings, left);
-            var rightAttr = new AttributeSet(_settings, right);
+            AttributeSet leftAttributeSet = new(_settings, left);
+            AttributeSet rightAttributeSet = new(_settings, right);
 
-            foreach (AttributeGroup lgrp in leftAttr)
+            foreach (AttributeGroup leftGroup in leftAttributeSet)
             {
-                if (rightAttr.TryGetValue(lgrp.Representative, out AttributeGroup? rgrp))
+                if (rightAttributeSet.TryGetValue(leftGroup.Representative, out AttributeGroup? rightGroup))
                 {
-                    for (int i = 0; i < lgrp.Attributes!.Count; i++) // TODO: this exclamation point shouldn't be necessary.
+                    for (int i = 0; i < leftGroup.Attributes.Count; i++)
                     {
-                        AttributeData? lem = lgrp.Attributes[i];
+                        AttributeData leftAttribute = leftGroup.Attributes[i];
                         bool seen = false;
-                        for (int j = 0; j < rgrp.Attributes.Count; j++)
+                        for (int j = 0; j < rightGroup.Attributes.Count; j++)
                         {
-                            AttributeData? rem = rgrp.Attributes[j];
-                            if (AttributeEquals(lem, rem))
+                            AttributeData rightAttribute = rightGroup.Attributes[j];
+                            if (AttributeEquals(leftAttribute, rightAttribute))
                             {
-                                rgrp.Seen[j] = true;
+                                rightGroup.Seen[j] = true;
                                 seen = true;
                                 break;
                             }
@@ -117,46 +117,47 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                         if (!seen)
                         {
-                            // issue lem exists on left but not right.
-                            differences.Add(AttributesMustMatch.ChangedDifference(containing, itemRef, lem));
+                            // Attribute arguments exist on left but not right.
+                            // Issue "changed" diagnostic.
+                            differences.Add(ChangedDifference(containing, itemRef, leftAttribute));
                         }
                     }
 
-                    for (int i = 0; i < rgrp.Attributes.Count; i++)
+                    for (int i = 0; i < rightGroup.Attributes.Count; i++)
                     {
-                        if (!rgrp.Seen[i])
+                        if (!rightGroup.Seen[i])
                         {
-                            // issue rem exists on right but not left.
-                            AttributeData? rem = rgrp.Attributes[i];
-                            differences.Add(AttributesMustMatch.ChangedDifference(containing, itemRef, rem));
+                            // Attribute arguments exist on right but not left.
+                            // Issue "changed" diagnostic.
+                            differences.Add(ChangedDifference(containing, itemRef, rightGroup.Attributes[i]));
                         }
                     }
                 }
                 else
                 {
-                    // exists on left but not on right.
-                    // loop over left and issue "removed" diagnostic for each one.
-                    for (int i = 0; i < lgrp.Attributes?.Count; i++)
+                    // Attribute exists on left but not on right.
+                    // Loop over left and issue "removed" diagnostic for each one.
+                    for (int i = 0; i < leftGroup.Attributes.Count; i++)
                     {
-                        AttributeData? lem = lgrp.Attributes[i];
-                        differences.Add(AttributesMustMatch.RemovedDifference(containing, itemRef, lem));
+                        AttributeData leftAttribute = leftGroup.Attributes[i];
+                        differences.Add(RemovedDifference(containing, itemRef, leftAttribute));
                     }
                 }
             }
 
-            foreach (AttributeGroup rgrp in rightAttr)
+            foreach (AttributeGroup rightGroup in rightAttributeSet)
             {
-                if (leftAttr.TryGetValue(rgrp.Representative, out _))
+                if (leftAttributeSet.TryGetValue(rightGroup.Representative, out _))
                 {
                     continue;
                 }
 
-                // exists on right but not left.
-                // loop over right and issue "added" diagnostic for each one.
-                for (int i = 0; i < rgrp.Attributes?.Count; i++)
+                // Attribute exists on right but not left.
+                // Loop over right and issue "added" diagnostic for each one.
+                for (int i = 0; i < rightGroup.Attributes.Count; i++)
                 {
-                    AttributeData? rem = rgrp.Attributes[i];
-                    differences.Add(AttributesMustMatch.AddedDifference(containing, itemRef, rem));
+                    AttributeData rightAttribute = rightGroup.Attributes[i];
+                    differences.Add(AddedDifference(containing, itemRef, rightAttribute));
                 }
             }
         }
