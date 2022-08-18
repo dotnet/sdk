@@ -142,7 +142,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                 var typeArguments = symbol.IsUnboundGenericType
                     ? Enumerable.Repeat((TypeSyntax)OmittedTypeArgument(), symbol.TypeArguments.Length)
-                    : symbol.TypeArguments.Select(t => GetTypeSyntaxForSymbol(t));
+                    : symbol.TypeArguments.Select(GetTypeSyntaxForSymbol);
 
                 return GenericName(
                     ToIdentifierToken(symbol.Name),

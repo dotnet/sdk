@@ -57,7 +57,7 @@ namespace Microsoft.NetFramework.Analyzers
         private static void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
             ImmutableHashSet<INamedTypeSymbol> badBaseTypes = s_badBaseTypesToMessage.Keys
-                                .Select(bt => context.Compilation.GetOrCreateTypeByMetadataName(bt))
+                                .Select(context.Compilation.GetOrCreateTypeByMetadataName)
                                 .WhereNotNull()
                                 .ToImmutableHashSet();
 

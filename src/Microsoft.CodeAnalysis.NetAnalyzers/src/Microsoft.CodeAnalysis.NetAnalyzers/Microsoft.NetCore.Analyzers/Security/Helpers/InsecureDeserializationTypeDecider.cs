@@ -233,7 +233,7 @@ namespace Microsoft.NetCore.Analyzers.Security.Helpers
 
                 bool hasAnyXmlSerializationAttributes =
                     this.XmlSerializationAttributeTypes.HasAnyAttribute(typeSymbol)
-                        || typeSymbol.GetMembers().Any(m => this.XmlSerializationAttributeTypes.HasAnyAttribute(m));
+                        || typeSymbol.GetMembers().Any(this.XmlSerializationAttributeTypes.HasAnyAttribute);
 
                 // Consider handling other Newtonsoft Json.NET member serialization modes other than its default.
 

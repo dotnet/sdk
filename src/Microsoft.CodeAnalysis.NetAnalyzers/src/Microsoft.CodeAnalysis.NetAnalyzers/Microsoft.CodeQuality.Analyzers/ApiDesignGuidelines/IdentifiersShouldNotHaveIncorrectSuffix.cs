@@ -307,7 +307,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             }
 
             return IsInvalidSuffix(namedTypeSymbol.Name, suffix, allowedSuffixes)
-                && !parentTypes.Any(parentType => namedTypeSymbol.DerivesFromOrImplementsAnyConstructionOf(parentType));
+                && !parentTypes.Any(namedTypeSymbol.DerivesFromOrImplementsAnyConstructionOf);
         }
 
         private static bool IsInvalidSuffix(string name, string suffix, ImmutableHashSet<string> allowedSuffixes)
