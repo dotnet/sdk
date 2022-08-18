@@ -24,7 +24,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private void RunOnTypeSymbol(ITypeSymbol? left, ITypeSymbol? right, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
+        private void RunOnTypeSymbol(
+            ITypeSymbol? left,
+            ITypeSymbol? right,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences)
         {
             if (left is null || right is null)
             {
@@ -38,12 +43,22 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 {
                     for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
                     {
-                        ReportAttributeDifferences(left, left.GetDocumentationCommentId() + $"<{i}>", leftNamed.TypeParameters[i].GetAttributes(), rightNamed.TypeParameters[i].GetAttributes(), differences);
+                        ReportAttributeDifferences(
+                            left,
+                            left.GetDocumentationCommentId() + $"<{i}>",
+                            leftNamed.TypeParameters[i].GetAttributes(),
+                            rightNamed.TypeParameters[i].GetAttributes(),
+                            differences);
                     }
                 }
             }
 
-            ReportAttributeDifferences(left, left.GetDocumentationCommentId() ?? "", left.GetAttributes(), right.GetAttributes(), differences);
+            ReportAttributeDifferences(
+                left,
+                left.GetDocumentationCommentId() ?? "",
+                left.GetAttributes(),
+                right.GetAttributes(),
+                differences);
         }
 
         private static CompatDifference RemovedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(
@@ -52,7 +67,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             DifferenceType.Removed,
             itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]");
 
-        private static CompatDifference AddedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute,
+        private static CompatDifference AddedDifference(ISymbol containing, string itemRef, AttributeData attr) => CompatDifference.CreateWithDefaultMetadata(
+            DiagnosticIds.CannotAddAttribute,
             string.Format(Resources.CannotAddAttribute, attr, containing),
             DifferenceType.Added,
             itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]");
