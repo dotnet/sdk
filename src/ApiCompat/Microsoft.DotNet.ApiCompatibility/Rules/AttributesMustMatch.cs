@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 if (rightAttr.TryGetValue(lgrp.Representative, out AttributeGroup? rgrp))
                 {
-                    for (int i = 0; i < lgrp.Attributes.Count; i++)
+                    for (int i = 0; i < lgrp.Attributes!.Count; i++) // TODO: this exclamation point shouldn't be necessary.
                     {
                         AttributeData? lem = lgrp.Attributes[i];
                         bool seen = false;
@@ -192,16 +192,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             ReportAttributeDifferences(left, left.GetDocumentationCommentId() ?? "", left.GetAttributes(), right.GetAttributes(), differences);
         }
 
-        private class AttributeGroup : IEqualityComparer<AttributeGroup>
+        private class AttributeGroup
         {
             public readonly AttributeData Representative;
             public readonly List<AttributeData> Attributes = new();
             public readonly List<bool> Seen = new();
-            private readonly RuleSettings _settings;
 
-            public AttributeGroup(RuleSettings Settings, AttributeData attr)
+            public AttributeGroup(AttributeData attr)
             {
-                _settings = Settings;
                 Representative = attr;
                 Seen = new List<bool>();
                 Add(attr);
@@ -212,12 +210,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 Attributes.Add(attr);
                 Seen.Add(false);
             }
-
-            public bool Equals(AttributeGroup? x, AttributeGroup? y) =>
-                _settings.SymbolComparer.Equals(x?.Representative.AttributeClass, y?.Representative.AttributeClass);
-
-            public int GetHashCode([DisallowNull] AttributeGroup obj) =>
-                _settings.SymbolComparer.GetHashCode(obj.Representative.AttributeClass!);
         }
         private class AttributeSet : IEnumerable<AttributeGroup>
         {
@@ -238,19 +230,21 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 foreach (AttributeGroup group in _set)
                 {
-                    if (group.Representative.Equals(attr))
+                    if (_settings.SymbolComparer.Equals(group.Representative.AttributeClass!, attr.AttributeClass!))
                     {
                         group.Add(attr);
                         return;
                     }
                 }
+
+                _set.Add(new AttributeGroup(attr));
             }
 
             public bool TryGetValue(AttributeData attr, [MaybeNullWhen(false)] out AttributeGroup attributeGroup)
             {
                 foreach (AttributeGroup group in _set)
                 {
-                    if (group.Representative.Equals(attr))
+                    if (_settings.SymbolComparer.Equals(group.Representative.AttributeClass!, attr.AttributeClass!))
                     {
                         attributeGroup = group;
                         return true;
