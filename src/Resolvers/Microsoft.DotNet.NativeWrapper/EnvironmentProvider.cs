@@ -61,29 +61,22 @@ namespace Microsoft.DotNet.NativeWrapper
                 return environmentOverride;
             }
 
-            string dotnetExe;
-#if NET6_0_OR_GREATER
-            dotnetExe = Environment.ProcessPath;
-#else
-            dotnetExe = Process.GetCurrentProcess().MainModule.FileName;
-#endif
+            var dotnetExe = GetCommandPath(Constants.DotNet);
 
-            if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileNameWithoutExtension(dotnetExe)
-                    .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
+            if (dotnetExe != null && !Interop.RunningOnWindows)
             {
-                string dotnetExeFromPath = GetCommandPath(Constants.DotNet);
+                // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
+                // resolve it to get the actual path to the binary
+                dotnetExe = Interop.Unix.realpath(dotnetExe) ?? dotnetExe;
+            }
 
-                if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
-                {
-                    // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
-                    // resolve it to get the actual path to the binary
-                    dotnetExeFromPath = Interop.Unix.realpath(dotnetExeFromPath) ?? dotnetExeFromPath;
-                }
-
-                if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
-                {
-                    dotnetExe = dotnetExeFromPath;
-                }
+            if (string.IsNullOrWhiteSpace(dotnetExe))
+            {
+#if NET6_0_OR_GREATER
+                dotnetExe = Environment.ProcessPath;
+#else
+                dotnetExe = Process.GetCurrentProcess().MainModule.FileName;
+#endif
             }
 
             return Path.GetDirectoryName(dotnetExe);
