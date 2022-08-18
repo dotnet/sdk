@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             _settings = settings;
             if (excludeAttributesFiles != null)
             {
-                readExclusions(excludeAttributesFiles);
+                ReadExclusions(excludeAttributesFiles);
             }
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
