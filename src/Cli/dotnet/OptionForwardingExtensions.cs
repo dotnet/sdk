@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Linq;
 
@@ -44,10 +43,18 @@ namespace Microsoft.DotNet.Cli
             });
         }
 
+        public static ForwardedOption<bool> ForwardAsFlag(this ForwardedOption<bool> option, Func<bool, IEnumerable<string>> format) => option.SetForwardingFunction((optionValue) =>
+            optionValue ? format(optionValue) : Enumerable.Empty<string>()
+        );
+
+        public static ForwardedOption<bool> ForwardAsFlag(this ForwardedOption<bool> option, string format) => option.SetForwardingFunction((optionValue) =>
+           optionValue ? format : string.Empty
+        );
+
         public static ForwardedOption<string[]> ForwardAsProperty(this ForwardedOption<string[]> option) => option
             .SetForwardingFunction((optionVals) =>
                 optionVals
-                    .SelectMany(Microsoft.DotNet.Cli.Utils.MSBuildPropertyParser.ParseProperties)
+                    .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
                     .Select(keyValue => $"{option.Aliases.FirstOrDefault()}:{keyValue.key}={keyValue.value}")
                 );
 
