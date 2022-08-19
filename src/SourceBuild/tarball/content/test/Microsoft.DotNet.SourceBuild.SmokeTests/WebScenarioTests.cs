@@ -34,8 +34,7 @@ public class WebScenarioTests : SmokeTests
         }
 
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Razor,         DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
-        // Disable building blazorwasm tests until https://github.com/dotnet/source-build/issues/2946 is addressed
-        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm     /*DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish*/);
+        yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorWasm,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.BlazorServer,  DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Worker);
         yield return new(nameof(WebScenarioTests), DotNetLanguage.CSharp, DotNetTemplate.Angular);
