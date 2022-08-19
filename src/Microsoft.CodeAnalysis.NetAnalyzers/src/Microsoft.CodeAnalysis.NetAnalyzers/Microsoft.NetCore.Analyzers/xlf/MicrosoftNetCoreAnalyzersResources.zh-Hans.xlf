@@ -2867,6 +2867,26 @@
         <target state="translated">如果可能，请考虑使用 Azure 基于角色的访问控制，而不是共享访问签名(SAS)。如果仍需使用 SAS，请指定 SharedAccessProtocol.HttpsOnly。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
+        <source>Use 'Clear()'</source>
+        <target state="new">Use 'Clear()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillDescription">
+        <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
+        <target state="new">It is more efficient to use 'Clear', instead of 'Fill' with default value.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillMessage">
+        <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
+        <target state="new">Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillTitle">
+        <source>Prefer 'Clear' over 'Fill'</source>
+        <target state="new">Prefer 'Clear' over 'Fill'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
         <source>Use 'string.Equals'</source>
         <target state="translated">使用 “string.Equals”</target>
@@ -2905,26 +2925,6 @@
       <trans-unit id="UseSpanBasedStringConcatTitle">
         <source>Use span-based 'string.Concat'</source>
         <target state="translated">使用基于跨度的 “string.Concat”</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
-        <source>Use 'Clear()'</source>
-        <target state="new">Use 'Clear()'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanClearInsteadOfFillDescription">
-        <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
-        <target state="new">It is more efficient to use 'Clear', instead of 'Fill' with default value.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanClearInsteadOfFillMessage">
-        <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
-        <target state="new">Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UseSpanClearInsteadOfFillTitle">
-        <source>Prefer 'Clear' over 'Fill'</source>
-        <target state="new">Prefer 'Clear' over 'Fill'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
