@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">Для делегатов с управляемыми типами в качестве параметров и с возвращаемыми типами требуется, чтобы в сборке, где определен делегат, был включен маршалинг среды выполнения.</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="needs-review-translation">Для делегатов с управляемыми типами в качестве параметров и с возвращаемыми типами требуется, чтобы в сборке, где определен делегат, был включен маршалинг среды выполнения.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
