@@ -2907,6 +2907,26 @@
         <target state="translated">請使用範圍型的 'string.Concat'</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
+        <source>Use 'Clear()'</source>
+        <target state="new">Use 'Clear()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillDescription">
+        <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
+        <target state="new">It is more efficient to use 'Clear', instead of 'Fill' with default value.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillMessage">
+        <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
+        <target state="new">Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillTitle">
+        <source>Prefer 'Clear' over 'Fill'</source>
+        <target state="new">Prefer 'Clear' over 'Fill'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseStringContainsCharOverloadWithSingleCharactersDescription">
         <source>'string.Contains(char)' is available as a better performing overload for single char lookup.</source>
         <target state="translated">'string.Contains(char)' 對單一字元查閱而言可做為更佳的執行多載。</target>

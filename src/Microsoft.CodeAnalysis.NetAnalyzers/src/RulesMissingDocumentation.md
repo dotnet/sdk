@@ -8,5 +8,6 @@ CA1421 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-r
 CA1422 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1422> | Validate platform compatibility |
 CA1852 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852> | Seal internal types |
 CA1853 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853> | Unnecessary call to 'Dictionary.ContainsKey(key)' |
+CA1855 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855> | Prefer 'Clear' over 'Fill' |
 CA2019 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019> | Improper 'ThreadStatic' field initialization |
 CA2259 | <https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259> | 'ThreadStatic' only affects static fields |
