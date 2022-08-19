@@ -233,9 +233,10 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>a633e8821026868f180be736112f35e6f63159e8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="3.1.0" Pinned="true">
-      <Uri>https://github.com/aspnet/xdt</Uri>
-      <Sha>c01a538851a8ab1a1fbeb2e6243f391fff7587b4</Sha>
+    <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22419.1" Pinned="true">
+      <Uri>https://github.com/dotnet/xdt</Uri>
+      <Sha>6a23b4b92e39fdbd4c63672893b7dce394cc1400</Sha>
+      <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0-preview1.22418.3">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
