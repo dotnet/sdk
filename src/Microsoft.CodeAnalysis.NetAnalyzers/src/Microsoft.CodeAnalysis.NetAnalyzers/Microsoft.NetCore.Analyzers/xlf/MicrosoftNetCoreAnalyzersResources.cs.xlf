@@ -1834,7 +1834,7 @@
       </trans-unit>
       <trans-unit id="ParenthesisWithPlaceHolder">
         <source> ({0})</source>
-        <target state="new"> ({0})</target>
+        <target state="translated"> ({0})</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
@@ -1859,12 +1859,12 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityObsoletedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</target>
+        <target state="translated">Toto místo volání je k dispozici na všech platformách. {0} je zastaralé na {1}.</target>
         <note>This call site is reachable on all platforms. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityObsoletedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</target>
+        <target state="translated">Toto místo volání je k dispozici na {2}. {0} je zastaralé na {1}.</target>
         <note>This call site is reachable on 'macos', 'linux'. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
