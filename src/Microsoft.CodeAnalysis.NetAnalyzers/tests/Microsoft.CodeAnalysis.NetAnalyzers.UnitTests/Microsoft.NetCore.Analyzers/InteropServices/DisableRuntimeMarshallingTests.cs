@@ -804,6 +804,55 @@ class C
         }
 
         [Fact]
+        [WorkItem(6094, "https://github.com/dotnet/roslyn-analyzers/issues/6094")]
+        public async Task CS_DelegateWith_NonBlittableParameter_PInvokeUsage_NoDisableRuntimeMarshalling_DoesNotEmit_Diagnostic()
+        {
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+
+internal delegate void DelegateType(string[] str);
+
+class C
+{
+    [DllImport(""Native"")]
+    public static extern void PInvoke(DelegateType d);
+    [DllImport(""Native"")]
+    public static extern DelegateType PInvoke();
+    [DllImport(""Native"")]
+    public static extern void PInvokeArray(DelegateType[] d);
+    [DllImport(""Native"")]
+    public static extern DelegateType[] PInvokeArray();
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
+        [WorkItem(6094, "https://github.com/dotnet/roslyn-analyzers/issues/5995")]
+        public async Task CS_DelegateWithClassReturnValue_NoUnmanagedFunctionPointer_MarshalAPIUsage_NoDisableRuntimeMarshalling_DoesNotEmit_Diagnostic()
+        {
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+
+public delegate string DelegateType();
+
+class C
+{
+    public static void M(DelegateType d, IntPtr i)
+    {
+        _ = Marshal.GetFunctionPointerForDelegate((Delegate)d);
+        _ = Marshal.GetFunctionPointerForDelegate(d);
+        _ = Marshal.GetDelegateForFunctionPointer(i, typeof(DelegateType));
+        _ = Marshal.GetDelegateForFunctionPointer<DelegateType>(i);
+    }
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
+        [Fact]
         public async Task VB_DelegateWithClassReturnValue_Emits_Diagnostic()
         {
             string source = @"
