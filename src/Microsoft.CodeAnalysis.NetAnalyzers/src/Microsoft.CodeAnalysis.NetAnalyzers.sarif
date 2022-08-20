@@ -285,6 +285,25 @@
             ]
           }
         },
+        "CA1855": {
+          "id": "CA1855",
+          "shortDescription": "Prefer 'Clear' over 'Fill'",
+          "fullDescription": "It is more efficient to use 'Clear', instead of 'Fill' with default value.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseSpanClearInsteadOfFillAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
