@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Wed, 10 Aug 2022 13:44:31 -0500
+Subject: [PATCH] Upgrade to an MS.Build.Traversal version we have a ref
+ package for.
+
+Backport PR is https://github.com/dotnet/llvm-project/pull/241.
+
+---
+ global.json | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/global.json b/global.json
+index df77e9a199d6..19b99be1f71b 100644
+--- a/global.json
++++ b/global.json
+@@ -5,6 +5,6 @@
+   "msbuild-sdks": {
+     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.22367.1",
+     "Microsoft.DotNet.Helix.Sdk": "7.0.0-beta.22367.1",
+-    "Microsoft.Build.Traversal": "2.0.2"
++    "Microsoft.Build.Traversal": "2.0.34"
+   }
+ }
