@@ -9,7 +9,7 @@ This folder contains common project and item templates:
 - Editor config (`editorconfig`)
 and some others
 
-The issues for these templates content should be opened in dotnet/sdk repo with label [`Area-Templates`](https://github.com/dotnet/sdk/issues?q=is%3Aopen+is%3Aissue+label%3AArea-Templates).
+The issues for the content of these templates should be opened in dotnet/sdk repo with label [`Area-Templates`](https://github.com/dotnet/sdk/issues?q=is%3Aopen+is%3Aissue+label%3AArea-Templates).
 
 The other templates are located in the following repositories:
 | Templates | Repository |
