@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            if (attr.AttributeClass != null && !SymbolExtensions.IsVisibleOutsideOfAssembly(attr.AttributeClass, false))
+            if (attr.AttributeClass != null && !attr.AttributeClass.IsVisibleOutsideOfAssembly(_settings.IncludeInternalSymbols))
             {
                 return;
             }
@@ -64,23 +64,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             CompatDifference difference = dt switch
             {
                 DifferenceType.Changed => new CompatDifference(
-                    leftMetadata, rightMetadata,
+                    leftMetadata,
+                    rightMetadata,
                     DiagnosticIds.CannotChangeAttribute,
                     string.Format(Resources.CannotChangeAttribute, attr.AttributeClass, containing),
                     DifferenceType.Changed,
-                    itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
+                    $"{itemRef}:[{docId}]"),
                 DifferenceType.Added => new CompatDifference(
-                    leftMetadata, rightMetadata,
+                    leftMetadata,
+                    rightMetadata,
                     DiagnosticIds.CannotAddAttribute,
                     string.Format(Resources.CannotAddAttribute, attr, containing),
                     DifferenceType.Added,
-                    itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
+                    $"{itemRef}:[{docId}]"),
                 DifferenceType.Removed => new CompatDifference(
-                    leftMetadata, rightMetadata,
+                    leftMetadata,
+                    rightMetadata,
                     DiagnosticIds.CannotRemoveAttribute,
                     string.Format(Resources.CannotRemoveAttribute, attr, containing),
                     DifferenceType.Removed,
-                    itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
+                    $"{itemRef}:[{docId}]"),
                 _ => throw new InvalidOperationException($"Unreachable DifferenceType '{dt}' encountered."),
             };
 
