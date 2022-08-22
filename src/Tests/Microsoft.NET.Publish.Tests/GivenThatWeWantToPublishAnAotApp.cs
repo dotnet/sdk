@@ -25,6 +25,10 @@ namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishAnAotApp : SdkTest
     {
+        /// <summary>
+        /// The test scenarios in a broad sense are covered below,
+        /// https://github.com/dotnet/runtime/issues/72415#issuecomment-1205540035
+        /// </summary>
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
 
         public GivenThatWeWantToPublishAnAotApp(ITestOutputHelper log) : base(log)
@@ -272,6 +276,8 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
                 // This will add a reference to a package that will also be automatically imported by the SDK
+                // The final ILCompiler packages that are used should be the onm defined in the explicit package reference but we
+                // don't have an easy way to validate the version
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
 
                 // Linux symbol files are embedded and require additional steps to be stripped to a separate file
@@ -361,18 +367,17 @@ namespace Microsoft.NET.Publish.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
             {
                 var projectName = "HellowWorldNativeAotApp";
+                // Setting a cross target RID will ensure that the SDK will download 2 runtime packages, host and target
                 var rid = "win-arm64";
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                // This will add a reference to a package that will also be automatically imported by the SDK
-                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
-                testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
-
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                
+                // We dont have a way of executing the application in this scenario but publish should succeed
                 publishCommand
                     .Execute($"/p:RuntimeIdentifier={rid}")
                     .Should().Pass();
