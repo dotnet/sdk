@@ -275,7 +275,7 @@ These components are defined in `Microsoft.TemplateEngine.Edge` and are part of 
 
 If the `binding` does not have prefix, or prefixed value cannot be evaluated the evaluation without prefix is performed as the fallback. 
 In case there are more than one component which returns the value, the component priority will be used to define the value to be bounded. In case of same priorities, the evaluation results in error.
-The template author needs to explicitly specify the prefix in this case.
+The template author needs to explicitly specify the prefix in this case. It is possible to restrict usage of prefix with setting `IBindSymbolSource.RequiresPrefixMatch` to `true`. 
 
 
 ## Registering the components

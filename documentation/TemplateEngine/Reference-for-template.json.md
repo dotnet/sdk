@@ -437,31 +437,8 @@ Values of `OrganizationalAuth`, `WindowsAuth`, `MultiOrgAuth`, `SingleOrgAuth`, 
 ```
 
 #### Bind symbol
+See (https://github.com/dotnet/templating/wiki/Binding-and-project-context-evaluation#bind-symbols).
 
-The symbol binds value from external sources. 
-By default, the following sources are available:
-- host parameters - parameters defined at certain host. For .NET SDK the following parameters are defined: `HostIdentifier: dotnetcli`, `GlobalJsonExists: true/false`.  Binding syntax is `host:<param name>`, example: `host:HostIdentifier`. 
-- environment variables - allows to bind environment allowed. Binding syntax is `env:<environment variable name>`, example: `env:MYENVVAR`. 
-
-It is also posible to bind the parameter without the prefix as the fallback behavior: `HostIdentifier`, `MYENVVAR`.
-
-|Name|Description|
-|---|---|
-|`type`|`bind`|
-|`binding`| Mandatory. The name of the source and parameter in the source to take the value from. The syntax follows: `<source prefix>:<parameter name>`.|
-|`replaces`|The text to be replaced by the symbol value in the template files content.|
-|`fileRename`|The portion of template filenames to be replaced by the symbol value.| 	 
-|`defaultValue`|The value assigned to the symbol if no value was provided from external source(s).|
-
- 
-##### Example  
-
-```json
-   "HostIdentifier": {
-      "type": "bind",
-      "binding": "host:HostIdentifier"
-    }
-```  
 
 ### Output Management
 |Name|Description|Default|

@@ -6,6 +6,7 @@
 | [Running template engine host](#template-engine-host) | `host` |
 | [Installed workloads](#installed-workloads) | `workload` |
 | [Current SDK version](#current-sdk-version) | `sdk-version` |
+| [Project capabilities](#project-capabilities) | `project-capability` |
 
 The feature is available since .NET SDK 7.0.100.
 The template may define the constraints all of which must be met in order for the template to be used.  In case constraints are not met, the template will be installed, however will not be visible or used by default. 
@@ -148,7 +149,7 @@ All the installed (queryable via `dotnet workload list`) as well as [extended](h
 - `type`: `workload`
 - `args` (string, array). Mandatory. List of names of supported workloads (running host need to have at least one of the requested workloads installed).
 
-  To see the list of instaled workloads run [`dotnet workload list`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-list). To see the list of available workloads run [`dotnet workload search`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-search)
+  To see the list of installed workloads run [`dotnet workload list`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-list). To see the list of available workloads run [`dotnet workload search`](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-workload-search)
 
 **Supported in**:
    - .NET SDK CLI (`dotnet new`)
@@ -175,7 +176,7 @@ All the installed (queryable via `dotnet workload list`) as well as [extended](h
 ## Current SDK Version
 Defines .NET SDK version(s) the template can be used on.
 
-Only the currently active SDK (queryable via `dotnet --version`, changeable by the [`global.json`](https://docs.microsoft.com/en-us/dotnet/core/tools/global-json)) is being considered. Other available SDKs (queryable via `dotnet --list-sdks`) are checked for possible match and result is reported in the evaluation output wuth possible remedy steps - the form of reporting is dependend on the templating host.
+Only the currently active SDK (queryable via `dotnet --version`, changeable by the [`global.json`](https://docs.microsoft.com/en-us/dotnet/core/tools/global-json)) is being considered. Other available SDKs (queryable via `dotnet --list-sdks`) are checked for possible match and result is reported in the evaluation output with possible remedy steps - the form of reporting is dependent on the templating host.
 
 **Configuration:**
 
@@ -198,8 +199,47 @@ Only the currently active SDK (queryable via `dotnet --version`, changeable by t
 ```json
    "current-with-previews": {
        "web-assembly": {
-           "type": "sdk-varsion",
+           "type": "sdk-version",
            "args": "7.*.*-*"
        },
    }
 ```
+## Project capabilities
+Defines [project capabilities](https://github.com/microsoft/VSProjectSystem/blob/master/doc/overview/about_project_capabilities.md) that the template requires.
+Commonly used with item templates to define the certain projects it is applicable to. 
+`dotnet new` attempts to find the closest project file using following rules:
+- the project in current directory or `--output` directory (matching `*.*proj` extension)
+- if not found, the parent of above and so on
+
+In case of ambiguity, the path to the project can be specified using `--project` option.
+
+Once project is located, its project capabilities are evaluated. The project should be restored, otherwise evaluation fails.
+Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview) are supported.
+
+**Configuration:**
+
+- `type`: `project-capability`
+- `args`: (string) project capability [expression](https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.shell.interop.vsprojectcapabilityexpressionmatcher) that should be satisfied by the project.
+
+**Supported in**:
+   - .NET SDK CLI (`dotnet new`)
+   - Visual Studio - TBD
+
+### Examples
+
+```json
+   "constraints": {
+       "CSharp": {
+           "type": "project-capability",
+           "args": "CSharp",
+       },
+   }
+```  
+```json
+   "constraints": {
+       "CSharpTest": {
+           "type": "project-capability",
+           "args": "CSharp & TestContainer",
+       },
+   }
+``` 
