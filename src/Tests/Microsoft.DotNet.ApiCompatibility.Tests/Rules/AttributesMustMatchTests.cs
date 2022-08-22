@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
+using System.IO;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
@@ -11,8 +13,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class AttributesMustMatchTests
     {
-        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, null));
-
         /*
          * Tests for:
          * - Types
@@ -666,12 +666,112 @@ new CompatDifference[] {
         [MemberData(nameof(MembersCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] want)
         {
+            using TempDirectory root = new();
+            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.Create(filePath).Dispose();
+            TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, new[] { filePath }));
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
             IEnumerable<CompatDifference> got = differ.GetDifferences(new[] { left }, new[] { right });
             Assert.Equal(want, got);
         }
+
+        [Fact]
+        public void TestExclusionsFilteredOut()
+        {
+            using TempDirectory root = new();
+            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.WriteAllText(filePath, "T:System.SerializableAttribute");
+            TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, new[] { filePath }));
+            string leftSyntax = @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  internal class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+
+  [Serializable]
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+            IEnumerable<CompatDifference> got = differ.GetDifferences(new[] { left }, new[] { right });
+            Assert.Empty(got);
+        }
     }
 
+    internal class TempDirectory : IDisposable
+    {
+        public const int MaxNameLength = 255;
+
+        /// <summary>Gets the created directory's path.</summary>
+        public string DirPath { get; private set; }
+
+        /// <summary>
+        /// Construct a random temp directory in the temp folder.
+        /// </summary>
+        public TempDirectory()
+            : this(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()))
+        {
+        }
+
+        public TempDirectory(string path)
+        {
+            DirPath = path;
+            Directory.CreateDirectory(path);
+        }
+
+        ~TempDirectory() { DeleteDirectory(); }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            DeleteDirectory();
+        }
+
+        public string GenerateRandomFilePath() => Path.Combine(DirPath, Path.GetRandomFileName());
+
+        protected virtual void DeleteDirectory()
+        {
+            try { Directory.Delete(DirPath, recursive: true); }
+            catch { /* Ignore exceptions on disposal paths */ }
+        }
+
+        /// <summary>
+        /// Generates a string with 255 random valid filename characters.
+        /// 255 is the max file/folder name length in NTFS and FAT32:
+        // https://docs.microsoft.com/en-us/windows/win32/fileio/filesystem-functionality-comparison?redirectedfrom=MSDN#limits
+        /// </summary>
+        /// <returns>A 255 length string with random valid filename characters.</returns>
+        public static string GetMaxLengthRandomName()
+        {
+            string guid = Guid.NewGuid().ToString("N");
+            return guid + new string('x', 255 - guid.Length);
+        }
+    }
 }

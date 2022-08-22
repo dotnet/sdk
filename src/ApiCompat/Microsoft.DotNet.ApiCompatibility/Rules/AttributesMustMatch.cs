@@ -18,103 +18,67 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     public class AttributesMustMatch : IRule
     {
         private readonly RuleSettings _settings;
-        private readonly HashSet<string> _attributesToExclude = new();
+        private readonly HashSet<string>? _attributesToExclude;
 
         public AttributesMustMatch(RuleSettings settings, IRuleRegistrationContext context, IEnumerable<string>? excludeAttributesFiles)
         {
             _settings = settings;
             if (excludeAttributesFiles != null)
             {
+                _attributesToExclude = new HashSet<string>();
                 ReadExclusions(excludeAttributesFiles);
+                context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
+                context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
             }
-            context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
-            context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
         private void ReadExclusions(IEnumerable<string> excludeAttributesFiles)
         {
             foreach (string filePath in excludeAttributesFiles)
             {
-                if (!File.Exists(filePath))
-                {
-                    throw new FileNotFoundException($"File {filePath} was not found.", filePath);
-                }
                 foreach (string id in File.ReadAllLines(filePath))
                 {
                     if (string.IsNullOrWhiteSpace(id) || id.StartsWith("#") || id.StartsWith("//"))
                     {
                         continue;
                     }
-                    _attributesToExclude.Add(id.Trim());
+                    _attributesToExclude?.Add(id.Trim());
                 }
             }
         }
 
-        private void RunOnTypeSymbol(
-            ITypeSymbol? left,
-            ITypeSymbol? right,
-            MetadataInformation leftMetadata,
-            MetadataInformation rightMetadata,
-            IList<CompatDifference> differences)
-        {
-            if (left is null || right is null)
-            {
-                return;
-            }
-
-            // Compare type parameter attributes.
-            if (left is INamedTypeSymbol leftNamed && right is INamedTypeSymbol rightNamed)
-            {
-                if (leftNamed.TypeParameters.Length == rightNamed.TypeParameters.Length)
-                {
-                    for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
-                    {
-                        ReportAttributeDifferences(
-                            left,
-                            left.GetDocumentationCommentId() + $"<{i}>",
-                            leftNamed.TypeParameters[i].GetAttributes(),
-                            rightNamed.TypeParameters[i].GetAttributes(),
-                            differences);
-                    }
-                }
-            }
-
-            ReportAttributeDifferences(
-                left,
-                left.GetDocumentationCommentId() ?? "",
-                left.GetAttributes(),
-                right.GetAttributes(),
-                differences);
-        }
-
-        private void AddDifference(IList<CompatDifference> differences, DifferenceType dt, ISymbol containing, string itemRef, AttributeData attr)
+        private void AddDifference(IList<CompatDifference> differences, DifferenceType dt, MetadataInformation leftMetadata, MetadataInformation rightMetadata, ISymbol containing, string itemRef, AttributeData attr)
         {
             string? docId = attr.AttributeClass?.GetDocumentationCommentId();
 
-            if (docId != null && _attributesToExclude.Contains(docId))
+            if (docId != null && _attributesToExclude != null && _attributesToExclude.Contains(docId))
             {
                 return;
             }
 
             CompatDifference difference = dt switch
             {
-                DifferenceType.Changed => CompatDifference.CreateWithDefaultMetadata(
+                DifferenceType.Changed => new CompatDifference(
+                    leftMetadata, rightMetadata,
                     DiagnosticIds.CannotChangeAttribute,
                     string.Format(Resources.CannotChangeAttribute, attr.AttributeClass, containing),
                     DifferenceType.Changed,
                     itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
-                DifferenceType.Added => CompatDifference.CreateWithDefaultMetadata(
+                DifferenceType.Added => new CompatDifference(
+                    leftMetadata, rightMetadata,
                     DiagnosticIds.CannotAddAttribute,
                     string.Format(Resources.CannotAddAttribute, attr, containing),
                     DifferenceType.Added,
                     itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
-                DifferenceType.Removed => CompatDifference.CreateWithDefaultMetadata(
+                DifferenceType.Removed => new CompatDifference(
+                    leftMetadata, rightMetadata,
                     DiagnosticIds.CannotRemoveAttribute,
                     string.Format(Resources.CannotRemoveAttribute, attr, containing),
                     DifferenceType.Removed,
                     itemRef + ":[" + attr.AttributeClass?.GetDocumentationCommentId() + "]"),
                 _ => throw new InvalidOperationException($"Unreachable DifferenceType '{dt}' encountered."),
             };
+
             differences.Add(difference);
         }
 
@@ -138,6 +102,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         private void ReportAttributeDifferences(ISymbol containing,
+                                                MetadataInformation leftMetadata,
+                                                MetadataInformation rightMetadata,
                                                 string itemRef,
                                                 IList<AttributeData> left,
                                                 IList<AttributeData> right,
@@ -183,7 +149,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // Attribute arguments exist on left but not right.
                             // Issue "changed" diagnostic.
-                            AddDifference(differences, DifferenceType.Changed, containing, itemRef, leftAttribute);
+                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
                         }
                     }
 
@@ -193,7 +159,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             // Attribute arguments exist on right but not left.
                             // Issue "changed" diagnostic.
-                            AddDifference(differences, DifferenceType.Changed, containing, itemRef, rightGroup.Attributes[i]);
+                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, rightGroup.Attributes[i]);
                         }
                     }
                 }
@@ -203,7 +169,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     // Loop over left and issue "removed" diagnostic for each one.
                     foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
-                        AddDifference(differences, DifferenceType.Removed, containing, itemRef, leftAttribute);
+                        AddDifference(differences, DifferenceType.Removed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
                     }
                 }
             }
@@ -219,9 +185,48 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // Loop over right and issue "added" diagnostic for each one.
                 foreach (AttributeData rightAttribute in rightGroup.Attributes)
                 {
-                    AddDifference(differences, DifferenceType.Added, containing, itemRef, rightAttribute);
+                    AddDifference(differences, DifferenceType.Added, leftMetadata, rightMetadata, containing, itemRef, rightAttribute);
                 }
             }
+        }
+
+        private void RunOnTypeSymbol(
+            ITypeSymbol? left,
+            ITypeSymbol? right,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences)
+        {
+            if (left is null || right is null)
+            {
+                return;
+            }
+
+            // Compare type parameter attributes.
+            if (left is INamedTypeSymbol leftNamed && right is INamedTypeSymbol rightNamed)
+            {
+                if (leftNamed.TypeParameters.Length == rightNamed.TypeParameters.Length)
+                {
+                    for (int i = 0; i < leftNamed.TypeParameters.Length; i++)
+                    {
+                        ReportAttributeDifferences(
+                            left,
+                            leftMetadata, rightMetadata,
+                            left.GetDocumentationCommentId() + $"<{i}>",
+                            leftNamed.TypeParameters[i].GetAttributes(),
+                            rightNamed.TypeParameters[i].GetAttributes(),
+                            differences);
+                    }
+                }
+            }
+
+            ReportAttributeDifferences(
+                left,
+                leftMetadata, rightMetadata,
+                left.GetDocumentationCommentId() ?? "",
+                left.GetAttributes(),
+                right.GetAttributes(),
+                differences);
         }
 
         private void RunOnMemberSymbol(
@@ -244,6 +249,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // compare return type attributes,
                 ReportAttributeDifferences(
                     left,
+                    leftMetadata, rightMetadata,
                     left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType,
                     leftMethod.GetReturnTypeAttributes(),
                     rightMethod.GetReturnTypeAttributes(),
@@ -256,6 +262,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     {
                         ReportAttributeDifferences(
                             left,
+                            leftMetadata, rightMetadata,
                             left.GetDocumentationCommentId() + $"${i}",
                             leftMethod.Parameters[i].GetAttributes(),
                             rightMethod.Parameters[i].GetAttributes(),
@@ -270,6 +277,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     {
                         ReportAttributeDifferences(
                             left,
+                            leftMetadata, rightMetadata,
                             left.GetDocumentationCommentId() + $"<{i}>",
                             leftMethod.TypeParameters[i].GetAttributes(),
                             rightMethod.TypeParameters[i].GetAttributes(),
@@ -280,6 +288,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             ReportAttributeDifferences(
                 left,
+                leftMetadata, rightMetadata,
                 left.GetDocumentationCommentId() ?? "",
                 left.GetAttributes(),
                 right.GetAttributes(),
