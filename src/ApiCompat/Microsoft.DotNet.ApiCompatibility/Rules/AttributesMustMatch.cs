@@ -106,6 +106,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 return Enumerable.SequenceEqual(left.NamedArguments, right.NamedArguments);
             }
+
             return left == right;
         }
 
@@ -219,7 +220,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     {
                         ReportAttributeDifferences(
                             left,
-                            leftMetadata, rightMetadata,
+                            leftMetadata,
+                            rightMetadata,
                             left.GetDocumentationCommentId() + $"<{i}>",
                             leftNamed.TypeParameters[i].GetAttributes(),
                             rightNamed.TypeParameters[i].GetAttributes(),
@@ -230,7 +232,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             ReportAttributeDifferences(
                 left,
-                leftMetadata, rightMetadata,
+                leftMetadata,
+                rightMetadata,
                 left.GetDocumentationCommentId() ?? "",
                 left.GetAttributes(),
                 right.GetAttributes(),
@@ -257,7 +260,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // compare return type attributes,
                 ReportAttributeDifferences(
                     left,
-                    leftMetadata, rightMetadata,
+                    leftMetadata,
+                    rightMetadata,
                     left.GetDocumentationCommentId() + "->" + leftMethod.ReturnType,
                     leftMethod.GetReturnTypeAttributes(),
                     rightMethod.GetReturnTypeAttributes(),
@@ -270,7 +274,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     {
                         ReportAttributeDifferences(
                             left,
-                            leftMetadata, rightMetadata,
+                            leftMetadata,
+                            rightMetadata,
                             left.GetDocumentationCommentId() + $"${i}",
                             leftMethod.Parameters[i].GetAttributes(),
                             rightMethod.Parameters[i].GetAttributes(),
@@ -285,7 +290,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     {
                         ReportAttributeDifferences(
                             left,
-                            leftMetadata, rightMetadata,
+                            leftMetadata,
+                            rightMetadata,
                             left.GetDocumentationCommentId() + $"<{i}>",
                             leftMethod.TypeParameters[i].GetAttributes(),
                             rightMethod.TypeParameters[i].GetAttributes(),
@@ -296,7 +302,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             ReportAttributeDifferences(
                 left,
-                leftMetadata, rightMetadata,
+                leftMetadata,
+                rightMetadata,
                 left.GetDocumentationCommentId() ?? "",
                 left.GetAttributes(),
                 right.GetAttributes(),
@@ -312,7 +319,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             public AttributeGroup(AttributeData attr)
             {
                 Representative = attr;
-                Seen = new List<bool>();
                 Add(attr);
             }
 
@@ -322,18 +328,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 Seen.Add(false);
             }
         }
+
         private class AttributeSet : IEnumerable<AttributeGroup>
         {
             // _set holds a set of attribute groups, each represented by an attribute class.
             // We use a List instead of a HashSet because in practice, the number of attributes
             // on a declaration is going to be extremely small (on the order of 1-3).
-            private readonly List<AttributeGroup> _set;
+            private readonly List<AttributeGroup> _set = new();
             private readonly RuleSettings _settings;
 
-            public AttributeSet(RuleSettings Settings, IList<AttributeData> attributes)
+            public AttributeSet(RuleSettings settings, IList<AttributeData> attributes)
             {
-                _set = new List<AttributeGroup>();
-                _settings = Settings;
+                _settings = settings;
                 for (int i = 0; i < attributes.Count; i++)
                 {
                     Add(attributes[i]);

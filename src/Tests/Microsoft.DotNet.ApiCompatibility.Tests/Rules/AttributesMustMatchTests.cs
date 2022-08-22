@@ -664,7 +664,7 @@ new CompatDifference[] {
         [Theory]
         [MemberData(nameof(TypesCases))]
         [MemberData(nameof(MembersCases))]
-        public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] want)
+        public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
             using TempDirectory root = new();
             string filePath = Path.Combine(root.DirPath, "exclusions.txt");
@@ -673,8 +673,8 @@ new CompatDifference[] {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            IEnumerable<CompatDifference> got = differ.GetDifferences(left, right);
-            Assert.Equal(want, got);
+            IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]
@@ -720,8 +720,8 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            IEnumerable<CompatDifference> got = differ.GetDifferences(left, right);
-            Assert.Empty(got);
+            IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
+            Assert.Empty(actual);
         }
     }
 }
