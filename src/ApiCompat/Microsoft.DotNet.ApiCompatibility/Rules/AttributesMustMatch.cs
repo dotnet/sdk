@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Abstractions;
+using Microsoft.DotNet.ApiCompatibility.Extensions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
@@ -52,6 +53,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             string? docId = attr.AttributeClass?.GetDocumentationCommentId();
 
             if (docId != null && _attributesToExclude != null && _attributesToExclude.Contains(docId))
+            {
+                return;
+            }
+
+            if (attr.AttributeClass != null && !SymbolExtensions.IsVisibleOutsideOfAssembly(attr.AttributeClass, false))
             {
                 return;
             }

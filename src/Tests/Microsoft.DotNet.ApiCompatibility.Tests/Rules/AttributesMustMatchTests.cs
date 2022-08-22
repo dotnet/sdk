@@ -39,7 +39,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -56,7 +56,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -77,7 +77,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -94,7 +94,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -116,7 +116,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -133,7 +133,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -156,7 +156,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -172,7 +172,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -198,17 +198,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -224,17 +224,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -258,17 +258,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -284,17 +284,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -318,17 +318,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -346,17 +346,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -382,17 +382,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -408,17 +408,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -442,17 +442,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -468,17 +468,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -502,17 +502,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -526,17 +526,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -559,17 +559,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First<[Bar] T1, [Foo(""S"", A = true, B = 0)] T2> {}
 }
@@ -580,17 +580,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First<[Baz] T1, [Foo(""T"")] T2> {}
 }
@@ -610,17 +610,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -634,17 +634,17 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A = false;
     public int B = 0;
   }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BarAttribute : Attribute { }
+  public class BarAttribute : Attribute { }
 
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class BazAttribute : Attribute { }
+  public class BazAttribute : Attribute { }
 
   public class First {
 
@@ -690,7 +690,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
@@ -706,7 +706,7 @@ namespace CompatTests
   using System;
   
   [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-  internal class FooAttribute : Attribute {
+  public class FooAttribute : Attribute {
     public FooAttribute(String s) {}
     public bool A;
     public int B;
