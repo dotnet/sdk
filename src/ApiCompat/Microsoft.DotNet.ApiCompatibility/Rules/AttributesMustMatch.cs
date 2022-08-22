@@ -26,24 +26,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             _settings = settings;
             if (excludeAttributesFiles != null)
             {
-                _attributesToExclude = new HashSet<string>();
-                ReadExclusions(excludeAttributesFiles);
+                IEnumerable<string> attributesToExclude = ReadExclusions(excludeAttributesFiles);
+                _attributesToExclude = new HashSet<string>(attributesToExclude);
                 context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
                 context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
             }
         }
 
-        private void ReadExclusions(IEnumerable<string> excludeAttributesFiles)
+        private static IEnumerable<string> ReadExclusions(IEnumerable<string> excludeAttributesFiles)
         {
             foreach (string filePath in excludeAttributesFiles)
             {
                 foreach (string id in File.ReadAllLines(filePath))
                 {
-                    if (string.IsNullOrWhiteSpace(id) || id.StartsWith("#") || id.StartsWith("//"))
+                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
                     {
-                        continue;
+                        yield return id.Trim();
                     }
-                    _attributesToExclude?.Add(id.Trim());
                 }
             }
         }
