@@ -341,6 +341,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         if (!x.Values.SequenceEqual(y.Values, this))
                             return false;
                         break;
+                    case TypedConstantKind.Type:
+                        if (!_settings.SymbolComparer.Equals((x.Value as INamedTypeSymbol)!, (y.Value as INamedTypeSymbol)!))
+                            return false;
+                        break;
                     default:
                         if (!Equals(x.Value, y.Value))
                             return false;
