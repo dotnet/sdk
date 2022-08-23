@@ -45,7 +45,8 @@ namespace Microsoft.DotNet.ApiCompatibility
             {
                 if (Directory.Exists(path))
                 {
-                    _referencePaths.Add(path, path);
+                    if (!_referencePaths.ContainsKey(path))
+                        _referencePaths.Add(path, path);
                 }
                 else
                 {
