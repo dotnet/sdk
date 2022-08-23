@@ -276,7 +276,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
                 // This will add a reference to a package that will also be automatically imported by the SDK
-                // The final ILCompiler packages that are used should be the onm defined in the explicit package reference but we
+                // The final ILCompiler packages that are used should be the ones defined in the explicit package reference but we
                 // don't have an easy way to validate the version
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
 
@@ -377,7 +377,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 
-                // We dont have a way of executing the application in this scenario but publish should succeed
+                // We don't have a way of executing the application in this scenario but publish should succeed
                 publishCommand
                     .Execute($"/p:RuntimeIdentifier={rid}")
                     .Should().Pass();
