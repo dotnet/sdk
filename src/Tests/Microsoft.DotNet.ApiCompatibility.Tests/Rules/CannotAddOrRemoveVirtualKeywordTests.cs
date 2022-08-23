@@ -203,5 +203,45 @@ namespace CompatTests
             };
             Assert.Equal(expected, differences);
         }
+
+        [Fact]
+        public static void InterfaceExample()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+public class A
+{
+    public virtual void F() {}
+}
+
+public class B : A
+{
+    sealed public override void F() {}
+}
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+public class A
+{
+    public virtual void F() {}
+}
+
+public class B : A
+{
+    sealed public override void F() {}
+}
+
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings());
+            CompatDifference[] expected = new CompatDifference[] { };
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
+            Assert.Equal(expected, differences);
+        }
     }
 }
