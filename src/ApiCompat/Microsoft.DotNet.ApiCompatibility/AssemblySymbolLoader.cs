@@ -23,7 +23,8 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
         /// value are the containing folder.
         /// </summary>
-        private readonly Dictionary<string, string> _referencePaths = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<AssemblyLoadWarning> _warnings = new();
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
@@ -45,18 +46,18 @@ namespace Microsoft.DotNet.ApiCompatibility
             {
                 if (Directory.Exists(path))
                 {
-                    if (!_referencePaths.ContainsKey(path))
-                        _referencePaths.Add(path, path);
+                    _referencePathDirectories.Add(path);
                 }
                 else
                 {
                     string assemblyName = Path.GetFileName(path);
-                    if (!_referencePaths.ContainsKey(assemblyName))
+                    if (!_referencePathFiles.ContainsKey(assemblyName))
                     {
                         string? directoryName = Path.GetDirectoryName(path);
                         if (directoryName != null)
                         {
-                            _referencePaths.Add(assemblyName, directoryName);
+                            _referencePathFiles.Add(assemblyName, directoryName);
+                            _referencePathDirectories.Add(path);
                         }
                     }
                 }
@@ -257,8 +258,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 {
                     // If a directory is passed in as a path, add that to the reference paths.
                     // Otherwise, if a file is passed in, add its parent directory to the reference paths.
-                    if (!_referencePaths.ContainsKey(path))
-                        _referencePaths.Add(path, path);
+                    _referencePathDirectories.Add(path);
 
                     foreach (string assembly in Directory.EnumerateFiles(path, "*.dll"))
                     {
@@ -270,8 +270,8 @@ namespace Microsoft.DotNet.ApiCompatibility
                     string? directory = Path.GetDirectoryName(path);
                     // If a directory is passed in as a path, add that to the reference paths.
                     // Otherwise, if a file is passed in, add its parent directory to the reference paths.
-                    if (!string.IsNullOrEmpty(directory) && !_referencePaths.ContainsKey(directory))
-                        _referencePaths.Add(directory, directory);
+                    if (!string.IsNullOrEmpty(directory))
+                        _referencePathDirectories.Add(directory);
 
                     result.Add(CreateOrGetMetadataReferenceFromPath(path, referenceAssemblyNamesToIgnore));
                 }
@@ -341,7 +341,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 
                 // First we try to see if a reference path for this specific assembly was passed in directly, and if so
                 // we use that.
-                if (_referencePaths.TryGetValue(name, out string? fullReferencePath))
+                if (_referencePathFiles.TryGetValue(name, out string? fullReferencePath))
                 {
                     // TODO: add version check and add a warning if it doesn't match?
                     using FileStream resolvedStream = File.OpenRead(Path.Combine(fullReferencePath, name));
@@ -353,7 +353,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 {
                     bool found = false;
 
-                    foreach (string referencePathDirectory in _referencePaths.Values)
+                    foreach (string referencePathDirectory in _referencePathDirectories)
                     {
                         string potentialPath = Path.Combine(referencePathDirectory, name);
                         if (File.Exists(potentialPath))
