@@ -34,7 +34,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new CannotSealType(settings, context),
                 new EnumsMustMatch(settings, context),
                 new MembersMustExist(settings, context),
-                new AttributesMustMatch(settings, context, _excludeAttributesFiles)
+                new AttributesMustMatch(settings, context, _excludeAttributesFiles),
+                new CannotChangeParameterName(settings, context),
             };
         }
     }
