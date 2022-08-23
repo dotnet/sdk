@@ -99,12 +99,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     return false;
                 }
 
-                if (!Enumerable.SequenceEqual(left.ConstructorArguments, right.ConstructorArguments))
+                ConstantComparer constantComparer = new(_settings);
+
+                if (!Enumerable.SequenceEqual(left.ConstructorArguments, right.ConstructorArguments, constantComparer))
                 {
                     return false;
                 }
 
-                return Enumerable.SequenceEqual(left.NamedArguments, right.NamedArguments);
+                return Enumerable.SequenceEqual(left.NamedArguments, right.NamedArguments, new NamedArgumentComparer(constantComparer));
             }
 
             return left == right;
@@ -308,6 +310,30 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 left.GetAttributes(),
                 right.GetAttributes(),
                 differences);
+        }
+
+        private class NamedArgumentComparer : IEqualityComparer<KeyValuePair<string, TypedConstant>>
+        {
+            private readonly ConstantComparer _constantComparer;
+
+            public NamedArgumentComparer(ConstantComparer constantComparer) => _constantComparer = constantComparer;
+
+            public bool Equals(KeyValuePair<string, TypedConstant> x, KeyValuePair<string, TypedConstant> y) =>
+                x.Key.Equals(y.Key) && _constantComparer.Equals(x.Value, y.Value);
+
+            public int GetHashCode([DisallowNull] KeyValuePair<string, TypedConstant> obj) => throw new NotImplementedException();
+        }
+
+        private class ConstantComparer : IEqualityComparer<TypedConstant>
+        {
+            private readonly RuleSettings _settings;
+
+            public ConstantComparer(RuleSettings settings) => _settings = settings;
+
+            public bool Equals(TypedConstant x, TypedConstant y) =>
+                x.Kind == y.Kind && x.Value!.Equals(y.Value) && _settings.SymbolComparer.Equals(x.Type!, y.Type!);
+
+            public int GetHashCode([DisallowNull] TypedConstant obj) => throw new NotImplementedException();
         }
 
         private class AttributeGroup
