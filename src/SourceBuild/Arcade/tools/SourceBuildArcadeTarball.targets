@@ -14,7 +14,7 @@
 
   <PropertyGroup>
     <ArtifactsDir>$(RepoRoot)artifacts/</ArtifactsDir>
-    <TarballDir>$(ArtifactsDir)tarball/</TarballDir>
+    <TarballDir Condition=" '$(TarballDir)' == '' ">$(ArtifactsDir)tarball/</TarballDir>
     <TarballRootDir>$([MSBuild]::EnsureTrailingSlash('$(TarballDir)'))</TarballRootDir>
     <TarballSourceDir>$(TarballRootDir)src/</TarballSourceDir>
     <TarballGitInfoDir>$(TarballRootDir)git-info/</TarballGitInfoDir>
@@ -234,8 +234,8 @@
       SourceBuildMetadataDir="$(TarballGitInfoDir)"
       Dependencies="@(SourceBuildRepos)" />
 
-    <Message Text="--> Dependencies for $(TarballVersionDetailsFile):" Importance="High" />
-    <Message Text="-->     [@(SourceBuildRepos)]" Importance="High" />
+    <Message Text="--> Dependencies for $(TarballVersionDetailsFile):" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
+    <Message Text="-->     %(SourceBuildRepos.SourceBuildRepoName) / %(SourceBuildRepos.Sha)" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
     <MSBuild Projects="$(MSBuildProjectFile)"
       Condition=" '@(SourceBuildRepos)' != '' "
       Targets="CloneRepoAndDependentsRecursive"
@@ -285,7 +285,7 @@
 
     <Message Text="Restoring text only packages..." Importance="High" />
 
-    <MSBuild Projects="../Arcade/tools/TextOnlyPackages.csproj"
+    <MSBuild Projects="$(RepoRoot)src/SourceBuild/Arcade/tools/TextOnlyPackages.csproj"
              Properties="TargetPackagesPath=$(TextOnlyPackageRestoreDir)"
              Targets="Restore" />
   </Target>
@@ -296,7 +296,7 @@
       <EngCommonContent Include="$(RepoRoot)eng/common/**/*" />
     </ItemGroup>
 
-    <Copy
+    <Copy Condition=" '$(InitializeVMR)' != 'true' "
       SourceFiles="$(TarballGitInfoDir)runtime.props"
       DestinationFiles="$(TarballGitInfoDir)runtime-portable.props" />
 
@@ -428,4 +428,3 @@
   </Target>
 
 </Project>
-

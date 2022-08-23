@@ -1,0 +1,140 @@
+{
+    "defaults": {
+        "defaultRef": "main",
+        "exclude": [
+            "**/*.dll",
+            "**/*.Dll",
+            "**/*.exe",
+            "**/*.pdb",
+            "**/*.mdb",
+            "**/*.zip",
+            "**/*.nupkg"
+        ]
+    },
+    "mappings": [
+        {
+            "name": "arcade",
+            "defaultRemote": "https://github.com/dotnet/arcade",
+            "include": [
+                "*.*",
+                ".*",
+                "eng/**/*",
+                "src/**/*",
+                "scripts/**/*"
+            ],
+            "exclude": [
+                "**/tests/**/*",
+                "**/*.Tests/**/*"
+            ]
+        },
+        {
+            "name": "aspnetcore",
+            "defaultRemote": "https://github.com/dotnet/aspnetcore"
+        },
+        {
+            "name": "clicommandlineparser",
+            "defaultRemote": "https://github.com/dotnet/clicommandlineparser"
+        },
+        {
+            "name": "command-line-api",
+            "defaultRemote": "https://github.com/dotnet/command-line-api"
+        },
+        {
+            "name": "deployment-tools",
+            "defaultRemote": "https://github.com/dotnet/deployment-tools"
+        },
+        {
+            "name": "diagnostics",
+            "defaultRemote": "https://github.com/dotnet/diagnostics"
+        },
+        {
+            "name": "format",
+            "defaultRemote": "https://github.com/dotnet/format"
+        },
+        {
+            "name": "fsharp",
+            "defaultRemote": "https://github.com/dotnet/fsharp"
+        },
+        {
+            "name": "installer",
+            "defaultRemote": "https://github.com/dotnet/installer",
+            "defaultRef": "vmr"
+        },
+        {
+            "name": "linker",
+            "defaultRemote": "https://github.com/dotnet/linker"
+        },
+        {
+            "name": "msbuild",
+            "defaultRemote": "https://github.com/dotnet/msbuild"
+        },
+        {
+            "name": "nuget-client",
+            "defaultRemote": "https://github.com/NuGet/NuGet.Client",
+            "defaultRef": "dev"
+        },
+        {
+            "name": "razor-compiler",
+            "defaultRemote": "https://github.com/dotnet/razor-compiler"
+        },
+        {
+            "name": "roslyn",
+            "defaultRemote": "https://github.com/dotnet/roslyn"
+        },
+        {
+            "name": "roslyn-analyzers",
+            "defaultRemote": "https://github.com/dotnet/roslyn-analyzers"
+        },
+        {
+            "name": "runtime",
+            "defaultRemote": "https://github.com/dotnet/runtime"
+        },
+        {
+            "name": "sdk",
+            "defaultRemote": "https://github.com/dotnet/sdk"
+        },
+        {
+            "name": "source-build",
+            "defaultRemote": "https://github.com/dotnet/source-build"
+        },
+        {
+            "name": "source-build-externals",
+            "defaultRemote": "https://github.com/dotnet/source-build-externals",
+            "exclude": [
+                "**/humanizer/samples/**/*.js"
+            ]
+        },
+        {
+            "name": "source-build-reference-packages",
+            "defaultRemote": "https://github.com/dotnet/source-build-reference-packages"
+        },
+        {
+            "name": "sourcelink",
+            "defaultRemote": "https://github.com/dotnet/sourcelink"
+        },
+        {
+            "name": "symreader",
+            "defaultRemote": "https://github.com/dotnet/symreader"
+        },
+        {
+            "name": "templating",
+            "defaultRemote": "https://github.com/dotnet/templating"
+        },
+        {
+            "name": "test-templates",
+            "defaultRemote": "https://github.com/dotnet/test-templates"
+        },
+        {
+            "name": "vstest",
+            "defaultRemote": "https://github.com/microsoft/vstest"
+        },
+        {
+            "name": "xdt",
+            "defaultRemote": "https://github.com/dotnet/xdt"
+        },
+        {
+            "name": "xliff-tasks",
+            "defaultRemote": "https://github.com/dotnet/xliff-tasks"
+        }
+    ]
+}

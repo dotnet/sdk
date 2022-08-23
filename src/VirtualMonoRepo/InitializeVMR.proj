@@ -1,0 +1,121 @@
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
+  <PropertyGroup>
+    <ArtifactsDir>$(RepoRoot)artifacts/</ArtifactsDir>
+    <VirtualMonoRepoTasksAssembly>$(ArtifactsDir)bin/VirtualMonoRepo.Tasks/$(Configuration)/net7.0/VirtualMonoRepo.Tasks.dll</VirtualMonoRepoTasksAssembly>
+
+    <VmrDir Condition=" '$(VmrDir)' != '' ">$([MSBuild]::EnsureTrailingSlash('$(VmrDir)'))</VmrDir>
+    <TmpDir Condition=" '$(TmpDir)' == '' ">$(ArtifactsDir)tmp/</TmpDir>
+    <VmrDefaultBranch Condition=" '$(VmrDefaultBranch)' == '' ">main</VmrDefaultBranch>
+
+    <!-- We set this for the source build targets to work well -->
+    <TarballDir>$(VmrDir)</TarballDir>
+    <InitializeVMR>true</InitializeVMR>
+  </PropertyGroup>
+
+  <Import Project="../SourceBuild/Arcade/tools/SourceBuildArcadeTarball.targets" />
+
+  <!-- Pull back in some properties from the tarball defaults -->
+  <PropertyGroup>
+    <VmrGitInfoDir>$(TarballGitInfoDir)</VmrGitInfoDir>
+    <VmrSourceDir>$(TarballSourceDir)</VmrSourceDir>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.VirtualMonoRepo.Tasks.VirtualMonoRepo_Initialize" AssemblyFile="$(VirtualMonoRepoTasksAssembly)" />
+
+  <Target Name="Build" DependsOnTargets="InitializeVMR" />
+
+  <!--
+    This target initializes a fresh VMR from scratch by assembling it similarly to the tarball.
+    Instead of cloning the repositories, we pull the sources via the `darc vmr initialize` command.
+    Most of the targets are reused from the tarball generation process (SourceBuildArcadeTarball.targets).
+  -->
+  <Target Name="InitializeVMR" DependsOnTargets="GenerateFullNuGetVersion;
+                                                 GenerateVersionFile;
+                                                 InitializeCleanVmr;
+                                                 CopyTarballContent;
+                                                 CommitInitialContent;
+                                                 SetupSelfGithubInfo;
+                                                 InitializeRepoAndDependentsRecursive;
+                                                 CommitGitInfoFiles;
+                                                 CopyTextOnlyPackages;
+                                                 CommitTextOnlyPackages">
+    <Message Text="VMR was successfully initialized in '$(VmrDir)'" Importance="High" />
+  </Target>
+
+  <Target Name="InitializeCleanVmr">
+    <RemoveDir Directories='$(VmrDir)' Condition=" EXISTS('$(VmrDir)') " />
+    <MakeDir Directories="$(VmrDir)" />
+    <MakeDir Directories="$(VmrGitInfoDir)" Condition=" '$(VmrGitInfoDir)' != '' " />
+    <MakeDir Directories="$(TmpDir)" Condition=" !EXISTS('$(TmpDir)') " />
+
+    <Exec Command="git init -b $(VmrDefaultBranch)" WorkingDirectory="$(VmrDir)" />
+  </Target>
+
+  <Target Name="CommitInitialContent">
+    <Exec Command="git add -A" WorkingDirectory="$(VmrDir)" />
+    <Exec Command="git commit -m 'VMR initialized'" WorkingDirectory="$(VmrDir)" />
+  </Target>
+
+  <Target Name="InitializeRepoAndDependentsRecursive"
+    DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention">
+
+    <Message Text="--> Initializing repo $(SourceBuildRepoName)" Importance="High" />
+    <PropertyGroup>
+      <SourceDir>$(SourceBuildRepoName)/</SourceDir>
+      <IndividualRepoSourceDir>$(VmrSourceDir)$(SourceDir)</IndividualRepoSourceDir>
+      <IndividualRepoSourceEngDir>$(IndividualRepoSourceDir)eng/</IndividualRepoSourceEngDir>
+      <IndividualRepoVersionDetailsFile>$(IndividualRepoSourceEngDir)Version.Details.xml</IndividualRepoVersionDetailsFile>
+    </PropertyGroup>
+
+    <VirtualMonoRepo_Initialize
+      Repository="$(SourceBuildRepoName)"
+      Revision="$(RepoSha)"
+      VmrPath="$(VmrDir)"
+      TmpPath="$(TmpDir)" />
+
+    <Message Text=" -> Done initializing repo $(SourceBuildRepoName)" Importance="High" />
+
+    <Tarball_ReadSourceBuildIntermediateNupkgDependencies
+      VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(IndividualRepoVersionDetailsFile)))"
+      SourceBuildIntermediateNupkgPrefix="$(SourceBuildIntermediateNupkgPrefix)"
+      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)"
+      ConvertInternalRepos="$(ConvertInternalRepos)">
+      <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
+    </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
+
+    <!-- Remove repo if it has already be cloned at any sha.  This results in
+         The commit sha for the cloned repo in the tarball being the one that
+         was first encountered. -->
+    <ItemGroup>
+      <SourceBuildRepos Remove="@(SourceBuildRepos)" Condition=" EXISTS('$(VmrGitInfoDir)%(SourceBuildRepoName).props')" />
+    </ItemGroup>
+
+    <Tarball_WriteSourceRepoProperties
+      SourceBuildMetadataDir="$(VmrGitInfoDir)"
+      Dependencies="@(SourceBuildRepos)" />
+
+    <Message Text="--> Dependencies for $(IndividualRepoVersionDetailsFile):" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
+    <Message Text="-->     %(SourceBuildRepos.SourceBuildRepoName) / %(SourceBuildRepos.Sha)" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
+    <MSBuild Projects="$(MSBuildProjectFile)"
+      Condition=" '@(SourceBuildRepos)' != '' "
+      Targets="InitializeRepoAndDependentsRecursive"
+      Properties="SourceBuildRepoName=%(SourceBuildRepos.SourceBuildRepoName);RepoSha=%(SourceBuildRepos.Sha)" />
+
+  </Target>
+
+  <Target Name="CommitGitInfoFiles">
+    <Copy
+      SourceFiles="$(VmrGitInfoDir)runtime.props"
+      DestinationFiles="$(VmrGitInfoDir)runtime-portable.props" />
+
+    <Exec Command="git add git-info" WorkingDirectory="$(VmrDir)" />
+    <Exec Command="git commit -m 'Initialized git-info files'" WorkingDirectory="$(VmrDir)" />
+  </Target>
+
+  <Target Name="CommitTextOnlyPackages">
+    <Exec Command="git add packages/text-only" WorkingDirectory="$(VmrDir)" />
+    <Exec Command="git commit -m 'Initialized text-only packages'" WorkingDirectory="$(VmrDir)" />
+  </Target>
+
+</Project>
