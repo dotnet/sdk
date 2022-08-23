@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                         if (directoryName != null)
                         {
                             _referencePathFiles.Add(assemblyName, directoryName);
-                            _referencePathDirectories.Add(path);
+                            _referencePathDirectories.Add(directoryName);
                         }
                     }
                 }
