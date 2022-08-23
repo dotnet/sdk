@@ -14,10 +14,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     {
         private readonly RuleSettings _settings;
 
-        public CannotChangeParameterName(RuleSettings settings, IRuleRegistrationContext context)
+        public CannotChangeParameterName(RuleSettings settings, IRuleRegistrationContext context, bool enableRuleCannotChangeParameterName)
         {
             _settings = settings;
-            context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
+            if (enableRuleCannotChangeParameterName)
+            {
+                context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
+            }
         }
 
         private void RunOnMemberSymbol(

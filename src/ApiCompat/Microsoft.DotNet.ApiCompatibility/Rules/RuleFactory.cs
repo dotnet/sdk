@@ -15,10 +15,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
         private readonly IReadOnlyCollection<string>? _excludeAttributesFiles;
 
-        public RuleFactory(ICompatibilityLogger log, IReadOnlyCollection<string>? excludeAttributesFiles = null)
+        private readonly bool _enableRuleCannotChangeParameterName;
+
+        public RuleFactory(ICompatibilityLogger log, IReadOnlyCollection<string>? excludeAttributesFiles = null, bool enableRuleCannotChangeParameterName = false)
         {
             _log = log;
             _excludeAttributesFiles = excludeAttributesFiles;
+            _enableRuleCannotChangeParameterName = enableRuleCannotChangeParameterName;
         }
 
         /// <inheritdoc />
@@ -35,7 +38,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new EnumsMustMatch(settings, context),
                 new MembersMustExist(settings, context),
                 new AttributesMustMatch(settings, context, _excludeAttributesFiles),
-                new CannotChangeParameterName(settings, context),
+                new CannotChangeParameterName(settings, context, _enableRuleCannotChangeParameterName),
             };
         }
     }

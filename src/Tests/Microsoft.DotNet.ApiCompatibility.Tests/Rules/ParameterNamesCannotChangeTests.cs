@@ -85,7 +85,7 @@ namespace CompatTests
         [MemberData(nameof(TestCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
         {
-            TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeParameterName(settings, context));
+            TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeParameterName(settings, context, true));
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
