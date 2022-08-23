@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -23,8 +23,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// Dictionary that holds the paths to help loading dependencies. Keys will be assembly name and 
         /// value are the containing folder.
         /// </summary>
-        private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
-        private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _referencePaths = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<AssemblyLoadWarning> _warnings = new();
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
@@ -46,17 +45,17 @@ namespace Microsoft.DotNet.ApiCompatibility
             {
                 if (Directory.Exists(path))
                 {
-                    _referencePathDirectories.Add(path);
+                    _referencePaths.Add(path, path);
                 }
                 else
                 {
                     string assemblyName = Path.GetFileName(path);
-                    if (!_referencePathFiles.ContainsKey(assemblyName))
+                    if (!_referencePaths.ContainsKey(assemblyName))
                     {
                         string? directoryName = Path.GetDirectoryName(path);
                         if (directoryName != null)
                         {
-                            _referencePathFiles.Add(assemblyName, directoryName);
+                            _referencePaths.Add(assemblyName, directoryName);
                         }
                     }
                 }
@@ -253,11 +252,12 @@ namespace Microsoft.DotNet.ApiCompatibility
             List<MetadataReference> result = new();
             foreach (string path in paths)
             {
-                string? directory = null;
-
                 if (Directory.Exists(path))
                 {
-                    directory = path;
+                    // If a directory is passed in as a path, add that to the reference paths.
+                    // Otherwise, if a file is passed in, add its parent directory to the reference paths.
+                    _referencePaths.Add(path, path);
+
                     foreach (string assembly in Directory.EnumerateFiles(path, "*.dll"))
                     {
                         result.Add(CreateOrGetMetadataReferenceFromPath(assembly, referenceAssemblyNamesToIgnore));
@@ -265,18 +265,18 @@ namespace Microsoft.DotNet.ApiCompatibility
                 }
                 else if (File.Exists(path))
                 {
-                    directory = Path.GetDirectoryName(path);
+                    string? directory = Path.GetDirectoryName(path);
+                    // If a directory is passed in as a path, add that to the reference paths.
+                    // Otherwise, if a file is passed in, add its parent directory to the reference paths.
+                    if (!string.IsNullOrEmpty(directory))
+                        _referencePaths.Add(directory, directory);
+
                     result.Add(CreateOrGetMetadataReferenceFromPath(path, referenceAssemblyNamesToIgnore));
                 }
                 else
                 {
                     throw new FileNotFoundException(string.Format(Resources.ProvidedPathToLoadBinariesFromNotFound, path));
                 }
-
-                // If a directory is passed in as a path, add that to the reference paths.
-                // Otherwise, if a file is passed in, add its parent directory to the reference paths.
-                if (!string.IsNullOrEmpty(directory))
-                    _referencePathDirectories.Add(directory);
             }
 
             return result;
@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 
                 // First we try to see if a reference path for this specific assembly was passed in directly, and if so
                 // we use that.
-                if (_referencePathFiles.TryGetValue(name, out string? fullReferencePath))
+                if (_referencePaths.TryGetValue(name, out string? fullReferencePath))
                 {
                     // TODO: add version check and add a warning if it doesn't match?
                     using FileStream resolvedStream = File.OpenRead(Path.Combine(fullReferencePath, name));
@@ -351,7 +351,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                 {
                     bool found = false;
 
-                    foreach (string referencePathDirectory in _referencePathDirectories)
+                    foreach (string referencePathDirectory in _referencePaths.Values)
                     {
                         string potentialPath = Path.Combine(referencePathDirectory, name);
                         if (File.Exists(potentialPath))
