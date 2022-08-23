@@ -257,7 +257,8 @@ namespace Microsoft.DotNet.ApiCompatibility
                 {
                     // If a directory is passed in as a path, add that to the reference paths.
                     // Otherwise, if a file is passed in, add its parent directory to the reference paths.
-                    _referencePaths.Add(path, path);
+                    if (!_referencePaths.ContainsKey(path))
+                        _referencePaths.Add(path, path);
 
                     foreach (string assembly in Directory.EnumerateFiles(path, "*.dll"))
                     {
@@ -269,7 +270,7 @@ namespace Microsoft.DotNet.ApiCompatibility
                     string? directory = Path.GetDirectoryName(path);
                     // If a directory is passed in as a path, add that to the reference paths.
                     // Otherwise, if a file is passed in, add its parent directory to the reference paths.
-                    if (!string.IsNullOrEmpty(directory))
+                    if (!string.IsNullOrEmpty(directory) && !_referencePaths.ContainsKey(directory))
                         _referencePaths.Add(directory, directory);
 
                     result.Add(CreateOrGetMetadataReferenceFromPath(path, referenceAssemblyNamesToIgnore));
