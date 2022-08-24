@@ -94,8 +94,8 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                         return factory.IndicateSuccess(r.Paths, sdkReference.Version);
                     case EmptyResolutionResult r:
                         return factory.IndicateSuccess(Enumerable.Empty<string>(), sdkReference.Version, r.propertiesToAdd, r.itemsToAdd);
-                    case NullResolutionResult:
-                        return null;
+                    case NullResolutionResult r:
+                        return factory.IndicateFailure(r.failureReason);
                 }
 
                 throw new InvalidOperationException("Unknown resolutionResult type: " + this.GetType());
