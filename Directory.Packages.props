@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.0.2</NuGetVersion>
+    <NuGetVersion>6.3.0-rc.128</NuGetVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +12,7 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.4.1" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.1-beta1.21413.1" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.2-beta1.22216.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />

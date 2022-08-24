@@ -1,0 +1,592 @@
+{
+  "version": "1.0",
+  "tasks": [
+    {
+      "taskType": "trigger",
+      "capabilityId": "AutoMerge",
+      "subCapability": "AutoMerge",
+      "version": "1.0",
+      "id": "JrwlBTuoi",
+      "config": {
+        "mergeType": "merge",
+        "label": "auto-merge",
+        "taskName": "Auto merge PRs",
+        "minMinutesOpen": "10",
+        "deleteBranches": true,
+        "requireAllStatuses": false,
+        "requireAllStatuses_exemptList": [
+          "codecov",
+          "dependabot",
+          "DotNet Maestro - Int",
+          "DotNet Maestro",
+          "msftbot"
+        ],
+        "removeLabelOnPush": true,
+        "minimumNumberOfCheckRuns": 0,
+        "silentMode": true
+      },
+      "disabled": false
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "nzNwskQ49iViNBPaRxLfW",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "user": "dotnet-maestro[bot]",
+                "label": "auto-merge"
+              }
+            },
+            {
+              "operator": "and",
+              "operands": [
+                {
+                  "name": "activitySenderHasPermissions",
+                  "parameters": {
+                    "permissions": "admin"
+                  }
+                },
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "dotnet-bot"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Auto-approve auto-merge PRs",
+        "actions": [
+          {
+            "name": "approvePullRequest",
+            "parameters": {
+              "comment": "Auto-approve"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "ZTyahSJVtqvo9NAEYE6wr",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "bodyContains",
+                  "parameters": {
+                    "bodyPattern": "Updates sdk.version"
+                  }
+                }
+              ]
+            },
+            {
+              "operator": "or",
+              "operands": [
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "dotnet-maestro[bot]"
+                  }
+                },
+                {
+                  "name": "isActivitySender",
+                  "parameters": {
+                    "user": "dotnet-maestro"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Auto-approve maestro PRs",
+        "actions": [
+          {
+            "name": "approvePullRequest",
+            "parameters": {
+              "comment": "Auto-approve"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "8iJRY9vWAHBda1J2fEQO2",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "prTargetsBranch",
+              "parameters": {
+                "branchName": "main"
+              }
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "merged"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Milestone tracking",
+        "actions": [
+          {
+            "name": "addMilestone",
+            "parameters": {
+              "milestoneName": "Next"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "jD6WDRtWPw12Nxv4J9blI",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "dotnet-maestro[bot]"
+              }
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "name": "bodyContains",
+              "parameters": {
+                "bodyPattern": "Updates sdk.version"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Require PR approval before merging SDK change",
+        "actions": [
+          {
+            "name": "requestChangesPullRequest",
+            "parameters": {
+              "comment": "This PR changes the .NET SDK version. Review required from before merging."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "oxst8BvJCMSxlF_Kgj6PL",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": "dotnet-bot"
+              }
+            },
+            {
+              "name": "titleContains",
+              "parameters": {
+                "titlePattern": "Localized file check-in"
+              }
+            },
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Auto-approve OneLoc PRs",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "auto-merge"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "scheduled",
+      "capabilityId": "ScheduledSearch",
+      "subCapability": "ScheduledSearch",
+      "version": "1.1",
+      "id": "Cb1EmjvddCFWM26Opf-Ob",
+      "config": {
+        "frequency": [
+          {
+            "weekDay": 0,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 1,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 2,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 3,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 4,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 5,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          },
+          {
+            "weekDay": 6,
+            "hours": [
+              1,
+              4,
+              7,
+              10,
+              13,
+              16,
+              19,
+              22
+            ],
+            "timezoneOffset": -7
+          }
+        ],
+        "searchTerms": [
+          {
+            "name": "isOpen",
+            "parameters": {}
+          },
+          {
+            "name": "isIssue",
+            "parameters": {}
+          },
+          {
+            "name": "hasLabel",
+            "parameters": {
+              "label": "Needs More Info"
+            }
+          },
+          {
+            "name": "noActivitySince",
+            "parameters": {
+              "days": 10
+            }
+          }
+        ],
+        "taskName": "Close \"Need More Info\" Issues",
+        "actions": [
+          {
+            "name": "closeIssue",
+            "parameters": {}
+          },
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "Closing this issue as we've seen no reply to the request for more information. If you are able to get the requested information, please add it to the issue and we will retriage it. "
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssueCommentResponder",
+      "version": "1.0",
+      "id": "dGi-k4L-D0ysRFrsVdPNj",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isOpen",
+              "parameters": {}
+            },
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "Needs More Info"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "taskName": "Remove \"Need More Info\" on comment",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "Needs More Info"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "id": "V__sbQWlWpb_8rU-zoDJq",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "isAction",
+              "parameters": {
+                "action": "opened"
+              }
+            },
+            {
+              "operator": "and",
+              "operands": [
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "activitySenderHasPermissions",
+                      "parameters": {
+                        "permissions": "admin"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "activitySenderHasPermissions",
+                      "parameters": {
+                        "permissions": "write"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "github-actions[bot]"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "dotnet-maestro[bot]"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "dotnet-maestro-bot[bot]"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "dotnet-maestro-bot"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "dotnet-maestro"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "operator": "not",
+                  "operands": [
+                    {
+                      "name": "isActivitySender",
+                      "parameters": {
+                        "user": "github-actions"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Label Community Pull Requests",
+        "actions": [
+          {
+            "name": "addLabel",
+            "parameters": {
+              "label": "Community"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "userGroups": []
+}

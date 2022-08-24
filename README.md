@@ -77,7 +77,7 @@ Note: if the user specifies a severity here it is used for both style and analyz
  - `--diagnostics`: A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.
  - `--severity`: The severity of diagnostics to fix. Allowed values are info, warn, and error.
 
-#### Unique options for `dotnet cleanup analyzers`
+#### Unique options for `dotnet format analyzers`
  - `--diagnostics`: A space separated list of diagnostic ids to use as a filter when fixing code style or 3rd party issues.
  - `--severity`: The severity of diagnostics to fix. Allowed values are info, warn, and error.
 
@@ -93,7 +93,7 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 | `dotnet format <workspace> --severity error`                     | Formats, fixes codestyle errors, and fixes 3rd party analyzer errors.                              |
 | `dotnet format whitespace <workspace> --folder`                  | Formats a particular folder and subfolders.                                                        |
 | `dotnet format style <workspace>`                                | Fixes only codestyle analyzer warnings.                                                            |
-| `dotnet format style <workspace> --serverity error --no-restore` | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
+| `dotnet format style <workspace> --severity error --no-restore` | Fixes only codestyle analyzer errors without performing an implicit restore.                       |
 | `dotnet format style <workspace> --diagnostics IDE0005`          | Fixes only codestyle analyzer warnings for the IDE0005 diagnostic.                                 |
 | `dotnet format analyzers <workspace> --severity error`           | Fixes only 3rd party analyzer errors.                                                              |
 | `dotnet format --include Program.cs Utility\Logging.cs`          | Formats the files Program.cs and Utility\Logging.cs                                                |
@@ -105,12 +105,12 @@ Add `format` after `dotnet` and before the command arguments that you want to ru
 
 #### How to install Development Builds
 
-Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet6&view=versions&package=dotnet-format&protocolType=NuGet).
+Development builds of `dotnet-format` are being hosted on Azure Packages. You can visit the [dotnet-format Azure Packages page](https://dev.azure.com/dnceng/public/_packaging?_a=package&feed=dotnet7&view=versions&package=dotnet-format&protocolType=NuGet).
 
 You can install the latest build of the tool using the following command.
 
 ```console
-dotnet tool install -g dotnet-format --version "6.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json
+dotnet tool install -g dotnet-format --version "7.*" --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet7/nuget/v3/index.json
 ```
 
 Note: After installing .NET 6 Preview 7 SDK or higher you will need to run the dotnet-format global tool by invoking `dotnet-format`. Invoking `dotnet format` will invoke the SDK's copy of dotnet-format.
@@ -122,8 +122,8 @@ You can build and package the tool using the following commands. The instruction
 ```console
 build -pack
 # The final line from the build will read something like
-# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.6.0.0-dev.nupkg'.
-# Use the value that is in the form `6.0.0-dev` as the version in the next command.
+# Successfully created package '..\artifacts\packages\Debug\Shipping\dotnet-format.7.0.0-dev.nupkg'.
+# Use the value that is in the form `7.0.0-dev` as the version in the next command.
 dotnet tool install --add-source .\artifacts\packages\Debug\Shipping -g dotnet-format --version <version>
 dotnet format
 ```
