@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// <inheritdoc />
         public IRule[] CreateRules(RuleSettings settings, IRuleRegistrationContext context)
         {
-            return new IRule[]
+            List<IRule> rules = new()
             {
                 new AssemblyIdentityMustMatch(_log, settings, context),
                 new CannotAddAbstractMember(settings, context),
@@ -36,8 +36,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new EnumsMustMatch(settings, context),
                 new MembersMustExist(settings, context),
                 new AttributesMustMatch(settings, context, _excludeAttributesFiles),
-                new CannotChangeParameterName(settings, context, _enableRuleCannotChangeParameterName),
             };
+
+            if (_enableRuleCannotChangeParameterName)
+            {
+                rules.Add(new CannotChangeParameterName(settings, context));
+            }
+
+            return rules.ToArray();
         }
     }
 }

@@ -11,7 +11,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
     public class ParameterNamesCannotChangeTests
     {
-        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeParameterName(settings, context, true));
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotChangeParameterName(settings, context));
+
         public static TheoryData<string, string, CompatDifference[]> TestCases => new()
         {
             // Method

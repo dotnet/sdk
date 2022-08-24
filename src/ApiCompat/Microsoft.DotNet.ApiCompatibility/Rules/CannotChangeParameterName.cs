@@ -13,13 +13,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class CannotChangeParameterName : IRule
     {
-        public CannotChangeParameterName(RuleSettings settings, IRuleRegistrationContext context, bool enableRuleCannotChangeParameterName)
-        {
-            if (enableRuleCannotChangeParameterName)
-            {
-                context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
-            }
-        }
+        public CannotChangeParameterName(RuleSettings settings, IRuleRegistrationContext context) =>
+            context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
 
         private void RunOnMemberSymbol(
             ISymbol? left,
