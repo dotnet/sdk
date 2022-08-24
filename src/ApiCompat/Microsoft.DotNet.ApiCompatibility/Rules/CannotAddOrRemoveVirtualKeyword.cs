@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
         }
 
+        private static bool isSealed(ISymbol sym) => sym.IsSealed || (!sym.IsVirtual && !sym.IsAbstract);
+
         private void RunOnMemberSymbol(ISymbol? left, ISymbol? right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
         {
             // Members must exist
@@ -29,10 +31,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            // TODO: Skip interfaces for now, until the compatibility rules for interface
-            // members are clarified: https://github.com/dotnet/sdk/issues/26169.
             if (leftContainingType.TypeKind == TypeKind.Interface || rightContainingType.TypeKind == TypeKind.Interface)
             {
+                if (!isSealed(left) && isSealed(right))
+                {
+                    // Introducing the sealed keyword to an interface method is a breaking change.
+                    differences.Add(new CompatDifference(
+                        leftMetadata,
+                        rightMetadata,
+                        DiagnosticIds.CannotAddSealedToInterfaceMember,
+                        string.Format(Resources.CannotAddSealedToInterfaceMember, right),
+                        DifferenceType.Added,
+                        right));
+                }
                 return;
             }
 

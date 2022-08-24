@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotAddOrRemoveVirtualKeyword(settings, context));
 
+        private static bool IsNetFramework => RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
+
         private static string CreateType(string s, params object[] args) => string.Format(@"
 namespace CompatTests {{
   public{0} First
@@ -205,42 +207,38 @@ namespace CompatTests
         }
 
         [Fact]
-        public static void InterfaceExample()
+        public static void EnsureDiagnosticWhenAddingSealedToInterfaceMember()
         {
+            if (IsNetFramework)
+            {
+                return;
+            }
             string leftSyntax = @"
 namespace CompatTests
 {
-public class A
-{
-    public virtual void F() {}
-}
-
-public class B : A
-{
-    sealed public override void F() {}
-}
+  public interface First {
+    public void F() {}
+  }
 }
 ";
             string rightSyntax = @"
 namespace CompatTests
 {
-public class A
-{
-    public virtual void F() {}
-}
-
-public class B : A
-{
-    sealed public override void F() {}
-}
-
+  public interface First {
+    public sealed void F() {}
+  }
 }
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings());
-            CompatDifference[] expected = new CompatDifference[] { };
+            CompatDifference[] expected = new[]
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddSealedToInterfaceMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.F")
+            };
+
             IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
+
             Assert.Equal(expected, differences);
         }
     }
