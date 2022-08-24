@@ -12,27 +12,36 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
-    <PackageReference Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
-    <PackageReference Include="Microsoft.ILVerification" Version="$(MicrosoftILVerificationVersion)" />
-    <PackageReference Include="Microsoft.NET.Sdk.IL" Version="$(MicrosoftNETSdkILVersion)" />
-    <PackageReference Include="Microsoft.NETCore.ILAsm" Version="$(MicrosoftNETCoreILAsmVersion)" />
-    <PackageReference Include="Microsoft.NETCore.ILDAsm" Version="$(MicrosoftNETCoreILDAsmVersion)" />
-    <PackageReference Include="Microsoft.NETCore.TestHost" Version="$(MicrosoftNETCoreTestHostVersion)" />
-    <PackageReference Include="runtime.linux-arm64.Microsoft.NETCore.ILAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)" />
-    <PackageReference Include="runtime.linux-arm64.Microsoft.NETCore.ILDAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)" />
-    <PackageReference Include="runtime.linux-arm64.Microsoft.NETCore.TestHost" Version="$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)" />
-    <PackageReference Include="runtime.linux-arm64.runtime.native.System.IO.Ports" Version="$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)" />
-    <PackageReference Include="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)" />
-    <PackageReference Include="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)" />
-    <PackageReference Include="runtime.linux-x64.Microsoft.NETCore.TestHost" Version="$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)" />
-    <PackageReference Include="runtime.linux-x64.runtime.native.System.IO.Ports" Version="$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)" />
-    <PackageReference Include="runtime.linux-musl-x64.Microsoft.NETCore.ILAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)" />
-    <PackageReference Include="runtime.linux-musl-x64.Microsoft.NETCore.ILDAsm" Version="$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)" />
-    <PackageReference Include="runtime.linux-musl-x64.Microsoft.NETCore.TestHost" Version="$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)" />
+        <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
+    <PackageDownload Include="Microsoft.NET.HostModel" Version="[$(MicrosoftNETHostModelVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Sdk.IL" Version="[$(MicrosoftNETSdkILVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.ILDAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.Microsoft.NETCore.TestHost" Version="[$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-x64.runtime.native.System.IO.Ports" Version="[$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.ILDAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-musl-x64.Microsoft.NETCore.TestHost" Version="[$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)]" />
     <!-- There's no nuget package for runtime.linux-musl-x64.runtime.native.System.IO.Ports
     <PackageReference Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" Version="$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)" />
     -->
+    <!-- Packages needed to bootstrap arm64 -->
+    <PackageDownload Include="Microsoft.Aspnetcore.App.Runtime.linux-arm64" Version="[$(MicrosoftAspNetCoreAppRuntimeLinuxx64Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Crossgen2.linux-arm64" Version="[$(MicrosoftNETCoreAppCrossgen2LinuxX64Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.linux-arm64" Version="[$(MicrosoftNETCoreAppHostLinuxX64Version)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.linux-arm64" Version="[$(MicrosoftNETCoreAppRuntimeLinuxX64Version)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.DotNet.IlCompiler" Version="[$(RuntimeLinuxX64MicrosoftDotNetIlCompilerVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetAppHost" Version="[$(RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHost" Version="[$(RuntimeLinuxX64MicrosoftNETCoreDotNetHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostPolicy" Version="[$(RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.DotNetHostResolver" Version="[$(RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.ILDAsm" Version="[$(RuntimeLinuxX64MicrosoftNETCoreILDAsmVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.Microsoft.NETCore.TestHost" Version="[$(RuntimeLinuxX64MicrosoftNETCoreTestHostVersion)]" />
+    <PackageDownload Include="runtime.linux-arm64.runtime.native.System.IO.Ports" Version="[$(RuntimeLinuxX64RuntimeNativeSystemIOPortsVersion)]" />
   </ItemGroup>
 
   <Target Name="BuildBoostrapPreviouslySourceBuilt" AfterTargets="Restore">
@@ -61,7 +70,7 @@
     <Message Text="  Replacing restored files in $(UnpackedTarPath)" Importance="High" />
     <MSBuild Projects="$(MSBuildProjectFile)"
       Targets="CopyDownloadedPackage"
-      Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageReference.Identity);PackageVersion=%(PackageReference.Version)" />
+      Properties="SourcePath=$(RestorePackagesPath);DestinationPath=$(UnpackedTarPath);PackageName=%(PackageDownload.Identity);PackageVersion=%(PackageDownload.Version)" />
 
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
