@@ -14,14 +14,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     public class CannotAddOrRemoveVirtualKeyword : IRule
     {
         private readonly RuleSettings _settings;
+        private static bool isSealed(ISymbol sym) => sym.IsSealed || (!sym.IsVirtual && !sym.IsAbstract);
 
         public CannotAddOrRemoveVirtualKeyword(RuleSettings settings, IRuleRegistrationContext context)
         {
             _settings = settings;
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
         }
-
-        private static bool isSealed(ISymbol sym) => sym.IsSealed || (!sym.IsVirtual && !sym.IsAbstract);
 
         private void RunOnMemberSymbol(ISymbol? left, ISymbol? right, ITypeSymbol leftContainingType, ITypeSymbol rightContainingType, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
         {
@@ -44,6 +43,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         DifferenceType.Added,
                         right));
                 }
+
                 return;
             }
 
