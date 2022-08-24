@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Collections.Immutable;
+using Microsoft.NET.Sdk.Localization;
 
 #if NET
 using Microsoft.DotNet.Cli;
@@ -114,7 +115,9 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             IDictionary<string, SdkResultItem> itemsToAdd
         ) : ResolutionResult;
 
-        public sealed record NullResolutionResult() : ResolutionResult;
+        public sealed record NullResolutionResult(
+            IEnumerable<string> failureReason
+            ) : ResolutionResult;
 
         private static ResolutionResult Resolve(string sdkReferenceName, IWorkloadManifestProvider manifestProvider, IWorkloadResolver workloadResolver)
         {
@@ -169,15 +172,18 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                         return new EmptyResolutionResult(propertiesToAdd, itemsToAdd);
                     }
                 }
+                else
+                {
+                    return new NullResolutionResult(new List<string>() { Strings.MissingWorkloadPathOrVersion });
+                }
             }
-            return new NullResolutionResult();
         }
 
         public ResolutionResult Resolve(string sdkReferenceName, string dotnetRootPath, string sdkVersion, string userProfileDir)
         {
             if (!_enabled)
             {
-                return new NullResolutionResult();
+                return new NullResolutionResult(new List<string>() { Strings.WorkloadResolverDisabled });
             }
 
             ResolutionResult resolutionResult;

@@ -147,6 +147,12 @@
   <data name="MissingWorkloadPackVersion" xml:space="preserve">
     <value>Missing version for workload pack '{0}'</value>
   </data>
+  <data name="MissingWorkloadPathOrVersion" xml:space="preserve">
+    <value>The WorkloadResolver failed to find workload path "{0}" or its version.</value>
+  </data>
+  <data name="WorkloadResolverDisabled" xml:space="preserve">
+    <value>The WorkloadResolver was disabled.</value>
+  </data>
   <data name="UnexpectedTokenAtOffset" xml:space="preserve">
     <value>Unexpected token '{0}' at offset {1}</value>
   </data>

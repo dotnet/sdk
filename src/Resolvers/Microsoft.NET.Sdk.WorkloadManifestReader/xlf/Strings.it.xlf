@@ -92,6 +92,11 @@
         <target state="translated">Versione mancante per il pacchetto '{0}' del carico di lavoro</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingWorkloadPathOrVersion">
+        <source>The WorkloadResolver failed to find workload path "{0}" or its version.</source>
+        <target state="new">The WorkloadResolver failed to find workload path "{0}" or its version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RedirectWorkloadHasOtherKeys">
         <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
         <target state="translated">Il carico di lavoro '{0}' di reindirizzamento ha chiavi diverse da ' Redirect-to '</target>
@@ -120,6 +125,11 @@
       <trans-unit id="UnresolvedWorkloadRedirect">
         <source>Unresolved target '{0}' for workload redirect '{1}' in manifest '{2}' [{3}]</source>
         <target state="translated">Destinazione non risolta '{0}' per il reindirizzamento del carico di lavoro '{1}' nel manifesto '{2}' [{3}]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadResolverDisabled">
+        <source>The WorkloadResolver was disabled.</source>
+        <target state="new">The WorkloadResolver was disabled.</target>
         <note />
       </trans-unit>
     </body>

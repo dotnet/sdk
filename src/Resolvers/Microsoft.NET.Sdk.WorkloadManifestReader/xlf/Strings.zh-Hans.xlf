@@ -92,6 +92,11 @@
         <target state="translated">工作负载包“{0}”版本缺失</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingWorkloadPathOrVersion">
+        <source>The WorkloadResolver failed to find workload path "{0}" or its version.</source>
+        <target state="new">The WorkloadResolver failed to find workload path "{0}" or its version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="RedirectWorkloadHasOtherKeys">
         <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
         <target state="translated">重定向工作负荷“{0}”具有“重定向到”以外的键</target>
@@ -120,6 +125,11 @@
       <trans-unit id="UnresolvedWorkloadRedirect">
         <source>Unresolved target '{0}' for workload redirect '{1}' in manifest '{2}' [{3}]</source>
         <target state="translated">工作负载未解析的目标“{0}”重定向到清单“{2}”[{3}] 中的“{1}”</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadResolverDisabled">
+        <source>The WorkloadResolver was disabled.</source>
+        <target state="new">The WorkloadResolver was disabled.</target>
         <note />
       </trans-unit>
     </body>
