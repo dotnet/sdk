@@ -12,9 +12,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     public class RuleFactory : IRuleFactory
     {
         private readonly ICompatibilityLogger _log;
-
         private readonly IReadOnlyCollection<string>? _excludeAttributesFiles;
-
         private readonly bool _enableRuleCannotChangeParameterName;
 
         public RuleFactory(ICompatibilityLogger log, IReadOnlyCollection<string>? excludeAttributesFiles = null, bool enableRuleCannotChangeParameterName = false)
