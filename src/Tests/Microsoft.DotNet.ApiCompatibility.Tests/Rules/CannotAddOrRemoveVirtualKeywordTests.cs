@@ -206,13 +206,11 @@ namespace CompatTests
             Assert.Equal(expected, differences);
         }
 
+        // Don't run this test on .NET Framework, because default interface methods weren't introduced until C# 8.
+#if !NETFRAMEWORK
         [Fact]
         public static void EnsureDiagnosticWhenAddingSealedToInterfaceMember()
         {
-            if (IsNetFramework)
-            {
-                return;
-            }
             string leftSyntax = @"
 namespace CompatTests
 {
@@ -241,5 +239,6 @@ namespace CompatTests
 
             Assert.Equal(expected, differences);
         }
+#endif
     }
 }

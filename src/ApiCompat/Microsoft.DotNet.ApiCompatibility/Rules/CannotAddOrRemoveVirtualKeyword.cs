@@ -14,7 +14,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     public class CannotAddOrRemoveVirtualKeyword : IRule
     {
         private readonly RuleSettings _settings;
-        private static bool isSealed(ISymbol sym) => sym.IsSealed || (!sym.IsVirtual && !sym.IsAbstract);
+
+        private static bool IsSealed(ISymbol sym) => sym.IsSealed || (!sym.IsVirtual && !sym.IsAbstract);
 
         public CannotAddOrRemoveVirtualKeyword(RuleSettings settings, IRuleRegistrationContext context)
         {
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             if (leftContainingType.TypeKind == TypeKind.Interface || rightContainingType.TypeKind == TypeKind.Interface)
             {
-                if (!isSealed(left) && isSealed(right))
+                if (!IsSealed(left) && IsSealed(right))
                 {
                     // Introducing the sealed keyword to an interface method is a breaking change.
                     differences.Add(new CompatDifference(
