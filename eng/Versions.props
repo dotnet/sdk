@@ -19,8 +19,8 @@
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
     <MicrosoftNetCompilersToolsetPackageVersion>4.3.0-3.22423.10</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
-    <SystemCommandLineVersion>2.0.0-beta4.22371.2</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.4.0-alpha.22371.2</SystemCommandLineRenderingVersion>
+    <SystemCommandLineVersion>2.0.0-beta4.22402.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.4.0-alpha.22402.1</SystemCommandLineRenderingVersion>
   </PropertyGroup>
   <!--
     Other Dependency versions
