@@ -1,4 +1,5 @@
 {
+    "patchesPath": "src/installer/src/SourceBuild/tarball/patches",
     "defaults": {
         "defaultRef": "main",
         "exclude": [
@@ -58,11 +59,18 @@
         {
             "name": "installer",
             "defaultRemote": "https://github.com/dotnet/installer",
-            "defaultRef": "vmr"
+            "exclude": [
+                "src/SourceBuild/tarball/content/**/*"
+            ]
         },
         {
             "name": "linker",
             "defaultRemote": "https://github.com/dotnet/linker"
+        },
+        {
+            "name": "llvm-project",
+            "defaultRemote": "https://github.com/dotnet/llvm-project",
+            "defaultRef": "dotnet/main"
         },
         {
             "name": "msbuild",
