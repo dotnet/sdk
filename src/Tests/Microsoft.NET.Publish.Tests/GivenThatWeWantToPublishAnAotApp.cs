@@ -27,7 +27,7 @@ namespace Microsoft.NET.Publish.Tests
     {
         /// <summary>
         /// The test scenarios in a broad sense are covered below,
-        /// https://github.com/dotnet/runtime/issues/72415#issuecomment-1205540035
+        /// https://github.com/dotnet/runtime/blob/main/src/coreclr/nativeaot/docs/compiling.md
         /// </summary>
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
 
@@ -362,7 +362,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
+        public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
             {
@@ -397,7 +397,30 @@ namespace Microsoft.NET.Publish.Tests
 
                 // This will add a reference to a package that will also be automatically imported by the SDK
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
-                testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Should().Pass();
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
+            {
+                var projectName = "HellowWorldNativeAotApp";
+                var rid = "win-arm64";
+
+                var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+
+                // This will add a reference to a package that will also be automatically imported by the SDK
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.1.22416.1"));
 
                 var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
