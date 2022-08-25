@@ -21,11 +21,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     internal class TestTemplateSetup
     {
         private readonly string _configFile;
+        private readonly TemplateConfigModel _configModel;
 
         private IEngineEnvironmentSettings _environmentSettings;
 
         private IDictionary<string, string> _sourceFiles;
-        private readonly TemplateConfigModel _configModel;
+
         private string _sourceBaseDir;
 
         private IMountPoint _sourceMountPoint;

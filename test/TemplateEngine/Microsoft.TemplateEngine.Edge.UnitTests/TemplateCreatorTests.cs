@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 }
 ";
 
-        const string? XmlConditionWithinMsBuildConditionSource = @"
+        private const string? XmlConditionWithinMsBuildConditionSource = @"
 <Project>
     <ItemGroup Condition=""'$(paramA)' == 'True'"">
         <!-- X -->
@@ -54,12 +54,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 </Project>
 ";
 
-        const string XmlConditionWithinMsBuildConditionOutputOnFalse = @"
+        private const string XmlConditionWithinMsBuildConditionOutputOnFalse = @"
 <Project>
 </Project>
 ";
 
-        const string XmlConditionWithinMsBuildConditionOutputOnTrue = @"
+        private const string XmlConditionWithinMsBuildConditionOutputOnTrue = @"
 <Project>
     <ItemGroup>
         <!-- X -->
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 </Project>
 ";
 
-        const string? MsBuildConditionWithinXmlConditionSource = @"
+        private const string? MsBuildConditionWithinXmlConditionSource = @"
 <Project>
     <!-- X -->
     <!--#if (paramA)-->
@@ -82,13 +82,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 </Project>
 ";
 
-        const string MsBuildConditionWithinXmlConditionOutputOnFalse = @"
+        private const string MsBuildConditionWithinXmlConditionOutputOnFalse = @"
 <Project>
     <!-- X -->
 </Project>
 ";
 
-        const string MsBuildConditionWithinXmlConditionOutputOnTrue = @"
+        private const string MsBuildConditionWithinXmlConditionOutputOnTrue = @"
 <Project>
     <!-- X -->
     <ItemGroup>

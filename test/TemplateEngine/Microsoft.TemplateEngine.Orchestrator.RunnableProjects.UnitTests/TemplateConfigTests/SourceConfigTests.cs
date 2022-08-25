@@ -33,12 +33,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Exclude = new [] { "**/*.config" },
+                        Exclude = new[] { "**/*.config" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                Include = new [] { "core.config" }
+                                Include = new[] { "core.config" }
 
                             }
                         }
@@ -74,12 +74,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = new [] { "**/*.txt" },
+                        Include = new[] { "**/*.txt" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = new [] { "copy.me" },
+                                CopyOnly = new[] { "copy.me" },
                             }
                         }
                     }
@@ -120,12 +120,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = new [] { "**/*.me" },
+                        Include = new[] { "**/*.me" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = new [] { "copy.me" }
+                                CopyOnly = new[] { "copy.me" }
                             }
                         }
                     }
@@ -164,12 +164,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 {
                     new ExtendedFileSource()
                     {
-                        Include = new [] { "*copy.me" },
+                        Include = new[] { "*copy.me" },
                         Modifiers = new List<SourceModifier>()
                         {
                             new SourceModifier()
                             {
-                                CopyOnly = new [] { "**/*.me" }
+                                CopyOnly = new[] { "**/*.me" }
                             }
                         }
                     }
@@ -212,11 +212,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         {
                             new SourceModifier()
                             {
-                                Exclude = new [] { "*.xyz" }
+                                Exclude = new[] { "*.xyz" }
                             },
                             new SourceModifier()
                             {
-                                Include = new [] { "include.xyz" }
+                                Include = new[] { "include.xyz" }
                             }
                         }
                     }
@@ -262,11 +262,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         {
                             new SourceModifier()
                             {
-                                Include = new [] { "*.xyz" }
+                                Include = new[] { "*.xyz" }
                             },
                             new SourceModifier()
                             {
-                                Exclude = new [] { "exclude.xyz" }
+                                Exclude = new[] { "exclude.xyz" }
                             },
                         }
                     }

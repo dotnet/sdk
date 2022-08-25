@@ -12,9 +12,9 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
 {
     public class ExportCommandFailureTests : IDisposable
     {
-        private string _workingDirectory;
-
         private readonly ITestOutputHelper _log;
+
+        private string _workingDirectory;
 
         public ExportCommandFailureTests(ITestOutputHelper log)
         {

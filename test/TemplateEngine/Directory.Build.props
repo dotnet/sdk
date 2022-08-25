@@ -5,6 +5,4 @@
   <PropertyGroup>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
-
-  <Import Project="$(RepositoryEngineeringDir)AnalyzersForTests.props" />
 </Project>

@@ -10,7 +10,7 @@ using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class TemplateConfigTestHelpers
+    public static class TemplateConfigTestHelpers
     {
         internal static void SetupFileSourceMatchersOnGlobalRunSpec(MockGlobalRunSpec runSpec, FileSourceMatchInfo source)
         {
