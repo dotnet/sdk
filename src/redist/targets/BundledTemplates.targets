@@ -22,10 +22,10 @@
 
   <ItemGroup>
     <Bundled80Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Web.ItemTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" UseVersionForTemplateInstallPath="true" />
-    <Bundled80Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
+    <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
+    <Bundled80Templates Include="Microsoft.DotNet.Web.ItemTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
+    <Bundled80Templates Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" UseVersionForTemplateInstallPath="true" />
+    <Bundled80Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
     
     <Bundled80Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates80PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled80Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates80PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
