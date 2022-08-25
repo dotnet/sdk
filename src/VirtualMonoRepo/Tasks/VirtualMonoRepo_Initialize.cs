@@ -39,9 +39,8 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     private async Task<bool> ExecuteAsync()
     {
-        var factory = _serviceProvider.Value.GetRequiredService<IVmrManagerFactory>();
-        var vmrManager = await factory.CreateVmrManager(_serviceProvider.Value, VmrPath, TmpPath);
-        await vmrManager.InitializeVmr(Repository, Revision, false, _cancellationToken.Token);
+        var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
+        await vmrInitializer.InitializeVmr(Repository, Revision, false, _cancellationToken.Token);
         return true;
     }
 
@@ -49,9 +48,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     private IServiceProvider CreateServiceProvider() => new ServiceCollection()
         .AddLogging(b => b.AddConsole().AddFilter(l => l >= LogLevel.Information))
-        .AddTransient<IProcessManager>(sp => ActivatorUtilities.CreateInstance<ProcessManager>(sp, "git"))
-        .AddSingleton<ISourceMappingParser, SourceMappingParser>()
-        .AddSingleton<IVmrManagerFactory, VmrManagerFactory>()
         .AddSingleton<IRemoteFactory>(sp => ActivatorUtilities.CreateInstance<RemoteFactory>(sp, TmpPath))
+        .AddVmrManagers("git", sp => new VmrManagerConfiguration(VmrPath, TmpPath))
         .BuildServiceProvider();
 }
