@@ -15,8 +15,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
     {
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new CannotAddOrRemoveVirtualKeyword(settings, context));
 
-        private static bool IsNetFramework => RuntimeInformation.FrameworkDescription.StartsWith(".NET Framework", StringComparison.OrdinalIgnoreCase);
-
         private static string CreateType(string s, params object[] args) => string.Format(@"
 namespace CompatTests {{
   public{0} First
