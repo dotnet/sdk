@@ -99,8 +99,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // but since VB doesn't properly support Span, just don't consider it
                 switch (constantOpt.Value)
                 {
-                    case (byte)0 or (short)0 or 0 or (long)0 or
-                        (sbyte)0 or (ushort)0 or (uint)0 or (ulong)0 or
+                    case (byte)0 or (short)0 or 0 or 0L or
+                        (sbyte)0 or (ushort)0 or 0U or 0UL or
                         false or '\0':
                         return true;
 
