@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class DirectedGraphTests
     {
-        private static IEnumerable<object?[]> DirectedGraphHasCycleData()
+        public static IEnumerable<object?[]> DirectedGraphHasCycleData()
         {
             List<int> empty = new List<int>();
 
@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             }
         }
 
-        private static IEnumerable<object?[]> DirectedGraphSubgraphData()
+        public static IEnumerable<object?[]> DirectedGraphSubgraphData()
         {
             HashSet<int> empty = new HashSet<int>();
 

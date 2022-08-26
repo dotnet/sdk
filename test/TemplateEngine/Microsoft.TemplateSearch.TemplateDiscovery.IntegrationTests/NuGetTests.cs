@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using FluentAssertions;
 using Microsoft.TemplateSearch.TemplateDiscovery.NuGet;
 using Newtonsoft.Json.Linq;
 using NuGet.Protocol;
@@ -38,8 +39,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     Assert.True(packageInfo.TotalDownloads > 0);
                     Assert.True(packageInfo.Verified);
                     Assert.Contains("Microsoft", packageInfo.Owners);
-                    Assert.NotEmpty(packageInfo.Description);
-                    Assert.NotEmpty(packageInfo.IconUrl);
+                    packageInfo.Description.Should().NotBeNullOrEmpty();
+                    packageInfo.IconUrl.Should().NotBeNullOrEmpty();
                 }
                 else
                 {

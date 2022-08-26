@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];
-            Assert.Equal(newValue, expectedValue);
+            Assert.Equal(expectedValue, newValue);
         }
 
         [Fact(DisplayName = nameof(TestRegexMatchMacroFalse))]
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];
-            Assert.Equal(newValue, expectedValue);
+            Assert.Equal(expectedValue, newValue);
         }
     }
 }

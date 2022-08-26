@@ -212,16 +212,21 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
             Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
+
+            Assert.NotNull(result.CreationEffects);
+            Assert.NotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
+            Assert.NotNull(result.CreationEffects.FileChanges);
+
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationEffects?.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects?.FileChanges.Count);
+            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
             Assert.Equal(
                 expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects?.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -240,10 +245,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult?.PrimaryOutputs.Count);
+            Assert.NotNull(result.CreationResult);
+
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult?.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))
@@ -286,17 +293,21 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             Edge.Template.ITemplateCreationResult result = await bootstrapper.GetCreationEffectsAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects?.CreationResult.PrimaryOutputs.Count);
+            Assert.NotNull(result.CreationEffects);
+            Assert.NotNull(result.CreationEffects.CreationResult.PrimaryOutputs);
+            Assert.NotNull(result.CreationEffects.FileChanges);
+
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationEffects.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationEffects?.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationEffects.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             IFileChangeComparer comparer = new IFileChangeComparer();
-            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects?.FileChanges.Count);
+            Assert.Equal(expectedResult.FileChanges.Count, result.CreationEffects.FileChanges.Count);
             Assert.Equal(
                 expectedResult.FileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects?.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -316,10 +327,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             ITemplateInfo template = foundTemplates.Single(template => template.Info.ShortNameList.Contains($"TestAssets.{templateName}")).Info;
             var result = await bootstrapper.CreateAsync(template, name, output, parametersDict).ConfigureAwait(false);
 
-            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult?.PrimaryOutputs.Count);
+            Assert.NotNull(result.CreationResult);
+
+            Assert.Equal(expectedResult.CreationResult.PrimaryOutputs.Count, result.CreationResult.PrimaryOutputs.Count);
             Assert.Equal(
                 expectedResult.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
-                result.CreationResult?.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
+                result.CreationResult.PrimaryOutputs.Select(po => po.Path).OrderBy(s => s, StringComparer.OrdinalIgnoreCase),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (string file in expectedResult.FileChanges.Where(fc => fc.ChangeKind != ChangeKind.Delete).Select(fc => fc.TargetRelativePath))

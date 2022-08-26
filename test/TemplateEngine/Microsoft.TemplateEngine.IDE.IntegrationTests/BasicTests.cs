@@ -48,9 +48,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new FileChange ("bar/bar.cs", "test/test.cs", ChangeKind.Create),
             };
             IFileChangeComparer comparer = new IFileChangeComparer();
+            Assert.NotNull(result.CreationEffects?.FileChanges);
+
             Assert.Equal(
                 expectedFileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects?.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
@@ -93,9 +95,10 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 new FileChange ("Program.cs", "Program.cs", ChangeKind.Create),
             };
             IFileChangeComparer comparer = new IFileChangeComparer();
+            Assert.NotNull(result.CreationEffects?.FileChanges);
             Assert.Equal(
                 expectedFileChanges.OrderBy(s => s, comparer),
-                result.CreationEffects?.FileChanges.OrderBy(s => s, comparer),
+                result.CreationEffects.FileChanges.OrderBy(s => s, comparer),
                 comparer);
         }
 
