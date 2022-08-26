@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             if (IsBrowserDocumentRequest(context))
             {
                 // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
-                using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
+                await using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
                 var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
                 context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(responseStreamWrapper));
 
@@ -39,6 +40,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 {
                     context.Features.Set(originalBodyFeature);
                 }
+
+                // Flushing the stream will perform the script injection, if applicable.
+                // We do this eagerly in order to react to failed script injection attempts.
+                await responseStreamWrapper.FlushAsync();
 
                 if (responseStreamWrapper.IsHtmlResponse && _logger.IsEnabled(LogLevel.Debug))
                 {

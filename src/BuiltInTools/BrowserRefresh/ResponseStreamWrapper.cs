@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     public class ResponseStreamWrapper : Stream
     {
         private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
+        private readonly MemoryStream _internalStream;
         private readonly Stream _baseStream;
         private readonly HttpContext _context;
         private readonly ILogger _logger;
@@ -28,6 +29,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public ResponseStreamWrapper(HttpContext context, ILogger logger)
         {
             _context = context;
+            _internalStream = new MemoryStream();
             _baseStream = context.Response.Body;
             _logger = logger;
         }
@@ -41,77 +43,63 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         public bool IsHtmlResponse => _isHtmlResponse ?? false;
 
+        private bool ScriptInjectionPending => IsHtmlResponse && !ScriptInjectionPerformed;
+        private Stream UnderlyingStream => ScriptInjectionPending ? _internalStream : _baseStream;
+
         public override void Flush()
         {
             OnWrite();
+
+            if (ScriptInjectionPending && _internalStream.TryGetBuffer(out var buffer))
+            {
+                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
+                _internalStream.SetLength(0);
+            }
+
             _baseStream.Flush();
         }
 
-        public override Task FlushAsync(CancellationToken cancellationToken)
+        public override async Task FlushAsync(CancellationToken cancellationToken)
         {
             OnWrite();
-            return _baseStream.FlushAsync(cancellationToken);
+
+            if (ScriptInjectionPending && _internalStream.TryGetBuffer(out var buffer))
+            {
+                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer);
+                _internalStream.SetLength(0);
+            }
+
+            await _baseStream.FlushAsync(cancellationToken);
         }
 
         public override void Write(ReadOnlySpan<byte> buffer)
         {
             OnWrite();
-            if (IsHtmlResponse && !ScriptInjectionPerformed)
-            {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
-            }
-            else
-            {
-                _baseStream.Write(buffer);
-            }
+            UnderlyingStream.Write(buffer);
         }
 
         public override void WriteByte(byte value)
         {
             OnWrite();
-            _baseStream.WriteByte(value);
+            UnderlyingStream.WriteByte(value);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
             OnWrite();
-
-            if (IsHtmlResponse && !ScriptInjectionPerformed)
-            {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
-            }
-            else
-            {
-                _baseStream.Write(buffer, offset, count);
-            }
+            UnderlyingStream.Write(buffer, offset, count);
         }
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             OnWrite();
-
-            if (IsHtmlResponse && !ScriptInjectionPerformed)
-            {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
-            }
-            else
-            {
-                await _baseStream.WriteAsync(buffer, offset, count, cancellationToken);
-            }
+            await UnderlyingStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             OnWrite();
-
-            if (IsHtmlResponse && !ScriptInjectionPerformed)
-            {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
-            }
-            else
-            {
-                await _baseStream.WriteAsync(buffer, cancellationToken);
-            }
+            await UnderlyingStream.WriteAsync(buffer, cancellationToken);
         }
 
         private void OnWrite()
@@ -136,6 +124,23 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 // Since we're changing the markup content, reset the content-length
                 response.Headers.ContentLength = null;
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (!disposing)
+            {
+                return;
+            }
+
+            Flush();
+            _internalStream.Dispose();
+        }
+
+        public override async ValueTask DisposeAsync()
+        {
+            await FlushAsync();
+            await _internalStream.DisposeAsync();
         }
 
         public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
