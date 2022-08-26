@@ -227,15 +227,14 @@ namespace CompatTests
 ";
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings());
-            CompatDifference[] expected = new[]
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Equal(new CompatDifference[]
             {
                 CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddSealedToInterfaceMember, string.Empty, DifferenceType.Added, "M:CompatTests.First.F")
-            };
-
-            IEnumerable<CompatDifference> differences = differ.GetDifferences(new[] { left }, new[] { right });
-
-            Assert.Equal(expected, differences);
+            }, differences);
         }
 #endif
     }
