@@ -14,6 +14,7 @@ CA1851 | Performance | Disabled | AvoidMultipleEnumerations, [Documentation](htt
 CA1852 | Performance | Hidden | SealInternalTypes, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1852)
 CA1853 | Performance | Info | DoNotGuardDictionaryRemoveByContainsKey, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1853)
 CA1854 | Performance | Info | PreferDictionaryTryGetValueAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854)
+CA1855 | Performance | Info | UseSpanClearInsteadOfFillAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855)
 CA2019 | Reliability | Info | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019)
 CA2259 | Usage | Warning | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259)
 CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5404)
