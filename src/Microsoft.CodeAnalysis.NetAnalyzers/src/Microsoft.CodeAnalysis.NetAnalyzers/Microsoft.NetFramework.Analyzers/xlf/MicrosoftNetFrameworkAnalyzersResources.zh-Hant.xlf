@@ -234,7 +234,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureDtdProcessingDescription">
         <source>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.</source>
-        <target state="needs-review-translation">使用 XmlTextReader.Load()、叫用 XmlReader.Create() 時建立不安全的 XmlReaderSettings 執行個體、設定 XmlDocument 的 InnerXml 屬性，以及用不安全的方式使用 XmlUrlResolver 啟用 DTD 處理，都可能會造成資訊外洩。以採用 XmlReader 執行個體的呼叫 Load() 方法多載取代它、使用 XmlReader.Create() 接受 XmlReaderSettings 引數或明確地考慮設定安全的值。DataViewManager 的 DataViewSettingCollectionString 屬性應一律從信任的來源指派，DtdProcessing 屬性應設為 false，而 XmlResolver 屬性則應變更為 XmlSecureResolver 或 Null。 </target>
+        <target state="new">Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
@@ -264,7 +264,7 @@
       </trans-unit>
       <trans-unit id="XmlDocumentWithNoSecureResolverMessage">
         <source>An XmlDocument instance is created without setting its XmlResolver property to a secure value</source>
-        <target state="needs-review-translation">建立 XmlDocument 執行個體時，未將其 XmlResolver 屬性設為安全的值。</target>
+        <target state="new">An XmlDocument instance is created without setting its XmlResolver property to a secure value</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="XmlReaderCreateInsecureConstructedMessage">
@@ -304,7 +304,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureDtdProcessingInApiDesignDescription">
         <source>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.</source>
-        <target state="needs-review-translation">在所有衍生自 XmlTextReader 或 XmlDocument 的執行個體上啟用 DTD 處理，並使用 XmlUrlResolver 解析外部 XML 實體，可能會造成資訊外洩。請務必將 XmlResolver 屬性設為 Null，在處理不受信任的輸入時建立 XmlSecureResolver 執行個體，或使用具有安全 XmlReaderSettings 引數的 XmlReader.Create 方法。除非需要將其啟用，否則請務必將 DtdProcessing 屬性設為 false。 </target>
+        <target state="new">Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage">
@@ -339,7 +339,7 @@
       </trans-unit>
       <trans-unit id="InsecureXsltScriptProcessingMessage">
         <source>Insecure XSLT script processing</source>
-        <target state="needs-review-translation">不安全的 XSLT 指令碼處理。</target>
+        <target state="new">Insecure XSLT script processing</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
