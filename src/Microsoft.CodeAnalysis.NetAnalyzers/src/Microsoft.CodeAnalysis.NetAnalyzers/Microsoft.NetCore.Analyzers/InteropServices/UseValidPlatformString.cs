@@ -228,7 +228,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (char.IsDigit(osString[i]))
                 {
-                    osPlatformName = osString.Substring(0, i);
+                    osPlatformName = osString[..i];
                     versionPart = osString[i..];
                     if (i > 0 && Version.TryParse(osString[i..], out Version _))
                     {

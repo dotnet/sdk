@@ -103,7 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
             if (argument.Value is not IArrayCreationOperation
                 {
                     IsImplicit: true,
-                    Initializer: { ElementValues: { Length: 1 } initializerValues }
+                    Initializer.ElementValues: { Length: 1 } initializerValues
                 })
             {
                 return false;

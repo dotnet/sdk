@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             foreach (SyntaxNode import in importList)
             {
-                if (import is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier: { Text: nameof(System) } } })
+                if (import is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier.Text: nameof(System) } })
                 {
                     return true;
                 }

@@ -714,7 +714,7 @@ public class C
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 NumberOfIncrementalIterations = incrementalIterations,
             };
-            test.TestState.ExpectedDiagnostics.AddRange(locations.Select(x => CS.DiagnosticAt(x)));
+            test.TestState.ExpectedDiagnostics.AddRange(locations.Select(CS.DiagnosticAt));
             return test.RunAsync();
         }
 
@@ -748,7 +748,7 @@ public class C
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 NumberOfIncrementalIterations = incrementalIterations,
             };
-            test.TestState.ExpectedDiagnostics.AddRange(locations.Select(x => VB.DiagnosticAt(x)));
+            test.TestState.ExpectedDiagnostics.AddRange(locations.Select(VB.DiagnosticAt));
             return test.RunAsync();
         }
 

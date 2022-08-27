@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">Pełnomocnicy z typami zarządzanymi jako parametrami lub zwracanym typem wymagają włączenia kierowania środowiska uruchomieniowego w zestawie, w którym zdefiniowano pełnomocnika.</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="needs-review-translation">Pełnomocnicy z typami zarządzanymi jako parametrami lub zwracanym typem wymagają włączenia kierowania środowiska uruchomieniowego w zestawie, w którym zdefiniowano pełnomocnika.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">

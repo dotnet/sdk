@@ -1931,7 +1931,7 @@
     <value>Seal class</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
-    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
+    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</value>
   </data>
   <data name="PreferDictionaryTryGetValueCodeFixTitle" xml:space="preserve">
     <value>Use 'TryGetValue(TKey, out TValue)'</value>

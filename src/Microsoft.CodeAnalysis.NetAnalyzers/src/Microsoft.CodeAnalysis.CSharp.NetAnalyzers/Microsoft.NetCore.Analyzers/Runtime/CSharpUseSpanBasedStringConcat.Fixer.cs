@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             foreach (var import in namespaceImports)
             {
-                if (import is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier: { ValueText: nameof(System) } } })
+                if (import is UsingDirectiveSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: nameof(System) } })
                     return true;
             }
             return false;

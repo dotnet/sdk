@@ -49,7 +49,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeSymbol(INamedTypeSymbol symbol, Action<Diagnostic> addDiagnostic)
         {
-            if (symbol.GetMembers().Any(member => IsDllImport(member)) && !IsTypeNamedCorrectly(symbol.Name))
+            if (symbol.GetMembers().Any(IsDllImport) && !IsTypeNamedCorrectly(symbol.Name))
             {
                 addDiagnostic(symbol.CreateDiagnostic(Rule));
             }

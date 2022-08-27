@@ -63,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             context.EnableConcurrentExecution();
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            context.RegisterCompilationStartAction(context => AnalyzeCompilationStart(context));
+            context.RegisterCompilationStartAction(AnalyzeCompilationStart);
         }
 
         private void AnalyzeCompilationStart(CompilationStartAnalysisContext context)

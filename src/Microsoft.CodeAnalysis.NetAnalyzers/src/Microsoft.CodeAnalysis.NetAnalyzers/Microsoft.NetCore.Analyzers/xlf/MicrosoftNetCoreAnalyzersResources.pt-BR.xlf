@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">Os delegados com tipos gerenciados como parâmetros ou o tipo de retorno exigem que o empacotamento de tempo de execução seja habilitado no assembly em que o delegado está definido.</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="needs-review-translation">Os delegados com tipos gerenciados como parâmetros ou o tipo de retorno exigem que o empacotamento de tempo de execução seja habilitado no assembly em que o delegado está definido.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">

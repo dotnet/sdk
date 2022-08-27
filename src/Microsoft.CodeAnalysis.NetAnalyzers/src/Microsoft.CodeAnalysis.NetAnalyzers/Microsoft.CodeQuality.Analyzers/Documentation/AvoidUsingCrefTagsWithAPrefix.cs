@@ -44,7 +44,7 @@ namespace Microsoft.CodeQuality.Analyzers.Documentation
                 if (text[1] == ':')
                 {
                     var location = Location.Create(token.SyntaxTree, textTokens.Span);
-                    context.ReportDiagnostic(Diagnostic.Create(Rule, location, text.Substring(0, 2)));
+                    context.ReportDiagnostic(Diagnostic.Create(Rule, location, text[..2]));
                 }
             }
         }
