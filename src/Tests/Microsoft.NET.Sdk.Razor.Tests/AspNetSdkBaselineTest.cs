@@ -355,8 +355,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 manifest.ReferencedProjectsConfiguration.OrderBy(cm => cm.Identity)
                     .Should()
                     .BeEquivalentTo(expected.ReferencedProjectsConfiguration.OrderBy(cm => cm.Identity));
-                
                 manifest.DiscoveryPatterns.OrderBy(dp => dp.Name).ShouldBeEquivalentTo(expected.DiscoveryPatterns.OrderBy(dp => dp.Name));
+                
                 var manifestAssets = manifest.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
                 var expectedAssets = expected.Assets.OrderBy(a => a.BasePath).ThenBy(a => a.RelativePath).ThenBy(a => a.AssetKind);
                 
