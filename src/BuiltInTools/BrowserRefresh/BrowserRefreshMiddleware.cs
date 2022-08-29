@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -26,10 +28,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // We only need to support this for requests that could be initiated by a browser.
             if (IsBrowserDocumentRequest(context))
             {
-                // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
-                await using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
+                // Use a custom stream so we can rewrite the response body.
+                using var memoryStream = new MemoryStream();
                 var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
-                context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(responseStreamWrapper));
+                context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(memoryStream));
 
                 try
                 {
@@ -40,19 +42,27 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     context.Features.Set(originalBodyFeature);
                 }
 
-                // Flushing the stream will perform the script injection, if applicable.
-                // We do this eagerly in order to react to failed script injection attempts.
-                await responseStreamWrapper.FlushAsync();
+                // This should always succeed because we don't explicitly make the buffer invisible.
+                Debug.Assert(memoryStream.TryGetBuffer(out var buffer));
 
-                if (responseStreamWrapper.IsHtmlResponse)
+                if (buffer.Count > 0)
                 {
-                    if (responseStreamWrapper.ScriptInjectionPerformed)
+                    var response = context.Response;
+                    var baseStream = response.Body;
+
+                    if (IsHtmlResponse(response))
                     {
-                        Log.BrowserConfiguredForRefreshes(_logger);
-                    }
-                    else
-                    {
-                        if (context.Response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodings))
+                        Log.SetupResponseForBrowserRefresh(_logger);
+
+                        // Since we're changing the markup content, reset the content-length
+                        response.Headers.ContentLength = null;
+
+                        var scriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(baseStream, buffer);
+                        if (scriptInjectionPerformed)
+                        {
+                            Log.BrowserConfiguredForRefreshes(_logger);
+                        }
+                        else if (response.Headers.TryGetValue(HeaderNames.ContentEncoding, out var contentEncodings))
                         {
                             Log.ResponseCompressionDetected(_logger, contentEncodings);
                         }
@@ -60,6 +70,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                         {
                             Log.FailedToConfiguredForRefreshes(_logger);
                         }
+                    }
+                    else
+                    {
+                        await baseStream.WriteAsync(buffer);
                     }
                 }
             }
@@ -102,6 +116,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             return false;
         }
+
+        private bool IsHtmlResponse(HttpResponse response)
+            => (response.StatusCode == StatusCodes.Status200OK || response.StatusCode == StatusCodes.Status500InternalServerError) &&
+                MediaTypeHeaderValue.TryParse(response.ContentType, out var mediaType) &&
+                mediaType.IsSubsetOf(_textHtmlMediaType) &&
+                (!mediaType.Charset.HasValue || mediaType.Charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase));
 
         internal static class Log
         {
