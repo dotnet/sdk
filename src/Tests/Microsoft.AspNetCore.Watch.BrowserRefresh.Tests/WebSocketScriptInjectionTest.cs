@@ -2,17 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
-    public class WebSockerScriptInjectionTest
+    public class WebSocketScriptInjectionTest
     {
         [Fact]
         public async Task TryInjectLiveReloadScriptAsync_DoesNotInjectMarkup_IfInputDoesNotContainBodyTag()

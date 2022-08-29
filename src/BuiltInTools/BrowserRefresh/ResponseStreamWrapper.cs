@@ -4,6 +4,7 @@
 // Based on https://github.com/RickStrahl/Westwind.AspnetCore.LiveReload/blob/128b5f524e86954e997f2c453e7e5c1dcc3db746/Westwind.AspnetCore.LiveReload/ResponseStreamWrapper.cs
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -43,66 +44,70 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         public bool IsHtmlResponse => _isHtmlResponse ?? false;
 
-        private bool ScriptInjectionPending => IsHtmlResponse && !ScriptInjectionPerformed;
-        private Stream UnderlyingStream => ScriptInjectionPending ? _internalStream : _baseStream;
-
         public override void Flush()
         {
-            OnWrite();
+            OnFlush();
 
-            if (ScriptInjectionPending && _internalStream.TryGetBuffer(out var buffer))
+            if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, buffer);
-                _internalStream.SetLength(0);
+                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScript(_baseStream, _internalStream.GetBuffer());
+
+                if (!ScriptInjectionPerformed)
+                {
+                    // The script was not injected, so copy the internal buffer directly to the base stream.
+                    _internalStream.CopyTo(_baseStream);
+                }
+            }
+            else
+            {
+                // Either script injection was already performed or we're not dealing with an HTML response.
+                _internalStream.CopyTo(_baseStream);
             }
 
+            _internalStream.SetLength(0);
             _baseStream.Flush();
         }
 
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
-            OnWrite();
+            OnFlush();
 
-            if (ScriptInjectionPending && _internalStream.TryGetBuffer(out var buffer))
+            if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, buffer);
-                _internalStream.SetLength(0);
+                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(_baseStream, _internalStream.GetBuffer());
+
+                if (!ScriptInjectionPerformed)
+                {
+                    // The script was not injected, so copy the internal buffer directly to the base stream.
+                    await _internalStream.CopyToAsync(_baseStream);
+                }
+            }
+            else
+            {
+                // Either script injection was already performed or we're not dealing with an HTML response.
+                await _internalStream.CopyToAsync(_baseStream);
             }
 
+            _internalStream.SetLength(0);
             await _baseStream.FlushAsync(cancellationToken);
         }
 
         public override void Write(ReadOnlySpan<byte> buffer)
-        {
-            OnWrite();
-            UnderlyingStream.Write(buffer);
-        }
+            => _internalStream.Write(buffer);
 
         public override void WriteByte(byte value)
-        {
-            OnWrite();
-            UnderlyingStream.WriteByte(value);
-        }
+            => _internalStream.WriteByte(value);
 
         public override void Write(byte[] buffer, int offset, int count)
-        {
-            OnWrite();
-            UnderlyingStream.Write(buffer, offset, count);
-        }
+            => _internalStream.Write(buffer, offset, count);
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            OnWrite();
-            await UnderlyingStream.WriteAsync(buffer, offset, count, cancellationToken);
-        }
+            => await _internalStream.WriteAsync(buffer, offset, count, cancellationToken);
 
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-        {
-            OnWrite();
-            await UnderlyingStream.WriteAsync(buffer, cancellationToken);
-        }
+            => await _internalStream.WriteAsync(buffer, cancellationToken);
 
-        private void OnWrite()
+        private void OnFlush()
         {
             if (_isHtmlResponse.HasValue)
             {

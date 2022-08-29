@@ -69,8 +69,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             return true;
         }
 
-        // Internal for testing
-        internal static int LastIndexOfClosingBodyTag(ReadOnlySpan<byte> buffer)
+        private static int LastIndexOfClosingBodyTag(ReadOnlySpan<byte> buffer)
         {
             while (true)
             {
