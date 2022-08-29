@@ -515,7 +515,7 @@ class MyAttribute : Attribute
             await test.RunAsync();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/6134")]
         public async Task TestCustomAttribute()
         {
             var csInput = @" 

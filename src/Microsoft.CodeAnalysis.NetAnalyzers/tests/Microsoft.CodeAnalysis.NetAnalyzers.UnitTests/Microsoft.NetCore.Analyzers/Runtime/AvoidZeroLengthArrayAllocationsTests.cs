@@ -422,6 +422,29 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
+        [Fact]
+        public async Task EmptyArrayCSharp_UsedInAttributeParams_NoDiagnosticsAsync()
+        {
+            const string source = @"
+using System;
+
+[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]  
+class CustomAttribute : Attribute
+{
+    public CustomAttribute(params int[] i)
+    {
+    }
+}
+
+[Custom(new int[0])]
+[Custom]
+class C
+{
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
         [Fact]
         public async Task EmptyArrayCSharp_FieldOrPropertyInitializerAsync()

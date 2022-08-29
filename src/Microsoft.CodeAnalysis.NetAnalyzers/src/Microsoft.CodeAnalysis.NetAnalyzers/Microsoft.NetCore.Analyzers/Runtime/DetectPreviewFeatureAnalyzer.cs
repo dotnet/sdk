@@ -417,11 +417,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
-            if (ProcessTypeAttributeForPreviewness(symbol, requiresPreviewFeaturesSymbols, previewFeatureAttributeSymbol, out SyntaxReference? attributeSyntaxReference, out string? attributeName, out ISymbol? previewAttributeSymbol))
-            {
-                ReportDiagnosticWithCustomMessageIfItExists(context, attributeSyntaxReference.GetSyntax(context.CancellationToken), previewAttributeSymbol, requiresPreviewFeaturesSymbols, GeneralPreviewFeatureAttributeRule, GeneralPreviewFeatureAttributeRuleWithCustomMessage, attributeName);
-            }
-
             INamedTypeSymbol? baseType = symbol.BaseType;
             if (baseType != null)
             {
@@ -438,40 +433,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
                 }
             }
-        }
-
-        private static bool ProcessTypeAttributeForPreviewness(ISymbol symbol,
-                                                               ConcurrentDictionary<ISymbol, (bool isPreview, string? message, string? url)> requiresPreviewFeaturesSymbols,
-                                                               INamedTypeSymbol previewFeatureAttribute,
-                                                               [NotNullWhen(true)] out SyntaxReference? attributeSyntaxReference,
-                                                               [NotNullWhen(true)] out string? attributeName,
-                                                               [NotNullWhen(true)] out ISymbol? previewSymbol)
-        {
-            ImmutableArray<AttributeData> attributes = symbol.GetAttributes();
-            for (int i = 0; i < attributes.Length; i++)
-            {
-                AttributeData attribute = attributes[i];
-                if (SymbolIsAnnotatedAsPreview(attribute.AttributeClass, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
-                {
-                    attributeName = attribute.AttributeClass.Name;
-                    attributeSyntaxReference = attribute.ApplicationSyntaxReference;
-                    previewSymbol = attribute.AttributeClass;
-                    return true;
-                }
-
-                if (SymbolIsAnnotatedAsPreview(attribute.AttributeConstructor, requiresPreviewFeaturesSymbols, previewFeatureAttribute))
-                {
-                    attributeName = attribute.AttributeClass.Name;
-                    attributeSyntaxReference = attribute.ApplicationSyntaxReference;
-                    previewSymbol = attribute.AttributeConstructor;
-                    return true;
-                }
-            }
-
-            attributeName = null;
-            attributeSyntaxReference = null;
-            previewSymbol = null;
-            return false;
         }
 
         private SyntaxNode? GetPreviewSyntaxNodeFromSymbols(ISymbol symbol,
@@ -981,32 +942,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 else
                 {
                     context.ReportDiagnostic(node.CreateDiagnostic(diagnosticDescriptor, diagnosticMessageArgument0, diagnosticMessageArgument1, url));
-                }
-            }
-        }
-
-        private static void ReportDiagnosticWithCustomMessageIfItExists(SymbolAnalysisContext context,
-                                                                        SyntaxNode node,
-                                                                        ISymbol previewSymbol,
-                                                                        ConcurrentDictionary<ISymbol, (bool isPreview, string? message, string? url)> requiresPreviewFeaturesSymbols,
-                                                                        DiagnosticDescriptor diagnosticDescriptor,
-                                                                        DiagnosticDescriptor diagnosticDescriptorWithPlaceholdersForCustomMessage,
-                                                                        string diagnosticMessageArgument0)
-        {
-            if (!requiresPreviewFeaturesSymbols.TryGetValue(previewSymbol, out (bool isPreview, string? message, string? url) existing))
-            {
-                Debug.Fail($"Should never reach this line. This means the symbol {previewSymbol.Name} was not processed in this analyzer");
-            }
-            else
-            {
-                string url = existing.url ?? DefaultURL;
-                if (existing.message is string customMessage)
-                {
-                    context.ReportDiagnostic(node.CreateDiagnostic(diagnosticDescriptorWithPlaceholdersForCustomMessage, diagnosticMessageArgument0, url, customMessage));
-                }
-                else
-                {
-                    context.ReportDiagnostic(node.CreateDiagnostic(diagnosticDescriptor, diagnosticMessageArgument0, url));
                 }
             }
         }
