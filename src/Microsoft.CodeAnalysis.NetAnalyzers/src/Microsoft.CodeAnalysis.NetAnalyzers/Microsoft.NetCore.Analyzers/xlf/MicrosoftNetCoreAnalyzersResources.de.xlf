@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">Delegates mit verwalteten Typen als Parameter oder der Rückgabetyp erfordern, dass das Marshalling der Runtime in der Assembly aktiviert ist, in der das Delegat definiert ist.</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -2869,22 +2869,22 @@
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
         <source>Use 'Clear()'</source>
-        <target state="new">Use 'Clear()'</target>
+        <target state="translated">Verwenden von „Clear()“</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillDescription">
         <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
-        <target state="new">It is more efficient to use 'Clear', instead of 'Fill' with default value.</target>
+        <target state="translated">Es ist effizienter, „Clear“ anstelle von „Fill“ mit dem Standardwert zu verwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillMessage">
         <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
-        <target state="new">Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</target>
+        <target state="translated">„Span&lt;T&gt;.Clear()“ anstelle von „Span&lt;T&gt;.Fill(default)“ bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillTitle">
         <source>Prefer 'Clear' over 'Fill'</source>
-        <target state="new">Prefer 'Clear' over 'Fill'</target>
+        <target state="translated">„Clear“ vor „Fill“ bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">

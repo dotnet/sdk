@@ -256,7 +256,7 @@
     <value>Change the base type of {0} from {1} to its generic equivalent 'System.Collections.Generic.Stack'.</value>
   </data>
   <data name="DoNotUseInsecureDtdProcessingDescription" xml:space="preserve">
-    <value>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. </value>
+    <value>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.</value>
     <comment>CA3075</comment>
   </data>
   <data name="DoNotUseDtdProcessingOverloadsMessage" xml:space="preserve">
@@ -280,7 +280,7 @@
     <comment>CA3075</comment>
   </data>
   <data name="XmlDocumentWithNoSecureResolverMessage" xml:space="preserve">
-    <value>An XmlDocument instance is created without setting its XmlResolver property to a secure value.</value>
+    <value>An XmlDocument instance is created without setting its XmlResolver property to a secure value</value>
     <comment>CA3075</comment>
   </data>
   <data name="XmlReaderCreateInsecureConstructedMessage" xml:space="preserve">
@@ -312,7 +312,7 @@
     <comment>CA3077</comment>
   </data>
   <data name="DoNotUseInsecureDtdProcessingInApiDesignDescription" xml:space="preserve">
-    <value>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. </value>
+    <value>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.</value>
     <comment>CA3077</comment>
   </data>
   <data name="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage" xml:space="preserve">
@@ -340,7 +340,7 @@
     <comment>CA3077</comment>
   </data>
   <data name="InsecureXsltScriptProcessingMessage" xml:space="preserve">
-    <value>Insecure XSLT script processing.</value>
+    <value>Insecure XSLT script processing</value>
     <comment>CA3076</comment>
   </data>
   <data name="DoNotUseInsecureXSLTScriptExecutionDescription" xml:space="preserve">

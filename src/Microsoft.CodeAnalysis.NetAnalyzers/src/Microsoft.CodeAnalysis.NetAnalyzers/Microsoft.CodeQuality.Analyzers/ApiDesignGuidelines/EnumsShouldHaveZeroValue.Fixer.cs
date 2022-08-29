@@ -108,7 +108,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             ISet<IFieldSymbol> set = EnumsShouldHaveZeroValueAnalyzer.GetZeroValuedFields(enumType).ToSet();
 
             bool makeNextFieldExplicit = false;
-            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field))
+            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field).Cast<IFieldSymbol>())
             {
                 bool isZeroValued = set.Contains(field);
                 bool isZeroValuedNamedNone = isZeroValued && EnumsShouldHaveZeroValueAnalyzer.IsMemberNamedNone(field);
@@ -146,7 +146,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SymbolEditor editor = SymbolEditor.Create(document);
 
             // remove any non-zero member named 'None'
-            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field))
+            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field).Cast<IFieldSymbol>())
             {
                 if (EnumsShouldHaveZeroValueAnalyzer.IsMemberNamedNone(field))
                 {

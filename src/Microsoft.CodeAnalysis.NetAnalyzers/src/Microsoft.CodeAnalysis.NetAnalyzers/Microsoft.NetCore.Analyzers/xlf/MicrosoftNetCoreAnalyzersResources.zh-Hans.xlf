@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">具有托管类型作为参数或返回类型的委托需要在定义该委托的程序集中启用运行时封送。</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -2869,22 +2869,22 @@
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
         <source>Use 'Clear()'</source>
-        <target state="new">Use 'Clear()'</target>
+        <target state="translated">使用“Clear()”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillDescription">
         <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
-        <target state="new">It is more efficient to use 'Clear', instead of 'Fill' with default value.</target>
+        <target state="translated">使用“清除”(而不是具有默认值的“填充”)效率更高。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillMessage">
         <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
-        <target state="new">Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</target>
+        <target state="translated">首选“Span&lt;T&gt;.Clear()”而不是“Span&lt;T&gt;.Fill(default)”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSpanClearInsteadOfFillTitle">
         <source>Prefer 'Clear' over 'Fill'</source>
-        <target state="new">Prefer 'Clear' over 'Fill'</target>
+        <target state="translated">首选“清除”而不是“填充”</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">
