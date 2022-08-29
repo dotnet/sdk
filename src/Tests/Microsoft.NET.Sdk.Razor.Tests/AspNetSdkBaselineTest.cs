@@ -362,7 +362,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 
                 manifestAssets.ShouldBeEquivalentTo(expectedAssets, AssetDifferencesDetails(manifestAssets, expectedAssets));
 
-                string AssetDifferencesDetails(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
+                static string AssetDifferencesDetails(IEnumerable<StaticWebAsset> manifestAssets, IEnumerable<StaticWebAsset> expectedAssets)
                 {
                     var missingAssets = expectedAssets.Except(manifestAssets);
                     var unexpectedAssets = manifestAssets.Except(expectedAssets);
@@ -371,12 +371,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
                     if (missingAssets.Any())
                     {
-                        differences.Add($"The following expected assets weren't found in the manifest {string.Join(", ", missingAssets)}.");
+                        differences.Add($"The following expected assets weren't found in the manifest {string.Join(", ", missingAssets.Select(a => a.Identity))}.");
                     }
 
                     if (unexpectedAssets.Any())
                     {
-                        differences.Add($"The following additional unexpected assets were found in the manifest {string.Join(", ", unexpectedAssets)}.");
+                        differences.Add($"The following additional unexpected assets were found in the manifest {string.Join(", ", unexpectedAssets.Select(a => a.Identity))}.");
                     }
 
                     if (differences.Any())
