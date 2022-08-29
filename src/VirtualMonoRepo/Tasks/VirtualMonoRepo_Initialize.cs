@@ -40,7 +40,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
     private async Task<bool> ExecuteAsync()
     {
         var vmrInitializer = _serviceProvider.Value.GetRequiredService<IVmrInitializer>();
-        await vmrInitializer.InitializeVmr(Repository, Revision, false, _cancellationToken.Token);
+        await vmrInitializer.InitializeVmr(Repository, Revision, _cancellationToken.Token);
         return true;
     }
 
