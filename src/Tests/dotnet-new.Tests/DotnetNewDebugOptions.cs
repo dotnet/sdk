@@ -1,20 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyTests;
-using VerifyXunit;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.New.Tests
@@ -131,7 +123,7 @@ namespace Microsoft.DotNet.New.Tests
 
             var createdCacheEntries = Directory.GetFileSystemEntries(home);
 
-            Assert.Equal(2, createdCacheEntries.Count());
+            Assert.Equal(2, createdCacheEntries.Length);
             Assert.Contains(Path.Combine(home, "packages"), createdCacheEntries);
             Assert.True(File.Exists(Path.Combine(home, "dotnetcli", TestUtils.Version, "templatecache.json")));
         }

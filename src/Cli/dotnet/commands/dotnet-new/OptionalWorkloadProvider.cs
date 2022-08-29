@@ -1,12 +1,15 @@
-﻿using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Configurer;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Configurer;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
 namespace Microsoft.DotNet.Tools.New
 {
@@ -20,14 +23,14 @@ namespace Microsoft.DotNet.Tools.New
             this._environmentSettings = settings;
         }
 
-        public ITemplatePackageProviderFactory Factory { get; }
-
         // To avoid warnings about unused, its implemented via add/remove
         event Action ITemplatePackageProvider.TemplatePackagesChanged
         {
             add { }
             remove { }
         }
+
+        public ITemplatePackageProviderFactory Factory { get; }
 
         public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {

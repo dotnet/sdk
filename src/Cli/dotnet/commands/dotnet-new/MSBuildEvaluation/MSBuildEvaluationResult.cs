@@ -10,7 +10,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 namespace Microsoft.TemplateEngine.MSBuildEvaluation
 {
     /// <summary>
-    /// Represents MSBuild evaluation result. 
+    /// Represents MSBuild evaluation result.
     /// For success results, <see cref="SDKStyleEvaluationResult"/>, <see cref="NonSDKStyleEvaluationResult"/>, <see cref="MultiTargetEvaluationResult"/> are used depending on the evaluated project.
     /// </summary>
     internal class MSBuildEvaluationResult
@@ -35,19 +35,33 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
             };
         }
 
-        internal enum EvalStatus { NotEvaluated, NoProjectFound, MultipleProjectFound, NoRestore, Succeeded, Failed }
+        internal enum EvalStatus
+        {
+            NotEvaluated,
+            NoProjectFound,
+            MultipleProjectFound,
+            NoRestore,
+            Succeeded,
+            Failed
+        }
 
-        internal enum DotNetLanguage { NotEvaluated, CSharp, VB, FSharp }
+        internal enum DotNetLanguage
+        {
+            NotEvaluated,
+            CSharp,
+            VB,
+            FSharp
+        }
+
+        public Project? EvaluatedProject { get; protected set; }
+
+        public string? ErrorMessage { get; protected set; }
 
         internal EvalStatus Status { get; }
 
         internal DotNetLanguage Language { get; private set; }
 
         internal string? ProjectPath { get; }
-
-        public Project? EvaluatedProject { get; protected set; }
-
-        public string? ErrorMessage { get; protected set; }
 
         internal static MSBuildEvaluationResult CreateNoProjectFound(string path)
         {
@@ -57,7 +71,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
             };
         }
 
-        internal static MSBuildEvaluationResult CreateNoRestore (string path)
+        internal static MSBuildEvaluationResult CreateNoRestore(string path)
         {
             return new MSBuildEvaluationResult(EvalStatus.NoRestore, path)
             {

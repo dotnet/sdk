@@ -1,17 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyTests;
-using VerifyXunit;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.New.Tests
@@ -157,7 +150,7 @@ namespace Microsoft.DotNet.New.Tests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact (Skip = "Template options filtering is not implemented.")]
+        [Fact(Skip = "Template options filtering is not implemented.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanFilterByChoiceParameter()
         {

@@ -225,7 +225,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 // print warning about the constraints that were not met.
                 try
-{
+                {
                     IReadOnlyList<TemplateConstraintResult> constraintResults = await constraintsEvaluation.WaitAsync(cancellationTokenSource.Token).ConfigureAwait(false);
                     if (constraintResults.Any())
                     {

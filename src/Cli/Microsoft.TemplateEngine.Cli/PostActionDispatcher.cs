@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Cli
             _ = creationResult.CreationEffects ?? throw new ArgumentNullException(nameof(creationResult.CreationEffects));
             if (!isDryRun)
             {
-            _ = creationResult.CreationResult ?? throw new ArgumentNullException(nameof(creationResult.CreationResult));
+                _ = creationResult.CreationResult ?? throw new ArgumentNullException(nameof(creationResult.CreationResult));
             }
             if (string.IsNullOrWhiteSpace(creationResult.OutputBaseDirectory))
             {

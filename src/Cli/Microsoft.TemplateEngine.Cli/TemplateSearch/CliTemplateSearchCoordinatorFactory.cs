@@ -3,7 +3,6 @@
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateSearch.Common;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 {

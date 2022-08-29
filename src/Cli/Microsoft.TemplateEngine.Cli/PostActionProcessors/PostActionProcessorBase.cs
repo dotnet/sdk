@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
     public abstract class PostActionProcessorBase : IPostActionProcessor
     {
-        public abstract Guid Id { get;  }
+        public abstract Guid Id { get; }
 
         public bool Process(
             IEngineEnvironmentSettings environment,

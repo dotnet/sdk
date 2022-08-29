@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         //This is duplicated from JExtensions, problem is that we are referencing
         //Cli and Edge assembly both have JExtensions referenced, hence ambigous reference error
         //having copy here solves that...
-        static JObject ReadJObjectFromIFile(IFile file)
+        private static JObject ReadJObjectFromIFile(IFile file)
         {
             using (Stream s = file.OpenRead())
             using (TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true))

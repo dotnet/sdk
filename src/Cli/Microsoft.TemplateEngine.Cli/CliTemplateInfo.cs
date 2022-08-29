@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                if (_parameters == null )
+                if (_parameters == null)
                 {
                     Dictionary<string, CliTemplateParameter> parameters = new();
                     foreach (ITemplateParameter parameter in ParameterDefinitions.Where(param => param.Type == "parameter"))

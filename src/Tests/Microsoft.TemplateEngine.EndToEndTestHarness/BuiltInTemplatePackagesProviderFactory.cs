@@ -11,14 +11,15 @@ namespace Microsoft.TemplateEngine.EndToEndTestHarness
     internal class BuiltInTemplatePackagesProviderFactory : ITemplatePackageProviderFactory
     {
         private string testTemplatesRoot;
-        public string DisplayName => "E2E Harness BuiltIn";
-
-        public Guid Id { get; } = new Guid("{3227D09D-C1EA-48F1-A33B-1F132BFD9F00}");
 
         public BuiltInTemplatePackagesProviderFactory(string testAssetsRoot)
         {
             testTemplatesRoot = testAssetsRoot;
         }
+
+        public string DisplayName => "E2E Harness BuiltIn";
+
+        public Guid Id { get; } = new Guid("{3227D09D-C1EA-48F1-A33B-1F132BFD9F00}");
 
         public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
         {

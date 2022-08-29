@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return existingPackVersion != templatePackageSearchData.Version;
             };
 
-        internal static Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> GetMatchingTemplatesFilter (SearchCommandArgs commandArgs)
+        internal static Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> GetMatchingTemplatesFilter(SearchCommandArgs commandArgs)
         {
             return (templatePackageSearchData) =>
             {

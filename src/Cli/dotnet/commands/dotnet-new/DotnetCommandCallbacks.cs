@@ -1,19 +1,17 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
-using Microsoft.DotNet.Tools.Add.PackageReference;
-using Microsoft.DotNet.Tools;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Tools.Add.PackageReference;
 using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
+using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.Restore;
 using Microsoft.DotNet.Tools.Sln.Add;
-using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tools.New
 {

@@ -43,7 +43,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 { "TestName", "whatever" }
             };
 
-
             string? telemetryEntry = TelemetryHelper.PrepareHashedChoiceValue(templateInfo, parameterValues, "OtherName");
             Assert.Null(telemetryEntry);
         }
@@ -117,7 +116,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             {
                 { "TestName", "f" }
             };
-
 
             string? telemetryEntry = TelemetryHelper.PrepareHashedChoiceValue(templateInfo, parameterValues, "TestName");
             Assert.Null(telemetryEntry);

@@ -7,7 +7,6 @@ using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
@@ -68,7 +67,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
         public void DebugFlagCanBeParsedOnNewLevel(string command, string option)
         {
-             Dictionary<string, Func<GlobalArgs, bool>> optionsMap = new Dictionary<string, Func<GlobalArgs, bool>>()
+            Dictionary<string, Func<GlobalArgs, bool>> optionsMap = new Dictionary<string, Func<GlobalArgs, bool>>()
             {
                 { "--debug:attach", args => args.DebugAttach },
                 { "--debug:ephemeral-hive", args => args.DebugVirtualizeSettings },

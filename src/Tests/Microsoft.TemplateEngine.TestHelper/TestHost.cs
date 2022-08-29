@@ -15,12 +15,11 @@ namespace Microsoft.TemplateEngine.TestHelper
 {
     public partial class TestHost : ITemplateEngineHost
     {
-        private IPhysicalFileSystem _fileSystem;
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private readonly string _hostIdentifier;
         private readonly string _version;
-        private readonly List<(LogLevel, string)> _messagesCollection = new List<(LogLevel, string)>();
+        private IPhysicalFileSystem _fileSystem;
         private IReadOnlyList<(Type, IIdentifiedComponent)> _builtIns;
         private IReadOnlyList<string> _fallbackNames;
 
@@ -81,7 +80,7 @@ namespace Microsoft.TemplateEngine.TestHelper
         {
             TestHost host = new TestHost(hostIdentifier: hostIdentifier, additionalComponents: additionalComponents);
             environment = environment ?? new DefaultEnvironment();
-            
+
             if (defaultParameters != null)
             {
                 foreach (var parameter in defaultParameters)

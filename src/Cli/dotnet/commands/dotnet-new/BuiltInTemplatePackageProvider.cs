@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -26,8 +26,6 @@ namespace Microsoft.DotNet.Tools.New
             _environmentSettings = settings;
         }
 
-        public ITemplatePackageProviderFactory Factory { get; }
-
 #pragma warning disable CS0067
         /// <summary>
         /// We don't trigger this event, we could complicate our life with FileSystemWatcher.
@@ -36,6 +34,8 @@ namespace Microsoft.DotNet.Tools.New
         /// </summary>
         public event Action TemplatePackagesChanged;
 #pragma warning restore CS0067
+
+        public ITemplatePackageProviderFactory Factory { get; }
 
         public Task<IReadOnlyList<ITemplatePackage>> GetAllTemplatePackagesAsync(CancellationToken cancellationToken)
         {
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tools.New
 
         private static IList<string> GetBestVersionsByMajorMinor(IReadOnlyDictionary<string, SemanticVersion> versionDirInfo)
         {
-            IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
+            IDictionary<string, (string Path, SemanticVersion Version)> bestVersionsByBucket = new Dictionary<string, (string Path, SemanticVersion Version)>();
 
             Version sdkVersion = typeof(Microsoft.DotNet.Cli.NewCommandParser).Assembly.GetName().Version;
             foreach (KeyValuePair<string, SemanticVersion> dirInfo in versionDirInfo)
@@ -107,15 +107,15 @@ namespace Microsoft.DotNet.Tools.New
                 if (majorMinorDirVersion <= sdkVersion)
                 {
                     string coreAppVersion = $"{dirInfo.Value.Major}.{dirInfo.Value.Minor}";
-                    if (!bestVersionsByBucket.TryGetValue(coreAppVersion, out (string path, SemanticVersion version) currentHighest)
-                        || dirInfo.Value.CompareTo(currentHighest.version) > 0)
+                    if (!bestVersionsByBucket.TryGetValue(coreAppVersion, out (string Path, SemanticVersion Version) currentHighest)
+                        || dirInfo.Value.CompareTo(currentHighest.Version) > 0)
                     {
                         bestVersionsByBucket[coreAppVersion] = (dirInfo.Key, dirInfo.Value);
                     }
                 }
             }
 
-            return bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path).ToList();
+            return bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.Path).ToList();
         }
     }
 }

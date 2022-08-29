@@ -1,43 +1,37 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.New;
-using Microsoft.DotNet.Tools.Restore;
-using Microsoft.TemplateEngine.Cli;
-using Microsoft.TemplateEngine.Abstractions;
-using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using Microsoft.TemplateEngine.Edge;
-using System.Linq;
-using Microsoft.DotNet.Workloads.Workload.List;
-using Microsoft.TemplateEngine.Abstractions.Components;
-using Microsoft.DotNet.Tools.Add.PackageReference;
-using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
-using Microsoft.DotNet.Tools.Sln.Add;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
-using Microsoft.TemplateEngine.MSBuildEvaluation;
-using Microsoft.TemplateEngine.Abstractions.Constraints;
 using System.IO;
-using NuGet.Packaging;
-using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.New;
 using Microsoft.DotNet.Tools.New.PostActionProcessors;
+using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Components;
+using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
+using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.Edge;
+using Microsoft.TemplateEngine.MSBuildEvaluation;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
 {
     internal static class NewCommandParser
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-new";
         public const string CommandName = "new";
+#pragma warning disable CA1802 // Use literals where appropriate
+        public static readonly string DocsLink = "https://aka.ms/dotnet-new";
+#pragma warning restore CA1802 // Use literals where appropriate
+
+        internal static readonly System.CommandLine.Command Command = GetCommand();
+
         private const string EnableProjectContextEvaluationEnvVar = "DOTNET_CLI_DISABLE_PROJECT_EVAL";
 
         private const string HostIdentifier = "dotnetcli";
@@ -47,11 +41,10 @@ namespace Microsoft.DotNet.Cli
 
         internal static Option<FileInfo> ProjectPathOption { get; } = new Option<FileInfo>("--project", LocalizableStrings.ProjectPath_OptionDescription).ExistingOnly().Hide();
 
-        internal static readonly System.CommandLine.Command Command = GetCommand();
-
         public static System.CommandLine.Command GetCommand()
         {
-            var getEngineHost = (ParseResult parseResult) => {
+            var getEngineHost = (ParseResult parseResult) =>
+            {
                 bool disableSdkTemplates = parseResult.GetValueForOption(_disableSdkTemplates);
                 bool disableProjectContext = parseResult.GetValueForOption(_disableProjectContextEvaluation)
                     || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVar);
@@ -100,7 +93,7 @@ namespace Microsoft.DotNet.Cli
             builtIns.Add((typeof(ISdkInfoProvider), new SdkInfoProvider()));
 
             string? preferredLangEnvVar = Environment.GetEnvironmentVariable("DOTNET_NEW_PREFERRED_LANG");
-            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar)? "C#" : preferredLangEnvVar;
+            string preferredLang = string.IsNullOrWhiteSpace(preferredLangEnvVar) ? "C#" : preferredLangEnvVar;
 
             var preferences = new Dictionary<string, string>
             {
@@ -112,7 +105,6 @@ namespace Microsoft.DotNet.Cli
 
             return new DefaultTemplateEngineHost(HostIdentifier, "v" + Product.Version, preferences, builtIns);
         }
-
 
     }
 }

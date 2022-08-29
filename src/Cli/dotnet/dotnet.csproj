@@ -12,6 +12,7 @@
     <PackageId>Microsoft.DotNet.Cli</PackageId>
     <UseAppHost>false</UseAppHost>
     <IsPackable>true</IsPackable>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="commands\dotnet-new\**" />

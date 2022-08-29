@@ -3,16 +3,12 @@
 
 #nullable enable
 
-using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyTests;
-using Xunit;
 using Xunit.Abstractions;
 using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
 
@@ -356,7 +352,7 @@ namespace Microsoft.DotNet.New.Tests
             string basicFSharp = TestUtils.GetTestTemplateLocation("TemplateResolution/DifferentLanguagesGroup/BasicFSharp");
             string basicVB = TestUtils.GetTestTemplateLocation("TemplateResolution/DifferentLanguagesGroup/BasicVB");
 
-            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0",  "Microsoft.DotNet.Common.ProjectTemplates.5.0", basicFSharp, basicVB)
+            new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0", "Microsoft.DotNet.Common.ProjectTemplates.5.0", basicFSharp, basicVB)
                 .WithCustomHive(home).WithDebug()
                 .WithWorkingDirectory(TestUtils.CreateTemporaryFolder())
                 .Execute()

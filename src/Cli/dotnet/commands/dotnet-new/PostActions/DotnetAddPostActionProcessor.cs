@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
         private readonly Func<string, string, bool> _addProjectReferenceCallback;
 
         public DotnetAddPostActionProcessor(
-            Func<string, string, string?, bool>? addPackageReferenceCallback = null, 
+            Func<string, string, string?, bool>? addPackageReferenceCallback = null,
             Func<string, string, bool>? addProjectReferenceCallback = null)
         {
             _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;

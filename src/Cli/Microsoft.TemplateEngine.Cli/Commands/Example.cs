@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal Example WithSubcommand<T>() where T : Command
         {
-            if (!_currentCommand.Children.OfType<Command>().Any( c => c is T))
+            if (!_currentCommand.Children.OfType<Command>().Any(c => c is T))
             {
                 throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand {typeof(T).Name}");
             }

@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
@@ -33,7 +32,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact (Skip = "doesn't work at the moment; it matches with legacy --language option which cannot be completed; to discuss how to avoid that")]
+        [Fact(Skip = "doesn't work at the moment; it matches with legacy --language option which cannot be completed; to discuss how to avoid that")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void Instantiate_CanSuggestLanguages()
         {
@@ -511,7 +510,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var template2 = new MockTemplateInfo("foo", identity: "foo.2", groupIdentity: "group")
                 .WithConstraints(new TemplateConstraintInfo("test", "no"))
-                .WithParameter("b"); 
+                .WithParameter("b");
 
             var template3 = new MockTemplateInfo("foo", identity: "foo.3", groupIdentity: "group")
              .WithConstraints(new TemplateConstraintInfo("test", "bad-params"))

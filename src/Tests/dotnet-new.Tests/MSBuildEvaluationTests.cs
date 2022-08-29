@@ -1,14 +1,14 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
 using FluentAssertions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.New.Tests
 {
@@ -73,7 +73,6 @@ namespace Microsoft.DotNet.New.Tests
                 .WithWorkingDirectory(tempDir.Path)
                 .Execute("xunit", "--name", "MyTestProject");
             cmd.Should().Pass();
-
 
             string projectPath = Path.Combine(tempDir.Path, "MyTestProject");
 
@@ -211,8 +210,6 @@ namespace Microsoft.DotNet.New.Tests
                 .And.HaveStdErrContaining($"Project capabiltities: The project {Path.Combine(projectPath, "ConsoleFullFramework.csproj")} is not an SDK style project, and is not supported for evaluation.");
         }
 
-
-
         private static string GetTestTemplatePath(string templateName)
         {
             string templateFolder = Path.Combine(Path.GetDirectoryName(typeof(NewCommandTests).Assembly.Location) ?? string.Empty, "TestTemplates", templateName);
@@ -234,7 +231,7 @@ namespace Microsoft.DotNet.New.Tests
 
             DirectoryInfo[] dirs = dir.GetDirectories();
 
-            // If the destination directory doesn't exist, create it.       
+            // If the destination directory doesn't exist, create it.
             Directory.CreateDirectory(destDirName);
 
             // Get the files in the directory and copy them to the new location.

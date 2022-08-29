@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsUnitTestProject>true</IsUnitTestProject>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                         string downloadedPackage = await nuGetHelper.DownloadPackageAsync(
                             templatePackName,
                             version: version,
-                            additionalSources: new [] { NuGetOrgFeed },
+                            additionalSources: new[] { NuGetOrgFeed },
                             minimumVersion: minimumVersion).ConfigureAwait(false);
                         _installedPackages[templatePackName] = downloadedPackage;
                         logger.LogDebug($"[NuGet Package Manager][attempt: {retry + 1}] The package {templatePackName} was successfully downloaded.");
@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 DirectDownload = true
             };
 
-            internal NuGetHelper (string packageLocation, ILogger? logger = null)
+            internal NuGetHelper(string packageLocation, ILogger? logger = null)
             {
                 _packageLocation = packageLocation;
                 _nugetLogger = logger ?? NullLogger.Instance;

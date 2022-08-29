@@ -22,12 +22,13 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
     {
         private readonly ProjectCollection _projectCollection = new();
         private readonly object _lockObj = new();
+        private readonly string _outputDirectory;
+        private readonly string? _projectFullPath;
 
         private IEngineEnvironmentSettings? _settings;
         private ILogger? _logger;
         private MSBuildEvaluationResult? _cachedEvaluationResult;
-        private readonly string _outputDirectory;
-        private readonly string? _projectFullPath;
+
         internal MSBuildEvaluator()
         {
             _outputDirectory = Directory.GetCurrentDirectory();
@@ -118,11 +119,13 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
 
             Stopwatch watch = new();
             Stopwatch innerBuildWatch = new();
+#pragma warning disable SA1312 // Variable names should begin with lower-case letter
             bool IsSdkStyleProject = false;
+#pragma warning restore SA1312 // Variable names should begin with lower-case letter
             IReadOnlyList<string>? targetFrameworks = null;
             string? targetFramework = null;
             MSBuildEvaluationResult? result = null;
-            
+
             try
             {
                 watch.Start();
@@ -204,10 +207,10 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
 
                 Dictionary<string, string> properties = new()
                 {
-                    { "ProjectPath",  Sha256Hasher.HashWithNormalizedCasing(projectPath)},
+                    { "ProjectPath",  Sha256Hasher.HashWithNormalizedCasing(projectPath) },
                     { "SdkStyleProject", IsSdkStyleProject.ToString() },
-                    { "Status", result?.Status.ToString() ?? "<null>"},
-                    { "TargetFrameworks", targetFrameworksString ?? "<null>"},
+                    { "Status", result?.Status.ToString() ?? "<null>" },
+                    { "TargetFrameworks", targetFrameworksString ?? "<null>" },
                 };
 
                 Dictionary<string, double> measurements = new()

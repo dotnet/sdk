@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.New.Tests
             string homeDir = TestUtils.CreateTemporaryFolder();
             var command = new DotnetNewCommand(_log, "complete", $"new3 --debug:custom-hive {homeDir} ");
             // Replace command "new" with "dotnet-new3.dll new3"
-			string dotnetNew3AssemblyPath = typeof(Dotnet_new3.Program).Assembly.Location;
+            string dotnetNew3AssemblyPath = typeof(Dotnet_new3.Program).Assembly.Location;
             command.Arguments.RemoveAt(0);
             command.Arguments.InsertRange(0, new List<string> { dotnetNew3AssemblyPath, "new3" });
             string dotnetRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;

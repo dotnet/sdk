@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

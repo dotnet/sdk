@@ -109,8 +109,8 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
                 {
                     _logger.LogDebug("No project found. This template can only be created inside the project.");
                     return TemplateConstraintResult.CreateRestricted(
-                        this, 
-                        _evaluationResult.ErrorMessage ?? LocalizableStrings.MSBuildEvaluationResult_Error_NoProjectFound, 
+                        this,
+                        _evaluationResult.ErrorMessage ?? LocalizableStrings.MSBuildEvaluationResult_Error_NoProjectFound,
                         LocalizableStrings.ProjectCapabilityConstraint_Restricted_NoProjectFound_CTA);
                 }
                 if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.MultipleProjectFound)
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
                 }
                 return capabilities.ToArray();
 
-                void AddProjectCapabilities (HashSet<string> collection, Project? evaluatedProject)
+                static void AddProjectCapabilities(HashSet<string> collection, Project? evaluatedProject)
                 {
                     if (evaluatedProject == null)
                     {

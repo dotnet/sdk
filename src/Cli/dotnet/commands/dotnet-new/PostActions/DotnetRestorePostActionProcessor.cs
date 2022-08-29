@@ -15,7 +15,6 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 {
     internal class DotnetRestorePostActionProcessor : PostActionProcessorBase
     {
-        
         private readonly Func<string, bool> _restoreCallback;
 
         public DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null)

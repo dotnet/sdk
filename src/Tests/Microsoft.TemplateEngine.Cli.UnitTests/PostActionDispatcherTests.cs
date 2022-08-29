@@ -535,15 +535,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
         private class CaptureMePostAction : IPostActionProcessor
         {
-            private bool _expectedResult;
-            private string _testName;
-            private Guid _guid;
             private readonly List<(
                 IEngineEnvironmentSettings EngineEnvironmentSettings,
                 IPostAction PostAction,
                 ICreationEffects CreationEffects,
                 ICreationResult CreationResult,
                 string OutputPath)> _receivedCalls = new();
+
+            private bool _expectedResult;
+            private string _testName;
+            private Guid _guid;
 
             public CaptureMePostAction([CallerMemberName] string test = "", bool expectedResult = true, Guid guid = default)
             {

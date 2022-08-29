@@ -616,7 +616,7 @@ namespace Microsoft.DotNet.New.Tests
                     output.Replace("{TempPath}", "/tmp/");
                     output.ScrubByRegex(testExecDirPatternForVerify, "%Test Execution Direcotry%");
                 });
-                
+
         }
 
     }

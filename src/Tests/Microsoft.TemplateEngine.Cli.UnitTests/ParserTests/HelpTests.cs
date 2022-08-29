@@ -11,8 +11,6 @@ using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using VerifyXunit;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
@@ -189,7 +187,7 @@ Author: Me
         public Task CanShowTemplateOptions_SingleTemplate_Choice()
         {
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
-                .WithChoiceParameter("choice", new[] { "val1", "val2" }, description: "my description", defaultValue: "def-val", defaultIfNoOptionValue: "def-val-no-arg" );
+                .WithChoiceParameter("choice", new[] { "val1", "val2" }, description: "my description", defaultValue: "def-val", defaultIfNoOptionValue: "def-val-no-arg");
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
                CliTemplateInfo.FromTemplateInfo(new[] { template }, A.Fake<IHostSpecificDataLoader>()))
                .Single();

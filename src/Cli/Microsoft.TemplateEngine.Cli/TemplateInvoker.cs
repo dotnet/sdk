@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Cli
             finally
             {
                 TelemetryEventEntry.TrackEvent(
-                    TelemetryConstants.CreateEvent, 
+                    TelemetryConstants.CreateEvent,
                     new Dictionary<string, string?>
                     {
                         { TelemetryConstants.Language, templateLanguage },

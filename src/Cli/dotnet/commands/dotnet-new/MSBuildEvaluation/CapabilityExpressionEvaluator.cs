@@ -1,22 +1,30 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.TemplateEngine.MSBuildEvaluation
 {
+    /// <summary>Capability Expression Evaluator.</summary>
     /// <remarks>
-    /// As implemented in: https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.shell.interop.vsprojectcapabilityexpressionmatcher?
+    /// As implemented in: https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.shell.interop.vsprojectcapabilityexpressionmatcher?.
     /// </remarks>
     internal class CapabilityExpressionEvaluator
     {
+        /// <summary>
+        /// The set of disallowed characters in terms.
+        /// </summary>
+        /// <remarks>
+        /// We restrict many symbols, especially mathematical symbols, because we may eventually want to
+        /// support arithmetic expressions.
+        /// </remarks>
+        internal static readonly char[] DisallowedCharacters = "\"'`:;,+-*/\\!~|&%$@^()={}[]<>? \t\b\n\r".ToCharArray();
+
         /// <summary>
         /// The set of terms that are present.
         /// </summary>
@@ -26,15 +34,6 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
         /// The tokenizer that reads the expression.
         /// </summary>
         private readonly Tokenizer _tokenizer;
-
-        /// <summary>
-        /// The set of disallowed characters in terms.
-        /// </summary>
-        /// <remarks>
-        /// We restrict many symbols, especially mathematical symbols, because we may eventually want to 
-        /// support arithmetic expressions.
-        /// </remarks>
-        internal static readonly char[] DisallowedCharacters = "\"'`:;,+-*/\\!~|&%$@^()={}[]<>? \t\b\n\r".ToCharArray();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CapabilityExpressionEvaluator"/> class.
@@ -51,7 +50,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
         /// Evaluates the given expression against the given set of true terms. Missing terms are assumed to be false.
         /// </summary>
         /// <param name="expression">
-        /// The expression, such as "(VisualC | CSharp) + (MSTest | NUnit)".  
+        /// The expression, such as "(VisualC | CSharp) + (MSTest | NUnit)".
         /// The '|' is the OR operator.
         /// The '&' and '+' characters are both AND operators.
         /// The '!' character is the NOT operator.

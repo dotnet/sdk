@@ -11,8 +11,8 @@ using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Microsoft.TemplateEngine.Utils;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 {
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
         // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)
         // If any indexes are out of range or non-numeric, this method returns false and projectFiles is set to null.
-        internal static bool TryGetProjectFilesToAdd(IPostAction actionConfig, ICreationResult templateCreationResult, string outputBasePath, [NotNullWhen(true)]out IReadOnlyList<string>? projectFiles)
+        internal static bool TryGetProjectFilesToAdd(IPostAction actionConfig, ICreationResult templateCreationResult, string outputBasePath, [NotNullWhen(true)] out IReadOnlyList<string>? projectFiles)
         {
             List<string> filesToAdd = new();
 
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             if (projectFiles is null)
             {
                 //If the author didn't opt in to the new behavior by specifying "projectFiles", use the old behavior
-                if (!TryGetProjectFilesToAdd( action, templateCreationResult, outputBasePath, out projectFiles))
+                if (!TryGetProjectFilesToAdd(action, templateCreationResult, outputBasePath, out projectFiles))
                 {
                     Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Error_NoProjectsToAdd);
                     return false;
@@ -106,7 +106,16 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
             Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddProjToSln_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0], solutionFolder));
             return AddProjectsToSolution(nearestSlnFilesFound[0], projectFiles, solutionFolder);
         }
-        
+
+        private static string GetSolutionFolder(IPostAction actionConfig)
+        {
+            if (actionConfig.Args != null && actionConfig.Args.TryGetValue("solutionFolder", out string? solutionFolder))
+            {
+                return solutionFolder;
+            }
+            return string.Empty;
+        }
+
         private bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder)
         {
             try
@@ -128,15 +137,6 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddProjToSln_Failed, e.Message));
                 return false;
             }
-        }
-
-        private static string GetSolutionFolder(IPostAction actionConfig)
-        {
-            if (actionConfig.Args != null && actionConfig.Args.TryGetValue("solutionFolder", out string? solutionFolder))
-            {
-                return solutionFolder;
-            }
-            return string.Empty;
         }
     }
 }

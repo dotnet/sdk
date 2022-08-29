@@ -3,6 +3,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <PropertyGroup>

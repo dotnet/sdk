@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.New.Tests
 
         public DiagnosticFixture(IMessageSink sink)
         {
-           _diagnosticMessageSink = sink;
+            _diagnosticMessageSink = sink;
         }
 
         public IMessageSink DiagnosticSink => _diagnosticMessageSink;

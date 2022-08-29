@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         protected internal virtual IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings)
         {
-            return base.GetCompletions(context);
+            return GetCompletions(context);
         }
 
         protected IEngineEnvironmentSettings CreateEnvironmentSettings(GlobalArgs args, ParseResult parseResult)

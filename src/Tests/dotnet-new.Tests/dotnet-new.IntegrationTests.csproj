@@ -5,6 +5,7 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <OutputType>Exe</OutputType>
     <IsUnitTestProject>true</IsUnitTestProject>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,6 @@
     <ProjectReference Include="..\Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageReference Include="Verify.Xunit" Version="17.1.4" />
-    <PackageReference Include="Wcwidth.Sources" Version="0.6.0" />
     <PackageReference Include="Verify.DiffPlex" Version="1.3.0" />
   </ItemGroup>
 
@@ -31,7 +31,7 @@
       <![CDATA[
 namespace Microsoft.DotNet.New.Tests
 {
-  class TemplatePackagesPaths
+  internal class TemplatePackagesPaths
   {
       public const string MicrosoftDotNetCommonProjectTemplates21Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_2_1)"%3B
       public const string MicrosoftDotNetCommonProjectTemplates31Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_3_1)"%3B

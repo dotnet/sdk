@@ -3,6 +3,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <Nullable>enable</Nullable>
     <IsTestProject>false</IsTestProject>
+    <EnableAnalyzers>true</EnableAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

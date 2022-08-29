@@ -734,7 +734,7 @@ class Program
         }
 
         [Theory]
-        //creates all possible combinations for supported templates, language versions and frameworks 
+        //creates all possible combinations for supported templates, language versions and frameworks
         [MemberData(nameof(FileScopedNamespacesSupport_Data))]
         public void FileScopedNamespacesSupport(string name, bool pass, string? framework, string? langVersion, bool supportsFeature)
         {

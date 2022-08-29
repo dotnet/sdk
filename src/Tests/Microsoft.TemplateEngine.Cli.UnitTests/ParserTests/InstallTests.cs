@@ -170,7 +170,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ITemplateEngineHost host = TestHost.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(includeTestTemplates: false));
             NewCommand myCommand = (NewCommand)NewCommandFactory.Create("new", _ => host);
-             
+
             var parseResult = myCommand.Parse(testCase);
             InstallCommandArgs args = new InstallCommandArgs((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
 

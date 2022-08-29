@@ -6,7 +6,6 @@ using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
@@ -118,7 +117,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var parseResult = myCommand.Parse(command);
 
             Assert.NotEmpty(parseResult.Errors);
-            Assert.Equal("Unrecognized command or argument 'cr2'.", parseResult.Errors.First().Message);
+            Assert.Equal("Unrecognized command or argument 'cr2'.", parseResult.Errors[0].Message);
         }
 
         [Fact]
@@ -130,7 +129,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var parseResult = myCommand.Parse("new smth search");
 
             Assert.NotEmpty(parseResult.Errors);
-            Assert.Equal("Unrecognized command or argument(s): 'smth'.", parseResult.Errors.First().Message);
+            Assert.Equal("Unrecognized command or argument(s): 'smth'.", parseResult.Errors[0].Message);
         }
 
         [Theory]
@@ -148,7 +147,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var parseResult = myCommand.Parse(command);
 
             Assert.NotEmpty(parseResult.Errors);
-            Assert.Equal($"Unrecognized command or argument(s): '{expectedFilter}','filter-value'.", parseResult.Errors.First().Message);
+            Assert.Equal($"Unrecognized command or argument(s): '{expectedFilter}','filter-value'.", parseResult.Errors[0].Message);
         }
 
         [Fact]
@@ -160,7 +159,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var parseResult = myCommand.Parse("new smth --search smth-else");
 
             Assert.NotEmpty(parseResult.Errors);
-            Assert.Equal("Unrecognized command or argument(s): 'smth'.", parseResult.Errors.First().Message);
+            Assert.Equal("Unrecognized command or argument(s): 'smth'.", parseResult.Errors[0].Message);
         }
 
         [Theory]
@@ -239,7 +238,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             var parseResult = myCommand.Parse(command);
 
             Assert.NotEmpty(parseResult.Errors);
-            Assert.Contains("Argument 'c1' not recognized. Must be one of:", parseResult.Errors.First().Message);
+            Assert.Contains("Argument 'c1' not recognized. Must be one of:", parseResult.Errors[0].Message);
         }
 
         [Fact]

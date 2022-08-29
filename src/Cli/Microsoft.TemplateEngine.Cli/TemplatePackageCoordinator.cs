@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -105,10 +102,10 @@ namespace Microsoft.TemplateEngine.Cli
             IEnumerable<(string Id, string Version, string Provider)> unmanagedTemplatePackages = templatePackages
                 .Where(tp => tp is not IManagedTemplatePackage)
                 .Select(tp => new
-                            {
-                                Info = NuGetUtils.GetNuGetPackageInfo(_engineEnvironmentSettings, tp.MountPointUri),
-                                Package = tp
-                            })
+                {
+                    Info = NuGetUtils.GetNuGetPackageInfo(_engineEnvironmentSettings, tp.MountPointUri),
+                    Package = tp
+                })
                 .Where(i => i.Info != default)
                 .Select(i => (i.Info.Id, i.Info.Version, i.Package.Provider.Factory.DisplayName));
 

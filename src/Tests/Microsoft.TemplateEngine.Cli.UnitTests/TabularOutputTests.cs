@@ -5,7 +5,6 @@ using System.Reflection;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Mocks;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -99,7 +98,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                        new MockEnvironment()
                        {
                            ConsoleBufferWidth = 100
-                 });
+                       });
 
             IEnumerable<Tuple<string, string, string>> data = new List<Tuple<string, string, string>>()
             {
@@ -280,7 +279,7 @@ Dotnet 本地...  tool-manifest
             string result = formatter.Layout();
             Assert.Equal(expectedOutput, result);
         }
-        
+
         [Fact]
         public void VerifyColumnsOptionHasAllColumnNamesDefined()
         {
@@ -294,7 +293,7 @@ Dotnet 本地...  tool-manifest
             List<string?> columnNamesConstants = (typeof(TabularOutputSettings.ColumnNames))
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
                 .Where(fi => fi.IsLiteral && !fi.IsInitOnly)
-                .Select(fi => (string?)fi.GetValue(null)) 
+                .Select(fi => (string?)fi.GetValue(null))
                 .ToList();
             columnNamesConstants.Sort();
 

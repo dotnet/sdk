@@ -15,7 +15,6 @@ using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.TemplateEngine.MSBuildEvaluation
 {
-
     /// <summary>
     /// Allows to bind symbols to MSBuild properties.
     /// </summary>

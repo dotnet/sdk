@@ -14,14 +14,13 @@ using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.Common.Providers;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
     public class TemplateSearchCoordinatorTests : IClassFixture<EnvironmentSettingsHelper>
     {
         private EnvironmentSettingsHelper _environmentSettingsHelper;
-       
+
         public TemplateSearchCoordinatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
             _environmentSettingsHelper = environmentSettingsHelper;
@@ -104,7 +103,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         // The _fooOneTemplate is a non-match because of a framework choice param value mismatch.
         // But the _fooTwoTemplate matches because the framework choice is valid for that template.
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact (Skip = "Fails due to matching on template options is not implemented.")]
+        [Fact(Skip = "Fails due to matching on template options is not implemented.")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public async Task CacheSearchCliSymbolNameFilterTest()
         {
@@ -221,9 +220,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 Assert.Single(searchResults, result => result.Provider.Factory.DisplayName == "NuGet.org");
                 var nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
                 Assert.Equal(1, nugetSearchResults.SearchHits.Count);
-                Assert.Equal(1, nugetSearchResults.SearchHits.First().MatchedTemplates.Count);
-                Assert.Equal(_packThreeInfo.Name, nugetSearchResults.SearchHits.First().PackageInfo.Name);
-                Assert.Equal(_barFSharpTemplate.Name, nugetSearchResults.SearchHits.First().MatchedTemplates.First().Name);
+                Assert.Equal(1, nugetSearchResults.SearchHits[0].MatchedTemplates.Count);
+                Assert.Equal(_packThreeInfo.Name, nugetSearchResults.SearchHits[0].PackageInfo.Name);
+                Assert.Equal(_barFSharpTemplate.Name, nugetSearchResults.SearchHits[0].MatchedTemplates[0].Name);
             }
         }
 

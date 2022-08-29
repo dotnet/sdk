@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.New.Tests
         public WebProjectsFixture(IMessageSink messageSink) : base(messageSink)
         {
             BaseWorkingDirectory = TestUtils.CreateTemporaryFolder(nameof(AllWebProjectsWork));
- 
+
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates31Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates50Path, BaseWorkingDirectory);
         }
