@@ -122,65 +122,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             }
         }
 
-        private static int compareDiagnosticID(string a, string b)
-        {
-            GroupCollection aMatch = Regex.Match(a, @"^([A-Z]+)(\d+)$").Groups;
-            GroupCollection bMatch = Regex.Match(b, @"^([A-Z]+)(\d+)$").Groups;
-            string aPrefix = aMatch[1].Value;
-            string bPrefix = bMatch[1].Value;
-            string acode = aMatch[2].Value;
-            string bcode = bMatch[2].Value;
-            if (!aPrefix.Equals(bPrefix))
-            {
-                if (aPrefix.Equals("PKV"))
-                {
-                    return -1;
-                }
-                return 1;
-            }
-            return acode.CompareTo(bcode);
-        }
-
-        private static int compareNullString(string? a, string? b) => (a, b) switch
-        {
-            (null, null) => 0,
-            (null, _) => -1,
-            (_, null) => 1,
-            (_, _) => a.CompareTo(b),
-        };
-
         /// <inheritdoc/>
         public bool WriteSuppressionsToFile(string supressionFile)
         {
             if (_validationSuppressions.Count == 0)
                 return false;
 
-            Suppression[] suppressionsToWrite = _validationSuppressions.ToArray();
-            Array.Sort(suppressionsToWrite, (a, b) =>
-            {
-                int cmp = compareDiagnosticID(a.DiagnosticId, b.DiagnosticId);
-
-                if (cmp != 0)
-                {
-                    return cmp;
-                }
-
-                cmp = compareNullString(a.Left, b.Left);
-
-                if (cmp != 0)
-                {
-                    return cmp;
-                }
-
-                cmp = compareNullString(a.Right, b.Right);
-
-                if (cmp != 0)
-                {
-                    return cmp;
-                }
-
-                return compareNullString(a.Target, b.Target);
-            });
+            Suppression[] orderedSuppressions = _validationSuppressions
+                .OrderBy(sup => sup.DiagnosticId)
+                .ThenBy(sup => sup.Left)
+                .ThenBy(sup => sup.Right)
+                .ThenBy(sup => sup.Target)
+                .ToArray();
 
             using (Stream writer = GetWritableStream(supressionFile))
             {
@@ -192,7 +145,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                         Formatting = Formatting.Indented,
                         Indentation = 2
                     };
-                    _serializer.Serialize(xmlWriter, suppressionsToWrite);
+                    _serializer.Serialize(xmlWriter, orderedSuppressions);
                     AfterWrittingSuppressionsCallback(writer);
                 }
                 finally
