@@ -487,7 +487,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     ContainingNamespace:
                     {
                         Name: nameof(System.Security),
-                        ContainingNamespace: { Name: nameof(System) }
+                        ContainingNamespace.Name: nameof(System)
                     }
                 };
             }

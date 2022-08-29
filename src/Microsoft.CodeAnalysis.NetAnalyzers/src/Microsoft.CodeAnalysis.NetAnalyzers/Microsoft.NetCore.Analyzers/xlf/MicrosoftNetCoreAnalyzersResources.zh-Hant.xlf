@@ -1143,8 +1143,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
-        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</source>
-        <target state="translated">若委派受管理的類型為參數或傳回型別，則需要在定義委派的組件中啟用執行階段封送處理。</target>
+        <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
+        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
@@ -1834,7 +1834,7 @@
       </trans-unit>
       <trans-unit id="ParenthesisWithPlaceHolder">
         <source> ({0})</source>
-        <target state="new"> ({0})</target>
+        <target state="translated"> ({0})</target>
         <note />
       </trans-unit>
       <trans-unit id="PlatformCompatibilityAllPlatforms">
@@ -1859,12 +1859,12 @@
       </trans-unit>
       <trans-unit id="PlatformCompatibilityObsoletedCsAllPlatformMessage">
         <source>This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</source>
-        <target state="new">This call site is reachable on all platforms. '{0}' is obsoleted on: {1}.</target>
+        <target state="translated">可在所有平台上連線到此呼叫網站。'{0}' 已在 {1} 上淘汰。</target>
         <note>This call site is reachable on all platforms. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityObsoletedCsReachableMessage">
         <source>This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</source>
-        <target state="new">This call site is reachable on: {2}. '{0}' is obsoleted on: {1}.</target>
+        <target state="translated">可在 {2} 上連線到此呼叫網站。'{0}' 已在 {1} 上淘汰。</target>
         <note>This call site is reachable on 'macos', 'linux'. 'OboletedOnMacOS()' is obsoleted on: 'macos'.</note>
       </trans-unit>
       <trans-unit id="PlatformCompatibilityOnlySupportedCsAllPlatformMessage">
@@ -2865,6 +2865,26 @@
       <trans-unit id="UseSharedAccessProtocolHttpsOnlyMessage">
         <source>Consider using Azure's role-based access control instead of a Shared Access Signature (SAS) if possible. If you still need to use a SAS, specify SharedAccessProtocol.HttpsOnly.</source>
         <target state="translated">如果可行的話，請考慮從共用存取簽章 (SAS) 改為使用 Azure 的角色型存取控制。如果您仍需要使用 SAS，請指定 SharedAccessProtocol.HttpsOnly。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillCodeFixTitle">
+        <source>Use 'Clear()'</source>
+        <target state="translated">使用 'Clear()'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillDescription">
+        <source>It is more efficient to use 'Clear', instead of 'Fill' with default value.</source>
+        <target state="translated">使用 'Clear' 比使用預設值的 'Fill' 更有效率。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillMessage">
+        <source>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</source>
+        <target state="translated">優先使用 'Span&lt;T&gt;.Clear()'，而不是 'Span&lt;T&gt;.Fill(default)'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSpanClearInsteadOfFillTitle">
+        <source>Prefer 'Clear' over 'Fill'</source>
+        <target state="translated">優先使用 'Clear' 而不是 'Fill'</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringEqualsOverStringCompareCodeFixTitle">

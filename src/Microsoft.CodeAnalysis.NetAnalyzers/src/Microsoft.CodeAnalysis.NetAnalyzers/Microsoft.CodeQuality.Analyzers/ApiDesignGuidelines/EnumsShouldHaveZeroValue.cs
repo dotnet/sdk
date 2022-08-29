@@ -176,7 +176,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         internal static IEnumerable<IFieldSymbol> GetZeroValuedFields(INamedTypeSymbol enumType)
         {
             SpecialType specialType = enumType.EnumUnderlyingType.SpecialType;
-            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field))
+            foreach (IFieldSymbol field in enumType.GetMembers().Where(m => m.Kind == SymbolKind.Field).Cast<IFieldSymbol>())
             {
                 if (field.HasConstantValue && IsZeroValueConstant(field.ConstantValue, specialType))
                 {

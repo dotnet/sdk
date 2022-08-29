@@ -120,7 +120,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 // Use Preserve to enable subsequent unlimited consumption is acceptable.
                                 return;
 
-                            case nameof(ValueTask.GetAwaiter) when parentIo.Parent is IInvocationOperation { TargetMethod: { Name: nameof(ValueTaskAwaiter.GetResult) } }:
+                            case nameof(ValueTask.GetAwaiter) when parentIo.Parent is IInvocationOperation { TargetMethod.Name: nameof(ValueTaskAwaiter.GetResult) }:
                                 // Warn! Trying to block waiting for a value task isn't supported.
                                 operationContext.ReportDiagnostic(invocation.CreateDiagnostic(AccessingIncompleteResultRule));
                                 return;
@@ -131,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 break;
                         }
                     }
-                    else if (invocation.Parent is IPropertyReferenceOperation { Property: { Name: nameof(ValueTask<int>.Result) } })
+                    else if (invocation.Parent is IPropertyReferenceOperation { Property.Name: nameof(ValueTask<int>.Result) })
                     {
                         operationContext.ReportDiagnostic(invocation.CreateDiagnostic(AccessingIncompleteResultRule));
                         return;
@@ -432,7 +432,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                         OperationKind.Return => true,
                         OperationKind.Argument => true,
                         OperationKind.Invocation => true, // e.g. AsTask()
-                        OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property: { Name: "Result" } } => true,
+                        OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property.Name: "Result" } => true,
                         _ => false
                     })
                 {
@@ -512,8 +512,8 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                 IsLocalOrParameterSymbolReference(op, valueTaskSymbol) &&
                 op.Parent?.Kind switch
                 {
-                    OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property: { Name: nameof(ValueTask<int>.Result) } } => true,
-                    OperationKind.Invocation when op.Parent is IInvocationOperation { TargetMethod: { Name: nameof(ValueTask.GetAwaiter) } } => true,
+                    OperationKind.PropertyReference when op.Parent is IPropertyReferenceOperation { Property.Name: nameof(ValueTask<int>.Result) } => true,
+                    OperationKind.Invocation when op.Parent is IInvocationOperation { TargetMethod.Name: nameof(ValueTask.GetAwaiter) } => true,
                     _ => false
                 };
         }

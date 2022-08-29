@@ -285,6 +285,25 @@
             ]
           }
         },
+        "CA1855": {
+          "id": "CA1855",
+          "shortDescription": "Prefer 'Clear' over 'Fill'",
+          "fullDescription": "It is more efficient to use 'Clear', instead of 'Fill' with default value.",
+          "defaultLevel": "note",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseSpanClearInsteadOfFillAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -4642,7 +4661,7 @@
         "CA3075": {
           "id": "CA3075",
           "shortDescription": "Insecure DTD processing in XML",
-          "fullDescription": "Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null. ",
+          "fullDescription": "Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3075",
           "properties": {
@@ -4661,7 +4680,7 @@
         },
         "CA3076": {
           "id": "CA3076",
-          "shortDescription": "Insecure XSLT script processing.",
+          "shortDescription": "Insecure XSLT script processing",
           "fullDescription": "Providing an insecure XsltSettings instance and an insecure XmlResolver instance to XslCompiledTransform.Load method is potentially unsafe as it allows processing script within XSL, which on an untrusted XSL input may lead to malicious code execution. Either replace the insecure XsltSettings argument with XsltSettings.Default or an instance that has disabled document function and script execution, or replace the XmlResolver argument with null or an XmlSecureResolver instance. This message may be suppressed if the input is known to be from a trusted source and external resource resolution from locations that are not known in advance must be supported.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3076",
@@ -4682,7 +4701,7 @@
         "CA3077": {
           "id": "CA3077",
           "shortDescription": "Insecure Processing in API Design, XmlDocument and XmlTextReader",
-          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false. ",
+          "fullDescription": "Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.",
           "defaultLevel": "hidden",
           "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca3077",
           "properties": {

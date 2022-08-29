@@ -124,7 +124,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var propertiesMap = new Dictionary<string, IPropertySymbol>(StringComparer.OrdinalIgnoreCase);
             foreach (INamedTypeSymbol currentType in attributeType.GetBaseTypesAndThis())
             {
-                foreach (IPropertySymbol property in currentType.GetMembers().Where(m => m.Kind == SymbolKind.Property))
+                foreach (IPropertySymbol property in currentType.GetMembers().Where(m => m.Kind == SymbolKind.Property).Cast<IPropertySymbol>())
                 {
                     if (!propertiesMap.ContainsKey(property.Name))
                     {

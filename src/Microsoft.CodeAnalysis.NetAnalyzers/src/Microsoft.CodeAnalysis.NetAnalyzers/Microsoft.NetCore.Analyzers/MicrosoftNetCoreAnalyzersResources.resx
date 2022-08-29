@@ -1931,7 +1931,7 @@
     <value>Seal class</value>
   </data>
   <data name="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage" xml:space="preserve">
-    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined.</value>
+    <value>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</value>
   </data>
   <data name="PreferDictionaryTryGetValueCodeFixTitle" xml:space="preserve">
     <value>Use 'TryGetValue(TKey, out TValue)'</value>
@@ -1958,5 +1958,17 @@
   </data>
   <data name="ParenthesisWithPlaceHolder" xml:space="preserve">
     <value> ({0})</value>
+  </data>
+  <data name="UseSpanClearInsteadOfFillCodeFixTitle" xml:space="preserve">
+    <value>Use 'Clear()'</value>
+  </data>
+  <data name="UseSpanClearInsteadOfFillDescription" xml:space="preserve">
+    <value>It is more efficient to use 'Clear', instead of 'Fill' with default value.</value>
+  </data>
+  <data name="UseSpanClearInsteadOfFillMessage" xml:space="preserve">
+    <value>Prefer 'Span&lt;T&gt;.Clear()' instead of 'Span&lt;T&gt;.Fill(default)'</value>
+  </data>
+  <data name="UseSpanClearInsteadOfFillTitle" xml:space="preserve">
+    <value>Prefer 'Clear' over 'Fill'</value>
   </data>
 </root>
