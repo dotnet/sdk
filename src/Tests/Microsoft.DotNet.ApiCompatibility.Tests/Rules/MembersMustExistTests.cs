@@ -466,5 +466,41 @@ namespace CompatTests
             };
             Assert.Equal(expected, differences);
         }
+
+        [Fact]
+        public void NumericPtrFlaggedOnlyBeforeNet7()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  using System;
+
+  public class First
+  {
+    public void F(IntPtr p) {}
+  }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public class First
+  {
+    public void F(nint p) {}
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            CompatDifference[] expected =
+            {
+            };
+            // ReferenceID on .NET 7 for left member is "M:CompatTests.First.F(System.IntPtr)"
+            Assert.Equal(expected, differences);
+        }
     }
 }

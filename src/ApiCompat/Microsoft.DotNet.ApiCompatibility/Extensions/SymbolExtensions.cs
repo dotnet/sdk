@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Extensions
             return format.WithParameterOptions(format.ParameterOptions & ~SymbolDisplayParameterOptions.IncludeParamsRefOut);
         }
 
-        internal static string ToComparisonDisplayString(this ISymbol symbol) => symbol.ToDisplayString(Format);
+        internal static string ToComparisonDisplayString(this ISymbol symbol) => symbol.ToDisplayString(Format);//.Replace("System.IntPtr", "nint");
 
         internal static IEnumerable<ITypeSymbol> GetAllBaseTypes(this ITypeSymbol type)
         {
