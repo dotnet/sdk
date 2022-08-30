@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // We only need to support this for requests that could be initiated by a browser.
             if (IsBrowserDocumentRequest(context))
             {
-                // Use a custom stream so we can rewrite the response body.
+                // Use a custom stream to buffer the response body for rewriting.
                 using var memoryStream = new MemoryStream();
                 var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
                 context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(memoryStream));

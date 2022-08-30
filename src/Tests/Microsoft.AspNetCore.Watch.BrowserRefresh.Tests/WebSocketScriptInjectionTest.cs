@@ -145,59 +145,6 @@ $@"<footer>
             Assert.Equal(expected, output);
         }
 
-        [Fact]
-        public void TryInjectLiveReloadScript_NoBodyTag()
-        {
-            // Arrange
-            var expected = "<p>Hello world</p>";
-            var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes(expected).AsSpan();
-
-            // Act
-            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
-
-            // Assert
-            Assert.False(result);
-            var output = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(expected, output);
-        }
-
-        [Theory]
-        [MemberData(nameof(ClosingBodyTagVariations))]
-        public void TryInjectLiveReloadScript_NoOffset(string closingBodyTag)
-        {
-            // Arrange
-            var expected = $"</table>{WebSocketScriptInjection.InjectedScript}{closingBodyTag}";
-            var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes($"</table>{closingBodyTag}").AsSpan();
-
-            // Act
-            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
-
-            // Assert
-            Assert.True(result);
-            var output = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(expected, output);
-        }
-
-        [Theory]
-        [MemberData(nameof(ClosingBodyTagVariations))]
-        public void TryInjectLiveReloadScript_WithOffset(string closingBodyTag)
-        {
-            // Arrange
-            var expected = $"</table>{WebSocketScriptInjection.InjectedScript}{closingBodyTag}";
-            var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes($"unused</table>{closingBodyTag}").AsSpan(6);
-
-            // Act
-            var result = WebSocketScriptInjection.TryInjectLiveReloadScript(stream, input);
-
-            // Assert
-            Assert.True(result);
-            var output = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(expected, output);
-        }
-
         public static IEnumerable<object[]> ClosingBodyTagVariations => new[]
         {
             new[] { "</body>" },

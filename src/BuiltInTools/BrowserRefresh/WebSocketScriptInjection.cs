@@ -23,29 +23,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         private static readonly byte[] s_injectedScriptBytes = Encoding.UTF8.GetBytes(InjectedScript);
 
-        public static bool TryInjectLiveReloadScript(Stream baseStream, ReadOnlySpan<byte> buffer)
-        {
-            var index = LastIndexOfClosingBodyTag(buffer);
-            if (index == -1)
-            {
-                baseStream.Write(buffer);
-                return false;
-            }
-
-            if (index > 0)
-            {
-                baseStream.Write(buffer.Slice(0, index));
-                buffer = buffer[index..];
-            }
-
-            // Write the injected script
-            baseStream.Write(s_injectedScriptBytes);
-
-            // Write the rest of the buffer/HTML doc
-            baseStream.Write(buffer);
-            return true;
-        }
-
         public static async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             var index = LastIndexOfClosingBodyTag(buffer.Span);
