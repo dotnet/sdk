@@ -190,7 +190,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToArray();
 
-                existingFiles..Should().BeEquivalentTo(expected);
+                existingFiles.Should().BeEquivalentTo(expected);
             }
             else
             {
@@ -250,7 +250,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 existingFiles = existingFiles.Select(f => Regex.Replace(f, DotNetJSHashRegexPattern, DotNetJSHashTemplate)).ToArray();
 
                 var expected = LoadExpectedFilesBaseline(manifest.ManifestType, publishFolder, intermediateOutputPath, suffix, name);
-                existingFiles..Should().BeEquivalentTo(expected);
+                existingFiles.Should().BeEquivalentTo(expected);
             }
             else
             {
