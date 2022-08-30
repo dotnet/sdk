@@ -15,36 +15,6 @@ using Microsoft.NET.TestFramework;
 using Xunit;
 using Xunit.Abstractions;
 
-
-/***
-
------------------------------------------------------------------
-  Blazor WebAssembly Static Web Asset (SWA) Baseline Generation
------------------------------------------------------------------
-
-The Blazor WASM SWA baselines are used to determine if the expected assets in 
-the manifest are present, and if new assets have been added. Occasionally, it's 
-required to update the SWA baselines to account for expected changes in the 
-packaged files.
-
-**Please note:** These steps must be performed in a Windows development environment
-otherwise the line-ending and ordering result in very large diff-counts.
-
-
-Updating Baselines:
-
-1. Restore repo: `.\restore.cmd`
-2. Build dotnet: `.\build.cmd`
-3. Activate local dotnet environment: `.\eng\dogfood.cmd`
-4. Enter the following into the CLI from the activated dogfood environment to open VS: `.\src\BlazorWasmSdk\BlazorWasmSdk.slnf`
-5. Add `#define GENERATE_SWA_BASELINES` on the first line of this file (above the license comment)
-6. Run all tests from `Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj`
-7. Delete `#define GENERATE_SWA_BASELINES` added in step 5 from the top of this file.
-8. Commit the changes to the project baselines.
-
- ***/
-
-
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     [Trait("AspNetCore", "BaselineTest")]
@@ -411,7 +381,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
                     if (differences.Any())
                     {
-                        differences.Add("If the difference in baselines is expected, please re-generate the baselines using the steps at the top of this file in the source code.");
+                        differences.Add("If the difference in baselines is expected, please re-generate the baselines using the src/RazorSdk/update-test-baselines.ps1 script.");
                     }
 
                     return string.Join(Environment.NewLine, differences);
