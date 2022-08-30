@@ -42,10 +42,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     context.Features.Set(originalBodyFeature);
                 }
 
-                // This should always succeed because we don't explicitly make the buffer invisible.
-                Debug.Assert(memoryStream.TryGetBuffer(out var buffer));
-
-                if (buffer.Count > 0)
+                if (memoryStream.TryGetBuffer(out var buffer) && buffer.Count > 0)
                 {
                     var response = context.Response;
                     var baseStream = response.Body;
