@@ -372,6 +372,12 @@ namespace Microsoft.NET.Publish.Tests
                 publishCommand
                     .Execute($"/p:RuntimeIdentifier={rid}")
                     .Should().Pass();
+                var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
+                var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
+                var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+                File.Exists(publishedDll).Should().BeFalse();
+                File.Exists(publishedExe).Should().BeTrue();
+
             }
         }
 
@@ -406,7 +412,9 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
+                var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
                 File.Exists(publishedDll).Should().BeFalse();
+                File.Exists(publishedExe).Should().BeTrue();
             }
         }
 
