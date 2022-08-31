@@ -234,7 +234,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureDtdProcessingDescription">
         <source>Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.</source>
-        <target state="new">Using XmlTextReader.Load(), creating an insecure XmlReaderSettings instance when invoking XmlReader.Create(), setting the InnerXml property of the XmlDocument and enabling DTD processing using XmlUrlResolver insecurely can lead to information disclosure. Replace it with a call to the Load() method overload that takes an XmlReader instance, use XmlReader.Create() to accept XmlReaderSettings arguments or consider explicitly setting secure values. The DataViewSettingCollectionString property of DataViewManager should always be assigned from a trusted source, the DtdProcessing property should be set to false, and the XmlResolver property should be changed to XmlSecureResolver or null.</target>
+        <target state="translated">Používání metody XmlTextReader.Load(), vytváření nezabezpečené instance XmlReaderSettings při volání metody XmlReader.Create(), nastavování vlastnosti InnerXml dokumentu XmlDocument a zapínání nezabezpečeného zpracování DTD pomocí nástroje XmlUrlResolver může vést k odhalení informací. Nahraďte je voláním přetížení metody Load(), která přijímá instanci XmlReader, pomocí metody XmlReader.Create() přijměte argumenty XmlReaderSettings nebo zvažte možnost explicitně nastavit bezpečné hodnoty. Vlastnost DataViewSettingCollectionString třídy DataViewManager by se vždy měla přiřazovat z důvěryhodného zdroje, vlastnost DtdProcessing by měla být nastavená na false a vlastnost XmlResolver by se měla změnit na XmlSecureResolver nebo null.</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="DoNotUseDtdProcessingOverloadsMessage">
@@ -264,7 +264,7 @@
       </trans-unit>
       <trans-unit id="XmlDocumentWithNoSecureResolverMessage">
         <source>An XmlDocument instance is created without setting its XmlResolver property to a secure value</source>
-        <target state="new">An XmlDocument instance is created without setting its XmlResolver property to a secure value</target>
+        <target state="translated">Instance XmlDocument se vytvořila bez toho, aby se vlastnost XmlResolver nastavila na bezpečnou hodnotu.</target>
         <note>CA3075</note>
       </trans-unit>
       <trans-unit id="XmlReaderCreateInsecureConstructedMessage">
@@ -304,7 +304,7 @@
       </trans-unit>
       <trans-unit id="DoNotUseInsecureDtdProcessingInApiDesignDescription">
         <source>Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.</source>
-        <target state="new">Enabling DTD processing on all instances derived from XmlTextReader or  XmlDocument and using XmlUrlResolver for resolving external XML entities may lead to information disclosure. Ensure to set the XmlResolver property to null, create an instance of XmlSecureResolver when processing untrusted input, or use XmlReader.Create method with a secure XmlReaderSettings argument. Unless you need to enable it, ensure the DtdProcessing property is set to false.</target>
+        <target state="translated">Když se ve všech instancích odvozených od třídy XmlTextReader nebo  XmlDocument povolí zpracování DTD a k překladu externích entit XML se použije XmlUrlResolver, může dojít k odhalení informací. Ujistěte se, že jste nastavili vlastnost XmlResolver na null, při zpracování nedůvěryhodného vstupu vytvořte instanci třídy XmlSecureResolver nebo použijte metodu XmlReader.Create s bezpečným argumentem XmlReaderSettings. Pokud nepotřebujete povolit vlastnost DtdProcessing, ujistěte se, že je nastavená na false.</target>
         <note>CA3077</note>
       </trans-unit>
       <trans-unit id="XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage">
@@ -339,7 +339,7 @@
       </trans-unit>
       <trans-unit id="InsecureXsltScriptProcessingMessage">
         <source>Insecure XSLT script processing</source>
-        <target state="new">Insecure XSLT script processing</target>
+        <target state="translated">Nezabezpečené zpracování skriptu XSLT</target>
         <note>CA3076</note>
       </trans-unit>
       <trans-unit id="DoNotUseInsecureXSLTScriptExecutionDescription">
