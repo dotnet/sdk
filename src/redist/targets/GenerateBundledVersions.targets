@@ -61,9 +61,9 @@
 
   <PropertyGroup>
       <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>28</VersionFeature31>
+      <VersionFeature31>29</VersionFeature31>
       <VersionFeature50>17</VersionFeature50>
-      <VersionFeature60>8</VersionFeature60>
+      <VersionFeature60>9</VersionFeature60>
   </PropertyGroup>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
