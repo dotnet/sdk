@@ -31,7 +31,6 @@ public class SdkContentTests : SmokeTests
         WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
-        diff = BaselineHelper.RemoveVersions(diff);
         diff = RemoveDiffMarkers(diff);
         BaselineHelper.CompareContents("MsftToSbSdk.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
@@ -45,6 +44,7 @@ public class SdkContentTests : SmokeTests
 
         string fileListing = ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"tf {tarballPath}", OutputHelper);
         fileListing = BaselineHelper.RemoveRids(fileListing, isPortable);
+        fileListing = BaselineHelper.RemoveVersions(fileListing);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
 
         File.WriteAllLines(outputFileName, files);
