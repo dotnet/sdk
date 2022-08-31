@@ -1144,7 +1144,7 @@
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageDelegateUsage">
         <source>Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</source>
-        <target state="new">Delegates with managed types as parameters or the return type require runtime marshalling to be enabled in the assembly where the delegate is defined</target>
+        <target state="translated">Delegates mit verwalteten Typen als Parameter oder der Rückgabetyp erfordern, dass das Marshalling der Runtime in der Assembly aktiviert ist, in der das Delegat definiert ist.</target>
         <note />
       </trans-unit>
       <trans-unit id="FeatureUnsupportedWhenRuntimeMarshallingDisabledMessageHResultSwapping">
