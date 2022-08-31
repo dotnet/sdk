@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.0.2</NuGetVersion>
+    <NuGetVersion>6.0.2-rc.5</NuGetVersion>
   </PropertyGroup>
 
   <ItemGroup>
