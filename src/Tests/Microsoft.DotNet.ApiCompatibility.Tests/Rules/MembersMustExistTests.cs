@@ -468,7 +468,7 @@ namespace CompatTests
         }
 
         [Fact]
-        public void NumericPtrFlaggedOnlyBeforeNet7()
+        public void NumericPtrNotFlagged()
         {
             string leftSyntax = @"
 namespace CompatTests
@@ -478,6 +478,7 @@ namespace CompatTests
   public class First
   {
     public void F(IntPtr p) {}
+    public void G(UIntPtr p) {}
   }
 }
 ";
@@ -487,6 +488,7 @@ namespace CompatTests
   public class First
   {
     public void F(nint p) {}
+    public void G(nuint p) {}
   }
 }
 ";
@@ -496,11 +498,7 @@ namespace CompatTests
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
-            CompatDifference[] expected =
-            {
-            };
-            // ReferenceID on .NET 7 for left member is "M:CompatTests.First.F(System.IntPtr)"
-            Assert.Equal(expected, differences);
+            Assert.Empty(differences);
         }
     }
 }
