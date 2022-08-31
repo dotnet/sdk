@@ -17,7 +17,7 @@
     <MicrosoftCodeAnalysisAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>7.0.0-preview.2.22152.2</MicrosoftExtensionsDependencyInjectionVersion>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.4.0-2.22426.8</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.4.0-3.22430.19</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Dependencies from https://github.com/dotnet/command-line-api -->
     <SystemCommandLineVersion>2.0.0-beta4.22402.1</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.22402.1</SystemCommandLineRenderingVersion>
