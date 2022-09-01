@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
+using System.IO;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 
 namespace Microsoft.DotNet.ApiCompat.Tool
@@ -34,7 +35,13 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
             Option<MessageImportance> verbosityOption = new(new string[] { "--verbosity", "-v" },
                 "Controls the log level verbosity. Allowed values are high, normal, and low.");
-            verbosityOption.SetDefaultValue(MessageImportance.Normal);
+            verbosityOption.SetDefaultValue(MessageImportance.High);
+            Option<bool> enableRuleAttributesMustMatchOption = new("--enable-rule-attributes-must-match",
+                "If true, enables rule to check that attributes match.");
+            Option<string[]> excludeAttributesFilesOption = new("--exclude-attributes-file",
+                "The path to one or more attribute exclusion files with types in DocId format.");
+            Option<bool> enableRuleCannotChangeParameterNameOption = new("--enable-rule-cannot-change-parameter-name",
+                "If true, enables rule to check that the parameter names between public methods do not change.");
 
             // Root command
             Option<string[]> leftAssembliesOption = new(new string[] { "--left-assembly", "--left", "-l" },
@@ -97,6 +104,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             rootCommand.AddGlobalOption(noWarnOption);
             rootCommand.AddGlobalOption(roslynAssembliesPathOption);
             rootCommand.AddGlobalOption(verbosityOption);
+            rootCommand.AddGlobalOption(enableRuleAttributesMustMatchOption);
+            rootCommand.AddGlobalOption(excludeAttributesFilesOption);
+            rootCommand.AddGlobalOption(enableRuleCannotChangeParameterNameOption);
 
             rootCommand.AddOption(leftAssembliesOption);
             rootCommand.AddOption(rightAssembliesOption);
@@ -109,16 +119,19 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
             rootCommand.SetHandler((InvocationContext context) =>
             {
-                string? roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption);
-                if (roslynAssembliesPath != null)
-                {
-                    RoslynResolver.Register(roslynAssembliesPath);
-                }
+                // If a roslyn assemblies path isn't provided, use the compiled against version from a subfolder.
+                string roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption) ??
+                    Path.Combine(AppContext.BaseDirectory, "codeanalysis");
+                RoslynResolver roslynResolver = RoslynResolver.Register(roslynAssembliesPath);
 
                 MessageImportance verbosity = context.ParseResult.GetValueForOption(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValueForOption(generateSuppressionFileOption);
                 string? suppressionFile = context.ParseResult.GetValueForOption(suppressionFileOption);
                 string? noWarn = context.ParseResult.GetValueForOption(noWarnOption);
+                bool enableRuleAttributesMustMatch = context.ParseResult.GetValueForOption(enableRuleAttributesMustMatchOption);
+                string[]? excludeAttributesFiles = context.ParseResult.GetValueForOption(excludeAttributesFilesOption);
+                bool enableRuleCannotChangeParameterName = context.ParseResult.GetValueForOption(enableRuleCannotChangeParameterNameOption);
+
                 string[] leftAssemblies = context.ParseResult.GetValueForOption(leftAssembliesOption)!;
                 string[] rightAssemblies = context.ParseResult.GetValueForOption(rightAssembliesOption)!;
                 bool strictMode = context.ParseResult.GetValueForOption(strictModeOption);
@@ -133,6 +146,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     generateSuppressionFile,
                     suppressionFile,
                     noWarn,
+                    enableRuleAttributesMustMatch,
+                    excludeAttributesFiles,
+                    enableRuleCannotChangeParameterName,
                     leftAssemblies,
                     rightAssemblies,
                     strictMode,
@@ -141,6 +157,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     createWorkItemPerAssembly,
                     leftAssembliesTransformationPattern,
                     rightAssembliesTransformationPattern);
+
+                roslynResolver.Unregister();
             });
 
             // Package command
@@ -197,16 +215,19 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             packageCommand.AddOption(baselinePackageAssemblyReferencesOption);
             packageCommand.SetHandler((InvocationContext context) =>
             {
-                string? roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption);
-                if (roslynAssembliesPath != null)
-                {
-                    RoslynResolver.Register(roslynAssembliesPath);
-                }
+                // If a roslyn assemblies path isn't provided, use the compiled against version from a subfolder.
+                string roslynAssembliesPath = context.ParseResult.GetValueForOption(roslynAssembliesPathOption) ??
+                    Path.Combine(AppContext.BaseDirectory, "codeanalysis");
+                RoslynResolver roslynResolver = RoslynResolver.Register(roslynAssembliesPath);
 
                 MessageImportance verbosity = context.ParseResult.GetValueForOption(verbosityOption);
                 bool generateSuppressionFile = context.ParseResult.GetValueForOption(generateSuppressionFileOption);
                 string? suppressionFile = context.ParseResult.GetValueForOption(suppressionFileOption);
                 string? noWarn = context.ParseResult.GetValueForOption(noWarnOption);
+                bool enableRuleAttributesMustMatch = context.ParseResult.GetValueForOption(enableRuleAttributesMustMatchOption);
+                string[]? excludeAttributesFiles = context.ParseResult.GetValueForOption(excludeAttributesFilesOption);
+                bool enableRuleCannotChangeParameterName = context.ParseResult.GetValueForOption(enableRuleCannotChangeParameterNameOption);
+
                 string package = context.ParseResult.GetValueForArgument(packageArgument);
                 bool runApiCompat = context.ParseResult.GetValueForOption(runApiCompatOption);
                 bool enableStrictModeForCompatibleTfms = context.ParseResult.GetValueForOption(enableStrictModeForCompatibleTfmsOption);
@@ -222,6 +243,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     generateSuppressionFile,
                     suppressionFile,
                     noWarn,
+                    enableRuleAttributesMustMatch,
+                    excludeAttributesFiles,
+                    enableRuleCannotChangeParameterName,
                     package,
                     runApiCompat,
                     enableStrictModeForCompatibleTfms,
@@ -231,8 +255,10 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     runtimeGraph,
                     packageAssemblyReferences,
                     baselinePackageAssemblyReferences);
+
+                roslynResolver.Unregister();
             });
-            
+
             rootCommand.AddCommand(packageCommand);
             return rootCommand.Invoke(args);
         }
