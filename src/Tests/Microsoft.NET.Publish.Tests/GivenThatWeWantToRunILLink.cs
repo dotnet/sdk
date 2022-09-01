@@ -1201,7 +1201,7 @@ namespace Microsoft.NET.Publish.Tests
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName);
-            testProject.AdditionalProperties["WarningsNotAsErrors"] = "IL2026;IL2046;IL2075";
+            testProject.AdditionalProperties["WarningsNotAsErrors"] += "IL2026;IL2046;IL2075";
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
@@ -1680,7 +1680,7 @@ namespace Microsoft.NET.Publish.Tests
             // and this failure will occur more clearly in other places when it's
             // actually an important failure, so don't error out here.
             // If we're actually testing that we build with no warnings, the test will still fail.
-            testProject.AdditionalProperties["WarningsNotAsErrors"] = "CS9057";
+            testProject.AdditionalProperties["WarningsNotAsErrors"] = "CS9057;";
             
             testProject.SourceFiles[$"{projectName}.cs"] = @"
 using System;
