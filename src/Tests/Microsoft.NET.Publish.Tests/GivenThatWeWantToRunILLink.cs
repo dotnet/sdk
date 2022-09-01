@@ -1672,6 +1672,15 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework,
                 IsExe = isExe
             };
+
+            // Don't error when generators/analyzers can't be loaded.
+            // This can occur when running tests against FullFramework MSBuild
+            // if the build machine has an MSBuild install with an older version of Roslyn
+            // than the generators in the SDK reference. We aren't testing the generators here
+            // and this failure will occur more clearly in other places when it's
+            // actually an important failure, so don't error out here.
+            // If we're actually testing that we build with no warnings, the test will still fail.
+            testProject.AdditionalProperties["WarningsNotAsErrors"] = "CS9057";
             
             testProject.SourceFiles[$"{projectName}.cs"] = @"
 using System;
