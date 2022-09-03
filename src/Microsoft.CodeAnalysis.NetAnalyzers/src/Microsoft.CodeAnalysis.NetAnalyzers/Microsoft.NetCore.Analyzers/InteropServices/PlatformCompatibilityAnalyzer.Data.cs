@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         /// </summary>
         private class Versions
         {
-            public Version? ObsoletedIn { get; set; }
+            public Version? Obsoleted { get; set; }
             public string? ObsoletedMessage { get; set; }
             public string? ObsoletedUrl { get; set; }
             public Version? SupportedFirst { get; set; }
@@ -35,7 +35,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             public string? UnsupportedMessage { get; set; }
             public Version? UnsupportedSecond { get; set; }
             public bool IsSet() => SupportedFirst != null || UnsupportedFirst != null ||
-                        SupportedSecond != null || UnsupportedSecond != null || ObsoletedIn != null;
+                        SupportedSecond != null || UnsupportedSecond != null || Obsoleted != null;
         }
 
         private sealed class PlatformAttributes
