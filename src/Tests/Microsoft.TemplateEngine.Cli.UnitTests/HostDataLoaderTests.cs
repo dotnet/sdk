@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -40,7 +39,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             Assert.False(data.IsHidden);
             Assert.Equal(2, data.UsageExamples?.Count);
-            Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
+            Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples!);
             Assert.Equal(4, data.SymbolInfo?.Count);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
@@ -83,7 +82,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             Assert.False(data.IsHidden);
             Assert.Equal(2, data.UsageExamples?.Count);
-            Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples);
+            Assert.Contains("--framework netcoreapp3.1 --langVersion '9.0'", data.UsageExamples!);
             Assert.Equal(4, data.SymbolInfo?.Count);
             Assert.Contains("TargetFrameworkOverride", data.HiddenParameterNames);
             Assert.Contains("Framework", data.ParametersToAlwaysShow);
