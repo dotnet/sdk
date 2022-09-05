@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
         }
 
-        private bool hasInternalArguments(AttributeData attr)
+        private bool HasInternalArguments(AttributeData attr)
         {
             foreach (TypedConstant argument in attr.ConstructorArguments)
             {
@@ -176,8 +176,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         {
                             AttributeData rightAttribute = rightGroup.Attributes[j];
                             if (AttributeEquals(leftAttribute, rightAttribute)
-                                || hasInternalArguments(leftAttribute) // If attribute argument is an internal type, ignore.
-                                || hasInternalArguments(rightAttribute))
+                                || HasInternalArguments(leftAttribute) // If attribute argument is an internal type, ignore.
+                                || HasInternalArguments(rightAttribute))
                             {
                                 rightGroup.Seen[j] = true;
                                 seen = true;
