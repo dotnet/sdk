@@ -46,9 +46,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                     {
                         await _connectionTask;
                         // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
-                        var capabiltiies = ClientInitializationPayload.Read(_pipe).Capabilities;
-                        _reporter.Verbose($"Application supports the following capabilities {capabiltiies}.");
-                        return capabiltiies.Split(' ').ToImmutableArray();
+                        var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                        _reporter.Verbose($"Application supports the following capabilities {capabilities}.");
+                        return capabilities.Split(' ').ToImmutableArray();
                     }
                     catch
                     {
@@ -101,15 +101,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var bytes = ArrayPool<byte>.Shared.Rent(1);
             try
             {
-                var timeout =
-#if DEBUG
-                 Timeout.InfiniteTimeSpan;
-#else
-                 TimeSpan.FromSeconds(5);
-#endif
-
-                using var cancellationTokenSource = new CancellationTokenSource(timeout);
-                var numBytes = await _pipe.ReadAsync(bytes, cancellationTokenSource.Token);
+                var numBytes = await _pipe.ReadAsync(bytes, cancellationToken);
 
                 if (numBytes == 1)
                 {
