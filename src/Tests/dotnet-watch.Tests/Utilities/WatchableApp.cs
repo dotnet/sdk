@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             // Make this timeout long because it depends much on the MSBuild compilation speed.
             // Slow machines may take a bit to compile and boot test apps
-            await Process.GetOutputLineAsync(WatchStartedMessage, TimeSpan.FromMinutes(2));
+            await Process.GetOutputLineAsync(WatchStartedMessage);
         }
 
         public void Dispose()
