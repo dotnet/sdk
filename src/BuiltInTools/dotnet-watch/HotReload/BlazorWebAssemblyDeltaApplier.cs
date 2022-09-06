@@ -24,8 +24,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly IReporter _reporter;
         private int _sequenceId;
 
-        private static readonly TimeSpan VerifyDeltaTimeout = TimeSpan.FromSeconds(5);
-
         public BlazorWebAssemblyDeltaApplier(IReporter reporter)
         {
             _reporter = reporter;
@@ -59,9 +57,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 {
                     // We'll query the browser and ask it send capabilities. If the browser does not respond in a short duration, we'll assume something is amiss and return
                     // baseline capabilities.
-                    var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken)
-                        .AsTask()
-                        .WaitAsync(TimeSpan.FromSeconds(15), cancellationToken);
+                    var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken);
                     if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
                     {
                         return _baselineCapabilities;
@@ -74,15 +70,10 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var result = values.Split(' ').ToImmutableArray();
                     return result;
                 }
-                catch (TimeoutException)
-                {
-                }
                 finally
                 {
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
-
-                return _baselineCapabilities;
             }
         }
 
@@ -104,7 +95,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             });
 
             await context.BrowserRefreshServer.SendJsonWithSecret(sharedSecret => new UpdatePayload { SharedSecret = sharedSecret, Deltas = deltas }, cancellationToken);
-            return await VerifyDeltaApplied(context, cancellationToken).WaitAsync(VerifyDeltaTimeout, cancellationToken);
+            return await VerifyDeltaApplied(context, cancellationToken);
         }
 
         public async ValueTask ReportDiagnosticsAsync(DotNetWatchContext context, IEnumerable<string> diagnostics, CancellationToken cancellationToken)
@@ -123,33 +114,18 @@ namespace Microsoft.DotNet.Watcher.Tools
         private async Task<bool> VerifyDeltaApplied(DotNetWatchContext context, CancellationToken cancellationToken)
         {
             var _receiveBuffer = new byte[1];
-            try
+            var result = await context.BrowserRefreshServer!.ReceiveAsync(_receiveBuffer, cancellationToken);
+            if (result is null)
             {
-                // We want to give the client some time to ACK the deltas being applied. VerifyDeltaApplied is limited by a
-                // 5 second wait timeout enforced using a WaitAsync. However, WaitAsync only works reliably if the calling
-                // function is async. If BrowserRefreshServer.ReceiveAsync finishes synchronously, the WaitAsync would
-                // never have an opportunity to execute. Consequently, we'll give it some reasonable number of opportunities
-                // to loop before we decide that applying deltas failed.
-                for (var i = 0; i < 100; i++)
-                {
-                    var result = await context.BrowserRefreshServer!.ReceiveAsync(_receiveBuffer, cancellationToken);
-                    if (result is null)
-                    {
-                        // A null result indicates no clients are connected. No deltas could have been applied in this state.
-                        _reporter.Verbose("No client is connected to ack deltas");
-                        return false;
-                    }
-
-                    if (IsDeltaReceivedMessage(result.Value))
-                    {
-                        // 1 indicates success.
-                        return _receiveBuffer[0] == 1;
-                    }
-                }
+                // A null result indicates no clients are connected. No deltas could have been applied in this state.
+                _reporter.Verbose("No client is connected to ack deltas");
+                return false;
             }
-            catch (TaskCanceledException)
+
+            if (IsDeltaReceivedMessage(result.Value))
             {
-                _reporter.Verbose("Timed out while waiting to verify delta was applied.");
+                // 1 indicates success.
+                return _receiveBuffer[0] == 1;
             }
 
             return false;
