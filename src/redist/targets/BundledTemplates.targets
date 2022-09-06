@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <Bundled80Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
     <Bundled80Templates Include="Microsoft.DotNet.Web.ItemTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
     <Bundled80Templates Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled80Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.8.0" PackageVersion="$(AspNetCorePackageVersionFor80Templates)" />
@@ -33,6 +32,7 @@
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <!-- Not available yet for 8.0 -->
     <!-- <Bundled80Templates Include="Microsoft.DotNet.Test.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates80PackageVersion)" /> -->
+    <!-- <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" /> -->
   </ItemGroup>
 
   <ItemGroup>
