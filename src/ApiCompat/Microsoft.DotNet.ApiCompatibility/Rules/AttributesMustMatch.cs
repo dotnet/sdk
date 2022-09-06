@@ -48,13 +48,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
         }
 
+        private bool IsInternalArgument(TypedConstant argument) => (argument.Kind == TypedConstantKind.Type
+            && argument.Value is INamedTypeSymbol typ
+            && !typ.IsVisibleOutsideOfAssembly(_settings.IncludeInternalSymbols));
+
         private bool HasInternalArguments(AttributeData attr)
         {
             foreach (TypedConstant argument in attr.ConstructorArguments)
             {
-                if (argument.Kind == TypedConstantKind.Type
-                    && argument.Value is INamedTypeSymbol typ
-                    && !typ.IsVisibleOutsideOfAssembly(_settings.IncludeInternalSymbols))
+                if (IsInternalArgument(argument))
                 {
                     return true;
                 }
@@ -63,9 +65,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             foreach (KeyValuePair<string, TypedConstant> kv in attr.NamedArguments)
             {
                 TypedConstant argument = kv.Value;
-                if (argument.Kind == TypedConstantKind.Type
-                    && argument.Value is INamedTypeSymbol typ
-                    && !typ.IsVisibleOutsideOfAssembly(_settings.IncludeInternalSymbols))
+                if (IsInternalArgument(argument))
                 {
                     return true;
                 }
