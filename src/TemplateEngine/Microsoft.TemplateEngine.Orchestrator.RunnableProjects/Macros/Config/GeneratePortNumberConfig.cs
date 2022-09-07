@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -23,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
                     6669, // Alternate IRC [Apple addition]
         };
 
-        internal GeneratePortNumberConfig(string variableName, string dataType, int fallback, int low, int high)
+        internal GeneratePortNumberConfig(string variableName, string? dataType, int fallback, int low, int high)
         {
             DataType = dataType;
             VariableName = variableName;
@@ -31,20 +33,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
             for (int testPort = startPort; testPort <= high; testPort++)
             {
-                if (TryAllocatePort(testPort, out Socket testSocket))
+                if (TryAllocatePort(testPort, out Socket? testSocket))
                 {
                     Socket = testSocket;
-                    Port = ((IPEndPoint)Socket.LocalEndPoint).Port;
+                    Port = ((IPEndPoint)Socket!.LocalEndPoint).Port;
                     return;
                 }
             }
 
             for (int testPort = low; testPort < startPort; testPort++)
             {
-                if (TryAllocatePort(testPort, out Socket testSocket))
+                if (TryAllocatePort(testPort, out Socket? testSocket))
                 {
                     Socket = testSocket;
-                    Port = ((IPEndPoint)Socket.LocalEndPoint).Port;
+                    Port = ((IPEndPoint)Socket!.LocalEndPoint).Port;
                     return;
                 }
             }
@@ -56,9 +58,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type => "port";
 
-        internal string DataType { get; }
+        internal string? DataType { get; }
 
-        internal Socket Socket { get; }
+        internal Socket? Socket { get; }
 
         internal int Port { get; }
 
@@ -66,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         internal int High { get; }
 
-        private bool TryAllocatePort(int testPort, out Socket testSocket)
+        private bool TryAllocatePort(int testPort, out Socket? testSocket)
         {
             testSocket = null;
 

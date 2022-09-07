@@ -31,6 +31,14 @@ namespace Microsoft.TemplateEngine.Core
 
         public VariableCollection(IVariableCollection? parent, IDictionary<string, object> values)
         {
+            if (values != null)
+            {
+                if (values.Values.Any(o => o is null))
+                {
+                    throw new ArgumentException($"The {nameof(values)} should not contain null.", nameof(values));
+                }
+            }
+
             _parent = parent;
             _values = values ?? new Dictionary<string, object>();
 
@@ -69,7 +77,7 @@ namespace Microsoft.TemplateEngine.Core
             {
                 if (_values.TryGetValue(key, out object result))
                 {
-                    ValueReadEventArgs args = new ValueReadEventArgs(key, result);
+                    ValueReadEventArgs args = new(key, result);
                     OnValueRead(args);
                     return result;
                 }
@@ -85,7 +93,7 @@ namespace Microsoft.TemplateEngine.Core
             set
             {
                 bool changing = !_values.ContainsKey(key);
-                _values[key] = value;
+                _values[key] = value ?? throw new ArgumentNullException(nameof(value));
                 if (changing)
                 {
                     OnKeysChanged();
@@ -95,7 +103,7 @@ namespace Microsoft.TemplateEngine.Core
 
         public static VariableCollection Root() => Root(new Dictionary<string, object>());
 
-        public static VariableCollection Root(IDictionary<string, object> values) => new VariableCollection(null, values);
+        public static VariableCollection Root(IDictionary<string, object> values) => new(null, values);
 
         public static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)
         {
@@ -152,6 +160,11 @@ namespace Microsoft.TemplateEngine.Core
                 throw new InvalidOperationException("Key already added");
             }
 
+            if (item.Value is null)
+            {
+                throw new ArgumentException($"The value of key-value pair {nameof(item)} should not be null.", nameof(item));
+            }
+
             _values.Add(item);
             OnKeysChanged();
         }
@@ -161,6 +174,11 @@ namespace Microsoft.TemplateEngine.Core
             if (_parent?.ContainsKey(key) ?? false)
             {
                 throw new InvalidOperationException("Key already added");
+            }
+
+            if (value is null)
+            {
+                throw new ArgumentNullException(nameof(value));
             }
 
             _values.Add(key, value);

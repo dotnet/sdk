@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
@@ -12,8 +14,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
     internal class MacrosOperationConfig
     {
-        private static IReadOnlyDictionary<string, IMacro> _macroObjects;
-        private static IReadOnlyDictionary<string, IDeferredMacro> _deferredMacroObjects;
+        private static IReadOnlyDictionary<string, IMacro>? _macroObjects;
+        private static IReadOnlyDictionary<string, IDeferredMacro>? _deferredMacroObjects;
 
         // Warning: if there are unknown macro "types", they are quietly ignored here.
         // This applies to both the regular and deferred macros.
@@ -34,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                     continue;
                 }
 
-                if (_macroObjects.TryGetValue(config.Type, out IMacro macroObject))
+                if (_macroObjects!.TryGetValue(config.Type, out IMacro macroObject))
                 {
                     macroObject.EvaluateConfig(environmentSettings, variables, config);
                 }
@@ -48,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             foreach (GeneratedSymbolDeferredMacroConfig deferredConfig in deferredConfigList)
             {
                 IDeferredMacro deferredMacroObject;
-                if (_deferredMacroObjects.TryGetValue(deferredConfig.Type, out deferredMacroObject))
+                if (_deferredMacroObjects!.TryGetValue(deferredConfig.Type, out deferredMacroObject))
                 {
                     deferredConfigs.Add(Tuple.Create((IMacro)deferredMacroObject, deferredMacroObject.CreateConfig(environmentSettings, deferredConfig)));
                 }

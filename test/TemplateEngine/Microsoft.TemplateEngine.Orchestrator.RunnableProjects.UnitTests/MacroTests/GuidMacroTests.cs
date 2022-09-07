@@ -43,8 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
         public void TestDeferredGuidConfig()
         {
-            Dictionary<string, JToken?> jsonParameters = new();
-            jsonParameters.Add("format", null);
+            Dictionary<string, JToken> jsonParameters = new();
             string variableName = "myGuid1";
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", "string", variableName, jsonParameters);
 

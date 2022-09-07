@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -20,8 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            string value = null;
-            RegexMacroConfig config = rawConfig as RegexMacroConfig;
+            string value = string.Empty;
+            RegexMacroConfig? config = rawConfig as RegexMacroConfig;
 
             if (config == null)
             {
@@ -39,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             if (config.Steps != null)
             {
-                foreach (KeyValuePair<string, string> stepInfo in config.Steps)
+                foreach (KeyValuePair<string?, string?> stepInfo in config.Steps)
                 {
                     value = Regex.Replace(value, stepInfo.Key, stepInfo.Value);
                 }
@@ -49,7 +51,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
             if (deferredConfig == null)
             {
@@ -62,16 +64,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             string sourceVariable = sourceVarToken.ToString();
 
-            List<KeyValuePair<string, string>> replacementSteps = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string?, string?>> replacementSteps = new();
             if (deferredConfig.Parameters.TryGetValue("steps", out JToken stepListToken))
             {
                 JArray stepList = (JArray)stepListToken;
                 foreach (JToken step in stepList)
                 {
                     JObject map = (JObject)step;
-                    string regex = map.ToString("regex");
-                    string replaceWith = map.ToString("replacement");
-                    replacementSteps.Add(new KeyValuePair<string, string>(regex, replaceWith));
+                    string? regex = map.ToString("regex");
+                    string? replaceWith = map.ToString("replacement");
+                    replacementSteps.Add(new KeyValuePair<string?, string?>(regex, replaceWith));
                 }
             }
 

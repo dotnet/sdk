@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            SwitchMacroConfig config = rawConfig as SwitchMacroConfig;
+            SwitchMacroConfig? config = rawConfig as SwitchMacroConfig;
 
             if (config == null)
             {
@@ -34,15 +36,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator, Cpp2StyleEvaluatorDefinition.Evaluate);
             string result = string.Empty;   // default if no condition assigns a value
 
-            foreach (KeyValuePair<string, string> switchInfo in config.Switches)
+            foreach (KeyValuePair<string?, string?> switchInfo in config.Switches)
             {
-                string condition = switchInfo.Key;
-                string value = switchInfo.Value;
+                string? condition = switchInfo.Key;
+                string? value = switchInfo.Value;
 
                 if (string.IsNullOrEmpty(condition))
                 {
                     // no condition, this is the default.
-                    result = value;
+                    result = value ?? string.Empty;
                     break;
                 }
                 else
@@ -54,7 +56,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
                     if (evaluator(state, ref length, ref position, out bool faulted))
                     {
-                        result = value;
+                        result = value ?? string.Empty;
                         break;
                     }
                 }
@@ -64,35 +66,35 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
             if (deferredConfig == null)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a SwitchMacroConfig");
             }
 
-            string evaluator = null;
+            string? evaluator = null;
             if (deferredConfig.Parameters.TryGetValue("evaluator", out JToken evaluatorToken))
             {
                 evaluator = evaluatorToken.ToString();
             }
 
-            string dataType = null;
+            string? dataType = null;
             if (deferredConfig.Parameters.TryGetValue("datatype", out JToken dataTypeToken))
             {
                 dataType = dataTypeToken.ToString();
             }
 
-            List<KeyValuePair<string, string>> switchList = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string?, string?>> switchList = new();
             if (deferredConfig.Parameters.TryGetValue("cases", out JToken switchListToken))
             {
                 JArray switchJArray = (JArray)switchListToken;
                 foreach (JToken switchInfo in switchJArray)
                 {
                     JObject map = (JObject)switchInfo;
-                    string condition = map.ToString("condition");
-                    string value = map.ToString("value");
-                    switchList.Add(new KeyValuePair<string, string>(condition, value));
+                    string? condition = map.ToString("condition");
+                    string? value = map.ToString("value");
+                    switchList.Add(new KeyValuePair<string?, string?>(condition, value));
                 }
             }
 

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
@@ -8,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class SwitchMacroConfig : IMacroConfig
     {
-        internal SwitchMacroConfig(string variableName, string evaluator, string dataType, IList<KeyValuePair<string, string>> switches)
+        internal SwitchMacroConfig(string variableName, string? evaluator, string? dataType, IList<KeyValuePair<string?, string?>> switches)
         {
             VariableName = variableName;
             Type = "switch";
@@ -21,11 +23,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; private set; }
 
-        internal string Evaluator { get; set; }
+        internal string? Evaluator { get; set; }
 
-        internal string DataType { get; set; }
+        internal string? DataType { get; set; }
 
         // condition -> value
-        internal IList<KeyValuePair<string, string>> Switches { get; private set; }
+        internal IList<KeyValuePair<string?, string?>> Switches { get; private set; }
     }
 }

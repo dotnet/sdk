@@ -15,6 +15,8 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
@@ -568,6 +570,76 @@ Console.WriteLine(""Hello, World!"");
             //
 
             string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourcFile"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
+
+        [Fact]
+        public async void Test_CoaleseWithInvalidSetup()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    safesourcename = new
+                    {
+                        type = "generated",
+                        generator = "coalesce",
+                        parameters = new
+                        {
+                            sourceVariableName = "safe_namespace",
+                            fallbackVariableName = "safe_name"
+                        },
+                        replaces = "%R1%"
+                    },
+                }
+            };
+
+            string sourceSnippet = @"
+%R1%
+";
+
+            string expectedSnippet = @"
+%R1%
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
+            // template.json
+            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+
+            //content
+            templateSourceFiles.Add("sourceFile", sourceSnippet);
+
+            //
+            // Dependencies preparation and mounting
+            //
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(settings);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(settings);
+
+            TestFileSystemHelper.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(settings, sourceBasePath);
+            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            ParameterSetData parametersData = new ParameterSetData(runnableConfig);
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+
+            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
             Assert.Equal(expectedSnippet, resultContent);
         }
     }

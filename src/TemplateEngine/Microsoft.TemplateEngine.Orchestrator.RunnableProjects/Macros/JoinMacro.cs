@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,19 +26,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IVariableCollection vars,
             IMacroConfig rawConfig)
         {
-            JoinMacroConfig config = rawConfig as JoinMacroConfig;
+            JoinMacroConfig? config = rawConfig as JoinMacroConfig;
             if (config == null)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as ConcatenationMacroConfig");
             }
 
-            List<string> values = new List<string>();
-            foreach (KeyValuePair<string, string> symbol in config.Symbols)
+            List<string?> values = new();
+            foreach (KeyValuePair<string?, string?> symbol in config.Symbols)
             {
                 switch (symbol.Key)
                 {
                     case "ref":
-                        if (!vars.TryGetValue(symbol.Value, out object working))
+                        if (string.IsNullOrEmpty(symbol.Value) || !vars.TryGetValue(symbol.Value!, out object working))
                         {
                             values.Add(string.Empty);
                         }
@@ -70,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
 
-            string separator = string.Empty;
+            string? separator = string.Empty;
             if (deferredConfig.Parameters.TryGetValue("separator", out JToken separatorToken))
             {
                 separator = separatorToken?.ToString();
@@ -81,16 +83,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 removeEmptyValuesToken != null &&
                 removeEmptyValuesToken.ToBool();
 
-            List<KeyValuePair<string, string>> symbolsList = new List<KeyValuePair<string, string>>();
+            List<KeyValuePair<string?, string?>> symbolsList = new();
             if (deferredConfig.Parameters.TryGetValue("symbols", out JToken symbolsToken))
             {
                 JArray switchJArray = (JArray)symbolsToken;
                 foreach (JToken switchInfo in switchJArray)
                 {
                     JObject map = (JObject)switchInfo;
-                    string condition = map.ToString("type");
-                    string value = map.ToString("value");
-                    symbolsList.Add(new KeyValuePair<string, string>(condition, value));
+                    string? condition = map.ToString("type");
+                    string? value = map.ToString("value");
+                    symbolsList.Add(new KeyValuePair<string?, string?>(condition, value));
                 }
             }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
@@ -20,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
             string value = string.Empty;
-            CaseChangeMacroConfig config = rawConfig as CaseChangeMacroConfig;
+            CaseChangeMacroConfig? config = rawConfig as CaseChangeMacroConfig;
 
             if (config == null)
             {
@@ -39,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
             if (deferredConfig == null)
             {

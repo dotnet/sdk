@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -18,18 +20,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            ConstantMacroConfig config = rawConfig as ConstantMacroConfig;
+            ConstantMacroConfig? config = rawConfig as ConstantMacroConfig;
 
             if (config == null)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as ConstantMacroConfig");
             }
-            vars[config.VariableName] = config.Value;
+            if (config.Value != null)
+            {
+                vars[config.VariableName] = config.Value;
+            }
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
+            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
 
             if (deferredConfig == null)
             {

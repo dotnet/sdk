@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         internal const string UpperCaseDenominator = "-uc-";
         internal const string LowerCaseDenominator = "-lc-";
 
-        internal GuidMacroConfig(string variableName, string dataType, string? format, string? defaultFormat)
+        internal GuidMacroConfig(string variableName, string? dataType, string? format, string? defaultFormat)
         {
             DataType = dataType;
             VariableName = variableName;
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
         public string Type { get; }
 
-        internal string DataType { get; }
+        internal string? DataType { get; }
 
         internal string? DefaultFormat { get; }
 
