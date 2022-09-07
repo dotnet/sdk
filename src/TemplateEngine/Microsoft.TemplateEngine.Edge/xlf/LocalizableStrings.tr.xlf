@@ -8,8 +8,8 @@
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_MismatchedCondition">
-        <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</source>
-        <target state="translated">{1} parametresinde {0} koşulu değerlendirilemedi (koşul metni: {2}, değerlendirme hatası: {3}). Koşul hatalı biçimlendirilmiş olabilir.</target>
+        <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed or referenced parameters do not have default nor explicit values.</source>
+        <target state="needs-review-translation">{1} parametresinde {0} koşulu değerlendirilemedi (koşul metni: {2}, değerlendirme hatası: {3}). Koşul hatalı biçimlendirilmiş olabilir.</target>
         <note>{0} is the condition type
 {1} is parameter name
 {2} is condition text

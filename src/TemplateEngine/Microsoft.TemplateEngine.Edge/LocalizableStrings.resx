@@ -122,7 +122,7 @@
     <comment>{0} is the dependency chain</comment>
   </data>
   <data name="ConditionEvaluation_Error_MismatchedCondition" xml:space="preserve">
-    <value>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</value>
+    <value>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed or referenced parameters do not have default nor explicit values.</value>
     <comment>{0} is the condition type
 {1} is parameter name
 {2} is condition text

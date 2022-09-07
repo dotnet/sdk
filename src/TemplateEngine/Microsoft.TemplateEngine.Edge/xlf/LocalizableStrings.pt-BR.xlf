@@ -8,8 +8,8 @@
         <note>{0} is the dependency chain</note>
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_MismatchedCondition">
-        <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed.</source>
-        <target state="translated">Falha ao avaliar a condição {0} no parâmetro {1} (texto da condição: {2}, erro de avaliação: {3}) - a condição pode estar malformada.</target>
+        <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed or referenced parameters do not have default nor explicit values.</source>
+        <target state="needs-review-translation">Falha ao avaliar a condição {0} no parâmetro {1} (texto da condição: {2}, erro de avaliação: {3}) - a condição pode estar malformada.</target>
         <note>{0} is the condition type
 {1} is parameter name
 {2} is condition text
