@@ -435,12 +435,32 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().Pass();
 
                 // Not setting PublishAot to true will be a normal publish
-                // Comment back after the below issue is fixed
-                // https://github.com/dotnet/sdk/issues/27533
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
                 File.Exists(publishedDll).Should().BeTrue();
 
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void NativeAot_hw_fails_with_sdk6_PublishAot_is_enabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var projectName = "HellowWorldNativeAotApp";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                var testProject = CreateHelloWorldTestProject("net6.0", projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Should().Fail()
+                    .And.HaveStdOutContaining("error NETSDK1183:");
             }
         }
 
