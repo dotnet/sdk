@@ -31,14 +31,14 @@ public class Test
         {|CA1422:ObsoletedOnLinux4AndWindows10()|}; // This call site is reachable on: 'Linux'. 'Test.ObsoletedOnLinux4AndWindows10()' is obsoleted on: 'Linux' 4.1 and later.
     }
     
-    [ObsoletedInOSPlatform(""Linux4.1"")]
+    [Mock.ObsoletedOSPlatform(""Linux4.1"")]
     public void ObsoletedOnLinux4() { }
 
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"")]
     public void ObsoletedOnWindows10() { }
 
-    [ObsoletedInOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
+    [Mock.ObsoletedOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
     public void ObsoletedOnLinux4AndWindows10() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.ObsoletedCsReachable).WithLocation(0)
@@ -56,11 +56,11 @@ Public Class Test
         {|#0:ObsoletedOnLinux()|} ' This call site is reachable on: 'Linux'. 'Public Sub ObsoletedOnLinux()' is obsoleted on: 'Linux' 4.1 and later.
     End Sub
 
-    <ObsoletedInOSPlatform(""Windows10.1.1.1"")>
+    <ObsoletedOSPlatform(""Windows10.1.1.1"")>
     Public Sub ObsoletedOnWindows10()
     End Sub
     
-    <ObsoletedInOSPlatform(""Linux4.1"")>
+    <ObsoletedOSPlatform(""Linux4.1"")>
     Public Sub ObsoletedOnLinux()
     End Sub
 End Class
@@ -113,7 +113,7 @@ public class Test
     }
 
     [SupportedOSPlatform(""Windows8.0"")]
-    [ObsoletedInOSPlatform(""Windows10.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.0"")]
     [Mock.UnsupportedOSPlatform(""Windows11.0"")]   
     public void Supported8Obsoleted10Unsupported11() { }
 }
@@ -121,14 +121,14 @@ public class Test
 [SupportedOSPlatform(""Windows10.0"")]
 public class Supported10
 {
-    [ObsoletedInOSPlatform(""Windows11.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows11.0"")]
     [Mock.UnsupportedOSPlatform(""Windows12.0"")]   
     public static void Obsoleted11Unsupported12() { }
 
-    [ObsoletedInOSPlatform(""Windows11.0"")] 
+    [Mock.ObsoletedOSPlatform(""Windows11.0"")] 
     public static void Obsoleted11() { }
 
-    [ObsoletedInOSPlatform(""Windows12.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows12.0"")]
     [Mock.UnsupportedOSPlatform(""Windows11.0"")]  
     public static void Unsupported11Obsoleted12() { }
 }
@@ -136,22 +136,22 @@ public class Supported10
 [SupportedOSPlatform(""Windows8.0"")]
 public class UnsupportedSupported8
 {
-    [Mock.ObsoletedInOSPlatform(""Windows10.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.0"")]
     public static void Obsoleted10() { }
 
-    [Mock.ObsoletedInOSPlatform(""Linux"")] 
-    [Mock.ObsoletedInOSPlatform(""Windows10.0"")] 
+    [Mock.ObsoletedOSPlatform(""Linux"")] 
+    [Mock.ObsoletedOSPlatform(""Windows10.0"")] 
     public static void ObsoletedWindows10Linux() { }
 
-    [Mock.ObsoletedInOSPlatform(""Windows10.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.0"")]
     [Mock.UnsupportedOSPlatform(""Windows11.0"")]
     public static void Obsoleted10Unspported11() { }
 }
 [Mock.UnsupportedOSPlatform(""Windows"")]
 public class Unsupported
 {
-    [Mock.ObsoletedInOSPlatform(""Linux"")] 
-    [Mock.ObsoletedInOSPlatform(""Windows10.0"")] 
+    [Mock.ObsoletedOSPlatform(""Linux"")] 
+    [Mock.ObsoletedOSPlatform(""Windows10.0"")] 
     public static void Obsoleted1Windows10Linux() { }
 }
 " + MockObsoletedAttributeCS;
@@ -175,11 +175,11 @@ public class Test
         {|#2:ObsoletedWithUrl()|};       // This call site is reachable on all platforms. 'Test.ObsoletedWithUrl()' is obsoleted on: 'Windows' 10.1.1.1 and later (http://www/look.for.more.info).
     }
     
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"", Url = ""http://www/look.for.more.info"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"", Url = ""http://www/look.for.more.info"")]
     public void ObsoletedWithUrl() { }
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"", ""Use other method instead"", Url = ""http://www/look.for.more.info"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"", ""Use other method instead"", Url = ""http://www/look.for.more.info"")]
     public void ObsoletedWithMessageAndUrl() { }
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"", ""Use other method instead"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"", ""Use other method instead"")]
     public void ObsoletedWithMessage() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms, VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.ObsoletedCsAllPlatforms).WithLocation(0).
@@ -226,8 +226,8 @@ public class Test
         {|CA1422:ObsoletedOnIOS14()|}; // This call site is reachable on: 'ios' 15.0 and before, 'maccatalyst' 15.0 and before. 'Test.ObsoletedOnIOS14()' is obsoleted on: 'ios' 14.0 and later, 'maccatalyst' 14.0 and later.
     }
 
-    [ObsoletedInOSPlatform(""ios13.0"")]
-    [ObsoletedInOSPlatform(""Windows10.1.0"")]
+    [Mock.ObsoletedOSPlatform(""ios13.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.0"")]
     public void SuppressedByCallsiteObsoleted()
     {
         ObsoletedOnWindows(); // All calls Obsoleted within version range, not warn
@@ -235,8 +235,8 @@ public class Test
         ObsoletedOnIOS14();
     }
 
-    [ObsoletedInOSPlatform(""ios16.0"")]
-    [ObsoletedInOSPlatform(""Windows11.1.0"")]
+    [Mock.ObsoletedOSPlatform(""ios16.0"")]
+    [Mock.ObsoletedOSPlatform(""Windows11.1.0"")]
     public void NotSuppressedByCallsiteObsoleted()
     {
         {|CA1422:ObsoletedOnWindows()|}; //This call site is reachable on all platforms. 'Test.ObsoletedOnWindows()' is obsoleted on: 'Windows' 10.1.1.1 and later.
@@ -244,12 +244,12 @@ public class Test
         {|CA1422:ObsoletedOnIOS14()|}; // This call site is reachable on all platforms. 'Test.ObsoletedOnIOS14()' is obsoleted on: 'ios' 14.0 and later, 'maccatalyst' 14.0 and later.
     }
     
-    [ObsoletedInOSPlatform(""ios14.0"")]
+    [Mock.ObsoletedOSPlatform(""ios14.0"")]
     public void ObsoletedOnIOS14() { }
 
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"")]
     public void ObsoletedOnWindows() { }
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"", ""Use other method instead"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"", ""Use other method instead"")]
     public void ObsoletedWithMessage() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
@@ -326,14 +326,14 @@ public class Test
         }
     }
     
-    [ObsoletedInOSPlatform(""Android21.0"")]
+    [Mock.ObsoletedOSPlatform(""Android21.0"")]
     public void ObsoletedOnAndroid21() { }
 
-    [ObsoletedInOSPlatform(""MacOS"")]
+    [Mock.ObsoletedOSPlatform(""MacOS"")]
     public void ObsoletedOnMacOS() { }
 
-    [ObsoletedInOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
+    [Mock.ObsoletedOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
     public void ObsoletedOnLinux4AndWindows10() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
@@ -384,14 +384,14 @@ public class Test
         }
     }
     
-    [ObsoletedInOSPlatform(""Android21.0"")]
+    [Mock.ObsoletedOSPlatform(""Android21.0"")]
     public void ObsoletedOnAndroid21() { }
 
-    [ObsoletedInOSPlatform(""MacOS"")]
+    [Mock.ObsoletedOSPlatform(""MacOS"")]
     public void ObsoletedOnMacOS() { }
 
-    [ObsoletedInOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
+    [Mock.ObsoletedOSPlatform(""Linux4.1"", ""Use Linux4Supported"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
     public void ObsoletedOnLinux4AndWindows10() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
@@ -441,14 +441,14 @@ public class Test
         }
     }
     
-    [ObsoletedInOSPlatform(""MacOS15.0"")]
+    [Mock.ObsoletedOSPlatform(""MacOS15.0"")]
     public void ObsoletedOnMacOS15() { }
 
-    [ObsoletedInOSPlatform(""MacOS"")]
+    [Mock.ObsoletedOSPlatform(""MacOS"")]
     public void ObsoletedOnMacOS() { }
 
-    [ObsoletedInOSPlatform(""Linux"", ""Use LinuxSupported"")]
-    [ObsoletedInOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
+    [Mock.ObsoletedOSPlatform(""Linux"", ""Use LinuxSupported"")]
+    [Mock.ObsoletedOSPlatform(""Windows10.1.1.1"",""Use Windows10Supported"")]
     public void ObsoletedOnLinuxAndWindows10() { }
 }" + MockObsoletedAttributeCS;
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
@@ -502,12 +502,12 @@ namespace Mock
                     AttributeTargets.Property |
                     AttributeTargets.Struct,
                     AllowMultiple = true, Inherited = false)]
-    public sealed class ObsoletedInOSPlatformAttribute : OSPlatformAttribute
+    public sealed class ObsoletedOSPlatformAttribute : OSPlatformAttribute
     {
-        public ObsoletedInOSPlatformAttribute(string platformName) : base(platformName)
+        public ObsoletedOSPlatformAttribute(string platformName) : base(platformName)
         {
         }
-        public ObsoletedInOSPlatformAttribute(string platformName, string message) : base(platformName)
+        public ObsoletedOSPlatformAttribute(string platformName, string message) : base(platformName)
         {
             Message = message;
         }
@@ -526,7 +526,7 @@ Namespace Mock
                     AttributeTargets.[Property] Or
                     AttributeTargets.Struct,
                     AllowMultiple:=True, Inherited:=False)>
-    Public NotInheritable Class ObsoletedInOSPlatformAttribute
+    Public NotInheritable Class ObsoletedOSPlatformAttribute
         Inherits Attribute
 
         Public Sub New(ByVal platformName As String)

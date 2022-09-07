@@ -35,14 +35,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
     {
         internal const string SupportRuleId = "CA1416";
         internal const string ObsoletedRuleId = "CA1422";
-        private static readonly ImmutableArray<string> s_osPlatformAttributes = ImmutableArray.Create(SupportedOSPlatformAttribute, UnsupportedOSPlatformAttribute, ObsoletedInOSPlatformAttribute);
+        private static readonly ImmutableArray<string> s_osPlatformAttributes = ImmutableArray.Create(SupportedOSPlatformAttribute, UnsupportedOSPlatformAttribute, ObsoletedOSPlatformAttribute);
 
         private static readonly LocalizableString s_localizableTitle = CreateLocalizableResourceString(nameof(PlatformCompatibilityTitle));
         private static readonly LocalizableString s_localizableDescription = CreateLocalizableResourceString(nameof(PlatformCompatibilityDescription));
 
         // We are adding the new attributes into older versions of .Net 5.0, so there could be multiple referenced assemblies each with their own
         // version of internal attribute type which will cause ambiguity, to avoid that we are comparing the attributes by their name
-        private const string ObsoletedInOSPlatformAttribute = nameof(ObsoletedInOSPlatformAttribute);
+        private const string ObsoletedOSPlatformAttribute = nameof(ObsoletedOSPlatformAttribute);
         private const string SupportedOSPlatformAttribute = nameof(SupportedOSPlatformAttribute);
         private const string UnsupportedOSPlatformAttribute = nameof(UnsupportedOSPlatformAttribute);
         private const string UnsupportedOSPlatformGuardAttribute = nameof(UnsupportedOSPlatformGuardAttribute);
@@ -528,10 +528,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     attribute.UnsupportedSecond = null;
                                 }
 
-                                if (attribute.ObsoletedIn != null &&
-                                    attribute.ObsoletedIn.IsGreaterThanOrEqualTo(info.Version))
+                                if (attribute.Obsoleted != null &&
+                                    attribute.Obsoleted.IsGreaterThanOrEqualTo(info.Version))
                                 {
-                                    attribute.ObsoletedIn = null;
+                                    attribute.Obsoleted = null;
                                     attribute.ObsoletedMessage = null;
                                     attribute.ObsoletedUrl = null;
                                 }
@@ -752,7 +752,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             attribute.SupportedSecond = null;
                             attribute.UnsupportedMessage = null;
                         }
-                        attribute.ObsoletedIn = null;
+                        attribute.Obsoleted = null;
                         attribute.ObsoletedMessage = null;
                         attribute.ObsoletedUrl = null;
                     }
@@ -897,7 +897,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             }
                         }
 
-                        AddObsoletedIn(csAttributes, obsoletedBuilder, pName, pAttribute);
+                        AddObsoleted(csAttributes, obsoletedBuilder, pName, pAttribute);
                     }
 
                     obsoletedPlatforms = obsoletedBuilder.ToImmutable();
@@ -1058,7 +1058,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             }
                         }
 
-                        AddObsoletedIn(csAttributes, obsoletedBuilder, pName, pAttribute);
+                        AddObsoleted(csAttributes, obsoletedBuilder, pName, pAttribute);
                     }
 
                     obsoletedPlatforms = obsoletedBuilder.ToImmutable();
@@ -1067,11 +1067,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
             }
 
-            static void AddObsoletedIn(SmallDictionary<string, Versions>? csAttributes, ArrayBuilder<string> obsoletedBuilder, string pName, Versions pAttribute)
+            static void AddObsoleted(SmallDictionary<string, Versions>? csAttributes, ArrayBuilder<string> obsoletedBuilder, string pName, Versions pAttribute)
             {
-                if (pAttribute.ObsoletedIn != null)
+                if (pAttribute.Obsoleted != null)
                 {
-                    if (IsEmptyVersion(pAttribute.ObsoletedIn)) // Do not need to add the version part if it is 0.0
+                    if (IsEmptyVersion(pAttribute.Obsoleted)) // Do not need to add the version part if it is 0.0
                     {
                         if (csAttributes != null && HasVersionedCallsite(csAttributes, pName))
                         {
@@ -1084,7 +1084,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     }
                     else
                     {
-                        obsoletedBuilder.Add(AppendMessageAndUrl(pAttribute, GetFormattedString(PlatformCompatibilityVersionAndLater, pName, pAttribute.ObsoletedIn)));
+                        obsoletedBuilder.Add(AppendMessageAndUrl(pAttribute, GetFormattedString(PlatformCompatibilityVersionAndLater, pName, pAttribute.Obsoleted)));
                     }
                 }
             }
@@ -1221,7 +1221,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (csAttributes.TryGetValue(pName, out var attribute))
                 {
-                    var version = attribute.ObsoletedIn;
+                    var version = attribute.Obsoleted;
                     var supportedVersion = attribute.SupportedSecond ?? attribute.SupportedFirst;
                     if (supportedVersion != null)
                     {
@@ -1596,25 +1596,25 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 // Check if obsoleted attribute guarded by callsite attributes
-                if (attribute.ObsoletedIn != null)
+                if (attribute.Obsoleted != null)
                 {
                     if (callSiteAttributes.TryGetValue(platformName, out var callSiteAttribute))
                     {
                         if (callSiteAttribute.SupportedFirst != null)
                         {
-                            if ((callSiteAttribute.ObsoletedIn == null || callSiteAttribute.ObsoletedIn > attribute.ObsoletedIn) &&
-                                (callSiteAttribute.UnsupportedFirst == null || callSiteAttribute.UnsupportedFirst > attribute.ObsoletedIn))
+                            if ((callSiteAttribute.Obsoleted == null || callSiteAttribute.Obsoleted > attribute.Obsoleted) &&
+                                (callSiteAttribute.UnsupportedFirst == null || callSiteAttribute.UnsupportedFirst > attribute.Obsoleted))
                             {
-                                diagnosticAttribute.ObsoletedIn = (Version)attribute.ObsoletedIn.Clone();
+                                diagnosticAttribute.Obsoleted = (Version)attribute.Obsoleted.Clone();
                                 diagnosticAttribute.ObsoletedMessage = attribute.ObsoletedMessage;
                                 diagnosticAttribute.ObsoletedUrl = attribute.ObsoletedUrl;
                             }
                         }
                         else if (msBuildPlatforms.Contains(platformName, StringComparer.OrdinalIgnoreCase) &&
-                                 (callSiteAttribute.UnsupportedFirst != null && callSiteAttribute.UnsupportedFirst > attribute.ObsoletedIn ||
-                                  callSiteAttribute.ObsoletedIn != null && callSiteAttribute.ObsoletedIn > attribute.ObsoletedIn))
+                                 (callSiteAttribute.UnsupportedFirst != null && callSiteAttribute.UnsupportedFirst > attribute.Obsoleted ||
+                                  callSiteAttribute.Obsoleted != null && callSiteAttribute.Obsoleted > attribute.Obsoleted))
                         {
-                            diagnosticAttribute.ObsoletedIn = (Version)attribute.ObsoletedIn.Clone();
+                            diagnosticAttribute.Obsoleted = (Version)attribute.Obsoleted.Clone();
                             diagnosticAttribute.ObsoletedMessage = attribute.ObsoletedMessage;
                             diagnosticAttribute.ObsoletedUrl = attribute.ObsoletedUrl;
                         }
@@ -1622,7 +1622,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     else if (msBuildPlatforms.Contains(platformName, StringComparer.OrdinalIgnoreCase) &&
                              !callSiteAttributes.Values.Any(AllowList))
                     {
-                        diagnosticAttribute.ObsoletedIn = (Version)attribute.ObsoletedIn.Clone();
+                        diagnosticAttribute.Obsoleted = (Version)attribute.Obsoleted.Clone();
                         diagnosticAttribute.ObsoletedMessage = attribute.ObsoletedMessage;
                         diagnosticAttribute.ObsoletedUrl = attribute.ObsoletedUrl;
                     }
@@ -1716,7 +1716,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             copyTo.UnsupportedFirst = (Version?)copyFrom.UnsupportedFirst?.Clone();
             copyTo.UnsupportedSecond = (Version?)copyFrom.UnsupportedSecond?.Clone();
             copyTo.UnsupportedMessage = copyFrom.UnsupportedMessage;
-            copyTo.ObsoletedIn = (Version?)copyFrom.ObsoletedIn?.Clone();
+            copyTo.Obsoleted = (Version?)copyFrom.Obsoleted?.Clone();
             copyTo.ObsoletedMessage = copyFrom.ObsoletedMessage;
             copyTo.ObsoletedUrl = copyFrom.ObsoletedUrl;
             return copyTo;
@@ -1829,13 +1829,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         }
                                     }
 
-                                    if (childAttribute.ObsoletedIn != null &&
-                                        (childAttribute.ObsoletedIn < existing.UnsupportedFirst ||
+                                    if (childAttribute.Obsoleted != null &&
+                                        (childAttribute.Obsoleted < existing.UnsupportedFirst ||
                                             existing.SupportedFirst != null &&
-                                            (existing.UnsupportedSecond == null || existing.UnsupportedSecond > childAttribute.ObsoletedIn)) &&
-                                        (existing.ObsoletedIn == null || childAttribute.ObsoletedIn < existing.ObsoletedIn))
+                                            (existing.UnsupportedSecond == null || existing.UnsupportedSecond > childAttribute.Obsoleted)) &&
+                                        (existing.Obsoleted == null || childAttribute.Obsoleted < existing.Obsoleted))
                                     {
-                                        existing.ObsoletedIn = childAttribute.ObsoletedIn;
+                                        existing.Obsoleted = childAttribute.Obsoleted;
                                         existing.ObsoletedMessage = childAttribute.ObsoletedMessage;
                                         existing.ObsoletedUrl = childAttribute.ObsoletedMessage;
                                     }
@@ -1896,10 +1896,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                         // Check for Obsoleted attributes, only lower version could overwrite
                         if (childAttributes.TryGetValue(platform, out var childAttr) &&
-                            childAttr.ObsoletedIn != null &&
-                            (attributes.ObsoletedIn == null || childAttr.ObsoletedIn < attributes.ObsoletedIn))
+                            childAttr.Obsoleted != null &&
+                            (attributes.Obsoleted == null || childAttr.Obsoleted < attributes.Obsoleted))
                         {
-                            attributes.ObsoletedIn = childAttr.ObsoletedIn;
+                            attributes.Obsoleted = childAttr.Obsoleted;
                             attributes.ObsoletedMessage = childAttr.ObsoletedMessage;
                             attributes.ObsoletedUrl = childAttr.ObsoletedUrl;
                         }
@@ -2110,7 +2110,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             }
             else
             {
-                Debug.Assert(name == ObsoletedInOSPlatformAttribute);
+                Debug.Assert(name == ObsoletedOSPlatformAttribute);
                 AddOrUpdateObsoletedAttribute(attribute, attributes, version);
             }
 
@@ -2121,19 +2121,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 var message = PopulateMessage(attribute);
                 var url = PopulateUrl(attribute);
 
-                if (attributes.ObsoletedIn != null)
+                if (attributes.Obsoleted != null)
                 {
                     // only keep lowest version, ignore other versions
-                    if (attributes.ObsoletedIn > version)
+                    if (attributes.Obsoleted > version)
                     {
-                        attributes.ObsoletedIn = version;
+                        attributes.Obsoleted = version;
                         attributes.ObsoletedMessage = message;
                         attributes.ObsoletedUrl = url;
                     }
                 }
                 else
                 {
-                    attributes.ObsoletedIn = version;
+                    attributes.Obsoleted = version;
                     attributes.ObsoletedMessage = message;
                     attributes.ObsoletedUrl = url;
                 }
