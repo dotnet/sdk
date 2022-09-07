@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="AssemblyLoadError">
         <source>Could not load assembly symbols for '{0}'. Skipping the assembly.</source>
-        <target state="new">Could not load assembly symbols for '{0}'. Skipping the assembly.</target>
+        <target state="translated">'{0}' için bütünleştirilmiş kod sembolleri yüklenemedi. Bütünleştirilmiş kod atlanıyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyNameDoesNotExist">

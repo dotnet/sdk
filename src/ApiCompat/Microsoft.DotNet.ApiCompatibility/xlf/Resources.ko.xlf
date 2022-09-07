@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="AssemblyLoadError">
         <source>Could not load assembly symbols for '{0}'. Skipping the assembly.</source>
-        <target state="new">Could not load assembly symbols for '{0}'. Skipping the assembly.</target>
+        <target state="translated">'{0}'에 대한 어셈블리 기호를 로드할 수 없습니다. 어셈블리를 건너뛰는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyNameDoesNotExist">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
-        <target state="translated">'{0}' 파일이 없습니다.</target>
+        <target state="translated">파일 '{0}'이(가) 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">

@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="AssemblyLoadError">
         <source>Could not load assembly symbols for '{0}'. Skipping the assembly.</source>
-        <target state="new">Could not load assembly symbols for '{0}'. Skipping the assembly.</target>
+        <target state="translated">Não foi possível carregar símbolos de montagem para '{0}'. Ignorando a montagem.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyNameDoesNotExist">

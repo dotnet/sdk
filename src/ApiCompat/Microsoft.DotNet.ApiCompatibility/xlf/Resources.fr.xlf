@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="AssemblyLoadError">
         <source>Could not load assembly symbols for '{0}'. Skipping the assembly.</source>
-        <target state="new">Could not load assembly symbols for '{0}'. Skipping the assembly.</target>
+        <target state="translated">Nous n’avons pas pu charger les symboles d’assembly pour '{0}'. Assembly ignoré.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyNameDoesNotExist">
@@ -109,7 +109,7 @@
       </trans-unit>
       <trans-unit id="FileDoesNotExist">
         <source>File '{0}' does not exist.</source>
-        <target state="translated">Le fichier « {0} » n’existe pas.</target>
+        <target state="translated">Le fichier « {0} » n'existe pas.</target>
         <note />
       </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
