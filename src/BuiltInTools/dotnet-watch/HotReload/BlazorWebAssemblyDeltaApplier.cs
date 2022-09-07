@@ -55,8 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
                 try
                 {
-                    // We'll query the browser and ask it send capabilities. If the browser does not respond in a short duration, we'll assume something is amiss and return
-                    // baseline capabilities.
+                    // We'll query the browser and ask it send capabilities.
                     var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken);
                     if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
                     {
