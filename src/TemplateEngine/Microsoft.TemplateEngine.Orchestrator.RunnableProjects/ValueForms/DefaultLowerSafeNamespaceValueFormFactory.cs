@@ -12,9 +12,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal DefaultLowerSafeNamespaceValueFormFactory()
             : base(FormIdentifier) { }
 
-        protected override string? Process(string? value)
+        protected override string Process(string value)
         {
-            return DefaultSafeNamespaceValueFormFactory.ToSafeNamespace(value)?.ToLowerInvariant();
+            return DefaultSafeNamespaceValueFormFactory.ToSafeNamespace(value).ToLowerInvariant();
         }
     }
 }

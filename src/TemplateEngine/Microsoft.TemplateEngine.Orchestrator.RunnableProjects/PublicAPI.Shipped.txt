@@ -121,7 +121,7 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.RunnableProjectGenerator.
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Identifier.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Name.get -> string!
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Process(string? value, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm!>! otherForms) -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm.Process(string! value, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueForm!>! otherForms) -> string!
 override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.Type.get -> string!
 override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ComputedSymbol.Type.get -> string!
 override Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.DerivedSymbol.Type.get -> string!

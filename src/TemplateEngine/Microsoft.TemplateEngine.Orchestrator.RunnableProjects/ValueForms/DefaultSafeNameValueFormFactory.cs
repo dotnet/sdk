@@ -14,19 +14,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal DefaultSafeNameValueFormFactory()
             : base(FormIdentifier) { }
 
-        internal static string? ToSafeName(string? value)
+        internal static string ToSafeName(string value)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                return value;
-            }
-
+            const string replacement = "_";
             string workingValue = Regex.Replace(value, @"(^\s+|\s+$)", "");
-            workingValue = Regex.Replace(workingValue, @"(((?<=\.)|^)(?=\d)|\W)", "_");
-
+            workingValue = Regex.Replace(workingValue, @"(((?<=\.)|^)(?=\d)|\W)", replacement);
             return workingValue;
         }
 
-        protected override string? Process(string? value) => ToSafeName(value);
+        protected override string Process(string value) => ToSafeName(value);
     }
 }

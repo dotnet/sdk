@@ -7,6 +7,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
+    /// <summary>
+    /// Defines an interface for value form.
+    /// </summary>
     public interface IValueForm
     {
         /// <summary>
@@ -26,6 +29,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         /// <param name="value"></param>
         /// <param name="otherForms">other forms defined in the template.</param>
         /// <returns>transformed value.</returns>
-        string? Process(string? value, IReadOnlyDictionary<string, IValueForm> otherForms);
+        string Process(string value, IReadOnlyDictionary<string, IValueForm> otherForms);
     }
 }

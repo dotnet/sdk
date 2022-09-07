@@ -11,9 +11,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         internal LowerCaseInvariantValueFormFactory() : base(FormIdentifier) { }
 
-        protected override string? Process(string? value)
+        protected override string Process(string value)
         {
-            return value?.ToLowerInvariant();
+            return value.ToLowerInvariant();
         }
     }
 }

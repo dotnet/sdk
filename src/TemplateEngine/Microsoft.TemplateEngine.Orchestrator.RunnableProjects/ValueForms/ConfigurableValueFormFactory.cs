@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
@@ -36,12 +37,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         protected abstract T ReadConfiguration(JObject jobject);
 
-        protected abstract string? Process(string? value, T? configuration);
+        protected abstract string Process(string value, T? configuration);
 
         private class ConfigurableBaseValueForm : BaseValueForm
         {
             private readonly ConfigurableValueFormFactory<T> _factory;
-            private T? _configuration;
+            private readonly T? _configuration;
 
             internal ConfigurableBaseValueForm(string name, ConfigurableValueFormFactory<T> factory, T? configuration) : base(name, factory.Identifier)
             {
@@ -49,8 +50,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
                 _configuration = configuration;
             }
 
-            public override string? Process(string? value, IReadOnlyDictionary<string, IValueForm> otherForms)
+            public override string Process(string value, IReadOnlyDictionary<string, IValueForm> otherForms)
             {
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
                 return _factory.Process(value, _configuration);
             }
         }

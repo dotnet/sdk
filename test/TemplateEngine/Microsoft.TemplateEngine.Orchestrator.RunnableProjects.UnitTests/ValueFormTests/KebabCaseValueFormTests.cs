@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Xunit;
@@ -31,7 +32,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("Windows10", "windows-10")]
         [InlineData("WindowsServer2016R2", "windows-server-2016-r-2")]
         [InlineData("", "")]
-        [InlineData(null, null)]
         [InlineData(";MyWord;", "my-word")]
         [InlineData("My Word", "my-word")]
         [InlineData("My    Word", "my-word")]
@@ -41,9 +41,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("НоваяПеременная", "новая-переменная")]
         public void KebabCaseWorksAsExpected(string input, string expected)
         {
-            var model = new KebabCaseValueFormFactory().Create("test");
-            string? actual = model.Process(input, new Dictionary<string, IValueForm>());
+            IValueForm? model = new KebabCaseValueFormFactory().Create("test");
+            string actual = model.Process(input, new Dictionary<string, IValueForm>());
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CanHandleNullValue()
+        {
+            IValueForm model = new KebabCaseValueFormFactory().Create("test");
+            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

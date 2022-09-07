@@ -16,19 +16,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal DefaultSafeNamespaceValueFormFactory()
             : base(FormIdentifier) { }
 
-        internal static string? ToSafeNamespace(string? value)
+        internal static string ToSafeNamespace(string value)
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return value;
-            }
-
             const char invalidCharacterReplacement = '_';
 
             value = value ?? throw new ArgumentNullException(nameof(value));
             value = value.Trim();
 
-            StringBuilder safeValueStr = new StringBuilder(value.Length);
+            StringBuilder safeValueStr = new(value.Length);
 
             for (int i = 0; i < value.Length; i++)
             {
@@ -62,10 +57,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
                     safeValueStr.Append(invalidCharacterReplacement);
                 }
             }
-
             return safeValueStr.ToString();
         }
 
-        protected override string? Process(string? value) => ToSafeNamespace(value);
+        protected override string Process(string value) => ToSafeNamespace(value);
     }
 }

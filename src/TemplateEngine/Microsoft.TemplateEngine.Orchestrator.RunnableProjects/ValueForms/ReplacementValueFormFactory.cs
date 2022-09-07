@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
         internal ReplacementValueFormFactory() : base(FormIdentifier) { }
 
-        protected override string? Process(string? value, ReplacementValueFormSettings? configuration)
+        protected override string Process(string value, ReplacementValueFormSettings? configuration)
         {
             if (configuration == null)
             {

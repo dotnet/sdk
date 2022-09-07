@@ -12,6 +12,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal DefaultLowerSafeNameValueFormFactory()
             : base(FormIdentifier) { }
 
-        protected override string? Process(string? value) => DefaultSafeNameValueFormFactory.ToSafeName(value)?.ToLowerInvariant();
+        protected override string Process(string value) => DefaultSafeNameValueFormFactory.ToSafeName(value).ToLowerInvariant();
     }
 }

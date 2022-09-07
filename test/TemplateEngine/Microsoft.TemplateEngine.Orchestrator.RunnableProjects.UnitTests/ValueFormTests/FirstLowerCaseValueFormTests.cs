@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
@@ -17,10 +18,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("NO", "nO", null)]
         [InlineData("NEW", "nEW", null)]
         [InlineData("", "", null)]
-        [InlineData(null, null, null)]
         [InlineData("İndigo", "indigo", "tr-TR")]
         [InlineData("Indigo", "ındigo", "tr-TR")]
-        public void FirstLowerCaseWorksAsExpected(string input, string expected, string culture)
+        public void FirstLowerCaseWorksAsExpected(string input, string expected, string? culture)
         {
             if (!string.IsNullOrEmpty(culture))
             {
@@ -34,9 +34,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
                 }
             }
 
-            var model = new FirstLowerCaseValueFormFactory().Create("test");
-            string? actual = model.Process(input, new Dictionary<string, IValueForm>());
+            IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
+            string actual = model.Process(input, new Dictionary<string, IValueForm>());
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CanHandleNullValue()
+        {
+            IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
+            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

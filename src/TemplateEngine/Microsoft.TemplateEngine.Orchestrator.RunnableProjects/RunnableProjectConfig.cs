@@ -646,30 +646,33 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyList<IReplacementTokens> ProduceSymbolFilenameReplacements()
         {
-            List<IReplacementTokens> filenameReplacements = new List<IReplacementTokens>();
+            List<IReplacementTokens> filenameReplacements = new();
             if (!_configuration.Symbols.Any())
             {
                 return filenameReplacements;
             }
 
-            foreach (BaseReplaceSymbol symbol in _configuration.Symbols.OfType<BaseReplaceSymbol>().Where(s => !string.IsNullOrWhiteSpace(s.FileRename)))
+            foreach (BaseReplaceSymbol symbol in _configuration.Symbols.OfType<BaseReplaceSymbol>())
             {
                 if (symbol is BaseValueSymbol p)
                 {
-                    foreach (string formName in p.Forms.GlobalForms)
+                    if (!string.IsNullOrWhiteSpace(symbol.FileRename))
                     {
-                        if (_configuration.Forms.TryGetValue(formName, out IValueForm valueForm) && p.FileRename != null)
+                        foreach (string formName in p.Forms.GlobalForms)
                         {
-                            string symbolName = symbol.Name + "{-VALUE-FORMS-}" + formName;
-                            string? processedFileReplacement = valueForm.Process(p.FileRename, _configuration.Forms);
-                            if (!string.IsNullOrEmpty(processedFileReplacement))
+                            if (_configuration.Forms.TryGetValue(formName, out IValueForm valueForm))
                             {
-                                GenerateFileReplacementsForSymbol(processedFileReplacement!, symbolName, filenameReplacements);
+                                string symbolName = symbol.Name + "{-VALUE-FORMS-}" + formName;
+                                string processedFileReplacement = valueForm.Process(symbol.FileRename!, _configuration.Forms);
+                                if (!string.IsNullOrEmpty(processedFileReplacement))
+                                {
+                                    GenerateFileReplacementsForSymbol(processedFileReplacement!, symbolName, filenameReplacements);
+                                }
                             }
-                        }
-                        else
-                        {
-                            _settings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
+                            else
+                            {
+                                _settings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
+                            }
                         }
                     }
                 }
@@ -747,7 +750,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 string symbolName = sourceVariable + "{-VALUE-FORMS-}" + formName;
                                 if (!string.IsNullOrWhiteSpace(replaceSymbol.Replaces))
                                 {
-                                    string? processedReplacement = valueForm.Process(baseValueSymbol.Replaces, _configuration.Forms);
+                                    string processedReplacement = valueForm.Process(baseValueSymbol.Replaces!, _configuration.Forms);
                                     if (!string.IsNullOrEmpty(processedReplacement))
                                     {
                                         GenerateReplacementsForSymbol(replaceSymbol, processedReplacement!, symbolName, macroGeneratedReplacements);

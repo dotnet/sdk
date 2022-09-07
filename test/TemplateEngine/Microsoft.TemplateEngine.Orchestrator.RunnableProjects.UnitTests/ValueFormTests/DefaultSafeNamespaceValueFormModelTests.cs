@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Xunit;
@@ -28,9 +29,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [InlineData("Template.1", "Template._1")]
         public void SafeNamespaceWorksAsExpected(string input, string expected)
         {
-            var model = new DefaultSafeNamespaceValueFormFactory().Create("test");
-            string? actual = model.Process(input, new Dictionary<string, IValueForm>());
+            IValueForm model = new DefaultSafeNamespaceValueFormFactory().Create("test");
+            string actual = model.Process(input, new Dictionary<string, IValueForm>());
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void CanHandleNullValue()
+        {
+            IValueForm model = new DefaultSafeNamespaceValueFormFactory().Create("test");
+            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }
