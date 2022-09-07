@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
@@ -20,6 +21,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         /// Gets value form name.
         /// </summary>
         string Name { get; }
+
+        /// <summary>
+        /// True is the form is a default implicit form.
+        /// See <see cref="TemplateConfigModel.SetupValueFormMapForTemplate(Newtonsoft.Json.Linq.JObject?)"/> for more details.
+        /// </summary>
+        internal bool IsDefault { get; }
 
         /// <summary>
         /// Transforms <paramref name="value"/>.

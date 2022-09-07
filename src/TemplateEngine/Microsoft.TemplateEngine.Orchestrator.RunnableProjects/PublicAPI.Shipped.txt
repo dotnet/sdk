@@ -2,8 +2,6 @@
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IDeferredMacro
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.Type.get -> string!
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig.Key.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components
 static Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents.get -> System.Collections.Generic.IReadOnlyList<(System.Type! Type, Microsoft.TemplateEngine.Abstractions.IIdentifiedComponent! Instance)>!
 abstract Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseSymbol.Type.get -> string!
@@ -12,7 +10,6 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.Evalu
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig.Type.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig.VariableName.get -> string!
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IOperationConfig.ConfigureFromJson(string! rawConfiguration, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! templateRoot) -> System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol.FileRename.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BaseReplaceSymbol.ReplacementContexts.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ReplacementContext!>!

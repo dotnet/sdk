@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public SwtichMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         [Fact(DisplayName = nameof(TestSwitchConfig))]
@@ -30,18 +30,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string evaluator = "C++";
             string dataType = "string";
             string expectedValue = "this one";
-            List<KeyValuePair<string?, string?>> switches = new()
+            List<(string?, string)> switches = new()
             {
-                new KeyValuePair<string?, string?>("(3 > 10)", "three greater than ten - false"),
-                new KeyValuePair<string?, string?>("(false)", "false value"),
-                new KeyValuePair<string?, string?>("(10 > 0)", expectedValue),
-                new KeyValuePair<string?, string?>("(5 > 4)", "not this one")
+                ("(3 > 10)", "three greater than ten - false"),
+                ("(false)", "false value"),
+                ("(10 > 0)", expectedValue),
+                ("(5 > 4)", "not this one")
             };
-            SwitchMacroConfig macroConfig = new SwitchMacroConfig(variableName, evaluator, dataType, switches);
+            SwitchMacro macro = new();
+            SwitchMacroConfig macroConfig = new(macro, variableName, evaluator, dataType, switches);
 
             IVariableCollection variables = new VariableCollection();
 
-            SwitchMacro macro = new SwitchMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             string resultValue = (string)variables[variableName];
@@ -74,18 +74,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 }
             ]";
 
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
             {
-                { "evaluator", evaluator },
-                { "datatype", dataType },
-                { "cases", JArray.Parse(switchCases) }
+                { "evaluator", JExtensions.ToJsonString(evaluator) },
+                { "datatype",  JExtensions.ToJsonString(dataType) },
+                { "cases", switchCases }
             };
 
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("SwitchMacro", null, variableName, jsonParameters);
+            GeneratedSymbol deferredConfig = new(variableName, "SwitchMacro", jsonParameters, dataType);
 
             IVariableCollection variables = new VariableCollection();
 
-            SwitchMacro macro = new SwitchMacro();
+            SwitchMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
 

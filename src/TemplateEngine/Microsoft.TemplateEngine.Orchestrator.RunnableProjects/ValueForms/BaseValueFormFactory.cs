@@ -42,6 +42,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 
             public string Name { get; }
 
+            public bool IsDefault { get; init; }
+
             public abstract string Process(string value, IReadOnlyDictionary<string, IValueForm> otherForms);
         }
     }

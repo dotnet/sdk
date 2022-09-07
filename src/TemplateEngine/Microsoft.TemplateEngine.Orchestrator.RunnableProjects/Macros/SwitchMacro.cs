@@ -2,90 +2,42 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class SwitchMacro : IMacro, IDeferredMacro
+    internal class SwitchMacro : BaseGeneratedSymbolMacro<SwitchMacroConfig>
     {
-        internal const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
+        public override Guid Id { get; } = new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
 
-        public Guid Id => new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
+        public override string Type => "switch";
 
-        public string Type => "switch";
-
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig rawConfig)
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, SwitchMacroConfig config)
         {
-            if (rawConfig is not SwitchMacroConfig config)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as SwitchMacroConfig");
-            }
-
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(config.Evaluator, DefaultEvaluator));
             string result = string.Empty;   // default if no condition assigns a value
 
-            foreach (KeyValuePair<string?, string?> switchInfo in config.Switches)
+            foreach ((string? condition, string value) in config.Cases)
             {
-                string? condition = switchInfo.Key;
-                string? value = switchInfo.Value;
-
                 if (string.IsNullOrEmpty(condition))
                 {
                     // no condition, this is the default.
-                    result = value ?? string.Empty;
+                    result = value;
                     break;
                 }
-                else
+
+                if (config.Evaluator(environmentSettings.Host.Logger, condition!, variableCollection))
                 {
-                    if (evaluator(environmentSettings.Host.Logger, condition!, variableCollection))
-                    {
-                        result = value ?? string.Empty;
-                        break;
-                    }
+                    result = value;
+                    break;
                 }
             }
-            variableCollection[config.VariableName] = result.ToString();
+            variableCollection[config.VariableName] = result;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(SwitchMacro), config.VariableName, result);
         }
 
-        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
-        {
-            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a SwitchMacroConfig");
-            }
-
-            string? evaluator = null;
-            if (deferredConfig.Parameters.TryGetValue("evaluator", out JToken evaluatorToken))
-            {
-                evaluator = evaluatorToken.ToString();
-            }
-
-            string? dataType = null;
-            if (deferredConfig.Parameters.TryGetValue("datatype", out JToken dataTypeToken))
-            {
-                dataType = dataTypeToken.ToString();
-            }
-
-            List<KeyValuePair<string?, string?>> switchList = new();
-            if (deferredConfig.Parameters.TryGetValue("cases", out JToken switchListToken))
-            {
-                JArray switchJArray = (JArray)switchListToken;
-                foreach (JToken switchInfo in switchJArray)
-                {
-                    JObject map = (JObject)switchInfo;
-                    string? condition = map.ToString("condition");
-                    string? value = map.ToString("value");
-                    switchList.Add(new KeyValuePair<string?, string?>(condition, value));
-                }
-            }
-
-            IMacroConfig realConfig = new SwitchMacroConfig(deferredConfig.VariableName, evaluator, dataType, switchList);
-            return realConfig;
-        }
+        protected override SwitchMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

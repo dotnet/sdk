@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 {
     public class SymbolValueFormsModel
     {
-        private SymbolValueFormsModel(IReadOnlyList<string> globalForms)
+        internal SymbolValueFormsModel(IReadOnlyList<string> globalForms)
         {
             GlobalForms = globalForms;
         }

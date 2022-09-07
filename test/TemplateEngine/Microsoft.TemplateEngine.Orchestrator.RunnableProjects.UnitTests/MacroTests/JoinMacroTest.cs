@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public JoinMacroTest(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         [Theory(DisplayName = nameof(TestJoinConstantAndReferenceSymbolConfig))]
@@ -38,21 +38,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string referenceEmptySymbolName = "referenceEmptySymbol";
             string constantValue = "constantValue";
 
-            List<KeyValuePair<string?, string?>> definitions = new()
+            List<(JoinMacroConfig.JoinType, string)> definitions = new()
             {
-                new KeyValuePair<string?, string?>("const", constantValue),
-                new KeyValuePair<string?, string?>("ref", referenceEmptySymbolName),
-                new KeyValuePair<string?, string?>("ref", referenceSymbolName)
+                (JoinMacroConfig.JoinType.Const, constantValue),
+                (JoinMacroConfig.JoinType.Ref, referenceEmptySymbolName),
+                (JoinMacroConfig.JoinType.Ref, referenceSymbolName)
             };
 
-            JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator, removeEmptyValues);
+            JoinMacro macro = new();
+            JoinMacroConfig macroConfig = new(macro, variableName, null, definitions, separator, removeEmptyValues);
 
             IVariableCollection variables = new VariableCollection
             {
                 [referenceSymbolName] = referenceSymbolValue
             };
 
-            JoinMacro macro = new JoinMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
             string convertedValue = (string)variables[variableName];
             string expectedValue =
@@ -65,7 +65,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [Theory(DisplayName = nameof(TestDeferredJoinConfig))]
         [InlineData(",")]
         [InlineData("")]
-        [InlineData(null)]
         public void TestDeferredJoinConfig(string separator)
         {
             string variableName = "joinedParameter";
@@ -73,29 +72,28 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string referenceSymbolValue = "referenceValue";
             string constantValue = "constantValue";
 
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
             string symbols =
                 $"[ {{\"type\":\"const\" , \"value\":\"{constantValue}\"  }}, {{\"type\":\"ref\" , \"value\":\"{referenceSymbolName}\"  }} ]";
-            jsonParameters.Add("symbols", JArray.Parse(symbols));
-            if (!string.IsNullOrEmpty(separator))
+            jsonParameters.Add("symbols", symbols);
+            if (separator != null)
             {
-                jsonParameters.Add("separator", separator);
+                jsonParameters.Add("separator", JExtensions.ToJsonString(separator));
             }
-
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("JoinMacro", null, variableName, jsonParameters);
+            GeneratedSymbol deferredConfig = new(variableName, "JoinMacro", jsonParameters);
 
             IVariableCollection variables = new VariableCollection
             {
                 [referenceSymbolName] = referenceSymbolValue
             };
 
-            JoinMacro macro = new JoinMacro();
+            JoinMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
 
             string convertedValue = (string)variables[variableName];
             string expectedValue = string.Join(separator, constantValue, referenceSymbolValue);
-            Assert.Equal(convertedValue, expectedValue);
+            Assert.Equal(expectedValue, convertedValue);
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
 {
-    public interface IOperationConfig : IIdentifiedComponent
+    internal interface IOperationConfig : IIdentifiedComponent
     {
         string Key { get; }
 

@@ -6,18 +6,19 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
-    internal class GlobalRunConfig : IGlobalRunConfig
+    internal class GlobalRunConfig
     {
         public IReadOnlyList<IOperationProvider> Operations { get; init; } = Array.Empty<IOperationProvider>();
 
         public IVariableConfig VariableSetup { get; init; } = VariableConfig.DefaultVariableSetup();
 
-        public IReadOnlyList<IMacroConfig> Macros { get; init; } = Array.Empty<IMacroConfig>();
+        public IReadOnlyList<IGeneratedSymbolConfig> GeneratedSymbolMacros { get; init; } = Array.Empty<IGeneratedSymbolConfig>();
 
-        public IReadOnlyList<IMacroConfig> ComputedMacros { get; init; } = Array.Empty<IMacroConfig>();
+        public IReadOnlyList<BaseMacroConfig> ComputedMacros { get; init; } = Array.Empty<BaseMacroConfig>();
 
         public IReadOnlyList<IReplacementTokens> Replacements { get; init; } = Array.Empty<IReplacementTokens>();
 

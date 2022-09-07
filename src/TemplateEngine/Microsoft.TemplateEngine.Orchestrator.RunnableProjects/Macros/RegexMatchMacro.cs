@@ -7,71 +7,33 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RegexMatchMacro : IDeferredMacro
+    internal class RegexMatchMacro : BaseGeneratedSymbolMacro<RegexMatchMacroConfig>
     {
-        public Guid Id => new Guid("AA5957B0-07B1-4B68-847F-83713973E86F");
+        public override Guid Id { get; } = new Guid("AA5957B0-07B1-4B68-847F-83713973E86F");
 
-        public string Type => "regexMatch";
+        public override string Type => "regexMatch";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, RegexMatchMacroConfig config)
         {
-            string value;
-
-            if (rawConfig is not RegexMatchMacroConfig config)
+            if (!variableCollection.TryGetValue(config.Source, out object working))
             {
-                throw new InvalidCastException("Couldn't cast the rawConfig as RegexMatchMacroConfig");
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Source variable '{sourceVar}' was not found, skipping processing for macro '{var}'.", nameof(RegexMatchMacro), config.Source, config.VariableName);
+                return;
             }
-
-            value = !vars.TryGetValue(config.SourceVariable, out object working) ? string.Empty : working?.ToString() ?? string.Empty;
-
-            bool result = false;
-
-            try
+            if (working == null)
             {
-                result = Regex.IsMatch(value, config.Pattern);
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: The value of source variable '{sourceVar}' is null, skipping processing for macro '{var}'.", nameof(RegexMatchMacro), config.Source, config.VariableName);
+                return;
             }
-            catch (ArgumentException)
-            {
-                environmentSettings.Host.Logger.LogDebug(string.Format(LocalizableStrings.Authoring_InvalidRegex, config.Pattern));
-            }
-            vars[config.VariableName] = result;
+            string value = working.ToString();
+            bool result = Regex.IsMatch(value, config.Pattern);
+            variableCollection[config.VariableName] = result;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(RegexMatchMacro), config.VariableName, result);
         }
 
-        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
-        {
-            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
-            }
-
-            if (!deferredConfig.Parameters.TryGetValue("source", out JToken sourceVarToken))
-            {
-                throw new ArgumentNullException("source");
-            }
-
-            string sourceVariable = sourceVarToken.ToString();
-
-            if (!deferredConfig.Parameters.TryGetValue("pattern", out JToken patternToken))
-            {
-                throw new ArgumentNullException("pattern");
-            }
-
-            string pattern = patternToken.ToString();
-
-            //Warn the user if they explicitly specify something other than "bool" for DataType for this macro
-            if (deferredConfig.DataType != null
-                && !string.Equals(deferredConfig.DataType, "bool", StringComparison.OrdinalIgnoreCase))
-            {
-                environmentSettings.Host.Logger.LogDebug(LocalizableStrings.Authoring_NonBoolDataTypeForRegexMatch);
-            }
-
-            IMacroConfig realConfig = new RegexMatchMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariable, pattern);
-            return realConfig;
-        }
+        protected override RegexMatchMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

@@ -5,7 +5,6 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -17,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public RegexMatchMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         [Fact(DisplayName = nameof(TestRegexMatchMacroTrue))]
@@ -25,7 +24,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             const string variableName = "isMatch";
             const string sourceVariable = "originalValue";
-            RegexMatchMacroConfig macroConfig = new RegexMatchMacroConfig(variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
+            RegexMatchMacro macro = new();
+            RegexMatchMacroConfig macroConfig = new(macro, variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
 
             IVariableCollection variables = new VariableCollection();
 
@@ -33,7 +33,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             const bool expectedValue = true;
             variables[sourceVariable] = sourceValue;
 
-            RegexMatchMacro macro = new RegexMatchMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];
@@ -45,7 +44,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             const string variableName = "isMatch";
             const string sourceVariable = "originalValue";
-            RegexMatchMacroConfig macroConfig = new RegexMatchMacroConfig(variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
+
+            RegexMatchMacro macro = new();
+            RegexMatchMacroConfig macroConfig = new(macro, variableName, null, sourceVariable, @"(((?<=\.)|^)(?=\d)|[^\w\.])");
 
             IVariableCollection variables = new VariableCollection();
 
@@ -53,7 +54,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             const bool expectedValue = false;
             variables[sourceVariable] = sourceValue;
 
-            RegexMatchMacro macro = new RegexMatchMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             bool newValue = (bool)variables[variableName];

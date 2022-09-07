@@ -304,7 +304,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
             }
 
             //not implemented
-            if (value.Forms.Any())
+            if (value.Forms.Values.Any(f => !f.IsDefault))
             {
                 throw new NotSupportedException("Forms are not supported for serialization to JSON.");
             }

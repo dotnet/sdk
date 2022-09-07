@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     {
         internal const string TypeName = "derived";
 
-        internal DerivedSymbol(string name, string valueTransform, string valueSource) : base(name, null)
+        internal DerivedSymbol(string name, string valueTransform, string valueSource, string? replaces = null) : base(name, replaces)
         {
             if (string.IsNullOrWhiteSpace(valueTransform))
             {

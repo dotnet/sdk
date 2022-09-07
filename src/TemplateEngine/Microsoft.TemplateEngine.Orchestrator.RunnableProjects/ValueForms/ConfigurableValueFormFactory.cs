@@ -30,7 +30,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             {
                 name = Identifier;
             }
-            return new ConfigurableBaseValueForm(name!, this, null);
+            return new ConfigurableBaseValueForm(name!, this, null)
+            {
+                IsDefault = true
+            };
         }
 
         protected abstract T ReadConfiguration(JObject jobject);

@@ -115,6 +115,11 @@ Details: {1}</target>
         <target state="translated">Fehler beim Lesen der Analyselokalisierungsdatei {0}. Sie wird bei der weiteren Verarbeitung übersprungen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
+        <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
+        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
+      </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>
         <target state="translated">Die Variable [{0}] wurde bereits mit dem Wert [{1}] hinzugefügt. Sie kann nicht als implizite Variable mit dem Wert \"self\" hinzugefügt werden.</target>

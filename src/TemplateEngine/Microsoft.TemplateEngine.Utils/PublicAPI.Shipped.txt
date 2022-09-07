@@ -217,9 +217,7 @@ Microsoft.TemplateEngine.Utils.MultiValueParameter.Values.get -> System.Collecti
 Microsoft.TemplateEngine.Utils.ParameterSetDataExtensions
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.PathRelativeTo(string! target, string! relativeTo) -> string!
 Microsoft.TemplateEngine.Utils.RuntimeValueUtil
-Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string!
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string! configItem) -> void
-Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string! configItem, System.Exception! innerException) -> void
 Microsoft.TemplateEngine.Utils.TemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.Equals(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! other) -> bool
 Microsoft.TemplateEngine.Utils.TemplateParameter.Precedence.get -> Microsoft.TemplateEngine.Abstractions.TemplateParameterPrecedence!

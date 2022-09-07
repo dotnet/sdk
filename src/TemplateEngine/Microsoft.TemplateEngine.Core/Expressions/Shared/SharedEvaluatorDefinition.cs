@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         where TSelf : SharedEvaluatorDefinition<TSelf, TTokens>, new()
         where TTokens : struct
     {
-        private static readonly TSelf Instance = new TSelf();
+        private static readonly TSelf Instance = new();
         private static readonly IOperatorMap<Operators, TTokens> Map = Instance.GenerateMap();
         private static readonly bool DereferenceInLiteralsSetting = Instance.DereferenceInLiterals;
         private static readonly string NullToken = Instance.NullTokenValue;
@@ -90,10 +90,10 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <returns></returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables, out string faultedMessage, HashSet<string> referencedVariablesKeys = null)
         {
-            using (MemoryStream ms = new MemoryStream(Encoding.UTF8.GetBytes(text)))
-            using (MemoryStream res = new MemoryStream())
+            using (MemoryStream ms = new(Encoding.UTF8.GetBytes(text)))
+            using (MemoryStream res = new())
             {
-                EngineConfig cfg = new EngineConfig(logger, variables);
+                EngineConfig cfg = new(logger, variables);
                 IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;

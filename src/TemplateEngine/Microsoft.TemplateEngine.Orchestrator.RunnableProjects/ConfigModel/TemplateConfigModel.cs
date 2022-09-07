@@ -24,8 +24,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     {
         private const string NameSymbolName = "name";
         private readonly ILogger? _logger;
+        private readonly Dictionary<string, IValueForm> _forms = SetupValueFormMapForTemplate();
         private IReadOnlyDictionary<string, string> _tags = new Dictionary<string, string>();
-        private Dictionary<string, BaseSymbol> _symbols = new Dictionary<string, BaseSymbol>();
+        private Dictionary<string, BaseSymbol> _symbols = new();
         private IReadOnlyList<PostActionModel> _postActions = new List<PostActionModel>();
         private string? _author;
         private string? _name;
@@ -141,7 +142,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     }
                 }
             }
-            foreach (var symbol in ImplicitBindSymbols)
+            foreach (BindSymbol symbol in ImplicitBindSymbols)
             {
                 if (!symbols.ContainsKey(symbol.Name))
                 {
@@ -161,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             // Custom operations for specials
             IReadOnlyDictionary<string, JToken> allSpecialOpsConfig = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(SpecialCustomOperations));
-            List<CustomFileGlobModel> specialCustomSetup = new List<CustomFileGlobModel>();
+            List<CustomFileGlobModel> specialCustomSetup = new();
 
             foreach (KeyValuePair<string, JToken> globConfigKeyValue in allSpecialOpsConfig)
             {
@@ -174,7 +175,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             SpecialCustomOperations = specialCustomSetup;
 
-            List<TemplateConstraintInfo> constraints = new List<TemplateConstraintInfo>();
+            List<TemplateConstraintInfo> constraints = new();
             foreach (JProperty prop in source.PropertiesOf(nameof(Constraints)))
             {
                 if (prop.Value is not JObject obj)
@@ -190,7 +191,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     continue;
                 }
                 obj.TryGetValue(nameof(TemplateConstraintInfo.Args), StringComparison.OrdinalIgnoreCase, out JToken? args);
-                constraints.Add(new TemplateConstraintInfo(type!, args.ToJSONString()));
+                constraints.Add(new TemplateConstraintInfo(type!, args?.ToString(Formatting.None)));
             }
             Constraints = constraints;
         }
@@ -343,7 +344,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             {
                 _symbols = value.ToDictionary(s => s.Name, s => s);
                 _symbols[NameSymbolName] = NameSymbol;
-                foreach (var symbol in ImplicitBindSymbols)
+                foreach (BindSymbol symbol in ImplicitBindSymbols)
                 {
                     if (!_symbols.ContainsKey(symbol.Name))
                     {
@@ -356,7 +357,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the list of forms defined in the template ("forms" JSON property).
         /// </summary>
-        public IReadOnlyDictionary<string, IValueForm> Forms { get; internal init; } = new Dictionary<string, IValueForm>();
+        public IReadOnlyDictionary<string, IValueForm> Forms
+        {
+            get => _forms;
+            internal init
+            {
+                foreach (KeyValuePair<string, IValueForm> kvp in value)
+                {
+                    _forms[kvp.Key] = kvp.Value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the placeholder filename defined in the template ("placeholderFilename" JSON property).
@@ -494,9 +505,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             };
         }
 
-        private static IReadOnlyDictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject source)
+        private static Dictionary<string, IValueForm> SetupValueFormMapForTemplate(JObject? source = null)
         {
-            Dictionary<string, IValueForm> formMap = new Dictionary<string, IValueForm>(StringComparer.Ordinal);
+            Dictionary<string, IValueForm> formMap = new(StringComparer.Ordinal);
 
             // setup all the built-in default forms.
             // name of the form is form identifier
@@ -504,6 +515,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             foreach (KeyValuePair<string, IValueFormFactory> builtInForm in ValueFormRegistry.FormLookup)
             {
                 formMap[builtInForm.Key] = builtInForm.Value.Create();
+            }
+
+            if (source == null)
+            {
+                return formMap;
             }
 
             // setup the forms defined by the template configuration.
@@ -517,13 +533,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     formMap[form.Key] = ValueFormRegistry.GetForm(form.Key, o);
                 }
             }
-
             return formMap;
         }
 
         private static IReadOnlyDictionary<string, IBaselineInfo> BaselineInfoFromJObject(IEnumerable<JProperty> baselineJProperties)
         {
-            Dictionary<string, IBaselineInfo> allBaselines = new Dictionary<string, IBaselineInfo>();
+            Dictionary<string, IBaselineInfo> allBaselines = new();
 
             foreach (JProperty property in baselineJProperties)
             {
@@ -532,8 +547,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     continue;
                 }
 
-                var defaultOverrides = obj.Get<JObject>(nameof(Utils.BaselineInfo.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>();
-                BaselineInfo baseline = new BaselineInfo(defaultOverrides, obj.ToString(nameof(baseline.Description)));
+                IReadOnlyDictionary<string, string>? defaultOverrides = obj.Get<JObject>(nameof(Utils.BaselineInfo.DefaultOverrides))?.ToStringDictionary() ?? new Dictionary<string, string>();
+                BaselineInfo baseline = new(defaultOverrides, obj.ToString(nameof(baseline.Description)));
                 allBaselines[property.Name] = baseline;
             }
 

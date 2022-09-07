@@ -1,15 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -20,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public RandomMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         [Theory(DisplayName = nameof(TestRandomConfig))]
@@ -32,11 +33,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestRandomConfig(int low, int? high)
         {
             string variableName = "myRnd";
-            RandomMacroConfig macroConfig = new RandomMacroConfig(variableName, null, low, high);
+            RandomMacro macro = new();
+            RandomMacroConfig macroConfig = new(macro, variableName, null, low, high);
 
             IVariableCollection variables = new VariableCollection();
 
-            RandomMacro macro = new RandomMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
 
             long randomValue = (int)variables[variableName];
@@ -57,19 +58,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestRandomDeferredConfig(int low, int? high)
         {
             string variableName = "myRnd";
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
             {
-                { "low", low }
+                { "low", JExtensions.ToJsonString(low) }
             };
             if (high.HasValue)
             {
-                jsonParameters.Add("high", high);
+                jsonParameters.Add("high", JExtensions.ToJsonString(high));
             }
 
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("RandomMacro", null, variableName, jsonParameters);
+            GeneratedSymbol deferredConfig = new(variableName, "RandomMacro", jsonParameters);
             IVariableCollection variables = new VariableCollection();
 
-            RandomMacro macro = new RandomMacro();
+            RandomMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
             long randomValue = (int)variables[variableName];

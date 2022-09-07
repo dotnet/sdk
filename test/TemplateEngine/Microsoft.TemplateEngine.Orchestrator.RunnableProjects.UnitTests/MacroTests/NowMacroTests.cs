@@ -7,10 +7,10 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -21,22 +21,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public NowMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         // tests regular Now configuration, and Utc = true
-        [Fact(DisplayName = nameof(EvaluateNowConfig))]
-        public void EvaluateNowConfig()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("yyyy-MM-dd HH:mm:ss")]
+        public void EvaluateNowConfig(string? format)
         {
             string variableName = "nowString";
-            string format = string.Empty;
             bool utc = true;
-            NowMacroConfig macroConfig = new NowMacroConfig(variableName, format, utc);
+
+            NowMacro macro = new();
+            NowMacroConfig macroConfig = new(macro, variableName, format, utc);
             Assert.Equal("string", macroConfig.DataType);
 
             IVariableCollection variables = new VariableCollection();
 
-            NowMacro macro = new NowMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
             Assert.IsType<string>(variables[variableName]);
             string macroNowString = (string)variables[variableName]!;
@@ -55,16 +58,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "nowString";
             string format = string.Empty;
             bool utc = false;
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
             {
-                { "format", format },
-                { "utc", utc }
+                { "format", JExtensions.ToJsonString(format) },
+                { "utc", JExtensions.ToJsonString(utc) }
             };
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", null, variableName, jsonParameters);
-
+            GeneratedSymbol deferredConfig = new(variableName, "NowMacro", jsonParameters);
             IVariableCollection variables = new VariableCollection();
 
-            NowMacro macro = new NowMacro();
+            NowMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
             Assert.Equal("string", (realConfig as NowMacroConfig)?.DataType);
 
@@ -80,25 +82,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [InlineData("string")]
-        [InlineData("date")]
-        public void EvaluateNowOverrideDatatypeInConfig(string type)
+        [InlineData(null, "string")]
+        [InlineData("", "string")]
+        [InlineData("string", "string")]
+        [InlineData("date", "date")]
+        public void EvaluateNowOverrideDatatypeInConfig(string type, string expectedType)
         {
             string variableName = "nowString";
             string format = string.Empty;
             bool utc = false;
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
             {
-                { "format", format },
-                { "utc", utc },
-                { "datatype", type }
+                { "format", JExtensions.ToJsonString(format) },
+                { "utc", JExtensions.ToJsonString(utc) }
             };
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", type, variableName, jsonParameters);
-            NowMacro macro = new NowMacro();
+            GeneratedSymbol deferredConfig = new(variableName, "NowMacro", jsonParameters, type);
+            NowMacro macro = new();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            Assert.Equal("string", (realConfig as NowMacroConfig)?.DataType);
+            Assert.Equal(expectedType, (realConfig as NowMacroConfig)?.DataType);
         }
     }
 }

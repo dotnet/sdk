@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -185,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            _ = await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            _ = await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -223,12 +223,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                             {
                                 new
                                 {
-                                    condition = "hostPrefixed == TestHost",
+                                    condition = "(hostPrefixed == \"TestHost\")",
                                     value = "Correct"
                                 },
                                 new
                                 {
-                                    condition = "hostPrefixed != TestHost",
+                                    condition = "(hostPrefixed != \"TestHost\")",
                                     value = "Incorrect"
                                 },
                             }
@@ -267,7 +267,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -281,7 +281,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -326,14 +326,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            var additionalComponents = new[]
+            (Type, IIdentifiedComponent)[]? additionalComponents = new[]
             {
                 (typeof(IBindSymbolSource), new TestBindSymbolSource(Guid.NewGuid())),
                 (typeof(IBindSymbolSource), new TestBindSymbolSource(Guid.NewGuid()) as IIdentifiedComponent)
             };
 
-            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
-            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            List<(LogLevel, string)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
             IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = settings.GetTempVirtualizedPath();
@@ -347,7 +347,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -356,7 +356,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
             Assert.Equal("%VAL%", resultContent);
 
-            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
+            IEnumerable<string> warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
             Assert.Equal(2, warningMessages.Count());
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_ValueAvailableFromMultipleSources, "Test", "'Test', 'Test'", "'test:', 'test:'"), warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "testBindConflict"), warningMessages);
@@ -398,13 +398,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             //
 
             var symbolSource = new TestBindSymbolSource(Guid.NewGuid(), prefix: "test", requiresPrefixMatch: true);
-            var additionalComponents = new[]
+            (Type, IIdentifiedComponent)[]? additionalComponents = new[]
             {
                 (typeof(IBindSymbolSource), (IIdentifiedComponent)symbolSource),
             };
 
-            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
-            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            List<(LogLevel, string)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
             IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, additionalComponents: additionalComponents, addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = settings.GetTempVirtualizedPath();
@@ -418,7 +418,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -427,7 +427,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
             Assert.Equal("%VAL%", resultContent);
 
-            var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
+            IEnumerable<string> warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
             Assert.Single(warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "notPrefixed"), warningMessages);
             Assert.False(symbolSource.GetBoundValueAsync_WasCalled);
@@ -513,7 +513,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            await RunnableProjectGenerator.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -525,11 +525,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
         private class TestBindSymbolSource : IBindSymbolSource
         {
-            private readonly Guid _guid;
-
             public TestBindSymbolSource(Guid guid, string prefix = "test", bool requiresPrefixMatch = false)
             {
-                _guid = guid;
+                Id = guid;
                 SourcePrefix = prefix;
                 RequiresPrefixMatch = requiresPrefixMatch;
             }
@@ -540,7 +538,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             public int Priority => 0;
 
-            public Guid Id => _guid;
+            public Guid Id { get; private set; }
 
             public bool RequiresPrefixMatch { get; }
 
@@ -549,7 +547,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             public Task<string?> GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
             {
                 GetBoundValueAsync_WasCalled = true;
-                return Task.FromResult((string?)("TestVal" + _guid.ToString()));
+                return Task.FromResult((string?)("TestVal" + Id.ToString()));
             }
         }
     }

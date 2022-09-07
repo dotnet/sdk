@@ -14,8 +14,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         {
             var assemblyCatalog = new AssemblyComponentCatalog(new[] { typeof(Components).Assembly });
 
-            var expectedTypeNames = assemblyCatalog.Select(pair => pair.Item1.FullName + ";" + pair.Item2.GetType().FullName).OrderBy(name => name);
-            var actualTypeNames = Components.AllComponents.Select(t => t.Type.FullName + ";" + t.Instance.GetType().FullName).OrderBy(name => name);
+            IOrderedEnumerable<string> expectedTypeNames = assemblyCatalog
+                .Where(pair => !pair.Item1.IsGenericType)
+                .Select(pair => pair.Item1.FullName + ";" + pair.Item2.GetType().FullName)
+                .OrderBy(name => name);
+            IOrderedEnumerable<string> actualTypeNames = Components.AllComponents.Select(t => t.Type.FullName + ";" + t.Instance.GetType().FullName).OrderBy(name => name);
 
             Assert.Equal(expectedTypeNames, actualTypeNames);
         }

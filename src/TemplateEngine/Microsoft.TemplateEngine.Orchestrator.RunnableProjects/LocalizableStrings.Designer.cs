@@ -249,6 +249,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
                 return ResourceManager.GetString("LocalizationModelDeserializer_Error_FailedToParse", resourceCulture);
             }
         }
+
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The symbol &apos;{0}&apos;: unable to find a form &apos;{1}&apos;, the further processing of the symbol will be skipped..
+        /// </summary>
+        internal static string RunnableProjectConfig_OperationSetup_UnknownForm {
+            get {
+                return ResourceManager.GetString("RunnableProjectConfig_OperationSetup_UnknownForm", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self..

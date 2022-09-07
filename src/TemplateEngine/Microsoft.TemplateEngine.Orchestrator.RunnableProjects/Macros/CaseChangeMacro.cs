@@ -2,60 +2,38 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class CaseChangeMacro : IMacro, IDeferredMacro
+    internal class CaseChangeMacro : BaseGeneratedSymbolMacro<CaseChangeMacroConfig>
     {
-        public Guid Id => new Guid("10919118-4E13-4FA9-825C-3B4DA855578E");
+        public override Guid Id { get; } = new Guid("10919118-4E13-4FA9-825C-3B4DA855578E");
 
-        public string Type => "casing";
+        public override string Type => "casing";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, CaseChangeMacroConfig config)
         {
             string value = string.Empty;
-
-            if (rawConfig is not CaseChangeMacroConfig config)
+            if (!variableCollection.TryGetValue(config.Source, out object? working))
             {
-                throw new InvalidCastException("Couldn't cast the rawConfig as CaseChangeMacroConfig");
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Source variable '{sourceVar}' was not found, skipping processing for macro '{var}'.", nameof(CaseChangeMacro), config.Source, config.VariableName);
+                return;
             }
-
-            if (vars.TryGetValue(config.SourceVariable, out object working))
+            if (working == null)
             {
-                value = working?.ToString() ?? string.Empty;
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: The value of source variable '{sourceVar}' is null, skipping processing for macro '{var}'.", nameof(CaseChangeMacro), config.Source, config.VariableName);
+                return;
             }
-
+            value = working.ToString();
             value = config.ToLower ? value.ToLowerInvariant() : value.ToUpperInvariant();
-
-            vars[config.VariableName] = value;
+            variableCollection[config.VariableName] = value;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(CaseChangeMacro), config.VariableName, value);
         }
 
-        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
-        {
-            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
-            }
-
-            if (!deferredConfig.Parameters.TryGetValue("source", out JToken sourceVarToken))
-            {
-                throw new ArgumentNullException("source");
-            }
-            string sourceVariable = sourceVarToken.ToString();
-
-            bool lowerCase = true;
-            if (deferredConfig.Parameters.TryGetValue("toLower", out JToken stepListToken))
-            {
-                lowerCase = stepListToken.ToBool(defaultValue: true);
-            }
-
-            IMacroConfig realConfig = new CaseChangeMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariable, lowerCase);
-            return realConfig;
-        }
+        protected override CaseChangeMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

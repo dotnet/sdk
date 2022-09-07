@@ -115,6 +115,11 @@ Detalhes: {1}</target>
         <target state="translated">Falha ao ler o arquivo de localização {0}, ele será ignorado do processamento posterior.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
+        <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
+        <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
+        <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
+      </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>
         <target state="translated">Variável [{0}] já adicionada com o valor [{1}]. Não é possível adicioná-lo como variável implícita com o valor de self.</target>

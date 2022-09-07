@@ -2,33 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
-    internal class EvaluateMacro : IMacro
+    internal class EvaluateMacro : BaseMacro<EvaluateMacroConfig>
     {
-        internal const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
+        internal const string MacroType = "evaluate";
 
-        public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
+        public override Guid Id { get; } = new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
 
-        public string Type => "evaluate";
+        public override string Type => MacroType;
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig rawConfig)
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, EvaluateMacroConfig config)
         {
-            if (rawConfig is not EvaluateMacroConfig config)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
-            }
-
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(config.Evaluator, DefaultEvaluator));
-            bool result = evaluator(environmentSettings.Host.Logger, config.Value, variableCollection);
-
+            bool result = config.Evaluator(environmentSettings.Host.Logger, config.Condition, variableCollection);
             variableCollection[config.VariableName] = result;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(EvaluateMacro), config.VariableName, result);
         }
     }
 }

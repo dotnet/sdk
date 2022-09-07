@@ -198,6 +198,10 @@ Details: {1}</value>
   <data name="LocalizationModelDeserializer_Error_FailedToParse" xml:space="preserve">
     <value>Failed to read parse localization file {0}, it will be skipped from further processing.</value>
   </data>
+  <data name="RunnableProjectConfig_OperationSetup_UnknownForm" xml:space="preserve">
+    <value>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</value>
+    <comment>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</comment>
+  </data>
   <data name="RunnableProjectGenerator_CannotAddImplicitChoice" xml:space="preserve">
     <value>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</value>
     <comment>{0} is the choiceKey, {1} is the existing conflict value</comment>

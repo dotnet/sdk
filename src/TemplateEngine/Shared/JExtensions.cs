@@ -121,11 +121,11 @@ namespace Microsoft.TemplateEngine
             return defaultValue;
         }
 
-        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default)
+        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default, bool ignoreCase = false)
             where T : struct
         {
             string? val = token.ToString(key);
-            if (val == null || !Enum.TryParse(val, out T result))
+            if (val == null || !Enum.TryParse(val, ignoreCase, out T result))
             {
                 return defaultValue;
             }
@@ -380,21 +380,12 @@ namespace Microsoft.TemplateEngine
         }
 
         /// <summary>
-        /// Converts <paramref name="token"/> to valid JSON string.
+        /// Converts <paramref name="obj"/> to valid JSON string.
         /// JToken.ToString() doesn't provide a valid JSON string for JTokenType == String.
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        internal static string? ToJSONString(this JToken? token)
+        internal static string ToJsonString(object obj)
         {
-            if (token == null)
-            {
-                return null;
-            }
-            using StringWriter stringWriter = new();
-            using JsonWriter jsonWriter = new JsonTextWriter(stringWriter);
-            token.WriteTo(jsonWriter);
-            return stringWriter.ToString();
+            return JToken.FromObject(obj).ToString(Formatting.None);
         }
 
     }

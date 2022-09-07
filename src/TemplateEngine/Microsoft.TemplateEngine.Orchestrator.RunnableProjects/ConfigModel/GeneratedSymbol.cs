@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 
@@ -11,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     /// <summary>
     /// Defines the symbol of type "generated".
     /// </summary>
-    public sealed class GeneratedSymbol : BaseReplaceSymbol
+    public sealed class GeneratedSymbol : BaseReplaceSymbol, IGeneratedSymbolConfig
     {
         internal const string TypeName = "generated";
 
@@ -21,8 +22,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             {
                 throw new ArgumentException($"'{nameof(generator)}' cannot be null or whitespace.", nameof(generator));
             }
-
             Generator = generator;
+        }
+
+        internal GeneratedSymbol(string name, string generator, IReadOnlyDictionary<string, string> parameters, string? dataType = null) : this(name, generator)
+        {
+            DataType = dataType;
+            Parameters = parameters;
         }
 
         internal GeneratedSymbol(string name, JObject jObject) : base(jObject, name)
@@ -30,12 +36,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             string? generator = jObject.ToString(nameof(Generator));
             if (string.IsNullOrWhiteSpace(generator))
             {
-                throw new TemplateAuthoringException(string.Format(LocalizableStrings.SymbolModel_Error_MandatoryPropertyMissing, name, GeneratedSymbol.TypeName, nameof(Generator).ToLowerInvariant()), name);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.SymbolModel_Error_MandatoryPropertyMissing, name, TypeName, nameof(Generator).ToLowerInvariant()), name);
             }
 
             Generator = generator!;
             DataType = jObject.ToString(nameof(DataType));
-            Parameters = jObject.ToJTokenStringDictionary(StringComparer.Ordinal, nameof(Parameters));
+            Parameters = jObject.ToJTokenStringDictionary(StringComparer.OrdinalIgnoreCase, nameof(Parameters));
         }
 
         /// <inheritdoc/>
@@ -56,6 +62,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// - the key is a parameter name
         /// - the value is a JSON value.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Parameters { get; internal init; } = new Dictionary<string, string>();
+        public IReadOnlyDictionary<string, string> Parameters { get; internal init; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        string IGeneratedSymbolConfig.DataType => DataType ?? "string";
+
+        string IMacroConfig.VariableName => Name;
+
+        string IMacroConfig.Type => Generator;
     }
 }

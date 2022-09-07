@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {
     public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
     {
-        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
+        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new();
 
         public enum Tokens
         {
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
         {
             if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
-                TokenTrie trie = new TokenTrie();
+                TokenTrie trie = new();
 
                 //Logic
                 trie.AddToken(processor.Encoding.GetBytes("&&"));

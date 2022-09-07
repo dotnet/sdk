@@ -6,73 +6,38 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class CoalesceMacro : IMacro, IDeferredMacro
+    internal class CoalesceMacro : BaseGeneratedSymbolMacro<CoalesceMacroConfig>
     {
-        public string Type => "coalesce";
+        public override string Type => "coalesce";
 
-        public Guid Id => new Guid("11C6EACF-8D24-42FD-8FC6-84063FCD8F14");
+        public override Guid Id { get; } = new("11C6EACF-8D24-42FD-8FC6-84063FCD8F14");
 
-        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, CoalesceMacroConfig config)
         {
-            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
+            if (variableCollection.TryGetValue(config.SourceVariableName, out object currentSourceValue) && currentSourceValue != null)
             {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
+                variableCollection[config.VariableName] = currentSourceValue;
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to '{value}'.", nameof(CoalesceMacro), config.VariableName, currentSourceValue);
+                return;
             }
-
-            string? sourceVariableName = null;
-            if (deferredConfig.Parameters.TryGetValue("sourceVariableName", out JToken sourceVariableToken) && sourceVariableToken.Type == JTokenType.String)
+            if (variableCollection.TryGetValue(config.FallbackVariableName, out object currentFallbackValue) && currentFallbackValue != null)
             {
-                sourceVariableName = sourceVariableToken.ToString();
+                variableCollection[config.VariableName] = currentFallbackValue;
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to fallback value '{value}'.", nameof(CoalesceMacro), config.VariableName, currentFallbackValue);
+                return;
             }
-
-            string? defaultValue = null;
-            if (deferredConfig.Parameters.TryGetValue("defaultValue", out JToken defaultValueToken) && defaultValueToken.Type == JTokenType.String)
+            else if (config.DefaultValue != null)
             {
-                defaultValue = defaultValueToken.ToString();
+                variableCollection[config.VariableName] = config.DefaultValue;
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Assigned variable '{var}' to default value '{value}'.", nameof(CoalesceMacro), config.VariableName, config.DefaultValue);
+                return;
             }
-
-            string? fallbackVariableName = null;
-            if (deferredConfig.Parameters.TryGetValue("fallbackVariableName", out JToken fallbackVariableNameToken) && fallbackVariableNameToken.Type == JTokenType.String)
-            {
-                fallbackVariableName = fallbackVariableNameToken.ToString();
-            }
-
-            IMacroConfig realConfig = new CoalesceMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, sourceVariableName, defaultValue, fallbackVariableName);
-            return realConfig;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was not assigned, neither source nor fallback variable was found.", nameof(CoalesceMacro), config.VariableName);
         }
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config)
-        {
-            if (config is not CoalesceMacroConfig realConfig)
-            {
-                throw new InvalidCastException("Unable to cast config as a CoalesceMacroConfig");
-            }
-
-            object? targetValue = null;
-            if (!string.IsNullOrEmpty(realConfig.SourceVariableName)
-                && vars.TryGetValue(realConfig.SourceVariableName!, out object currentSourceValue)
-                && !Equals(currentSourceValue ?? string.Empty, realConfig.DefaultValue ?? string.Empty))
-            {
-                targetValue = currentSourceValue;
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(realConfig.FallbackVariableName)
-                    && !vars.TryGetValue(realConfig.FallbackVariableName!, out targetValue))
-                {
-                    environmentSettings.Host.Logger.LogDebug("Unable to find a variable to fall back to called " + realConfig.FallbackVariableName);
-                    targetValue = realConfig.DefaultValue;
-                }
-            }
-            if (targetValue is not null)
-            {
-                vars[config.VariableName] = targetValue.ToString();
-            }
-        }
+        protected override CoalesceMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

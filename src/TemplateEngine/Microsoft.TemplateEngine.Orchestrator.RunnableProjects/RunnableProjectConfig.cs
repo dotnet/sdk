@@ -18,7 +18,7 @@ using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
@@ -56,8 +56,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IFile? _hostConfigFile;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
-        private IGlobalRunConfig? _operationConfig;
-        private IReadOnlyList<(string Glob, IGlobalRunConfig RunConfig)>? _specialOperationConfig;
+        private GlobalRunConfig? _operationConfig;
+        private IReadOnlyList<(string Glob, GlobalRunConfig RunConfig)>? _specialOperationConfig;
         private IReadOnlyList<IReplacementTokens>? _symbolFilenameReplacements;
         private IReadOnlyList<ICreationPath>? _evaluatedPrimaryOutputs;
         private IReadOnlyList<IPostAction>? _evaluatedPostActions;
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<FileSourceMatchInfo> EvaluatedSources => _sources ?? throw new InvalidOperationException($"{nameof(Evaluate)} should be called before accessing the property.");
 
-        public IGlobalRunConfig GlobalOperationConfig
+        public GlobalRunConfig GlobalOperationConfig
         {
             get
             {
@@ -141,14 +141,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyList<(string Glob, IGlobalRunConfig RunConfig)> SpecialOperationConfig
+        public IReadOnlyList<(string Glob, GlobalRunConfig RunConfig)> SpecialOperationConfig
         {
             get
             {
                 if (_specialOperationConfig == null)
                 {
                     IReadOnlyList<OperationConfigDefault> defaultSpecials = OperationConfigDefault.DefaultSpecialConfig;
-                    List<(string Glob, IGlobalRunConfig RunConfig)> specialOperationConfig = new();
+                    List<(string Glob, GlobalRunConfig RunConfig)> specialOperationConfig = new();
 
                     // put the custom configs first in the list
                     HashSet<string> processedGlobs = new HashSet<string>();
@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                             defaultParams ??= OperationConfigDefault.Default;
 
-                            IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
+                            GlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
                             specialOperationConfig.Add((customGlobModel.Glob, runConfig));
                         }
 
@@ -180,7 +180,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             continue;
                         }
 
-                        IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, null);
+                        GlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, null);
                         specialOperationConfig.Add((defaultParams.Glob, runConfig));
                     }
 
@@ -442,7 +442,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return filenameReplacements;
         }
 
-        private IGlobalRunConfig ProduceOperationSetup(OperationConfigDefault defaultModel, bool generateMacros, CustomFileGlobModel? customGlobModel = null)
+        private GlobalRunConfig ProduceOperationSetup(OperationConfigDefault defaultModel, bool generateMacros, CustomFileGlobModel? customGlobModel = null)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
 
@@ -463,14 +463,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             IVariableConfig variableConfig = customGlobModel != null ? customGlobModel.VariableFormat : VariableConfig.DefaultVariableSetup();
-            List<IMacroConfig>? macros = null;
-            List<IMacroConfig>? computedMacros = new List<IMacroConfig>();
-            List<IReplacementTokens> macroGeneratedReplacements = new List<IReplacementTokens>();
+            List<IGeneratedSymbolConfig> generatedSymbolMacros = new();
+            List<BaseMacroConfig> computedMacros = new();
+            List<IReplacementTokens> macroGeneratedReplacements = new();
 
             if (generateMacros)
             {
-                macros = ProduceMacroConfig();
-                computedMacros = ProduceComputedMacroConfig();
+                generatedSymbolMacros = ProduceGeneratedSymbolsMacroConfig();
+                computedMacros = ProduceMacroConfig();
             }
 
             foreach (BaseSymbol symbol in ConfigurationModel.Symbols)
@@ -479,7 +479,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     if (generateMacros)
                     {
-                        macros?.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Name, derivedSymbol.DataType, derivedSymbol.ValueTransform, ConfigurationModel.Forms));
+                        if (ConfigurationModel.Forms.TryGetValue(derivedSymbol.ValueTransform, out _))
+                        {
+                            computedMacros.Add(new ProcessValueFormMacroConfig(derivedSymbol.ValueSource, symbol.Name, derivedSymbol.DataType, derivedSymbol.ValueTransform, ConfigurationModel.Forms));
+                        }
+                        else
+                        {
+                            _settings.Host.Logger.LogWarning(LocalizableStrings.RunnableProjectConfig_OperationSetup_UnknownForm, derivedSymbol.Name, derivedSymbol.ValueTransform);
+                        }
                     }
                 }
 
@@ -504,12 +511,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                 }
                                 if (generateMacros)
                                 {
-                                    macros?.Add(new ProcessValueFormMacroConfig(sourceVariable, symbolName, "string", formName, ConfigurationModel.Forms));
+                                    computedMacros.Add(new ProcessValueFormMacroConfig(sourceVariable, symbolName, "string", formName, ConfigurationModel.Forms));
                                 }
                             }
                             else
                             {
-                                _settings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
+                                _settings.Host.Logger.LogWarning(LocalizableStrings.RunnableProjectConfig_OperationSetup_UnknownForm, baseValueSymbol.Name, formName);
                             }
                         }
                     }
@@ -545,11 +552,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
 
-            GlobalRunConfig config = new GlobalRunConfig()
+            GlobalRunConfig config = new()
             {
                 Operations = operations,
                 VariableSetup = variableConfig,
-                Macros = (macros as IReadOnlyList<IMacroConfig>) ?? Array.Empty<IMacroConfig>(),
+                GeneratedSymbolMacros = generatedSymbolMacros,
                 ComputedMacros = computedMacros,
                 Replacements = macroGeneratedReplacements,
                 CustomOperations = customOperationConfig
@@ -590,9 +597,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             filenameReplacements.Add(new ReplacementTokens(sourceVariable, replacementConfig));
         }
 
-        private List<IMacroConfig> ProduceMacroConfig()
+        private List<IGeneratedSymbolConfig> ProduceGeneratedSymbolsMacroConfig()
         {
-            List<IMacroConfig> generatedMacroConfigs = new List<IMacroConfig>();
+            return ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
+        }
+
+        private List<BaseMacroConfig> ProduceMacroConfig()
+        {
+            List<BaseMacroConfig> computedMacroConfigs = new();
+            foreach (ComputedSymbol symbol in ConfigurationModel.Symbols.OfType<ComputedSymbol>())
+            {
+                string value = symbol.Value;
+                string? evaluator = symbol.Evaluator;
+                computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Name, "bool", value, evaluator));
+            }
 
             if (ConfigurationModel.Guids != null)
             {
@@ -601,33 +619,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 {
                     int id = guidCount++;
                     string replacementId = "guid" + id;
-                    generatedMacroConfigs.Add(new GuidMacroConfig(replacementId, "string", null, null));
+                    computedMacroConfigs.Add(new GuidMacroConfig(replacementId, "string", null, null));
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
-
-            foreach (GeneratedSymbol symbol in ConfigurationModel.Symbols.OfType<GeneratedSymbol>())
-            {
-                string type = symbol.Generator;
-                string variableName = symbol.Name;
-                Dictionary<string, JToken> configParams = new Dictionary<string, JToken>();
-
-                foreach (KeyValuePair<string, string> parameter in symbol.Parameters)
-                {
-                    configParams.Add(parameter.Key, JToken.Parse(parameter.Value));
-                }
-
-                string? dataType = symbol.DataType;
-
-                if (string.Equals(dataType, "choice", StringComparison.OrdinalIgnoreCase))
-                {
-                    dataType = "string";
-                }
-
-                generatedMacroConfigs.Add(new GeneratedSymbolDeferredMacroConfig(type, dataType, variableName, configParams));
-            }
-
-            return generatedMacroConfigs;
+            return computedMacroConfigs;
         }
 
         private List<IMacroConfig> ProduceComputedMacroConfig()

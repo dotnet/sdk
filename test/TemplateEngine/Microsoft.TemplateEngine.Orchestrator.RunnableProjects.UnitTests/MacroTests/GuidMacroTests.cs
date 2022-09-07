@@ -8,10 +8,10 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
         public GuidMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         [Fact(DisplayName = nameof(TestGuidConfig))]
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             IVariableCollection variables = new VariableCollection();
 
-            GuidMacro guidMacro = new GuidMacro();
+            GuidMacro guidMacro = new();
             guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
         }
@@ -41,11 +41,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
         public void TestDeferredGuidConfig()
         {
-            Dictionary<string, JToken> jsonParameters = new();
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
             string variableName = "myGuid1";
-            GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("GuidMacro", "string", variableName, jsonParameters);
+            GeneratedSymbol deferredConfig = new(variableName, "GuidMacro", jsonParameters);
 
-            GuidMacro guidMacro = new GuidMacro();
+            GuidMacro guidMacro = new();
             IVariableCollection variables = new VariableCollection();
 
             IMacroConfig realConfig = guidMacro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             IVariableCollection variables = new VariableCollection();
 
-            GuidMacro guidMacro = new GuidMacro();
+            GuidMacro guidMacro = new();
             guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigLower);
             guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigUpper);
 

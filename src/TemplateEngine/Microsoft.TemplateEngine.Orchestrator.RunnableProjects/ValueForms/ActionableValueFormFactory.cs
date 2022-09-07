@@ -25,7 +25,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             {
                 name = Identifier;
             }
-            return new ActionableValueForm(name!, this);
+            return new ActionableValueForm(name!, this)
+            {
+                IsDefault = true
+            };
         }
 
         protected abstract string Process(string value);

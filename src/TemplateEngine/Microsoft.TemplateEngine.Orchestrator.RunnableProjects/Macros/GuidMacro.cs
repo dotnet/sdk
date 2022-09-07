@@ -2,69 +2,55 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class GuidMacro : IMacro, IDeferredMacro
+    internal class GuidMacro : BaseGeneratedSymbolMacro<GuidMacroConfig>
     {
-        public Guid Id => new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
+        internal const string MacroType = "guid";
 
-        public string Type => "guid";
+        public override Guid Id { get; } = new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
+        public override string Type => MacroType;
+
+        public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, GuidMacroConfig config)
         {
-            if (rawConfig is not GuidMacroConfig config)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as GuidMacroConfig");
-            }
-
-            string guidFormats = !string.IsNullOrEmpty(config.Format) ? config.Format! : GuidMacroConfig.DefaultFormats;
             Guid g = Guid.NewGuid();
 
-            for (int i = 0; i < guidFormats.Length; ++i)
+            for (int i = 0; i < config.Format.Length; ++i)
             {
-                bool isUpperCase = char.IsUpper(guidFormats[i]);
-                string value = g.ToString(guidFormats[i].ToString());
+                bool isUpperCase = char.IsUpper(config.Format[i]);
+                string value = g.ToString(config.Format[i].ToString());
                 value = isUpperCase ? value.ToUpperInvariant() : value.ToLowerInvariant();
+
                 // Not breaking any dependencies on exact param names and on the
                 //  case insensitive matching of parameters (https://github.com/dotnet/templating/blob/7e14ef44/src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/RunnableProjectGenerator.cs#L726)
                 //  we need to introduce new parameters - with distinc naming for upper- and lower- casing replacements
-                string legacyName = config.VariableName + "-" + guidFormats[i];
+                string legacyName = config.VariableName + "-" + config.Format[i];
                 string newName = config.VariableName +
                         (isUpperCase ? GuidMacroConfig.UpperCaseDenominator : GuidMacroConfig.LowerCaseDenominator) +
-                        guidFormats[i];
+                        config.Format[i];
 
                 vars[legacyName] = value;
                 vars[newName] = value;
+
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(GuidMacro), legacyName, value);
+                environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(GuidMacro), newName, value);
             }
 
-            var defaultFormat = string.IsNullOrEmpty(config.DefaultFormat) ? "D" : config.DefaultFormat!;
-            string defaultValue = char.IsUpper(defaultFormat[0]) ?
+            string defaultValue = char.IsUpper(config.DefaultFormat[0]) ?
                 g.ToString(config.DefaultFormat).ToUpperInvariant() :
                 g.ToString(config.DefaultFormat).ToLowerInvariant();
+
             vars[config.VariableName] = defaultValue;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(GuidMacro), config.VariableName, defaultValue);
         }
 
-        public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
-        {
-            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
-            {
-                throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
-            }
-
-            deferredConfig.Parameters.TryGetValue("format", out JToken? formatToken);
-            string? format = formatToken?.ToString();
-
-            deferredConfig.Parameters.TryGetValue("defaultFormat", out JToken defaultFormatToken);
-            string? defaultFormat = defaultFormatToken?.ToString();
-
-            IMacroConfig realConfig = new GuidMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, format, defaultFormat);
-            return realConfig;
-        }
+        protected override GuidMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

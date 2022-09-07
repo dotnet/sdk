@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (configuration.SpecialOperationConfig != null)
             {
-                foreach ((string glob, IGlobalRunConfig runConfig) in configuration.SpecialOperationConfig)
+                foreach ((string glob, GlobalRunConfig runConfig) in configuration.SpecialOperationConfig)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = Array.Empty<IOperationProvider>();
 
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         // If there are custom Conditional operations, don't include the default Conditionals.
         //
         // Note: we may need a more robust filtering mechanism in the future.
-        private IReadOnlyList<IOperationProvider> ResolveOperations(IGlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables)
+        private IReadOnlyList<IOperationProvider> ResolveOperations(GlobalRunConfig runConfig, IDirectory templateRoot, IVariableCollection variables)
         {
             IReadOnlyList<IOperationProvider> customOperations = SetupCustomOperations(runConfig.CustomOperations, templateRoot, variables);
             IReadOnlyList<IOperationProvider> defaultOperations = SetupOperations(templateRoot.MountPoint.EnvironmentSettings, variables, runConfig);
@@ -113,7 +113,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return operations;
         }
 
-        private IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, IGlobalRunConfig runConfig)
+        private IReadOnlyList<IOperationProvider> SetupOperations(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, GlobalRunConfig runConfig)
         {
             // default operations
             List<IOperationProvider> operations = new List<IOperationProvider>();
