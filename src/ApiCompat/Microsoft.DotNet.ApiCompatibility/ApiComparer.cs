@@ -109,7 +109,25 @@ namespace Microsoft.DotNet.ApiCompatibility
             visitor.Visit(mapper);
 
             // Sort the compat differences by the order of the passed in rights.
-            return right.Join(visitor.CompatDifferences, i => i.MetadataInformation, d => d.Right, (i, d) => d).ToArray();
+            ILookup<MetadataInformation, CompatDifference> compatDifferenceLookup = visitor.CompatDifferences.ToLookup(c => c.Right, t => t);
+            HashSet<MetadataInformation> processedMetadata = new();
+            List<CompatDifference> compatDifferences = new();
+
+            foreach (ElementContainer<IAssemblySymbol> r in right)
+            {
+                compatDifferences.AddRange(compatDifferenceLookup[r.MetadataInformation]);
+                processedMetadata.Add(r.MetadataInformation);
+            }
+
+            foreach (IGrouping<MetadataInformation, CompatDifference> compatDifferenceGroup in compatDifferenceLookup)
+            {
+                if (processedMetadata.Contains(compatDifferenceGroup.Key))
+                    continue;
+
+                compatDifferences.AddRange(compatDifferenceGroup);
+            }
+
+            return compatDifferences;
         }
 
         /// <inheritdoc />
@@ -126,8 +144,26 @@ namespace Microsoft.DotNet.ApiCompatibility
             IDifferenceVisitor visitor = _differenceVisitorFactory.Create();
             visitor.Visit(mapper);
 
-            // Sort the compat differences by the order of the passed in left assemblies.
-            return left.Join(visitor.CompatDifferences, i => i.MetadataInformation, d => d.Left, (i, d) => d).ToArray();
+            // Sort the compat differences by the order of the passed in lefts.
+            ILookup<MetadataInformation, CompatDifference> compatDifferenceLookup = visitor.CompatDifferences.ToLookup(d => d.Left, t => t);
+            HashSet<MetadataInformation> processedMetadata = new();
+            List<CompatDifference> compatDifferences = new();
+
+            foreach (ElementContainer<IAssemblySymbol> l in left)
+            {
+                compatDifferences.AddRange(compatDifferenceLookup[l.MetadataInformation]);
+                processedMetadata.Add(l.MetadataInformation);
+            }
+
+            foreach (IGrouping<MetadataInformation, CompatDifference> compatDifferenceGroup in compatDifferenceLookup)
+            {
+                if (processedMetadata.Contains(compatDifferenceGroup.Key))
+                    continue;
+
+                compatDifferences.AddRange(compatDifferenceGroup);
+            }
+
+            return compatDifferences;
         }
     }
 }
