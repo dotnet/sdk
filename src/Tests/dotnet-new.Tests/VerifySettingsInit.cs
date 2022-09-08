@@ -2,11 +2,14 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class VerifySettingsFixture : IDisposable
+    public static class VerifySettingsInit
     {
-        public VerifySettingsFixture()
+        [ModuleInitializer]
+        public static void Init()
         {
             VerifierSettings.DerivePathInfo(
                 (_, _, type, method) => new(
@@ -17,7 +20,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);
         }
-
-        public void Dispose() { }
     }
 }

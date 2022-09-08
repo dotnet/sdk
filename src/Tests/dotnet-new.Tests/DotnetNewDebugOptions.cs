@@ -12,7 +12,6 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [UsesVerify]
-    [Collection("Verify Tests")]
     public class DotnetNewDebugOptions : BaseIntegrationTest
     {
         private readonly ITestOutputHelper _log;
