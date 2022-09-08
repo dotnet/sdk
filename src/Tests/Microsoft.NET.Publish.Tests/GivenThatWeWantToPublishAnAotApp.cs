@@ -466,6 +466,30 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        public void NativeAot_hw_fails_with_sdk6_PackageReference_PublishAot_is_enabled(string targetFramework)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var projectName = "HellowWorldNativeAotApp";
+                var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+                var testProject = CreateHelloWorldTestProject("net6.0", projectName, true);
+                testProject.AdditionalProperties["PublishAot"] = "true";
+
+                testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", "7.0.0-rc.2.22456.11"));
+
+                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+                var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+                publishCommand
+                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Should().Fail()
+                    .And.HaveStdOutContaining("error NETSDK1183:");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
