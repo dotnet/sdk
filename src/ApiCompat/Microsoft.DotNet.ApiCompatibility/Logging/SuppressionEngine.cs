@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -30,7 +30,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             string? noWarn = null,
             bool baselineAllErrors = false)
         {
-            _validationSuppressions = ParseSuppressionFile(suppressionFile);
+            // Don't read from the passed in suppression file if errors will be baselined and the file doesn't exist.
+            _validationSuppressions = baselineAllErrors && !File.Exists(suppressionFile) ?
+                new HashSet<Suppression>() :
+                ParseSuppressionFile(suppressionFile);
             _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
             BaselineAllErrors = baselineAllErrors;
         }
@@ -122,7 +125,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         /// <inheritdoc/>
-        public bool WriteSuppressionsToFile(string supressionFile)
+        public bool WriteSuppressionsToFile(string suppressionFile)
         {
             if (_validationSuppressions.Count == 0)
                 return false;
@@ -134,7 +137,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
                 .ThenBy(sup => sup.Target)
                 .ToArray();
 
-            using (Stream writer = GetWritableStream(supressionFile))
+            using (Stream writer = GetWritableStream(suppressionFile))
             {
                 _readerWriterLock.EnterReadLock();
                 try
@@ -180,7 +183,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         }
 
         // FileAccess.Read and FileShare.Read are specified to allow multiple processes to concurrently read from the suppression file.
-        protected virtual Stream GetReadableStream(string supressionFile) => new FileStream(supressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+        protected virtual Stream GetReadableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
     }
