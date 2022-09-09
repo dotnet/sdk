@@ -194,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' >= '7.0'">
 
     <NETSdkWarning Condition="'$(Prefer32Bit)' == 'true'"
-                    ResourceName="PublishTrimmedRequiresVersion30" />
+                    ResourceName="Prefer32BitIgnoredForNetCoreApp" />
 
     <PropertyGroup>
           <Prefer32Bit>false</Prefer32Bit>

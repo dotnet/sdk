@@ -403,7 +403,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(Strings.PublishTrimmedRequiresVersion30);
+                .HaveStdOutContaining(Strings.Prefer32BitIgnoredForNetCoreApp);
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: runtimeIdentifier);
             var selfContainedExecutable = $"HelloWorld{Constants.ExeSuffix}";
