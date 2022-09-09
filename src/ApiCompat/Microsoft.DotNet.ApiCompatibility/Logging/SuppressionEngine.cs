@@ -30,12 +30,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             string? noWarn = null,
             bool baselineAllErrors = false)
         {
-            // Don't read from the passed in suppression file if errors will be baselined and the file doesn't exist.
-            _validationSuppressions = baselineAllErrors && !File.Exists(suppressionFile) ?
-                new HashSet<Suppression>() :
-                ParseSuppressionFile(suppressionFile);
-            _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
             BaselineAllErrors = baselineAllErrors;
+            _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
+            _validationSuppressions = ParseSuppressionFile(suppressionFile);
         }
 
         /// <inheritdoc/>
@@ -164,22 +161,27 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
             // Do nothing. Used for tests.
         }
 
-        private HashSet<Suppression> ParseSuppressionFile(string? file)
+        private HashSet<Suppression> ParseSuppressionFile(string? suppressionFile)
         {
-            if (string.IsNullOrEmpty(file?.Trim()))
+            if (string.IsNullOrEmpty(suppressionFile?.Trim()))
             {
                 return new HashSet<Suppression>();
             }
 
-            using (Stream reader = GetReadableStream(file!))
+            try
             {
+                using Stream reader = GetReadableStream(suppressionFile);
                 if (_serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
                 {
                     return new HashSet<Suppression>(deserializedSuppressions);
                 }
-
-                return new HashSet<Suppression>();
             }
+            catch (FileNotFoundException) when (BaselineAllErrors)
+            {
+                // Throw if the passed in suppression file doesn't exist and errors aren't baselined.
+            }
+
+            return new HashSet<Suppression>();
         }
 
         // FileAccess.Read and FileShare.Read are specified to allow multiple processes to concurrently read from the suppression file.
