@@ -43,15 +43,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             using var settingsLock = await globalSettings2.LockAsync(cts2.Token).ConfigureAwait(false);
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "Randomly failing see https://github.com/dotnet/templating/issues/3336")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [Fact]
         public async Task TestFileWatcher()
         {
             var envSettings = _helper.CreateEnvironment();
             var settingsFile = Path.Combine(_helper.CreateTemporaryFolder(), "settings.json");
-            using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
-            using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
+            var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
+            var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             var taskSource = new TaskCompletionSource<TemplatePackageData>();
             globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false)).Single());
             var mutex = await globalSettings1.LockAsync(default).ConfigureAwait(false);
@@ -62,11 +60,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 new Dictionary<string, string>() { { "a", "b" } });
             await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             mutex.Dispose();
-            var timeoutTask = Task.Delay(1000);
+            var timeoutTask = Task.Delay(2000);
             var firstFinishedTask = await Task.WhenAny(timeoutTask, taskSource.Task).ConfigureAwait(false);
             Assert.Equal(taskSource.Task, firstFinishedTask);
 
             var newData2 = taskSource.Task.Result;
+            // Explicitly dispose both instances after the data is finally set because volatile _disposed(true)
+            // might cause ObjectDisposedException while GetInstalledTemplatePackagesAsync is being executed
+            globalSettings1.Dispose();
+            globalSettings2.Dispose();
             Assert.Equal(newData.InstallerId, newData2.InstallerId);
             Assert.Equal(newData.MountPointUri, newData2.MountPointUri);
             Assert.Equal(newData.Details?["a"], newData2.Details?["a"]);
