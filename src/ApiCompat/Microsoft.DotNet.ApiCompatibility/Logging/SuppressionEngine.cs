@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
             try
             {
-                using Stream reader = GetReadableStream(suppressionFile);
+                using Stream reader = GetReadableStream(suppressionFile!);
                 if (_serializer.Deserialize(reader) is Suppression[] deserializedSuppressions)
                 {
                     return new HashSet<Suppression>(deserializedSuppressions);
