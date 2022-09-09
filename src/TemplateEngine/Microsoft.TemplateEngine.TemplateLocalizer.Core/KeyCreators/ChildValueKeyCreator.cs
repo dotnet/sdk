@@ -41,8 +41,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
         /// <inheritdoc/>
         public string CreateKey(JsonElement element, string? elementName, string? parentElementName, int indexInParent, int parentChildCount)
         {
-            string key = string.Empty;
-
+            string key;
             if (element.TryGetProperty(MemberPropertyName, out JsonElement keyProperty) && keyProperty.ValueKind == JsonValueKind.String)
             {
                 key = keyProperty.GetString() ?? string.Empty;
@@ -53,11 +52,11 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.KeyCreators
             }
             else
             {
-                string owningElementName = (parentElementName == null ? elementName : (parentElementName + TemplateStringExtractor._keySeparator + elementName)) ?? string.Empty;
+                string owningElementName = (parentElementName == null ? elementName : (parentElementName + TemplateStringExtractor.KeySeparator + elementName)) ?? string.Empty;
                 throw new JsonMemberMissingException(owningElementName, MemberPropertyName);
             }
 
-            return parentElementName == null ? key : string.Concat(parentElementName, TemplateStringExtractor._keySeparator, key);
+            return parentElementName == null ? key : string.Concat(parentElementName, TemplateStringExtractor.KeySeparator, key);
         }
     }
 }

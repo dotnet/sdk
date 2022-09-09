@@ -60,9 +60,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
                 if (searchOption == SearchOption.AllDirectories)
                 {
-                    IDirectory childDir = child as IDirectory;
-
-                    if (childDir != null)
+                    if (child is IDirectory childDir)
                     {
                         foreach (IFileSystemInfo nestedChild in childDir.EnumerateFileSystemInfos(patten, searchOption))
                         {
@@ -77,16 +75,13 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             foreach (IFileSystemInfo child in _children)
             {
-                IFile childFile = child as IFile;
-                if (childFile != null)
+                if (child is IFile childFile)
                 {
                     yield return childFile;
                 }
                 else if (searchOption == SearchOption.AllDirectories)
                 {
-                    IDirectory childDir = child as IDirectory;
-
-                    if (childDir != null)
+                    if (child is IDirectory childDir)
                     {
                         foreach (IFileSystemInfo nestedChild in childDir.EnumerateFileSystemInfos(pattern, searchOption))
                         {
@@ -106,8 +101,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             foreach (IFileSystemInfo child in _children)
             {
-                IDirectory childDir = child as IDirectory;
-                if (childDir != null)
+                if (child is IDirectory childDir)
                 {
                     yield return childDir;
 

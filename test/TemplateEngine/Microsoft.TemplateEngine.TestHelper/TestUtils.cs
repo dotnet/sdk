@@ -87,7 +87,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 file2byte = fs2.ReadByte();
             }
             while ((file1byte == file2byte) && (file1byte != -1));
-            return ((file1byte - file2byte) == 0);
+            return (file1byte - file2byte) == 0;
         }
 
         public static async Task<T> AttemptSearch<T, E>(int count, TimeSpan interval, Func<Task<T>> execute) where E : Exception

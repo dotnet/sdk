@@ -148,14 +148,14 @@ namespace Microsoft.TemplateSearch.Common
             try
             {
                 if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.PackToTemplateMap), out JToken? packToTemplateMapToken)
-                    || !(packToTemplateMapToken is JObject packToTemplateMapObject))
+                    || packToTemplateMapToken is not JObject packToTemplateMapObject)
                 {
                     logger.LogDebug($"Failed to read package info entries. Details: no PackToTemplateMap property found.");
                     packToTemplateMap = null;
                     return false;
                 }
 
-                Dictionary<string, PackToTemplateEntry> workingPackToTemplateMap = new Dictionary<string, PackToTemplateEntry>();
+                Dictionary<string, PackToTemplateEntry> workingPackToTemplateMap = new();
 
                 foreach (JProperty packEntry in packToTemplateMapObject.Properties())
                 {
@@ -176,7 +176,7 @@ namespace Microsoft.TemplateSearch.Common
                             }
                             List<TemplateIdentificationEntry> templatesInPack = new List<TemplateIdentificationEntry>();
 
-                            foreach (JObject templateIdentityInfo in identificationArray)
+                            foreach (JToken templateIdentityInfo in identificationArray)
                             {
                                 string? identity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.Identity));
                                 string? groupIdentity = templateIdentityInfo.Value<string>(nameof(TemplateIdentificationEntry.GroupIdentity));
@@ -221,14 +221,14 @@ namespace Microsoft.TemplateSearch.Common
             logger.LogDebug($"Reading additional information.");
             // get the additional data section
             if (!cacheObject.TryGetValue(nameof(TemplateDiscoveryMetadata.AdditionalData), out JToken? additionalDataToken)
-                || !(additionalDataToken is JObject additionalDataObject))
+                || additionalDataToken is not JObject additionalDataObject)
             {
                 logger.LogDebug($"Failed to read package info entries. Details: no AdditionalData property found.");
                 additionalData = null;
                 return false;
             }
 
-            Dictionary<string, object> workingAdditionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object> workingAdditionalData = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
             {
@@ -236,7 +236,7 @@ namespace Microsoft.TemplateSearch.Common
                 {
                     // get the entry for this piece of additional data
                     if (!additionalDataObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
-                        || !(dataToken is JObject dataObject))
+                        || dataToken is not JObject dataObject)
                     {
                         // this piece of data wasn't found, or wasn't valid. Ignore it.
                         continue;

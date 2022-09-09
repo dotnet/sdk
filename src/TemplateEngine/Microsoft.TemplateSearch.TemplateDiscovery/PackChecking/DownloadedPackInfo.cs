@@ -7,7 +7,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
     public class DownloadedPackInfo : IDownloadedPackInfo
     {
-        private ITemplatePackageInfo _info;
+        private readonly ITemplatePackageInfo _info;
 
         internal DownloadedPackInfo(ITemplatePackageInfo info, string filePath)
         {

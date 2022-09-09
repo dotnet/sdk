@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
     /// </summary>
     public class TemplateConstraintResult
     {
-        private string _constraintType;
+        private readonly string _constraintType;
 
         private TemplateConstraintResult(ITemplateConstraint constraint)
         {

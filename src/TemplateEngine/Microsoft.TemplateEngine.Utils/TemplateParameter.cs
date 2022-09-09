@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Utils
             return false;
         }
 
-        public override int GetHashCode() => (Name != null ? Name.GetHashCode() : 0);
+        public override int GetHashCode() => Name != null ? Name.GetHashCode() : 0;
 
         public bool Equals(ITemplateParameter other) => !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(other.Name) && Name == other.Name;
     }

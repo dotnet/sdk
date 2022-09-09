@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         private class InMemoryLogger : ILogger
         {
-            private List<(LogLevel, string)> _messagesCollection;
+            private readonly List<(LogLevel, string)> _messagesCollection;
 
             public InMemoryLogger(List<(LogLevel, string)> messagesCollection) => _messagesCollection = messagesCollection;
 

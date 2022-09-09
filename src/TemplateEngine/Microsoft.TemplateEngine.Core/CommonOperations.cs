@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Core
             {
                 processor.SeekSourceForwardWhile(processor.EncodingConfig.Whitespace, ref bufferLength, ref currentBufferPosition);
                 //Consume the trailing line end if possible
-                processor.EncodingConfig.LineEndings.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out _);
+                _ = processor.EncodingConfig.LineEndings.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out _);
             }
         }
     }

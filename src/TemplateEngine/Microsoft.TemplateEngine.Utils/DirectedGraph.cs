@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class DirectedGraph<T>
     {
-        private static readonly DirectedGraph<T> Empty = new DirectedGraph<T>(new Dictionary<T, HashSet<T>>());
+        private static readonly DirectedGraph<T> s_empty = new(new Dictionary<T, HashSet<T>>());
 
         private readonly Dictionary<T, HashSet<T>> _dependenciesMap;
         private readonly Lazy<Dictionary<T, HashSet<T>>> _dependantsMap;
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private bool IsEmpty => _dependenciesMap.Count == 0;
 
-        public static implicit operator DirectedGraph<T>(Dictionary<T, HashSet<T>> dependenciesMap) => new DirectedGraph<T>(dependenciesMap);
+        public static implicit operator DirectedGraph<T>(Dictionary<T, HashSet<T>> dependenciesMap) => new(dependenciesMap);
 
         /// <summary>
         /// Attempts to perform a topological sort of a given acyclic graph.
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <returns>True if topological sort can be performed, false otherwise (means graph contains cycle(s)).</returns>
         public bool TryGetTopologicalSort(out IReadOnlyList<T> sortedElements)
         {
-            List<T> result = new List<T>();
+            List<T> result = new();
             sortedElements = result;
 
             // short circuit for empty graph
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Utils
                 inDegreeLookup[depPair.Key] = depPair.Value?.Count ?? 0;
             }
 
-            Queue<T> noDependenciesQueue = new Queue<T>(inDegreeLookup.Where(kp => kp.Value == 0).Select(kp => kp.Key));
+            Queue<T> noDependenciesQueue = new(inDegreeLookup.Where(kp => kp.Value == 0).Select(kp => kp.Key));
             var dependantsMap = _dependantsMap.Value;
 
             while (noDependenciesQueue.Count != 0)
@@ -95,11 +95,11 @@ namespace Microsoft.TemplateEngine.Utils
             // Short circuit for empty graphs
             if (IsEmpty || vertices.Count == 0)
             {
-                return Empty;
+                return s_empty;
             }
 
             HashSet<T> dependantVertices = includeSeedVertices ? new HashSet<T>(vertices) : new HashSet<T>();
-            Queue<T> directDependants = new Queue<T>(vertices);
+            Queue<T> directDependants = new(vertices);
             var dependantsMap = _dependantsMap.Value;
 
             while (directDependants.Count > 0)
@@ -126,8 +126,8 @@ namespace Microsoft.TemplateEngine.Utils
                 return false;
             }
 
-            HashSet<T> visitedVertices = new HashSet<T>();
-            RecursionStack recursionStack = new RecursionStack();
+            HashSet<T> visitedVertices = new();
+            RecursionStack recursionStack = new();
 
             // detect cycles for any vertex (as we can have disconnected graph here)
             foreach (T vertex in _vertices)
@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 foreach (T dependency in keyValuePair.Value!)
                 {
-                    dependantsMap[dependency].Add(keyValuePair.Key);
+                    _ = dependantsMap[dependency].Add(keyValuePair.Key);
                 }
             }
 
@@ -197,8 +197,8 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class RecursionStack
         {
-            private readonly HashSet<T> _lookup = new HashSet<T>();
-            private readonly Stack<T> _stack = new Stack<T>();
+            private readonly HashSet<T> _lookup = new();
+            private readonly Stack<T> _stack = new();
 
             public bool TryPush(T item)
             {
@@ -208,13 +208,13 @@ namespace Microsoft.TemplateEngine.Utils
 
             public void Pop()
             {
-                _lookup.Remove(_stack.Pop());
+                _ = _lookup.Remove(_stack.Pop());
             }
 
             public IReadOnlyList<T> GetCycle()
             {
-                List<T> items = new List<T>();
-                HashSet<T> visited = new HashSet<T>();
+                List<T> items = new();
+                HashSet<T> visited = new();
 
                 bool hasCycle = false;
 

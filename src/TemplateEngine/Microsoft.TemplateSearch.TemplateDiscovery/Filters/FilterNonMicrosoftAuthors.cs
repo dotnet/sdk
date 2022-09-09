@@ -12,20 +12,20 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters;
 
 internal class FilterNonMicrosoftAuthors
 {
-    private const string _FilterId = "Template.json contains Author=Microsoft";
+    private const string FilterId = "Template.json contains Author=Microsoft";
 
-    private static ITemplateEngineHost _host = TemplateEngineHostHelper.CreateHost("filterHost");
+    private static readonly ITemplateEngineHost s_host = TemplateEngineHostHelper.CreateHost("filterHost");
 
     internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
     {
-        Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
+        static PreFilterResult Filter(IDownloadedPackInfo packInfo)
         {
             // All NuGet packages that start with Microsoft. are OK since that is protected prefix on NuGet.org
             if (packInfo.Name.StartsWith("Microsoft."))
             {
-                return new PreFilterResult(_FilterId, isFiltered: false);
+                return new PreFilterResult(FilterId, isFiltered: false);
             }
-            using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(_host, virtualizeSettings: true);
+            using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(s_host, virtualizeSettings: true);
             foreach (IMountPointFactory factory in environmentSettings.Components.OfType<IMountPointFactory>())
             {
                 if (factory.TryMount(environmentSettings, null, packInfo.Path, out IMountPoint? mountPoint))
@@ -41,21 +41,21 @@ internal class FilterNonMicrosoftAuthors
                                 var author = jObject["author"]?.Value<string>();
                                 if (author?.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ?? false)
                                 {
-                                    return new PreFilterResult(_FilterId, isFiltered: true, $"{templateJson.FullPath} has Author=Microsoft and package id is {packInfo.Name}");
+                                    return new PreFilterResult(FilterId, isFiltered: true, $"{templateJson.FullPath} has Author=Microsoft and package id is {packInfo.Name}");
                                 }
                             }
                         }
                         catch (Exception)
                         {
-                            return new PreFilterResult(_FilterId, isFiltered: false);
+                            return new PreFilterResult(FilterId, isFiltered: false);
                         }
                     }
                     mountPoint.Dispose();
                 }
             }
-            return new PreFilterResult(_FilterId, isFiltered: false);
-        };
+            return new PreFilterResult(FilterId, isFiltered: false);
+        }
 
-        return filter;
+        return Filter;
     }
 }

@@ -26,13 +26,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public IReadOnlyList<IFileChange> FileChanges => _mockFileChanges;
 
-        public ICreationResult CreationResult
-        {
-            get
-            {
-                return new MockCreationResult(primaryOutputs: _primaryOutputs.Select(p => new MockCreationPath(p)).ToList());
-            }
-        }
+        public ICreationResult CreationResult => new MockCreationResult(primaryOutputs: _primaryOutputs.Select(p => new MockCreationPath(p)).ToList());
 
         IReadOnlyList<IFileChange2> ICreationEffects2.FileChanges => _mockFileChanges;
 

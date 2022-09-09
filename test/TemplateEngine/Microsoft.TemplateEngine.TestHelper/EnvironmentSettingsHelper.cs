@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.TestHelper
     public class EnvironmentSettingsHelper : IDisposable
     {
         private readonly List<string> _foldersToCleanup = new List<string>();
-        private SharedTestOutputHelper _testOutputHelper;
+        private readonly SharedTestOutputHelper _testOutputHelper;
 
         public EnvironmentSettingsHelper(IMessageSink messageSink)
         {

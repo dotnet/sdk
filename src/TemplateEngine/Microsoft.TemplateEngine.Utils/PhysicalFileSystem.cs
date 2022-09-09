@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Utils
     /// <summary>
     /// Local file system implementation of <see cref="IPhysicalFileSystem"/>.
     /// </summary>
-    /// <seealso cref="Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost"/>
+    /// <seealso cref="Abstractions.ITemplateEngineHost"/>
     public class PhysicalFileSystem : IPhysicalFileSystem
     {
         public bool DirectoryExists(string directory)
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public void CreateDirectory(string path)
         {
-            Directory.CreateDirectory(path);
+            _ = Directory.CreateDirectory(path);
         }
 
         public string GetCurrentDirectory()
@@ -150,20 +150,12 @@ namespace Microsoft.TemplateEngine.Utils
         private static string NormalizePath(string path)
         {
             char desiredDirectorySeparator = Path.DirectorySeparatorChar;
-            char undesiredSeparatorChar;
-            switch (desiredDirectorySeparator)
+            char undesiredSeparatorChar = desiredDirectorySeparator switch
             {
-                case '/':
-                    undesiredSeparatorChar = '\\';
-                    break;
-                case '\\':
-                    undesiredSeparatorChar = '/';
-                    break;
-                default:
-                    undesiredSeparatorChar = desiredDirectorySeparator;
-                    break;
-            }
-
+                '/' => '\\',
+                '\\' => '/',
+                _ => desiredDirectorySeparator,
+            };
             return path.Replace(undesiredSeparatorChar, desiredDirectorySeparator);
         }
     }

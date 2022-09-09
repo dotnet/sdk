@@ -9,7 +9,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 {
     internal static class CacheFileTests
     {
-        internal static void RunTests(CommandArgs config, string metadataPath, string legacyMetadataPath)
+        internal static void RunTests(string metadataPath, string legacyMetadataPath)
         {
             //3.1
             string sdkVersion = "3.1.400";

@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class TrieTests : TestBase, IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public TrieTests(TestLoggerFactory testLoggerFactory)
         {
@@ -42,8 +42,10 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 VariableCollection.Root());
 
             byte[] data = new byte[] { 1, 2, 3, 4, 5 };
-            MemoryStream source = new MemoryStream(data);
-            source.Position = 0;
+            MemoryStream source = new MemoryStream(data)
+            {
+                Position = 0
+            };
             p.Run(source, new MemoryStream());
             Assert.True(testActivated);
         }

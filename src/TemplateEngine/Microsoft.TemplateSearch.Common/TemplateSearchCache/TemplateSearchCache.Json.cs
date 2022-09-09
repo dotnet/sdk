@@ -12,7 +12,7 @@ namespace Microsoft.TemplateSearch.Common
 {
     internal partial class TemplateSearchCache
     {
-        private static readonly string[] _supportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
+        private static readonly string[] s_supportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
 
         internal static TemplateSearchCache FromJObject(
             JObject cacheObject,
@@ -54,13 +54,12 @@ namespace Microsoft.TemplateSearch.Common
             {
                 throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
             }
-            List<TemplatePackageSearchData> templatePackages = new List<TemplatePackageSearchData>();
+            List<TemplatePackageSearchData> templatePackages = new();
             foreach (JToken templatePackage in data)
             {
-                JObject? templatePackageObj = templatePackage as JObject;
                 try
                 {
-                    if (templatePackageObj == null)
+                    if (templatePackage is not JObject templatePackageObj)
                     {
                         throw new Exception($"Unexpected data in template search cache data, property: {nameof(TemplatePackages)}, value: {templatePackage}");
                     }
@@ -79,11 +78,11 @@ namespace Microsoft.TemplateSearch.Common
             IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders,
             ILogger logger)
         {
-            Dictionary<string, object> additionalData = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, object> additionalData = new(StringComparer.OrdinalIgnoreCase);
             foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
             {
                 if (!cacheObject.TryGetValue(dataReadInfo.Key, StringComparison.OrdinalIgnoreCase, out JToken? dataToken)
-                    || !(dataToken is JObject dataObject))
+                    || dataToken is not JObject dataObject)
                 {
                     // this piece of data wasn't found, or wasn't valid. Ignore it.
                     continue;
@@ -115,7 +114,7 @@ namespace Microsoft.TemplateSearch.Common
             if (!string.IsNullOrWhiteSpace(version))
             {
                 logger.LogDebug($"Version: {version}.");
-                if (_supportedVersions.Contains(version))
+                if (s_supportedVersions.Contains(version))
                 {
                     return true;
                 }

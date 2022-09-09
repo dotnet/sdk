@@ -23,9 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            GeneratePortNumberConfig? config = rawConfig as GeneratePortNumberConfig;
-
-            if (config == null)
+            if (rawConfig is not GeneratePortNumberConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
             }
@@ -36,9 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }

@@ -16,12 +16,11 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
         public TerminalLocation<T> Evaluate(byte[] buffer, int bufferLength, bool isFinalBuffer, int lastNetBufferEffect, ref int bufferPosition)
         {
-            TerminalLocation<T> terminal;
             _sequenceNumber += lastNetBufferEffect;
             int sequenceNumberToBufferPositionRelationship = _sequenceNumber - bufferPosition;
             int originalSequenceNumber = _sequenceNumber;
 
-            if (lastNetBufferEffect != 0 || !_evaluator.TryGetNext(isFinalBuffer && bufferPosition >= bufferLength, ref _sequenceNumber, out terminal))
+            if (lastNetBufferEffect != 0 || !_evaluator.TryGetNext(isFinalBuffer && bufferPosition >= bufferLength, ref _sequenceNumber, out TerminalLocation<T> terminal))
             {
                 while (!_evaluator.Accept(buffer[bufferPosition], ref _sequenceNumber, out terminal))
                 {

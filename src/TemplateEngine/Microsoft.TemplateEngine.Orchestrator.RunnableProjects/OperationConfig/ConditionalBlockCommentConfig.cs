@@ -111,7 +111,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 
             if (!string.IsNullOrWhiteSpace(pseudoEndToken))
             {
-                Guid operationIdGuid = default(Guid);
+                Guid operationIdGuid = default;
                 string commentFixOperationId = $"Fix pseudo tokens ({pseudoEndToken} {operationIdGuid})";
                 string commentFixResetId = $"Reset pseudo token fixer ({pseudoEndToken} {operationIdGuid})";
 

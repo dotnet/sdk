@@ -62,14 +62,9 @@ namespace Microsoft.TemplateSearch.Common
             }
             Templates = templates;
             //read additional data
-            if (additionalDataReaders != null)
-            {
-                AdditionalData = TemplateSearchCache.ReadAdditionalData(jObject, additionalDataReaders, logger);
-            }
-            else
-            {
-                AdditionalData = new Dictionary<string, object>();
-            }
+            AdditionalData = additionalDataReaders != null
+                ? TemplateSearchCache.ReadAdditionalData(jObject, additionalDataReaders, logger)
+                : new Dictionary<string, object>();
         }
 
         #region JsonConverter

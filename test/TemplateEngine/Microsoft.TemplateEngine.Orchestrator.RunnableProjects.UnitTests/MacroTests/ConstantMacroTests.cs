@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class ConstantMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public ConstantMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -43,8 +43,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             string variableName = "myConstant";
             string value = "1048576";
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("value", value);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "value", value }
+            };
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("ConstantMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();

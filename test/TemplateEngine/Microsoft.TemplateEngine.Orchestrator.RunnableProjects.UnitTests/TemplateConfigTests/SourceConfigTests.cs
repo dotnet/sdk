@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class SourceConfigTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public SourceConfigTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -46,12 +46,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // config
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            // content
-            templateSourceFiles.Add("core.config", null);
-            templateSourceFiles.Add("full.config", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // config
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                // content
+                { "core.config", null },
+                { "full.config", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 
@@ -86,10 +88,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            templateSourceFiles.Add("something.txt", null);
-            templateSourceFiles.Add("copy.me", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                { "something.txt", null },
+                { "copy.me", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 
@@ -132,9 +136,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            templateSourceFiles.Add("copy.me", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                { "copy.me", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 
@@ -176,9 +182,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            templateSourceFiles.Add("copy.me", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                { "copy.me", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 
@@ -223,11 +231,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            templateSourceFiles.Add("other.xyz", null);
-            templateSourceFiles.Add("include.xyz", null);
-            templateSourceFiles.Add("exclude.xyz", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                { "other.xyz", null },
+                { "include.xyz", null },
+                { "exclude.xyz", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 
@@ -273,11 +283,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
-            templateSourceFiles.Add("other.xyz", null);
-            templateSourceFiles.Add("include.xyz", null);
-            templateSourceFiles.Add("exclude.xyz", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() },
+                { "other.xyz", null },
+                { "include.xyz", null },
+                { "exclude.xyz", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles, config);
             setup.WriteSource();
 

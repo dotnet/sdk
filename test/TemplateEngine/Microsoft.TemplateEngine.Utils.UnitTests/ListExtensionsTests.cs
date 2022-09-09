@@ -10,66 +10,68 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [Fact(DisplayName = nameof(GroupByExtensionTest))]
         public void GroupByExtensionTest()
         {
-            List<GroupByTestStruct> templatesToGroup = new List<GroupByTestStruct>();
-            templatesToGroup.Add(new GroupByTestStruct()
+            List<GroupByTestStruct> templatesToGroup = new List<GroupByTestStruct>
             {
-                Identity = "1",
-                GroupIdentity = null
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "2",
-                GroupIdentity = string.Empty
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "3",
-                GroupIdentity = null
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "4",
-                GroupIdentity = string.Empty
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "5",
-                GroupIdentity = "TemplateGroup"
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "6",
-                GroupIdentity = "templategroup"
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "7",
-                GroupIdentity = "TemplateGroup2"
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "8",
-                GroupIdentity = "other"
-            });
-            templatesToGroup.Add(new GroupByTestStruct()
-            {
-                Identity = "9",
-                GroupIdentity = "templategroup"
-            });
+                new GroupByTestStruct()
+                {
+                    _identity = "1",
+                    _groupIdentity = null
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "2",
+                    _groupIdentity = string.Empty
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "3",
+                    _groupIdentity = null
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "4",
+                    _groupIdentity = string.Empty
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "5",
+                    _groupIdentity = "TemplateGroup"
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "6",
+                    _groupIdentity = "templategroup"
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "7",
+                    _groupIdentity = "TemplateGroup2"
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "8",
+                    _groupIdentity = "other"
+                },
+                new GroupByTestStruct()
+                {
+                    _identity = "9",
+                    _groupIdentity = "templategroup"
+                }
+            };
 
-            var templateGroups = templatesToGroup.GroupBy(x => x.GroupIdentity, x => !string.IsNullOrEmpty(x.GroupIdentity), StringComparer.OrdinalIgnoreCase);
+            var templateGroups = templatesToGroup.GroupBy(x => x._groupIdentity, x => !string.IsNullOrEmpty(x._groupIdentity), StringComparer.OrdinalIgnoreCase);
             Assert.Equal(7, templateGroups.Count());
             var groupWithExpectedMultipleElements = templateGroups.Single(g => g.Key?.Equals("TemplateGroup", StringComparison.OrdinalIgnoreCase) ?? false);
             Assert.Equal(3, groupWithExpectedMultipleElements.Count());
-            Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "5");
-            Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "6");
-            Assert.Single(groupWithExpectedMultipleElements, s => s.Identity == "9");
+            Assert.Single(groupWithExpectedMultipleElements, s => s._identity == "5");
+            Assert.Single(groupWithExpectedMultipleElements, s => s._identity == "6");
+            Assert.Single(groupWithExpectedMultipleElements, s => s._identity == "9");
         }
 
         internal struct GroupByTestStruct
         {
-            internal string Identity;
-            internal string GroupIdentity;
+            internal string _identity;
+            internal string _groupIdentity;
         }
     }
 }

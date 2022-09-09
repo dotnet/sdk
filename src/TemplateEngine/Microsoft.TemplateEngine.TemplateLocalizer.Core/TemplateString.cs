@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <inheritdoc/>
         public override bool Equals(object obj)
         {
-            if (!(obj is TemplateString other))
+            if (obj is not TemplateString other)
             {
                 return false;
             }
@@ -66,8 +66,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <inheritdoc/>
         public override int GetHashCode()
         {
-            return unchecked(((17 * 23 + Identifier.GetHashCode()) * 23
-                + (LocalizationKey?.GetHashCode() ?? 0)) * 23
+            return unchecked((((((17 * 23) + Identifier.GetHashCode()) * 23)
+                + (LocalizationKey?.GetHashCode() ?? 0)) * 23)
                 + (Value?.GetHashCode() ?? 0));
         }
 

@@ -163,7 +163,7 @@ Trailing stuff
 Trailing stuff
 {/* trailing comment */}";
 
-        private static readonly VariableCollection JsxOuterElseifTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection s_jsxOuterElseifTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = true,
@@ -171,7 +171,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        private static readonly VariableCollection JsxInnerIfTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection s_jsxInnerIfTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -179,7 +179,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        private static readonly VariableCollection JsxInnerElseIfTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection s_jsxInnerElseIfTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -187,7 +187,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = true
         };
 
-        private static readonly VariableCollection JsxAllFalse = new VariableCollection
+        private static readonly VariableCollection s_jsxAllFalse = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -227,7 +227,7 @@ Trailing stuff
         [InlineData(JsxInnerElseDefaultValue, JsxOuterElseifTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseifTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxOuterElseifTrueVariableCollection);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxOuterElseifTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -241,7 +241,7 @@ Trailing stuff
         [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerIfTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxInnerIfTrueVariableCollection);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxInnerIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -255,7 +255,7 @@ Trailing stuff
         [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseifTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxInnerElseIfTrueVariableCollection);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxInnerElseIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -269,7 +269,7 @@ Trailing stuff
         [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseHappensExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxAllFalse);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxAllFalse);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -305,19 +305,19 @@ Trailing stuff";
     content: else
 Trailing stuff";
 
-        private static readonly VariableCollection JsxBothClausesTrue = new VariableCollection
+        private static readonly VariableCollection s_jsxBothClausesTrue = new VariableCollection
         {
             ["CLAUSE"] = true,
             ["CLAUSE_2"] = true // irrelevant
         };
 
-        private static readonly VariableCollection JsxClauseTwoTrue = new VariableCollection
+        private static readonly VariableCollection s_jsxClauseTwoTrue = new VariableCollection
         {
             ["CLAUSE"] = false,
             ["CLAUSE_2"] = true
         };
 
-        private static readonly VariableCollection JsxNeitherClauseTrue = new VariableCollection
+        private static readonly VariableCollection s_jsxNeitherClauseTrue = new VariableCollection
         {
             ["CLAUSE"] = false,
             ["CLAUSE_2"] = false
@@ -328,7 +328,7 @@ Trailing stuff";
         [InlineData(JsxBasicWithDefault, JsxIfEmitted)]
         public void JsxBlockCommentsBasicTestBothClausesTrue(string test, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxBothClausesTrue);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxBothClausesTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
@@ -337,7 +337,7 @@ Trailing stuff";
         [InlineData(JsxBasicWithDefault, JsxElseIfEmitted)]
         public void JsxBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxClauseTwoTrue);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxClauseTwoTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
@@ -346,7 +346,7 @@ Trailing stuff";
         [InlineData(JsxBasicWithDefault, JsxElseEmitted)]
         public void JsxBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)
         {
-            IProcessor processor = SetupJsxBlockCommentsProcessor(JsxNeitherClauseTrue);
+            IProcessor processor = SetupJsxBlockCommentsProcessor(s_jsxNeitherClauseTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
     }

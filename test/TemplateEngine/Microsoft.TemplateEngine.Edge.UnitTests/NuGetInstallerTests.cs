@@ -16,8 +16,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class NuGetInstallerTests : TestBase, IClassFixture<PackageManager>, IClassFixture<EnvironmentSettingsHelper>
     {
-        private PackageManager _packageManager;
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly PackageManager _packageManager;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public NuGetInstallerTests(PackageManager packageManager, EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -65,7 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_LocalPackage()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -81,7 +80,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_CannotInstallDirectory()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -97,7 +95,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_CannotInstallFile()
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();
@@ -118,7 +115,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public async Task CanInstall_RemotePackage(string identifier, string version, bool result)
         {
             MockInstallerFactory factory = new MockInstallerFactory();
-            MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             string installPath = _environmentSettingsHelper.CreateTemporaryFolder();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             MockPackageManager mockPackageManager = new MockPackageManager();

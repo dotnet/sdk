@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class PhasedOperationTests : TestBase, IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public PhasedOperationTests(TestLoggerFactory testLoggerFactory)
         {

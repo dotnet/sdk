@@ -35,11 +35,6 @@ namespace Microsoft.TemplateEngine.Core.Util
                 throw new ArgumentNullException(nameof(target));
             }
 
-            if (config == null)
-            {
-                throw new ArgumentNullException(nameof(config));
-            }
-
             if (operationProviders == null)
             {
                 throw new ArgumentNullException(nameof(operationProviders));
@@ -68,7 +63,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             _source = source;
             _target = new StreamProxy(target, bufferSize);
-            Config = config;
+            Config = config ?? throw new ArgumentNullException(nameof(config));
             _flushThreshold = flushThreshold;
             CurrentBuffer = new byte[bufferSize];
             CurrentBufferLength = ReadExactBytes(source, CurrentBuffer, 0, CurrentBuffer.Length);
@@ -81,8 +76,8 @@ namespace Microsoft.TemplateEngine.Core.Util
             WriteToTarget(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
-            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
-            List<string> turnOnByDefault = OperationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
+            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = s_trieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
+            List<string> turnOnByDefault = s_operationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
             {
                 explicitOnConfigurationRequired = true;
                 return new List<string>();
@@ -371,9 +366,8 @@ namespace Microsoft.TemplateEngine.Core.Util
                 int bestPos = -1;
                 for (int i = nRead - match.MinLength; i >= 0; --i)
                 {
-                    int token;
                     int ic = i;
-                    if (match.GetOperation(buffer, nRead, ref ic, out token) && ic >= bestPos)
+                    if (match.GetOperation(buffer, nRead, ref ic, out int token) && ic >= bestPos)
                     {
                         bestPos = ic;
                         best = token;

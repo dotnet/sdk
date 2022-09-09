@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class CommonOperationsTests : IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public CommonOperationsTests(TestLoggerFactory testLoggerFactory)
         {

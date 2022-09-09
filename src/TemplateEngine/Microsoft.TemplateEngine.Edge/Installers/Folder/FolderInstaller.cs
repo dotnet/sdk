@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
         public TemplatePackageData Serialize(IManagedTemplatePackage templatePackage)
         {
             _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
-            if (!(templatePackage is FolderManagedTemplatePackage))
+            if (templatePackage is not FolderManagedTemplatePackage)
             {
                 throw new ArgumentException($"{nameof(templatePackage)} should be of type {nameof(FolderManagedTemplatePackage)}", nameof(templatePackage));
             }

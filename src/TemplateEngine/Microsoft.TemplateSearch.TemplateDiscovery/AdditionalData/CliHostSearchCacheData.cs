@@ -8,18 +8,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     public static class CliHostSearchCacheData
     {
         public const string DataName = "cliHostData";
-        private static readonly string[] _hostDataPropertyNames = new[] { "isHidden", "SymbolInfo", "UsageExamples" };
+        private static readonly string[] s_hostDataPropertyNames = new[] { "isHidden", "SymbolInfo", "UsageExamples" };
 
         public static Func<object, object> Reader => (obj) =>
         {
-            JObject? cacheObject = obj as JObject;
-            if (cacheObject == null)
+            if (obj is not JObject cacheObject)
             {
                 return CliHostTemplateData.Default;
             }
             try
             {
-                if (_hostDataPropertyNames.Contains(cacheObject.Properties().First().Name, StringComparer.OrdinalIgnoreCase))
+                if (s_hostDataPropertyNames.Contains(cacheObject.Properties().First().Name, StringComparer.OrdinalIgnoreCase))
                 {
                     return new CliHostTemplateData(cacheObject);
                 }

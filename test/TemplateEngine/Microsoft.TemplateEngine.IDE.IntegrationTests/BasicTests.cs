@@ -1,19 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.IDE.IntegrationTests.Utils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Utils;
-using VerifyXunit;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
@@ -21,7 +14,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
     [Collection("Verify Tests")]
     public class BasicTests : BootstrapperTestBase, IClassFixture<PackageManager>
     {
-        private PackageManager _packageManager;
+        private readonly PackageManager _packageManager;
 
         public BasicTests(PackageManager packageManager)
         {

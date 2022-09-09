@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
     internal static class NuGetVersionHelper
     {
         // '*'
-        private static readonly FloatRange _unspecifiedVersion = new FloatRange(NuGetVersionFloatBehavior.Major);
+        private static readonly FloatRange s_unspecifiedVersion = new FloatRange(NuGetVersionFloatBehavior.Major);
 
         public static bool IsSupportedVersionString(string? versionString)
         {
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public static bool IsUnrestricted(this FloatRange floatRange)
         {
-            return floatRange.Equals(_unspecifiedVersion);
+            return floatRange.Equals(s_unspecifiedVersion);
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         {
             floatRange =
                 string.IsNullOrEmpty(versionString) ?
-                    _unspecifiedVersion : FloatRange.Parse(versionString);
+                    s_unspecifiedVersion : FloatRange.Parse(versionString);
 
             return floatRange.FloatBehavior != NuGetVersionFloatBehavior.None;
         }

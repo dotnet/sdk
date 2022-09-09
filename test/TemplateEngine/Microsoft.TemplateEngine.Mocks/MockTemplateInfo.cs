@@ -47,23 +47,9 @@ namespace Microsoft.TemplateEngine.Mocks
         public MockTemplateInfo(string[] shortNames, string? name = null, string? identity = null, string? groupIdentity = null, int precedence = 0, string? author = null) : this()
         {
             _shortNameList = shortNames;
-            if (string.IsNullOrEmpty(name))
-            {
-                _name = "Template " + shortNames[0];
-            }
-            else
-            {
-                _name = name;
-            }
+            _name = string.IsNullOrEmpty(name) ? "Template " + shortNames[0] : name;
 
-            if (string.IsNullOrEmpty(identity))
-            {
-                _identity = shortNames[0];
-            }
-            else
-            {
-                _identity = identity;
-            }
+            _identity = string.IsNullOrEmpty(identity) ? shortNames[0] : identity;
 
             Precedence = precedence;
             GroupIdentity = groupIdentity;
@@ -74,13 +60,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public string? Description { get; private set; }
 
-        public IReadOnlyList<string> Classifications
-        {
-            get
-            {
-                return _classifications;
-            }
-        }
+        public IReadOnlyList<string> Classifications => _classifications;
 
         public string? DefaultName { get; }
 
@@ -140,13 +120,7 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public string? ThirdPartyNotices { get; }
 
-        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo
-        {
-            get
-            {
-                return _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo)new BaselineInfo(new Dictionary<string, string>()));
-            }
-        }
+        public IReadOnlyDictionary<string, IBaselineInfo> BaselineInfo => _baselineInfo.ToDictionary(k => k, k => (IBaselineInfo)new BaselineInfo(new Dictionary<string, string>()));
 
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
@@ -229,27 +203,13 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithBaselineInfo(params string[] baseline)
         {
-            if (_baselineInfo.Length == 0)
-            {
-                _baselineInfo = baseline;
-            }
-            else
-            {
-                _baselineInfo = _baselineInfo.Concat(baseline).ToArray();
-            }
+            _baselineInfo = _baselineInfo.Length == 0 ? baseline : _baselineInfo.Concat(baseline).ToArray();
             return this;
         }
 
         public MockTemplateInfo WithClassifications(params string[] classifications)
         {
-            if (_classifications.Length == 0)
-            {
-                _classifications = classifications;
-            }
-            else
-            {
-                _classifications = _classifications.Concat(classifications).ToArray();
-            }
+            _classifications = _classifications.Length == 0 ? classifications : _classifications.Concat(classifications).ToArray();
             return this;
         }
 
@@ -272,27 +232,13 @@ namespace Microsoft.TemplateEngine.Mocks
 
         public MockTemplateInfo WithPostActions(params Guid[] postActions)
         {
-            if (_postActions.Length == 0)
-            {
-                _postActions = postActions;
-            }
-            else
-            {
-                _postActions = _postActions.Concat(postActions).ToArray();
-            }
+            _postActions = _postActions.Length == 0 ? postActions : _postActions.Concat(postActions).ToArray();
             return this;
         }
 
         public MockTemplateInfo WithConstraints(params TemplateConstraintInfo[] constraintInfos)
         {
-            if (_constraints.Length == 0)
-            {
-                _constraints = constraintInfos;
-            }
-            else
-            {
-                _constraints = _constraints.Concat(constraintInfos).ToArray();
-            }
+            _constraints = _constraints.Length == 0 ? constraintInfos : _constraints.Concat(constraintInfos).ToArray();
             return this;
         }
 
@@ -340,14 +286,7 @@ namespace Microsoft.TemplateEngine.Mocks
             _ = sb.Append("Short name:" + string.Join(",", _shortNameList) + ";");
             _ = sb.Append("Identity:" + Identity + ";");
 
-            if (string.IsNullOrEmpty(GroupIdentity))
-            {
-                _ = sb.Append("Group:<not set>;");
-            }
-            else
-            {
-                _ = sb.Append("Group:" + GroupIdentity + ";");
-            }
+            _ = string.IsNullOrEmpty(GroupIdentity) ? sb.Append("Group:<not set>;") : sb.Append("Group:" + GroupIdentity + ";");
             if (Precedence != 0)
             {
                 _ = sb.Append("Precedence:" + Precedence + ";");

@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
         public async Task<ExportResult> ExportLocalizationFilesAsync(string templateJsonPath, ExportOptions options, CancellationToken cancellationToken = default)
         {
-            JsonDocumentOptions jsonOptions = new JsonDocumentOptions()
+            JsonDocumentOptions jsonOptions = new()
             {
                 CommentHandling = JsonCommentHandling.Skip,
                 AllowTrailingCommas = true,
@@ -42,10 +42,10 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
             try
             {
-                using FileStream fileStream = new FileStream(templateJsonPath, FileMode.Open, FileAccess.Read);
+                using FileStream fileStream = new(templateJsonPath, FileMode.Open, FileAccess.Read);
                 using JsonDocument jsonDocument = await JsonDocument.ParseAsync(fileStream, jsonOptions, cancellationToken).ConfigureAwait(false);
 
-                TemplateStringExtractor stringExtractor = new TemplateStringExtractor(jsonDocument, _loggerFactory);
+                TemplateStringExtractor stringExtractor = new(jsonDocument, _loggerFactory);
                 IReadOnlyList<TemplateString> templateJsonStrings = stringExtractor.ExtractStrings(out string templateJsonLanguage);
 
                 string targetDirectory = options.TargetDirectory ?? Path.Combine(Path.GetDirectoryName(templateJsonPath) ?? string.Empty, "localize");
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 return new ExportResult(templateJsonPath);
             }
             catch (Exception exception)
-                when (exception is JsonMemberMissingException || exception is LocalizationKeyIsNotUniqueException)
+                when (exception is JsonMemberMissingException or LocalizationKeyIsNotUniqueException)
             {
                 // Output a more friendly text without stack trace for known errors.
                 return new ExportResult(templateJsonPath, exception.Message);

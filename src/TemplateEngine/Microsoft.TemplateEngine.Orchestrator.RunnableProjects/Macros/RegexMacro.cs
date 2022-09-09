@@ -22,23 +22,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            string value = string.Empty;
-            RegexMacroConfig? config = rawConfig as RegexMacroConfig;
-
-            if (config == null)
+            if (rawConfig is not RegexMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as RegexMacroConfig");
             }
 
-            if (!vars.TryGetValue(config.SourceVariable, out object working))
-            {
-                value = string.Empty;
-            }
-            else
-            {
-                value = working?.ToString() ?? "";
-            }
-
+            string value = !vars.TryGetValue(config.SourceVariable, out object working) ? string.Empty : working?.ToString() ?? "";
             if (config.Steps != null)
             {
                 foreach (KeyValuePair<string?, string?> stepInfo in config.Steps)
@@ -51,9 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }

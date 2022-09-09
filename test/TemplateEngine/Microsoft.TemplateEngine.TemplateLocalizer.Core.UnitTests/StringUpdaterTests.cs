@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 {
     public class StringUpdaterTests : IDisposable
     {
-        private static readonly IReadOnlyList<TemplateString> InputStrings = new List<TemplateString>()
+        private static readonly IReadOnlyList<TemplateString> s_inputStrings = new List<TemplateString>()
         {
             new("..name", "name", "Class library"),
             new("..description", "description", "dEscRiPtiON: ,./|\\<>{}!@#$%^&*()_+-=? 12 äÄßöÖüÜçÇğĞıIİşŞ"),
@@ -28,12 +28,12 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             new("..postactions.1.description", "postActions[1].description", "Opens Class1.cs in the editor")
         };
 
-        private string _workingDirectory;
+        private readonly string _workingDirectory;
 
         public StringUpdaterTests()
         {
             _workingDirectory = Path.Combine(Path.GetTempPath(), "Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests", Path.GetRandomFileName());
-            Directory.CreateDirectory(_workingDirectory);
+            _ = Directory.CreateDirectory(_workingDirectory);
         }
 
         public void Dispose()
@@ -45,22 +45,22 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         public async Task AllStringsAreWrittenToFile()
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
             Assert.True(File.Exists(expectedFilename));
 
             // Only the specified language file should be generated (no more than 1 file in the directory).
-            Assert.Single(Directory.EnumerateFileSystemEntries(_workingDirectory));
+            _ = Assert.Single(Directory.EnumerateFileSystemEntries(_workingDirectory));
 
             Dictionary<string, string> resultStrings = await ReadTemplateStringsFromJsonFile(expectedFilename, cts.Token).ConfigureAwait(false);
 
             // All the InputStrings should be in the resultStrings
-            Assert.True(InputStrings.All(i => resultStrings.TryGetValue(i.LocalizationKey, out var value) && value == i.Value));
-            Assert.All(InputStrings, i =>
+            Assert.True(s_inputStrings.All(i => resultStrings.TryGetValue(i.LocalizationKey, out var value) && value == i.Value));
+            Assert.All(s_inputStrings, i =>
             {
-                Assert.Contains(i.LocalizationKey, (IDictionary<string, string>)resultStrings);
+                _ = Assert.Contains(i.LocalizationKey, (IDictionary<string, string>)resultStrings);
                 Assert.Equal(i.Value, resultStrings[i.LocalizationKey]);
             });
         }
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         public async Task DryRunPreventsWritingToFileSystem()
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: true, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: true, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         public async Task StringOrderIsPreserved()
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string expectedFilename = Path.Combine(_workingDirectory, "templatestrings.tr.json");
@@ -92,13 +92,13 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
             int inputIndex = 0;
             foreach (JsonProperty property in locFile.RootElement.EnumerateObject())
             {
-                if (inputIndex >= InputStrings.Count)
+                if (inputIndex >= s_inputStrings.Count)
                 {
                     return;
                 }
 
-                Assert.Equal(InputStrings[inputIndex].LocalizationKey, property.Name);
-                Assert.Equal(InputStrings[inputIndex].Value, property.Value.GetString());
+                Assert.Equal(s_inputStrings[inputIndex].LocalizationKey, property.Name);
+                Assert.Equal(s_inputStrings[inputIndex].Value, property.Value.GetString());
                 inputIndex++;
             }
         }
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 }",
                 cts.Token).ConfigureAwait(false);
 
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "tr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string fileContent = await File.ReadAllTextAsync(expectedFilename, cts.Token).ConfigureAwait(false);
@@ -141,7 +141,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 }",
                 cts.Token).ConfigureAwait(false);
 
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string fileContent = await File.ReadAllTextAsync(expectedFilename, cts.Token).ConfigureAwait(false);
@@ -175,7 +175,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
                 jsonWriter.WriteStartObject();
 
-                foreach (TemplateString locString in InputStrings)
+                foreach (TemplateString locString in s_inputStrings)
                 {
                     jsonWriter.WritePropertyName(locString.LocalizationKey);
                     jsonWriter.WriteStringValue(locString.Value);
@@ -191,7 +191,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 
             // Attempt to update the previously created json to see if it will be overwritten.
             // The content is identical. So we can read, but we shouldn't write to the file after this point.
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "fr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "fr" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             // An exception will be thrown, failing the test, if the call above tries to write to the file.
@@ -213,7 +213,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
 }",
                 cts.Token).ConfigureAwait(false);
 
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             string fileContent = await File.ReadAllTextAsync(expectedFilename, cts.Token).ConfigureAwait(false);
@@ -275,7 +275,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
                 new UTF8Encoding(fileStartsWithBom),
                 cts.Token).ConfigureAwait(false);
 
-            await TemplateStringUpdater.UpdateStringsAsync(InputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
+            await TemplateStringUpdater.UpdateStringsAsync(s_inputStrings, "en", new string[] { "en" }, _workingDirectory, dryRun: false, NullLogger.Instance, cts.Token)
                 .ConfigureAwait(false);
 
             byte[] fileContent = await File.ReadAllBytesAsync(expectedFilename, cts.Token).ConfigureAwait(false);

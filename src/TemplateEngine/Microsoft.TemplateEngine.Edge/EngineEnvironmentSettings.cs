@@ -57,13 +57,7 @@ namespace Microsoft.TemplateEngine.Edge
         }
 
         [Obsolete("ISettingsLoader is obsolete, see obsolete messages for individual properties/methods of ISettingsLoader for details.")]
-        public ISettingsLoader SettingsLoader
-        {
-            get
-            {
-                throw new NotSupportedException("ISettingsLoader is no longer supported, see Obsolete message for details.");
-            }
-        }
+        public ISettingsLoader SettingsLoader => throw new NotSupportedException("ISettingsLoader is no longer supported, see Obsolete message for details.");
 
         public ITemplateEngineHost Host { get; }
 

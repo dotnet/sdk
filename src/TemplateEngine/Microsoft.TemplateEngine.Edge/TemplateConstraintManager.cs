@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Edge
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
         private readonly ILogger<TemplateConstraintManager> _logger;
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
-        private Dictionary<string, Task<ITemplateConstraint>> _templateConstrains = new Dictionary<string, Task<ITemplateConstraint>>();
+        private readonly Dictionary<string, Task<ITemplateConstraint>> _templateConstrains = new Dictionary<string, Task<ITemplateConstraint>>();
 
         public TemplateConstraintManager(IEngineEnvironmentSettings engineEnvironmentSettings)
         {
@@ -126,9 +126,9 @@ namespace Microsoft.TemplateEngine.Edge
 
             if (task.IsFaulted || task.IsCanceled)
             {
-                var exception = task.Exception is AggregateException ? task.Exception.InnerException ?? task.Exception : task.Exception;
+                var exception = task.Exception is not null ? task.Exception.InnerException ?? task.Exception : task.Exception;
                 _logger.LogDebug($"The constraint '{type}' failed to be initialized, details: {exception}.");
-                return TemplateConstraintResult.CreateInitializationFailure(type, string.Format(LocalizableStrings.TemplateConstraintManager_Error_FailedToInitialize, type, exception.Message));
+                return TemplateConstraintResult.CreateInitializationFailure(type, string.Format(LocalizableStrings.TemplateConstraintManager_Error_FailedToInitialize, type, exception?.Message));
             }
 
             try
@@ -201,9 +201,9 @@ namespace Microsoft.TemplateEngine.Edge
 
                     if (task.IsFaulted || task.IsCanceled)
                     {
-                        var exception = task.Exception is AggregateException ? task.Exception.InnerException ?? task.Exception : task.Exception;
+                        var exception = task.Exception is not null ? task.Exception.InnerException ?? task.Exception : task.Exception;
                         _logger.LogDebug($"The constraint '{constraint.Type}' failed to be initialized, details: {exception}.");
-                        constraintResults.Add(TemplateConstraintResult.CreateInitializationFailure(constraint.Type, string.Format(LocalizableStrings.TemplateConstraintManager_Error_FailedToInitialize, constraint.Type, exception.Message)));
+                        constraintResults.Add(TemplateConstraintResult.CreateInitializationFailure(constraint.Type, string.Format(LocalizableStrings.TemplateConstraintManager_Error_FailedToInitialize, constraint.Type, exception?.Message)));
                         continue;
                     }
 

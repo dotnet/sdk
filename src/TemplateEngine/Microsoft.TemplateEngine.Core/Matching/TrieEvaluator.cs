@@ -188,7 +188,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
                             if (start >= _lastReturnedTerminalEndSequenceNumber)
                             {
-                                if (start < minNonTerminatedPathStart && (best == null || start < minTerminalStart || start == minTerminalStart && terminal.End > best.End))
+                                if (start < minNonTerminatedPathStart && (best == null || start < minTerminalStart || (start == minTerminalStart && terminal.End > best.End)))
                                 {
                                     bestPath = i;
                                     best = terminal;

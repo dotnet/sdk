@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.IDE
             {
                 // returns all templates
                 criteria = (t) => true;
-                filters = filters ?? Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
+                filters ??= Array.Empty<Func<ITemplateInfo, MatchInfo?>>();
             }
             else
             {

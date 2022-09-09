@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.TestHelper
         private readonly IPhysicalFileSystem _baseFileSystem;
         private ConcurrentBag<DirectoryScanParameters> _directoriesScanned = new();
         private ConcurrentBag<string> _filesOpened = new();
-        private ConcurrentBag<string> _filesWatched = new();
+        private readonly ConcurrentBag<string> _filesWatched = new();
 
         public MonitoredFileSystem(IPhysicalFileSystem baseFileSystem)
         {

@@ -24,7 +24,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         private readonly SourceCacheContext _cacheContext = new SourceCacheContext();
         private readonly FindPackageByIdResource _downloadResource;
         private readonly bool _includePreview;
-        private string _searchUriFormat;
+        private readonly string _searchUriFormat;
 
         internal NuGetPackProvider(string name, string query, DirectoryInfo packageTempBasePath, int pageSize, bool runOnlyOnePage, bool includePreviewPacks)
         {
@@ -111,7 +111,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                             }
                         }
                         //4000 is NuGet limit, stop after 4000 is processed.
-                        if (totalPackCount == packCount || totalPackCount > 4000 && packCount == 4000)
+                        if (totalPackCount == packCount || (totalPackCount > 4000 && packCount == 4000))
                         {
                             if (totalPackCount > 4000)
                             {
@@ -128,7 +128,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                     }
                     else
                     {
-                        Console.WriteLine($"Unexpected response from NuGet: code {response.StatusCode}, details: {response.ToString()}.");
+                        Console.WriteLine($"Unexpected response from NuGet: code {response.StatusCode}, details: {response}.");
                         throw new Exception("Failed to get search results from NuGet search API.");
                     }
                 }
@@ -226,8 +226,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                     return default;
                 }
 
-                if (foundPackages
-                    .Where(package => package.IsListed).Any())
+                if (foundPackages.Any(package => package.IsListed))
                 {
                     IPackageSearchMetadata latestPackage = foundPackages
                         .Where(package => package.IsListed)

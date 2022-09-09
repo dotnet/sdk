@@ -24,14 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         {
             if (!string.IsNullOrEmpty(culture))
             {
-                if (culture == "invariant")
-                {
-                    CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-                }
-                else
-                {
-                    CultureInfo.CurrentCulture = new CultureInfo(culture);
-                }
+                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
             }
 
             IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");

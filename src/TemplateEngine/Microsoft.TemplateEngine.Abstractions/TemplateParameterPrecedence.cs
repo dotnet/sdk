@@ -13,7 +13,7 @@ public class TemplateParameterPrecedence
     /// <summary>
     /// Default optional precedence.
     /// </summary>
-    public static readonly TemplateParameterPrecedence Default = new TemplateParameterPrecedence(PrecedenceDefinition.Optional);
+    public static readonly TemplateParameterPrecedence Default = new(PrecedenceDefinition.Optional);
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TemplateParameterPrecedence"/> class.

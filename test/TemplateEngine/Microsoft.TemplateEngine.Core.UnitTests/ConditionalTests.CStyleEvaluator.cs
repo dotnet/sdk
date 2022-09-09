@@ -1449,14 +1449,7 @@ There";
         {
             if (!string.IsNullOrEmpty(culture))
             {
-                if (culture == "invariant")
-                {
-                    CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-                }
-                else
-                {
-                    CultureInfo.CurrentCulture = new CultureInfo(culture);
-                }
+                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
             }
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);

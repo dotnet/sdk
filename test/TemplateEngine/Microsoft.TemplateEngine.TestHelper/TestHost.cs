@@ -20,8 +20,8 @@ namespace Microsoft.TemplateEngine.TestHelper
         private readonly string _hostIdentifier;
         private readonly string _version;
         private IPhysicalFileSystem _fileSystem;
-        private IReadOnlyList<(Type, IIdentifiedComponent)> _builtIns;
-        private IReadOnlyList<string> _fallbackNames;
+        private readonly IReadOnlyList<(Type, IIdentifiedComponent)> _builtIns;
+        private readonly IReadOnlyList<string> _fallbackNames;
 
         internal TestHost(
             [CallerMemberName] string hostIdentifier = "",
@@ -79,7 +79,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             IReadOnlyDictionary<string, string>? defaultParameters = null)
         {
             TestHost host = new TestHost(hostIdentifier: hostIdentifier, additionalComponents: additionalComponents);
-            environment = environment ?? new DefaultEnvironment();
+            environment ??= new DefaultEnvironment();
 
             if (defaultParameters != null)
             {

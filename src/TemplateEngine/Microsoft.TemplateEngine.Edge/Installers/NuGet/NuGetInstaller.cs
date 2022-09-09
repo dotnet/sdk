@@ -265,7 +265,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             catch (Exception e)
             {
-                _logger.LogDebug($"Installing {installRequest.DisplayName} failed. Details:{e.ToString()}");
+                _logger.LogDebug($"Installing {installRequest.DisplayName} failed. Details:{e}");
                 return InstallResult.CreateFailure(
                     installRequest,
                     InstallerErrorCode.GenericError,
@@ -289,7 +289,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public Task<UninstallResult> UninstallAsync(IManagedTemplatePackage templatePackage, IManagedTemplatePackageProvider provider, CancellationToken cancellationToken)
         {
             _ = templatePackage ?? throw new ArgumentNullException(nameof(templatePackage));
-            if (!(templatePackage is NuGetManagedTemplatePackage))
+            if (templatePackage is not NuGetManagedTemplatePackage)
             {
                 return Task.FromResult(UninstallResult.CreateFailure(
                     templatePackage,
@@ -332,9 +332,8 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 return UpdateResult.CreateFailure(updateRequest, uninstallResult.Error, uninstallResult.ErrorMessage);
             }
 
-            var nuGetManagedSource = updateRequest.TemplatePackage as NuGetManagedTemplatePackage;
             Dictionary<string, string> installationDetails = new Dictionary<string, string>();
-            if (nuGetManagedSource != null && !string.IsNullOrWhiteSpace(nuGetManagedSource.NuGetSource))
+            if (updateRequest.TemplatePackage is NuGetManagedTemplatePackage nuGetManagedSource && !string.IsNullOrWhiteSpace(nuGetManagedSource.NuGetSource))
             {
                 installationDetails.Add(InstallerConstants.NuGetSourcesKey, nuGetManagedSource.NuGetSource!);
             }
@@ -359,7 +358,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _logger.LogError(string.Format(LocalizableStrings.NuGetInstaller_Error_FailedToReadPackage, installRequest.PackageIdentifier));
-                _logger.LogDebug($"Details: {ex.ToString()}.");
+                _logger.LogDebug($"Details: {ex}.");
                 throw new InvalidNuGetPackageException(installRequest.PackageIdentifier, ex);
             }
             string targetPackageLocation = Path.Combine(_installPath, packageInfo.PackageIdentifier + "." + packageInfo.PackageVersion + ".nupkg");
@@ -377,7 +376,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _logger.LogError(string.Format(LocalizableStrings.NuGetInstaller_Error_CopyFailed, installRequest.PackageIdentifier, targetPackageLocation), null, 0);
-                _logger.LogDebug($"Details: {ex.ToString()}.");
+                _logger.LogDebug($"Details: {ex}.");
                 throw new DownloadException(packageInfo.PackageIdentifier, packageInfo.PackageVersion, installRequest.PackageIdentifier);
             }
             return packageInfo;

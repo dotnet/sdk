@@ -21,9 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config)
         {
-            ProcessValueFormMacroConfig? realConfig = config as ProcessValueFormMacroConfig;
-
-            if (realConfig == null)
+            if (config is not ProcessValueFormMacroConfig realConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a ProcessValueFormMacroConfig");
             }

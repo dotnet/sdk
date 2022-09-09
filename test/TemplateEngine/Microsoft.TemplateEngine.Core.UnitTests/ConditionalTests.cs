@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public partial class ConditionalTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public ConditionalTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

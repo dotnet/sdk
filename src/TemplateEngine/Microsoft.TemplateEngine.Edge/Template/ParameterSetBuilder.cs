@@ -378,10 +378,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             public DataSource DataSource => _dataSource;
 
-            public object? Value
-            {
-                get { return _value; }
-            }
+            public object? Value => _value;
 
             public void SetValue(object? value, DataSource source)
             {

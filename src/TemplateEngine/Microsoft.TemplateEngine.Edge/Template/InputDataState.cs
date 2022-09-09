@@ -37,7 +37,7 @@ public static class InputDataStateUtil
     {
         // This is not and extension method as it's reach would be too broad (applicable to object)
 
-        return value == null || value is string str && string.IsNullOrEmpty(str)
+        return value == null || (value is string str && string.IsNullOrEmpty(str))
             ? InputDataState.ExplicitEmpty
             : InputDataState.Set;
     }

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class RandomMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public RandomMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -57,8 +57,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestRandomDeferredConfig(int low, int? high)
         {
             string variableName = "myRnd";
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("low", low);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "low", low }
+            };
             if (high.HasValue)
             {
                 jsonParameters.Add("high", high);

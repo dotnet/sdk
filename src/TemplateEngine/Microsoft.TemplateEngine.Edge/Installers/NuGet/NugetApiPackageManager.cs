@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal class NuGetApiPackageManager : IDownloader, IUpdateChecker
     {
-        private static readonly ConcurrentDictionary<PackageSource, SourceRepository> _sourcesCache = new ConcurrentDictionary<PackageSource, SourceRepository>();
+        private static readonly ConcurrentDictionary<PackageSource, SourceRepository> s_sourcesCache = new ConcurrentDictionary<PackageSource, SourceRepository>();
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _nugetLogger;
 
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             FindPackageByIdResource resource;
-            SourceRepository repository = _sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
+            SourceRepository repository = s_sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
             try
             {
                 resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception e)
             {
                 _nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToLoadSource, source.Source));
-                _nugetLogger.LogDebug($"Details: {e.ToString()}.");
+                _nugetLogger.LogDebug($"Details: {e}.");
                 throw new InvalidNuGetSourceException("Failed to load NuGet source", new[] { source.Source }, e);
             }
 
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                             string.Format(
                                 LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDelete,
                                 filePath));
-                        _nugetLogger.LogDebug($"Details: {ex.ToString()}.");
+                        _nugetLogger.LogDebug($"Details: {ex}.");
                     }
                     throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source });
                 }
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDownload,
                         $"{packageMetadata.Identity.Id}::{packageMetadata.Identity.Version}",
                         source.Source));
-                _nugetLogger.LogDebug($"Details: {e.ToString()}.");
+                _nugetLogger.LogDebug($"Details: {e}.");
                 try
                 {
                     _environmentSettings.Host.FileSystem.FileDelete(filePath);
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         string.Format(
                             LocalizableStrings.NuGetApiPackageManager_Warning_FailedToDelete,
                             filePath));
-                    _nugetLogger.LogDebug($"Details: {ex.ToString()}.");
+                    _nugetLogger.LogDebug($"Details: {ex}.");
                 }
                 throw new DownloadException(packageMetadata.Identity.Id, packageMetadata.Identity.Version.ToNormalizedString(), new[] { source.Source }, e.InnerException);
             }
@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             string[] additionalSources = string.IsNullOrWhiteSpace(additionalSource) ? Array.Empty<string>() : new[] { additionalSource! };
             IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
             var (_, package) = await GetLatestVersionInternalAsync(identifier, packageSources, floatRange, cancellationToken).ConfigureAwait(false);
-            bool isLatestVersion = currentVersion != null ? currentVersion >= package.Identity.Version : false;
+            bool isLatestVersion = currentVersion != null && currentVersion >= package.Identity.Version;
             return (package.Identity.Version.ToNormalizedString(), isLatestVersion);
         }
 
@@ -280,23 +280,23 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             {
                 Task<(PackageSource Source, IEnumerable<IPackageSearchMetadata>? FoundPackages)> finishedTask =
                     await Task.WhenAny(tasks).ConfigureAwait(false);
-                tasks.Remove(finishedTask);
-                (PackageSource Source, IEnumerable<IPackageSearchMetadata>? FoundPackages) result = await finishedTask.ConfigureAwait(false);
-                if (result.FoundPackages == null)
+                _ = tasks.Remove(finishedTask);
+                (PackageSource foundSource, IEnumerable<IPackageSearchMetadata>? foundPackages) = await finishedTask.ConfigureAwait(false);
+                if (foundPackages == null)
                 {
                     continue;
                 }
                 atLeastOneSourceValid = true;
-                IPackageSearchMetadata matchedVersion = result.FoundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                IPackageSearchMetadata matchedVersion = foundPackages.FirstOrDefault(package => package.Identity.Version == packageVersion);
                 if (matchedVersion != null)
                 {
-                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} was found in {result.Source.Source}.");
+                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} was found in {foundSource.Source}.");
                     linkedCts.Cancel();
-                    return (result.Source, matchedVersion);
+                    return (foundSource, matchedVersion);
                 }
                 else
                 {
-                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} is not found in NuGet feed {result.Source.Source}.");
+                    _nugetLogger.LogDebug($"{packageIdentifier}::{packageVersion} is not found in NuGet feed {foundSource.Source}.");
                 }
             }
             if (!atLeastOneSourceValid)
@@ -322,7 +322,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _nugetLogger.LogDebug($"Searching for {packageIdentifier} in {source.Source}.");
             try
             {
-                SourceRepository repository = _sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
+                SourceRepository repository = s_sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
                 PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
                 IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
                     packageIdentifier,
@@ -350,7 +350,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _nugetLogger.LogDebug(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToReadPackage, source.Source));
-                _nugetLogger.LogDebug($"Details: {ex.ToString()}.");
+                _nugetLogger.LogDebug($"Details: {ex}.");
             }
             return (source, FoundPackages: null);
         }
@@ -369,7 +369,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             catch (Exception ex)
             {
                 _nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToLoadSources, currentDirectory));
-                _nugetLogger.LogDebug($"Details: {ex.ToString()}.");
+                _nugetLogger.LogDebug($"Details: {ex}.");
                 throw new InvalidNuGetSourceException($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
             }
 

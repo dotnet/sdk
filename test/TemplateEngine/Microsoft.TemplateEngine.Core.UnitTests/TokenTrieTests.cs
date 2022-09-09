@@ -35,7 +35,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             t.AddToken(builder.ToToken(Encoding.UTF8));
 
             int pos = checkPosition;
-            Assert.Equal(success, t.GetOperation(data, data.Length, ref pos, out int token));
+            Assert.Equal(success, t.GetOperation(data, data.Length, ref pos, out _));
             Assert.Equal(expectedPosition, pos);
         }
 
@@ -58,9 +58,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source5 = Encoding.UTF8.GetBytes("hi");
             byte[] source6 = Encoding.UTF8.GetBytes("he");
 
-            int token;
             int pos = 0;
-            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out token));
+            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));
             Assert.Equal(0, token);
 
             pos = 0;
@@ -97,9 +96,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source1 = Encoding.UTF8.GetBytes("hi");
             byte[] source2 = Encoding.UTF8.GetBytes(" hello");
 
-            int token;
             int pos = 0;
-            Assert.False(t.GetOperation(source1, source1.Length, ref pos, out token));
+            Assert.False(t.GetOperation(source1, source1.Length, ref pos, out int token));
             Assert.Equal(-1, token);
 
             pos = 1;
@@ -136,9 +134,8 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] source3 = Encoding.UTF8.GetBytes("hi there");
             byte[] source4 = Encoding.UTF8.GetBytes("there!");
 
-            int token;
             int pos = 0;
-            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out token));
+            Assert.True(t.GetOperation(source1, source1.Length, ref pos, out int token));
             Assert.Equal(0, token);
 
             pos = 0;

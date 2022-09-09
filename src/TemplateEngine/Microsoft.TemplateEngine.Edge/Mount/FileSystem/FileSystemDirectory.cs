@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
                 if (_fileSystem.DirectoryExists(x) && baseName[baseName.Length - 1] != '/')
                 {
-                    baseName = baseName + "/";
+                    baseName += "/";
                 }
 
                 return fileSystemMountPoint.FileSystemInfo(baseName);
@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
                 if (baseName[baseName.Length - 1] != '/')
                 {
-                    baseName = baseName + "/";
+                    baseName += "/";
                 }
 
                 return new FileSystemDirectory(MountPoint, baseName, _paths.Name(x), x);

@@ -39,17 +39,13 @@ namespace Microsoft.TemplateEngine.Mocks
                     return new MockFile(fullPath, this);
                 }
 
-                IDirectory dir = info as IDirectory;
-
-                if (dir != null)
+                if (info is IDirectory dir)
                 {
                     current = dir;
                     continue;
                 }
 
-                IFile file = info as IFile;
-
-                if (file != null)
+                if (info is IFile file)
                 {
                     if (i == parts.Length - 1)
                     {
@@ -66,9 +62,8 @@ namespace Microsoft.TemplateEngine.Mocks
         public IDirectory DirectoryInfo(string fullPath)
         {
             IFileSystemInfo info = FileInfo(fullPath);
-            IDirectory resultDir = info as IDirectory;
 
-            if (resultDir != null)
+            if (info is IDirectory resultDir)
             {
                 return resultDir;
             }
@@ -79,9 +74,8 @@ namespace Microsoft.TemplateEngine.Mocks
         public IFile FileInfo(string fullPath)
         {
             IFileSystemInfo info = FileSystemInfo(fullPath);
-            IFile resultFile = info as IFile;
 
-            if (resultFile != null)
+            if (info is IFile resultFile)
             {
                 return resultFile;
             }

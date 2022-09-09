@@ -119,7 +119,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 isCopiedIntoContentDirectory = false;
             }
 
-            foreach (KeyValuePair<string, Assembly> asm in LoadAllFromPath(out IEnumerable<string> failures, actualScanPath))
+            foreach (KeyValuePair<string, Assembly> asm in LoadAllFromPath(out _, actualScanPath))
             {
                 try
                 {
@@ -288,13 +288,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             public bool FoundTemplates { get; set; }
 
-            public bool AnythingFound
-            {
-                get
-                {
-                    return FoundTemplates || FoundComponents;
-                }
-            }
+            public bool AnythingFound => FoundTemplates || FoundComponents;
         }
     }
 }

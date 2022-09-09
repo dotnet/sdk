@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
     public sealed class FolderInstallerFactory : IInstallerFactory
     {
-        internal static readonly Guid FactoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
+        internal static readonly Guid s_factoryId = new Guid("{F01DEA33-E89C-46D1-89C2-1CA1F394C5AA}");
 
-        Guid IIdentifiedComponent.Id => FactoryId;
+        Guid IIdentifiedComponent.Id => s_factoryId;
 
         string IInstallerFactory.Name => "Folder";
 

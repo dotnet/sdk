@@ -13,13 +13,13 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = Array.Empty<(Type, IIdentifiedComponent)>();
+        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> s_noComponents = Array.Empty<(Type, IIdentifiedComponent)>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         [Obsolete]
-        private Dictionary<string, Action<string, string[]>> _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
-        private ILoggerFactory _loggerFactory;
-        private ILogger _logger;
+        private readonly Dictionary<string, Action<string, string[]>> _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
 
         public DefaultTemplateEngineHost(
             string hostIdentifier,
@@ -33,13 +33,10 @@ namespace Microsoft.TemplateEngine.Edge
             Version = version;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
-            _hostBuiltInComponents = builtIns ?? NoComponents;
+            _hostBuiltInComponents = builtIns ?? s_noComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
 
-            if (loggerFactory == null)
-            {
-                loggerFactory = NullLoggerFactory.Instance;
-            }
+            loggerFactory ??= NullLoggerFactory.Instance;
             _loggerFactory = loggerFactory;
             _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
         }

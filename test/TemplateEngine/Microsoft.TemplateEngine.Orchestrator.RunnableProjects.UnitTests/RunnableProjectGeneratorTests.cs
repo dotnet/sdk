@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     public class RunnableProjectGeneratorTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public RunnableProjectGeneratorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -48,9 +48,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() }
+            };
 
             //content
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
@@ -87,9 +89,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))
             {
                 string resultContent = environment.Host.FileSystem.ReadAllText(Path.Combine(targetDir, contentFileNamePrefix + guidFormat));
-                Guid resultGuid;
                 Assert.True(
-                    Guid.TryParseExact(resultContent, guidFormat, out resultGuid),
+                    Guid.TryParseExact(resultContent, guidFormat, out Guid resultGuid),
                     $"Expected the result conent ({resultContent}) to be parseable by Guid format '{guidFormat}'");
 
                 if (expectedResultGuid == Guid.Empty)
@@ -182,12 +183,14 @@ UNKNOWN
 //#endif
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, templateConfig },
 
-            //content
-            templateSourceFiles.Add("sourcFile", sourceSnippet);
+                //content
+                { "sourcFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -278,12 +281,14 @@ SECOND
 THIRD
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, templateConfig },
 
-            //content
-            templateSourceFiles.Add("sourcFile", sourceSnippet);
+                //content
+                { "sourcFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -424,12 +429,14 @@ Console.WriteLine(""Hello, World!"");
 // Plats: android, iOS
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, templateConfig },
 
-            //content
-            templateSourceFiles.Add("sourcFile", sourceSnippet);
+                //content
+                { "sourcFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -534,12 +541,14 @@ Console.WriteLine(""Hello, World!"");
 // This file is generated for platfrom: MacOS, iOS
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, templateConfig },
 
-            //content
-            templateSourceFiles.Add("sourcFile", sourceSnippet);
+                //content
+                { "sourcFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -607,12 +616,14 @@ Console.WriteLine(""Hello, World!"");
 %R1%
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting

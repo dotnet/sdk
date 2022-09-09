@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class BalancedNestingTests : TestBase, IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public BalancedNestingTests(TestLoggerFactory testLoggerFactory)
         {

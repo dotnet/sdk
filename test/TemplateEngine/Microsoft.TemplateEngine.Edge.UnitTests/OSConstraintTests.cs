@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class OSConstraintTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _sharedSettings;
+        private readonly IEngineEnvironmentSettings _sharedSettings;
 
         public OSConstraintTests(EnvironmentSettingsHelper helper)
         {

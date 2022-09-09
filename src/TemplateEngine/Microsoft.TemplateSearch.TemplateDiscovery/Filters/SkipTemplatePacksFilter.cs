@@ -7,9 +7,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 {
     internal sealed class SkipTemplatePacksFilter
     {
-        private const string _FilterId = "Permanently skipped packages";
+        private const string FilterId = "Permanently skipped packages";
 
-        private static readonly List<string> PackagesToBeSkipped = new List<string>
+        private static readonly List<string> s_packagesToBeSkipped = new List<string>
         {
             "microsoft.dotnet.common.itemtemplates",
             "microsoft.dotnet.common.projecttemplates",
@@ -33,19 +33,19 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
 
         internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {
-            Func<IDownloadedPackInfo, PreFilterResult> filter = (packInfo) =>
+            static PreFilterResult Filter(IDownloadedPackInfo packInfo)
             {
-                foreach (string package in PackagesToBeSkipped)
+                foreach (string package in s_packagesToBeSkipped)
                 {
                     if (packInfo.Name.StartsWith(package, StringComparison.OrdinalIgnoreCase))
                     {
-                        return new PreFilterResult(_FilterId, isFiltered: true, $"Package {packInfo.Name} is skipped as it matches the package name to be permanently skipped.");
+                        return new PreFilterResult(FilterId, isFiltered: true, $"Package {packInfo.Name} is skipped as it matches the package name to be permanently skipped.");
                     }
                 }
-                return new PreFilterResult(_FilterId, isFiltered: false);
-            };
+                return new PreFilterResult(FilterId, isFiltered: false);
+            }
 
-            return filter;
+            return Filter;
         }
     }
 }

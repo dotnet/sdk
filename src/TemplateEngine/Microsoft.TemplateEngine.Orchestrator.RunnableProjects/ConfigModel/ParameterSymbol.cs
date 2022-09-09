@@ -129,15 +129,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         public IReadOnlyDictionary<string, ParameterChoice>? Choices
         {
-            get
-            {
-                return _choices;
-            }
+            get => _choices;
 
-            internal init
-            {
-                _choices = value?.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
-            }
+            internal init => _choices = value?.CloneIfDifferentComparer(StringComparer.OrdinalIgnoreCase);
         }
 
         // only relevant for choice datatype
@@ -220,8 +214,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
         private static string? ParseIsRequiredConditionField(JToken token)
         {
-            JToken? isRequiredToken;
-            if (!token.TryGetValue(nameof(IsRequired), out isRequiredToken))
+            if (!token.TryGetValue(nameof(IsRequired), out JToken? isRequiredToken))
             {
                 return null;
             }

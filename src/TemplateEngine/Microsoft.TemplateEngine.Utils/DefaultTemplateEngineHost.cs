@@ -13,12 +13,12 @@ namespace Microsoft.TemplateEngine.Utils
     [Obsolete("Use Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost instead.")]
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
+        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> s_noComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
-        private Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
-        private ILoggerFactory _loggerFactory;
-        private ILogger _logger;
+        private readonly Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version)
                     : this(hostIdentifier, version, null)
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string>? defaults)
-            : this(hostIdentifier, version, defaults, NoComponents, null)
+            : this(hostIdentifier, version, defaults, s_noComponents, null)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<string> fallbackHostTemplateConfigNames)
-            : this(hostIdentifier, version, defaults, NoComponents, fallbackHostTemplateConfigNames)
+            : this(hostIdentifier, version, defaults, s_noComponents, fallbackHostTemplateConfigNames)
         {
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
             Version = version;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
-            _hostBuiltInComponents = builtIns ?? NoComponents;
+            _hostBuiltInComponents = builtIns ?? s_noComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
             _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
             _loggerFactory = NullLoggerFactory.Instance;
@@ -102,6 +102,8 @@ namespace Microsoft.TemplateEngine.Utils
                 case "HostIdentifier":
                     value = HostIdentifier;
                     return true;
+                default:
+                    break;
             }
 
             return _hostDefaults.TryGetValue(paramName, out value);

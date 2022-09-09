@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
         {
-            ReadOnlySpan<char> input = new ReadOnlySpan<char>(text, textLength);
+            ReadOnlySpan<char> input = new(text, textLength);
             int idx = 0;
 
             while (Rune.DecodeFromUtf16(input.Slice(idx), out Rune result, out int charsConsumed) == OperationStatus.Done)

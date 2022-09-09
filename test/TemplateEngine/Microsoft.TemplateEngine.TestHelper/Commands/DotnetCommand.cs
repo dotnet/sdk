@@ -10,13 +10,10 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 {
     public class DotnetCommand : TestCommand
     {
-        private readonly string commandName;
-
         public DotnetCommand(ITestOutputHelper log, string commandName, params string[] args) : base(log)
         {
             Arguments.Add(commandName);
             Arguments.AddRange(args);
-            this.commandName = commandName;
         }
 
         public DotnetCommand WithCustomHive(string? path = null)

@@ -28,8 +28,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             Dictionary<byte, TrieNode<T>> current = NextNodes;
             for (int i = 0; i < path.Length; ++i, --remainingLength)
             {
-                TrieNode<T> next;
-                if (!current.TryGetValue(path[i], out next))
+                if (!current.TryGetValue(path[i], out TrieNode<T> next))
                 {
                     current[path[i]] = next = new TrieNode<T>(path[i])
                     {
@@ -46,10 +45,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
 
                 if (i == path.Length - 1)
                 {
-                    if (next.Terminals == null)
-                    {
-                        next.Terminals = new List<T>();
-                    }
+                    next.Terminals ??= new List<T>();
 
                     int sameMatcherIndex = next.Terminals.FindIndex(t => t.Start == terminal.Start && t.End == terminal.End);
 

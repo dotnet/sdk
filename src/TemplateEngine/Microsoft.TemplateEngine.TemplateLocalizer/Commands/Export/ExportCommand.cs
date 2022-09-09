@@ -12,13 +12,13 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
     {
         private const string CommandName = "export";
 
-        private Argument<IEnumerable<string>> _templatePathArgument = new Argument<IEnumerable<string>>("template-path")
+        private readonly Argument<IEnumerable<string>> _templatePathArgument = new Argument<IEnumerable<string>>("template-path")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = LocalizableStrings.command_export_help_templatePath_description,
         };
 
-        private Option<IEnumerable<string>> _languageOption = new Option<IEnumerable<string>>("-l")
+        private readonly Option<IEnumerable<string>> _languageOption = new Option<IEnumerable<string>>("-l")
         {
             Name = "--language",
             Description = LocalizableStrings.command_export_help_language_description,
@@ -26,13 +26,13 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
             AllowMultipleArgumentsPerToken = true,
         };
 
-        private Option<bool> _recursiveOption = new Option<bool>("-r")
+        private readonly Option<bool> _recursiveOption = new Option<bool>("-r")
         {
             Name = "--recursive",
             Description = LocalizableStrings.command_export_help_recursive_description,
         };
 
-        private Option<bool> _dryRunOption = new Option<bool>("-d")
+        private readonly Option<bool> _dryRunOption = new Option<bool>("-d")
         {
             Name = "--dry-run",
             Description = LocalizableStrings.command_export_help_dryrun_description,
@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
 
             try
             {
-                await Task.WhenAll(runningExportTasks.Select(t => t.Task)).ConfigureAwait(false);
+                _ = await Task.WhenAll(runningExportTasks.Select(t => t.Task)).ConfigureAwait(false);
             }
             catch (Exception)
             {

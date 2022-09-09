@@ -47,9 +47,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             List<CustomOperationModel> customOpsForGlob = new List<CustomOperationModel>();
             if (globData.TryGetValue(nameof(Operations), StringComparison.OrdinalIgnoreCase, out JToken? operationData))
             {
-                foreach (JObject operationConfig in (JArray)operationData)
+                foreach (JToken operationConfig in (JArray)operationData)
                 {
-                    customOpsForGlob.Add(CustomOperationModel.FromJObject(operationConfig));
+                    if (operationConfig is JObject obj)
+                    {
+                        customOpsForGlob.Add(CustomOperationModel.FromJObject(obj));
+                    }
                 }
             }
 

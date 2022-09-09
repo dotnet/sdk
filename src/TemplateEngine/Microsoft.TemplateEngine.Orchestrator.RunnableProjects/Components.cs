@@ -14,17 +14,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     public static class Components
     {
-        private static readonly CaseChangeMacro CaseChange = new CaseChangeMacro();
-        private static readonly GeneratePortNumberMacro GeneratePortNumberMacro = new GeneratePortNumberMacro();
-        private static readonly CoalesceMacro CoalesceMacro = new CoalesceMacro();
-        private static readonly ConstantMacro ConstantMacro = new ConstantMacro();
-        private static readonly GuidMacro GuidMacro = new GuidMacro();
-        private static readonly SwitchMacro SwitchMacro = new SwitchMacro();
-        private static readonly RegexMatchMacro RegexMatchMacro = new RegexMatchMacro();
-        private static readonly RegexMacro RegexMacro = new RegexMacro();
-        private static readonly RandomMacro RandomMacro = new RandomMacro();
-        private static readonly NowMacro NowMacro = new NowMacro();
-        private static readonly JoinMacro JoinMacro = new JoinMacro();
+        private static readonly CaseChangeMacro s_caseChange = new();
+        private static readonly GeneratePortNumberMacro s_generatePortNumberMacro = new();
+        private static readonly CoalesceMacro s_coalesceMacro = new();
+        private static readonly ConstantMacro s_constantMacro = new();
+        private static readonly GuidMacro s_guidMacro = new();
+        private static readonly SwitchMacro s_switchMacro = new();
+        private static readonly RegexMatchMacro s_regexMatchMacro = new();
+        private static readonly RegexMacro s_regexMacro = new();
+        private static readonly RandomMacro s_randomMacro = new();
+        private static readonly NowMacro s_nowMacro = new();
+        private static readonly JoinMacro s_joinMacro = new();
 
         public static IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> AllComponents { get; } =
             new (Type Type, IIdentifiedComponent Instance)[]
@@ -38,30 +38,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 (typeof(IOperationConfig), new RegionConfig()),
                 (typeof(IOperationConfig), new ReplacementConfig()),
 
-                (typeof(IMacro), CaseChange),
-                (typeof(IDeferredMacro), CaseChange),
-                (typeof(IMacro), CoalesceMacro),
-                (typeof(IDeferredMacro), CoalesceMacro),
-                (typeof(IMacro), ConstantMacro),
-                (typeof(IDeferredMacro), ConstantMacro),
+                (typeof(IMacro), s_caseChange),
+                (typeof(IDeferredMacro), s_caseChange),
+                (typeof(IMacro), s_coalesceMacro),
+                (typeof(IDeferredMacro), s_coalesceMacro),
+                (typeof(IMacro), s_constantMacro),
+                (typeof(IDeferredMacro), s_constantMacro),
                 (typeof(IMacro), new EvaluateMacro()),
-                (typeof(IMacro), GeneratePortNumberMacro),
-                (typeof(IDeferredMacro), GeneratePortNumberMacro),
-                (typeof(IMacro), GuidMacro),
-                (typeof(IDeferredMacro), GuidMacro),
-                (typeof(IMacro), JoinMacro),
-                (typeof(IDeferredMacro), JoinMacro),
-                (typeof(IMacro), NowMacro),
-                (typeof(IDeferredMacro), NowMacro),
+                (typeof(IMacro), s_generatePortNumberMacro),
+                (typeof(IDeferredMacro), s_generatePortNumberMacro),
+                (typeof(IMacro), s_guidMacro),
+                (typeof(IDeferredMacro), s_guidMacro),
+                (typeof(IMacro), s_joinMacro),
+                (typeof(IDeferredMacro), s_joinMacro),
+                (typeof(IMacro), s_nowMacro),
+                (typeof(IDeferredMacro), s_nowMacro),
                 (typeof(IMacro), new ProcessValueFormMacro()),
-                (typeof(IMacro), RandomMacro),
-                (typeof(IDeferredMacro), RandomMacro),
-                (typeof(IMacro), RegexMacro),
-                (typeof(IDeferredMacro), RegexMacro),
-                (typeof(IMacro), RegexMatchMacro),
-                (typeof(IDeferredMacro), RegexMatchMacro),
-                (typeof(IMacro), SwitchMacro),
-                (typeof(IDeferredMacro), SwitchMacro),
+                (typeof(IMacro), s_randomMacro),
+                (typeof(IDeferredMacro), s_randomMacro),
+                (typeof(IMacro), s_regexMacro),
+                (typeof(IDeferredMacro), s_regexMacro),
+                (typeof(IMacro), s_regexMatchMacro),
+                (typeof(IDeferredMacro), s_regexMatchMacro),
+                (typeof(IMacro), s_switchMacro),
+                (typeof(IDeferredMacro), s_switchMacro),
             };
     }
 }

@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 {
     public class Cpp2StyleEvaluatorDefinition : SharedEvaluatorDefinition<Cpp2StyleEvaluatorDefinition, Cpp2StyleEvaluatorDefinition.Tokens>
     {
-        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
+        private static readonly Dictionary<Encoding, ITokenTrie> s_tokenCache = new Dictionary<Encoding, ITokenTrie>();
 
         public enum Tokens
         {
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {
-            if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
+            if (!s_tokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
                 TokenTrie trie = new TokenTrie();
 
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp2
                 trie.AddToken(processor.Encoding.GetBytes("'"));
                 trie.AddToken(processor.Encoding.GetBytes("\""));
 
-                TokenCache[processor.Encoding] = tokens = trie;
+                s_tokenCache[processor.Encoding] = tokens = trie;
             }
 
             return tokens;

@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (customOperations.Any(x => x is Conditional))
             {
-                operations.AddRange(defaultOperations.Where(op => !(op is Conditional)));
+                operations.AddRange(defaultOperations.Where(op => op is not Conditional));
             }
             else
             {
@@ -157,7 +157,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 if (string.IsNullOrEmpty(condition)
                     || Cpp2StyleEvaluatorDefinition.EvaluateFromString(host.Logger, condition, variables))
                 {
-                    IOperationConfig realConfigObject;
                     if (opType == null)
                     {
                         continue;
@@ -166,7 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     {
                         continue;
                     }
-                    if (_operationConfigLookup.TryGetValue(opType, out realConfigObject))
+                    if (_operationConfigLookup.TryGetValue(opType, out IOperationConfig realConfigObject))
                     {
                         customOperations.AddRange(
                             realConfigObject.ConfigureFromJson(opModel.Configuration, templateRoot));

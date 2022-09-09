@@ -63,14 +63,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            if (contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken))
-            {
-                Locale = localeToken.ToString();
-            }
-            else
-            {
-                Locale = string.Empty;
-            }
+            Locale = contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
+                ? localeToken.ToString()
+                : string.Empty;
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 

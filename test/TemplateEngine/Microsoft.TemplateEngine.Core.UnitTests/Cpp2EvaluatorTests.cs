@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class Cpp2EvaluatorTests : TestBase, IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public Cpp2EvaluatorTests(TestLoggerFactory testLoggerFactory)
         {

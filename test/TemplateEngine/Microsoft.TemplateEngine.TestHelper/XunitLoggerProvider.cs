@@ -46,11 +46,11 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         private class XunitLogger : ILogger
         {
-            private static readonly string[] NewLineChars = new[] { Environment.NewLine };
+            private static readonly string[] s_newLineChars = new[] { Environment.NewLine };
             private readonly string _category;
             private readonly LogLevel _minLogLevel;
             private readonly ITestOutputHelper _output;
-            private DateTimeOffset? _logStart;
+            private readonly DateTimeOffset? _logStart;
 
             public XunitLogger(ITestOutputHelper output, string category, LogLevel minLogLevel, DateTimeOffset? logStart)
             {
@@ -71,10 +71,10 @@ namespace Microsoft.TemplateEngine.TestHelper
                 // Buffer the message into a single string in order to avoid shearing the message when running across multiple threads.
                 var messageBuilder = new StringBuilder();
 
-                var timestamp = _logStart.HasValue ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds.ToString("N3")}s" : DateTimeOffset.UtcNow.ToString("s");
+                var timestamp = _logStart.HasValue ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds:N3}s" : DateTimeOffset.UtcNow.ToString("s");
 
                 var firstLinePrefix = $"| [{timestamp}] {_category} {logLevel}: ";
-                var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+                var lines = formatter(state, exception).Split(s_newLineChars, StringSplitOptions.RemoveEmptyEntries);
                 messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
 
                 var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
                 if (exception != null)
                 {
-                    lines = exception.ToString().Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
+                    lines = exception.ToString().Split(s_newLineChars, StringSplitOptions.RemoveEmptyEntries);
                     additionalLinePrefix = "| ";
                     foreach (var line in lines)
                     {

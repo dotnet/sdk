@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class ChunkStreamReadTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public ChunkStreamReadTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

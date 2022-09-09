@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
     /// </summary>
     public sealed class ExtendedFileSource : ConditionedConfigurationElement
     {
-        internal static readonly Dictionary<string, string> RenameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
+        internal static readonly Dictionary<string, string> s_renameDefaults = new Dictionary<string, string>(StringComparer.Ordinal);
 
         internal ExtendedFileSource() { }
 
@@ -40,7 +40,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Defines the files to be renamed when instantiating the template. The key is a source file name, the value is the final file name.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Rename { get; internal init; } = RenameDefaults;
+        public IReadOnlyDictionary<string, string> Rename { get; internal init; } = s_renameDefaults;
 
         /// <summary>
         /// Defines the path to the source files to apply the settings to. The path is relative to the directory containing the .template.config folder.
@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 Exclude = jObject.ToStringReadOnlyList(nameof(Exclude)),
                 Include = jObject.ToStringReadOnlyList(nameof(Include)),
                 Condition = jObject.ToString(nameof(Condition)),
-                Rename = jObject.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
+                Rename = jObject.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? s_renameDefaults,
                 Modifiers = modifiers,
                 Source = jObject.ToString(nameof(Source)) ?? "./",
                 Target = jObject.ToString(nameof(Target)) ?? "./"
@@ -82,7 +82,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     CopyOnly = entry.ToStringReadOnlyList(nameof(CopyOnly)),
                     Exclude = entry.ToStringReadOnlyList(nameof(Exclude)),
                     Include = entry.ToStringReadOnlyList(nameof(Include)),
-                    Rename = entry.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? RenameDefaults,
+                    Rename = entry.Get<JObject>(nameof(Rename))?.ToStringDictionary().ToDictionary(x => x.Key, x => x.Value) ?? s_renameDefaults,
                 };
                 modifiers.Add(modifier);
             }

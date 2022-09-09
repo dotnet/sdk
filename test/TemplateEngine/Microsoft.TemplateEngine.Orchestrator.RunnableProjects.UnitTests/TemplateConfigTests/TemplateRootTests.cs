@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class TemplateRootTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public TemplateRootTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -78,8 +78,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(pathToTemplateJson, BasicTemplateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { pathToTemplateJson, BasicTemplateConfig }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -111,9 +113,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             const string pathToTemplateConfig = ".template.config/template.json";
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
-            templateSourceFiles.Add("things/stuff/_._", "");    // directories under the root - valid source locations.
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { pathToTemplateConfig, templateConfig },
+                // directories under the root - valid source locations.
+                { "things/stuff/_._", "" }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
             IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
@@ -155,8 +160,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
             string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(pathToTemplateConfig, templateConfig);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { pathToTemplateConfig, templateConfig }
+            };
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
             templateSourceFiles.Add(sampleContentDir, "");    // directories under the template root - valid source locations.

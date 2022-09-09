@@ -24,19 +24,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             string value;
 
-            if (!(rawConfig is RegexMatchMacroConfig config))
+            if (rawConfig is not RegexMatchMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as RegexMatchMacroConfig");
             }
 
-            if (!vars.TryGetValue(config.SourceVariable, out object working))
-            {
-                value = string.Empty;
-            }
-            else
-            {
-                value = working?.ToString() ?? string.Empty;
-            }
+            value = !vars.TryGetValue(config.SourceVariable, out object working) ? string.Empty : working?.ToString() ?? string.Empty;
 
             bool result = false;
 
@@ -53,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            if (!(rawConfig is GeneratedSymbolDeferredMacroConfig deferredConfig))
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }

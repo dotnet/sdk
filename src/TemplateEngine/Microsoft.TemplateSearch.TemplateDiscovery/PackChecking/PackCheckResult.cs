@@ -27,12 +27,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 
         internal IReadOnlyList<ITemplateInfo> FoundTemplates { get; }
 
-        internal bool AnyTemplates
-        {
-            get
-            {
-                return FoundTemplates.Count > 0;
-            }
-        }
+        internal bool AnyTemplates => FoundTemplates.Count > 0;
     }
 }

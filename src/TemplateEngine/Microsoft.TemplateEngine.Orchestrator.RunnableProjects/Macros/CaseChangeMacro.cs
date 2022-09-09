@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -22,9 +21,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
             string value = string.Empty;
-            CaseChangeMacroConfig? config = rawConfig as CaseChangeMacroConfig;
 
-            if (config == null)
+            if (rawConfig is not CaseChangeMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as CaseChangeMacroConfig");
             }
@@ -41,9 +39,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
@@ -55,7 +51,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             string sourceVariable = sourceVarToken.ToString();
 
             bool lowerCase = true;
-            List<KeyValuePair<string, string>> replacementSteps = new List<KeyValuePair<string, string>>();
             if (deferredConfig.Parameters.TryGetValue("toLower", out JToken stepListToken))
             {
                 lowerCase = stepListToken.ToBool(defaultValue: true);

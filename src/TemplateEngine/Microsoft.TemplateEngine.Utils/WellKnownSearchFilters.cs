@@ -19,13 +19,13 @@ namespace Microsoft.TemplateEngine.Utils
         /// The template should match all filters: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have all dispositions of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
         /// </summary>
         public static Func<ITemplateMatchInfo, bool> MatchesAllCriteria =>
-            t => t.MatchDisposition.Count > 0 && t.MatchDisposition.All(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
+            t => t.MatchDisposition.Count > 0 && t.MatchDisposition.All(x => x.Kind is MatchKind.Exact or MatchKind.Partial);
 
         /// <summary>
         /// The template should match at least one filter: <see cref="ITemplateMatchInfo.MatchDisposition"/> should have at least one disposition of <see cref="MatchKind.Exact"/> or <see cref="MatchKind.Partial"/>.
         /// </summary>
         public static Func<ITemplateMatchInfo, bool> MatchesAtLeastOneCriteria =>
-            t => t.MatchDisposition.Any(x => x.Kind == MatchKind.Exact || x.Kind == MatchKind.Partial);
+            t => t.MatchDisposition.Any(x => x.Kind is MatchKind.Exact or MatchKind.Partial);
 
         /// <summary>
         /// The template filter that matches <paramref name="name"/> on the following criteria: <br/>

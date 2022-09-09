@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class SetFlagTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public SetFlagTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -69,8 +69,10 @@ Final stuff";
 
             string on = "//+:cnd";
             string off = "//-:cnd";
-            List<IOperationProvider> flagOperations = new List<IOperationProvider>();
-            flagOperations.Add(new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), string.Empty.TokenConfig(), string.Empty.TokenConfig(), null, true));
+            List<IOperationProvider> flagOperations = new List<IOperationProvider>
+            {
+                new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), string.Empty.TokenConfig(), string.Empty.TokenConfig(), null, true)
+            };
 
             IProcessor processor = partialProcessor.CloneAndAppendOperations(flagOperations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);
@@ -125,8 +127,10 @@ Final stuff";
             string onNoEmit = on + ":noEmit";
             string off = "//-:cnd";
             string offNoEmit = off + ":noEmit";
-            List<IOperationProvider> flagOperations = new List<IOperationProvider>();
-            flagOperations.Add(new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), null, true));
+            List<IOperationProvider> flagOperations = new List<IOperationProvider>
+            {
+                new SetFlag(Conditional.OperationName, on.TokenConfig(), off.TokenConfig(), onNoEmit.TokenConfig(), offNoEmit.TokenConfig(), null, true)
+            };
 
             IProcessor processor = partialProcessor.CloneAndAppendOperations(flagOperations);
             RunAndVerify(originalValue, expectedValue, processor, 9999);

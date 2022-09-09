@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class PostActionTests : IClassFixture<TestLoggerFactory>
     {
-        private Microsoft.Extensions.Logging.ILogger _logger;
+        private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
         public PostActionTests(TestLoggerFactory testLoggerFactory)
         {

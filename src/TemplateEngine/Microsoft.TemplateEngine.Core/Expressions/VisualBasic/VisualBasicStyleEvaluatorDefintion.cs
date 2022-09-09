@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 {
     public class VisualBasicStyleEvaluatorDefintion : SharedEvaluatorDefinition<VisualBasicStyleEvaluatorDefintion, VisualBasicStyleEvaluatorDefintion.Tokens>
     {
-        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
+        private static readonly Dictionary<Encoding, ITokenTrie> s_tokenCache = new Dictionary<Encoding, ITokenTrie>();
 
         public enum Tokens
         {
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {
-            if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
+            if (!s_tokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
                 TokenTrie trie = new TokenTrie();
 
@@ -129,7 +129,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.VisualBasic
                 // quotes
                 trie.AddToken(processor.Encoding.GetBytes("\""));
 
-                TokenCache[processor.Encoding] = tokens = trie;
+                s_tokenCache[processor.Encoding] = tokens = trie;
             }
 
             return tokens;

@@ -24,9 +24,10 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 JToken? shortNameToken = entry.Get<JToken>(nameof(ShortNameList));
                 IEnumerable<string> shortNames = shortNameToken.JTokenStringOrArrayToCollection(Array.Empty<string>());
 
-                TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace);
-
-                info.Author = entry.ToString(nameof(Author));
+                TemplateInfo info = new TemplateInfo(identity, name, shortNames, mountPointUri, configPlace)
+                {
+                    Author = entry.ToString(nameof(Author))
+                };
                 JArray? classificationsArray = entry.Get<JArray>(nameof(Classifications));
                 if (classificationsArray != null)
                 {
@@ -73,9 +74,12 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (parametersArray != null)
                 {
                     List<ITemplateParameter> templateParameters = new List<ITemplateParameter>();
-                    foreach (JObject item in parametersArray)
+                    foreach (JToken item in parametersArray)
                     {
-                        templateParameters.Add(new TemplateParameter(item));
+                        if (item is JObject jobj)
+                        {
+                            templateParameters.Add(new TemplateParameter(jobj));
+                        }
                     }
                     info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);
                 }
@@ -114,7 +118,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 if (constraintsArray != null)
                 {
                     List<TemplateConstraintInfo> constraints = new List<TemplateConstraintInfo>();
-                    foreach (JObject item in constraintsArray)
+                    foreach (JToken item in constraintsArray)
                     {
                         string? type = item.ToString(nameof(TemplateConstraintInfo.Type));
                         if (string.IsNullOrWhiteSpace(type))

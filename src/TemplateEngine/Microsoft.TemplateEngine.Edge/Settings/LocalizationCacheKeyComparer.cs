@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         public int GetHashCode((string? Key, string? Value) obj)
         {
-            return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Key) * 17 +
+            return (StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Key) * 17) +
                 StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Value);
         }
     }

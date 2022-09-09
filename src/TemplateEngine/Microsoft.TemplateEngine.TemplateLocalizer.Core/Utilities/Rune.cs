@@ -46,7 +46,9 @@ namespace System.Text
         }
 
         // non-validating ctor
+#pragma warning disable IDE0060 // Remove unused parameter
         private Rune(uint scalarValue, bool unused)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             UnicodeDebug.AssertIsValidScalar(scalarValue);
             _value = scalarValue;
@@ -81,7 +83,7 @@ namespace System.Text
             get
             {
                 int codeUnitCount = UnicodeUtility.GetUtf16SequenceLength(_value);
-                Debug.Assert(codeUnitCount > 0 && codeUnitCount <= MaxUtf16CharsPerRune);
+                Debug.Assert(codeUnitCount is > 0 and <= MaxUtf16CharsPerRune);
                 return codeUnitCount;
             }
         }
@@ -293,7 +295,7 @@ namespace System.Text
         Finish:
 
             bytesConsumed = index + 1;
-            Debug.Assert(1 <= bytesConsumed && bytesConsumed <= 4); // Valid subsequences are always length [1..4]
+            Debug.Assert(bytesConsumed is >= 1 and <= 4); // Valid subsequences are always length [1..4]
             result = UnsafeCreate(tempValue);
             return OperationStatus.Done;
 
@@ -418,14 +420,14 @@ namespace System.Text
 
         Invalid:
 
-            Debug.Assert(1 <= index && index <= 3); // Invalid subsequences are always length 1..3
+            Debug.Assert(index is >= 1 and <= 3); // Invalid subsequences are always length 1..3
             bytesConsumed = index;
             result = ReplacementChar;
             return OperationStatus.InvalidData;
 
         NeedsMoreData:
 
-            Debug.Assert(0 <= index && index <= 3); // Incomplete subsequences are always length 0..3
+            Debug.Assert(index is >= 0 and <= 3); // Incomplete subsequences are always length 0..3
             bytesConsumed = index;
             result = ReplacementChar;
             return OperationStatus.NeedMoreData;
@@ -537,6 +539,6 @@ namespace System.Text
         /// Creates a <see cref="Rune"/> without performing validation on the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Rune UnsafeCreate(uint scalarValue) => new Rune(scalarValue, false);
+        internal static Rune UnsafeCreate(uint scalarValue) => new(scalarValue, false);
     }
 }

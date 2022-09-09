@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// </returns>
         public static string GetDisplayPath(this IFileSystemInfo fileSystemInfo)
         {
-            string result = string.Empty;
+            string result;
             if (fileSystemInfo.MountPoint.EnvironmentSettings.Host.FileSystem.DirectoryExists(fileSystemInfo.MountPoint.MountPointUri))
             {
                 //mount point is a directory, combine paths

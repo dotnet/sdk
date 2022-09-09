@@ -13,28 +13,16 @@ namespace Microsoft.TemplateEngine.TestHelper
     public class AssemblyComponentCatalog : IReadOnlyList<(Type, IIdentifiedComponent)>
     {
         private readonly IReadOnlyList<Assembly> _assemblies;
-        private IReadOnlyList<(Type, IIdentifiedComponent)>? _lookup;
+        private readonly IReadOnlyList<(Type, IIdentifiedComponent)>? _lookup;
 
         public AssemblyComponentCatalog(IReadOnlyList<Assembly> assemblies)
         {
             _assemblies = assemblies;
         }
 
-        public int Count
-        {
-            get
-            {
-                return EnsureLookupLoaded().Count;
-            }
-        }
+        public int Count => EnsureLookupLoaded().Count;
 
-        public (Type, IIdentifiedComponent) this[int index]
-        {
-            get
-            {
-                return EnsureLookupLoaded()[index];
-            }
-        }
+        public (Type, IIdentifiedComponent) this[int index] => EnsureLookupLoaded()[index];
 
         public IEnumerator<(Type, IIdentifiedComponent)> GetEnumerator()
         {

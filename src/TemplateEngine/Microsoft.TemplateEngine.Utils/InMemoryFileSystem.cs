@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Utils
     /// <summary>
     /// In-memory file system implementation of <see cref="IPhysicalFileSystem"/>.
     /// </summary>
-    /// <seealso cref="Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost"/>
+    /// <seealso cref="Abstractions.ITemplateEngineHost"/>
     public class InMemoryFileSystem : IPhysicalFileSystem
     {
         private readonly FileSystemDirectory _root;
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             _basis = basis;
             _root = new FileSystemDirectory(Path.GetFileName(root.TrimEnd('/', '\\')), root);
-            IsPathInCone(root, out string newRoot);
+            _ = IsPathInCone(root, out string newRoot);
             if (root != newRoot)
             {
                 _root = new FileSystemDirectory(Path.GetFileName(newRoot.TrimEnd('/', '\\')), newRoot);
@@ -51,8 +51,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -76,8 +75,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -86,8 +84,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 targetFile = new FileSystemFile(parts[parts.Length - 1], Path.Combine(currentDir.FullPath, parts[parts.Length - 1]));
                 currentDir.Files[parts[parts.Length - 1]] = targetFile;
@@ -121,8 +118,7 @@ namespace Microsoft.TemplateEngine.Utils
             for (int i = 0; i < parts.Length; ++i)
             {
                 parent = currentDir;
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     return;
                 }
@@ -135,7 +131,7 @@ namespace Microsoft.TemplateEngine.Utils
                 throw new IOException("Directory is not empty");
             }
 
-            parent?.Directories.Remove(currentDir.Name);
+            _ = (parent?.Directories.Remove(currentDir.Name));
         }
 
         public bool DirectoryExists(string directory)
@@ -158,8 +154,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     return false;
                 }
@@ -192,8 +187,7 @@ namespace Microsoft.TemplateEngine.Utils
                 string[] parts = rel.Split('/', '\\');
                 for (int i = 0; i < parts.Length; ++i)
                 {
-                    FileSystemDirectory dir;
-                    if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                    if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                     {
                         yield break;
                     }
@@ -202,7 +196,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            Regex rx = new Regex(Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", "."));
+            Regex rx = new(Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", "."));
 
             if (searchOption == SearchOption.TopDirectoryOnly)
             {
@@ -217,7 +211,7 @@ namespace Microsoft.TemplateEngine.Utils
                 yield break;
             }
 
-            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>>();
+            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new();
             IEnumerator<KeyValuePair<string, FileSystemDirectory>> current = currentDir.Directories.GetEnumerator();
             bool moveNext;
 
@@ -273,8 +267,7 @@ namespace Microsoft.TemplateEngine.Utils
                 string[] parts = rel.Split('/', '\\');
                 for (int i = 0; i < parts.Length; ++i)
                 {
-                    FileSystemDirectory dir;
-                    if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                    if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                     {
                         yield break;
                     }
@@ -283,7 +276,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            Regex rx = new Regex(Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", "."));
+            Regex rx = new(Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", "."));
             foreach (KeyValuePair<string, FileSystemFile> entry in currentDir.Files)
             {
                 if (rx.IsMatch(entry.Key))
@@ -297,8 +290,7 @@ namespace Microsoft.TemplateEngine.Utils
                 yield break;
             }
 
-            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>>();
-            Stack<FileSystemDirectory> parentDirectories = new Stack<FileSystemDirectory>();
+            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new();
             IEnumerator<KeyValuePair<string, FileSystemDirectory>> current = currentDir.Directories.GetEnumerator();
             bool moveNext;
 
@@ -357,8 +349,7 @@ namespace Microsoft.TemplateEngine.Utils
                 string[] parts = rel.Split('/', '\\');
                 for (int i = 0; i < parts.Length; ++i)
                 {
-                    FileSystemDirectory dir;
-                    if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                    if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                     {
                         yield break;
                     }
@@ -367,7 +358,7 @@ namespace Microsoft.TemplateEngine.Utils
                 }
             }
 
-            Regex rx = new Regex("^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$");
+            Regex rx = new("^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$");
 
             foreach (KeyValuePair<string, FileSystemFile> entry in currentDir.Files)
             {
@@ -389,7 +380,7 @@ namespace Microsoft.TemplateEngine.Utils
                 yield break;
             }
 
-            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>>();
+            Stack<IEnumerator<KeyValuePair<string, FileSystemDirectory>>> directories = new();
             IEnumerator<KeyValuePair<string, FileSystemDirectory>> current = currentDir.Directories.GetEnumerator();
             bool moveNext;
 
@@ -460,8 +451,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -470,7 +460,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            currentDir.Files.Remove(parts[parts.Length - 1]);
+            _ = currentDir.Files.Remove(parts[parts.Length - 1]);
         }
 
         public bool FileExists(string file)
@@ -487,8 +477,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     return false;
                 }
@@ -518,8 +507,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -528,8 +516,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 throw new FileNotFoundException("File not found", path);
             }
@@ -540,7 +527,7 @@ namespace Microsoft.TemplateEngine.Utils
         public string ReadAllText(string path)
         {
             using (Stream s = OpenRead(path))
-            using (StreamReader r = new StreamReader(s, Encoding.UTF8, true, 8192, true))
+            using (StreamReader r = new(s, Encoding.UTF8, true, 8192, true))
             {
                 return r.ReadToEnd();
             }
@@ -550,9 +537,9 @@ namespace Microsoft.TemplateEngine.Utils
         {
             //file can be either memory or physical file here
             using Stream s = OpenRead(path);
-            if (!(s is MemoryStream ms))
+            if (s is not MemoryStream ms)
             {
-                using (MemoryStream stream = new MemoryStream())
+                using (MemoryStream stream = new())
                 {
                     s.CopyTo(stream);
                     return stream.ToArray();
@@ -564,7 +551,7 @@ namespace Microsoft.TemplateEngine.Utils
         public void WriteAllText(string path, string value)
         {
             using (Stream s = CreateFile(path))
-            using (StreamWriter r = new StreamWriter(s, Encoding.UTF8, 8192, true))
+            using (StreamWriter r = new(s, Encoding.UTF8, 8192, true))
             {
                 r.Write(value);
             }
@@ -584,8 +571,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -594,8 +580,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 throw new FileNotFoundException("File not found", file);
             }
@@ -618,8 +603,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -628,8 +612,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 throw new FileNotFoundException("File not found", file);
             }
@@ -651,8 +634,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -661,8 +643,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 throw new FileNotFoundException("File not found", file);
             }
@@ -684,8 +665,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             for (int i = 0; i < parts.Length - 1; ++i)
             {
-                FileSystemDirectory dir;
-                if (!currentDir.Directories.TryGetValue(parts[i], out dir))
+                if (!currentDir.Directories.TryGetValue(parts[i], out FileSystemDirectory dir))
                 {
                     dir = new FileSystemDirectory(parts[i], Path.Combine(currentDir.FullPath, parts[i]));
                     currentDir.Directories[parts[i]] = dir;
@@ -694,8 +674,7 @@ namespace Microsoft.TemplateEngine.Utils
                 currentDir = dir;
             }
 
-            FileSystemFile targetFile;
-            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out targetFile))
+            if (!currentDir.Files.TryGetValue(parts[parts.Length - 1], out FileSystemFile targetFile))
             {
                 throw new FileNotFoundException("File not found", file);
             }
@@ -744,7 +723,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             string[] parts = path.Split('/');
 
-            List<string> realParts = new List<string>();
+            List<string> realParts = new();
 
             for (int i = 0; i < parts.Length; ++i)
             {
@@ -803,7 +782,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class FileSystemFile
         {
-            private readonly object _sync = new object();
+            private readonly object _sync = new();
             private byte[] _data;
             private int _currentReaders;
             private int _currentWriters;
@@ -867,7 +846,7 @@ namespace Microsoft.TemplateEngine.Utils
                     }
 
                     ++_currentWriters;
-                    MemoryStream target = new MemoryStream();
+                    MemoryStream target = new();
                     return new DisposingStream(target, () =>
                     {
                         lock (_sync)
@@ -875,7 +854,7 @@ namespace Microsoft.TemplateEngine.Utils
                             --_currentWriters;
                             _data = new byte[target.Length];
                             target.Position = 0;
-                            target.Read(_data, 0, _data.Length);
+                            _ = target.Read(_data, 0, _data.Length);
                             LastWriteTimeUtc = DateTime.UtcNow;
                         }
                     });

@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class RegionTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public RegionTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

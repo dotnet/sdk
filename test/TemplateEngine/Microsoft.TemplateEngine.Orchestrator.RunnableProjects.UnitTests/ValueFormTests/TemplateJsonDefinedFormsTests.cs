@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 {
     public class TemplateJsonDefinedFormsTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public TemplateJsonDefinedFormsTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

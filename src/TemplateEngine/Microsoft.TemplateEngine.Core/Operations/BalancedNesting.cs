@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -98,7 +97,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     ++_depth;
                 }
-                else if (token == RealEndTokenIndex || token == PseudoEndTokenIndex)
+                else if (token is RealEndTokenIndex or PseudoEndTokenIndex)
                 {
                     --_depth;
                 }

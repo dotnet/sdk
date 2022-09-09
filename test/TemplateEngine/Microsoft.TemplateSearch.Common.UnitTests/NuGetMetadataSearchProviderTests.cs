@@ -13,7 +13,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 {
     public class NuGetMetadataSearchProviderTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public NuGetMetadataSearchProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -23,20 +23,19 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
         [Fact]
         public async Task SearchOnlineCache()
         {
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "api";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            Func<Task<IReadOnlyList<SearchResult>>> search = async () =>
+            async Task<IReadOnlyList<SearchResult>> Search()
             {
-                var result = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+                var result = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
                 if (result != null && result.Count > 0 && !string.IsNullOrWhiteSpace(result[0].ErrorMessage))
                 {
                     var errorMessage = result[0].ErrorMessage;
@@ -46,9 +45,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     }
                 }
                 return result!;
-            };
+            }
 
-            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -64,18 +63,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -94,18 +92,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -124,20 +121,19 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", "true");
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "api";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            Func<Task<IReadOnlyList<SearchResult>>> search = async () =>
+            async Task<IReadOnlyList<SearchResult>> Search()
             {
-                var result = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+                var result = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
                 if (result != null && result.Count > 0 && !string.IsNullOrWhiteSpace(result[0].ErrorMessage))
                 {
                     var errorMessage = result[0].ErrorMessage;
@@ -147,8 +143,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     }
                 }
                 return result!;
-            };
-            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            }
+            var searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -158,7 +154,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal($"Local search cache '{Path.Combine(engineEnvironmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json")}' does not exist.", searchResult[0].ErrorMessage);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", null);
-            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -167,7 +163,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.True(searchResult[0].SearchHits.Count > 0);
 
             environment.SetEnvironmentVariable("DOTNET_NEW_LOCAL_SEARCH_FILE_ONLY", "true");
-            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            searchResult = await TestUtils.AttemptSearch<IReadOnlyList<SearchResult>, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -186,18 +182,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -220,18 +215,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -254,18 +248,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);
@@ -288,18 +281,17 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             var environment = new MockEnvironment();
             environment.SetEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", searchFilePath);
 
-            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true, environment: environment);
+            IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true, environment: environment);
             engineEnvironmentSettings.Components.AddComponent(typeof(ITemplateSearchProviderFactory), new NuGetMetadataSearchProviderFactory());
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
 
             Assert.NotNull(searchResult);
             Assert.Equal(1, searchResult.Count);

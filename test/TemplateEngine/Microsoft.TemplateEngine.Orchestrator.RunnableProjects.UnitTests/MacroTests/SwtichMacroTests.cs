@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class SwtichMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public SwtichMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -30,11 +30,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string evaluator = "C++";
             string dataType = "string";
             string expectedValue = "this one";
-            IList<KeyValuePair<string, string>> switches = new List<KeyValuePair<string, string>>();
-            switches.Add(new KeyValuePair<string, string>("(3 > 10)", "three greater than ten - false"));
-            switches.Add(new KeyValuePair<string, string>("(false)", "false value"));
-            switches.Add(new KeyValuePair<string, string>("(10 > 0)", expectedValue));
-            switches.Add(new KeyValuePair<string, string>("(5 > 4)", "not this one"));
+            IList<KeyValuePair<string, string>> switches = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("(3 > 10)", "three greater than ten - false"),
+                new KeyValuePair<string, string>("(false)", "false value"),
+                new KeyValuePair<string, string>("(10 > 0)", expectedValue),
+                new KeyValuePair<string, string>("(5 > 4)", "not this one")
+            };
             SwitchMacroConfig macroConfig = new SwitchMacroConfig(variableName, evaluator, dataType, switches);
 
             IVariableCollection variables = new VariableCollection();
@@ -72,10 +74,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 }
             ]";
 
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("evaluator", evaluator);
-            jsonParameters.Add("datatype", dataType);
-            jsonParameters.Add("cases", JArray.Parse(switchCases));
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "evaluator", evaluator },
+                { "datatype", dataType },
+                { "cases", JArray.Parse(switchCases) }
+            };
 
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("SwitchMacro", null, variableName, jsonParameters);
 

@@ -48,7 +48,7 @@ namespace System.Text
             UnicodeDebug.AssertIsValidScalar(value);
 
             value -= 0x10000;   // if value < 0x10000, high byte = 0xFF; else high byte = 0x00
-            value += (2 << 24); // if value < 0x10000, high byte = 0x01; else high byte = 0x02
+            value += 2 << 24; // if value < 0x10000, high byte = 0x01; else high byte = 0x02
             value >>= 24;       // shift high byte down
             return (int)value;  // and return it
         }
@@ -100,7 +100,7 @@ namespace System.Text
 
             value ^= 0xF800u;
             value -= 0xF880u;   // if scalar is 1 or 3 code units, high byte = 0xFF; else high byte = 0x00
-            value += (4 << 24); // if scalar is 1 or 3 code units, high byte = 0x03; else high byte = 0x04
+            value += 4 << 24; // if scalar is 1 or 3 code units, high byte = 0x03; else high byte = 0x04
             value >>= 24;       // shift high byte down
 
             // Final return value:

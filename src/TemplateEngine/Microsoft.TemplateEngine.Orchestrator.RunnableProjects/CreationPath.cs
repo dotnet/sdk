@@ -31,10 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             List<ICreationPath> pathList = new List<ICreationPath>();
 
-            if (rootVariableCollection == null)
-            {
-                rootVariableCollection = new VariableCollection();
-            }
+            rootVariableCollection ??= new VariableCollection();
 
             foreach (PrimaryOutputModel model in modelList)
             {

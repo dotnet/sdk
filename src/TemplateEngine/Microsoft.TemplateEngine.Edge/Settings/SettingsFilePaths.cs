@@ -162,7 +162,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         private string GetOrComputePath(ref string? cache, params string[] paths)
         {
-            return cache ?? (cache = Path.Combine(paths));
+            return cache ??= Path.Combine(paths);
         }
     }
 }

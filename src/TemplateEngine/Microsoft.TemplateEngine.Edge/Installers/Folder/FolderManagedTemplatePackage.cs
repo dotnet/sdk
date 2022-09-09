@@ -12,10 +12,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
     internal class FolderManagedTemplatePackage : IManagedTemplatePackage
     {
-        private static readonly Dictionary<string, string> _emptyDictionary = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> s_emptyDictionary = new Dictionary<string, string>();
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger _logger;
-        private DateTime _currentLastChangedDateTime;
+        private readonly DateTime _currentLastChangedDateTime;
 
         public FolderManagedTemplatePackage(IEngineEnvironmentSettings settings, IInstaller installer, IManagedTemplatePackageProvider provider, string mountPointUri, DateTime lastChangeTime)
         {
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
                 }
                 catch (Exception e)
                 {
-                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}");
+                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e}");
                     return default;
                 }
             }
@@ -65,6 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public bool IsLocalPackage => true;
 
-        public IReadOnlyDictionary<string, string> GetDetails() => _emptyDictionary;
+        public IReadOnlyDictionary<string, string> GetDetails() => s_emptyDictionary;
     }
 }

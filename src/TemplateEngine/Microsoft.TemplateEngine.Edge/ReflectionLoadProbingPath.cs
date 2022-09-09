@@ -18,9 +18,9 @@ namespace Microsoft.TemplateEngine.Edge
 {
     internal class ReflectionLoadProbingPath
     {
-        private static readonly ConcurrentDictionary<string, Assembly?> LoadedAssemblies = new ConcurrentDictionary<string, Assembly?>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, Assembly?> s_loadedAssemblies = new ConcurrentDictionary<string, Assembly?>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly List<ReflectionLoadProbingPath> Instance = new List<ReflectionLoadProbingPath>();
+        private static readonly List<ReflectionLoadProbingPath> s_instance = new List<ReflectionLoadProbingPath>();
 
         private readonly string _path;
 
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge
 
         internal static void Add(string basePath)
         {
-            Instance.Add(new ReflectionLoadProbingPath(basePath));
+            s_instance.Add(new ReflectionLoadProbingPath(basePath));
 #if !NETFULL
             AssemblyLoadContext.Default.Resolving += Resolving;
 #else
@@ -41,12 +41,12 @@ namespace Microsoft.TemplateEngine.Edge
 
         internal static bool HasLoaded(string assemblyName)
         {
-            return LoadedAssemblies.ContainsKey(assemblyName);
+            return s_loadedAssemblies.ContainsKey(assemblyName);
         }
 
         internal static void Reset()
         {
-            Instance.Clear();
+            s_instance.Clear();
         }
 
 #if !NETFULL
@@ -56,7 +56,7 @@ namespace Microsoft.TemplateEngine.Edge
         private static Assembly? SelectBestMatch(object sender, AssemblyName match, IEnumerable<FileInfo> candidates)
 #endif
         {
-            return LoadedAssemblies.GetOrAdd(match.ToString(), n =>
+            return s_loadedAssemblies.GetOrAdd(match.ToString(), n =>
             {
                 Stack<string> bestMatch = new Stack<string>();
                 byte[] pk = match.GetPublicKey();
@@ -216,7 +216,7 @@ namespace Microsoft.TemplateEngine.Edge
             AssemblyName assemblyName = new AssemblyName(stringName);
 #endif
 
-            foreach (ReflectionLoadProbingPath selector in Instance)
+            foreach (ReflectionLoadProbingPath selector in s_instance)
             {
                 DirectoryInfo info = new DirectoryInfo(Path.Combine(selector._path, stringName));
                 Assembly? found = null;

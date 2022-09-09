@@ -309,9 +309,9 @@ C
 ";
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
-                { "A", a_val == null ? null : a_val.ToString() },
-                { "B", b_val == null ? null : b_val.ToString() },
-                { "C", c_val == null ? null : c_val.ToString() }
+                { "A", a_val?.ToString() },
+                { "B", b_val?.ToString() },
+                { "C", c_val?.ToString() }
             }
                 .Where(p => p.Value != null)
                 .ToDictionary(p => p.Key, p => p.Value);
@@ -496,9 +496,11 @@ C
             // Template content preparation
             //
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet }
+            };
 
             string sourceFileName = "sourceFile" + sourceExtension;
 
@@ -591,7 +593,7 @@ C
             public InputDataBag(string name, bool? value, bool? isEnabledConditionResult = null, bool? isRequiredConditionResult = null)
             {
                 Name = name;
-                Value = value == null ? null : value.ToString();
+                Value = value?.ToString();
                 IsEnabledConditionResult = isEnabledConditionResult;
                 IsRequiredConditionResult = isRequiredConditionResult;
                 IsNull = value == null;

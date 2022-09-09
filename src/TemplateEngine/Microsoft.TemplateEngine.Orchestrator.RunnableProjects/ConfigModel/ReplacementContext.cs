@@ -41,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 List<ReplacementContext> contexts = new List<ReplacementContext>();
                 foreach (JToken entry in onlyIf.Children())
                 {
-                    if (!(entry is JObject x))
+                    if (entry is not JObject)
                     {
                         continue;
                     }

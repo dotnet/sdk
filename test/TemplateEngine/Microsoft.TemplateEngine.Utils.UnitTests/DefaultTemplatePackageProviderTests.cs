@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class DefaultTemplatePackageProviderTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public DefaultTemplatePackageProviderTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

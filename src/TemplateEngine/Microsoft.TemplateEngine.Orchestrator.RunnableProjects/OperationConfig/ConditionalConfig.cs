@@ -23,25 +23,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         {
             JObject rawConfiguration = JObject.Parse(configuration);
             string commentStyle = rawConfiguration.ToString("style");
-            IEnumerable<IOperationProvider> operations = null;
-
-            if (string.IsNullOrEmpty(commentStyle) || string.Equals(commentStyle, "custom", StringComparison.OrdinalIgnoreCase))
-            {
-                operations = ConditionalCustomConfig.ConfigureFromJObject(rawConfiguration);
-            }
-            else if (string.Equals(commentStyle, "line", StringComparison.OrdinalIgnoreCase))
-            {
-                operations = ConditionalLineCommentConfig.ConfigureFromJObject(rawConfiguration);
-            }
-            else if (string.Equals(commentStyle, "block", StringComparison.OrdinalIgnoreCase))
-            {
-                operations = ConditionalBlockCommentConfig.ConfigureFromJObject(rawConfiguration);
-            }
-            else
-            {
-                throw new TemplateAuthoringException($"Template authoring error. Invalid comment style [{commentStyle}].", "style");
-            }
-
+            IEnumerable<IOperationProvider> operations = string.IsNullOrEmpty(commentStyle) || string.Equals(commentStyle, "custom", StringComparison.OrdinalIgnoreCase)
+                ? ConditionalCustomConfig.ConfigureFromJObject(rawConfiguration)
+                : string.Equals(commentStyle, "line", StringComparison.OrdinalIgnoreCase)
+                    ? ConditionalLineCommentConfig.ConfigureFromJObject(rawConfiguration)
+                    : string.Equals(commentStyle, "block", StringComparison.OrdinalIgnoreCase)
+                                    ? (IEnumerable<IOperationProvider>)ConditionalBlockCommentConfig.ConfigureFromJObject(rawConfiguration)
+                                    : throw new TemplateAuthoringException($"Template authoring error. Invalid comment style [{commentStyle}].", "style");
             foreach (IOperationProvider op in operations)
             {
                 yield return op;

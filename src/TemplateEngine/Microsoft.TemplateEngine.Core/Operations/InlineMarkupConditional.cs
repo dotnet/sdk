@@ -103,8 +103,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
-                bool flag;
-                if (processor.Config.Flags.TryGetValue(Conditional.OperationName, out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(Conditional.OperationName, out bool flag) && !flag)
                 {
                     processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
@@ -118,8 +117,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 int pos = 0;
                 int len = conditionBytes.Count;
 
-                bool faulted;
-                bool value = _definition.Evaluator(localState, ref len, ref pos, out faulted);
+                bool value = _definition.Evaluator(localState, ref len, ref pos, out bool faulted);
 
                 if (faulted)
                 {
@@ -173,8 +171,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                             return;
                         }
 
-                        int token;
-                        if (_structureTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                        if (_structureTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out int token))
                         {
                             if (inComment)
                             {
@@ -252,8 +249,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                             return;
                         }
 
-                        int token;
-                        if (_closeConditionTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                        if (_closeConditionTrie.GetOperation(processorState.CurrentBuffer, bufferLength, ref currentBufferPosition, out int token))
                         {
                             conditionBytes.AddRange(processorState.CurrentBuffer.Skip(previousPosition).Take(currentBufferPosition - previousPosition - _closeConditionTrie.Tokens[token].Length));
                             return;

@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                     return true;
                 }
 
-                T handlerValue = default(T);
+                T handlerValue = default;
                 bool? handlerResult = Instance?.TryExecuteInternal(source, out handlerValue);
 
                 if (handlerResult.HasValue)
@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
                 }
                 catch
                 {
-                    result = default(T);
+                    result = default;
                     return false;
                 }
             }

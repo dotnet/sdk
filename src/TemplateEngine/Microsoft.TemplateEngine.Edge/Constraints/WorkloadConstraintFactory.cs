@@ -49,12 +49,12 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
             internal static async Task<WorkloadConstraint> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplateConstraintFactory factory, CancellationToken cancellationToken)
             {
-                var workloadsInfo =
+                (IReadOnlyList<WorkloadInfo> workloads, Func<IReadOnlyList<string>, string> remedySuggestionFactory) =
                     await ExtractWorkloadInfoAsync(
                         environmentSettings.Components.OfType<IWorkloadsInfoProvider>(),
                         environmentSettings.Host.Logger,
                         cancellationToken).ConfigureAwait(false);
-                return new WorkloadConstraint(environmentSettings, factory, workloadsInfo.Workloads, workloadsInfo.RemedySuggestionFactory);
+                return new WorkloadConstraint(environmentSettings, factory, workloads, remedySuggestionFactory);
             }
 
             protected override TemplateConstraintResult EvaluateInternal(string? args)

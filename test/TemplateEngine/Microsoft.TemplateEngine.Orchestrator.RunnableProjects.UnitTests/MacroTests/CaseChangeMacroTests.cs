@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class CaseChangeMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public CaseChangeMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -70,9 +70,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "myString";
             string sourceVariable = "sourceString";
 
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("source", sourceVariable);
-            jsonParameters.Add("toLower", false);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "source", sourceVariable },
+                { "toLower", false }
+            };
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("CaseChangeMacro", null, variableName, jsonParameters);
 
             CaseChangeMacro macro = new CaseChangeMacro();

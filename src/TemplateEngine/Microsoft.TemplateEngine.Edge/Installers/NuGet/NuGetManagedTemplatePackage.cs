@@ -42,8 +42,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _logger = settings.Host.LoggerFactory.CreateLogger<NuGetInstaller>();
 
-            Details = new Dictionary<string, string>();
-            Details[PackageIdKey] = packageIdentifier;
+            Details = new Dictionary<string, string>
+            {
+                [PackageIdKey] = packageIdentifier
+            };
         }
 
         /// <summary>
@@ -81,10 +83,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string? Author
         {
-            get
-            {
-                return Details.TryGetValue(AuthorKey, out string author) ? author : null;
-            }
+            get => Details.TryGetValue(AuthorKey, out string author) ? author : null;
 
             set
             {
@@ -94,7 +93,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 else
                 {
-                    Details.Remove(AuthorKey);
+                    _ = Details.Remove(AuthorKey);
                 }
             }
         }
@@ -115,7 +114,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 catch (Exception e)
                 {
-                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e.ToString()}");
+                    _logger.LogDebug($"Failed to get last changed time for {MountPointUri}, details: {e}");
                     return default;
                 }
             }
@@ -140,7 +139,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 else
                 {
-                    Details.Remove(LocalPackageKey);
+                    _ = Details.Remove(LocalPackageKey);
                 }
             }
         }
@@ -149,10 +148,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string? NuGetSource
         {
-            get
-            {
-                return Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
-            }
+            get => Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
 
             set
             {
@@ -162,7 +158,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 else
                 {
-                    Details.Remove(NuGetSourceKey);
+                    _ = Details.Remove(NuGetSourceKey);
                 }
             }
         }
@@ -173,10 +169,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
         public string? Version
         {
-            get
-            {
-                return Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
-            }
+            get => Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
 
             set
             {

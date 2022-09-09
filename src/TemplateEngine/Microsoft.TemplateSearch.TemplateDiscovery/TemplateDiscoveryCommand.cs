@@ -12,73 +12,73 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
     internal class TemplateDiscoveryCommand : Command
     {
-        private const int _defaultPageSize = 100;
+        private const int DefaultPageSize = 100;
 
-        private Option<DirectoryInfo> _basePathOption = new Option<DirectoryInfo>("--basePath")
+        private readonly Option<DirectoryInfo> _basePathOption = new Option<DirectoryInfo>("--basePath")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = "The root dir for output for this run.",
             IsRequired = true
         }.LegalFilePathsOnly();
 
-        private Option<bool> _allowPreviewPacksOption = new Option<bool>("--allowPreviewPacks")
+        private readonly Option<bool> _allowPreviewPacksOption = new Option<bool>("--allowPreviewPacks")
         {
             Description = "Include preview packs in the results (by default, preview packs are ignored and the latest stable pack is used.",
         };
 
-        private Option<int> _pageSizeOption = new Option<int>("--pageSize", getDefaultValue: () => _defaultPageSize)
+        private readonly Option<int> _pageSizeOption = new Option<int>("--pageSize", getDefaultValue: () => DefaultPageSize)
         {
             Description = "(debugging) The chunk size for interactions with the source.",
         };
 
-        private Option<bool> _onePageOption = new Option<bool>("--onePage")
+        private readonly Option<bool> _onePageOption = new Option<bool>("--onePage")
         {
             Description = "(debugging) Only process one page of template packs.",
         };
 
-        private Option<bool> _savePacksOption = new Option<bool>("--savePacks")
+        private readonly Option<bool> _savePacksOption = new Option<bool>("--savePacks")
         {
             Description = "Don't delete downloaded candidate packs (by default, they're deleted at the end of a run).",
         };
 
-        private Option<bool> _noTemplateJsonFilterOption = new Option<bool>("--noTemplateJsonFilter")
+        private readonly Option<bool> _noTemplateJsonFilterOption = new Option<bool>("--noTemplateJsonFilter")
         {
             Description = "Don't prefilter packs that don't contain any template.json files (this filter is applied by default).",
         };
 
-        private Option<bool> _verboseOption = new Option<bool>(new[] { "-v", "--verbose" })
+        private readonly Option<bool> _verboseOption = new Option<bool>(new[] { "-v", "--verbose" })
         {
             Description = "Verbose output for template processing.",
         };
 
-        private Option<bool> _testOption = new Option<bool>(new[] { "-t", "--test" })
+        private readonly Option<bool> _testOption = new Option<bool>(new[] { "-t", "--test" })
         {
             Description = "Run tests on generated metadata files.",
         };
 
-        private Option<SupportedQueries[]> _queriesOption = new Option<SupportedQueries[]>("--queries")
+        private readonly Option<SupportedQueries[]> _queriesOption = new Option<SupportedQueries[]>("--queries")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = $"The list of providers to run. Supported providers: {string.Join(",", Enum.GetValues<SupportedQueries>())}.",
             AllowMultipleArgumentsPerToken = true,
         }.FromAmong(Enum.GetValues<SupportedQueries>().Select(e => e.ToString()).ToArray());
 
-        private Option<DirectoryInfo> _packagesPathOption = (new Option<DirectoryInfo>("--packagesPath")
+        private readonly Option<DirectoryInfo> _packagesPathOption = new Option<DirectoryInfo>("--packagesPath")
         {
             Description = $"Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org.",
-        }.ExistingOnly());
+        }.ExistingOnly();
 
-        private Option<bool> _diffOption = new Option<bool>("--diff", getDefaultValue: () => true)
+        private readonly Option<bool> _diffOption = new Option<bool>("--diff", getDefaultValue: () => true)
         {
             Description = $"The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
         };
 
-        private Option<FileInfo> _diffOverrideCacheOption = new Option<FileInfo>("--diff-override-cache")
+        private readonly Option<FileInfo> _diffOverrideCacheOption = new Option<FileInfo>("--diff-override-cache")
         {
             Description = $"Location of current search cache (local path only).",
         }.ExistingOnly();
 
-        private Option<FileInfo> _diffOverrideNonPackagesOption = new Option<FileInfo>("--diff-override-non-packages")
+        private readonly Option<FileInfo> _diffOverrideNonPackagesOption = new Option<FileInfo>("--diff-override-non-packages")
         {
             Description = $"Location of the list of packages known not to be a valid package (local path only).",
         }.ExistingOnly();
@@ -124,7 +124,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 (string metadataPath, string legacyMetadataPath) = PackCheckResultReportWriter.WriteResults(config.OutputPath, checkResults);
                 if (config.TestEnabled)
                 {
-                    CacheFileTests.RunTests(config, metadataPath, legacyMetadataPath);
+                    CacheFileTests.RunTests(metadataPath, legacyMetadataPath);
                 }
                 return 0;
             }

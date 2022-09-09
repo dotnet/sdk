@@ -30,15 +30,12 @@ namespace Microsoft.TemplateEngine
                 return token.ToString();
             }
 
-            JObject? obj = token as JObject;
-
-            if (obj == null)
+            if (token is not JObject obj)
             {
                 return null;
             }
 
-            JToken? element;
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element) || element.Type != JTokenType.String)
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element) || element.Type != JTokenType.String)
             {
                 return null;
             }
@@ -92,7 +89,7 @@ namespace Microsoft.TemplateEngine
 
         internal static int ToInt32(this JToken? token, string? key = null, int defaultValue = 0)
         {
-            int value = defaultValue;
+            int value;
             if (key == null)
             {
                 if (token == null || token.Type != JTokenType.Integer || !int.TryParse(token.ToString(), out value))
@@ -103,15 +100,12 @@ namespace Microsoft.TemplateEngine
                 return value;
             }
 
-            JObject? obj = token as JObject;
-
-            if (obj == null)
+            if (token is not JObject obj)
             {
                 return defaultValue;
             }
 
-            JToken? element;
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element))
             {
                 return defaultValue;
             }
@@ -127,12 +121,11 @@ namespace Microsoft.TemplateEngine
             return defaultValue;
         }
 
-        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default(T))
+        internal static T ToEnum<T>(this JToken token, string? key = null, T defaultValue = default)
             where T : struct
         {
             string? val = token.ToString(key);
-            T result;
-            if (val == null || !Enum.TryParse(val, out result))
+            if (val == null || !Enum.TryParse(val, out T result))
             {
                 return defaultValue;
             }
@@ -140,11 +133,10 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
-        internal static Guid ToGuid(this JToken token, string? key = null, Guid defaultValue = default(Guid))
+        internal static Guid ToGuid(this JToken token, string? key = null, Guid defaultValue = default)
         {
             string? val = token.ToString(key);
-            Guid result;
-            if (val == null || !Guid.TryParse(val, out result))
+            if (val == null || !Guid.TryParse(val, out Guid result))
             {
                 return defaultValue;
             }
@@ -158,10 +150,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static IReadOnlyList<string> ToStringReadOnlyList(this JObject jObject, string propertyName, IReadOnlyList<string>? defaultValue = null)
         {
-            if (defaultValue == null)
-            {
-                defaultValue = Array.Empty<string>();
-            }
+            defaultValue ??= Array.Empty<string>();
             JToken? token = jObject.Get<JToken>(propertyName);
             if (token == null)
             {
@@ -172,46 +161,33 @@ namespace Microsoft.TemplateEngine
 
         internal static IEnumerable<JProperty> PropertiesOf(this JToken? token, string? key = null)
         {
-            JObject? obj = token as JObject;
-
-            if (obj == null)
+            if (token is not JObject obj)
             {
                 return Array.Empty<JProperty>();
             }
 
             if (key != null)
             {
-                JToken? element;
-                if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out element))
+                if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? element))
                 {
                     return Array.Empty<JProperty>();
                 }
-
-                obj = element as JObject;
+                return element is not JObject jObj ? Array.Empty<JProperty>() : jObj.Properties();
             }
-
-            if (obj == null)
-            {
-                return Array.Empty<JProperty>();
-            }
-
             return obj.Properties();
         }
 
         internal static T? Get<T>(this JToken? token, string? key)
             where T : JToken
         {
-            JObject? obj = token as JObject;
-
-            if (obj == null || key == null)
+            if (token is not JObject obj || key == null)
             {
-                return default(T);
+                return default;
             }
 
-            JToken? res;
-            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out res))
+            if (!obj.TryGetValue(key, StringComparison.OrdinalIgnoreCase, out JToken? res))
             {
-                return default(T);
+                return default;
             }
 
             return res as T;
@@ -219,7 +195,7 @@ namespace Microsoft.TemplateEngine
 
         internal static IReadOnlyDictionary<string, string> ToStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>(comparer ?? StringComparer.Ordinal);
+            Dictionary<string, string> result = new(comparer ?? StringComparer.Ordinal);
 
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {
@@ -240,7 +216,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
         {
-            Dictionary<string, JToken> result = new Dictionary<string, JToken>(comparaer ?? StringComparer.Ordinal);
+            Dictionary<string, JToken> result = new(comparaer ?? StringComparer.Ordinal);
 
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {
@@ -256,7 +232,7 @@ namespace Microsoft.TemplateEngine
         /// </summary>
         internal static IReadOnlyDictionary<string, string> ToJTokenStringDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
         {
-            Dictionary<string, string> result = new Dictionary<string, string>(comparaer ?? StringComparer.Ordinal);
+            Dictionary<string, string> result = new(comparaer ?? StringComparer.Ordinal);
 
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {
@@ -288,14 +264,12 @@ namespace Microsoft.TemplateEngine
                 token = token.Get<JArray>(propertyName);
             }
 
-            JArray? arr = token as JArray;
-
-            if (arr == null)
+            if (token is not JArray arr)
             {
                 return Array.Empty<string>();
             }
 
-            List<string> values = new List<string>();
+            List<string> values = new();
 
             foreach (JToken item in arr)
             {
@@ -315,21 +289,18 @@ namespace Microsoft.TemplateEngine
                 token = token.Get<JArray>(propertyName);
             }
 
-            JArray? arr = token as JArray;
-
-            if (arr == null)
+            if (token is not JArray arr)
             {
                 return Array.Empty<Guid>();
             }
 
-            List<Guid> values = new List<Guid>();
+            List<Guid> values = new();
 
             foreach (JToken item in arr)
             {
                 if (item != null && item.Type == JTokenType.String)
                 {
-                    Guid val;
-                    if (Guid.TryParse(item.ToString(), out val))
+                    if (Guid.TryParse(item.ToString(), out Guid val))
                     {
                         values.Add(val);
                     }
@@ -347,18 +318,14 @@ namespace Microsoft.TemplateEngine
                 token = token.Get<JArray>(propertyName);
             }
 
-            JArray? arr = token as JArray;
-
-            if (arr == null)
+            if (token is not JArray arr)
             {
                 yield break;
             }
 
             foreach (JToken item in arr)
             {
-                T? res = item as T;
-
-                if (res != null)
+                if (item is T res)
                 {
                     yield return res;
                 }
@@ -424,7 +391,7 @@ namespace Microsoft.TemplateEngine
             {
                 return null;
             }
-            using StringWriter stringWriter = new StringWriter();
+            using StringWriter stringWriter = new();
             using JsonWriter jsonWriter = new JsonTextWriter(stringWriter);
             token.WriteTo(jsonWriter);
             return stringWriter.ToString();

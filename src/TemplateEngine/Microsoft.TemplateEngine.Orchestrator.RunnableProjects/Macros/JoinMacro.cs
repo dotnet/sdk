@@ -26,8 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             IVariableCollection vars,
             IMacroConfig rawConfig)
         {
-            JoinMacroConfig? config = rawConfig as JoinMacroConfig;
-            if (config == null)
+            if (rawConfig is not JoinMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as ConcatenationMacroConfig");
             }
@@ -42,7 +41,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                         {
                             values.Add(string.Empty);
                         }
-                        else if (working != null && working is MultiValueParameter multiValue)
+                        else if (working is not null and MultiValueParameter multiValue)
                         {
                             values.AddRange(multiValue.Values);
                         }
@@ -67,7 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            if (!(rawConfig is GeneratedSymbolDeferredMacroConfig deferredConfig))
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }

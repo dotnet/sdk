@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public static bool IsVersionWellFormed(string version)
         {
-            return TryParseVersionString(version, out int[]? parsed);
+            return TryParseVersionString(version, out _);
         }
 
         // tries to parse a version into 4 int parts, zero-padding on the rght if needed.
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             string[] parts = version.Split(new[] { '.' });
-            if (parts.Length < 2 || parts.Length > 4)
+            if (parts.Length is < 2 or > 4)
             {
                 parsed = null;
                 return false;

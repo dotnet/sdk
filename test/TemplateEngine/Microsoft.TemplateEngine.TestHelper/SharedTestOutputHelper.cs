@@ -12,21 +12,21 @@ namespace Microsoft.TemplateEngine.TestHelper
     /// </summary>
     public class SharedTestOutputHelper : ITestOutputHelper
     {
-        private readonly IMessageSink sink;
+        private readonly IMessageSink _sink;
 
         public SharedTestOutputHelper(IMessageSink sink)
         {
-            this.sink = sink;
+            this._sink = sink;
         }
 
         public void WriteLine(string message)
         {
-            sink.OnMessage(new DiagnosticMessage(message));
+            _sink.OnMessage(new DiagnosticMessage(message));
         }
 
         public void WriteLine(string format, params object[] args)
         {
-            sink.OnMessage(new DiagnosticMessage(format, args));
+            _sink.OnMessage(new DiagnosticMessage(format, args));
         }
     }
 }

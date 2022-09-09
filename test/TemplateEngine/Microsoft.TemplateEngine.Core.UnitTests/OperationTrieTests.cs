@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
-using System.IO;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Matching;
 using Xunit;
@@ -43,12 +42,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
             byte[] buffer = { 1, 2, 3, 4, 5 };
             int currentBufferPosition = 0;
-            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
+            IOperation match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out _);
 
             Assert.Null(match);
             Assert.Equal(0, currentBufferPosition);
             currentBufferPosition = 1;
-            match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out token);
+            match = trie.GetOperation(buffer, buffer.Length, ref currentBufferPosition, out int token);
 
             Assert.NotNull(match);
             Assert.Equal("Test2", match.Id);

@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Mocks
     {
         public event Action TemplatePackagesChanged
         {
-            add { throw new NotSupportedException(); }
+            add => throw new NotSupportedException();
             remove { }
         }
 

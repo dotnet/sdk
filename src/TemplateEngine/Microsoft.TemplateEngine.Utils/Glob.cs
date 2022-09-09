@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public static Glob Parse(string pattern, bool canBeNameOnlyMatch = true)
         {
-            List<IMatcher> matchers = new List<IMatcher>();
+            List<IMatcher> matchers = new();
 
             int start = 0;
             bool negate = false;
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Utils
                         }
                         break;
                     case '[':
-                        List<char> values = new List<char>();
+                        List<char> values = new();
                         for (; i < pattern.Length; ++i)
                         {
                             if (pattern[i] == '\\')
@@ -82,6 +82,8 @@ namespace Microsoft.TemplateEngine.Utils
                                             ++i;
                                             values.Add(pattern[i]);
                                             continue;
+                                        default:
+                                            break;
                                     }
                                 }
                             }
@@ -130,7 +132,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private bool IsMatchCore(string test)
         {
-            Stack<Checkpoint> checkpoints = new Stack<Checkpoint>();
+            Stack<Checkpoint> checkpoints = new();
 
             int currentMatcher = 0;
             int i = 0;
@@ -148,7 +150,7 @@ namespace Microsoft.TemplateEngine.Utils
                 //If the matcher has a minimum zero width, isn't the last matcher and produces a checkpoint,
                 //  we don't need to actually test for a match at this stage
                 //Otherwise, test whether the matcher can consume starting at the current position
-                if (currentMatcher < _matchers.Count - 1 && matcher.ProducesCheckpoint && matcher.MinConsume == 0 || matcher.CanConsume(test, i, out i))
+                if ((currentMatcher < _matchers.Count - 1 && matcher.ProducesCheckpoint && matcher.MinConsume == 0) || matcher.CanConsume(test, i, out i))
                 {
                     //If the current matcher isn't that last one and it produces a checkpoint, stash
                     //  the checkpoint info

@@ -166,19 +166,19 @@ namespace Microsoft.TemplateSearch.Common.Providers
         /// <returns></returns>
         private async Task AcquireFileFromCloudAsync(string searchMetadataFileLocation, CancellationToken cancellationToken)
         {
-            List<Exception> exceptionsOccurred = new List<Exception>();
+            List<Exception> exceptionsOccurred = new();
             foreach (Uri searchMetadataUri in _searchMetadataUris)
             {
                 _logger.LogDebug("Retrieving cache file from {0} ...", searchMetadataUri);
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    HttpClientHandler handler = new HttpClientHandler()
+                    HttpClientHandler handler = new()
                     {
                         AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                         CheckCertificateRevocationList = true
                     };
-                    using (HttpClient client = new HttpClient(handler))
+                    using (HttpClient client = new(handler))
                     {
                         string etagFileLocation = searchMetadataFileLocation + ETagFileSuffix;
                         if (_environmentSettings.Host.FileSystem.FileExists(etagFileLocation))
@@ -195,8 +195,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
                                 string resultText = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                                 _environmentSettings.Host.FileSystem.WriteAllText(searchMetadataFileLocation, resultText);
                                 _logger.LogDebug("Search cache file was successfully downloaded to {0}.", searchMetadataFileLocation);
-                                IEnumerable<string> etagValues;
-                                if (response.Headers.TryGetValues(ETagHeaderName, out etagValues))
+                                if (response.Headers.TryGetValues(ETagHeaderName, out IEnumerable<string> etagValues))
                                 {
                                     if (etagValues.Count() == 1)
                                     {
@@ -240,17 +239,16 @@ namespace Microsoft.TemplateSearch.Common.Providers
 
         private string GetResponseDetails(HttpResponseMessage response)
         {
-            StringBuilder message = new StringBuilder();
+            StringBuilder message = new();
 
-            message.AppendLine($"Status code: {response.StatusCode}");
-            message.AppendLine("Headers:");
+            _ = message.AppendLine($"Status code: {response.StatusCode}").AppendLine("Headers:");
             foreach (KeyValuePair<string, IEnumerable<string>> header in response.Content.Headers)
             {
-                message.AppendLine($"  {header.Key}: {string.Join(", ", header.Value)}");
+                _ = message.AppendLine($"  {header.Key}: {string.Join(", ", header.Value)}");
             }
             foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
             {
-                message.AppendLine($"  {header.Key}: {string.Join(", ", header.Value)}");
+                _ = message.AppendLine($"  {header.Key}: {string.Join(", ", header.Value)}");
             }
             return message.ToString();
         }

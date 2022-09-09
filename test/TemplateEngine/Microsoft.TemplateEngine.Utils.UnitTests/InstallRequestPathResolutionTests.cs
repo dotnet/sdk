@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
     public class InstallRequestPathResolutionTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public InstallRequestPathResolutionTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

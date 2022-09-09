@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.IntegrationTests
 {
     public class ExportCommandTests : TestBase, IDisposable
     {
-        private string _workingDirectory;
+        private readonly string _workingDirectory;
 
         public ExportCommandTests()
         {

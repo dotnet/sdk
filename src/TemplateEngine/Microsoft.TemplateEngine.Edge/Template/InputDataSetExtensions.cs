@@ -60,28 +60,21 @@ internal static class InputDataSetExtensions
     {
         EvaluatedInputParameterData? dt = inputParameterData as EvaluatedInputParameterData;
 
-        switch (inputParameterData.ParameterDefinition.Precedence.PrecedenceDefinition)
+        return inputParameterData.ParameterDefinition.Precedence.PrecedenceDefinition switch
         {
-            case PrecedenceDefinition.Required:
-                return EvaluatedPrecedence.Required;
+            PrecedenceDefinition.Required => EvaluatedPrecedence.Required,
             // Conditionally required state is only set if enabled condition is not  present
-            case PrecedenceDefinition.ConditionalyRequired:
-                return dt!.IsRequiredConditionResult!.Value ? EvaluatedPrecedence.Required : EvaluatedPrecedence.Optional;
-            case PrecedenceDefinition.Optional:
-                return EvaluatedPrecedence.Optional;
-            case PrecedenceDefinition.Implicit:
-                return EvaluatedPrecedence.Implicit;
-            case PrecedenceDefinition.ConditionalyDisabled:
-                return !dt!.IsEnabledConditionResult!.Value
-                    ? EvaluatedPrecedence.Disabled
-                    :
-                    dt.IsRequiredConditionResult.HasValue && dt.IsRequiredConditionResult.Value || dt.ParameterDefinition.Precedence.IsRequired
-                        ? EvaluatedPrecedence.Required : EvaluatedPrecedence.Optional;
-            case PrecedenceDefinition.Disabled:
-                return EvaluatedPrecedence.Disabled;
-            default:
-                throw new ArgumentOutOfRangeException("PrecedenceDefinition");
-        }
+            PrecedenceDefinition.ConditionalyRequired => dt!.IsRequiredConditionResult!.Value ? EvaluatedPrecedence.Required : EvaluatedPrecedence.Optional,
+            PrecedenceDefinition.Optional => EvaluatedPrecedence.Optional,
+            PrecedenceDefinition.Implicit => EvaluatedPrecedence.Implicit,
+            PrecedenceDefinition.ConditionalyDisabled => !dt!.IsEnabledConditionResult!.Value
+                                ? EvaluatedPrecedence.Disabled
+                                :
+                                (dt.IsRequiredConditionResult.HasValue && dt.IsRequiredConditionResult.Value) || dt.ParameterDefinition.Precedence.IsRequired
+                                    ? EvaluatedPrecedence.Required : EvaluatedPrecedence.Optional,
+            PrecedenceDefinition.Disabled => EvaluatedPrecedence.Disabled,
+            _ => throw new ArgumentOutOfRangeException("PrecedenceDefinition"),
+        };
     }
 
     private static void ErrorOutOnMismatchedConditionEvaluation(IReadOnlyList<InputParameterData> offendingParameters)

@@ -129,12 +129,7 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         private IReadOnlyList<IFileChange2> GetFileChangesInternal(IDirectory sourceDir, string targetDir, IGlobalRunSpec spec)
         {
-            EngineConfig cfg = new EngineConfig(_logger, EngineConfig.DefaultWhitespaces, EngineConfig.DefaultLineEndings, spec.RootVariableCollection);
-            IProcessor fallback = Processor.Create(cfg, spec.Operations);
-
             List<IFileChange2> changes = new List<IFileChange2>();
-            List<KeyValuePair<IPathMatcher, IProcessor>> fileGlobProcessors = CreateFileGlobProcessors(_logger, spec);
-
             foreach (IFile file in sourceDir.EnumerateFiles("*", SearchOption.AllDirectories))
             {
                 string sourceRel = file.PathRelativeTo(sourceDir);

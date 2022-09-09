@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class NowMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public NowMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -57,9 +57,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "nowString";
             string format = "";
             bool utc = false;
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("format", format);
-            jsonParameters.Add("utc", utc);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "format", format },
+                { "utc", utc }
+            };
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", null, variableName, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
@@ -89,10 +91,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string variableName = "nowString";
             string format = "";
             bool utc = false;
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("format", format);
-            jsonParameters.Add("utc", utc);
-            jsonParameters.Add("datatype", type);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "format", format },
+                { "utc", utc },
+                { "datatype", type }
+            };
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("NowMacro", type, variableName, jsonParameters);
             NowMacro macro = new NowMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);

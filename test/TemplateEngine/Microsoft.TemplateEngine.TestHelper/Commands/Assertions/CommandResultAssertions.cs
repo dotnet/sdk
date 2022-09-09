@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 {
     public class CommandResultAssertions
     {
-        private CommandResult _commandResult;
+        private readonly CommandResult _commandResult;
 
         public CommandResultAssertions(CommandResult commandResult)
         {

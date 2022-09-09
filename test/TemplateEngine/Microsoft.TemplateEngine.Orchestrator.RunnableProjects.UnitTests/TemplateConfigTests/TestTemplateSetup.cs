@@ -23,11 +23,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         private readonly string _configFile;
         private readonly TemplateConfigModel _configModel;
 
-        private IEngineEnvironmentSettings _environmentSettings;
+        private readonly IEngineEnvironmentSettings _environmentSettings;
 
-        private IDictionary<string, string> _sourceFiles;
+        private readonly IDictionary<string, string> _sourceFiles;
 
-        private string _sourceBaseDir;
+        private readonly string _sourceBaseDir;
 
         private IMountPoint _sourceMountPoint;
 
@@ -64,10 +64,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                if (_sourceMountPoint == null)
-                {
-                    _sourceMountPoint = TestFileSystemHelper.CreateMountPoint(_environmentSettings, _sourceBaseDir);
-                }
+                _sourceMountPoint ??= TestFileSystemHelper.CreateMountPoint(_environmentSettings, _sourceBaseDir);
 
                 return _sourceMountPoint;
             }
@@ -90,17 +87,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public void InstantiateTemplate(string targetBaseDir, IVariableCollection variables = null)
         {
-            if (variables == null)
-            {
-                variables = new VariableCollection();
-            }
+            variables ??= new VariableCollection();
 
             IRunnableProjectConfig runnableConfig = GetConfig();
 
             runnableConfig.Evaluate(variables);
 
-            MockGlobalRunSpec runSpec = new MockGlobalRunSpec();
-            runSpec.RootVariableCollection = variables;
+            MockGlobalRunSpec runSpec = new MockGlobalRunSpec
+            {
+                RootVariableCollection = variables
+            };
             IDirectory sourceDir = SourceMountPoint.DirectoryInfo("/");
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(_environmentSettings.Host.Logger, _environmentSettings.Host.FileSystem);
@@ -116,10 +112,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public IReadOnlyDictionary<string, IReadOnlyList<IFileChange2>> GetFileChanges(string targetBaseDir, IVariableCollection variables = null)
         {
-            if (variables == null)
-            {
-                variables = new VariableCollection();
-            }
+            variables ??= new VariableCollection();
 
             IRunnableProjectConfig runnableConfig = GetConfig();
             runnableConfig.Evaluate(variables);

@@ -33,7 +33,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             {
                 foreach (var symbolInfo in symbols.Properties())
                 {
-                    if (!(symbolInfo.Value is JObject symbol))
+                    if (symbolInfo.Value is not JObject symbol)
                     {
                         continue;
                     }
@@ -144,7 +144,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             }
         }
 
-        internal static CliHostTemplateData Default { get; } = new CliHostTemplateData((JObject?)null);
+        internal static CliHostTemplateData Default { get; } = new CliHostTemplateData(null);
 
         internal string DisplayNameForParameter(string parameterName)
         {

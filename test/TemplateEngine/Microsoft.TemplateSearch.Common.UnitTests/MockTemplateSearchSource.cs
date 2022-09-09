@@ -39,15 +39,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
         public ITemplateSearchProviderFactory Factory
         {
-            get
-            {
-                return _factory ?? throw new Exception($"{nameof(Factory)} is not set.");
-            }
+            get => _factory ?? throw new Exception($"{nameof(Factory)} is not set.");
 
-            set
-            {
-                _factory = value;
-            }
+            set => _factory = value;
         }
 
         Task<IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> ITemplateSearchProvider.SearchForTemplatePackagesAsync(

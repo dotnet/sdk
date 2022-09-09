@@ -142,9 +142,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             switch (scope)
             {
                 case InstallationScope.Global:
-                    return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
+                    return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.s_factoryId);
+                default:
+                    break;
             }
-            return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
+            return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.s_factoryId);
         }
 
         /// <summary>
@@ -239,7 +241,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             cancellationToken.ThrowIfCancellationRequested();
             // Kick off gathering template packages, so parsing cache can happen in parallel.
             Task<IReadOnlyList<ITemplatePackage>> getTemplatePackagesTask = GetTemplatePackagesAsync(needsRebuild, cancellationToken);
-            if (!(_userTemplateCache is TemplateCache cache))
+            if (_userTemplateCache is not TemplateCache cache)
             {
                 try
                 {

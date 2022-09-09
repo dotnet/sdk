@@ -19,13 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             _mountPoint = (ZipFileMountPoint)mountPoint;
         }
 
-        public override bool Exists
-        {
-            get
-            {
-                return _entry != null || (_mountPoint.Universe.TryGetValue(FullPath, out var info) && info.Kind == FileSystemInfoKind.File);
-            }
-        }
+        public override bool Exists => _entry != null || (_mountPoint.Universe.TryGetValue(FullPath, out var info) && info.Kind == FileSystemInfoKind.File);
 
         public override Stream OpenRead()
         {
@@ -35,10 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
                 {
                     throw new FileNotFoundException("File not found", FullPath);
                 }
-
-                ZipFileFile? self = info as ZipFileFile;
-
-                if (self == null)
+                if (info is not ZipFileFile self)
                 {
                     throw new FileNotFoundException("File not found", FullPath);
                 }

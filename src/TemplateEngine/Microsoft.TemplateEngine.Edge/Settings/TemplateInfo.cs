@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     internal partial class TemplateInfo : ITemplateInfo, ITemplateInfoHostJsonCache
     {
         internal const string CurrentVersion = "1.0.0.7";
-        private static readonly Guid RunnableProjectGeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
+        private static readonly Guid s_runnableProjectGeneratorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
 
 #pragma warning disable CS0618 // Type or member is obsolete
         private IReadOnlyDictionary<string, ICacheTag>? _tags;
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Name = localizationInfo?.Name ?? template.Name;
             ParameterDefinitions = LocalizeParameters(template, localizationInfo);
 
-            if (template.GeneratorId == RunnableProjectGeneratorId && HostConfigPlace != null)
+            if (template.GeneratorId == s_runnableProjectGeneratorId && HostConfigPlace != null)
             {
                 logger.LogDebug($"Start loading host config {HostConfigPlace}");
                 try

@@ -49,11 +49,11 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
             internal static async Task<SdkVersionConstraint> CreateAsync(IEngineEnvironmentSettings environmentSettings, ITemplateConstraintFactory factory, CancellationToken cancellationToken)
             {
-                var versions =
+                (NuGetVersionSpecification currentSdkVersion, IEnumerable<NuGetVersionSpecification> installedVersions, Func<IReadOnlyList<string>, IReadOnlyList<string>, string> remedySuggestionFactory) =
                     await ExtractInstalledSdkVersionAsync(
                         environmentSettings.Components.OfType<ISdkInfoProvider>(),
                         cancellationToken).ConfigureAwait(false);
-                return new SdkVersionConstraint(environmentSettings, factory, versions.CurrentSdkVersion, versions.InstalledVersions, versions.RemedySuggestionFactory);
+                return new SdkVersionConstraint(environmentSettings, factory, currentSdkVersion, installedVersions, remedySuggestionFactory);
             }
 
             protected override TemplateConstraintResult EvaluateInternal(string? args)

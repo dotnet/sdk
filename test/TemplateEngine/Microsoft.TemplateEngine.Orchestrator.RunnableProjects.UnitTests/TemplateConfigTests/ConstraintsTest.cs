@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             var model = TemplateConfigModel.FromJObject(JObject.FromObject(json), loggerProvider.CreateLogger("test"));
             Assert.Empty(model.Constraints);
             Assert.Single(loggedMessages);
-            Assert.Equal($"Constraint definition '{JObject.FromObject(new { args = "arg" }).ToString()}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
+            Assert.Equal($"Constraint definition '{JObject.FromObject(new { args = "arg" })}' does not contain mandatory property 'type'.", loggedMessages.Single().Item2);
         }
 
         [Fact]

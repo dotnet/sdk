@@ -20,18 +20,18 @@ namespace Microsoft.TemplateEngine.TestHelper
     public class PackageManager : IDisposable
     {
         private const string NuGetOrgFeed = "https://api.nuget.org/v3/index.json";
-        private static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
-        private string _packageLocation = TestUtils.CreateTemporaryFolder("packages");
-        private ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+        private readonly string _packageLocation = TestUtils.CreateTemporaryFolder("packages");
+        private readonly ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public async Task<string> GetNuGetPackage(string templatePackName, string? version = null, NuGetVersion? minimumVersion = null, ILogger? logger = null)
         {
-            logger = logger ?? NullLogger.Instance;
+            logger ??= NullLogger.Instance;
             NuGetHelper nuGetHelper = new NuGetHelper(_packageLocation, logger);
             try
             {
                 logger.LogDebug($"[NuGet Package Manager] Trying to get semaphore.");
-                await semaphore.WaitAsync().ConfigureAwait(false);
+                await s_semaphore.WaitAsync().ConfigureAwait(false);
                 logger.LogDebug($"[NuGet Package Manager] Semaphore acquired.");
                 if (_installedPackages.TryGetValue(templatePackName, out string? packagePath))
                 {
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             finally
             {
                 logger.LogDebug($"[NuGet Package Manager] Releasing semaphore.");
-                semaphore.Release();
+                s_semaphore.Release();
                 logger.LogDebug($"[NuGet Package Manager] Semaphore released.");
             }
         }
@@ -300,21 +300,21 @@ namespace Microsoft.TemplateEngine.TestHelper
                 {
                     var finishedTask = await Task.WhenAny(tasks).ConfigureAwait(false);
                     tasks.Remove(finishedTask);
-                    (PackageSource Source, IEnumerable<IPackageSearchMetadata> FoundPackages) result = await finishedTask.ConfigureAwait(false);
-                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {result.Source.Source}, found {result.FoundPackages.Count()} packages.");
-                    if (result.FoundPackages == null)
+                    (PackageSource foundSource, IEnumerable<IPackageSearchMetadata> foundPackages) = await finishedTask.ConfigureAwait(false);
+                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {foundPackages.Count()} packages.");
+                    if (foundPackages == null)
                     {
                         continue;
                     }
                     atLeastOneSourceValid = true;
-                    IPackageSearchMetadata? matchedVersion = result.FoundPackages!.FirstOrDefault(package => package.Identity.Version == packageVersion);
+                    IPackageSearchMetadata? matchedVersion = foundPackages!.FirstOrDefault(package => package.Identity.Version == packageVersion);
                     if (matchedVersion != null)
                     {
-                        _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {result.Source.Source}, found {matchedVersion.Identity.Id}:: {matchedVersion.Identity.Version} package, cancelling other tasks.");
+                        _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, found {matchedVersion.Identity.Id}:: {matchedVersion.Identity.Version} package, cancelling other tasks.");
                         linkedCts.Cancel();
-                        return (result.Source, matchedVersion);
+                        return (foundSource, matchedVersion);
                     }
-                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {result.Source.Source}, no package with version {packageVersion} found.");
+                    _nugetLogger.LogDebug($"[NuGet Package Manager] Processed source {foundSource.Source}, no package with version {packageVersion} found.");
                 }
                 if (!atLeastOneSourceValid)
                 {

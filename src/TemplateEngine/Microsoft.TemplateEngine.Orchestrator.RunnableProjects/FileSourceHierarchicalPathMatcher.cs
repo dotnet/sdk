@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
     internal class FileSourceHierarchicalPathMatcher
     {
-        private IReadOnlyList<FileSourceEvaluablePathMatcher> _evaluators;
+        private readonly IReadOnlyList<FileSourceEvaluablePathMatcher> _evaluators;
 
         // Caching the most recent result.
         private string _cachedEvaluatedPath;
@@ -100,11 +100,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class FileSourceEvaluablePathMatcher
         {
-            private IReadOnlyList<IPathMatcher> _include;
+            private readonly IReadOnlyList<IPathMatcher> _include;
 
-            private IReadOnlyList<IPathMatcher> _exclude;
+            private readonly IReadOnlyList<IPathMatcher> _exclude;
 
-            private IReadOnlyList<IPathMatcher> _copyOnly;
+            private readonly IReadOnlyList<IPathMatcher> _copyOnly;
 
             internal FileSourceEvaluablePathMatcher(FileSourceEvaluable evaluable)
             {

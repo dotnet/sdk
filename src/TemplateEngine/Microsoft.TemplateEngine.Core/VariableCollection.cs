@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core
 {
     public class VariableCollection : IVariableCollection
     {
-        private static readonly IEnumerable<string> NoKeys = Array.Empty<string>();
+        private static readonly IEnumerable<string> s_noKeys = Array.Empty<string>();
         private readonly IDictionary<string, object> _values;
         private IVariableCollection? _parent;
 
@@ -56,11 +56,11 @@ namespace Microsoft.TemplateEngine.Core
 
         public bool IsReadOnly => false;
 
-        public ICollection<string> Keys => _values.Keys.Union(_parent?.Keys ?? NoKeys).ToList();
+        public ICollection<string> Keys => _values.Keys.Union(_parent?.Keys ?? s_noKeys).ToList();
 
         public IVariableCollection? Parent
         {
-            get { return _parent; }
+            get => _parent;
 
             set
             {

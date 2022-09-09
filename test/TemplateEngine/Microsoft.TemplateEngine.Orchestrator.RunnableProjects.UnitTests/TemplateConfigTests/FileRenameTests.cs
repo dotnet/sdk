@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class FileRenameTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public FileRenameTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -172,12 +172,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add("Replace1_file.txt", null);
-            templateSourceFiles.Add("Replace2_file.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { "Replace1_file.txt", null },
+                { "Replace2_file.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -185,13 +187,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["test"] = "Replace1Value";
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["test"] = "Replace1Value"
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace1")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("test", TokenConfig.FromValue("Replace1"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(1, allChanges.Count);
@@ -206,12 +212,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add("date_name.txt", null);
-            templateSourceFiles.Add("other_name.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { "date_name.txt", null },
+                { "other_name.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -219,16 +227,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["date"] = 20210429;
-            variables["other"] = new TestParameterValueClass { A = "foo", B = "bar" };
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["date"] = 20210429,
+                ["other"] = new TestParameterValueClass { A = "foo", B = "bar" }
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("date", TokenConfig.FromValue("date")));
-            symbolBasedRenames.Add(new ReplacementTokens("other", TokenConfig.FromValue("other")));
-            symbolBasedRenames.Add(new ReplacementTokens("name", TokenConfig.FromValue("name")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("date", TokenConfig.FromValue("date")),
+                new ReplacementTokens("other", TokenConfig.FromValue("other")),
+                new ReplacementTokens("name", TokenConfig.FromValue("name"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
@@ -244,13 +256,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add("Replace1_file.txt", null);
-            templateSourceFiles.Add("replace2_file.txt", null);
-            templateSourceFiles.Add("REPLACE3_file.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { "Replace1_file.txt", null },
+                { "replace2_file.txt", null },
+                { "REPLACE3_file.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -258,17 +272,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["test{-VALUE-FORMS-}identity"] = "TestProject";
-            variables["test{-VALUE-FORMS-}uc"] = "TESTPROJECT";
-            variables["test{-VALUE-FORMS-}lc"] = "testproject";
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["test{-VALUE-FORMS-}identity"] = "TestProject",
+                ["test{-VALUE-FORMS-}uc"] = "TESTPROJECT",
+                ["test{-VALUE-FORMS-}lc"] = "testproject"
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("Replace")));
-            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}uc", TokenConfig.FromValue("REPLACE")));
-            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("Replace")),
+                new ReplacementTokens("test{-VALUE-FORMS-}uc", TokenConfig.FromValue("REPLACE")),
+                new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(3, allChanges.Count);
@@ -285,12 +303,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add("replace1_file.txt", null);
-            templateSourceFiles.Add("replace2_file.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { "replace1_file.txt", null },
+                { "replace2_file.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -298,15 +318,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["test{-VALUE-FORMS-}identity"] = "testproject";
-            variables["test{-VALUE-FORMS-}lc"] = "testproject";
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["test{-VALUE-FORMS-}identity"] = "testproject",
+                ["test{-VALUE-FORMS-}lc"] = "testproject"
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("replace")));
-            symbolBasedRenames.Add(new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("test{-VALUE-FORMS-}identity", TokenConfig.FromValue("replace")),
+                new ReplacementTokens("test{-VALUE-FORMS-}lc", TokenConfig.FromValue("replace"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
@@ -322,12 +346,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add("Replace1_file.txt", null);
-            templateSourceFiles.Add("Replace2_file.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { "Replace1_file.txt", null },
+                { "Replace2_file.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -335,13 +361,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["test"] = "ReplaceValue";
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["test"] = "ReplaceValue"
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("test", TokenConfig.FromValue("Replace"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
@@ -357,11 +387,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             //simulate template files
             string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, string.Empty);
-            // content
-            templateSourceFiles.Add(@"Replace_dir/Replace_file.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, string.Empty },
+                // content
+                { @"Replace_dir/Replace_file.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, sourceBasePath, templateSourceFiles);
             setup.WriteSource();
 
@@ -369,13 +401,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
 
             //prepare variables
-            IVariableCollection variables = new VariableCollection();
-            variables["name"] = "testName";
-            variables["test"] = "ReplaceValue";
+            IVariableCollection variables = new VariableCollection
+            {
+                ["name"] = "testName",
+                ["test"] = "ReplaceValue"
+            };
 
             //prepare renames configuration
-            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>();
-            symbolBasedRenames.Add(new ReplacementTokens("test", TokenConfig.FromValue("Replace")));
+            List<IReplacementTokens> symbolBasedRenames = new List<IReplacementTokens>
+            {
+                new ReplacementTokens("test", TokenConfig.FromValue("Replace"))
+            };
 
             IReadOnlyDictionary<string, string> allChanges = setup.GetRenames("./", targetDir, variables, symbolBasedRenames);
             Assert.Equal(2, allChanges.Count);
@@ -400,12 +436,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
   ]
 }";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, sourceConfig);
-            // content
-            templateSourceFiles.Add("RenameMe.txt", null);
-            templateSourceFiles.Add("dontrenameme.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, sourceConfig },
+                // content
+                { "RenameMe.txt", null },
+                { "dontrenameme.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
@@ -433,12 +471,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 }
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, sourceConfig);
-            // content
-            templateSourceFiles.Add("RenameMe.txt", null);
-            templateSourceFiles.Add("dontrenameme.txt", null);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, sourceConfig },
+                // content
+                { "RenameMe.txt", null },
+                { "dontrenameme.txt", null }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;

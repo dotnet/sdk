@@ -15,7 +15,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public CryptoRandom() { }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         public CryptoRandom(int ignoredSeed) { }
+#pragma warning restore IDE0060 // Remove unused parameter
 
         public static int NextInt(int minValue, int maxValue)
         {
@@ -60,7 +62,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 _rng.GetBytes(_uint32Buffer);
                 uint rand = BitConverter.ToUInt32(_uint32Buffer, 0);
-                long max = (1 + (long)uint.MaxValue);
+                long max = 1 + (long)uint.MaxValue;
                 long remainder = max % diff;
                 if (rand < max - remainder)
                 {

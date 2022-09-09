@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class LocalizationTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public LocalizationTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string expectedDescription,
             string expectedManualInstructions)
         {
-            var environmentSettings = LoadHostWithLocalizationTemplates(locale, out var templatePackageManager, out ITemplateInfo localizationTemplate);
+            var environmentSettings = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
             var templateCreator = new TemplateCreator(environmentSettings);
             ITemplate? template = templateCreator.LoadTemplate(localizationTemplate, null);
             Assert.NotNull(template);

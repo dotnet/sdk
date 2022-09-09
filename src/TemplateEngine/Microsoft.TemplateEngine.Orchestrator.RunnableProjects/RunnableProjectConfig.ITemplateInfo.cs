@@ -95,14 +95,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IParameterDefinitionSet ParameterDefinitions
-        {
-            get
-            {
-                return new ParameterDefinitionSet(_parameters.Values
+        public IParameterDefinitionSet ParameterDefinitions => new ParameterDefinitionSet(_parameters.Values
                     .Where(param => param.Type.Equals("parameter", StringComparison.OrdinalIgnoreCase)));
-            }
-        }
 
         [Obsolete("Use ParameterDefinitionSet instead.")]
         public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;

@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class RegexMacroTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public RegexMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -28,9 +28,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             string variableName = "myRegex";
             string sourceVariable = "originalValue";
-            IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>();
-            steps.Add(new KeyValuePair<string, string>("2+", "3"));
-            steps.Add(new KeyValuePair<string, string>("13", "Z"));
+            IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("2+", "3"),
+                new KeyValuePair<string, string>("13", "Z")
+            };
             RegexMacroConfig macroConfig = new RegexMacroConfig(variableName, null, sourceVariable, steps);
 
             IVariableCollection variables = new VariableCollection();
@@ -52,8 +54,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             string variableName = "myRegex";
             string sourceVariable = "originalValue";
-            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>();
-            jsonParameters.Add("source", sourceVariable);
+            Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
+            {
+                { "source", sourceVariable }
+            };
 
             string jsonSteps = @"[
                 { 

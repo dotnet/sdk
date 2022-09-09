@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private readonly bool _trimWhitespace;
         private readonly ConditionalTokens _tokens;
         private readonly string _id;
-        private bool _initialState;
+        private readonly bool _initialState;
 
         public Conditional(ConditionalTokens tokenVariants, bool wholeLine, bool trimWhitespace, ConditionEvaluator evaluator, string id, bool initialState)
         {
@@ -155,8 +155,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
-                bool flag;
-                if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(OperationName, out bool flag) && !flag)
                 {
                     processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
@@ -442,8 +441,8 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 public bool BranchTaken
                 {
-                    get { return _branchTaken; }
-                    set { _branchTaken |= value; }
+                    get => _branchTaken;
+                    set => _branchTaken |= value;
                 }
 
                 public bool ActionableOperationsEnabled { get; private set; }
@@ -460,8 +459,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 internal bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
                 {
-                    bool faulted;
-                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out faulted);
+                    BranchTaken = _impl._definition._evaluator(processor, ref bufferLength, ref currentBufferPosition, out bool faulted);
                     return BranchTaken;
                 }
             }

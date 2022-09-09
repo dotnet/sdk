@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.Archive
             }
         }
 
-        internal Guid MountPointFactoryId => ZipFileMountPointFactory.FactoryId;
+        internal Guid MountPointFactoryId => ZipFileMountPointFactory.s_factoryId;
 
         public IFile? FileInfo(string path)
         {

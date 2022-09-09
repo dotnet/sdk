@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class InlineMarkupConditionalTests : TestBase, IClassFixture<TestLoggerFactory>
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public InlineMarkupConditionalTests(TestLoggerFactory testLoggerFactory)
         {

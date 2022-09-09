@@ -21,8 +21,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 24;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
-        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
-        private static readonly char[] SupportedQuotes = { '"', '\'' };
+        private static readonly IOperationProvider[] s_noOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly char[] s_supportedQuotes = { '"', '\'' };
 
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             using (MemoryStream res = new MemoryStream())
             {
                 EngineConfig cfg = new EngineConfig(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
+                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, s_noOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
                 return Evaluate(state, ref len, ref pos, out bool faulted);
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             {
                 currentTokenFamily = (TokenFamily)token;
 
-                if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
+                if (currentTokenFamily is not TokenFamily.WindowsEOL and not TokenFamily.LegacyMacEOL and not TokenFamily.UnixEOL)
                 {
                     tokens.Add(new TokenRef
                     {
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                                 case TokenFamily.UnixEOL:
                                 case TokenFamily.LegacyMacEOL:
                                     TokenFamily thisFamily = (TokenFamily)token;
-                                    if (thisFamily == TokenFamily.WindowsEOL || thisFamily == TokenFamily.UnixEOL || thisFamily == TokenFamily.LegacyMacEOL)
+                                    if (thisFamily is TokenFamily.WindowsEOL or TokenFamily.UnixEOL or TokenFamily.LegacyMacEOL)
                                     {
                                         currentBufferPosition = oldBufferPos;
                                     }
@@ -176,23 +176,14 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                         TokenFamily foundTokenFamily = (TokenFamily)token;
 
-                        if (foundTokenFamily == TokenFamily.QuotedLiteral || foundTokenFamily == TokenFamily.SingleQuotedLiteral)
+                        if (foundTokenFamily is TokenFamily.QuotedLiteral or TokenFamily.SingleQuotedLiteral)
                         {
-                            QuotedRegionKind incomingQuoteKind;
-
-                            switch (foundTokenFamily)
+                            var incomingQuoteKind = foundTokenFamily switch
                             {
-                                case TokenFamily.QuotedLiteral:
-                                    incomingQuoteKind = QuotedRegionKind.DoubleQuoteRegion;
-                                    break;
-                                case TokenFamily.SingleQuotedLiteral:
-                                    incomingQuoteKind = QuotedRegionKind.SingleQuoteRegion;
-                                    break;
-                                default:
-                                    incomingQuoteKind = QuotedRegionKind.None;
-                                    break;
-                            }
-
+                                TokenFamily.QuotedLiteral => QuotedRegionKind.DoubleQuoteRegion,
+                                TokenFamily.SingleQuotedLiteral => QuotedRegionKind.SingleQuoteRegion,
+                                _ => QuotedRegionKind.None,
+                            };
                             if (inQuoteType == QuotedRegionKind.None)
                             {
                                 // starting quote found
@@ -235,7 +226,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                             //If we have a normal token...
                             currentTokenFamily = (TokenFamily)token;
 
-                            if (currentTokenFamily != TokenFamily.WindowsEOL && currentTokenFamily != TokenFamily.LegacyMacEOL && currentTokenFamily != TokenFamily.UnixEOL)
+                            if (currentTokenFamily is not TokenFamily.WindowsEOL and not TokenFamily.LegacyMacEOL and not TokenFamily.UnixEOL)
                             {
                                 switch (currentTokenFamily)
                                 {
@@ -292,7 +283,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static bool IsLogicalOperator(Operator op)
         {
-            return op == Operator.And || op == Operator.Or || op == Operator.Xor || op == Operator.Not;
+            return op is Operator.And or Operator.Or or Operator.Xor or Operator.Not;
         }
 
         private static void CombineExpressionOperator(ref Scope current, Stack<Scope> parents)
@@ -300,7 +291,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             if (current.Operator == Operator.None)
             {
                 if (current.TargetPlacement != Scope.NextPlacement.Right
-                    || !(current.Left is Scope leftScope)
+                    || current.Left is not Scope leftScope
                     || !IsLogicalOperator(leftScope.Operator))
                 {
                     return;
@@ -345,7 +336,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             List<TokenRef> outputTokens = new List<TokenRef>();
             for (; i < tokens.Count; ++i)
             {
-                if (tokens[i].Family == TokenFamily.Whitespace || tokens[i].Family == TokenFamily.Tab)
+                if (tokens[i].Family is TokenFamily.Whitespace or TokenFamily.Tab)
                 {
                     //Ignore whitespace
                 }
@@ -547,7 +538,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             //  At least two characters long
             //  Start and end with the same character
             //  The character that the string starts with must be one of the supported quote kinds
-            if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !SupportedQuotes.Contains(literal[0]))
+            if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !s_supportedQuotes.Contains(literal[0]))
             {
                 if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
                 {

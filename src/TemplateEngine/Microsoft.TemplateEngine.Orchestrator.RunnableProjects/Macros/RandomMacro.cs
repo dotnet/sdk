@@ -20,9 +20,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
         {
-            RandomMacroConfig? config = rawConfig as RandomMacroConfig;
-
-            if (config == null)
+            if (rawConfig is not RandomMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as RandomMacroConfig");
             }
@@ -33,9 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a GeneratedSymbolDeferredMacroConfig");
             }
@@ -43,23 +39,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             int low;
             int high;
 
-            if (!deferredConfig.Parameters.TryGetValue("low", out JToken lowToken))
-            {
-                throw new ArgumentNullException("low");
-            }
-            else
-            {
-                low = lowToken.Value<int>();
-            }
+            low = !deferredConfig.Parameters.TryGetValue("low", out JToken lowToken)
+                ? throw new ArgumentNullException("low")
+                : lowToken.Value<int>();
 
-            if (!deferredConfig.Parameters.TryGetValue("high", out JToken highToken))
-            {
-                high = int.MaxValue;
-            }
-            else
-            {
-                high = highToken.Value<int>();
-            }
+            high = !deferredConfig.Parameters.TryGetValue("high", out JToken highToken) ? int.MaxValue : highToken.Value<int>();
 
             IMacroConfig realConfig = new RandomMacroConfig(deferredConfig.VariableName, deferredConfig.DataType, low, high);
             return realConfig;

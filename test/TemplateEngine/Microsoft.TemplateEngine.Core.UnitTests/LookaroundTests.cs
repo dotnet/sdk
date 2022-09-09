@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class LookaroundTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public LookaroundTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

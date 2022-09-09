@@ -17,9 +17,9 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
                 { 3, "this" },
                 { 4, "this" }
             };
-            Func<KeyValuePair<int, string>, string> selector = (KeyValuePair<int, string> x) => x.Value;
+            static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            Assert.True(items.AllAreTheSame(selector));
+            Assert.True(items.AllAreTheSame(Selector));
         }
 
         [Fact(DisplayName = "AllAreTheSameDefaultComparerFailsTest")]
@@ -32,9 +32,9 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
                 { 3, "other" },
                 { 4, "thing" }
             };
-            Func<KeyValuePair<int, string>, string> selector = (KeyValuePair<int, string> x) => x.Value;
+            static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            Assert.False(items.AllAreTheSame(selector));
+            Assert.False(items.AllAreTheSame(Selector));
         }
 
         [Fact(DisplayName = "AllAreTheSameCustomComparerTest")]
@@ -47,15 +47,15 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
                 { 3, "four" },
                 { 4, "long" }
             };
-            Func<KeyValuePair<int, string>, string> selector = (KeyValuePair<int, string> x) => x.Value;
+            static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            Func<string, string, bool> lengthComparer = (x, y) => x.Length == y.Length;
+            static bool LengthComparer(string x, string y) => x.Length == y.Length;
 
             // they're all the same length
-            Assert.True(items.AllAreTheSame(selector, lengthComparer));
+            Assert.True(items.AllAreTheSame(Selector, LengthComparer));
 
-            Func<string, string, bool> upperComparer = (x, y) => x.ToUpper() == y.ToUpper();
-            Assert.False(items.AllAreTheSame(selector, upperComparer));
+            static bool UpperComparer(string x, string y) => x.ToUpper() == y.ToUpper();
+            Assert.False(items.AllAreTheSame(Selector, UpperComparer));
         }
     }
 }

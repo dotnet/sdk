@@ -56,10 +56,7 @@ namespace Microsoft.TemplateEngine.Core.Util
         {
             get => _currentTargetStream.Position;
 
-            set
-            {
-                _currentTargetStream.Position = value;
-            }
+            set => _currentTargetStream.Position = value;
         }
 
         public override void Flush() => _currentTargetStream.Flush();

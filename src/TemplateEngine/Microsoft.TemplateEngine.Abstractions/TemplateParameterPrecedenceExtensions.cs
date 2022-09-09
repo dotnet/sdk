@@ -16,17 +16,14 @@ public static class TemplateParameterPrecedenceExtensions
     [Obsolete("TemplateParameterPriority is Obsolete and should be replaced with PrecedenceDefinition.")]
     public static PrecedenceDefinition ToPrecedenceDefinition(this TemplateParameterPriority priority)
     {
-        switch (priority)
+        return priority switch
         {
-            case TemplateParameterPriority.Required:
-                return PrecedenceDefinition.Required;
-            case TemplateParameterPriority.Optional:
-                return PrecedenceDefinition.Optional;
-            case TemplateParameterPriority.Implicit:
-                return PrecedenceDefinition.Implicit;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(priority), priority, null);
-        }
+            TemplateParameterPriority.Required => PrecedenceDefinition.Required,
+            TemplateParameterPriority.Optional => PrecedenceDefinition.Optional,
+            TemplateParameterPriority.Implicit => PrecedenceDefinition.Implicit,
+            TemplateParameterPriority.Suggested => throw new NotImplementedException(),
+            _ => throw new ArgumentOutOfRangeException(nameof(priority), priority, null),
+        };
     }
 
     /// <summary>
@@ -49,19 +46,15 @@ public static class TemplateParameterPrecedenceExtensions
     [Obsolete("TemplateParameterPriority is Obsolete and should be replaced with PrecedenceDefinition.")]
     public static TemplateParameterPriority ToTemplateParameterPriority(this PrecedenceDefinition precedenceDefinition)
     {
-        switch (precedenceDefinition)
+        return precedenceDefinition switch
         {
-            case PrecedenceDefinition.Required:
-                return TemplateParameterPriority.Required;
-            case PrecedenceDefinition.Optional:
-                return TemplateParameterPriority.Optional;
-            case PrecedenceDefinition.Implicit:
-                return TemplateParameterPriority.Implicit;
-            case PrecedenceDefinition.ConditionalyDisabled:
-            case PrecedenceDefinition.Disabled:
-            case PrecedenceDefinition.ConditionalyRequired:
-            default:
-                throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value");
-        }
+            PrecedenceDefinition.Required => TemplateParameterPriority.Required,
+            PrecedenceDefinition.Optional => TemplateParameterPriority.Optional,
+            PrecedenceDefinition.Implicit => TemplateParameterPriority.Implicit,
+            PrecedenceDefinition.ConditionalyRequired => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
+            PrecedenceDefinition.ConditionalyDisabled => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
+            PrecedenceDefinition.Disabled => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
+            _ => throw new ArgumentOutOfRangeException(nameof(precedenceDefinition), precedenceDefinition, "Conversion to obsolete TemplateParameterPriority is not defined for current value"),
+        };
     }
 }

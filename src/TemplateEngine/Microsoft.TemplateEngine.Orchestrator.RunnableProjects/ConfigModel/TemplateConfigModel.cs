@@ -190,15 +190,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? Author
         {
-            get
-            {
-                return _author;
-            }
+            get => _author;
 
-            internal init
-            {
-                _author = value;
-            }
+            internal init => _author = value;
         }
 
         /// <summary>
@@ -211,15 +205,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? Description
         {
-            get
-            {
-                return _description;
-            }
+            get => _description;
 
-            internal init
-            {
-                _description = value;
-            }
+            internal init => _description = value;
         }
 
         /// <summary>
@@ -238,15 +226,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? Name
         {
-            get
-            {
-                return _name;
-            }
+            get => _name;
 
-            internal init
-            {
-                _name = value;
-            }
+            internal init => _name = value;
         }
 
         /// <summary>
@@ -264,15 +246,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public IReadOnlyDictionary<string, string> Tags
         {
-            get
-            {
-                return _tags;
-            }
+            get => _tags;
 
-            internal init
-            {
-                _tags = value;
-            }
+            internal init => _tags = value;
         }
 
         /// <summary>
@@ -285,15 +261,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public IReadOnlyList<PostActionModel> PostActionModels
         {
-            get
-            {
-                return _postActions;
-            }
+            get => _postActions;
 
-            internal init
-            {
-                _postActions = value;
-            }
+            internal init => _postActions = value;
         }
 
         /// <summary>
@@ -331,10 +301,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? SourceName
         {
-            get
-            {
-                return _sourceName;
-            }
+            get => _sourceName;
 
             internal init
             {
@@ -360,10 +327,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public IEnumerable<BaseSymbol> Symbols
 
         {
-            get
-            {
-                return _symbols.Values;
-            }
+            get => _symbols.Values;
 
             internal init
             {
@@ -521,9 +485,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             foreach (JProperty property in baselineJProperties)
             {
-                JObject? obj = property.Value as JObject;
-
-                if (obj == null)
+                if (property.Value is not JObject obj)
                 {
                     continue;
                 }

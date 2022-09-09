@@ -24,9 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig rawConfig)
         {
-            SwitchMacroConfig? config = rawConfig as SwitchMacroConfig;
-
-            if (config == null)
+            if (rawConfig is not SwitchMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as SwitchMacroConfig");
             }
@@ -59,9 +57,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)
         {
-            GeneratedSymbolDeferredMacroConfig? deferredConfig = rawConfig as GeneratedSymbolDeferredMacroConfig;
-
-            if (deferredConfig == null)
+            if (rawConfig is not GeneratedSymbolDeferredMacroConfig deferredConfig)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as a SwitchMacroConfig");
             }

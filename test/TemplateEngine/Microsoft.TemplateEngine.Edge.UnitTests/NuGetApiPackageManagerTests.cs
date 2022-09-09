@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class NuGetApiPackageManagerTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public NuGetApiPackageManagerTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

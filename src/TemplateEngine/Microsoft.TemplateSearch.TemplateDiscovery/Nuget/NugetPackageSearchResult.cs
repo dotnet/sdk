@@ -15,15 +15,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
         internal static NuGetPackageSearchResult FromJObject(JObject entry)
         {
-            NuGetPackageSearchResult searchResult = new NuGetPackageSearchResult();
-            searchResult.TotalHits = entry.ToInt32("totalHits");
+            NuGetPackageSearchResult searchResult = new NuGetPackageSearchResult
+            {
+                TotalHits = entry.ToInt32("totalHits")
+            };
             var dataArray = entry.Get<JArray>("data");
             if (dataArray != null)
             {
                 foreach (JToken data in dataArray)
                 {
-                    JObject? dataObj = data as JObject;
-                    if (dataObj != null)
+                    if (data is JObject dataObj)
                     {
                         searchResult.Data.Add(NuGetPackageSourceInfo.FromJObject(dataObj));
                     }

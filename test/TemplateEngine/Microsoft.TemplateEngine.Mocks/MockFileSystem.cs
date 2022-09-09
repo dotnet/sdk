@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Mocks
 {
     public class MockFileSystem : IPhysicalFileSystem
     {
-        private HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _directories = new HashSet<string>(StringComparer.Ordinal);
 
-        private Dictionary<string, FileSystemFile> _files = new Dictionary<string, FileSystemFile>(StringComparer.Ordinal);
+        private readonly Dictionary<string, FileSystemFile> _files = new Dictionary<string, FileSystemFile>(StringComparer.Ordinal);
 
-        private List<DirectoryScanParameters> _directoriesScanned = new List<DirectoryScanParameters>();
+        private readonly List<DirectoryScanParameters> _directoriesScanned = new List<DirectoryScanParameters>();
 
         public string? CurrentDirectory { get; set; }
 
@@ -135,7 +135,7 @@ namespace Microsoft.TemplateEngine.Mocks
                 throw new Exception("Directory is not empty");
             }
 
-            _directories.RemoveWhere(x => x.Equals(path, StringComparison.Ordinal) || x.StartsWith(path, StringComparison.Ordinal) && (x[path.Length] == Path.DirectorySeparatorChar || x[path.Length] == Path.AltDirectorySeparatorChar));
+            _directories.RemoveWhere(x => x.Equals(path, StringComparison.Ordinal) || (x.StartsWith(path, StringComparison.Ordinal) && (x[path.Length] == Path.DirectorySeparatorChar || x[path.Length] == Path.AltDirectorySeparatorChar)));
             List<string> toRemove = new List<string>();
 
             foreach (string key in _files.Keys)
@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Mocks
             RecordDirectoryScan(directoryName, pattern, searchOption);
             Glob g = Glob.Parse(searchOption != SearchOption.AllDirectories ? "**/" + pattern : pattern);
 
-            foreach (string entry in _files.Keys.Union(_directories).Where(x => x.StartsWith(directoryName, StringComparison.Ordinal) || x.StartsWith(directoryName, StringComparison.Ordinal) && (x[directoryName.Length] == Path.DirectorySeparatorChar || x[directoryName.Length] == Path.AltDirectorySeparatorChar)))
+            foreach (string entry in _files.Keys.Union(_directories).Where(x => x.StartsWith(directoryName, StringComparison.Ordinal) || (x.StartsWith(directoryName, StringComparison.Ordinal) && (x[directoryName.Length] == Path.DirectorySeparatorChar || x[directoryName.Length] == Path.AltDirectorySeparatorChar))))
             {
                 string p = entry.Replace('\\', '/').TrimStart('/');
                 if (g.IsMatch(p))

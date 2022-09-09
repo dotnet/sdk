@@ -32,7 +32,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <summary>
         /// Returns true if the mutex is acquired.
         /// </summary>
-        public bool IsLocked { get { return _isLocked; } }
+        public bool IsLocked => _isLocked;
 
         /// <summary>
         /// Creates the <see cref="AsyncMutex"/> and task for waiting until underlying <see cref="Mutex"/> is acquired.

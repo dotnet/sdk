@@ -44,12 +44,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
         {
             string id = entry.ToString("id") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"id\" property.", nameof(entry));
             string version = entry.ToString("version") ?? throw new ArgumentException($"{nameof(entry)} doesn't have \"version\"  property.", nameof(entry));
-            NuGetPackageSourceInfo sourceInfo = new NuGetPackageSourceInfo(id, version);
-            sourceInfo.TotalDownloads = entry.ToInt32("totalDownloads");
-            sourceInfo.Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection(Array.Empty<string>());
-            sourceInfo.Verified = entry.ToBool("verified");
-            sourceInfo.Description = entry.ToString("description");
-            sourceInfo.IconUrl = entry.ToString("iconUrl");
+            NuGetPackageSourceInfo sourceInfo = new NuGetPackageSourceInfo(id, version)
+            {
+                TotalDownloads = entry.ToInt32("totalDownloads"),
+                Owners = entry.Get<JToken>("owners").JTokenStringOrArrayToCollection(Array.Empty<string>()),
+                Verified = entry.ToBool("verified"),
+                Description = entry.ToString("description"),
+                IconUrl = entry.ToString("iconUrl")
+            };
 
             return sourceInfo;
         }
@@ -67,7 +69,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
         public override int GetHashCode()
         {
-            return (Name, Version).GetHashCode();
+            return HashCode.Combine(Name, Version);
         }
 
         public bool Equals(ITemplatePackageInfo? other)

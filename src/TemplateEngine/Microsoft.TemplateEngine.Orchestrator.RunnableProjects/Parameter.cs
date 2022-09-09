@@ -30,8 +30,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string? Documentation
         {
-            get { return Description; }
-            internal set { Description = value; }
+            get => Description;
+            internal set => Description = value;
         }
 
         public string? Description { get; internal set; }

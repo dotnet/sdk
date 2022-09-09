@@ -39,15 +39,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string? Description
         {
-            get
-            {
-                return _description;
-            }
+            get => _description;
 
-            internal init
-            {
-                _description = value;
-            }
+            internal init => _description = value;
         }
 
         /// <summary>

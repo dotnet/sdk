@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Utils
             string baseDir = maskedPath;
 
             //trim trailing separators
-            if (baseDir[baseDir.Length - 1] == '/' || baseDir[baseDir.Length - 1] == '\\')
+            if (baseDir[baseDir.Length - 1] is '/' or '\\')
             {
                 baseDir = baseDir.Substring(0, baseDir.Length - 1);
             }

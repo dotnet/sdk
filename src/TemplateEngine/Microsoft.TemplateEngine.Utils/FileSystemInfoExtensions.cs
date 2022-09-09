@@ -136,7 +136,7 @@ namespace Microsoft.TemplateEngine.Utils
                             throw new IOException($"Failed to combine paths, stack underflow at {string.Join("/", parts.Skip(i))}");
                         }
 
-                        partStack.Pop();
+                        _ = partStack.Pop();
                         break;
                     default:
                         partStack.Push(parts[i]);

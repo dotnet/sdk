@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(10000)]
-        [InlineData(1024 * 1024 + 10000)]
+        [InlineData((1024 * 1024) + 10000)]
         public void CanReadStream(int requestedCount)
         {
             Random rnd = new Random();
@@ -42,9 +42,9 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             }
             if (requestedCount > 1024 * 1024)
             {
-                for (int i = 0; i < requestedCount - 1024 * 1024; i++)
+                for (int i = 0; i < requestedCount - (1024 * 1024); i++)
                 {
-                    Assert.Equal(valueBytes2[i], read[i + 1024 * 1024]);
+                    Assert.Equal(valueBytes2[i], read[i + (1024 * 1024)]);
                 }
             }
             for (int i = requestedCount; i < 2 * 1024 * 1024; i++)

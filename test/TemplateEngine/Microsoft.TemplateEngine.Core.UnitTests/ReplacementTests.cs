@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class ReplacementTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public ReplacementTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

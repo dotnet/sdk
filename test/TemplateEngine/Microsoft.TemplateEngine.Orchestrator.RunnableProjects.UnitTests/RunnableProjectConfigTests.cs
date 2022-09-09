@@ -105,9 +105,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString());
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() }
+            };
 
             //content
             foreach (string guidFormat in GuidMacroConfig.DefaultFormats.Select(c => c.ToString()))

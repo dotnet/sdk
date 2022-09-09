@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class SplitConfigurationTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public SplitConfigurationTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -185,8 +185,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         // It doesn't need to exist, the reader will fail in trying to read it.
         private static TestTemplateSetup SetupSplitConfigWithAFileOutsideMountPoint(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { ".template.config/template.json", TemplateJsonWithAdditionalFileOutsideBasePath }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
@@ -196,8 +198,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         // But doesn't create the additional file
         private static TestTemplateSetup SetupSplitConfigWithAMissingReferencedFile(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add(".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { ".template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;
@@ -205,9 +209,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         private static TestTemplateSetup SetupSplitConfigTestTemplate(IEngineEnvironmentSettings environment, string basePath)
         {
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            templateSourceFiles.Add("templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString);
-            templateSourceFiles.Add("templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { "templateSource/.template.config/template.json", TemplateJsonWithProperAdditionalConfigFilesString },
+                { "templateSource/.template.config/symbols.template.json", SymbolsTemplateJsonString }
+            };
             TestTemplateSetup setup = new TestTemplateSetup(environment, basePath, templateSourceFiles);
             setup.WriteSource();
             return setup;

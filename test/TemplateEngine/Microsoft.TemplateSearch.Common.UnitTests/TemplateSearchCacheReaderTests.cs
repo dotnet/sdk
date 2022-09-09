@@ -64,7 +64,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             Assert.Equal(2, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[0]).ParameterDefinitions.Count);
 
             Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count);
-            Assert.Equal(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Where(p => p.DataType == "choice").Count());
+            Assert.Equal(1, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Count(p => p.DataType == "choice"));
             Assert.Equal(3, ((ITemplateInfo)parsedCache.TemplatePackages[0].Templates[2]).ParameterDefinitions.Single(p => p.DataType == "choice").Choices?.Count);
         }
 
@@ -92,8 +92,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 A.Fake<ITemplateSearchProviderFactory>(),
                 environmentSettings,
                 new Dictionary<string, Func<object, object>>());
-            Func<Task<string>> search = async () => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
-            await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
+            await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JObject.Parse(content);
             Assert.NotNull(TemplateSearchCache.FromJObject(jObj, environmentSettings.Host.Logger, null));
@@ -108,8 +108,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 environmentSettings,
                 new Dictionary<string, Func<object, object>>(),
                 new[] { "https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409" });  //v1 search cache
-            Func<Task<string>> search = async () => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
-            await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), search);
+            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
+            await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JObject.Parse(content);
 #pragma warning disable CS0618 // Type or member is obsolete

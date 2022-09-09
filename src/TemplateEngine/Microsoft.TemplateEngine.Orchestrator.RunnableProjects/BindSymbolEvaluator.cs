@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
             cancellationToken.ThrowIfCancellationRequested();
 
-            foreach (var task in tasksToRun.Where(t => t.Task.IsFaulted || t.Task.IsCompleted && t.Task.Result == null))
+            foreach (var task in tasksToRun.Where(t => t.Task.IsFaulted || (t.Task.IsCompleted && t.Task.Result == null)))
             {
                 _logger.LogWarning(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, task.Symbol.Name);
             }

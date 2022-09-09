@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             {
                 foreach (JToken entry in onlyIf.Children())
                 {
-                    if (!(entry is JObject x))
+                    if (entry is not JObject)
                     {
                         continue;
                     }

@@ -38,10 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             List<IPostAction> actionList = new List<IPostAction>();
 
-            if (rootVariableCollection == null)
-            {
-                rootVariableCollection = new VariableCollection();
-            }
+            rootVariableCollection ??= new VariableCollection();
 
             foreach (PostActionModel model in modelList)
             {

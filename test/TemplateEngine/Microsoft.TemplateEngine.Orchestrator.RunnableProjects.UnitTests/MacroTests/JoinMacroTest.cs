@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 {
     public class JoinMacroTest : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public JoinMacroTest(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -47,8 +47,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator, removeEmptyValues);
 
-            IVariableCollection variables = new VariableCollection();
-            variables[referenceSymbolName] = referenceSymbolValue;
+            IVariableCollection variables = new VariableCollection
+            {
+                [referenceSymbolName] = referenceSymbolValue
+            };
 
             JoinMacro macro = new JoinMacro();
             macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
@@ -82,8 +84,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("JoinMacro", null, variableName, jsonParameters);
 
-            IVariableCollection variables = new VariableCollection();
-            variables[referenceSymbolName] = referenceSymbolValue;
+            IVariableCollection variables = new VariableCollection
+            {
+                [referenceSymbolName] = referenceSymbolValue
+            };
 
             JoinMacro macro = new JoinMacro();
             IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);

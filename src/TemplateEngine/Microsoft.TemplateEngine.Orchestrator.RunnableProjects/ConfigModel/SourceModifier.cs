@@ -36,6 +36,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Defines the files to be renamed when instantiating the template. The key is a source file name, the value is the final file name.
         /// </summary>
-        public IReadOnlyDictionary<string, string> Rename { get; internal init; } = ExtendedFileSource.RenameDefaults;
+        public IReadOnlyDictionary<string, string> Rename { get; internal init; } = ExtendedFileSource.s_renameDefaults;
     }
 }

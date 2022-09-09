@@ -25,8 +25,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
                     return false;
                 }
 
-                return ch <= 'Z' // '\u005A'
-                    || ch == '_'; // '\u005F'
+                return ch is <= 'Z' // '\u005A'
+                    or '_'; // '\u005F'
             }
 
             if (ch <= 'z') // '\u007A'
@@ -59,12 +59,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
             {
                 if (ch < 'A') // '\u0041'
                 {
-                    return ch >= '0' // '\u0030'
-                        && ch <= '9'; // '\u0039'
+                    return ch is >= '0' // '\u0030'
+                        and <= '9'; // '\u0039'
                 }
 
-                return ch <= 'Z' // '\u005A'
-                    || ch == '_'; // '\u005F'
+                return ch is <= 'Z' // '\u005A'
+                    or '_'; // '\u005F'
             }
 
             if (ch <= 'z') // '\u007A'
@@ -129,18 +129,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
             //   A Unicode character of classes Lu, Ll, Lt, Lm, Lo, or Nl
             //   A Unicode-escape-sequence representing a character of classes Lu, Ll, Lt, Lm, Lo, or Nl
 
-            switch (cat)
+            return cat switch
             {
-                case UnicodeCategory.UppercaseLetter:
-                case UnicodeCategory.LowercaseLetter:
-                case UnicodeCategory.TitlecaseLetter:
-                case UnicodeCategory.ModifierLetter:
-                case UnicodeCategory.OtherLetter:
-                case UnicodeCategory.LetterNumber:
-                    return true;
-            }
-
-            return false;
+                UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter or UnicodeCategory.LetterNumber => true,
+                _ => false,
+            };
         }
 
         private static bool IsCombiningChar(UnicodeCategory cat)
@@ -149,14 +142,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Utilities
             //   A Unicode character of classes Mn or Mc
             //   A Unicode-escape-sequence representing a character of classes Mn or Mc
 
-            switch (cat)
+            return cat switch
             {
-                case UnicodeCategory.NonSpacingMark:
-                case UnicodeCategory.SpacingCombiningMark:
-                    return true;
-            }
-
-            return false;
+                UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark => true,
+                _ => false,
+            };
         }
 
         private static bool IsDecimalDigitChar(UnicodeCategory cat)

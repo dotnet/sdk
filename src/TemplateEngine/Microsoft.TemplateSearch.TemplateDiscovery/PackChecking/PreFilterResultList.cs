@@ -18,20 +18,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         internal IReadOnlyList<PreFilterResult> Results { get; }
 
         // return true if any of the filter results have IsFiltered == true
-        internal bool ShouldBeFiltered
-        {
-            get
-            {
-                return Results.Any(r => r.IsFiltered);
-            }
-        }
+        internal bool ShouldBeFiltered => Results.Any(r => r.IsFiltered);
 
-        internal string Reason
-        {
-            get
-            {
-                return string.Join("; ", Results.Where(r => r.IsFiltered && !string.IsNullOrWhiteSpace(r.Reason)).Select(r => r.Reason));
-            }
-        }
+        internal string Reason => string.Join("; ", Results.Where(r => r.IsFiltered && !string.IsNullOrWhiteSpace(r.Reason)).Select(r => r.Reason));
     }
 }

@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class LocalizationTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
         public static readonly string DefaultConfigRelativePath = ".template.config/template.json";
         public static readonly string DefaultLocalizeConfigRelativePath = ".template.config/localize/templatestrings.{0}.json";
 

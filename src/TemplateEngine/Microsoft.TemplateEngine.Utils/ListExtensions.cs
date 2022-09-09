@@ -13,10 +13,7 @@ namespace Microsoft.TemplateEngine.Utils
         public static IEnumerable<IGrouping<TKey?, TElement>> GroupBy<TElement, TKey>(this IEnumerable<TElement> elements, Func<TElement, TKey?> grouper, Func<TElement, bool> hasGroupKey, IEqualityComparer<TKey?>? comparer = null)
             where TKey : IEquatable<TKey?>
         {
-            if (comparer == null)
-            {
-                comparer = EqualityComparer<TKey?>.Default;
-            }
+            comparer ??= EqualityComparer<TKey?>.Default;
             Dictionary<ValueWrapper<TKey?>, List<TElement>> groups = new Dictionary<ValueWrapper<TKey?>, List<TElement>>(new ValueWrapperComparer<TKey?>(comparer));
             List<TElement> ungrouped = new List<TElement>();
 
@@ -47,7 +44,7 @@ namespace Microsoft.TemplateEngine.Utils
 
             foreach (TElement entry in ungrouped)
             {
-                allGrouped.Add(new Grouping<TKey?, TElement>(default(TKey), new[] { entry }));
+                allGrouped.Add(new Grouping<TKey?, TElement>(default, new[] { entry }));
             }
 
             return allGrouped;
@@ -75,7 +72,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class ValueWrapperComparer<T> : IEqualityComparer<ValueWrapper<T>>
         {
-            private IEqualityComparer<T> _comparer;
+            private readonly IEqualityComparer<T> _comparer;
 
             public ValueWrapperComparer(IEqualityComparer<T> comparer)
             {
@@ -107,7 +104,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         private class Grouping<TKey, TElement> : IGrouping<TKey, TElement>
         {
-            private IEnumerable<TElement> _element;
+            private readonly IEnumerable<TElement> _element;
 
             public Grouping(TKey key, IEnumerable<TElement> element)
             {

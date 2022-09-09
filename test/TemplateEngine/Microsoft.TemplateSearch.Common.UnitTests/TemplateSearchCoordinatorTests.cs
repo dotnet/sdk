@@ -11,22 +11,22 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 {
     public class TemplateSearchCoordinatorTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
         public TemplateSearchCoordinatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        private static readonly ITemplatePackageInfo _fooPackInfo = new MockTemplatePackageInfo("fooPack", "1.0.0");
+        private static readonly ITemplatePackageInfo s_fooPackInfo = new MockTemplatePackageInfo("fooPack", "1.0.0");
 
-        private static readonly ITemplatePackageInfo _barPackInfo = new MockTemplatePackageInfo("barPack", "2.0.0");
+        private static readonly ITemplatePackageInfo s_barPackInfo = new MockTemplatePackageInfo("barPack", "2.0.0");
 
-        private static readonly ITemplatePackageInfo _redPackInfo = new MockTemplatePackageInfo("redPack", "1.1");
+        private static readonly ITemplatePackageInfo s_redPackInfo = new MockTemplatePackageInfo("redPack", "1.1");
 
-        private static readonly ITemplatePackageInfo _bluePackInfo = new MockTemplatePackageInfo("bluePack", "2.1");
+        private static readonly ITemplatePackageInfo s_bluePackInfo = new MockTemplatePackageInfo("bluePack", "2.1");
 
-        private static readonly ITemplatePackageInfo _greenPackInfo = new MockTemplatePackageInfo("greenPack", "3.0.0");
+        private static readonly ITemplatePackageInfo s_greenPackInfo = new MockTemplatePackageInfo("greenPack", "3.0.0");
 
         [Fact]
         public async Task TwoSourcesAreBothSearched()
@@ -68,13 +68,12 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             const string templateName = "foo";
 
-            Func<TemplatePackageSearchData, IReadOnlyList<ITemplateInfo>> filter =
-                templatePack => templatePack.Templates
+            static IReadOnlyList<ITemplateInfo> Filter(TemplatePackageSearchData templatePack) => templatePack.Templates
                     .Where(t => ((ITemplateInfo)t).Name.Contains(templateName, StringComparison.OrdinalIgnoreCase))
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
             Assert.Equal(2, searchResult.Count);
 
             var searchResultDictionary = searchResult.ToDictionary(r => r.Provider.Factory.DisplayName);
@@ -96,8 +95,8 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             ITemplateInfo sourceOneTemplateTwo = new MockTemplateInfo("foo2", name: "MockFooTemplateTwo", identity: "Mock.Foo.2").WithDescription("Mock Foo template two");
             ITemplateInfo sourceOneTemplateThree = new MockTemplateInfo("bar1", name: "MockBarTemplateOne", identity: "Mock.Bar.1").WithDescription("Mock Bar template one");
 
-            var packOne = (_fooPackInfo, (IReadOnlyList<ITemplateInfo>)new[] { sourceOneTemplateOne, sourceOneTemplateTwo });
-            var packTwo = (_barPackInfo, new[] { sourceOneTemplateThree });
+            var packOne = (s_fooPackInfo, (IReadOnlyList<ITemplateInfo>)new[] { sourceOneTemplateOne, sourceOneTemplateTwo });
+            var packTwo = (s_barPackInfo, new[] { sourceOneTemplateThree });
 
             dataForSources["source one"] = new[] { packOne, packTwo };
 
@@ -105,9 +104,9 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
             ITemplateInfo sourceTwoTemplateTwo = new MockTemplateInfo("blue", name: "MockBlueTemplate", identity: "Mock.Blue.1").WithDescription("Mock blue template");
             ITemplateInfo sourceTwoTemplateThree = new MockTemplateInfo("green", name: "MockGreenTemplate", identity: "Mock.Green.1").WithDescription("Mock green template");
 
-            var red = (_redPackInfo, (IReadOnlyList<ITemplateInfo>)new[] { sourceTwoTemplateOne });
-            var blue = (_bluePackInfo, new[] { sourceTwoTemplateTwo });
-            var green = (_greenPackInfo, new[] { sourceTwoTemplateThree });
+            var red = (s_redPackInfo, (IReadOnlyList<ITemplateInfo>)new[] { sourceTwoTemplateOne });
+            var blue = (s_bluePackInfo, new[] { sourceTwoTemplateTwo });
+            var green = (s_greenPackInfo, new[] { sourceTwoTemplateThree });
 
             dataForSources["source two"] = new[] { red, blue, green };
 

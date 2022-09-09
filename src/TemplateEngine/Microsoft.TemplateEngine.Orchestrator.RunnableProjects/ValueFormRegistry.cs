@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal static class ValueFormRegistry
     {
-        private static readonly IReadOnlyList<IValueFormFactory> AllForms =
+        private static readonly IReadOnlyList<IValueFormFactory> s_allForms =
             new IValueFormFactory[]
             {
                 new ReplacementValueFormFactory(),
@@ -37,15 +37,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 new TitleCaseValueFormFactory(),
             };
 
-        private static readonly IValueFormFactory DefaultForm = new IdentityValueFormFactory();
+        private static readonly IValueFormFactory s_defaultForm = new IdentityValueFormFactory();
 
-        internal static IReadOnlyDictionary<string, IValueFormFactory> FormLookup
-        {
-            get
-            {
-                return AllForms.ToDictionary(ff => ff.Identifier, ff => ff, StringComparer.OrdinalIgnoreCase);
-            }
-        }
+        internal static IReadOnlyDictionary<string, IValueFormFactory> FormLookup => s_allForms.ToDictionary(ff => ff.Identifier, ff => ff, StringComparer.OrdinalIgnoreCase);
 
         internal static IValueForm GetForm(string name, JObject? obj)
         {
@@ -53,12 +47,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (string.IsNullOrWhiteSpace(identifier))
             {
-                return DefaultForm.FromJObject(name, obj);
+                return s_defaultForm.FromJObject(name, obj);
             }
 
             if (!FormLookup.TryGetValue(identifier!, out IValueFormFactory? value))
             {
-                return DefaultForm.FromJObject(name, obj);
+                return s_defaultForm.FromJObject(name, obj);
             }
 
             return value.FromJObject(name, obj);

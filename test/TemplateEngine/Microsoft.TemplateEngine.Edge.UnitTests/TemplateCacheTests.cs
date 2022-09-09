@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
     public class TemplateCacheTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public TemplateCacheTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {

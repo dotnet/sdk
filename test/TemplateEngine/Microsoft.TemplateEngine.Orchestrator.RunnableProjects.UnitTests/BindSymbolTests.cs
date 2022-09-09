@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     public class BindSymbolTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private EnvironmentSettingsHelper _environmentSettingsHelper;
+        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
 
         public BindSymbolTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
@@ -86,12 +86,14 @@ TestHost
 MyValue
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -154,13 +156,15 @@ MyValue
                 }
             };
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("_R1_.cs", "");
-            templateSourceFiles.Add("_R2_.cs", "");
+                //content
+                { "_R1_.cs", "" },
+                { "_R2_.cs", "" }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -186,7 +190,7 @@ MyValue
             // Running the actual scenario: template files processing and generating output (including macros processing)
             //
 
-            var result = await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
+            _ = await rpg.CreateAsync(settings, runnableConfig, sourceDir, parametersData, targetDir, CancellationToken.None);
 
             //
             // Veryfying the outputs
@@ -240,12 +244,14 @@ MyValue
 
             string sourceSnippet = @"%VAL%";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -314,12 +320,14 @@ MyValue
 
             string sourceSnippet = @"%VAL%";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -327,8 +335,8 @@ MyValue
 
             var additionalComponents = new[]
             {
-                (typeof(IBindSymbolSource), (IIdentifiedComponent)new TestBindSymbolSource(Guid.NewGuid())),
-                (typeof(IBindSymbolSource), (IIdentifiedComponent)new TestBindSymbolSource(Guid.NewGuid()))
+                (typeof(IBindSymbolSource), new TestBindSymbolSource(Guid.NewGuid())),
+                (typeof(IBindSymbolSource), new TestBindSymbolSource(Guid.NewGuid()) as IIdentifiedComponent)
             };
 
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
@@ -384,12 +392,14 @@ MyValue
 
             string sourceSnippet = @"%VAL%";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting
@@ -479,12 +489,14 @@ MyValue
 expectedDefValue
 ";
 
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>();
-            // template.json
-            templateSourceFiles.Add(TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented));
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
-            //content
-            templateSourceFiles.Add("sourceFile", sourceSnippet);
+                //content
+                { "sourceFile", sourceSnippet }
+            };
 
             //
             // Dependencies preparation and mounting

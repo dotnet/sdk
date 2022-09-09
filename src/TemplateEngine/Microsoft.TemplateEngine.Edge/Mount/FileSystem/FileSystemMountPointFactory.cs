@@ -9,9 +9,9 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 {
     public sealed class FileSystemMountPointFactory : IMountPointFactory
     {
-        internal static readonly Guid FactoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
+        internal static readonly Guid s_factoryId = new Guid("8C19221B-DEA3-4250-86FE-2D4E189A11D2");
 
-        Guid IIdentifiedComponent.Id => FactoryId;
+        Guid IIdentifiedComponent.Id => s_factoryId;
 
         bool IMountPointFactory.TryMount(IEngineEnvironmentSettings environmentSettings, IMountPoint? parent, string mountPointUri, out IMountPoint? mountPoint)
         {
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
                 return false;
             }
 
-            mountPoint = new FileSystemMountPoint(environmentSettings, parent, mountPointUri, uri.LocalPath);
+            mountPoint = new FileSystemMountPoint(environmentSettings, mountPointUri, uri.LocalPath);
             return true;
         }
     }

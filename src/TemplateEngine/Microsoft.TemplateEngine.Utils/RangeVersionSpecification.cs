@@ -90,14 +90,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return false;
                 }
 
-                if (IsStartInclusive)
-                {
-                    isStartValid = startComparison.Value <= 0;
-                }
-                else
-                {
-                    isStartValid = startComparison.Value < 0;
-                }
+                isStartValid = IsStartInclusive ? startComparison.Value <= 0 : startComparison.Value < 0;
             }
             else
             {
@@ -113,14 +106,7 @@ namespace Microsoft.TemplateEngine.Utils
                     return false;
                 }
 
-                if (IsEndInclusive)
-                {
-                    isEndValid = endComparison.Value <= 0;
-                }
-                else
-                {
-                    isEndValid = endComparison.Value < 0;
-                }
+                isEndValid = IsEndInclusive ? endComparison.Value <= 0 : endComparison.Value < 0;
             }
             else
             {

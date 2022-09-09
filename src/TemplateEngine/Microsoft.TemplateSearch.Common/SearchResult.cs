@@ -30,14 +30,7 @@ namespace Microsoft.TemplateSearch.Common
             Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             Success = success;
             ErrorMessage = errorMessage;
-            if (!success)
-            {
-                SearchHits = new List<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
-            }
-            else
-            {
-                SearchHits = hits!;
-            }
+            SearchHits = success ? hits! : Array.Empty<(ITemplatePackageInfo, IReadOnlyList<ITemplateInfo>)>();
         }
 
         /// <summary>

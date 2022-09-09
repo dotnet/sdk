@@ -11,7 +11,7 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
     {
         private const string DefaultHostVersion = "1.0.0";
 
-        private static readonly Dictionary<string, string> DefaultPreferences = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> s_defaultPreferences = new Dictionary<string, string>
         {
             { "prefs:language", "C#" }
         };
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateSearch.ScraperOutputComparison
                 throw new ArgumentException("hostIdentifier cannot be null");
             }
             // use "dotnetcli" as a fallback host so the correct host specific files are read.
-            DefaultTemplateEngineHost host = new DefaultTemplateEngineHost(hostIdentifier, DefaultHostVersion, DefaultPreferences, null, new[] { "dotnetcli" });
+            DefaultTemplateEngineHost host = new DefaultTemplateEngineHost(hostIdentifier, DefaultHostVersion, s_defaultPreferences, null, new[] { "dotnetcli" });
             return host;
         }
     }

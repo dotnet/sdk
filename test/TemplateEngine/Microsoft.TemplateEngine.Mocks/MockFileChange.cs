@@ -33,15 +33,9 @@ namespace Microsoft.TemplateEngine.Mocks
         /// </summary>
         public string SourceRelativePath
         {
-            get
-            {
-                return _sourcePath ?? throw new Exception($"{nameof(SourceRelativePath)} was not set.");
-            }
+            get => _sourcePath ?? throw new Exception($"{nameof(SourceRelativePath)} was not set.");
 
-            set
-            {
-                _sourcePath = value;
-            }
+            set => _sourcePath = value;
         }
 
         /// <summary>
@@ -49,15 +43,9 @@ namespace Microsoft.TemplateEngine.Mocks
         /// </summary>
         public string TargetRelativePath
         {
-            get
-            {
-                return _targetPath ?? throw new Exception($"{nameof(TargetRelativePath)} was not set.");
-            }
+            get => _targetPath ?? throw new Exception($"{nameof(TargetRelativePath)} was not set.");
 
-            set
-            {
-                _targetPath = value;
-            }
+            set => _targetPath = value;
         }
 
         public ChangeKind ChangeKind { get; private set; }

@@ -10,14 +10,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         private const string DefaultEvaluatorType = "C++";
         private const bool DefaultWholeLine = true;
         private const bool DefaultTrimWhitespace = true;
-        private static readonly string DefaultId;
+        private static readonly string s_defaultId;
 
         internal ConditionalOperationOptions()
         {
             EvaluatorType = DefaultEvaluatorType;
             WholeLine = DefaultWholeLine;
             TrimWhitespace = DefaultTrimWhitespace;
-            Id = DefaultId;
+            Id = s_defaultId;
         }
 
         internal string EvaluatorType { get; set; }

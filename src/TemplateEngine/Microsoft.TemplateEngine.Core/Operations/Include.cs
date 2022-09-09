@@ -67,8 +67,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
-                bool flag;
-                if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
+                if (processor.Config.Flags.TryGetValue(OperationName, out bool flag) && !flag)
                 {
                     processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;

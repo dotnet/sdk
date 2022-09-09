@@ -11,19 +11,18 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public class OrchestratorTests : IClassFixture<EnvironmentSettingsHelper>
     {
-        private IEngineEnvironmentSettings _engineEnvironmentSettings;
-        private ILogger _logger;
+        private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
+        private readonly ILogger _logger;
 
         public OrchestratorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
             _logger = _engineEnvironmentSettings.Host.Logger;
         }
 
         [Fact(DisplayName = nameof(VerifyRun))]
         public void VerifyRun()
         {
-            MockFileSystem fileSystem = new MockFileSystem();
             Util.Orchestrator orchestrator = new Util.Orchestrator(_logger, new MockFileSystem());
             MockMountPoint mnt = new MockMountPoint(_engineEnvironmentSettings);
             mnt.MockRoot.AddDirectory("subdir").AddFile("test.file", System.Array.Empty<byte>());
