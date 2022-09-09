@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
 
         private HashSet<Suppression> ParseSuppressionFile(string? suppressionFile)
         {
-            if (string.IsNullOrEmpty(suppressionFile?.Trim()))
+            if (string.IsNullOrWhiteSpace(suppressionFile))
             {
                 return new HashSet<Suppression>();
             }
