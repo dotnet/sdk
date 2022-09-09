@@ -61,7 +61,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true'">
+  <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true' or
+                 (
+                 '$(RuntimeIdentifier)' == '' and
+                 '$(RuntimeIdentifiers)' == '' and
+                   (
+                   '$(SelfContained)' == 'true' or
+                   '$(PublishReadyToRun)' == 'true' or
+                   '$(PublishSingleFile)' == 'true' or
+                   '$(PublishAot)' == 'true' or
+                   '$(PublishSelfContained)' == 'true'
+                   )
+                 )">
     <RuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
@@ -153,6 +164,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' == ''"
                  ResourceName="CannotHaveSelfContainedWithoutRuntimeIdentifier" />
+
+    <NETSdkError Condition="
+    (
+    '$(PublishAot)' == 'true' or
+    '$(PublishSingleFile)' == 'true' or
+    '$(PublishReadyToRun)' == 'true' or
+    '$(PublishSelfContained)' == 'true'
+    ) and '$(RuntimeIdentifier)' == ''"
+                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed" />
 
     <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(UseAppHost)' != 'true' and '$(_RuntimeIdentifierUsesAppHost)' == 'true'"
                  ResourceName="CannotUseSelfContainedWithoutAppHost" />

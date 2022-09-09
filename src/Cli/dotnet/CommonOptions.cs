@@ -268,14 +268,7 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
         {
-            IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
-            
-            if (!UserSpecifiedRidOption(parseResult) && isSelfContained)
-            {
-                var ridProperties = RuntimeArgFunc(GetCurrentRuntimeId());
-                selfContainedProperties = selfContainedProperties.Concat(ridProperties);
-            }
-            
+            IEnumerable<string> selfContainedProperties = new string[] { $"-property:_UserDefinedSelfContainedValue={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
             return selfContainedProperties;
         }
 

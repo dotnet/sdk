@@ -373,5 +373,33 @@ namespace Microsoft.NET.Build.Tests
             var publishCommand = new PublishCommand(createdAppProject);
             publishCommand.Execute(new [] {"-property:SelfContained=true", "-property:_CommandLineDefinedSelfContained=true", $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" }).Should().Pass().And.NotHaveStdOutContaining("warning");
         }
+
+        [Theory]
+        [InlineData("net7.0")]
+        public void It_does_not_build_SelfContained_due_to_PublishSelfContained_being_true(string targetFramework)
+        {
+            var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: targetFramework)
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", runtimeIdentifier));
+                    propertyGroup.Add(new XElement(ns + "PublishSelfContained", "true"));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute("-p:SelfContained=false")
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: runtimeIdentifier);
+            outputDirectory.Should().NotHaveFile("hostfxr.dll");
+        }
     }
 }
