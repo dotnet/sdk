@@ -43,7 +43,7 @@ Pokud chcete nainstalovat balíček NuGet určité verze, použijte &lt;package 
       </trans-unit>
       <trans-unit id="Command_Instantiate_Description">
         <source>Instantiates a template with given short name.</source>
-        <target state="translated">Vytvoří instanci šablony se zadaným krátkým názvem.</target>
+        <target state="new">Instantiates a template with given short name.</target>
         <note />
       </trans-unit>
       <trans-unit id="Command_Legacy_Update_Check_Description">

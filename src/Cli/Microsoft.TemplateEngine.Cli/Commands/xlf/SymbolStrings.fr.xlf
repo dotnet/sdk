@@ -43,7 +43,7 @@ Pour installer le package NuGet d’une certaine version, utilisez &lt;package I
       </trans-unit>
       <trans-unit id="Command_Instantiate_Description">
         <source>Instantiates a template with given short name.</source>
-        <target state="translated">Instancie un modèle avec le nom court donné.</target>
+        <target state="new">Instantiates a template with given short name.</target>
         <note />
       </trans-unit>
       <trans-unit id="Command_Legacy_Update_Check_Description">
