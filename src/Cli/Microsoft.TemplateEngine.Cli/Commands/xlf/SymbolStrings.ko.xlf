@@ -43,7 +43,7 @@ To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;ver
       </trans-unit>
       <trans-unit id="Command_Instantiate_Description">
         <source>Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</source>
-        <target state="new">Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</target>
+        <target state="translated">주어진 짧은 이름으로 템플릿을 인스턴스화합니다. 'dotnet new &lt;template name&gt;'의 별칭입니다.</target>
         <note>do not translate 'dotnet new &lt;template name&gt;'</note>
       </trans-unit>
       <trans-unit id="Command_Legacy_Update_Check_Description">
