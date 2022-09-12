@@ -642,7 +642,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PReleaseRequiresEnvVarOnSln">
         <source>NETSDK1189: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</source>
-        <target state="new">NETSDK1189: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</target>
+        <target state="translated">NETSDK1189: 若要在解决方案项目中使用 "{0}"，必须将环境变量 "{1}" 设置为 true。这会增加完成操作的时间。</target>
         <note>{StrBegin="NETSDK1189: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
