@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="ConditionEvaluation_Error_MismatchedCondition">
         <source>Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed or referenced parameters do not have default nor explicit values.</source>
-        <target state="new">Failed to evaluate condition {0} on parameter {1} (condition text: {2}, evaluation error: {3}) - condition might be malformed or referenced parameters do not have default nor explicit values.</target>
+        <target state="translated">Non è stato possibile valutare la condizione {0} nel parametro {1} (testo della condizione: {2}, errore di valutazione: {3}). La condizione potrebbe essere in formato non corretto o i parametri a cui viene fatto riferimento non hanno valori predefiniti né espliciti.</target>
         <note>{0} is the condition type
 {1} is parameter name
 {2} is condition text
