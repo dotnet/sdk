@@ -43,7 +43,7 @@ Para instalar el paquete NuGet de una versión determinada, use &lt;package ID&g
       </trans-unit>
       <trans-unit id="Command_Instantiate_Description">
         <source>Instantiates a template with given short name.</source>
-        <target state="translated">Crea una instancia de una plantilla con un nombre corto determinado.</target>
+        <target state="new">Instantiates a template with given short name.</target>
         <note />
       </trans-unit>
       <trans-unit id="Command_Legacy_Update_Check_Description">
