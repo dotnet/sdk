@@ -77,12 +77,12 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
       <!-- TODO: Once .NET 7.0 has released, update these version numbers to 7.0.0 -->
-      <_NET70RuntimePackVersion>7.0.0-preview.7.22375.6</_NET70RuntimePackVersion>
-      <_NET70TargetingPackVersion>7.0.0-preview.7.22375.6</_NET70TargetingPackVersion>
-      <_WindowsDesktop70RuntimePackVersion>7.0.0-preview.7.22377.1</_WindowsDesktop70RuntimePackVersion>
-      <_WindowsDesktop70TargetingPackVersion>7.0.0-preview.7.22377.1</_WindowsDesktop70TargetingPackVersion>
-      <_AspNet70RuntimePackVersion>7.0.0-preview.7.22376.6</_AspNet70RuntimePackVersion>
-      <_AspNet70TargetingPackVersion>7.0.0-preview.7.22376.6</_AspNet70TargetingPackVersion>
+      <_NET70RuntimePackVersion>7.0.0-rc.1.22427.1</_NET70RuntimePackVersion>
+      <_NET70TargetingPackVersion>7.0.0-rc.1.22427.1</_NET70TargetingPackVersion>
+      <_WindowsDesktop70RuntimePackVersion>7.0.0-rc.1.22431.18</_WindowsDesktop70RuntimePackVersion>
+      <_WindowsDesktop70TargetingPackVersion>7.0.0-rc.1.22431.18</_WindowsDesktop70TargetingPackVersion>
+      <_AspNet70RuntimePackVersion>7.0.0-rc.1.22426.10</_AspNet70RuntimePackVersion>
+      <_AspNet70TargetingPackVersion>7.0.0-rc.1.22426.10</_AspNet70TargetingPackVersion>
 
       <_NET60RuntimePackVersion>6.0.$(VersionFeature60)</_NET60RuntimePackVersion>
       <_NET60TargetingPackVersion>6.0.$(VersionFeature60)</_NET60TargetingPackVersion>
