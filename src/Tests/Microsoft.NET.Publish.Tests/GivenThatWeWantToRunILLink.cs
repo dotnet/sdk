@@ -24,7 +24,6 @@ using Xunit;
 using Xunit.Abstractions;
 using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 using System.Security.Permissions;
-using NuGet.Packaging;
 
 namespace Microsoft.NET.Publish.Tests
 {
