@@ -19,9 +19,9 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>4c6b4aa257241c4d419b8c271e37afac4445b1c0</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="5.7.2-rtm.8">
+    <Dependency Name="NuGet.Build.Tasks" Version="5.7.3-rtm.5">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>332fc3399af39ebaf103f04e039f7c0ce0b53c88</Sha>
+      <Sha>e3675c6173f0e3e4f13272c814ff33c590defba9</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
