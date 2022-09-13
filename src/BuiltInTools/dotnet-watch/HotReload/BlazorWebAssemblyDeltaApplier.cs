@@ -19,8 +19,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal class BlazorWebAssemblyDeltaApplier : IDeltaApplier
     {
-        private static Task<ImmutableArray<string>>? _cachedCapabilties;
-        private static readonly ImmutableArray<string> _baselineCapabilities = ImmutableArray.Create<string>("Baseline");
+        private static Task<ImmutableArray<string>>? s_cachedCapabilties;
         private readonly IReporter _reporter;
         private int _sequenceId;
 
@@ -38,20 +37,20 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            _cachedCapabilties ??= GetApplyUpdateCapabilitiesCoreAsync();
-            return _cachedCapabilties;
+            return s_cachedCapabilties ??= GetApplyUpdateCapabilitiesCoreAsync();
 
             async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesCoreAsync()
             {
                 if (context.BrowserRefreshServer is null)
                 {
-                    return _baselineCapabilities;
+                    throw new ApplicationException("The browser refresh server is unavailable.");
                 }
 
-                await context.BrowserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
+                _reporter.Verbose("Connecting to the browser.");
 
+                await context.BrowserRefreshServer.WaitForClientConnectionAsync(cancellationToken);
                 await context.BrowserRefreshServer.SendJsonSerlialized(default(BlazorRequestApplyUpdateCapabilities), cancellationToken);
-                // 32k ought to be enough for anyone.
+
                 var buffer = ArrayPool<byte>.Shared.Rent(32 * 1024);
                 try
                 {
@@ -59,15 +58,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var response = await context.BrowserRefreshServer.ReceiveAsync(buffer, cancellationToken);
                     if (!response.HasValue || !response.Value.EndOfMessage || response.Value.MessageType != WebSocketMessageType.Text)
                     {
-                        return _baselineCapabilities;
+                        throw new ApplicationException("Unable to connect to the browser refresh server.");
                     }
 
-                    var values = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
+                    var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
 
-                    // Capabilitiies are expressed a space-separated string.
+                    // Capabilities are expressed a space-separated string.
                     // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
-                    var result = values.Split(' ').ToImmutableArray();
-                    return result;
+                    return capabilities.Split(' ').ToImmutableArray();
                 }
                 finally
                 {
@@ -80,7 +78,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             if (context.BrowserRefreshServer is null)
             {
-                _reporter.Verbose("Unable to send deltas because the refresh server is unavailable.");
+                _reporter.Verbose("Unable to send deltas because the browser refresh server is unavailable.");
                 return false;
             }
 
