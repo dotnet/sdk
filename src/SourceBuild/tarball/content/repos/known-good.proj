@@ -35,17 +35,17 @@
         <RepositoryReference Include="diagnostics" />
         <RepositoryReference Include="llvm-project" />
         <RepositoryReference Include="razor-compiler" />
+        <RepositoryReference Include="xliff-tasks" />
         <RepositoryReference Include="roslyn" />
         <RepositoryReference Include="source-build-externals" />
         <RepositoryReference Include="symreader" />
         <RepositoryReference Include="xdt" />
-        <RepositoryReference Include="xliff-tasks" />
 
         <!-- Tier 2 -->
         <RepositoryReference Include="linker" />
-        <RepositoryReference Include="msbuild" />
         <RepositoryReference Include="runtime-portable" />
         <RepositoryReference Include="runtime" />
+        <RepositoryReference Include="msbuild" />
 
         <!-- Tier 3 -->
         <RepositoryReference Include="roslyn-analyzers" />
