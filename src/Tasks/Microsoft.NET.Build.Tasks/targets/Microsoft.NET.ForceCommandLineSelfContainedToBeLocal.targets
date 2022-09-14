@@ -1,2 +1,5 @@
-﻿<Project TreatAsLocalProperty="SelfContained" Condition=" '$(PublishSelfContained)' != ''">
+﻿<Project TreatAsLocalProperty="SelfContained">
+  <SelfContained>FOO</SelfContained>
+  <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' == 'true'">true</SelfContained>
+  <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' != ''">false</SelfContained>
 </Project>

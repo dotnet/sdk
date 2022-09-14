@@ -171,11 +171,11 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         }
 
         [Theory]
-        [InlineData("--sc=false")]
-        [InlineData("--self-contained=false")]
-        [InlineData("--no-self-contained")]
-        public void PublishSelfContainedPropertyOverridesSelfContainProperty(string sc_arg)
+        [InlineData("net7.0")]
+        public void PublishSelfContainedPropertyOverridesSelfContainProperty(string targetFramework)
         {
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
             var testAsset = _testAssetsManager
             .CopyTestAsset("HelloWorld")
             .WithSource()
@@ -187,11 +187,13 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             });
 
             var publishCommand = new PublishCommand(testAsset);
-            var publishResult = publishCommand.Execute(sc_arg);
+            var publishResult = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:_IsPublishing=true", "/p:SelfContained=false");
 
             publishResult.Should().Pass();
 
-            var publishDirectory = publishCommand.GetOutputDirectory();
+            var publishDirectory = publishCommand.GetOutputDirectory(
+                targetFramework: targetFramework,
+                runtimeIdentifier: rid);
             publishDirectory.Should().HaveFiles(new[] {
                 "HelloWorld.dll",
                 "System.dll"  // File that should only exist if self contained 

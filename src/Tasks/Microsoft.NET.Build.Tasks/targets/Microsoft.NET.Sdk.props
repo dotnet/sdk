@@ -16,15 +16,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DisableHandlePackageFileConflicts>true</DisableHandlePackageFileConflicts>
   </PropertyGroup>
 
-  <Import Project="Microsoft.NET.ForceCommandLineSelfContainedToBeLocal.targets" />
+  <Import Project="Microsoft.NET.ForceCommandLineSelfContainedToBeLocal.targets" Condition=" '$(PublishSelfContained)' != '' "/>
 
   <!-- Default configuration and platform to Debug|AnyCPU-->
   <PropertyGroup>
     <Configurations Condition=" '$(Configurations)' == '' ">Debug;Release</Configurations>
     <Platforms Condition=" '$(Platforms)' == '' ">AnyCPU</Platforms>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' == 'true'">true</SelfContained>
-    <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' != ''">false</SelfContained>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
   </PropertyGroup>
 
