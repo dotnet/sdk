@@ -15,7 +15,7 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
-        private static readonly string currentTfm = "net7.0";
+        private static readonly string currentTfm = "net8.0";
 
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
@@ -249,15 +249,15 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
-        [InlineData("winforms", Skip = "https://github.com/dotnet/wpf/issues/2363")]
+        [InlineData("wpf")]
+        [InlineData("winforms")]
         public void ItCanBuildDesktopTemplates(string templateName)
         {
             TestTemplateCreateAndBuild(templateName);
         }
 
         [WindowsOnlyTheory]
-        [InlineData("wpf", Skip = "https://github.com/dotnet/wpf/issues/2363")]
+        [InlineData("wpf")]
         public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
         {
             TestTemplateCreateAndBuild(templateName);
@@ -328,7 +328,7 @@ namespace EndToEnd.Tests
         [InlineData("react")]
         public void ItCanCreateTemplateWithDefaultFramework(string templateName)
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, build: false, framework: framework);
         }
 
@@ -374,7 +374,7 @@ namespace EndToEnd.Tests
         [InlineData("grpc")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_DisableBuildOnLinuxMusl(string templateName)
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
 
             if (RuntimeInformation.RuntimeIdentifier.StartsWith("alpine")) //linux musl
             {
@@ -392,8 +392,27 @@ namespace EndToEnd.Tests
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
 
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 7)
+            if (latestMajorVersion == 8)
             {
+                if (template.StartsWith("blazor")
+                    || template.StartsWith("mstest")
+                    || template.StartsWith("classlib")
+                    || template.StartsWith("console")
+                    || template.StartsWith("nunit")
+                    || template.StartsWith("xunit")
+                    || template.StartsWith("xunit")
+                    || template.StartsWith("wpf")
+                    || template.StartsWith("winforms")
+                    || template.StartsWith("mvc")
+                    || template.StartsWith("web")
+                    || template.StartsWith("worker")
+                    || template.StartsWith("razor")
+                    || template.StartsWith("grpc")
+                    || template.StartsWith("angular")
+                    || template.StartsWith("react"))
+                {
+                    return "net7.0";
+                }
                 return $"net{latestMajorVersion}.0";
             }
 

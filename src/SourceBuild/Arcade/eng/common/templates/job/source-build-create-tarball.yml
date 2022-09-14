@@ -86,3 +86,5 @@ jobs:
         fi
       displayName: Tarball Build Check
       name: Tarball_Build_Check
+      # Disable tarball CI until .NET 8.0 is source-buildable
+      condition: false

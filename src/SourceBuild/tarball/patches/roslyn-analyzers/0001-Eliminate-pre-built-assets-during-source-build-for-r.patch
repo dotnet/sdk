@@ -219,7 +219,7 @@ index fe90e93ca..01b64e055 100644
 +++ b/src/Tools/ReleaseNotesUtil/ReleaseNotesUtil.csproj
 @@ -3,6 +3,7 @@
      <OutputType>Exe</OutputType>
-     <TargetFramework>net6.0</TargetFramework>
+     <TargetFramework>net7.0</TargetFramework>
      <NonShipping>true</NonShipping>
 +    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
    </PropertyGroup>
