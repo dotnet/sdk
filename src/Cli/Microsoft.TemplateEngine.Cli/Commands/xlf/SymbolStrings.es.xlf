@@ -95,7 +95,7 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
       </trans-unit>
       <trans-unit id="Command_Update_Option_CheckOnly">
         <source>Only checks for updates and display the template packages to be updated without applying update.</source>
-        <target state="new">Only checks for updates and display the template packages to be updated without applying update.</target>
+        <target state="translated">Comprueba solo si hay actualizaciones y muestra los paquetes de plantillas que se van a actualizar sin aplicar la actualización.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
@@ -125,7 +125,7 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
       </trans-unit>
       <trans-unit id="Option_ColumnsAll">
         <source>Displays all columns in the output.</source>
-        <target state="new">Displays all columns in the output.</target>
+        <target state="translated">Muestra todas las columnas de la salida.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Debug_Attach">
