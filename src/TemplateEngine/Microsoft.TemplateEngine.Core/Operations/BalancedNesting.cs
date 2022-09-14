@@ -114,12 +114,12 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (_depth == 0 && token == PseudoEndTokenIndex)
                 {
-                    processor.Write(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
+                    processor.WriteToTarget(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
                     return _psuedoEndToken.Length;  // the source buffer needs to skip over this token.
                 }
                 else
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 }
 
                 return 0;

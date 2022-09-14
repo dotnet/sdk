@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 
         int AddToken(IToken token);
 
-        void AddToken(IToken token, int index);
+        void AddToken(IToken? token, int index);
 
         bool GetOperation(byte[] buffer, int bufferLength, ref int currentBufferPosition, out int token);
 

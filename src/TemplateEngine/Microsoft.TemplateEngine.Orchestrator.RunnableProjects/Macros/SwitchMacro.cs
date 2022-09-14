@@ -5,11 +5,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
-using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Newtonsoft.Json.Linq;
@@ -24,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "switch";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig rawConfig)
         {
             SwitchMacroConfig? config = rawConfig as SwitchMacroConfig;
 
@@ -33,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as SwitchMacroConfig");
             }
 
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator, Cpp2StyleEvaluatorDefinition.Evaluate);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, Cpp2StyleEvaluatorDefinition.EvaluateFromString);
             string result = string.Empty;   // default if no condition assigns a value
 
             foreach (KeyValuePair<string?, string?> switchInfo in config.Switches)
@@ -49,19 +47,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
                 else
                 {
-                    byte[] conditionBytes = Encoding.UTF8.GetBytes(condition);
-                    int length = conditionBytes.Length;
-                    int position = 0;
-                    IProcessorState state = new GlobalRunSpec.ProcessorState(environmentSettings, vars, conditionBytes, Encoding.UTF8);
-
-                    if (evaluator(state, ref length, ref position, out bool faulted))
+                    if (evaluator(environmentSettings.Host.Logger, condition!, variableCollection))
                     {
                         result = value ?? string.Empty;
                         break;
                     }
                 }
             }
-            vars[config.VariableName] = result.ToString();
+            variableCollection[config.VariableName] = result.ToString();
         }
 
         public IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig)

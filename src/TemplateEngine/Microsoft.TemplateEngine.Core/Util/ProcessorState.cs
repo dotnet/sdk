@@ -15,8 +15,8 @@ namespace Microsoft.TemplateEngine.Core.Util
 {
     public class ProcessorState : IProcessorState
     {
-        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>>();
-        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>>();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, Dictionary<Encoding, Trie<OperationTerminal>>> TrieLookup = new();
+        private static readonly ConcurrentDictionary<IReadOnlyList<IOperationProvider>, List<string>> OperationsToExplicitlySetOnByDefault = new();
         private readonly StreamProxy _target;
         private readonly TrieEvaluator<OperationTerminal> _trie;
         private readonly int _flushThreshold;
@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             _bomSize = bom.Length;
             CurrentBufferPosition = _bomSize;
             CurrentSequenceNumber = _bomSize;
-            this.Write(bom, 0, _bomSize);
+            WriteToTarget(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
             Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
@@ -102,13 +102,13 @@ namespace Microsoft.TemplateEngine.Core.Util
                         {
                             if (op.Tokens[j] != null)
                             {
-                                trie.AddPath(op.Tokens[j].Value, new OperationTerminal(op, j, op.Tokens[j].Length, op.Tokens[j].Start, op.Tokens[j].End));
+                                trie.AddPath(op.Tokens[j]!.Value, new OperationTerminal(op, j, op.Tokens[j]!.Length, op.Tokens[j]!.Start, op.Tokens[j]!.End));
                             }
                         }
 
                         if (explicitOnConfigurationRequired && op.IsInitialStateOn && !string.IsNullOrEmpty(op.Id))
                         {
-                            turnOnByDefault.Add(op.Id);
+                            turnOnByDefault.Add(op.Id!);
                         }
                     }
                 }
@@ -351,12 +351,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             return anyOperationsExecuted;
         }
 
-        public void SeekBackUntil(ITokenTrie match)
-        {
-            SeekBackUntil(match, false);
-        }
-
-        public void SeekBackUntil(ITokenTrie match, bool consume)
+        public void SeekTargetBackUntil(ITokenTrie match, bool consume = false)
         {
             byte[] buffer = new byte[match.MaxLength];
             while (_target.Position > _bomSize)
@@ -409,7 +404,7 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
-        public void SeekBackWhile(ITokenTrie match)
+        public void SeekTargetBackWhile(ITokenTrie match)
         {
             byte[] buffer = new byte[match.MaxLength];
             while (_target.Position > _bomSize)
@@ -461,51 +456,9 @@ namespace Microsoft.TemplateEngine.Core.Util
             }
         }
 
-        public void Write(byte[] buffer, int offset, int count) => _target.Write(buffer, offset, count);
+        public void WriteToTarget(byte[] buffer, int offset, int count) => _target.Write(buffer, offset, count);
 
-        public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-        {
-            BaseSeekForward(trie, ref bufferLength, ref currentBufferPosition, true);
-        }
-
-        public void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-        {
-            BaseSeekForward(trie, ref bufferLength, ref currentBufferPosition, false);
-        }
-
-        public void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-        {
-            while (bufferLength > trie.MinLength)
-            {
-                while (currentBufferPosition < bufferLength - trie.MinLength + 1)
-                {
-                    if (bufferLength == 0)
-                    {
-                        currentBufferPosition = 0;
-                        return;
-                    }
-
-                    int token;
-                    if (!trie.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
-                    {
-                        return;
-                    }
-                }
-
-                AdvanceBuffer(currentBufferPosition);
-                currentBufferPosition = CurrentBufferPosition;
-                bufferLength = CurrentBufferLength;
-            }
-        }
-
-        public void Inject(Stream staged)
-        {
-            _source = new CombinedStream(staged, _source, inner => _source = inner);
-            CurrentBufferLength = ReadExactBytes(_source, CurrentBuffer, 0, CurrentBufferLength);
-            CurrentBufferPosition = 0;
-        }
-
-        private void BaseSeekForward(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken)
+        public void SeekSourceForwardUntil(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken = false)
         {
             while (bufferLength >= match.MinLength)
             {
@@ -541,6 +494,38 @@ namespace Microsoft.TemplateEngine.Core.Util
 
             //Ran out of places to check and haven't reached the actual match, consume all the way to the end
             currentBufferPosition = bufferLength;
+        }
+
+        public void SeekSourceForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
+        {
+            while (bufferLength > trie.MinLength)
+            {
+                while (currentBufferPosition < bufferLength - trie.MinLength + 1)
+                {
+                    if (bufferLength == 0)
+                    {
+                        currentBufferPosition = 0;
+                        return;
+                    }
+
+                    int token;
+                    if (!trie.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    {
+                        return;
+                    }
+                }
+
+                AdvanceBuffer(currentBufferPosition);
+                currentBufferPosition = CurrentBufferPosition;
+                bufferLength = CurrentBufferLength;
+            }
+        }
+
+        public void Inject(Stream staged)
+        {
+            _source = new CombinedStream(staged, _source, inner => _source = inner);
+            CurrentBufferLength = ReadExactBytes(_source, CurrentBuffer, 0, CurrentBufferLength);
+            CurrentBufferPosition = 0;
         }
 
         private int ReadExactBytes(Stream stream, byte[] buffer, int offset, int count)

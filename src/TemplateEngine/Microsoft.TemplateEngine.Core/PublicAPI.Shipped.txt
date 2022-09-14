@@ -333,11 +333,6 @@ override Microsoft.TemplateEngine.Core.TokenConfig.GetHashCode() -> int
 ~Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.Parent.set -> void
 ~Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.TryAccept(Microsoft.TemplateEngine.Core.Expressions.IEvaluable child) -> bool
 ~Microsoft.TemplateEngine.Core.Expressions.UnaryScope<TOperator>.UnaryScope(Microsoft.TemplateEngine.Core.Expressions.IEvaluable parent, TOperator operator, System.Func<object, object> evaluate) -> void
-~Microsoft.TemplateEngine.Core.Matching.OperationTerminal.Operation.get -> Microsoft.TemplateEngine.Core.Contracts.IOperation
-~Microsoft.TemplateEngine.Core.Matching.OperationTerminal.OperationTerminal(Microsoft.TemplateEngine.Core.Contracts.IOperation operation, int token, int tokenLength, int start = 0, int end = -1) -> void
-~Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>
-~Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.Terminal.get -> T
-~Microsoft.TemplateEngine.Core.Matching.TerminalLocation<T>.TerminalLocation(T terminal, int location) -> void
 ~Microsoft.TemplateEngine.Core.Matching.Trie<T>
 ~Microsoft.TemplateEngine.Core.Matching.Trie<T>.AddPath(byte[] path, T terminal) -> void
 ~Microsoft.TemplateEngine.Core.Matching.Trie<T>.NextNodes.get -> System.Collections.Generic.Dictionary<byte, Microsoft.TemplateEngine.Core.Matching.TrieNode<T>>
@@ -460,12 +455,6 @@ Microsoft.TemplateEngine.Core.Util.ProcessorState.Encoding.get -> System.Text.En
 Microsoft.TemplateEngine.Core.Util.ProcessorState.EncodingConfig.get -> Microsoft.TemplateEngine.Core.Contracts.IEncodingConfig!
 Microsoft.TemplateEngine.Core.Util.ProcessorState.Inject(System.IO.Stream! staged) -> void
 Microsoft.TemplateEngine.Core.Util.ProcessorState.ProcessorState(System.IO.Stream! source, System.IO.Stream! target, int bufferSize, int flushThreshold, Microsoft.TemplateEngine.Core.Contracts.IEngineConfig! config, System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Core.Contracts.IOperationProvider!>! operationProviders) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, bool consume) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardThrough(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! trie, ref int bufferLength, ref int currentBufferPosition) -> void
 ~Microsoft.TemplateEngine.Core.Util.Token.Token(byte[] token, int index, int start = 0, int end = -1) -> void
 ~Microsoft.TemplateEngine.Core.Util.Token.Value.get -> byte[]
 ~Microsoft.TemplateEngine.Core.Util.TokenTrie.AddToken(byte[] literalToken) -> int
@@ -492,9 +481,6 @@ Microsoft.TemplateEngine.Core.Util.ProcessorState.SeekForwardWhile(Microsoft.Tem
 ~override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.GetSymbols(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor) -> Microsoft.TemplateEngine.Core.Contracts.ITokenTrie
 ~override Microsoft.TemplateEngine.Core.Expressions.VisualBasic.VisualBasicStyleEvaluatorDefintion.NullTokenValue.get -> string
 ~override Microsoft.TemplateEngine.Core.TokenConfig.Equals(object obj) -> bool
-~static Microsoft.TemplateEngine.Core.CommonOperations.ConsumeWholeLine(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition) -> void
-~static Microsoft.TemplateEngine.Core.CommonOperations.TrimWhitespace(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, bool forward, bool backward, ref int bufferLength, ref int currentBufferPosition) -> void
-~static Microsoft.TemplateEngine.Core.CommonOperations.WhitespaceHandler(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, bool wholeLine = false, bool trim = false, bool trimForward = false, bool trimBackward = false) -> void
 ~static Microsoft.TemplateEngine.Core.Expressions.Converter.TryConvert<T>(object source, out T result) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.Cpp.CppStyleEvaluatorDefinition.Evaluate(Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out bool faulted) -> bool
 ~static Microsoft.TemplateEngine.Core.Expressions.ScopeBuilderHelper.ScopeBuilder<TOperator, TToken>(this Microsoft.TemplateEngine.Core.Contracts.IProcessorState processor, Microsoft.TemplateEngine.Core.Contracts.ITokenTrie tokens, Microsoft.TemplateEngine.Core.Expressions.IOperatorMap<TOperator, TToken> operatorMap, bool dereferenceInLiterals = false) -> Microsoft.TemplateEngine.Core.Expressions.ScopeBuilder<TOperator, TToken>
@@ -533,7 +519,6 @@ Microsoft.TemplateEngine.Core.Util.Orchestrator.GetFileChanges(Microsoft.Templat
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(string! runSpecPath, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Orchestrator(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem.IPhysicalFileSystem! fileSystem) -> void
 Microsoft.TemplateEngine.Core.Util.Orchestrator.Run(Microsoft.TemplateEngine.Core.Contracts.IGlobalRunSpec! spec, Microsoft.TemplateEngine.Abstractions.Mount.IDirectory! sourceDir, string! targetDir) -> void
-Microsoft.TemplateEngine.Core.Util.ProcessorState.Write(byte[]! buffer, int offset, int count) -> void
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.Key.get -> string!
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.Value.get -> object!
 Microsoft.TemplateEngine.Core.ValueReadEventArgs.ValueReadEventArgs(string! key, object! value) -> void

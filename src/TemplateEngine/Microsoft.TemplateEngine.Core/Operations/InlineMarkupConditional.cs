@@ -106,7 +106,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(Conditional.OperationName, out flag) && !flag)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (faulted)
                 {
-                    processor.Write(Tokens[0].Value, Tokens[0].Start, Tokens[0].Length);
+                    processor.WriteToTarget(Tokens[0].Value, Tokens[0].Start, Tokens[0].Length);
                     MemoryStream fragment = new MemoryStream();
                     fragment.Write(condition, 0, condition.Length);
                     fragment.Write(_closeConditionTrie.Tokens[0].Value, _closeConditionTrie.Tokens[0].Start, _closeConditionTrie.Tokens[0].Length);
@@ -141,7 +141,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     return 0;
                 }
 
-                processor.SeekBackUntil(_scanBackTrie, true);
+                processor.SeekTargetBackUntil(_scanBackTrie, true);
                 FindEnd(processor, ref bufferLength, ref currentBufferPosition);
                 processor.WhitespaceHandler(ref bufferLength, ref currentBufferPosition, _definition.WholeLine, _definition.TrimWhitespace);
                 return 0;

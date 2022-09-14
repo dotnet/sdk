@@ -5,16 +5,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
-using Microsoft.TemplateEngine.Core.Util;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
@@ -182,78 +179,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
 
             return customOperations;
-        }
-
-        internal class ProcessorState : IProcessorState
-        {
-            internal ProcessorState(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, byte[] buffer, Encoding encoding)
-            {
-                Config = new EngineConfig(environmentSettings.Host.Logger, vars);
-                CurrentBuffer = buffer;
-                CurrentBufferPosition = 0;
-                Encoding = encoding;
-                EncodingConfig = new EncodingConfig(Config, encoding);
-            }
-
-            public IEngineConfig Config { get; }
-
-            public byte[] CurrentBuffer { get; private set; }
-
-            public int CurrentBufferLength => CurrentBuffer.Length;
-
-            public int CurrentBufferPosition { get; }
-
-            public Encoding Encoding { get; set; }
-
-            public IEncodingConfig EncodingConfig { get; }
-
-            public int CurrentSequenceNumber => throw new NotImplementedException();
-
-            public bool AdvanceBuffer(int bufferPosition)
-            {
-                byte[] tmp = new byte[CurrentBufferLength - bufferPosition];
-                Buffer.BlockCopy(CurrentBuffer, bufferPosition, tmp, 0, CurrentBufferLength - bufferPosition);
-                CurrentBuffer = tmp;
-
-                return true;
-            }
-
-            public void SeekBackUntil(ITokenTrie match)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SeekBackUntil(ITokenTrie match, bool consume)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SeekBackWhile(ITokenTrie match)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Write(byte[] buffer, int offset, int count) => throw new NotImplementedException();
-
-            public void SeekForwardUntil(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SeekForwardThrough(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SeekForwardWhile(ITokenTrie trie, ref int bufferLength, ref int currentBufferPosition)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void Inject(Stream staged)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

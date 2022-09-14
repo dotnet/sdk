@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue("expandVariables", out flag) && !flag)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 string output = result?.ToString() ?? "null";
 
                 byte[] outputBytes = processor.Encoding.GetBytes(output);
-                processor.Write(outputBytes, 0, outputBytes.Length);
+                processor.WriteToTarget(outputBytes, 0, outputBytes.Length);
                 return outputBytes.Length;
             }
         }

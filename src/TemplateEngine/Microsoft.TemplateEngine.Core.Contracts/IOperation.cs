@@ -7,9 +7,9 @@ namespace Microsoft.TemplateEngine.Core.Contracts
 {
     public interface IOperation
     {
-        IReadOnlyList<IToken> Tokens { get; }
+        IReadOnlyList<IToken?> Tokens { get; }
 
-        string Id { get; }
+        string? Id { get; }
 
         bool IsInitialStateOn { get; }
 

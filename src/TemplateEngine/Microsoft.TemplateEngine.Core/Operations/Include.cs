@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -147,7 +147,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     nBytesToWrite = totalBytesRead - bom.Length;
                 }
 
-                processor.Write(composite, offset, nBytesToWrite);
+                processor.WriteToTarget(composite, offset, nBytesToWrite);
                 return nBytesToWrite;
             }
         }

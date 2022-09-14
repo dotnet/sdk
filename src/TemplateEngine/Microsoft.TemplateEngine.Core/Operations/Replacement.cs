@@ -67,11 +67,11 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
-                processor.Write(_replacement, 0, _replacement.Length);
+                processor.WriteToTarget(_replacement, 0, _replacement.Length);
                 return _replacement.Length;
             }
         }

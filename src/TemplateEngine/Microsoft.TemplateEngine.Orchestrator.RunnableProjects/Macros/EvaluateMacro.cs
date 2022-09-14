@@ -4,11 +4,9 @@
 #nullable enable
 
 using System;
-using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
-using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
@@ -23,24 +21,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public string Type => "evaluate";
 
-        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig rawConfig)
+        public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig rawConfig)
         {
-            EvaluateMacroConfig? config = rawConfig as EvaluateMacroConfig;
-
-            if (config == null)
+            if (rawConfig is not EvaluateMacroConfig config)
             {
                 throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
             }
 
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(config.Evaluator, Cpp2StyleEvaluatorDefinition.Evaluate);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, Cpp2StyleEvaluatorDefinition.EvaluateFromString);
+            bool result = evaluator(environmentSettings.Host.Logger, config.Value, variableCollection);
 
-            byte[] data = Encoding.UTF8.GetBytes(config.Value);
-            int len = data.Length;
-            int pos = 0;
-            IProcessorState state = new GlobalRunSpec.ProcessorState(environmentSettings, vars, data, Encoding.UTF8);
-            bool result = evaluator(state, ref len, ref pos, out bool faulted);
-
-            vars[config.VariableName] = result;
+            variableCollection[config.VariableName] = result;
         }
     }
 }

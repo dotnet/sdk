@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 bool flag;
                 if (processor.Config.Flags.TryGetValue(OperationName, out flag) && !flag)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -167,7 +167,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 {
                     if (_definition._wholeLine)
                     {
-                        processor.SeekBackUntil(processor.EncodingConfig.LineEndings);
+                        processor.SeekTargetBackUntil(processor.EncodingConfig.LineEndings);
                     }
                     else if (_definition._trimWhitespace)
                     {
@@ -196,7 +196,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     {
                         if (_definition.WholeLine)
                         {
-                            processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                            processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                         }
 
                         if (IsTokenIndexOfType(token, IfTokenActionableBaseIndex))
@@ -219,7 +219,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 // If we've got an unbalanced statement, emit the token
                 if (_current == null)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     return Tokens[token].Length;
                 }
 
@@ -240,7 +240,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                     if (_definition._wholeLine)
                     {
-                        processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                     }
                     else if (_definition._trimWhitespace)
                     {
@@ -252,7 +252,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (_current.BranchTaken)
                 {
-                    processor.SeekBackUntil(processor.EncodingConfig.LineEndings, true);
+                    processor.SeekTargetBackUntil(processor.EncodingConfig.LineEndings, true);
                     //A previous branch was taken. Skip to the endif token.
                     // NOTE: this can probably use the new method SeekToNextTokenAtSameLevel() - they do almost the same thing.
                     SkipToMatchingEndif(processor, ref bufferLength, ref currentBufferPosition, ref token);
@@ -271,7 +271,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                     if (_definition._wholeLine)
                     {
-                        processor.SeekForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                        processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: false);
                     }
                     else if (_definition._trimWhitespace)
                     {
@@ -290,7 +290,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     {
                         if (_definition.WholeLine)
                         {
-                            processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                            processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                         }
 
                         if (IsTokenIndexOfType(token, ElseIfTokenActionableBaseIndex))
@@ -357,7 +357,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             {
                 if (_definition.WholeLine)
                 {
-                    processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                    processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                 }
 
                 bool seekSucceeded = SeekToToken(processor, ref bufferLength, ref currentBufferPosition, out token);

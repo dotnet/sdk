@@ -90,13 +90,13 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
                 if (emit)
                 {
-                    processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                    processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                     written = Tokens[token].Length;
                 }
                 else
                 {
                     // consume the entire line when not emitting. Otherwise the newlines on the falg tokens get emitted
-                    processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+                    processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                 }
 
                 //Only turn the flag in question back on if it's the "flags" flag.

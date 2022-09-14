@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (match != null)
                 {
                     _currentPhase = match.Next.Count > 0 ? match : null;
-                    processor.Write(match.Replacement, 0, match.Replacement.Length);
+                    processor.WriteToTarget(match.Replacement, 0, match.Replacement.Length);
                     return match.Replacement.Length;
                 }
 
@@ -127,7 +127,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                     _currentPhase = null;
                 }
 
-                processor.Write(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
+                processor.WriteToTarget(Tokens[token].Value, Tokens[token].Start, Tokens[token].Length);
                 return Tokens[token].Length;
             }
         }

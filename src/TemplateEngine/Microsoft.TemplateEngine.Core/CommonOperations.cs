@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core
@@ -26,23 +28,22 @@ namespace Microsoft.TemplateEngine.Core
 
         public static void ConsumeWholeLine(this IProcessorState processor, ref int bufferLength, ref int currentBufferPosition)
         {
-            processor.SeekBackWhile(processor.EncodingConfig.Whitespace);
-            processor.SeekForwardThrough(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition);
+            processor.SeekTargetBackWhile(processor.EncodingConfig.Whitespace);
+            processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
         }
 
         public static void TrimWhitespace(this IProcessorState processor, bool forward, bool backward, ref int bufferLength, ref int currentBufferPosition)
         {
             if (backward)
             {
-                processor.SeekBackWhile(processor.EncodingConfig.Whitespace);
+                processor.SeekTargetBackWhile(processor.EncodingConfig.Whitespace);
             }
 
             if (forward)
             {
-                processor.SeekForwardWhile(processor.EncodingConfig.Whitespace, ref bufferLength, ref currentBufferPosition);
+                processor.SeekSourceForwardWhile(processor.EncodingConfig.Whitespace, ref bufferLength, ref currentBufferPosition);
                 //Consume the trailing line end if possible
-                int tok;
-                processor.EncodingConfig.LineEndings.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out tok);
+                processor.EncodingConfig.LineEndings.GetOperation(processor.CurrentBuffer, bufferLength, ref currentBufferPosition, out _);
             }
         }
     }
