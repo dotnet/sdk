@@ -1,7 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Xunit;
 
@@ -1341,5 +1345,31 @@ Trailing stuff
                 RunAndVerify(test, outerElseHappensExpectedValue, processor, 9999);
             }
         }
+
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+        public void VerifyXMLConditionAtEnd()
+        {
+            string value = @"Hello
+<!--#if (B)
+bar
+#endif -->
+";
+            string expected = @"Hello
+";
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            MemoryStream input = new MemoryStream(valueBytes);
+            MemoryStream output = new MemoryStream();
+
+            VariableCollection vc = new VariableCollection();
+            IProcessor processor = SetupXmlStyleProcessor(vc);
+
+            //Changes should be made
+            bool changed = processor.Run(input, output, 50);
+            Verify(Encoding.UTF8, output, changed, value, expected);
+        }
+
     }
 }

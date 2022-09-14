@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
             _loggerFactory = new TestLoggerFactory();
             addLoggerProviders?.ToList().ForEach(_loggerFactory.AddProvider);
-            _logger = _loggerFactory.CreateLogger("Test Host");
+            _logger = _loggerFactory.CreateLogger(hostIdentifier);
             _fallbackNames = fallbackNames ?? new[] { "dotnetcli" };
         }
 

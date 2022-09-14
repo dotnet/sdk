@@ -642,5 +642,176 @@ Console.WriteLine(""Hello, World!"");
             string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile"));
             Assert.Equal(expectedSnippet, resultContent);
         }
+
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+        public async void XMLConditionFailure()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    A = new
+                    {
+                        type = "parameter",
+                        dataType = "bool",
+                        defaultValue = "false"
+                    },
+                    B = new
+                    {
+                        type = "parameter",
+                        dataType = "bool",
+                        defaultValue = "false"
+                    },
+                }
+            };
+
+            string sourceSnippet = @"
+<!--#if (A) -->
+<!-- comment foo -->
+foo
+<!--#endif -->
+<!--#if (B) -->
+This text should not be generated, just to make file content longer to prove the bug.
+If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
+This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
+<!--#endif -->
+";
+
+            string expectedSnippet = @"
+<!-- comment foo -->
+foo
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+
+                //content
+                { "sourceFile.md", sourceSnippet }
+            };
+
+            //
+            // Dependencies preparation and mounting
+            //
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(settings);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(settings);
+
+            TestFileSystemHelper.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(settings, sourceBasePath);
+            RunnableProjectGenerator rpg = new();
+
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            ParameterSetData parameters = new(
+                runnableConfig,
+                new Dictionary<string, object?>() { { "A", true } });
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.md"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
+
+#pragma warning disable xUnit1004 // Test methods should not be skipped
+        [Fact(Skip = "https://github.com/dotnet/templating/issues/4988")]
+#pragma warning restore xUnit1004 // Test methods should not be skipped
+        public async void HashConditionFailure()
+        {
+            //
+            // Template content preparation
+            //
+
+            var templateConfig = new
+            {
+                identity = "test.template",
+                symbols = new
+                {
+                    A = new
+                    {
+                        type = "parameter",
+                        dataType = "bool",
+                        defaultValue = "false"
+                    },
+                    B = new
+                    {
+                        type = "parameter",
+                        dataType = "bool",
+                        defaultValue = "false"
+                    },
+                }
+            };
+
+            string sourceSnippet = @"
+#if (A)
+# comment foo
+foo
+#endif
+##if (B)
+This text should not be generated, just to make file content longer to prove the bug.
+If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
+This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
+#endif
+";
+
+            string expectedSnippet = @"
+# comment foo
+foo
+";
+
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                // template.json
+                { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
+
+                //content
+                { "sourceFile.yaml", sourceSnippet }
+            };
+
+            //
+            // Dependencies preparation and mounting
+            //
+            IEngineEnvironmentSettings settings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(settings);
+            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(settings);
+
+            TestFileSystemHelper.WriteTemplateSource(settings, sourceBasePath, templateSourceFiles);
+            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(settings, sourceBasePath);
+            RunnableProjectGenerator rpg = new();
+            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
+            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            ParameterSetData parameters = new(
+                runnableConfig,
+                new Dictionary<string, object?>() { { "A", true } });
+            IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
+
+            //
+            // Running the actual scenario: template files processing and generating output (including macros processing)
+            //
+            await rpg.CreateAsync(settings, runnableConfig, sourceDir, parameters, targetDir, CancellationToken.None);
+
+            //
+            // Veryfying the outputs
+            //
+
+            string resultContent = settings.Host.FileSystem.ReadAllText(Path.Combine(targetDir, "sourceFile.yaml"));
+            Assert.Equal(expectedSnippet, resultContent);
+        }
     }
 }
