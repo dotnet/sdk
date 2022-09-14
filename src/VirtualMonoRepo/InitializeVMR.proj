@@ -35,9 +35,7 @@
                                                  InitializeCleanVmr;
                                                  CopyTarballContent;
                                                  CommitInitialContent;
-                                                 SetupSelfGithubInfo;
                                                  InitializeRepoAndDependentsRecursive;
-                                                 CommitGitInfoFiles;
                                                  CopyTextOnlyPackages;
                                                  CommitTextOnlyPackages">
     <Message Text="VMR was successfully initialized in '$(VmrDir)'" Importance="High" />
@@ -60,57 +58,30 @@
   <Target Name="InitializeRepoAndDependentsRecursive"
     DependsOnTargets="GetSourceBuildIntermediateNupkgNameConvention">
 
-    <Message Text="--> Initializing repo $(SourceBuildRepoName)" Importance="High" />
     <PropertyGroup>
-      <SourceDir>$(SourceBuildRepoName)/</SourceDir>
-      <IndividualRepoSourceDir>$(VmrSourceDir)$(SourceDir)</IndividualRepoSourceDir>
-      <IndividualRepoSourceEngDir>$(IndividualRepoSourceDir)eng/</IndividualRepoSourceEngDir>
-      <IndividualRepoVersionDetailsFile>$(IndividualRepoSourceEngDir)Version.Details.xml</IndividualRepoVersionDetailsFile>
+      <RootRepoName>$([System.IO.Path]::GetFileName("$(RepoRoot.TrimEnd('/').TrimEnd('\\'))"))</RootRepoName>
     </PropertyGroup>
 
+    <!-- Get installer's sha -->
+    <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" WorkingDirectory="$(RepoRoot)">
+      <Output TaskParameter="ConsoleOutput" ItemName="RootRepoCommitSha" />
+    </Exec>
+
+    <Message Text="--> Initializing individual repos recursively. Starting from $(RootRepoName) / @(RootRepoCommitSha)" Importance="High" />
+
+    <!-- We are hardcoding the package version for the root repo (installer), since there
+         isn't a Version.Details.xml file to read it from.
+         See https://github.com/dotnet/source-build/issues/2250 -->
     <VirtualMonoRepo_Initialize
-      Repository="$(SourceBuildRepoName)"
-      Revision="$(RepoSha)"
+      Repository="$(RootRepoName)"
+      Revision="@(RootRepoCommitSha)"
+      PackageVersion="8.0.100"
+      Recursive="true"
       VmrPath="$(VmrDir)"
       TmpPath="$(TmpDir)" />
 
-    <Message Text=" -> Done initializing repo $(SourceBuildRepoName)" Importance="High" />
+    <Message Text=" -> Done initializing individual repositories recursively" Importance="High" />
 
-    <Tarball_ReadSourceBuildIntermediateNupkgDependencies
-      VersionDetailsXmlFile="$([MSBuild]::NormalizePath($(IndividualRepoVersionDetailsFile)))"
-      SourceBuildIntermediateNupkgPrefix="$(SourceBuildIntermediateNupkgPrefix)"
-      SourceBuildIntermediateNupkgRid="$(SourceBuildIntermediateNupkgRid)"
-      ConvertInternalRepos="$(ConvertInternalRepos)">
-      <Output TaskParameter="Dependencies" ItemName="SourceBuildRepos" />
-    </Tarball_ReadSourceBuildIntermediateNupkgDependencies>
-
-    <!-- Remove repo if it has already be cloned at any sha.  This results in
-         The commit sha for the cloned repo in the tarball being the one that
-         was first encountered. -->
-    <ItemGroup>
-      <SourceBuildRepos Remove="@(SourceBuildRepos)" Condition=" EXISTS('$(VmrGitInfoDir)%(SourceBuildRepoName).props')" />
-    </ItemGroup>
-
-    <Tarball_WriteSourceRepoProperties
-      SourceBuildMetadataDir="$(VmrGitInfoDir)"
-      Dependencies="@(SourceBuildRepos)" />
-
-    <Message Text="--> Dependencies for $(IndividualRepoVersionDetailsFile):" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
-    <Message Text="-->     %(SourceBuildRepos.SourceBuildRepoName) / %(SourceBuildRepos.Sha)" Importance="High" Condition=" '@(SourceBuildRepos)' != '' " />
-    <MSBuild Projects="$(MSBuildProjectFile)"
-      Condition=" '@(SourceBuildRepos)' != '' "
-      Targets="InitializeRepoAndDependentsRecursive"
-      Properties="SourceBuildRepoName=%(SourceBuildRepos.SourceBuildRepoName);RepoSha=%(SourceBuildRepos.Sha)" />
-
-  </Target>
-
-  <Target Name="CommitGitInfoFiles">
-    <Copy
-      SourceFiles="$(VmrGitInfoDir)runtime.props"
-      DestinationFiles="$(VmrGitInfoDir)runtime-portable.props" />
-
-    <Exec Command="git add git-info" WorkingDirectory="$(VmrDir)" />
-    <Exec Command="git commit -m 'Initialized git-info files'" WorkingDirectory="$(VmrDir)" />
   </Target>
 
   <Target Name="CommitTextOnlyPackages">

@@ -5,26 +5,29 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.DotNet.DarcLib;
 using Microsoft.DotNet.DarcLib.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.VirtualMonoRepo.Tasks;
 
 internal class RemoteFactory : IRemoteFactory
 {
     private readonly IProcessManager _processManager;
+    private readonly IVersionDetailsParser _versionDetailsParser;
     private readonly string _tmpPath;
 
-    public RemoteFactory(IProcessManager processManager, string tmpPath)
+    public RemoteFactory(IProcessManager processManager, IVersionDetailsParser versionDetailsParser, string tmpPath)
     {
         _processManager = processManager;
+        _versionDetailsParser = versionDetailsParser;
         _tmpPath = tmpPath;
     }
 
-    public Task<IRemote> GetBarOnlyRemoteAsync(Extensions.Logging.ILogger logger)
+    public Task<IRemote> GetBarOnlyRemoteAsync(ILogger logger)
     {
         throw new NotImplementedException();
     }
 
-    public Task<IRemote> GetRemoteAsync(string repoUrl, Extensions.Logging.ILogger logger)
+    public Task<IRemote> GetRemoteAsync(string repoUrl, ILogger logger)
     {
         var githubClient = new DarcLib.GitHubClient(
             _processManager.GitExecutable,
@@ -33,6 +36,7 @@ internal class RemoteFactory : IRemoteFactory
             _tmpPath,
             cache: null);
 
-        return System.Threading.Tasks.Task.FromResult<IRemote>(new Remote(githubClient, barClient: null, logger));
+        IRemote remote = new Remote(githubClient, barClient: null, _versionDetailsParser, logger);
+        return Task.FromResult(remote);
     }
 }
