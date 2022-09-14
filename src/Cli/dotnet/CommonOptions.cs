@@ -23,14 +23,14 @@ namespace Microsoft.DotNet.Cli
                 IsHidden = true
             }.ForwardAsProperty()
             .AllowSingleArgPerToken();
-            
+
         public static Option<VerbosityOptions> VerbosityOption =
             new ForwardedOption<VerbosityOptions>(
                 new string[] { "-v", "--verbosity" },
                 description: CommonLocalizableStrings.VerbosityOptionDescription)
-                {
-                    ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
-                }.ForwardAsSingle(o => $"-verbosity:{o}");
+            {
+                ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
+            }.ForwardAsSingle(o => $"-verbosity:{o}");
 
         public static Option<VerbosityOptions> HiddenVerbosityOption =
             new ForwardedOption<VerbosityOptions>(
@@ -47,15 +47,15 @@ namespace Microsoft.DotNet.Cli
                 description)
             {
                 ArgumentHelpName = CommonLocalizableStrings.FrameworkArgumentName
-                    
+
             }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
             .AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
         private static Func<string, IEnumerable<string>> RuntimeArgFunc = o => new string[] { $"-property:RuntimeIdentifier={o}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
         private static CompletionDelegate RuntimeCompletions = Complete.RunTimesFromProjectFile;
-        
-        public static Option<string> RuntimeOption = 
+
+        public static Option<string> RuntimeOption =
             new ForwardedOption<string>(
                 new string[] { "-r", "--runtime" })
             {
@@ -156,7 +156,7 @@ namespace Microsoft.DotNet.Cli
                 "--no-self-contained",
                 CommonLocalizableStrings.FrameworkDependentOptionDescription)
             // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p)); 
+            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
         public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
 
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Cli
                 // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
                 return Array.Empty<string>();
             }
-            
+
             var selfContainedSpecified = parseResult.HasOption(SelfContainedOption) || parseResult.HasOption(NoSelfContainedOption);
             return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
         }
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Cli
             var properties = new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
             if (!userSpecifiedSelfContainedOption)
             {
-                properties = properties.Append("-property:_UserDefinedSelfContainedValue=false").ToArray();
+                properties = properties.Append("-property:SelfContained=false").ToArray();
             }
             return properties;
         }
@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.Cli
 
             var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
             // When running under test the path does not always contain "dotnet".
-			// The sdk folder is /d/ when run on helix because of space issues
+            // The sdk folder is /d/ when run on helix because of space issues
             dotnetRootPath = Path.GetFileName(dotnetRootPath).Contains("dotnet") || Path.GetFileName(dotnetRootPath).Contains("x64") || Path.GetFileName(dotnetRootPath).Equals("d") ? dotnetRootPath : Path.Combine(dotnetRootPath, "dotnet");
             return dotnetRootPath;
         }
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
         {
-            IEnumerable<string> selfContainedProperties = new string[] { $"-property:_UserDefinedSelfContainedValue={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
+            IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
             return selfContainedProperties;
         }
 

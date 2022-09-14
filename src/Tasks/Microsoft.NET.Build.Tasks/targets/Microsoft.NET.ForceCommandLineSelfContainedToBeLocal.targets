@@ -1,2 +1,2 @@
-﻿<Project TreatAsLocalProperty="_UserDefinedSelfContainedValue">
+﻿<Project TreatAsLocalProperty="SelfContained" Condition=" '$(PublishSelfContained)' != ''">
 </Project>
