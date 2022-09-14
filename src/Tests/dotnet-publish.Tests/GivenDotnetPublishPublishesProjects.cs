@@ -170,27 +170,32 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             });
         }
 
-        [Fact]
-        public void PublishSelfContainedPropertyOverridesSelfContainProperty()
+        [Theory]
+        [InlineData("--sc=false")]
+        [InlineData("--self-contained=false")]
+        [InlineData("--no-self-contained")]
+        public void PublishSelfContainedPropertyOverridesSelfContainProperty(string sc_arg)
         {
-            var testAppName = "MSBuildTestApp";
-            var rid = EnvironmentInfo.GetCompatibleRid();
-            var outputDirectory = PublishApp(testAppName, rid, "--no-self-contained -p:PublishSelfContained=true");
-
-            var outputProgram = Path.Combine(outputDirectory.FullName, $"{testAppName}{Constants.ExeSuffix}");
-
-            outputDirectory.Should().HaveFiles(new[] {
-                $"{testAppName}{Constants.ExeSuffix}",
-                $"{testAppName}.dll",
-                $"{testAppName}.pdb",
-                $"{testAppName}.deps.json",
-                $"{testAppName}.runtimeconfig.json",
-                "System.dll", // File that should only exist if self contained 
+            var testAsset = _testAssetsManager
+            .CopyTestAsset("HelloWorld")
+            .WithSource()
+            .WithProjectChanges(project =>
+            {
+                var ns = project.Root.Name.Namespace;
+                var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                propertyGroup.Add(new XElement(ns + "PublishSelfContained", "true"));
             });
 
-            new RunExeCommand(Log, outputProgram)
-                .Execute()
-                .Should().Pass();
+            var publishCommand = new PublishCommand(testAsset);
+            var publishResult = publishCommand.Execute(sc_arg);
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory();
+            publishDirectory.Should().HaveFiles(new[] {
+                "HelloWorld.dll",
+                "System.dll"  // File that should only exist if self contained 
+            });
         }
 
         [Theory]

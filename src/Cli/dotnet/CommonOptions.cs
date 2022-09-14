@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.Cli
             var properties = new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
             if (!userSpecifiedSelfContainedOption)
             {
-                properties = properties.Append("-property:SelfContained=false").ToArray();
+                properties = properties.Append("-property:_UserDefinedSelfContainedValue=false").ToArray();
             }
             return properties;
         }
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Cli
 
         private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
         {
-            IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
+            IEnumerable<string> selfContainedProperties = new string[] { $"-property:_UserDefinedSelfContainedValue={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
             return selfContainedProperties;
         }
 
