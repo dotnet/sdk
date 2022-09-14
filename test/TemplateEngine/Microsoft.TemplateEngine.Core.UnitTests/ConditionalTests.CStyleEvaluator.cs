@@ -1644,5 +1644,27 @@ GAGA
             processor.Run(input, output, 999);
             Verify(Encoding.UTF8, output, true, value, expected);
         }
+
+        [Fact]
+        public void VerifyTheScopeAfterLongConditionIsNotLost()
+        {
+            //the buffer size is selected in the way so after processing the condition, the buffer is in the end and should be read
+            //for trie, the last know position is 4 and it misses the buffer window after condition processing.
+            string value = """
+                #ifdef false
+                Long text, long text, long text, long text, long text, long text, long text, long text, long text, long text, long text, long text, long tex
+                #endif
+                Long test after condition, Long test after condition,Long test after condition, Long test after condition,Long test after condition
+                """;
+            string expected = "Long test after condition, Long test after condition,Long test after condition, Long test after condition,Long test after condition";
+            byte[] valueBytes = Encoding.UTF8.GetBytes(value);
+            using MemoryStream input = new(valueBytes);
+            using MemoryStream output = new();
+
+            VariableCollection vc = new();
+            IProcessor processor = SetupCStyleNoCommentsProcessor(vc);
+            processor.Run(input, output, 20);
+            Verify(Encoding.UTF8, output, true, value, expected);
+        }
     }
 }

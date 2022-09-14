@@ -256,9 +256,19 @@ namespace Microsoft.TemplateEngine.Core.Util
                 //Calculate the sequence number at the head of the buffer
                 int headSequenceNumber = CurrentSequenceNumber - CurrentBufferPosition;
 
-                // Calculate the buffer position to advance to. It can not be negative.
-                // Taking a maximum is a workaround for out-of-sync _trie.OldestRequiredSequenceNumber which may appear near EOF.
-                int bufferPositionToAdvanceTo = Math.Max(_trie.OldestRequiredSequenceNumber - headSequenceNumber, 0);
+                int bufferPositionToAdvanceTo;
+                if (headSequenceNumber > _trie.OldestRequiredSequenceNumber)
+                {
+                    // if headSequenceNumber is higher than _trie.OldestRequiredSequenceNumber
+                    // the window is already missed
+                    // we won't be able to continue with current tries anyway
+                    // advance to new chunk of the buffer.
+                    bufferPositionToAdvanceTo = CurrentBufferLength;
+                }
+                else
+                {
+                    bufferPositionToAdvanceTo = _trie.OldestRequiredSequenceNumber - headSequenceNumber;
+                }
                 int numberOfUncommittedBytesBeforeThePositionToAdvanceTo = _trie.OldestRequiredSequenceNumber - nextSequenceNumberThatCouldBeWritten;
 
                 //If we'd advance data out of the buffer that hasn't been
