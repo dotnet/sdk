@@ -153,6 +153,7 @@ All the installed (queryable via `dotnet workload list`) as well as [extended](h
 
 **Supported in**:
    - .NET SDK CLI (`dotnet new`)
+   - Visual Studio 17.4
 
 ### Examples
 
@@ -185,6 +186,7 @@ Only the currently active SDK (queryable via `dotnet --version`, changeable by t
 
 **Supported in**:
    - .NET SDK CLI (`dotnet new`)
+   - Visual Studio 17.4
 
 ### Examples
 
@@ -223,7 +225,7 @@ Only .NET [SDK-style projects](https://docs.microsoft.com/en-us/dotnet/core/proj
 
 **Supported in**:
    - .NET SDK CLI (`dotnet new`)
-   - Visual Studio - TBD
+   - Visual Studio 17.4 Preview 3
 
 ### Examples
 

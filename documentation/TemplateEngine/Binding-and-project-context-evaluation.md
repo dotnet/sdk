@@ -77,4 +77,22 @@ Example - binds `DefaultNamespace` symbol to `RootNamespace` of the project:
 
 
 ## Visual Studio specifics
-TBD
+
+Visual Studio supports binding to host parameters, environment variables and MSBuild properties.
+In addition to that, there is additional `context` source supporting:
+- `context:cratesolutiondirectory` - indicates if a solution directory is to be created as a result of project creation (Place solution and project in same directory is UNCHECKED in NPD).
+- `context:isexclusive` - is the template instantiation is a result of a new project being created (true) vs adding to an existing solution (false).
+- `context:solutionname` - the name of the solution, which may be different from the project name.
+
+Visual Studio also provides a way to bind to "namespace" via host parameters source:
+```
+  "type": "bind"
+  "binding": "namespace"
+```
+
+or 
+
+```
+  "type": "bind"
+  "binding": "host:namespace"
+```
