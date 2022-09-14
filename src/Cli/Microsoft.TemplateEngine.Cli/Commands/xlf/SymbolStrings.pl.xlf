@@ -95,7 +95,7 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
       </trans-unit>
       <trans-unit id="Command_Update_Option_CheckOnly">
         <source>Only check for updates and display the template packages to be updated without applying update.</source>
-        <target state="translated">Wyszukaj tylko aktualizacje i wyświetl pakiety szablonów do zaktualizowania bez stosowania aktualizacji.</target>
+        <target state="new">Only check for updates and display the template packages to be updated without applying update.</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
@@ -125,7 +125,7 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
       </trans-unit>
       <trans-unit id="Option_ColumnsAll">
         <source>Display all columns in the output.</source>
-        <target state="translated">Wyświetl wszystkie kolumny w danych wyjściowych.</target>
+        <target state="new">Display all columns in the output.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Debug_Attach">
