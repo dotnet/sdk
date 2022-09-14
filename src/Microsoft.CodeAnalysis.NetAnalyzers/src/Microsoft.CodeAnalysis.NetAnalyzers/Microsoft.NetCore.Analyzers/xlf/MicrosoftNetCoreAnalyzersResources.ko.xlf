@@ -1242,6 +1242,21 @@
         <target state="translated">하드 코딩된 SslProtocols 값 방지</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImplementGenericMathInterfacesCorrectlyDescription">
+        <source>Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</source>
+        <target state="new">Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementGenericMathInterfacesCorrectlyMessage">
+        <source>The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</source>
+        <target state="new">The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ImplementGenericMathInterfacesCorrectlyTitle">
+        <source>Use correct type parameter</source>
+        <target state="new">Use correct type parameter</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyDescription">
         <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
         <target state="translated">이 규칙 위반 문제를 해결하려면 GetObjectData 메서드를 visible 및 overridable로 설정하고 모든 인스턴스 필드가 serialization 프로세스에 포함되거나 NonSerializedAttribute 특성을 사용하여 명시적으로 표시되도록 합니다.</target>

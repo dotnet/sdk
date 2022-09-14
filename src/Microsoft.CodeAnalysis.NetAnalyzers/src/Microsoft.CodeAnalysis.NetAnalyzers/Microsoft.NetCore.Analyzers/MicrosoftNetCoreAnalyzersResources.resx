@@ -1959,6 +1959,15 @@
   <data name="ParenthesisWithPlaceHolder" xml:space="preserve">
     <value> ({0})</value>
   </data>
+  <data name="ImplementGenericMathInterfacesCorrectlyDescription" xml:space="preserve">
+    <value>Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</value>
+  </data>
+  <data name="ImplementGenericMathInterfacesCorrectlyMessage" xml:space="preserve">
+    <value>The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</value>
+  </data>
+  <data name="ImplementGenericMathInterfacesCorrectlyTitle" xml:space="preserve">
+    <value>Use correct type parameter</value>
+  </data>
   <data name="UseSpanClearInsteadOfFillCodeFixTitle" xml:space="preserve">
     <value>Use 'Clear()'</value>
   </data>

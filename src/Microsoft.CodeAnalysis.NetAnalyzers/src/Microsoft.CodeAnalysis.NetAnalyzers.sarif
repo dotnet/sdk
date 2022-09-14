@@ -381,6 +381,25 @@
             ]
           }
         },
+        "CA2260": {
+          "id": "CA2260",
+          "shortDescription": "Use correct type parameter",
+          "fullDescription": "Generic math interfaces require the derived type itself to be used for the self recurring type parameter.",
+          "defaultLevel": "warning",
+          "helpUri": "https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpImplementGenericMathInterfacesCorrectly",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2352": {
           "id": "CA2352",
           "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",

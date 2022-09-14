@@ -2292,6 +2292,18 @@ Providing a functional 'DynamicInterfaceCastableImplementationAttribute'-attribu
 |CodeFix|False|
 ---
 
+## [CA2260](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260): Use correct type parameter
+
+Generic math interfaces require the derived type itself to be used for the self recurring type parameter.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2300](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2300): Do not use insecure deserializer BinaryFormatter
 
 The method '{0}' is insecure when deserializing untrusted data.  If you need to instead detect BinaryFormatter deserialization without a SerializationBinder set, then disable rule CA2300, and enable rules CA2301 and CA2302.
