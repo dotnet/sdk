@@ -26,7 +26,7 @@
 
   <PropertyGroup>
       <VersionFeature21>30</VersionFeature21>
-      <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 20))</VersionFeature31>
+      <VersionFeature31>$([MSBuild]::Add($(VersionFeature), 25))</VersionFeature31>
       <VersionFeature50>17</VersionFeature50>
   </PropertyGroup>
 
@@ -370,6 +370,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
                               RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackExcludedRuntimeIdentifiers="android"
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
