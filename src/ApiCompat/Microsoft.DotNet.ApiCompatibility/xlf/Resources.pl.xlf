@@ -87,9 +87,14 @@
         <target state="new">Parameter name on member '{0}' changed from '{1}' to '{2}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotChangeVisibility">
-        <source>Visibility of '{0}' changed from '{1}' to '{2}'.</source>
-        <target state="new">Visibility of '{0}' changed from '{1}' to '{2}'.</target>
+      <trans-unit id="CannotExpandVisibility">
+        <source>Visibility of '{0}' expanded from '{1}' to '{2}'.</source>
+        <target state="new">Visibility of '{0}' expanded from '{1}' to '{2}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotReduceVisibility">
+        <source>Visibility of '{0}' reduced from '{1}' to '{2}'.</source>
+        <target state="new">Visibility of '{0}' reduced from '{1}' to '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveAttribute">

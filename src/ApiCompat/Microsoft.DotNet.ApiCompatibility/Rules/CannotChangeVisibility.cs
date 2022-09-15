@@ -42,12 +42,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             if (leftAccess > rightAccess)
             {
-                string msg = string.Format(Resources.CannotChangeVisibility, left, leftAccess, rightAccess);
+                string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
                 differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left!));
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
             {
-                string msg = string.Format(Resources.CannotChangeVisibility, right, rightAccess, leftAccess);
+                string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
                 differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right!));
             }
         }
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     return;
                 }
 
-                string msg = string.Format(Resources.CannotChangeVisibility, left, leftAccess, rightAccess);
+                string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
                 differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left!));
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     return;
                 }
 
-                string msg = string.Format(Resources.CannotChangeVisibility, right, rightAccess, leftAccess);
+                string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
                 differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right!));
             }
         }
