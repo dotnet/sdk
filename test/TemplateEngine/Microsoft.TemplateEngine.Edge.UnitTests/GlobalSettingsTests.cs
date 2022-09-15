@@ -48,8 +48,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var envSettings = _helper.CreateEnvironment();
             var settingsFile = Path.Combine(_helper.CreateTemporaryFolder(), "settings.json");
-            var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
-            var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
+            using var globalSettings1 = new GlobalSettings(envSettings, settingsFile);
+            using var globalSettings2 = new GlobalSettings(envSettings, settingsFile);
             var taskSource = new TaskCompletionSource<TemplatePackageData>();
             globalSettings2.SettingsChanged += async () => taskSource.TrySetResult((await globalSettings2.GetInstalledTemplatePackagesAsync(default).ConfigureAwait(false)).Single());
             var mutex = await globalSettings1.LockAsync(default).ConfigureAwait(false);
@@ -65,10 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.Equal(taskSource.Task, firstFinishedTask);
 
             var newData2 = taskSource.Task.Result;
-            // Explicitly dispose both instances after the data is finally set because volatile _disposed(true)
-            // might cause ObjectDisposedException while GetInstalledTemplatePackagesAsync is being executed
-            globalSettings1.Dispose();
-            globalSettings2.Dispose();
             Assert.Equal(newData.InstallerId, newData2.InstallerId);
             Assert.Equal(newData.MountPointUri, newData2.MountPointUri);
             Assert.Equal(newData.Details?["a"], newData2.Details?["a"]);
