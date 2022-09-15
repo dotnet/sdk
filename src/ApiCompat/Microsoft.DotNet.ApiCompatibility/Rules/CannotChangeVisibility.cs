@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-
 using System.Collections.Generic;
 using System.Runtime;
 using Microsoft.CodeAnalysis;
@@ -32,23 +31,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
         {
-            if (left is null && right is null)
+            if (left is null || right is null)
             {
                 return;
             }
 
-            Accessibility leftAccess = left?.DeclaredAccessibility ?? Accessibility.Private;
-            Accessibility rightAccess = right?.DeclaredAccessibility ?? Accessibility.Private;
+            Accessibility leftAccess = left.DeclaredAccessibility;
+            Accessibility rightAccess = right.DeclaredAccessibility;
 
             if (leftAccess > rightAccess)
             {
                 string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left!));
+                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left));
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
             {
                 string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right!));
+                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right));
             }
         }
 
@@ -61,13 +60,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
         {
-            if (left is null && right is null)
+            if (left is null || right is null)
             {
                 return;
             }
 
-            Accessibility leftAccess = left?.DeclaredAccessibility ?? Accessibility.Private;
-            Accessibility rightAccess = right?.DeclaredAccessibility ?? Accessibility.Private;
+            Accessibility leftAccess = left.DeclaredAccessibility;
+            Accessibility rightAccess = right.DeclaredAccessibility;
 
             if (leftAccess > rightAccess)
             {
@@ -77,7 +76,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 }
 
                 string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left!));
+                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left));
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
             {
@@ -87,7 +86,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 }
 
                 string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right!));
+                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right));
             }
         }
     }

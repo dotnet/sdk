@@ -44,9 +44,7 @@ namespace CompatTests
 new CompatDifference[] {
     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
 },
-new CompatDifference[] {
-    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
-}
+new CompatDifference[] {}
             },
             // Expand visibility of type
             {
@@ -186,9 +184,7 @@ namespace CompatTests
 new CompatDifference[] {
     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
 },
-new CompatDifference[] {
-    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
-}
+new CompatDifference[] {}
             },
             // Expand visibility of type
             {
@@ -207,9 +203,7 @@ namespace CompatTests
 new CompatDifference[] {
     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotExpandVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
 },
-new CompatDifference[] {
-    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotExpandVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
-}
+new CompatDifference[] {}
             },
             // Expand visibility of member
             {
