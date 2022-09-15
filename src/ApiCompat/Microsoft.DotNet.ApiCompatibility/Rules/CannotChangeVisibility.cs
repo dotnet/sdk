@@ -24,7 +24,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private void RunOnSymbol(ISymbol? left,
+        private void RunOnSymbol(
+            ISymbol? left,
             ISymbol? right,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
