@@ -12,9 +12,10 @@ diff --git a/Directory.Build.props b/Directory.Build.props
 index 1353696a29..4e7463a453 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
-@@ -13,9 +13,11 @@
-     <SdkTargetFramework>net7.0</SdkTargetFramework>
-     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+@@ -14,9 +14,11 @@
+     <!-- VS for Mac may run on a lower version of .NET than the SDK is targeting, but needs to load the resolvers.  So the resolvers and dependencies
+          may target a lower version of .NET -->
+     <ResolverTargetFramework>net6.0</ResolverTargetFramework>
  
 -    <!-- Disable implict package target fallback, and disable warning for when we explicitly add it (currently needed for
 -         Microsoft.ApplicationInsights) -->
@@ -24,6 +25,6 @@ index 1353696a29..4e7463a453 100644
 +      CA1420 - Temporarily disable for source-build until SDK builds with latest toolset.
 +    -->
 +    <NoWarn>$(NoWarn);NU1701;CA1420</NoWarn>
+     <!-- do not enable analyzers on source build-->
+     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnforceCodeStyleInBuild>
      <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
- 
-     <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->

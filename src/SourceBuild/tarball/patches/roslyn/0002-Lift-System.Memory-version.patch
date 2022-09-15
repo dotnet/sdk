@@ -19,7 +19,7 @@ index 627f9c46824..711593e2a1e 100644
 +++ b/eng/Versions.props
 @@ -214,7 +214,7 @@
      <SystemIOPipesAccessControlVersion>5.0.0</SystemIOPipesAccessControlVersion>
-     <SystemIOPipelinesVersion>6.0.1</SystemIOPipelinesVersion>
+     <SystemIOPipelinesVersion>6.0.3</SystemIOPipelinesVersion>
      <SystemManagementVersion>5.0.0-preview.8.20407.11</SystemManagementVersion>
 -    <SystemMemoryVersion>4.5.4</SystemMemoryVersion>
 +    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
