@@ -87,6 +87,11 @@
         <target state="new">Parameter name on member '{0}' changed from '{1}' to '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotChangeVisibility">
+        <source>Visibility of '{0}' changed from '{1}' to '{2}'.</source>
+        <target state="new">Visibility of '{0}' changed from '{1}' to '{2}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotRemoveAttribute">
         <source>Cannot remove attribute '{0}' from '{1}'.</source>
         <target state="new">Cannot remove attribute '{0}' from '{1}'.</target>

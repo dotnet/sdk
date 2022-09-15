@@ -240,4 +240,7 @@
   <data name="CannotAddSealedToInterfaceMember" xml:space="preserve">
     <value>Cannot add sealed keyword to default interface member '{0}'.</value>
   </data>
+  <data name="CannotChangeVisibility" xml:space="preserve">
+    <value>Visibility of '{0}' changed from '{1}' to '{2}'.</value>
+  </data>
 </root>
