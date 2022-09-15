@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Logan Bussell <loganbussell@microsoft.com>
 Date: Thu, 14 Jul 2022 14:53:35 -0700
-Subject: [PATCH] Fully qualify conflicting runtime and roslyn APIs
+Subject: [PATCH 3/5] Fully qualify conflicting runtime and roslyn APIs
 
 ---
  .../System.Private.CoreLib/gen/EventSourceGenerator.Parser.cs   | 2 +-
@@ -22,7 +22,7 @@ index 43a498b589a..1bad8f3753c 100644
              const string EventSourceAttribute = "System.Diagnostics.Tracing.EventSourceAttribute";
  
 diff --git a/src/libraries/System.Text.RegularExpressions/gen/RegexGenerator.Parser.cs b/src/libraries/System.Text.RegularExpressions/gen/RegexGenerator.Parser.cs
-index 33dd18fc67f..13005b9d0a9 100644
+index 7a472a994c9..36dc7500bea 100644
 --- a/src/libraries/System.Text.RegularExpressions/gen/RegexGenerator.Parser.cs
 +++ b/src/libraries/System.Text.RegularExpressions/gen/RegexGenerator.Parser.cs
 @@ -20,7 +20,7 @@ public partial class RegexGenerator

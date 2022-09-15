@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: MichaelSimons <msimons@microsoft.com>
 Date: Mon, 25 Jul 2022 19:15:47 +0000
-Subject: [PATCH] Disable CA1420
+Subject: [PATCH 1/2] Disable CA1420
 
 Workaround until NuGet updates to build with latest .NET toolset.
 ---
@@ -9,7 +9,7 @@ Workaround until NuGet updates to build with latest .NET toolset.
  1 file changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index 8ee962ab1d..ce999a306f 100644
+index 1353696a29..4e7463a453 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
 @@ -13,9 +13,11 @@
