@@ -1,0 +1,313 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ben Villalobos <4691428+BenVillalobos@users.noreply.github.com>
+Date: Tue, 5 Jul 2022 16:33:56 -0500
+Subject: [PATCH] Change TargetFramework to net7.0
+
+Add nowarn for SYSLIB warnings
+Resolve CS8981: lowercase preserved types
+
+Backport PR: https://github.com/dotnet/msbuild/pull/7790
+---
+ Directory.Build.props                                     | 2 +-
+ eng/BootStrapMSBuild.targets                              | 2 +-
+ eng/cibuild_bootstrapped_msbuild.ps1                      | 2 +-
+ eng/cibuild_bootstrapped_msbuild.sh                       | 2 +-
+ global.json                                               | 2 +-
+ scripts/Deploy-MSBuild.ps1                                | 2 +-
+ .../RemoteProjectsProviderMock/CollectionsHelpers.cs      | 8 ++++----
+ .../Microsoft.Build.Engine.UnitTests.csproj               | 4 ++--
+ src/Build/Definition/ToolsetReader.cs                     | 4 ++--
+ src/Build/Microsoft.Build.csproj                          | 2 +-
+ src/Directory.BeforeCommon.targets                        | 2 +-
+ src/Directory.Build.props                                 | 6 +++---
+ src/Framework/README.md                                   | 2 +-
+ src/MSBuild.Bootstrap/MSBuild.Bootstrap.csproj            | 2 +-
+ src/Package/Localization/Localization.csproj              | 2 +-
+ src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj  | 4 ++--
+ src/Tasks/Microsoft.Build.Tasks.csproj                    | 2 +-
+ src/Utilities/README.md                                   | 2 +-
+ 18 files changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 0df28a5b8..3a959f894 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -38,7 +38,7 @@
+         SYSLIB0011: Removing binary formatter will happen as part of a larger .NET-wide effort.
+     -->
+ 
+-    <NoWarn>$(NoWarn);NU1603;NU5105;1701;1702;SYSLIB0011</NoWarn>
++    <NoWarn>$(NoWarn);NU1603;NU5105;1701;1702;SYSLIB0011;SYSLIB0037;SYSLIB0044</NoWarn>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(Configuration)' == 'Debug-MONO'">
+diff --git a/eng/BootStrapMSBuild.targets b/eng/BootStrapMSBuild.targets
+index 288c062da..4ba21444d 100644
+--- a/eng/BootStrapMSBuild.targets
++++ b/eng/BootStrapMSBuild.targets
+@@ -210,7 +210,7 @@
+          Copy it from "next to MSBuild" in the pre-bootstrap SDK to our little weirdo bootstrap
+          layout next to the SDK tasks, so it can get loaded by the SDK tasks that need it. -->
+     <Copy SourceFiles="$(DOTNET_INSTALL_DIR)\sdk\$(DotNetCliVersion)\Microsoft.Extensions.DependencyModel.dll"
+-          DestinationFolder="$(BootstrapDestination)Sdks\Microsoft.NET.Sdk\tools\net6.0" />
++          DestinationFolder="$(BootstrapDestination)Sdks\Microsoft.NET.Sdk\tools\net7.0" />
+ 
+     <Copy SourceFiles="@(InstalledExtensions)"
+           DestinationFolder="$(BootstrapDestination)Current\%(RecursiveDir)" />
+diff --git a/eng/cibuild_bootstrapped_msbuild.ps1 b/eng/cibuild_bootstrapped_msbuild.ps1
+index b9c1cf4fe..906a33dc1 100644
+--- a/eng/cibuild_bootstrapped_msbuild.ps1
++++ b/eng/cibuild_bootstrapped_msbuild.ps1
+@@ -91,7 +91,7 @@ try {
+   else
+   {
+     $buildToolPath = $dotnetExePath
+-    $buildToolCommand = Join-Path $bootstrapRoot "net6.0\MSBuild\MSBuild.dll"
++    $buildToolCommand = Join-Path $bootstrapRoot "net7.0\MSBuild\MSBuild.dll"
+     $buildToolFramework = "netcoreapp3.1"
+   }
+ 
+diff --git a/eng/cibuild_bootstrapped_msbuild.sh b/eng/cibuild_bootstrapped_msbuild.sh
+index e5425507f..b4404b7e4 100755
+--- a/eng/cibuild_bootstrapped_msbuild.sh
++++ b/eng/cibuild_bootstrapped_msbuild.sh
+@@ -63,7 +63,7 @@ bootstrapRoot="$Stage1Dir/bin/bootstrap"
+ if [ $host_type = "core" ]
+ then
+   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"
+-  _InitializeBuildToolCommand="$bootstrapRoot/net6.0/MSBuild/MSBuild.dll"
++  _InitializeBuildToolCommand="$bootstrapRoot/net7.0/MSBuild/MSBuild.dll"
+   _InitializeBuildToolFramework="netcoreapp3.1"
+ elif [ $host_type = "mono" ]
+ then
+diff --git a/global.json b/global.json
+index 471f88dbc..efd25efd1 100644
+--- a/global.json
++++ b/global.json
+@@ -3,7 +3,7 @@
+     "allowPrerelease": true
+   },
+   "tools": {
+-    "dotnet": "6.0.200",
++    "dotnet": "7.0.100-preview.5.22307.18",
+     "vs": {
+       "version": "17.0"
+     }
+diff --git a/scripts/Deploy-MSBuild.ps1 b/scripts/Deploy-MSBuild.ps1
+index ef1959fc3..8cfecb6a0 100644
+--- a/scripts/Deploy-MSBuild.ps1
++++ b/scripts/Deploy-MSBuild.ps1
+@@ -69,7 +69,7 @@ else {
+ if ($runtime -eq "Desktop") {
+     $targetFramework = "net472"
+ } else {
+-    $targetFramework = "net6.0"
++    $targetFramework = "net7.0"
+ }
+ 
+ $bootstrapBinDirectory = "artifacts\bin\MSBuild.Bootstrap\$configuration\$targetFramework"
+diff --git a/src/Build.OM.UnitTests/ObjectModelRemoting/RemoteProjectsProviderMock/CollectionsHelpers.cs b/src/Build.OM.UnitTests/ObjectModelRemoting/RemoteProjectsProviderMock/CollectionsHelpers.cs
+index b6d935f41..83035cd50 100644
+--- a/src/Build.OM.UnitTests/ObjectModelRemoting/RemoteProjectsProviderMock/CollectionsHelpers.cs
++++ b/src/Build.OM.UnitTests/ObjectModelRemoting/RemoteProjectsProviderMock/CollectionsHelpers.cs
+@@ -85,13 +85,13 @@ namespace Microsoft.Build.UnitTests.OM.ObjectModelRemoting
+         }
+ 
+ 
+-        public static IDictionary<key, T> ImportDictionary<key, T, RMock>(this ProjectCollectionLinker importer, IDictionary<key, RMock> source)
++        public static IDictionary<Key, T> ImportDictionary<Key, T, RMock>(this ProjectCollectionLinker importer, IDictionary<Key, RMock> source)
+             where T : class
+             where RMock : MockLinkRemoter<T>, new()
+         {
+             if (source == null) return null;
+             // Just copy ...
+-            Dictionary<key, T> result = new Dictionary<key, T>();
++            Dictionary<Key, T> result = new Dictionary<Key, T>();
+             foreach (var sRemoter in source)
+             {
+                 var value = importer.Import<T, RMock>(sRemoter.Value);
+@@ -101,13 +101,13 @@ namespace Microsoft.Build.UnitTests.OM.ObjectModelRemoting
+             return result;
+         }
+ 
+-        public static IDictionary<key, RMock> ExportDictionary<key, T, RMock>(this ProjectCollectionLinker exporter, IDictionary<key, T> source)
++        public static IDictionary<Key, RMock> ExportDictionary<Key, T, RMock>(this ProjectCollectionLinker exporter, IDictionary<Key, T> source)
+             where T : class
+             where RMock : MockLinkRemoter<T>, new()
+         {
+             if (source == null) return null;
+             // Just copy ...
+-            Dictionary<key, RMock> result = new Dictionary<key, RMock>();
++            Dictionary<Key, RMock> result = new Dictionary<Key, RMock>();
+             foreach (var s in source)
+             {
+                 var valueRemoter = exporter.Export<T, RMock>(s.Value);
+diff --git a/src/Build.UnitTests/Microsoft.Build.Engine.UnitTests.csproj b/src/Build.UnitTests/Microsoft.Build.Engine.UnitTests.csproj
+index 8ddca6108..83a4382d8 100644
+--- a/src/Build.UnitTests/Microsoft.Build.Engine.UnitTests.csproj
++++ b/src/Build.UnitTests/Microsoft.Build.Engine.UnitTests.csproj
+@@ -36,14 +36,14 @@
+     <ProjectReference Include="..\Samples\TaskWithDependency\TaskWithDependency.csproj" Private="false" ReferenceOutputAssembly="false" OutputItemType="TaskWithDependencyResolvedProjectReferencePath">
+       <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">TargetFramework=$(FullFrameworkTFM)</SetTargetFramework>
+       <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(MonoBuild)' == 'true'">TargetFramework=$(FullFrameworkTFM)</SetTargetFramework>
+-      <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">TargetFramework=net6.0</SetTargetFramework>
++      <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">TargetFramework=net7.0</SetTargetFramework>
+     </ProjectReference>
+     <ProjectReference Include="..\Samples\PortableTask\PortableTask.csproj" Private="false" ReferenceOutputAssembly="false" OutputItemType="PortableTaskResolvedProjectReferencePath" />
+ 
+     <ProjectReference Include="..\Samples\ProjectCachePlugin\ProjectCachePlugin.csproj" Private="false" ReferenceOutputAssembly="false">
+       <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">TargetFramework=$(FullFrameworkTFM)</SetTargetFramework>
+       <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(MonoBuild)' == 'true'">TargetFramework=$(FullFrameworkTFM)</SetTargetFramework>
+-      <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">TargetFramework=net6.0</SetTargetFramework>
++      <SetTargetFramework Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">TargetFramework=net7.0</SetTargetFramework>
+     </ProjectReference>
+   </ItemGroup>
+ 
+diff --git a/src/Build/Definition/ToolsetReader.cs b/src/Build/Definition/ToolsetReader.cs
+index 8887b9cca..ddb164cb7 100644
+--- a/src/Build/Definition/ToolsetReader.cs
++++ b/src/Build/Definition/ToolsetReader.cs
+@@ -12,7 +12,7 @@ using Microsoft.Build.Execution;
+ using Microsoft.Build.Framework;
+ using Microsoft.Build.Internal;
+ using Microsoft.Build.Shared.FileSystem;
+-using error = Microsoft.Build.Shared.ErrorUtilities;
++using ErrorUtils = Microsoft.Build.Shared.ErrorUtilities;
+ using InvalidProjectFileException = Microsoft.Build.Exceptions.InvalidProjectFileException;
+ using InvalidToolsetDefinitionException = Microsoft.Build.Exceptions.InvalidToolsetDefinitionException;
+ using ReservedPropertyNames = Microsoft.Build.Internal.ReservedPropertyNames;
+@@ -366,7 +366,7 @@ namespace Microsoft.Build.Evaluation
+             out string defaultOverrideToolsVersion
+             )
+         {
+-            error.VerifyThrowArgumentNull(toolsets, "Toolsets");
++            ErrorUtils.VerifyThrowArgumentNull(toolsets, "Toolsets");
+ 
+             ReadEachToolset(toolsets, globalProperties, initialProperties, accumulateProperties);
+ 
+diff --git a/src/Build/Microsoft.Build.csproj b/src/Build/Microsoft.Build.csproj
+index 309d14bdc..c4eb0bce6 100644
+--- a/src/Build/Microsoft.Build.csproj
++++ b/src/Build/Microsoft.Build.csproj
+@@ -4,7 +4,7 @@
+   <Import Project="..\Shared\DebuggingSources.proj" />
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(FullFrameworkTFM);net6.0</TargetFrameworks>
++    <TargetFrameworks>$(FullFrameworkTFM);net7.0</TargetFrameworks>
+     <TargetFrameworks Condition="'$(MonoBuild)'=='true'">$(RuntimeOutputTargetFrameworks)</TargetFrameworks>
+     <RootNamespace>Microsoft.Build</RootNamespace>
+     <AssemblyName>Microsoft.Build</AssemblyName>
+diff --git a/src/Directory.BeforeCommon.targets b/src/Directory.BeforeCommon.targets
+index 6696e3861..40bc57ecb 100644
+--- a/src/Directory.BeforeCommon.targets
++++ b/src/Directory.BeforeCommon.targets
+@@ -92,7 +92,7 @@
+     <DefineConstants>$(DefineConstants);FEATURE_SYMLINK_TARGET</DefineConstants>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1' or '$(TargetFramework)' == 'net6.0'">
++  <PropertyGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1' or '$(TargetFramework)' == 'net7.0'">
+     <DefineConstants>$(DefineConstants);FEATURE_PIPEOPTIONS_CURRENTUSERONLY</DefineConstants>
+     <DefineConstants Condition="'$(MachineIndependentBuild)' != 'true'">$(DefineConstants);FEATURE_NODE_REUSE</DefineConstants>
+   </PropertyGroup>
+diff --git a/src/Directory.Build.props b/src/Directory.Build.props
+index ccffd9b5c..6e12f1557 100644
+--- a/src/Directory.Build.props
++++ b/src/Directory.Build.props
+@@ -30,13 +30,13 @@
+     <Platforms>AnyCPU;x64;arm64</Platforms>
+ 
+     <!-- Defaults for target frameworks and architecture -->
+-    <LibraryTargetFrameworks>$(FullFrameworkTFM);net6.0;netstandard2.0</LibraryTargetFrameworks>
+-    <LibraryTargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net6.0;netstandard2.0</LibraryTargetFrameworks>
++    <LibraryTargetFrameworks>$(FullFrameworkTFM);net7.0;netstandard2.0</LibraryTargetFrameworks>
++    <LibraryTargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">net7.0;netstandard2.0</LibraryTargetFrameworks>
+     <LibraryTargetFrameworks Condition="'$(MonoBuild)'=='true'">$(FullFrameworkTFM);netstandard2.0</LibraryTargetFrameworks>
+     <PlatformTarget>AnyCPU</PlatformTarget>
+ 
+     <!-- Target frameworks for Exe and unit test projects (ie projects with runtime output) -->
+-    <RuntimeOutputTargetFrameworks>net6.0</RuntimeOutputTargetFrameworks>
++    <RuntimeOutputTargetFrameworks>net7.0</RuntimeOutputTargetFrameworks>
+     <RuntimeOutputTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);$(RuntimeOutputTargetFrameworks)</RuntimeOutputTargetFrameworks>
+     <RuntimeOutputTargetFrameworks Condition="'$(MonoBuild)' == 'true'">$(FullFrameworkTFM)</RuntimeOutputTargetFrameworks>
+ 
+diff --git a/src/Framework/README.md b/src/Framework/README.md
+index 1b72454f5..8a86bc21c 100644
+--- a/src/Framework/README.md
++++ b/src/Framework/README.md
+@@ -6,6 +6,6 @@ The items in this namespace are primarily base-level classes and interfaces shar
+ [`ITask`](https://docs.microsoft.com/dotnet/api/microsoft.build.framework.itask), and [`ILogger`](https://docs.microsoft.com/dotnet/api/microsoft.build.framework.ilogger).
+ 
+ ### netstandard2.0 target
+-The `netstandard2.0` target of this build is configured only to output reference assemblies; at runtime MSBuild will be `net6.0` or `net472`. Please use the `net6.0`-targeted assemblies for .NET Core 6+ scenarios.
++The `netstandard2.0` target of this build is configured only to output reference assemblies; at runtime MSBuild will be `net7.0` or `net472`. Please use the `net7.0`-targeted assemblies for .NET Core 6+ scenarios.
+ 
+ For context, see https://github.com/dotnet/msbuild/pull/6148
+\ No newline at end of file
+diff --git a/src/MSBuild.Bootstrap/MSBuild.Bootstrap.csproj b/src/MSBuild.Bootstrap/MSBuild.Bootstrap.csproj
+index 9bb2da049..4766c0418 100644
+--- a/src/MSBuild.Bootstrap/MSBuild.Bootstrap.csproj
++++ b/src/MSBuild.Bootstrap/MSBuild.Bootstrap.csproj
+@@ -43,7 +43,7 @@
+   <Target Name="UpdateMSBuildDepsFile" AfterTargets="Build" Condition="'$(MonoBuild)' != 'true' and ($([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'netcoreapp2.1')) or '$(TargetFramework)' == 'netstandard2.0')">
+     <Copy SourceFiles="$(OutputPath)$(AssemblyName).deps.json" DestinationFiles="$(OutputPath)MSBuild.deps.json" />
+   </Target>
+-  <Target Name="UpdatePublishedMSBuildDepsFile" AfterTargets="Publish" Condition="'$(TargetFramework)' == 'net6.0'">
++  <Target Name="UpdatePublishedMSBuildDepsFile" AfterTargets="Publish" Condition="'$(TargetFramework)' == 'net7.0'">
+     <Copy SourceFiles="$(PublishDir)$(AssemblyName).deps.json" DestinationFiles="$(PublishDir)MSBuild.deps.json" />
+   </Target>
+ 
+diff --git a/src/Package/Localization/Localization.csproj b/src/Package/Localization/Localization.csproj
+index e15af6ed0..e6c8a82ee 100644
+--- a/src/Package/Localization/Localization.csproj
++++ b/src/Package/Localization/Localization.csproj
+@@ -1,6 +1,6 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFramework Condition="$(MonoBuild) != 'true'">net6.0</TargetFramework>
++    <TargetFramework Condition="$(MonoBuild) != 'true'">net7.0</TargetFramework>
+     <TargetFramework Condition="$(MonoBuild) == 'true'">net472</TargetFramework>
+     <NuspecFile>Microsoft.Build.Localization.nuspec</NuspecFile>
+     <IsShipping>false</IsShipping>
+diff --git a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
+index 6972b5e9a..0e37d41d9 100644
+--- a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
++++ b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
+@@ -4,8 +4,8 @@
+     <CopyNuGetImplementations>false</CopyNuGetImplementations>
+     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+ 
+-    <TargetFrameworks>net6.0</TargetFrameworks>
+-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);net6.0</TargetFrameworks>
++    <TargetFrameworks>net7.0</TargetFrameworks>
++    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);net7.0</TargetFrameworks>
+     <TargetFrameworks Condition="'$(MonoBuild)'=='true'">$(RuntimeOutputTargetFrameworks)</TargetFrameworks>
+   </PropertyGroup>
+   <ItemGroup>
+diff --git a/src/Tasks/Microsoft.Build.Tasks.csproj b/src/Tasks/Microsoft.Build.Tasks.csproj
+index 5bd98bfbe..547075939 100644
+--- a/src/Tasks/Microsoft.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.Build.Tasks.csproj
+@@ -1013,7 +1013,7 @@
+     <PackageReference Include="System.Security.Permissions" />
+     <PackageReference Include="System.Threading.Tasks.Dataflow" />
+ 
+-    <Content Include="$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\net6.0\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Roslyn" />
++    <Content Include="$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\net7.0\**\*" CopyToOutputDirectory="PreserveNewest" LinkBase="Roslyn" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(MonoBuild)' == 'true'">
+diff --git a/src/Utilities/README.md b/src/Utilities/README.md
+index a85d56e11..99a1651b5 100644
+--- a/src/Utilities/README.md
++++ b/src/Utilities/README.md
+@@ -7,6 +7,6 @@ This package contains `Microsoft.Build.Utilities.Core.dll`, which defines helper
+ * [`Logger`](https://docs.microsoft.com/dotnet/api/microsoft.build.utilities.logger), a base class for custom logging functionality.
+ 
+ ### netstandard2.0 target
+-The `netstandard2.0` target of this build is configured only to output reference assemblies; at runtime MSBuild will be `net6.0` or `net472`. Please use the `net6.0`-targeted assemblies for .NET Core 6+ scenarios.
++The `netstandard2.0` target of this build is configured only to output reference assemblies; at runtime MSBuild will be `net7.0` or `net472`. Please use the `net7.0`-targeted assemblies for .NET Core 6+ scenarios.
+ 
+ For context, see https://github.com/dotnet/msbuild/pull/6148
+\ No newline at end of file

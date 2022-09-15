@@ -19,8 +19,9 @@ SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
 
 MSBUILD_ARGUMENTS=("/flp:v=detailed")
 CUSTOM_REF_PACKAGES_DIR=''
-CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR=''
+CUSTOM_PACKAGES_DIR=''
 alternateTarget=false
+runningSmokeTests=false
 CUSTOM_SDK_DIR=''
 
 while :; do
@@ -41,15 +42,15 @@ while :; do
             ;;
         --run-smoke-test)
             alternateTarget=true
+            runningSmokeTests=true
             MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
             ;;
         --with-packages)
-            CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR="$(cd -P "$2" && pwd)"
-            if [ ! -d "$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR" ]; then
-                echo "Custom prviously built packages directory '$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR' does not exist"
+            CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
+            if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
+                echo "Custom prviously built packages directory '$CUSTOM_PACKAGES_DIR' does not exist"
                 exit 1
             fi
-            MSBUILD_ARGUMENTS+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR" )
             shift
             ;;
         --with-sdk)
@@ -82,13 +83,21 @@ while :; do
     shift
 done
 
+if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
+  if [ "$runningSmokeTests" == "true" ]; then
+    MSBUILD_ARGUMENTS+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+  else
+    MSBUILD_ARGUMENTS+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+  fi
+fi
+
 if [ -f "$SCRIPT_ROOT/packages/archive/archiveArtifacts.txt" ]; then
   ARCHIVE_ERROR=0
   if [ ! -d "$SCRIPT_ROOT/.dotnet" ] && [ "$CUSTOM_SDK_DIR" == "" ]; then
     echo "ERROR: SDK not found at $SCRIPT_ROOT/.dotnet"
     ARCHIVE_ERROR=1
   fi
-  if [ ! -f $SCRIPT_ROOT/packages/archive/Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR" == "" ]; then
+  if [ ! -f $SCRIPT_ROOT/packages/archive/Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PACKAGES_DIR" == "" ]; then
     echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at $SCRIPT_ROOT/packages/archive/ - Either run prep.sh or pass --with-packages parameter"
     ARCHIVE_ERROR=1
   fi
@@ -120,7 +129,9 @@ fi
 packageVersionsPath=''
 restoredPackagesDir="$SCRIPT_ROOT/packages/restored"
 
-if [ -d "$SCRIPT_ROOT/packages/archive" ]; then
+if [[ "$CUSTOM_PACKAGES_DIR" != "" && -f "$CUSTOM_PACKAGES_DIR/PackageVersions.props" ]]; then
+  packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
+elif [ -d "$SCRIPT_ROOT/packages/archive" ]; then
   sourceBuiltArchive=`find $SCRIPT_ROOT/packages/archive -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz'`
   if [ -f "$SCRIPT_ROOT/packages/previously-source-built/PackageVersions.props" ]; then
     packageVersionsPath=$SCRIPT_ROOT/packages/previously-source-built/PackageVersions.props
@@ -128,14 +139,12 @@ if [ -d "$SCRIPT_ROOT/packages/archive" ]; then
     tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
     packageVersionsPath=/tmp/PackageVersions.props
   fi
-elif [ -f "$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR/PackageVersions.props" ]; then
-  packageVersionsPath="$CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR/PackageVersions.props"
 fi
 
 if [ ! -f "$packageVersionsPath" ]; then
   echo "Cannot find PackagesVersions.props.  Debugging info:"
   echo "  Attempted archive path: $SCRIPT_ROOT/packages/archive"
-  echo "  Attempted custom PVP path: $CUSTOM_PREVIOUSLY_BUILT_PACKAGES_DIR/PackageVersions.props"
+  echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
   exit 1
 fi
 

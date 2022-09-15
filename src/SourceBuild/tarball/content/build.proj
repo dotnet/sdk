@@ -107,6 +107,7 @@
             SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
             SMOKE_TESTS_TARGET_RID=$(TargetRid);
             SMOKE_TESTS_PORTABLE_RID=$(PortableRid);
+            SMOKE_TESTS_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
             $(CustomTestEnvVars)" />
   </Target>
 

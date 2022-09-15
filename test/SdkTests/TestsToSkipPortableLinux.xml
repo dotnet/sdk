@@ -3,5 +3,9 @@
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.It_publishes_as_framework_dependent_by_default"
             Skip="true"
             Reason="https://github.com/NuGet/Home/issues/8571"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.It_should_publish_framework_dependent_for_2x"
+            Skip="true"
+            Reason="https://github.com/NuGet/Home/issues/8571"/>
   </SkippedTests>
 </Tests>
