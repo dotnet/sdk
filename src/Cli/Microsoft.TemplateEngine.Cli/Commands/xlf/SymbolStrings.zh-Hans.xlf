@@ -42,9 +42,9 @@ To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;ver
         <note />
       </trans-unit>
       <trans-unit id="Command_Instantiate_Description">
-        <source>Instantiates a template with given short name.</source>
-        <target state="new">Instantiates a template with given short name.</target>
-        <note />
+        <source>Instantiates a template with given short name. An alias of 'dotnet new &lt;template name&gt;'.</source>
+        <target state="translated">实例化具有给定短名称的模板。"dotnet new &lt;template name&gt;" 的别名。</target>
+        <note>do not translate 'dotnet new &lt;template name&gt;'</note>
       </trans-unit>
       <trans-unit id="Command_Legacy_Update_Check_Description">
         <source>Checks the currently installed template packages for updates.</source>
@@ -94,8 +94,8 @@ If command is specified without the argument, it lists all the template packages
         <note />
       </trans-unit>
       <trans-unit id="Command_Update_Option_CheckOnly">
-        <source>Only check for updates and display the template packages to be updated without applying update.</source>
-        <target state="new">Only check for updates and display the template packages to be updated without applying update.</target>
+        <source>Only checks for updates and display the template packages to be updated without applying update.</source>
+        <target state="translated">仅检查更新并显示要更新的模板包，而不应用更新。</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
@@ -124,8 +124,8 @@ If command is specified without the argument, it lists all the template packages
         <note />
       </trans-unit>
       <trans-unit id="Option_ColumnsAll">
-        <source>Display all columns in the output.</source>
-        <target state="new">Display all columns in the output.</target>
+        <source>Displays all columns in the output.</source>
+        <target state="translated">显示输出中的所有列。</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Debug_Attach">
