@@ -24,9 +24,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private void RunOnTypeSymbol(
-            ITypeSymbol? left,
-            ITypeSymbol? right,
+        private void RunOnSymbol(ISymbol? left,
+            ISymbol? right,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
@@ -50,6 +49,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right));
             }
         }
+
+        private void RunOnTypeSymbol(
+            ITypeSymbol? left,
+            ITypeSymbol? right,
+            MetadataInformation leftMetadata,
+            MetadataInformation rightMetadata,
+            IList<CompatDifference> differences) => RunOnSymbol(left, right, leftMetadata, rightMetadata, differences);
 
         private void RunOnMemberSymbol(
             ISymbol? left,
@@ -58,36 +64,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             ITypeSymbol rightContainingType,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
-            IList<CompatDifference> differences)
-        {
-            if (left is null || right is null)
-            {
-                return;
-            }
-
-            Accessibility leftAccess = left.DeclaredAccessibility;
-            Accessibility rightAccess = right.DeclaredAccessibility;
-
-            if (leftAccess > rightAccess)
-            {
-                if (leftAccess == Accessibility.Protected && leftContainingType.IsEffectivelySealed(_settings.IncludeInternalSymbols))
-                {
-                    return;
-                }
-
-                string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left));
-            }
-            else if (_settings.StrictMode && rightAccess > leftAccess)
-            {
-                if (rightAccess == Accessibility.Protected && rightContainingType.IsEffectivelySealed(_settings.IncludeInternalSymbols))
-                {
-                    return;
-                }
-
-                string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right));
-            }
-        }
+            IList<CompatDifference> differences) => RunOnSymbol(left, right, leftMetadata, rightMetadata, differences);
     }
 }
