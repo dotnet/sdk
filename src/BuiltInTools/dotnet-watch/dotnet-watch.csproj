@@ -35,6 +35,15 @@
                       TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
                       CopyToOutputDirectory="PreserveNewest"/>
 
+    <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj"
+                      PrivateAssets="All"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      UndefineProperties="TargetFramework;TargetFrameworks"
+                      OutputItemType="Content"
+                      TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll"
+                      CopyToOutputDirectory="PreserveNewest"/>
+
     <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj"
                       PrivateAssets="All"
                       ReferenceOutputAssembly="false"
@@ -42,6 +51,8 @@
                       UndefineProperties="TargetFramework;TargetFrameworks"
                       OutputItemType="Content"
                       CopyToOutputDirectory="PreserveNewest"/>
+
+    
   </ItemGroup>
 
 </Project>
