@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             });
 
             var publishCommand = new PublishCommand(testAsset);
-            var publishResult = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:_IsPublishing=true", "/p:SelfContained=false");
+            var publishResult = publishCommand.Execute($"/p:PublishSelfContained=true", $"/p:RuntimeIdentifier={rid}", "/p:_IsPublishing=true", "/p:SelfContained=false");
 
             publishResult.Should().Pass();
 

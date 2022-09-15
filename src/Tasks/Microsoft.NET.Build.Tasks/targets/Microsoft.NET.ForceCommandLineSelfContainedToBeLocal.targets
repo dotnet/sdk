@@ -1,5 +1,6 @@
 ﻿<Project TreatAsLocalProperty="SelfContained">
-  <SelfContained>FOO</SelfContained>
-  <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' == 'true'">true</SelfContained>
-  <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' != ''">false</SelfContained>
+  <PropertyGroup>
+    <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' != '' and '$(PublishSelfContained)' != 'true'">false</SelfContained>
+    <SelfContained Condition=" '$(_IsPublishing)' == 'true' and '$(PublishSelfContained)' == 'true'">true</SelfContained>
+  </PropertyGroup>
 </Project>
