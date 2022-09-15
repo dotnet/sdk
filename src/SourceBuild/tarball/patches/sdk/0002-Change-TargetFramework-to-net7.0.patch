@@ -46,7 +46,7 @@ index 2de17ce715..32e6580920 100644
 --- a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj
 +++ b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj
 @@ -1,7 +1,7 @@
- ﻿<Project Sdk="Microsoft.NET.Sdk">
+ <Project Sdk="Microsoft.NET.Sdk">
  
    <PropertyGroup>
 -    <TargetFramework>net6.0</TargetFramework>
