@@ -347,8 +347,12 @@ new CompatDifference[] {
         {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
-            ApiComparer differWithInternal = new(s_ruleFactory, new ApiComparerSettings(includeInternalSymbols: true, strictMode: true));
-            ApiComparer differWithoutInternal = new(s_ruleFactory, new ApiComparerSettings(includeInternalSymbols: false, strictMode: true));
+            ApiComparer differWithInternal = new(s_ruleFactory, new ApiComparerSettings(
+                includeInternalSymbols: true,
+                strictMode: true));
+            ApiComparer differWithoutInternal = new(s_ruleFactory, new ApiComparerSettings(
+                includeInternalSymbols: false,
+                strictMode: true));
 
             IEnumerable<CompatDifference> actualWithInternal = differWithInternal.GetDifferences(left, right);
             IEnumerable<CompatDifference> actualWithoutInternal = differWithoutInternal.GetDifferences(left, right);
