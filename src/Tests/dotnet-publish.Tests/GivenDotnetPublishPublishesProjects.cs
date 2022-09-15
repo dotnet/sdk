@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             });
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.5.0.0")] // This needs _IsPublishing to be set in MSBuild to pass.
         [InlineData("net7.0")]
         public void PublishSelfContainedPropertyOverridesSelfContainProperty(string targetFramework)
         {
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             });
 
             var publishCommand = new PublishCommand(testAsset);
-            var publishResult = publishCommand.Execute($"/p:PublishSelfContained=true", $"/p:RuntimeIdentifier={rid}", "/p:_IsPublishing=true", "/p:SelfContained=false");
+            var publishResult = publishCommand.Execute( $"/p:RuntimeIdentifier={rid}", "/p:SelfContained=false");
 
             publishResult.Should().Pass();
 
