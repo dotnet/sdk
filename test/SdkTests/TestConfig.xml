@@ -53,6 +53,14 @@
             Skip="true"
             Issue=""
             Reason="Need all .NET core runtime"/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_RID_specific_runnable_output"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_framework_dependent_RID_specific_runnable_output"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_keeps_symbols_by_default"
             Skip="true"
             Issue=""
