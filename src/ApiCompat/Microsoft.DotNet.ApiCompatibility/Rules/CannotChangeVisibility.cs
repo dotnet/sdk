@@ -42,8 +42,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             if (leftAccess > rightAccess)
             {
-                string msg = string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotReduceVisibility, msg, DifferenceType.Changed, left));
+                differences.Add(new CompatDifference(leftMetadata,
+                    rightMetadata,
+                    DiagnosticIds.CannotReduceVisibility,
+                    string.Format(Resources.CannotReduceVisibility, left, leftAccess, rightAccess),
+                    DifferenceType.Changed,
+                    left));
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
             {
