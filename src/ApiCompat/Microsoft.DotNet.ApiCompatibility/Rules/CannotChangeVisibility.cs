@@ -51,8 +51,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             }
             else if (_settings.StrictMode && rightAccess > leftAccess)
             {
-                string msg = string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess);
-                differences.Add(new CompatDifference(leftMetadata, rightMetadata, DiagnosticIds.CannotExpandVisibility, msg, DifferenceType.Changed, right));
+                differences.Add(new CompatDifference(leftMetadata,
+                    rightMetadata,
+                    DiagnosticIds.CannotExpandVisibility,
+                    string.Format(Resources.CannotExpandVisibility, right, leftAccess, rightAccess),
+                    DifferenceType.Changed,
+                    right));
             }
         }
 
