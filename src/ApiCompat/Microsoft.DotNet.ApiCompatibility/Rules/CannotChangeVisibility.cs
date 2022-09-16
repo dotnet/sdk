@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
         {
+            // The MemberMustExist rule handles missing symbols and therefore this rule only runs when left and right is not null.
             if (left is null || right is null)
             {
                 return;
