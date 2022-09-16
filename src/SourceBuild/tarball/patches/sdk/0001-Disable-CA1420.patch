@@ -24,6 +24,6 @@ index 1353696a29..4e7463a453 100644
 +      CA1420 - Temporarily disable for source-build until SDK builds with latest toolset.
 +    -->
 +    <NoWarn>$(NoWarn);NU1701;CA1420</NoWarn>
+     <!-- do not enable analyzers on source build-->
+     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnforceCodeStyleInBuild>
      <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
- 
-     <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->

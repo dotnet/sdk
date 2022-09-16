@@ -11,9 +11,7 @@ Subject: [PATCH] Change TargetFramework to net7.0
  .../Microsoft.DotNet.PackageValidation.csproj                 | 2 +-
  .../Microsoft.Extensions.DotNetDeltaApplier.csproj            | 2 +-
  .../Microsoft.DotNet.Cli.Utils.csproj                         | 2 +-
- src/Layout/redist/targets/GenerateLayout.targets              | 4 ++--
- src/Layout/redist/targets/OverlaySdkOnLKG.targets             | 2 +-
- 9 files changed, 10 insertions(+), 10 deletions(-)
+ 7 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj
 index 8177095a90..0c1f7acebf 100644
@@ -106,38 +104,3 @@ index 006f56939d..ddcfe2e362 100644
      </PropertyGroup>
      <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
      <ItemGroup>
-diff --git a/src/Layout/redist/targets/GenerateLayout.targets b/src/Layout/redist/targets/GenerateLayout.targets
-index 85adb4ed8a..d399fe6f29 100644
---- a/src/Layout/redist/targets/GenerateLayout.targets
-+++ b/src/Layout/redist/targets/GenerateLayout.targets
-@@ -161,7 +161,7 @@
-           BeforeTargets="Build">
-     <PropertyGroup>
-       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
--      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net6.0</TestCliNuGetDirectoryTargetFramework>
-+      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net7.0</TestCliNuGetDirectoryTargetFramework>
-       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
-     </PropertyGroup>
-     <ItemGroup>
-@@ -196,7 +196,7 @@
-     <ItemGroup>
-       <DotNetWatchFile Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**" />
-       <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\*.dll" DeploymentSubpath="middleware" />
--      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\net6.0\*.dll" DeploymentSubpath="hotreload" />
-+      <DotNetWatchFile Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\net7.0\*.dll" DeploymentSubpath="hotreload" />
-       <DotNetWatchFile Include="$(ArtifactsDir)bin\DotNetWatchTasks\$(Configuration)\netstandard2.0\DotNetWatchTasks.dll" />
-     </ItemGroup>
- 
-diff --git a/src/Layout/redist/targets/OverlaySdkOnLKG.targets b/src/Layout/redist/targets/OverlaySdkOnLKG.targets
-index b31188d592..4052c1581b 100644
---- a/src/Layout/redist/targets/OverlaySdkOnLKG.targets
-+++ b/src/Layout/redist/targets/OverlaySdkOnLKG.targets
-@@ -77,7 +77,7 @@
-       <DotNetWatchOverlay Remove="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\Microsoft.CodeAnalysis.CSharp.dll" />
-       <DotNetWatchOverlay Remove="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\Microsoft.CodeAnalysis.dll" />
-       <DotNetWatchOverlay Include="$(ArtifactsDir)bin\Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\*.dll" TargetDir="middleware" />
--      <DotNetWatchOverlay Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\net6.0\*.dll" TargetDir="hotreload" />
-+      <DotNetWatchOverlay Include="$(ArtifactsDir)bin\Microsoft.Extensions.DotNetDeltaApplier\$(Configuration)\net7.0\*.dll" TargetDir="hotreload" />
-       <DotNetWatchOverlay Include="$(ArtifactsDir)bin\DotNetWatchTasks\$(Configuration)\netstandard2.0\DotNetWatchTasks.dll" />
-     </ItemGroup>
- 
