@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Logan Bussell <36081148+lbussell@users.noreply.github.com>
 Date: Thu, 21 Oct 2021 23:15:23 +0000
-Subject: [PATCH] lift version of Microsoft.CodeAnalysis.Common dependencies to
- previously source built versions
+Subject: [PATCH 1/2] lift version of Microsoft.CodeAnalysis.Common
+ dependencies to previously source built versions
 
 Requires https://github.com/dotnet/source-build/issues/2482 in order to eliminate this patch
 ---

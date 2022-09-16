@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Chris Rummel <crummel@microsoft.com>
+Date: Thu, 15 Sep 2022 14:46:53 -0500
+Subject: [PATCH] Use the source-built version of ref packs and don't use app
+ host when building in source-build.
+
+Backport PR: https://github.com/dotnet/roslyn/pull/64055.
+
+---
+ Directory.Build.targets | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index 8f38a48cd95..dfb4fd33c9a 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -1,5 +1,20 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. See the LICENSE file in the project root for more information. -->
+ <Project>
++  <!-- use the source-built version of the reference packs if building in source-build -->
++  <ItemGroup Condition="'$(DotNetBuidlFromSource)' == 'true'">
++    <KnownFrameworkReference Update="Microsoft.NETCore.App">
++      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net6.0'">6.0.0</TargetingPackVersion>
++    </KnownFrameworkReference>
++    <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
++      <TargetingPackVersion Condition="'%(TargetFramework)' == 'net6.0'">6.0.0</TargetingPackVersion>
++    </KnownFrameworkReference>
++  </ItemGroup>
++
++  <!-- do not restore or use the 6.0 app host in source-build -->
++  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
++    <UseAppHost>false</UseAppHost>
++  </PropertyGroup>
++
+   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+   <Import Project="eng\targets\Imports.targets" />
+ </Project>
