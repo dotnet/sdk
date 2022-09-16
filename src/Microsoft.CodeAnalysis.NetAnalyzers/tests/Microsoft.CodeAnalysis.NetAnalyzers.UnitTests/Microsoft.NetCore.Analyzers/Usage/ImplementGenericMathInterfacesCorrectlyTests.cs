@@ -572,6 +572,40 @@ namespace MyNamespace
         }
 
         [Fact]
+        public async Task SelfConstrainedInterfaceDerivedFromGMInterfaceTest()
+        {
+            await PopulateTestCs(@"
+using System;
+
+namespace MyNamespace
+{
+    public interface IMyInterface<TSelf> : IParsable<TSelf> where TSelf : IMyInterface<TSelf>
+    { }
+}").RunAsync();
+        }
+
+        [Fact]
+        public async Task SelfConstrainedClassDerivedFromGMInterfaceTest()
+        {
+            await PopulateTestCs(@"
+using System;
+
+public class MyDate<TSelf> : IParsable<TSelf> where TSelf : MyDate<TSelf>
+{
+    public static TSelf Parse(string s, IFormatProvider provider)
+    {
+        throw new NotImplementedException();
+    }
+
+    public static bool TryParse(string s, IFormatProvider provider, out TSelf result)
+    {
+        throw new NotImplementedException();
+    }
+}
+").RunAsync();
+        }
+
+        [Fact]
         public async Task InterfacesImplementedCorrectlyNotWarn()
         {
             await PopulateTestCs(@"

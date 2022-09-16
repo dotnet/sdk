@@ -64,7 +64,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             {
                 if (IsKnownInterfaceInTheChain(anInterface) &&
                     FirstTypeParameterNameIsNotTheSymbolName(symbol, anInterface) &&
-                    (!symbol.IsGenericType || NotConstrainedToTheInterface(anInterface, symbol.TypeParameters)))
+                    (!symbol.IsGenericType || NotConstrainedToTheInterfaceOrSelf(anInterface, symbol)))
                 {
                     SyntaxNode? typeParameter = FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(symbol, anInterface);
                     context.ReportDiagnostic(CreateDiagnostic(GMIRule, typeParameter, anInterface.OriginalDefinition.ToDisplayString(
@@ -79,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 {
                     if (IsKnownInterfaceInTheChain(anInterface) &&
                         FirstTypeParameterNameIsNotTheSymbolName(symbol, anInterface) &&
-                        (!symbol.IsGenericType || NotConstrainedToTheInterface(anInterface, symbol.TypeParameters)))
+                        (!symbol.IsGenericType || NotConstrainedToTheInterfaceOrSelf(anInterface, symbol)))
                     {
                         SyntaxNode? typeParameter = FindTheTypeArgumentOfTheInterfaceFromTypeDeclaration(symbol, symbol.BaseType);
                         context.ReportDiagnostic(CreateDiagnostic(GMIRule, typeParameter, symbol.BaseType.OriginalDefinition.ToDisplayString(
@@ -113,13 +113,14 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 return false;
             }
 
-            static bool NotConstrainedToTheInterface(INamedTypeSymbol anInterface, ImmutableArray<ITypeParameterSymbol> typeParameters)
+            static bool NotConstrainedToTheInterfaceOrSelf(INamedTypeSymbol anInterface, INamedTypeSymbol symbol)
             {
-                foreach (var typeParameter in typeParameters)
+                foreach (var typeParameter in symbol.TypeParameters)
                 {
                     foreach (var constraint in typeParameter.ConstraintTypes)
                     {
-                        if (constraint.Equals(anInterface, SymbolEqualityComparer.Default))
+                        if (constraint.Equals(symbol) ||
+                            constraint.Equals(anInterface, SymbolEqualityComparer.Default))
                         {
                             return false;
                         }
