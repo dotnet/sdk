@@ -76,7 +76,7 @@ Zasoby
   <String Id="InstallationNoteTitle">Uwaga dotycząca instalacji</String>
   <String Id="InstallationNote">W trakcie procesu instalacji zostanie uruchomione polecenie, które zwiększy szybkość przywracania projektu i umożliwi dostęp do trybu offline. Zajmie to maksymalnie minutę.
   </String>
-  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET 7.0 z programem Visual Studio, wymagany jest program Visual Studio 2022 17.0 lub nowszy. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Jeśli planujesz używać platformy .NET 7.0 z programem Visual Studio, wymagany jest program Visual Studio 2022 17.4 lub nowszy. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Dowiedz się więcej&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Klikając pozycję Zainstaluj, wyrażasz zgodę na następujące warunki.</String>
   <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
