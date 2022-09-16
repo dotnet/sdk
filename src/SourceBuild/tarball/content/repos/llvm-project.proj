@@ -2,7 +2,10 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(StandardSourceBuildArgs)</BuildCommand>
+    <BuildCommandArgs/>
+    <!-- llvm-project always builds x64 unless told otherwisse -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:OutputRid=$(PortableRid)</BuildCommandArgs>
+    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(StandardSourceBuildArgs) $(BuildCommandArgs)</BuildCommand>
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
