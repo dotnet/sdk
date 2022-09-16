@@ -49,6 +49,10 @@
             Skip="true"
             Issue="https://github.com/dotnet/sdk/pull/3574"
             Reason="Test update needed (in PR)"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_runs_single_file_apps"
+            Skip="true"
+            Issue=""
+            Reason="Need all .NET core runtime"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_keeps_symbols_by_default"
             Skip="true"
             Issue=""
