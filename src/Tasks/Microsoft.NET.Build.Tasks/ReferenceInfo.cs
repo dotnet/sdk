@@ -54,17 +54,21 @@ namespace Microsoft.NET.Build.Tasks
         public static IEnumerable<ReferenceInfo> CreateDirectReferenceInfos(
             IEnumerable<ITaskItem> referencePaths,
             IEnumerable<ITaskItem> referenceSatellitePaths,
-            bool projectContextHasProjectReferences,
+            LockFileLookup lockFileLookup,
             Func<ITaskItem, bool> isRuntimeAssembly)
         {
-
-            bool filterOutProjectReferenceIfInProjectContextAlready(ITaskItem referencePath)
+            bool lockFileContains(ITaskItem referencePath)
             {
-                return (projectContextHasProjectReferences ? !IsProjectReference(referencePath) : true);
+                if (lockFileLookup == null)
+                {
+                    return false;
+                }
+
+                return IsProjectReference(referencePath) && lockFileLookup.GetProject(referencePath.ItemSpec) != null;
             }
 
             IEnumerable<ITaskItem> directReferencePaths = referencePaths
-                .Where(r => filterOutProjectReferenceIfInProjectContextAlready(r) && !IsNuGetReference(r) && isRuntimeAssembly(r));
+                .Where(r => !lockFileContains(r) && !IsNuGetReference(r) && isRuntimeAssembly(r));
 
             return CreateFilteredReferenceInfos(directReferencePaths, referenceSatellitePaths);
         }
