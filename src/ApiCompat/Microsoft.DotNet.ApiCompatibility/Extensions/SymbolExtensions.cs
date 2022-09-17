@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Extensions
             {
                 foreach (IMethodSymbol constructor in namedType.Constructors)
                 {
-                    if (!constructor.IsStatic && constructor.IsVisibleOutsideOfAssembly(includeInternals, includeEffectivelySealedSymbols: true))
+                    if (!constructor.IsStatic && constructor.IsVisibleOutsideOfAssembly(includeInternals, includeEffectivelyPrivateSymbols: true))
                         return true;
                 }
             }
@@ -84,13 +84,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Extensions
                     yield return baseInterface;
         }
 
-        internal static bool IsVisibleOutsideOfAssembly(this ISymbol symbol, bool includeInternals, bool includeEffectivelySealedSymbols = false) =>
+        internal static bool IsVisibleOutsideOfAssembly(this ISymbol symbol, bool includeInternals, bool includeEffectivelyPrivateSymbols = false) =>
             symbol.DeclaredAccessibility switch
             {
                 Accessibility.Public => true,
-                Accessibility.Protected => includeEffectivelySealedSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
-                Accessibility.ProtectedOrInternal => includeEffectivelySealedSymbols || includeInternals || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
-                Accessibility.ProtectedAndInternal => includeInternals && (includeEffectivelySealedSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals)),
+                Accessibility.Protected => includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
+                Accessibility.ProtectedOrInternal => includeEffectivelyPrivateSymbols || includeInternals || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals),
+                Accessibility.ProtectedAndInternal => includeInternals && (includeEffectivelyPrivateSymbols || symbol.ContainingType == null || !IsEffectivelySealed(symbol.ContainingType, includeInternals)),
                 _ => includeInternals && symbol.DeclaredAccessibility != Accessibility.Private,
             };
 
