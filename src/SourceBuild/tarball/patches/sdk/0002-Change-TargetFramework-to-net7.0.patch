@@ -11,10 +11,10 @@ Subject: [PATCH] Change TargetFramework to net7.0
  .../Microsoft.DotNet.PackageValidation.csproj                 | 2 +-
  .../Microsoft.Extensions.DotNetDeltaApplier.csproj            | 2 +-
  .../Microsoft.DotNet.Cli.Utils.csproj                         | 2 +-
- 7 files changed, 7 insertions(+), 7 deletions(-)
+ 8 files changed, 13 insertions(+), 11 deletions(-)
 
 diff --git a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj
-index 8177095a90..0c1f7acebf 100644
+index e56cd66fa1..0330085999 100644
 --- a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj
 +++ b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Task/Microsoft.DotNet.ApiCompat.Task.csproj
 @@ -1,7 +1,7 @@
@@ -40,7 +40,7 @@ index fb49a12fb4..2ce737c75d 100644
      <!-- TODO: Remove when the consumers of this package upgraded to a newer SDK with this change. -->
      <UseCompatibilityPackage>true</UseCompatibilityPackage>
 diff --git a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj
-index 2de17ce715..32e6580920 100644
+index 4d148d1360..8e2f52a7ac 100644
 --- a/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj
 +++ b/src/ApiCompat/Microsoft.DotNet.ApiCompat.Tool/Microsoft.DotNet.ApiCompat.Tool.csproj
 @@ -1,7 +1,7 @@
@@ -53,7 +53,7 @@ index 2de17ce715..32e6580920 100644
      <Nullable>enable</Nullable>
      <IsPackable>true</IsPackable>
 diff --git a/src/ApiCompat/Microsoft.DotNet.ApiCompatibility/Microsoft.DotNet.ApiCompatibility.csproj b/src/ApiCompat/Microsoft.DotNet.ApiCompatibility/Microsoft.DotNet.ApiCompatibility.csproj
-index 7b8569a72b..b1e1e4d53e 100644
+index 4ee0173f24..c72ac850d1 100644
 --- a/src/ApiCompat/Microsoft.DotNet.ApiCompatibility/Microsoft.DotNet.ApiCompatibility.csproj
 +++ b/src/ApiCompat/Microsoft.DotNet.ApiCompatibility/Microsoft.DotNet.ApiCompatibility.csproj
 @@ -1,7 +1,7 @@
@@ -92,7 +92,7 @@ index 40927ae1f2..3c2236e38d 100644
  
      <IsPackable>false</IsPackable>
 diff --git a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
-index 006f56939d..ddcfe2e362 100644
+index 03ea923734..3246138cf9 100644
 --- a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
 +++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
 @@ -22,7 +22,7 @@
