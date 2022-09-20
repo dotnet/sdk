@@ -88,11 +88,11 @@ index 471f88dbc..efd25efd1 100644
      "allowPrerelease": true
    },
    "tools": {
--    "dotnet": "6.0.200",
+-    "dotnet": "6.0.401",
 +    "dotnet": "7.0.100-preview.5.22307.18",
      "vs": {
-       "version": "17.0"
-     }
+       "version": "17.2.1"
+     },
 diff --git a/scripts/Deploy-MSBuild.ps1 b/scripts/Deploy-MSBuild.ps1
 index ef1959fc3..8cfecb6a0 100644
 --- a/scripts/Deploy-MSBuild.ps1

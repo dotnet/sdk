@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Logan Bussell <loganbussell@microsoft.com>
+Date: Tue, 20 Sep 2022 10:10:29 -0700
+Subject: [PATCH] Look for msbuild net7.0 artifacts
+
+This patch can be removed once https://github.com/dotnet/msbuild/pull/7790 flows
+into dotnet/sdk, at which point that repo will need this change.
+---
+ .../Microsoft.DotNet.Cli.Utils.csproj                           | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+index 03ea923734..3246138cf9 100644
+--- a/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
++++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
+@@ -22,7 +22,7 @@
+ 
+   <Target Name="VerifyMSBuildDependency" BeforeTargets="ResolveAssemblyReferences" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'">
+     <PropertyGroup>
+-      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll</MSBuildPathInPackage>
++      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net7.0\MSBuild.dll</MSBuildPathInPackage>
+     </PropertyGroup>
+     <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
+     <ItemGroup>
