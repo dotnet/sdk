@@ -1429,9 +1429,10 @@ namespace Microsoft.NET.Build.Tasks
                                 if (tfm.Version.Major >= 7)
                                 {
                                     _task.Log.LogWarning(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
-                                } else
+                                }
+                                else
                                 {
-                                    _task.Log.LogMessage(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale)
+                                    _task.Log.LogMessage(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
                                 }
                             }
                             locale = normalizedLocale;
