@@ -1,4 +1,4 @@
-From 157de59d479f2ed179b9b777eaf2b769871e3bf6 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Matt Mitchell <mmitche@microsoft.com>
 Date: Sat, 23 Oct 2021 16:41:24 -0700
 Subject: [PATCH] Remove uneeded source build patches and re-patch
@@ -22,7 +22,7 @@ Subject: [PATCH] Remove uneeded source build patches and re-patch
  15 files changed, 25 insertions(+), 28 deletions(-)
 
 diff --git a/build/common.project.props b/build/common.project.props
-index 79a935391..65e482b83 100644
+index 47b5a6b60..50c40bac5 100644
 --- a/build/common.project.props
 +++ b/build/common.project.props
 @@ -10,24 +10,20 @@
@@ -57,7 +57,7 @@ index 79a935391..65e482b83 100644
      <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
      <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
 diff --git a/build/packages.targets b/build/packages.targets
-index c11557248..0e7dd7861 100644
+index d9b3006e9..99cb24a16 100644
 --- a/build/packages.targets
 +++ b/build/packages.targets
 @@ -10,6 +10,7 @@
@@ -68,8 +68,8 @@ index c11557248..0e7dd7861 100644
      </PropertyGroup>
  
      <!-- Test and package versions -->
-@@ -33,7 +34,7 @@
-         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+@@ -34,7 +35,7 @@
+         <PackageReference Update="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.3.2" />
          <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
          <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
 -        <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
@@ -291,6 +291,3 @@ index 180293944..8498664b9 100644
      <TargetFramework />
      <Description>NuGet's implementation of Semantic Versioning.</Description>
      <PackageTags>semver;semantic versioning</PackageTags>
--- 
-2.31.1
-
