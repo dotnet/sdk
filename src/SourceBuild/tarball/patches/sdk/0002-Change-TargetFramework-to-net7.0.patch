@@ -97,7 +97,7 @@ index 03ea923734..3246138cf9 100644
 +++ b/src/Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj
 @@ -22,7 +22,7 @@
  
-   <Target Name="VerifyMSBuildDependency" BeforeTargets="ResolveAssemblyReferences" Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
+   <Target Name="VerifyMSBuildDependency" BeforeTargets="ResolveAssemblyReferences" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'">
      <PropertyGroup>
 -      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net6.0\MSBuild.dll</MSBuildPathInPackage>
 +      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net7.0\MSBuild.dll</MSBuildPathInPackage>

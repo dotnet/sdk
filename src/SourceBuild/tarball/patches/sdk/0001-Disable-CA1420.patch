@@ -13,8 +13,8 @@ index 1353696a29..4e7463a453 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
 @@ -14,9 +14,11 @@
-     <SdkTargetFramework>net7.0</SdkTargetFramework>
-     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
+          may target a lower version of .NET -->
+     <ResolverTargetFramework>net6.0</ResolverTargetFramework>
  
 -    <!-- Disable implict package target fallback, and disable warning for when we explicitly add it (currently needed for
 -         Microsoft.ApplicationInsights) -->
