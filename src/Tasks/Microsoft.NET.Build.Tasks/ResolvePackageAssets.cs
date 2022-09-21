@@ -677,6 +677,10 @@ namespace Microsoft.NET.Build.Tasks
 
             private const char RelatedPropertySeparator = ';';
 
+            /// <summary>
+            /// This constructor should only be used for testing - IPackgeResolver carries a lot of
+            /// state so using mocks really help with testing this component.
+            /// </summary>
             public CacheWriter(ResolvePackageAssets task, IPackageResolver resolver) : this(task)
             {
                 _packageResolver = resolver;

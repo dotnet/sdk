@@ -166,7 +166,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
             var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188");
-            invalidContextMessages.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
+            invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
 
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
             var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187");
-            invalidContextMessages.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
+            invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
         }
 
         private ResolvePackageAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)
