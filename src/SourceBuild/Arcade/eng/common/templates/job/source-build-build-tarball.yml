@@ -68,7 +68,7 @@ jobs:
   - ${{ if ne(parameters.excludeSdkContentTests, 'true') }}:
     - download: ${{ parameters.installerBuildResourceId }}
       artifact: BlobArtifacts
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-preview*|-rc*)-linux-${{ parameters.architecture }}.tar.gz'
+      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-preview*|-rc*|-rtm)-linux-${{ parameters.architecture }}.tar.gz'
       displayName: Download MSFT sdk Tarball
 
   - ${{ if eq(parameters.usePreviousArtifacts, 'true') }}:
