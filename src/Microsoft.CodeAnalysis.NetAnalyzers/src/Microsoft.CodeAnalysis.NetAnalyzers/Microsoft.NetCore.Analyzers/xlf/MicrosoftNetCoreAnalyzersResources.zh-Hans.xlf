@@ -1244,17 +1244,17 @@
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyDescription">
         <source>Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</source>
-        <target state="new">Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</target>
+        <target state="translated">泛型数学接口要求将派生类型本身用于自重复类型参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyMessage">
         <source>The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</source>
-        <target state="new">The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</target>
+        <target state="translated">"{0}" 需要使用派生类型 "{2}" 填充 "{1}" 类型参数。</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyTitle">
         <source>Use correct type parameter</source>
-        <target state="new">Use correct type parameter</target>
+        <target state="translated">使用正确的类型参数</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyDescription">

@@ -1244,17 +1244,17 @@
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyDescription">
         <source>Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</source>
-        <target state="new">Generic math interfaces require the derived type itself to be used for the self recurring type parameter.</target>
+        <target state="translated">Las interfaces matemáticas genéricas requieren que se use el tipo derivado para el parámetro de tipo periódico.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyMessage">
         <source>The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</source>
-        <target state="new">The '{0}' requires the '{1}' type parameter to be filled with the derived type '{2}'</target>
+        <target state="translated">El "{0}" requiere que el parámetro de tipo "{1}" se rellene con el tipo derivado "{2}"</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementGenericMathInterfacesCorrectlyTitle">
         <source>Use correct type parameter</source>
-        <target state="new">Use correct type parameter</target>
+        <target state="translated">Use el parámetro de tipo correcto</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementISerializableCorrectlyDescription">
