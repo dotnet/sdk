@@ -464,6 +464,11 @@
         <target state="translated">Ottimizzazione degli assembly per le dimensioni. Questo processo potrebbe richiedere del tempo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed">
+        <source>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</source>
+        <target state="translated">NETSDK1191: non è stato possibile dedurre un identificatore di runtime per la proprietà '{0}'. Specificare un RID in modo esplicito.</target>
+        <note>{StrBegin="NETSDK1191: "}</note>
+      </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
         <source>NETSDK1020: Package Root {0} was incorrectly given for Resolved library {1}</source>
         <target state="translated">NETSDK1020: la radice {0} del pacchetto specificata per la libreria risolta {1} non è corretta</target>
