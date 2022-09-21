@@ -16,6 +16,7 @@ CA1853 | Performance | Info | DoNotGuardDictionaryRemoveByContainsKey, [Document
 CA1854 | Performance | Info | PreferDictionaryTryGetValueAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1854)
 CA1855 | Performance | Info | UseSpanClearInsteadOfFillAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1855)
 CA2019 | Reliability | Info | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2019)
+CA2020 | Reliability | Info | PreventNumericIntPtrUIntPtrBehavioralChanges, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020)
 CA2259 | Usage | Warning | UseThreadStaticCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259)
 CA2260 | Usage | Warning | ImplementGenericMathInterfacesCorrectly, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260)
 CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://docs.microsoft.com/visualstudio/code-quality/ca5404)

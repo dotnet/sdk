@@ -2107,6 +2107,31 @@
         <target state="translated">若适用，请考虑使用 "StringBuilder.Append(char)"</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
+        <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
+        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage">
+        <source>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
+        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
+        <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
+        <target state="new">Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
+        <source>Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
+        <target state="new">Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
+        <source>Prevent from behavioral change</source>
+        <target state="new">Prevent from behavioral change</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
         <source>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</source>
         <target state="translated">"Enum.HasFlag" 方法要求 "enum" 参数与调用该方法的实例具有相同的 "enum" 类型，并且此 "enum" 用 "System.FlagsAttribute" 标记。如果它们是不同的 "enum" 类型，则在运行时将引发未经处理的异常。如果 "enum" 类型未使用 "System.FlagsAttribute" 进行标记，则调用在运行时将始终返回 "false"。</target>
