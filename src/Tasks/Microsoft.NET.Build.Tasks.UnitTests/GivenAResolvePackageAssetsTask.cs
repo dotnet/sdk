@@ -4,7 +4,6 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -159,7 +158,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var task = InitializeTask(out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
             task.TargetFramework = tfm;
-            var writer = new CacheWriter(task);
+            var writer = new CacheWriter(task, new MockPackageResolver());
             writer.WriteToMemoryStream();
             var engine = task.BuildEngine as MockBuildEngine;
 
@@ -167,7 +166,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
             var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188");
-            invalidContextWarnings.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
+            invalidContextMessages.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
 
         }
 
@@ -177,12 +176,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void It_warns_on_incorrectly_cased_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithInvalidLocale(tfm, "ru-RU");
+            var assetsContent = AssetsFileWithInvalidLocale(tfm, "ru-ru");
             File.WriteAllText(projectAssetsJsonPath, assetsContent);
             var task = InitializeTask(out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
             task.TargetFramework = tfm;
-            var writer = new CacheWriter(task);
+            var writer = new CacheWriter(task, new MockPackageResolver());
             writer.WriteToMemoryStream();
             var engine = task.BuildEngine as MockBuildEngine;
 
@@ -190,7 +189,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
             var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187");
-            invalidContextWarnings.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
+            invalidContextMessages.Should().HaveCount(!shouldHaveWarnings ? 1 : 0);
         }
 
         private ResolvePackageAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)

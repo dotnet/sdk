@@ -657,8 +657,8 @@ namespace Microsoft.NET.Build.Tasks
             private ResolvePackageAssets _task;
             private BinaryWriter _writer;
             private LockFile _lockFile;
-            private NuGetPackageResolver _packageResolver;
             private LockFileTarget _compileTimeTarget;
+            private IPackageResolver _packageResolver;
             private LockFileTarget _runtimeTarget;
             private Dictionary<string, int> _stringTable;
             private List<string> _metadataStrings;
@@ -676,6 +676,11 @@ namespace Microsoft.NET.Build.Tasks
             private const string NetCorePlatformLibrary = "Microsoft.NETCore.App";
 
             private const char RelatedPropertySeparator = ';';
+
+            public CacheWriter(ResolvePackageAssets task, IPackageResolver resolver) : this(task)
+            {
+                _packageResolver = resolver;
+            }
 
             public CacheWriter(ResolvePackageAssets task)
             {
