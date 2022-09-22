@@ -22,12 +22,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
             JObject rawConfiguration = JObject.Parse(configuration);
-            string startToken = rawConfiguration.ToString("start");
-            string endToken = rawConfiguration.ToString("end");
-            string id = rawConfiguration.ToString("id");
+            string? startToken = rawConfiguration.ToString("start");
+            string? endToken = rawConfiguration.ToString("end");
+            string? id = rawConfiguration.ToString("id");
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            yield return new Include(startToken.TokenConfig(), endToken.TokenConfig(), x => templateRoot.FileInfo(x).OpenRead(), id, onByDefault);
+            yield return new Include(startToken.TokenConfig(), endToken.TokenConfig(), x => templateRoot.FileInfo(x)?.OpenRead(), id, onByDefault);
         }
     }
 }

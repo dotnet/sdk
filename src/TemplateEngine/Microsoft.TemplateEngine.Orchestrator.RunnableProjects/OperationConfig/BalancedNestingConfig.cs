@@ -21,11 +21,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
             JObject rawConfiguration = JObject.Parse(configuration);
-            string startToken = rawConfiguration.ToString("startToken");
-            string realEndToken = rawConfiguration.ToString("realEndToken");
-            string pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
-            string id = rawConfiguration.ToString("id");
-            string resetFlag = rawConfiguration.ToString("resetFlag");
+            string? startToken = rawConfiguration.ToString("startToken");
+            string? realEndToken = rawConfiguration.ToString("realEndToken");
+            string? pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
+            string? id = rawConfiguration.ToString("id");
+            string? resetFlag = rawConfiguration.ToString("resetFlag");
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
             yield return new BalancedNesting(startToken.TokenConfig(), realEndToken.TokenConfig(), pseudoEndToken.TokenConfig(), id, resetFlag, onByDefault);

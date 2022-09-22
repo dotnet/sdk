@@ -10,7 +10,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly IReadOnlyList<IOperationProvider> _overrides;
 
-        internal RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, string variableFormatString)
+        internal RunSpec(IReadOnlyList<IOperationProvider> operationOverrides, string? variableFormatString)
         {
             _overrides = operationOverrides;
             VariableFormatString = variableFormatString ?? "{0}";
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public string VariableFormatString { get; }
 
-        public bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath)
+        public bool TryGetTargetRelPath(string sourceRelPath, out string? targetRelPath)
         {
             targetRelPath = null;
             return false;

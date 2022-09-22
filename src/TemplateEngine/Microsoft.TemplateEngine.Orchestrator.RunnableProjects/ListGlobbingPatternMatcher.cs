@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         private readonly IReadOnlyList<IPathMatcher> _pathMatchers;
 
-        private string _displayPattern;
+        private string? _displayPattern;
 
         internal ListGlobbingPatternMatcher(IList<string> patternList)
         {

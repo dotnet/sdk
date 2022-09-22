@@ -6,4 +6,5 @@ Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekSourceForwardWhile(M
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekTargetBackUntil(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match, bool consumeToken = false) -> void
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.SeekTargetBackWhile(Microsoft.TemplateEngine.Core.Contracts.ITokenTrie! match) -> void
 Microsoft.TemplateEngine.Core.Contracts.IProcessorState.WriteToTarget(byte[]! buffer, int offset, int count) -> void
+Microsoft.TemplateEngine.Core.Contracts.IRunSpec.TryGetTargetRelPath(string! sourceRelPath, out string? targetRelPath) -> bool
 Microsoft.TemplateEngine.Core.Contracts.ITokenTrie.AddToken(Microsoft.TemplateEngine.Core.Contracts.IToken? token, int index) -> void

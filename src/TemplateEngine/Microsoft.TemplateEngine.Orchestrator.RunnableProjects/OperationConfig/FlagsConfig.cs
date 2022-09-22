@@ -28,13 +28,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
             JObject rawConfiguration = JObject.Parse(configuration);
-            string flag = rawConfiguration.ToString("name");
+            string? flag = rawConfiguration.ToString("name");
             string on = rawConfiguration.ToString("on") ?? string.Empty;
             string off = rawConfiguration.ToString("off") ?? string.Empty;
             string onNoEmit = rawConfiguration.ToString("onNoEmit") ?? string.Empty;
             string offNoEmit = rawConfiguration.ToString("offNoEmit") ?? string.Empty;
-            string defaultStr = rawConfiguration.ToString("default");
-            string id = rawConfiguration.ToString("id");
+            string? defaultStr = rawConfiguration.ToString("default");
+            string? id = rawConfiguration.ToString("id");
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
             bool? @default = null;
 

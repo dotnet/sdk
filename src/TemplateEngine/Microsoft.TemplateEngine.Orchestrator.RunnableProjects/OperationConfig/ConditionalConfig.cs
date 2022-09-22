@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
             JObject rawConfiguration = JObject.Parse(configuration);
-            string commentStyle = rawConfiguration.ToString("style");
+            string? commentStyle = rawConfiguration.ToString("style");
             IEnumerable<IOperationProvider> operations = string.IsNullOrEmpty(commentStyle) || string.Equals(commentStyle, "custom", StringComparison.OrdinalIgnoreCase)
                 ? ConditionalCustomConfig.ConfigureFromJObject(rawConfiguration)
                 : string.Equals(commentStyle, "line", StringComparison.OrdinalIgnoreCase)
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             }
         }
 
-        internal static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        internal static IReadOnlyList<IOperationProvider> ConditionalSetup(ConditionalType style, string evaluatorType, bool wholeLine, bool trimWhiteSpace, string? id)
         {
             List<IOperationProvider> setup;
 
@@ -134,7 +134,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         }
 
         // Nice to have: Generalize this type of setup similarly to Line, Block, & Custom
-        internal static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string id)
+        internal static List<IOperationProvider> CStyleNoCommentsConditionalSetup(string evaluatorType, bool wholeLine, bool trimWhiteSpace, string? id)
         {
             ConditionalKeywords defaultKeywords = new ConditionalKeywords();
 

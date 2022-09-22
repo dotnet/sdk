@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
     {
         string VariableFormatString { get; }
 
-        bool TryGetTargetRelPath(string sourceRelPath, out string targetRelPath);
+        bool TryGetTargetRelPath(string sourceRelPath, out string? targetRelPath);
 
         IReadOnlyList<IOperationProvider> GetOperations(IReadOnlyList<IOperationProvider> sourceOperations);
     }

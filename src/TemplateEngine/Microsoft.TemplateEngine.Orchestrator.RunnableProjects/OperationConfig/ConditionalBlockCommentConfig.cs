@@ -15,8 +15,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
     {
         internal static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
-            string startToken = rawConfiguration.ToString("startToken");
-            string endToken = rawConfiguration.ToString("endToken");
+            string? startToken = rawConfiguration.ToString("startToken");
+            string? endToken = rawConfiguration.ToString("endToken");
 
             if (string.IsNullOrWhiteSpace(startToken))
             {
@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                 throw new TemplateAuthoringException($"Template authoring error. EndToken must be defined", "EndToken");
             }
 
-            string pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
+            string? pseudoEndToken = rawConfiguration.ToString("pseudoEndToken");
 
             ConditionalKeywords keywords = ConditionalKeywords.FromJObject(rawConfiguration);
             ConditionalOperationOptions options = ConditionalOperationOptions.FromJObject(rawConfiguration);
@@ -47,11 +47,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             return GenerateConditionalSetup(startToken, endToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string? startToken, string? endToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
-            string pseudoEndComment;
+            string? pseudoEndComment;
 
-            if (endToken.Length < 2)
+            if (endToken is null || endToken.Length < 2)
             {
                 // end comment must be at least two characters to have a programmatically determined pseudo-comment
                 pseudoEndComment = null;
@@ -65,12 +65,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             return GenerateConditionalSetup(startToken, endToken, pseudoEndComment, keywords, options);
         }
 
-        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string? startToken, string? endToken, string? pseudoEndToken)
         {
             return GenerateConditionalSetup(startToken, endToken, pseudoEndToken, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        internal static List<IOperationProvider> GenerateConditionalSetup(string startToken, string endToken, string pseudoEndToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string? startToken, string? endToken, string? pseudoEndToken, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             ConditionEvaluator evaluator = EvaluatorSelector.Select(options.EvaluatorType);
 

@@ -38,31 +38,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         internal static ConditionalKeywords FromJObject(JObject rawConfiguration)
         {
             ConditionalKeywords keywords = new ConditionalKeywords();
-            string ifKeyword = rawConfiguration.ToString("ifKeyword");
+            string? ifKeyword = rawConfiguration.ToString("ifKeyword");
             if (!string.IsNullOrWhiteSpace(ifKeyword))
             {
-                keywords.IfKeywords = new[] { ifKeyword };
+                keywords.IfKeywords = new[] { ifKeyword! };
             }
 
-            string elseIfKeyword = rawConfiguration.ToString("elseIfKeyword");
+            string? elseIfKeyword = rawConfiguration.ToString("elseIfKeyword");
             if (!string.IsNullOrWhiteSpace(elseIfKeyword))
             {
-                keywords.ElseIfKeywords = new[] { elseIfKeyword };
+                keywords.ElseIfKeywords = new[] { elseIfKeyword! };
             }
 
-            string elseKeyword = rawConfiguration.ToString("elseKeyword");
+            string? elseKeyword = rawConfiguration.ToString("elseKeyword");
             if (!string.IsNullOrWhiteSpace(elseKeyword))
             {
-                keywords.ElseKeywords = new[] { elseKeyword };
+                keywords.ElseKeywords = new[] { elseKeyword! };
             }
 
-            string endIfKeyword = rawConfiguration.ToString("endIfKeyword");
+            string? endIfKeyword = rawConfiguration.ToString("endIfKeyword");
             if (!string.IsNullOrWhiteSpace(endIfKeyword))
             {
-                keywords.EndIfKeywords = new[] { endIfKeyword };
+                keywords.EndIfKeywords = new[] { endIfKeyword! };
             }
 
-            string prefixString = rawConfiguration.ToString("keywordPrefix");
+            string? prefixString = rawConfiguration.ToString("keywordPrefix");
             if (prefixString != null)
             {
                 // Empty string is a valid value for keywordPrefix, null is not.

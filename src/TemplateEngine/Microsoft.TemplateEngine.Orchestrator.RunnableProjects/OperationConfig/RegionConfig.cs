@@ -21,9 +21,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
         public IEnumerable<IOperationProvider> ConfigureFromJson(string configuration, IDirectory templateRoot)
         {
             JObject rawConfiguration = JObject.Parse(configuration);
-            string id = rawConfiguration.ToString("id");
-            string start = rawConfiguration.ToString("start");
-            string end = rawConfiguration.ToString("end");
+            string? id = rawConfiguration.ToString("id");
+            string? start = rawConfiguration.ToString("start");
+            string? end = rawConfiguration.ToString("end");
             bool include = rawConfiguration.ToBool("include");
             bool regionTrim = rawConfiguration.ToBool("trim");
             bool regionWholeLine = rawConfiguration.ToBool("wholeLine");

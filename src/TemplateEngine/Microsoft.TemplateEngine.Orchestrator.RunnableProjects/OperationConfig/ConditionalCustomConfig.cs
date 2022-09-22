@@ -21,12 +21,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             IReadOnlyList<string> actionableElseIfToken = rawConfiguration.ArrayAsStrings("actionableElseif");
             IReadOnlyList<string> actionsToken = rawConfiguration.ArrayAsStrings("actions");
             IReadOnlyList<string> endIfToken = rawConfiguration.ArrayAsStrings("endif");
-            string id = rawConfiguration.ToString("id");
+            string? id = rawConfiguration.ToString("id");
             bool trim = rawConfiguration.ToBool("trim");
             bool wholeLine = rawConfiguration.ToBool("wholeLine");
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
-            string evaluatorName = rawConfiguration.ToString("evaluator");
+            string? evaluatorName = rawConfiguration.ToString("evaluator");
             ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
 
             ConditionalTokens tokenVariants = new ConditionalTokens

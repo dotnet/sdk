@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
     {
         internal static List<IOperationProvider> ConfigureFromJObject(JObject rawConfiguration)
         {
-            string token = rawConfiguration.ToString("token");
+            string? token = rawConfiguration.ToString("token");
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             return GenerateConditionalSetup(token, new ConditionalKeywords(), new ConditionalOperationOptions());
         }
 
-        internal static List<IOperationProvider> GenerateConditionalSetup(string token, ConditionalKeywords keywords, ConditionalOperationOptions options)
+        internal static List<IOperationProvider> GenerateConditionalSetup(string? token, ConditionalKeywords keywords, ConditionalOperationOptions options)
         {
             string uncommentOperationId = $"Uncomment (line): {token} -> ()";
             string reduceCommentOperationId = $"Reduce comment (line): ({token}{token}) -> ({token})";
