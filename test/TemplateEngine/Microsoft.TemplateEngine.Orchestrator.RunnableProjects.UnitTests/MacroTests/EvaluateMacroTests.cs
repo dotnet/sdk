@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestEvaluateMultichoice(string condition, string evaluator, string multichoiceValues, bool expectedResult)
         {
             string variableName = "myPredicate";
-            EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, null, condition, evaluator);
+            EvaluateMacroConfig macroConfig = new EvaluateMacroConfig(variableName, "bool", condition, evaluator);
 
             IVariableCollection variables = new VariableCollection
             {

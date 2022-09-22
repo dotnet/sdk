@@ -30,12 +30,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string evaluator = "C++";
             string dataType = "string";
             string expectedValue = "this one";
-            IList<KeyValuePair<string, string>> switches = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string?, string?>> switches = new()
             {
-                new KeyValuePair<string, string>("(3 > 10)", "three greater than ten - false"),
-                new KeyValuePair<string, string>("(false)", "false value"),
-                new KeyValuePair<string, string>("(10 > 0)", expectedValue),
-                new KeyValuePair<string, string>("(5 > 4)", "not this one")
+                new KeyValuePair<string?, string?>("(3 > 10)", "three greater than ten - false"),
+                new KeyValuePair<string?, string?>("(false)", "false value"),
+                new KeyValuePair<string?, string?>("(10 > 0)", expectedValue),
+                new KeyValuePair<string?, string?>("(5 > 4)", "not this one")
             };
             SwitchMacroConfig macroConfig = new SwitchMacroConfig(variableName, evaluator, dataType, switches);
 

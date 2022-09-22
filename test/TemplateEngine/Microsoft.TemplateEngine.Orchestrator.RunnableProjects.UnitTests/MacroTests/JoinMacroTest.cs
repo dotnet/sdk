@@ -38,11 +38,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             string referenceEmptySymbolName = "referenceEmptySymbol";
             string constantValue = "constantValue";
 
-            List<KeyValuePair<string, string>> definitions = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string?, string?>> definitions = new()
             {
-                new KeyValuePair<string, string>("const", constantValue),
-                new KeyValuePair<string, string>("ref", referenceEmptySymbolName),
-                new KeyValuePair<string, string>("ref", referenceSymbolName)
+                new KeyValuePair<string?, string?>("const", constantValue),
+                new KeyValuePair<string?, string?>("ref", referenceEmptySymbolName),
+                new KeyValuePair<string?, string?>("ref", referenceSymbolName)
             };
 
             JoinMacroConfig macroConfig = new JoinMacroConfig(variableName, null, definitions, separator, removeEmptyValues);

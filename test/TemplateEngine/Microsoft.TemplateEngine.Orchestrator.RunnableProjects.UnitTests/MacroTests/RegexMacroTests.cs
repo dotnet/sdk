@@ -28,10 +28,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         {
             string variableName = "myRegex";
             string sourceVariable = "originalValue";
-            IList<KeyValuePair<string, string>> steps = new List<KeyValuePair<string, string>>
+            List<KeyValuePair<string?, string?>> steps = new()
             {
-                new KeyValuePair<string, string>("2+", "3"),
-                new KeyValuePair<string, string>("13", "Z")
+                new KeyValuePair<string?, string?>("2+", "3"),
+                new KeyValuePair<string?, string?>("13", "Z")
             };
             RegexMacroConfig macroConfig = new RegexMacroConfig(variableName, null, sourceVariable, steps);
 
