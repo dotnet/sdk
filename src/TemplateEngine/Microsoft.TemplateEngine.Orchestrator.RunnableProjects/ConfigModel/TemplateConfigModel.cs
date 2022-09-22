@@ -412,12 +412,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             return new TemplateConfigModel(source, logger, configModifiers, filename);
         }
 
-        //TODO: create convertors to get proper json format if needed.
-        internal JObject ToJObject()
-        {
-            return JObject.FromObject(this);
-        }
-
         /// <summary>
         /// Localizes this <see cref="TemplateConfigModel"/> with given localization model.
         /// </summary>
@@ -431,7 +425,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             _name = locModel.Name ?? Name;
             _description = locModel.Description ?? Description;
 
-            foreach (var postAction in _postActions)
+            foreach (PostActionModel postAction in _postActions)
             {
                 if (postAction.Id != null && locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
                 {
@@ -448,7 +442,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 Description = "The default name symbol",
                 DataType = "string",
                 Forms = SymbolValueFormsModel.NameForms,
-                Precedence = new TemplateParameterPrecedence(PrecedenceDefinition.Implicit)
+                Precedence = new TemplateParameterPrecedence(PrecedenceDefinition.Implicit),
+                IsImplicit = true,
             };
         }
 
@@ -507,7 +502,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
             //on Windows we implicitly bind OS to avoid likely breaking change.
             //this environment variable is commonly used in conditions when using run script post action.
-            return new[] { new BindSymbol("OS", "env:OS") };
+            return new[]
+            {
+                new BindSymbol("OS", "env:OS")
+                {
+                    IsImplicit = true,
+                }
+            };
         }
     }
 }

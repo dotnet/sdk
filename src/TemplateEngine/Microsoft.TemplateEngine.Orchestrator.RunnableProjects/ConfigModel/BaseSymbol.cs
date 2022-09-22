@@ -35,5 +35,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public abstract string Type { get; }
 
+        /// <summary>
+        /// Indicates that the symbol is implicit and was created by generator itself.
+        /// Those symbols are not part of JSON.
+        /// </summary>
+        internal bool IsImplicit { get; init; }
     }
 }
