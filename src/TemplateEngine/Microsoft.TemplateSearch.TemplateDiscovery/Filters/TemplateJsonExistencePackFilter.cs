@@ -12,13 +12,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
     {
         private const string FilterId = "Template.json existence";
 
-        private static readonly ITemplateEngineHost s_host = TemplateEngineHostHelper.CreateHost("filterHost");
+        private static readonly ITemplateEngineHost Host = TemplateEngineHostHelper.CreateHost("filterHost");
 
         internal static Func<IDownloadedPackInfo, PreFilterResult> SetupPackFilter()
         {
             static PreFilterResult Filter(IDownloadedPackInfo packInfo)
             {
-                using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(s_host, virtualizeSettings: true);
+                using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(Host, virtualizeSettings: true);
                 foreach (IMountPointFactory factory in environmentSettings.Components.OfType<IMountPointFactory>())
                 {
                     if (factory.TryMount(environmentSettings, null, packInfo.Path, out IMountPoint? mountPoint))

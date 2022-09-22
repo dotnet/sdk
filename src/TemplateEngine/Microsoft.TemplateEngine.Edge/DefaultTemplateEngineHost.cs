@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Edge
 {
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> s_noComponents = Array.Empty<(Type, IIdentifiedComponent)>();
+        private static readonly IReadOnlyList<(Type, IIdentifiedComponent)> NoComponents = Array.Empty<(Type, IIdentifiedComponent)>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         [Obsolete]
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Edge
             Version = version;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
-            _hostBuiltInComponents = builtIns ?? s_noComponents;
+            _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
 
             loggerFactory ??= NullLoggerFactory.Instance;

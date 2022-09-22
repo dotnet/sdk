@@ -172,8 +172,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     "someSymbol|anotherSymbol",
     "localizedSymbol|localizedSymbol",
     "localizedSymbolDescription|localizedSymbolDescription",
-    "one*one-localized*(null)%two*two-localized*(null)|foo*foo-localized*(null)%bar*bar-localized*(null)"
-            )]
+    "one*one-localized*(null)%two*two-localized*(null)|foo*foo-localized*(null)%bar*bar-localized*(null)")]
         [InlineData("{ \"symbols/someSymbol/displayName\": \"localizedSymbol\" }", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
         [InlineData("{ \"symbols/someSymbol/description\": \"localizedSymbolDescription\" }", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
         [InlineData("{ \"symbols/someSymbol/choices/one/displayName\": \"one-localized\"}", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
@@ -248,8 +247,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 false,
 "pa0|pa1",
 "localizedDescription|localizedDescription",
-"first*firstLocalized%second*secondLocalized|first*firstLocalized"
-    )]
+"first*firstLocalized%second*secondLocalized|first*firstLocalized")]
         [InlineData("{ description: \"\"}", false, null, null, null)]
         [InlineData("{ \"postActions/pa0/description\": \"localizedDescription\" }", false, "pa0", "localizedDescription", "(null)")]
         [InlineData("{ \"postActions/pa0/manualInstructions/first/text\": \"localizedDescription\" }", false, "pa0", "(null)", "first*localizedDescription")]
@@ -327,11 +325,11 @@ false,
                 {
                     new PostActionModel()
                     {
-                         Id = "",
+                         Id = string.Empty,
                          Description = "text",
                          ActionId = Guid.NewGuid()
                     },
-                       new PostActionModel()
+                    new PostActionModel()
                     {
                          Id = "pa0",
                          Description = "text",

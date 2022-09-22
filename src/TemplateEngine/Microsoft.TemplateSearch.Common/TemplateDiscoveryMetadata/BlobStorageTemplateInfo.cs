@@ -285,7 +285,7 @@ namespace Microsoft.TemplateSearch.Common
                               defaultValue: tagObj.ToString("defaultValue"),
                               defaultIfOptionWithoutValue: tagObj.ToString("defaultIfOptionWithoutValue"));
                         }
-                        tags[item.Name.ToString()] = tagObj.ToString("defaultValue") ?? "";
+                        tags[item.Name.ToString()] = tagObj.ToString("defaultValue") ?? string.Empty;
                     }
                 }
                 info.Tags = legacyTags;

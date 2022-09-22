@@ -17,8 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             IMountPoint mountPoint,
             IReadOnlyList<ITemplate> templates,
             IReadOnlyList<ILocalizationLocator> localizations,
-            IReadOnlyList<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)> components
-            )
+            IReadOnlyList<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)> components)
         {
             MountPoint = mountPoint;
             Templates = templates;

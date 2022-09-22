@@ -94,9 +94,7 @@ internal static class InputDataSetExtensions
             (
             string.IsNullOrEmpty(inputParameterData.ParameterDefinition.Precedence.IsEnabledCondition) ^ !evaluatedInputParameterData.IsEnabledConditionResult.HasValue
             ||
-            string.IsNullOrEmpty(inputParameterData.ParameterDefinition.Precedence.IsRequiredCondition) ^ !evaluatedInputParameterData.IsRequiredConditionResult.HasValue
-            )
-        )
+            string.IsNullOrEmpty(inputParameterData.ParameterDefinition.Precedence.IsRequiredCondition) ^ !evaluatedInputParameterData.IsRequiredConditionResult.HasValue))
         {
             throw new ArgumentException(string.Format(LocalizableStrings.EvaluatedInputParameterData_Error_ConditionsInvalid, inputParameterData.ParameterDefinition.Name));
         }

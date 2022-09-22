@@ -29,16 +29,16 @@ namespace Microsoft.TemplateEngine.Edge
         {
             settings.Host.Logger.LogDebug(
                 "[{0}]: Retrieving bound value for '{1}'.",
-                        nameof(EnvironmentVariablesBindSource),
-                        bindname);
+                nameof(EnvironmentVariablesBindSource),
+                bindname);
 
             string? result = settings.Environment.GetEnvironmentVariable(bindname);
 
             settings.Host.Logger.LogDebug(
         "[{0}]: Retrieved bound value for '{1}': '{2}'.",
-                    nameof(EnvironmentVariablesBindSource),
-                    bindname,
-                    result ?? "<null>");
+        nameof(EnvironmentVariablesBindSource),
+        bindname,
+        result ?? "<null>");
             return Task.FromResult(result);
         }
     }

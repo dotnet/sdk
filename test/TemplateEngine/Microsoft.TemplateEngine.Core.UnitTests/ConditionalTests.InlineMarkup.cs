@@ -330,8 +330,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 MSBuildStyleEvaluatorDefinition.Evaluate,
                 "$({0})",
                 null,
-                true
-            ));
+                true));
         }
 
         private IProcessor SetupXmlPlusMsBuildProcessorAndReplacement(IVariableCollection vc)
@@ -349,12 +348,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                         "\"".TokenConfig(),
                         "<!--".TokenConfig(),
                         "-->".TokenConfig()),
-                true,
-                true,
-                MSBuildStyleEvaluatorDefinition.Evaluate,
-                "$({0})",
-                null,
-                true),
+                    true,
+                    true,
+                    MSBuildStyleEvaluatorDefinition.Evaluate,
+                    "$({0})",
+                    null,
+                    true),
                 new Replacement("ReplaceMe".TokenConfig(), "I've been replaced", null, true));
         }
 
@@ -373,12 +372,12 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                         "\"".TokenConfig(),
                         "<!--".TokenConfig(),
                         "-->".TokenConfig()),
-                true,
-                true,
-                MSBuildStyleEvaluatorDefinition.Evaluate,
-                "$({0})",
-                null,
-                true),
+                    true,
+                    true,
+                    MSBuildStyleEvaluatorDefinition.Evaluate,
+                    "$({0})",
+                    null,
+                    true),
                 new Replacement("ReplaceMe".TokenConfigBuilder().OnlyIfAfter("Condition=\"Exists("), "I've been replaced", null, true));
         }
     }

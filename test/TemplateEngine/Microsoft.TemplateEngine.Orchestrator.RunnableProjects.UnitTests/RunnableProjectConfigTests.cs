@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 ShortNameList = new[] { "shortName" },
                 Symbols = new[]
                 {
-                    new ParameterSymbol( "ParamA", choiceParam, null)
+                    new ParameterSymbol("ParamA", choiceParam, null)
                 }
             };
 

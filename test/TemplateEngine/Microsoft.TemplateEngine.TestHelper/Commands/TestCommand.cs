@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 
             if (!string.IsNullOrEmpty(result.StdErr))
             {
-                Log.WriteLine("");
+                Log.WriteLine(string.Empty);
                 Log.WriteLine("StdErr:");
                 Log.WriteLine(result.StdErr);
             }

@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                     break;
                 case ConditionalType.VB:
                     setup = ConditionalLineCommentConfig.GenerateConditionalSetup(
-                        "",
+                        string.Empty,
                         new ConditionalKeywords
                         {
                             IfKeywords = new[] { "If" },
@@ -125,8 +125,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                 evaluator,
                 "$({0})",
                 id,
-                true
-            );
+                true);
 
             return new List<IOperationProvider>()
             {

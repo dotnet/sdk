@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 {
     internal class FolderManagedTemplatePackage : IManagedTemplatePackage
     {
-        private static readonly Dictionary<string, string> s_emptyDictionary = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> EmptyDictionary = new Dictionary<string, string>();
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger _logger;
         private readonly DateTime _currentLastChangedDateTime;
@@ -65,6 +65,6 @@ namespace Microsoft.TemplateEngine.Edge.Installers.Folder
 
         public bool IsLocalPackage => true;
 
-        public IReadOnlyDictionary<string, string> GetDetails() => s_emptyDictionary;
+        public IReadOnlyDictionary<string, string> GetDetails() => EmptyDictionary;
     }
 }

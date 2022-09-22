@@ -162,8 +162,8 @@ MyValue
                 { TestFileSystemHelper.DefaultConfigRelativePath, JsonConvert.SerializeObject(templateConfig, Formatting.Indented) },
 
                 //content
-                { "_R1_.cs", "" },
-                { "_R2_.cs", "" }
+                { "_R1_.cs", string.Empty },
+                { "_R2_.cs", string.Empty }
             };
 
             //
@@ -436,7 +436,7 @@ MyValue
             Assert.Equal("%VAL%", resultContent);
 
             var warningMessages = loggedMessages.Where(log => log.Item1 == LogLevel.Warning).Select(log => log.Item2);
-            Assert.Equal(1, warningMessages.Count());
+            Assert.Single(warningMessages);
             Assert.Contains(string.Format(LocalizableStrings.BindSymbolEvaluator_Warning_EvaluationError, "notPrefixed"), warningMessages);
             Assert.False(symbolSource.GetBoundValueAsync_WasCalled);
         }

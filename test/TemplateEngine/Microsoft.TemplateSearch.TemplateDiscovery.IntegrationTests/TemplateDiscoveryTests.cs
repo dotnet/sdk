@@ -415,8 +415,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 @"[Error]: the following 1 packages were removed
    Test.Templates::1.0.0
 Checking template packages via API: 
-Package Test.Templates was unlisted."
-                );
+Package Test.Templates was unlisted.");
 
             Assert.True(File.Exists(cacheV1Path));
             Assert.True(File.Exists(cacheV2Path));

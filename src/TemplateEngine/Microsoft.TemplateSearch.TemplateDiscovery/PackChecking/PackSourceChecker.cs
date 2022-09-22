@@ -287,8 +287,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Dictionary<string, FilteredPackageInfo> filteredPackages,
             ScanningStats scanningStats,
             string? oldTemplatePackageVersion,
-            string? oldNonTemplatePackageVersion
-            )
+            string? oldNonTemplatePackageVersion)
         {
             IEnumerable<TemplateSearchData> foundTemplates = TryGetTemplatesInPack(sourceInfo, _additionalDataProducers);
             Verbose.WriteLine($"{sourceInfo.Name}::{sourceInfo.Version} is processed");

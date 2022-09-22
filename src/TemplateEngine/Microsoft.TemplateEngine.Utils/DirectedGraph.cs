@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Utils
 {
     public class DirectedGraph<T>
     {
-        private static readonly DirectedGraph<T> s_empty = new(new Dictionary<T, HashSet<T>>());
+        private static readonly DirectedGraph<T> Empty = new(new Dictionary<T, HashSet<T>>());
 
         private readonly Dictionary<T, HashSet<T>> _dependenciesMap;
         private readonly Lazy<Dictionary<T, HashSet<T>>> _dependantsMap;
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Utils
             // Short circuit for empty graphs
             if (IsEmpty || vertices.Count == 0)
             {
-                return s_empty;
+                return Empty;
             }
 
             HashSet<T> dependantVertices = includeSeedVertices ? new HashSet<T>(vertices) : new HashSet<T>();

@@ -84,9 +84,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 var newData = new TemplatePackageData(
                 Guid.NewGuid(),
-                    "Hi",
-                    DateTime.UtcNow,
-                    new Dictionary<string, string>() { { "a", "b" } });
+                "Hi",
+                DateTime.UtcNow,
+                new Dictionary<string, string>() { { "a", "b" } });
                 await globalSettings1.SetInstalledTemplatePackagesAsync(new[] { newData }, default).ConfigureAwait(false);
             }
 

@@ -29,9 +29,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal const string LocalizationFilePrefix = "templatestrings.";
         internal const string LocalizationFileExtension = ".json";
         internal const string GeneratorVersion = "1.0.0.0";
-        private static readonly Guid s_generatorId = new Guid("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
+        private static readonly Guid GeneratorId = new("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
 
-        Guid IIdentifiedComponent.Id => s_generatorId;
+        Guid IIdentifiedComponent.Id => GeneratorId;
 
         /// <summary>
         /// Converts the raw, string version of a parameter to a strongly typed value. If the parameter has a datatype specified, use that. Otherwise attempt to infer the type.
@@ -354,8 +354,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (
                             variables.TryGetValue(choiceKey, out object? existingValueObj) &&
                             existingValueObj is string existingValue &&
-                            !string.Equals(choiceKey, existingValue, StringComparison.CurrentCulture)
-                        )
+                            !string.Equals(choiceKey, existingValue, StringComparison.CurrentCulture))
                         {
                             throw new InvalidOperationException(string.Format(LocalizableStrings.RunnableProjectGenerator_CannotAddImplicitChoice, choiceKey, existingValue));
                         }

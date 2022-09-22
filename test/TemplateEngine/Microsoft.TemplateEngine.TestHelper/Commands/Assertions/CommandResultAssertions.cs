@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.TestHelper.Commands
 
         public AndConstraint<CommandResultAssertions> HaveStdOutContainingIgnoreSpaces(string pattern)
         {
-            string commandResultNoSpaces = _commandResult.StdOut.Replace(" ", "");
+            string commandResultNoSpaces = _commandResult.StdOut.Replace(" ", string.Empty);
 
             Execute.Assertion
                 .ForCondition(commandResultNoSpaces.Contains(pattern))

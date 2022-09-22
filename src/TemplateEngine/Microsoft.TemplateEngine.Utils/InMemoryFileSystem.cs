@@ -747,10 +747,10 @@ namespace Microsoft.TemplateEngine.Utils
 
             if (leadSlash)
             {
-                realParts.Insert(0, "");
+                realParts.Insert(0, string.Empty);
             }
 
-            processedPath = string.Join(Path.DirectorySeparatorChar + "", realParts);
+            processedPath = string.Join(Path.DirectorySeparatorChar + string.Empty, realParts);
             if (processedPath.Equals(_root.FullPath) || processedPath.StartsWith(_root.FullPath.TrimEnd('/', '\\') + Path.DirectorySeparatorChar))
             {
                 return true;

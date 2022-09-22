@@ -186,7 +186,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
                             string etagValue = _environmentSettings.Host.FileSystem.ReadAllText(etagFileLocation);
                             client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, $"\"{etagValue}\"");
                         }
-                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, "");
+                        client.DefaultRequestHeaders.Add(IfNoneMatchHeaderName, string.Empty);
                         using (HttpResponseMessage response = await client.GetAsync(searchMetadataUri, cancellationToken).ConfigureAwait(false))
                         {
                             _logger.LogDebug(GetResponseDetails(response));

@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                             new
                             {
                                 hostName = "host1",
-                                version = ""
+                                version = string.Empty
                             },
                             new
                             {
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                             new
                             {
                                 hostName = "host1",
-                                version = ""
+                                version = string.Empty
                             },
                             new
                             {
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                             new
                             {
                                 hostName = "host1",
-                                version = ""
+                                version = string.Empty
                             },
                             new
                             {

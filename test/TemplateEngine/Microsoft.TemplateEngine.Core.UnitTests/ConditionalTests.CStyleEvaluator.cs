@@ -1630,7 +1630,7 @@ There";
 GAGA
 #endif";
             string expected = varName == "def" && varValue ? @"GAGA
-" : "";
+" : string.Empty;
 
             byte[] valueBytes = Encoding.UTF8.GetBytes(value);
             MemoryStream input = new MemoryStream(valueBytes);

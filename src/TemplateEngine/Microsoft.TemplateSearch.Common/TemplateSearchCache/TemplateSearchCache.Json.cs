@@ -12,7 +12,7 @@ namespace Microsoft.TemplateSearch.Common
 {
     internal partial class TemplateSearchCache
     {
-        private static readonly string[] s_supportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
+        private static readonly string[] SupportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
 
         internal static TemplateSearchCache FromJObject(
             JObject cacheObject,
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateSearch.Common
             if (!string.IsNullOrWhiteSpace(version))
             {
                 logger.LogDebug($"Version: {version}.");
-                if (s_supportedVersions.Contains(version))
+                if (SupportedVersions.Contains(version))
                 {
                     return true;
                 }

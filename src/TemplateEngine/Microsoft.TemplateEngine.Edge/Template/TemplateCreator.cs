@@ -273,8 +273,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                                      !(p.Value is EvaluatedInputParameterData
                                      {
                                          IsEnabledConditionResult: false
-                                     })
-                                     )
+                                     }))
                          .Select(p => p.Value))
             {
                 if (templateParamsBuilder.TryGetValue(inputParam.ParameterDefinition.Name, out ITemplateParameter paramFromTemplate))
@@ -395,7 +394,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 const int _MAX_RETRIES = 3;
                 int retries = 0;
 #pragma warning disable CS0618 // Type or member is obsolete - for backward compatibility
-                while (host.OnParameterError(evaluatedParameterData.ParameterDefinition, "", "Missing required parameter", out newParamValue)
+                while (host.OnParameterError(evaluatedParameterData.ParameterDefinition, string.Empty, "Missing required parameter", out newParamValue)
 #pragma warning restore CS0618 // Type or member is obsolete
                        && string.IsNullOrEmpty(newParamValue)
                        && ++retries < _MAX_RETRIES)

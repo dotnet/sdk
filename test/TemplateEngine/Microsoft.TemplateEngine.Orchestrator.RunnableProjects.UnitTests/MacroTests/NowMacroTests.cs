@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void EvaluateNowConfig()
         {
             string variableName = "nowString";
-            string format = "";
+            string format = string.Empty;
             bool utc = true;
             NowMacroConfig macroConfig = new NowMacroConfig(variableName, format, utc);
             Assert.Equal("string", macroConfig.DataType);
@@ -55,7 +55,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void EvaluateNowDeferredConfig()
         {
             string variableName = "nowString";
-            string format = "";
+            string format = string.Empty;
             bool utc = false;
             Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
             {
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void EvaluateNowOverrideDatatypeInConfig(string type)
         {
             string variableName = "nowString";
-            string format = "";
+            string format = string.Empty;
             bool utc = false;
             Dictionary<string, JToken> jsonParameters = new Dictionary<string, JToken>
             {

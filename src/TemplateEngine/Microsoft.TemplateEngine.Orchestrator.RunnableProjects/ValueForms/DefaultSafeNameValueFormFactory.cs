@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
         internal static string ToSafeName(string value)
         {
             const string replacement = "_";
-            string workingValue = Regex.Replace(value, @"(^\s+|\s+$)", "");
+            string workingValue = Regex.Replace(value, @"(^\s+|\s+$)", string.Empty);
             workingValue = Regex.Replace(workingValue, @"(((?<=\.)|^)(?=\d)|\W)", replacement);
             return workingValue;
         }

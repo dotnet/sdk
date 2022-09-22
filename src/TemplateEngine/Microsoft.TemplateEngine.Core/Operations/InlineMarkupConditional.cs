@@ -68,8 +68,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 closeCloseElementToken,
                 selfClosingElementEndToken,
                 openCommentToken,
-                closeCommentToken
-            );
+                closeCommentToken);
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
             return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);

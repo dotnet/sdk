@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             {
                 { pathToTemplateConfig, templateConfig },
                 // directories under the root - valid source locations.
-                { "things/stuff/_._", "" }
+                { "things/stuff/_._", string.Empty }
             };
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
@@ -166,9 +166,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
-            templateSourceFiles.Add(sampleContentDir, "");    // directories under the template root - valid source locations.
-            templateSourceFiles.Add("ExistingDir/_._", "");
-            templateSourceFiles.Add("MountRoot/Subdir/_._", "");
+            templateSourceFiles.Add(sampleContentDir, string.Empty);    // directories under the template root - valid source locations.
+            templateSourceFiles.Add("ExistingDir/_._", string.Empty);
+            templateSourceFiles.Add("MountRoot/Subdir/_._", string.Empty);
             TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
             setup.WriteSource();
 

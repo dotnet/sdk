@@ -129,8 +129,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             if (!recursive
                 && _files.Any(x => x.Key.StartsWith(path, StringComparison.Ordinal) && (x.Key[path.Length] == Path.DirectorySeparatorChar || x.Key[path.Length] == Path.AltDirectorySeparatorChar))
-                && _directories.Any(x => x.StartsWith(path, StringComparison.Ordinal) && (x[path.Length] == Path.DirectorySeparatorChar || x[path.Length] == Path.AltDirectorySeparatorChar))
-                )
+                && _directories.Any(x => x.StartsWith(path, StringComparison.Ordinal) && (x[path.Length] == Path.DirectorySeparatorChar || x[path.Length] == Path.AltDirectorySeparatorChar)))
             {
                 throw new Exception("Directory is not empty");
             }

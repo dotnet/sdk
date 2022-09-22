@@ -21,8 +21,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
     {
         private const int ReservedTokenCount = 24;
         private const int ReservedTokenMaxIndex = ReservedTokenCount - 1;
-        private static readonly IOperationProvider[] s_noOperationProviders = Array.Empty<IOperationProvider>();
-        private static readonly char[] s_supportedQuotes = { '"', '\'' };
+        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly char[] SupportedQuotes = { '"', '\'' };
 
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             using (MemoryStream res = new MemoryStream())
             {
                 EngineConfig cfg = new EngineConfig(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, s_noOperationProviders);
+                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
                 return Evaluate(state, ref len, ref pos, out bool faulted);
@@ -350,7 +350,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
                     {
                         //Combine literals
                         string literalValue = tokens[i].Literal;
-                        string followingWhitespace = "";
+                        string followingWhitespace = string.Empty;
                         int reach = i;
 
                         for (int j = i + 1; j < tokens.Count; ++j)
@@ -538,7 +538,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             //  At least two characters long
             //  Start and end with the same character
             //  The character that the string starts with must be one of the supported quote kinds
-            if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !s_supportedQuotes.Contains(literal[0]))
+            if (literal.Length < 2 || literal[0] != literal[literal.Length - 1] || !SupportedQuotes.Contains(literal[0]))
             {
                 if (string.Equals(literal, "true", StringComparison.OrdinalIgnoreCase))
                 {

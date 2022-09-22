@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
                     return InstallResult.CreateFailure(
                         installRequest,
                         InstallerErrorCode.UnsupportedRequest,
-                               string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed, installRequest.PackageIdentifier));
+                        string.Format(LocalizableStrings.GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed, installRequest.PackageIdentifier));
                 }
 
                 IInstaller installer = installersThatCanInstall[0];

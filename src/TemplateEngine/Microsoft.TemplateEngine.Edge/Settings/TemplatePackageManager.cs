@@ -142,11 +142,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             switch (scope)
             {
                 case InstallationScope.Global:
-                    return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.s_factoryId);
+                    return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
                 default:
                     break;
             }
-            return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.s_factoryId);
+            return GetManagedProvider(GlobalSettingsTemplatePackageProviderFactory.FactoryId);
         }
 
         /// <summary>

@@ -30,7 +30,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 
                     NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
                     Assert.Equal(1, resultsForPage.TotalHits);
-                    Assert.Equal(1, resultsForPage.Data.Count);
+                    Assert.Single(resultsForPage.Data);
 
                     var packageInfo = resultsForPage.Data[0];
 

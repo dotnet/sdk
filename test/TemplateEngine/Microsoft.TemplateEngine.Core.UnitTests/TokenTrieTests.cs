@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             byte[] data = Encoding.UTF8.GetBytes(original);
 
             TokenTrie t = new TokenTrie();
-            TokenConfig builder = (value ?? "").TokenConfigBuilder();
+            TokenConfig builder = (value ?? string.Empty).TokenConfigBuilder();
 
             if (!string.IsNullOrEmpty(after))
             {

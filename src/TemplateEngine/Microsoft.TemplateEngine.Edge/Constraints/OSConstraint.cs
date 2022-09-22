@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 {
     public sealed class OSConstraintFactory : ITemplateConstraintFactory
     {
-        private static readonly Dictionary<string, OSPlatform> s_platformMap = new Dictionary<string, OSPlatform>(StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, OSPlatform> PlatformMap = new Dictionary<string, OSPlatform>(StringComparer.OrdinalIgnoreCase)
         {
             { "Windows",  OSPlatform.Windows },
             { "Linux",  OSPlatform.Linux },
@@ -58,13 +58,13 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             // "args": [ "Linux", "Windows" ]
             private static IEnumerable<OSPlatform> ParseArgs(string? args)
             {
-                string supportedValues = string.Join(", ", s_platformMap.Keys.Select(e => $"'{e}'"));
+                string supportedValues = string.Join(", ", PlatformMap.Keys.Select(e => $"'{e}'"));
 
                 return args.ParseArrayOfConstraintStrings().Select(Parse);
 
                 OSPlatform Parse(string arg)
                 {
-                    if (s_platformMap.TryGetValue(arg, out OSPlatform parsedValue))
+                    if (PlatformMap.TryGetValue(arg, out OSPlatform parsedValue))
                     {
                         return parsedValue;
                     }

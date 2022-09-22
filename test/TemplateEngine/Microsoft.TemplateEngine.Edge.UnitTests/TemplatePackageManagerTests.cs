@@ -292,7 +292,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private class FakeFactory : ITemplatePackageProviderFactory
         {
-            private static readonly List<WeakReference<DefaultTemplatePackageProvider>> s_allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+            private static readonly List<WeakReference<DefaultTemplatePackageProvider>> AllCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
 
             public string DisplayName => nameof(FakeFactory);
 
@@ -310,7 +310,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public static void TriggerChanged()
             {
-                foreach (var provider in s_allCreatedProviders)
+                foreach (var provider in AllCreatedProviders)
                 {
                     if (provider.TryGetTarget(out var actualProvider))
                     {
@@ -322,7 +322,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
             {
                 var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
-                s_allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
+                AllCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
                 return defaultTemplatePackageProvider;
             }
         }
@@ -359,7 +359,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private class FakeFactoryWithPriority : ITemplatePackageProviderFactory, IPrioritizedComponent
         {
-            private static readonly List<WeakReference<DefaultTemplatePackageProvider>> s_allCreatedProviders = new List<WeakReference<DefaultTemplatePackageProvider>>();
+            private static readonly List<WeakReference<DefaultTemplatePackageProvider>> AllCreatedProviders = new();
 
             public string DisplayName => nameof(FakeFactory);
 
@@ -377,7 +377,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             public static void TriggerChanged()
             {
-                foreach (var provider in s_allCreatedProviders)
+                foreach (var provider in AllCreatedProviders)
                 {
                     if (provider.TryGetTarget(out var actualProvider))
                     {
@@ -391,7 +391,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             public ITemplatePackageProvider CreateProvider(IEngineEnvironmentSettings settings)
             {
                 var defaultTemplatePackageProvider = new DefaultTemplatePackageProvider(this, settings, NuPkgs, Folders);
-                s_allCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
+                AllCreatedProviders.Add(new WeakReference<DefaultTemplatePackageProvider>(defaultTemplatePackageProvider));
                 return defaultTemplatePackageProvider;
             }
 

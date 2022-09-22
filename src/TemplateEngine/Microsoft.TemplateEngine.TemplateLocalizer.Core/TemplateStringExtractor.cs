@@ -22,8 +22,8 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
     {
         internal const char KeySeparator = '/';
         private const string DefaultTemplateJsonLanguage = "en";
-        private static readonly IJsonKeyCreator s_defaultArrayKeyExtractor = new IndexBasedKeyCreator();
-        private static readonly IJsonKeyCreator s_defaultObjectKeyExtractor = new NameKeyCreator();
+        private static readonly IJsonKeyCreator DefaultArrayKeyExtractor = new IndexBasedKeyCreator();
+        private static readonly IJsonKeyCreator DefaultObjectKeyExtractor = new NameKeyCreator();
 
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -198,7 +198,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 foreach (JsonElement child in element.EnumerateArray())
                 {
                     string childElementName = childIndex.ToString();
-                    string? childKey = (rule.KeyCreator ?? s_defaultArrayKeyExtractor).CreateKey(child, childElementName, elementName, childIndex, childrenCount);
+                    string? childKey = (rule.KeyCreator ?? DefaultArrayKeyExtractor).CreateKey(child, childElementName, elementName, childIndex, childrenCount);
 
                     if (!childKeys.Add(childKey))
                     {
@@ -228,7 +228,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
                 foreach (JsonProperty child in element.EnumerateObject())
                 {
                     string childElementName = child.Name;
-                    string childKey = (rule.KeyCreator ?? s_defaultObjectKeyExtractor).CreateKey(child.Value, childElementName, elementName, childIndex, childrenCount);
+                    string childKey = (rule.KeyCreator ?? DefaultObjectKeyExtractor).CreateKey(child.Value, childElementName, elementName, childIndex, childrenCount);
 
                     if (!childKeys.Add(childKey))
                     {

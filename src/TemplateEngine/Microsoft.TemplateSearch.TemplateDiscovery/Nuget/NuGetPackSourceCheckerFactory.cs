@@ -14,7 +14,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 {
     internal class NuGetPackSourceCheckerFactory : IPackCheckerFactory
     {
-        private static readonly Dictionary<SupportedQueries, string> s_supportedProviders = new Dictionary<SupportedQueries, string>()
+        private static readonly Dictionary<SupportedQueries, string> SupportedProviders = new Dictionary<SupportedQueries, string>()
         {
             { SupportedQueries.PackageTypeQuery, "packageType=Template" },
             { SupportedQueries.TemplateQuery, "q=template" }
@@ -26,13 +26,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
 
             if (!config.Queries.Any())
             {
-                providers.AddRange(s_supportedProviders.Select(kvp => new NuGetPackProvider(kvp.Key.ToString(), kvp.Value, config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
+                providers.AddRange(SupportedProviders.Select(kvp => new NuGetPackProvider(kvp.Key.ToString(), kvp.Value, config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
             }
             else
             {
                 foreach (SupportedQueries provider in config.Queries.Distinct())
                 {
-                    providers.Add(new NuGetPackProvider(provider.ToString(), s_supportedProviders[provider], config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
+                    providers.Add(new NuGetPackProvider(provider.ToString(), SupportedProviders[provider], config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
                 }
             }
 

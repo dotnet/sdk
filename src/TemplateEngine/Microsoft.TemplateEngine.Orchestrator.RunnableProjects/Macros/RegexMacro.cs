@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as RegexMacroConfig");
             }
 
-            string value = !vars.TryGetValue(config.SourceVariable, out object working) ? string.Empty : working?.ToString() ?? "";
+            string value = !vars.TryGetValue(config.SourceVariable, out object working) ? string.Empty : working?.ToString() ?? string.Empty;
             if (config.Steps != null)
             {
                 foreach (KeyValuePair<string?, string?> stepInfo in config.Steps)

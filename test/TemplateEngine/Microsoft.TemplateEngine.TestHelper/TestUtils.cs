@@ -90,7 +90,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             return (file1byte - file2byte) == 0;
         }
 
-        public static async Task<T> AttemptSearch<T, E>(int count, TimeSpan interval, Func<Task<T>> execute) where E : Exception
+        public static async Task<T> AttemptSearch<T, TEx>(int count, TimeSpan interval, Func<Task<T>> execute) where TEx : Exception
         {
             T? result = default;
             int attempt = 0;
@@ -110,12 +110,12 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
 
                     if (ex is AggregateException agEx)
                     {
-                        if (!agEx.InnerExceptions.Any(e => e is E))
+                        if (!agEx.InnerExceptions.Any(e => e is TEx))
                         {
                             throw ex;
                         }
                     }
-                    else if (ex is not E)
+                    else if (ex is not TEx)
                     {
                         throw ex;
                     }

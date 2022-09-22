@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Tasks.Utilities
     /// </summary>
     internal sealed class MSBuildLogger : ILogger
     {
-        private static readonly IDisposable s_scope = new DummyDisposable();
+        private static readonly IDisposable Scope = new DummyDisposable();
 
         private readonly string _categoryHeader;
         private readonly TaskLoggingHelper _loggingHelper;
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Tasks.Utilities
             _loggingHelper = loggingHelperToWrap;
         }
 
-        public IDisposable BeginScope<TState>(TState state) => s_scope;
+        public IDisposable BeginScope<TState>(TState state) => Scope;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 

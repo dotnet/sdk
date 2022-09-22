@@ -163,7 +163,7 @@ Trailing stuff
 Trailing stuff
 @* trailing comment *@";
 
-        private static readonly VariableCollection s_outerElseifTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection OuterElseifTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = true,
@@ -171,7 +171,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        private static readonly VariableCollection s_innerIfTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection InnerIfTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -179,7 +179,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        private static readonly VariableCollection s_innerElseIfTrueVariableCollection = new VariableCollection
+        private static readonly VariableCollection InnerElseIfTrueVariableCollection = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -187,7 +187,7 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = true
         };
 
-        private static readonly VariableCollection s_allFalse = new VariableCollection
+        private static readonly VariableCollection AllFalse = new VariableCollection
         {
             ["OUTER_IF_CLAUSE"] = false,
             ["OUTER_ELSEIF_CLAUSE"] = false,
@@ -227,7 +227,7 @@ Trailing stuff
         [InlineData(InnerElseDefaultValue, OuterElseifTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseifTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_outerElseifTrueVariableCollection);
+            IProcessor processor = SetupRazorStyleProcessor(OuterElseifTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -241,7 +241,7 @@ Trailing stuff
         [InlineData(InnerElseDefaultValue, OuterElseHappensInnerIfTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerIfTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_innerIfTrueVariableCollection);
+            IProcessor processor = SetupRazorStyleProcessor(InnerIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -255,7 +255,7 @@ Trailing stuff
         [InlineData(InnerElseDefaultValue, OuterElseHappensInnerElseifTrueExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseifTrueExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_innerElseIfTrueVariableCollection);
+            IProcessor processor = SetupRazorStyleProcessor(InnerElseIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -269,7 +269,7 @@ Trailing stuff
         [InlineData(InnerElseDefaultValue, OuterElseHappensInnerElseHappensExpectedValue)]
         public void VerifyRazorBlockCommentEmbeddedInElseTestOuterElseHappensInnerElseHappensExpectedValue(string source, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_allFalse);
+            IProcessor processor = SetupRazorStyleProcessor(AllFalse);
             RunAndVerify(source, expected, processor, 9999);
         }
 
@@ -305,19 +305,19 @@ Trailing stuff";
     content: else
 Trailing stuff";
 
-        private static readonly VariableCollection s_bothClausesTrue = new VariableCollection
+        private static readonly VariableCollection BothClausesTrue = new VariableCollection
         {
             ["CLAUSE"] = true,
             ["CLAUSE_2"] = true // irrelevant
         };
 
-        private static readonly VariableCollection s_clauseTwoTrue = new VariableCollection
+        private static readonly VariableCollection ClauseTwoTrue = new VariableCollection
         {
             ["CLAUSE"] = false,
             ["CLAUSE_2"] = true
         };
 
-        private static readonly VariableCollection s_neitherClauseTrue = new VariableCollection
+        private static readonly VariableCollection NeitherClauseTrue = new VariableCollection
         {
             ["CLAUSE"] = false,
             ["CLAUSE_2"] = false
@@ -328,7 +328,7 @@ Trailing stuff";
         [InlineData(BasicWithDefault, IfEmitted)]
         public void RazorBlockCommentsBasicTestBothClausesTrue(string test, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_bothClausesTrue);
+            IProcessor processor = SetupRazorStyleProcessor(BothClausesTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
@@ -337,7 +337,7 @@ Trailing stuff";
         [InlineData(BasicWithDefault, ElseIfEmitted)]
         public void RazorBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_clauseTwoTrue);
+            IProcessor processor = SetupRazorStyleProcessor(ClauseTwoTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
@@ -346,7 +346,7 @@ Trailing stuff";
         [InlineData(BasicWithDefault, ElseEmitted)]
         public void RazorBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)
         {
-            IProcessor processor = SetupRazorStyleProcessor(s_neitherClauseTrue);
+            IProcessor processor = SetupRazorStyleProcessor(NeitherClauseTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 

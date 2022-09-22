@@ -17,11 +17,11 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         where TSelf : SharedEvaluatorDefinition<TSelf, TTokens>, new()
         where TTokens : struct
     {
-        private static readonly TSelf s_instance = new TSelf();
-        private static readonly IOperatorMap<Operators, TTokens> s_map = s_instance.GenerateMap();
-        private static readonly bool s_dereferenceInLiteralsSetting = s_instance.DereferenceInLiterals;
-        private static readonly string s_nullToken = s_instance.NullTokenValue;
-        private static readonly IOperationProvider[] s_noOperationProviders = Array.Empty<IOperationProvider>();
+        private static readonly TSelf Instance = new TSelf();
+        private static readonly IOperatorMap<Operators, TTokens> Map = Instance.GenerateMap();
+        private static readonly bool DereferenceInLiteralsSetting = Instance.DereferenceInLiterals;
+        private static readonly string NullToken = Instance.NullTokenValue;
+        private static readonly IOperationProvider[] NoOperationProviders = Array.Empty<IOperationProvider>();
 
         protected abstract string NullTokenValue { get; }
 
@@ -36,8 +36,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         public static bool Evaluate(IProcessorState processor, ref int bufferLength, ref int currentBufferPosition, out string faultedMessage, HashSet<string> referencedVariablesKeys)
         {
-            ITokenTrie tokens = s_instance.GetSymbols(processor);
-            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, s_map, s_dereferenceInLiteralsSetting);
+            ITokenTrie tokens = Instance.GetSymbols(processor);
+            ScopeBuilder<Operators, TTokens> builder = processor.ScopeBuilder(tokens, Map, DereferenceInLiteralsSetting);
             string faultedSection = null;
             IEvaluable result = builder.Build(
                 ref bufferLength,
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             using (MemoryStream res = new MemoryStream())
             {
                 EngineConfig cfg = new EngineConfig(logger, variables);
-                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, s_noOperationProviders);
+                IProcessorState state = new ProcessorState(ms, res, (int)ms.Length, (int)ms.Length, cfg, NoOperationProviders);
                 int len = (int)ms.Length;
                 int pos = 0;
                 return Evaluate(state, ref len, ref pos, out faultedMessage, referencedVariablesKeys);
@@ -104,12 +104,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         protected static int Compare(object left, object right)
         {
-            if (Equals(right, s_nullToken))
+            if (Equals(right, NullToken))
             {
                 right = null;
             }
 
-            if (Equals(left, s_nullToken))
+            if (Equals(left, NullToken))
             {
                 left = null;
             }
@@ -129,8 +129,8 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         private static int? AttemptBooleanComparison(object left, object right)
         {
-            bool leftIsBool = s_map.TryConvert(left, out bool lb);
-            bool rightIsBool = s_map.TryConvert(right, out bool rb);
+            bool leftIsBool = Map.TryConvert(left, out bool lb);
+            bool rightIsBool = Map.TryConvert(right, out bool rb);
 
             if (!leftIsBool || !rightIsBool)
             {
@@ -172,12 +172,12 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
         private static int? AttemptNumericComparison(object left, object right)
         {
-            bool leftIsDouble = s_map.TryConvert(left, out double ld);
-            bool rightIsDouble = s_map.TryConvert(right, out double rd);
+            bool leftIsDouble = Map.TryConvert(left, out double ld);
+            bool rightIsDouble = Map.TryConvert(right, out double rd);
 
             if (!leftIsDouble)
             {
-                if (!s_map.TryConvert(left, out long ll))
+                if (!Map.TryConvert(left, out long ll))
                 {
                     return null;
                 }
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
 
             if (!rightIsDouble)
             {
-                if (!s_map.TryConvert(right, out long rl))
+                if (!Map.TryConvert(right, out long rl))
                 {
                     return null;
                 }

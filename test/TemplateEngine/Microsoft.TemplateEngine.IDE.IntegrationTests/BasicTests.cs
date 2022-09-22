@@ -37,8 +37,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var expectedFileChanges = new FileChange[]
             {
-                new FileChange ("bar.cs", "test.cs", ChangeKind.Create),
-                new FileChange ("bar/bar.cs", "test/test.cs", ChangeKind.Create),
+                new FileChange("bar.cs", "test.cs", ChangeKind.Create),
+                new FileChange("bar/bar.cs", "test/test.cs", ChangeKind.Create),
             };
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.NotNull(result.CreationEffects?.FileChanges);
@@ -84,8 +84,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 
             var expectedFileChanges = new FileChange[]
             {
-                new FileChange ("Company.ConsoleApplication1.csproj", "test.csproj", ChangeKind.Create),
-                new FileChange ("Program.cs", "Program.cs", ChangeKind.Create),
+                new FileChange("Company.ConsoleApplication1.csproj", "test.csproj", ChangeKind.Create),
+                new FileChange("Program.cs", "Program.cs", ChangeKind.Create),
             };
             IFileChangeComparer comparer = new IFileChangeComparer();
             Assert.NotNull(result.CreationEffects?.FileChanges);

@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <summary>
         /// The UTF8 BOM sequence 0xEF,0xBB,0xBF cached in a static field.
         /// </summary>
-        private static readonly byte[] s_utf8Bom = new UTF8Encoding(true).GetPreamble();
+        private static readonly byte[] Utf8Bom = new UTF8Encoding(true).GetPreamble();
 
         /// <summary>
         /// Updates the templatestrings.json files for given languages with the provided strings.
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <returns>A task that represents the asynchronous operation.</returns>
         private static async Task TruncateFileWhilePreservingBom(FileStream fileStream, CancellationToken cancellationToken)
         {
-            byte[] preamble = new byte[s_utf8Bom.Length];
+            byte[] preamble = new byte[Utf8Bom.Length];
             int offset = 0;
             int read;
             // Read bytes from the stream until we fill the preamble array or hit EOF.
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
             }
             while (read > 0);
 
-            fileStream.SetLength(offset == s_utf8Bom.Length && preamble.SequenceEqual(s_utf8Bom) ? offset : 0);
+            fileStream.SetLength(offset == Utf8Bom.Length && preamble.SequenceEqual(Utf8Bom) ? offset : 0);
         }
 
         private static bool SequenceEqual(List<(string, string)> lhs, Dictionary<string, string>? rhs)

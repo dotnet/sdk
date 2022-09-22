@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         private class XunitLogger : ILogger
         {
-            private static readonly string[] s_newLineChars = new[] { Environment.NewLine };
+            private static readonly string[] NewLineChars = new[] { Environment.NewLine };
             private readonly string _category;
             private readonly LogLevel _minLogLevel;
             private readonly ITestOutputHelper _output;
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.TestHelper
                 var timestamp = _logStart.HasValue ? $"{(DateTimeOffset.UtcNow - _logStart.Value).TotalSeconds:N3}s" : DateTimeOffset.UtcNow.ToString("s");
 
                 var firstLinePrefix = $"| [{timestamp}] {_category} {logLevel}: ";
-                var lines = formatter(state, exception).Split(s_newLineChars, StringSplitOptions.RemoveEmptyEntries);
+                var lines = formatter(state, exception).Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
                 messageBuilder.AppendLine(firstLinePrefix + lines.FirstOrDefault() ?? string.Empty);
 
                 var additionalLinePrefix = "|" + new string(' ', firstLinePrefix.Length - 1);
@@ -85,7 +85,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
                 if (exception != null)
                 {
-                    lines = exception.ToString().Split(s_newLineChars, StringSplitOptions.RemoveEmptyEntries);
+                    lines = exception.ToString().Split(NewLineChars, StringSplitOptions.RemoveEmptyEntries);
                     additionalLinePrefix = "| ";
                     foreach (var line in lines)
                     {

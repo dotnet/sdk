@@ -36,8 +36,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                                 return 0;
                             },
                             true,
-                            new byte[] { 1, 2, 3 })
-                    )
+                            new byte[] { 1, 2, 3 }))
                 },
                 VariableCollection.Root());
 
@@ -66,8 +65,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                                 return 0;
                             },
                             true,
-                            new byte[] { 1, 2, 3 })
-                    )
+                            new byte[] { 1, 2, 3 }))
                 },
                 VariableCollection.Root());
 
@@ -92,8 +90,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                                 return 0;
                             },
                             true,
-                            new byte[] { 1, 2, 3 })
-                    )
+                            new byte[] { 1, 2, 3 }))
                 },
                 VariableCollection.Root());
 
@@ -118,8 +115,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                                 return 0;
                             },
                             true,
-                            new byte[] { 1, 2, 3 })
-                    )
+                            new byte[] { 1, 2, 3 }))
                 },
                 VariableCollection.Root());
 

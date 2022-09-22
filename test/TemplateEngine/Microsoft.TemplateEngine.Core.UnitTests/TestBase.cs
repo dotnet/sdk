@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             Assert.Equal(expected, actual);
 
             bool expectedChange = changeOverride ?? !string.Equals(expected, source, StringComparison.Ordinal);
-            string modifier = expectedChange ? "" : "not ";
+            string modifier = expectedChange ? string.Empty : "not ";
             if (expectedChange ^ changed)
             {
                 Assert.False(true, $"Expected value to {modifier} be changed");

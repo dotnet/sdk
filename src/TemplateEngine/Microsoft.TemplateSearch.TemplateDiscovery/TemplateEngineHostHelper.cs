@@ -10,7 +10,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
     {
         private const string DefaultHostVersion = "1.0.0";
 
-        private static readonly Dictionary<string, string> s_defaultPreferences = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> DefaultPreferences = new Dictionary<string, string>
         {
             { "prefs:language", "C#" }
         };
@@ -27,10 +27,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
                 hostVersion = DefaultHostVersion;
             }
 
-            preferences ??= s_defaultPreferences;
+            preferences ??= DefaultPreferences;
 
             var builtIns = new List<(Type, IIdentifiedComponent)>();
-            builtIns.AddRange(TemplateEngine.Edge.Components.AllComponents);
+            builtIns.AddRange(Components.AllComponents);
             builtIns.AddRange(TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
 
             // use "dotnetcli" as a fallback host so the correct host specific files are read.

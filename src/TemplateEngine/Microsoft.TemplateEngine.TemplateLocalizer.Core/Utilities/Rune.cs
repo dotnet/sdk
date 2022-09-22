@@ -155,7 +155,7 @@ namespace System.Text
                 // Let's optimistically assume for now it's a high surrogate and hope
                 // that combining it with the next char yields useful results.
 
-                if (1 < (uint)source.Length)
+                if ((uint)source.Length > 1)
                 {
                     char secondChar = source[1];
                     if (TryCreate(firstChar, secondChar, out result))

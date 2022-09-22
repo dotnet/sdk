@@ -85,8 +85,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                         mountPoint: mountPoint,
                         shouldStayInOriginalLocation: isLocalFlatFileSource,
                         foundComponents: false,
-                        foundTemplates: false
-                    );
+                        foundTemplates: false);
                 }
             }
             throw new Exception(string.Format(LocalizableStrings.Scanner_Error_TemplatePackageLocationIsNotSupported, sourceLocation));

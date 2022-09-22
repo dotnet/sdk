@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             if (vars.TryGetValue(config.SourceVariable, out object working))
             {
-                value = working?.ToString() ?? "";
+                value = working?.ToString() ?? string.Empty;
             }
 
             value = config.ToLower ? value.ToLowerInvariant() : value.ToUpperInvariant();

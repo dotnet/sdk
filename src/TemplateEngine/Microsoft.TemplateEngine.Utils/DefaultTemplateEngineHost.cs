@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Utils
     [Obsolete("Use Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost instead.")]
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> s_noComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
+        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         private readonly Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string>? defaults)
-            : this(hostIdentifier, version, defaults, s_noComponents, null)
+            : this(hostIdentifier, version, defaults, NoComponents, null)
         {
         }
 
@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version, Dictionary<string, string> defaults, IReadOnlyList<string> fallbackHostTemplateConfigNames)
-            : this(hostIdentifier, version, defaults, s_noComponents, fallbackHostTemplateConfigNames)
+            : this(hostIdentifier, version, defaults, NoComponents, fallbackHostTemplateConfigNames)
         {
         }
 
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Utils
             Version = version;
             _hostDefaults = defaults ?? new Dictionary<string, string>();
             FileSystem = new PhysicalFileSystem();
-            _hostBuiltInComponents = builtIns ?? s_noComponents;
+            _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
             _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
             _loggerFactory = NullLoggerFactory.Instance;

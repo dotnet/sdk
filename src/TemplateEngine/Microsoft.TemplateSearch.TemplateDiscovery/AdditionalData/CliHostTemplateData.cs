@@ -42,7 +42,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
                     foreach (var symbolProperty in symbol.Properties())
                     {
-                        symbolProperties[symbolProperty.Name] = symbolProperty.Value.Value<string>() ?? "";
+                        symbolProperties[symbolProperty.Name] = symbolProperty.Value.Value<string>() ?? string.Empty;
                     }
 
                     symbolsInfo[symbolInfo.Name] = symbolProperties;

@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 {
     internal class GeneratePortNumberConfig : IMacroConfig
     {
-        private static readonly HashSet<int> s_unsafePorts = new HashSet<int>()
+        private static readonly HashSet<int> UnsafePorts = new HashSet<int>()
         {
                     2049, // nfs
                     3659, // apple-sasl / PasswordServer
@@ -72,7 +72,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         {
             testSocket = null;
 
-            if (s_unsafePorts.Contains(testPort))
+            if (UnsafePorts.Contains(testPort))
             {
                 return false;
             }

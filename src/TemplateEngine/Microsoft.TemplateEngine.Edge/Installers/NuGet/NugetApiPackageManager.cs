@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal class NuGetApiPackageManager : IDownloader, IUpdateChecker
     {
-        private static readonly ConcurrentDictionary<PackageSource, SourceRepository> s_sourcesCache = new ConcurrentDictionary<PackageSource, SourceRepository>();
+        private static readonly ConcurrentDictionary<PackageSource, SourceRepository> SourcesCache = new();
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly ILogger _nugetLogger;
 
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
 
             FindPackageByIdResource resource;
-            SourceRepository repository = s_sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
+            SourceRepository repository = SourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
             try
             {
                 resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
@@ -115,8 +115,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                         filePath,
                         source.Source,
                         packageMetadata.Identity.Id,
-                        packageMetadata.Identity.Version.ToNormalizedString()
-                    );
+                        packageMetadata.Identity.Version.ToNormalizedString());
                 }
                 else
                 {
@@ -322,7 +321,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             _nugetLogger.LogDebug($"Searching for {packageIdentifier} in {source.Source}.");
             try
             {
-                SourceRepository repository = s_sourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
+                SourceRepository repository = SourcesCache.GetOrAdd(source, Repository.Factory.GetCoreV3(source));
                 PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken).ConfigureAwait(false);
                 IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
                     packageIdentifier,

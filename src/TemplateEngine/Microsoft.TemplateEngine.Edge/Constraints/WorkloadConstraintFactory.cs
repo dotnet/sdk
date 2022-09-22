@@ -74,8 +74,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
                         LocalizableStrings.WorkloadConstraint_Message_Restricted,
                         string.Join(", ", supportedWorkloads),
                         string.Join(", ", _installedWorkloadsString)),
-                    _remedySuggestionFactory(supportedWorkloads)
-                    );
+                    _remedySuggestionFactory(supportedWorkloads));
             }
 
             //supported configuration:

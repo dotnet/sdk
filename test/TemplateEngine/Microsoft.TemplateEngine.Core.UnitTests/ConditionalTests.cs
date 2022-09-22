@@ -221,7 +221,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
                     new Replacement("##".TokenConfig(), "#", uncommentOperationId, false),
-                    new Replacement("#".TokenConfig(), "", replaceOperationId, false),
+                    new Replacement("#".TokenConfig(), string.Empty, replaceOperationId, false),
                 };
 
                 return operations;
@@ -251,7 +251,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
                     new Replacement("rem rem".TokenConfig(), "rem", uncommentOperationId, false),
-                    new Replacement("rem".TokenConfig(), "", replaceOperationId, false)
+                    new Replacement("rem".TokenConfig(), string.Empty, replaceOperationId, false)
                 };
 
                 return operations;
@@ -281,7 +281,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 {
                     new Conditional(tokens, true, true, CppStyleEvaluatorDefinition.Evaluate, null, true),
                     new Replacement("-#-#".TokenConfig(), "-#", reduceCommentOperationId, false),
-                    new Replacement("-#".TokenConfig(), "", uncommentOperationId, false),
+                    new Replacement("-#".TokenConfig(), string.Empty, uncommentOperationId, false),
                 };
 
                 return operations;

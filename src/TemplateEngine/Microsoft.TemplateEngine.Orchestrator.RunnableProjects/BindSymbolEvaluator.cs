@@ -174,8 +174,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _logger.LogDebug(
                     "The following values were retrieved for binding '{0}': {1}.",
                     binding,
-                    string.Join(", ", successfulTasks.Select(t => $"{t.Source.DisplayName} (priority: {t.Source.Priority}): '{t.Value}'"))
-                );
+                    string.Join(", ", successfulTasks.Select(t => $"{t.Source.DisplayName} (priority: {t.Source.Priority}): '{t.Value}'")));
                 var highestPriority = successfulTasks.Max(t => t.Source.Priority);
                 var highestPrioTasks = successfulTasks.Where(t => t.Source.Priority == highestPriority);
                 if (highestPrioTasks.Count() > 1)

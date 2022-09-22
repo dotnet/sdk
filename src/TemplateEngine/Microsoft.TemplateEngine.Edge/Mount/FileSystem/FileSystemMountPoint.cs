@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
             MountPointRootPath = mountPointRootPath;
             EnvironmentSettings = environmentSettings;
             _paths = new SettingsFilePaths(environmentSettings);
-            Root = new FileSystemDirectory(this, "/", "", MountPointRootPath);
+            Root = new FileSystemDirectory(this, "/", string.Empty, MountPointRootPath);
         }
 
         public IDirectory Root { get; }
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Edge.Mount.FileSystem
 
         public IMountPoint? Parent { get; }
 
-        public Guid MountPointFactoryId => FileSystemMountPointFactory.s_factoryId;
+        public Guid MountPointFactoryId => FileSystemMountPointFactory.FactoryId;
 
         public string MountPointUri { get; }
 

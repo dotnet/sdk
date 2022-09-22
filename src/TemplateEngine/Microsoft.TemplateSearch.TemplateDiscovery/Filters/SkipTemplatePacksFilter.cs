@@ -9,7 +9,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
     {
         private const string FilterId = "Permanently skipped packages";
 
-        private static readonly List<string> s_packagesToBeSkipped = new List<string>
+        private static readonly List<string> PackagesToBeSkipped = new List<string>
         {
             "microsoft.dotnet.common.itemtemplates",
             "microsoft.dotnet.common.projecttemplates",
@@ -35,7 +35,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Filters
         {
             static PreFilterResult Filter(IDownloadedPackInfo packInfo)
             {
-                foreach (string package in s_packagesToBeSkipped)
+                foreach (string package in PackagesToBeSkipped)
                 {
                     if (packInfo.Name.StartsWith(package, StringComparison.OrdinalIgnoreCase))
                     {

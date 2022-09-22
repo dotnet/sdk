@@ -168,8 +168,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 {
                     var constraintManager = new TemplateConstraintManager(engineEnvironmentSettings);
                     constraints = await constraintManager.GetConstraintsAsync(new[] { templateInfo }, default).ConfigureAwait(false);
-                }
-            );
+                });
             var completedTask = await Task.WhenAny(constraintsTask, Task.Delay(10000)).ConfigureAwait(false);
 
             Assert.Equal(completedTask, constraintsTask);

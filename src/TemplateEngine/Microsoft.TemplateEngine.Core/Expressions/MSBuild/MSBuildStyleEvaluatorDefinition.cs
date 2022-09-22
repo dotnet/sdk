@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
 {
     public class MSBuildStyleEvaluatorDefinition : SharedEvaluatorDefinition<MSBuildStyleEvaluatorDefinition, MSBuildStyleEvaluatorDefinition.Tokens>
     {
-        private static readonly Dictionary<Encoding, ITokenTrie> s_tokenCache = new Dictionary<Encoding, ITokenTrie>();
+        private static readonly Dictionary<Encoding, ITokenTrie> TokenCache = new Dictionary<Encoding, ITokenTrie>();
 
         public enum Tokens
         {
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
 
         protected override ITokenTrie GetSymbols(IProcessorState processor)
         {
-            if (!s_tokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
+            if (!TokenCache.TryGetValue(processor.Encoding, out ITokenTrie tokens))
             {
                 TokenTrie trie = new TokenTrie();
 
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.MSBuild
                 // variable start
                 trie.AddToken(processor.Encoding.GetBytes("$("));
 
-                s_tokenCache[processor.Encoding] = tokens = trie;
+                TokenCache[processor.Encoding] = tokens = trie;
             }
 
             return tokens;

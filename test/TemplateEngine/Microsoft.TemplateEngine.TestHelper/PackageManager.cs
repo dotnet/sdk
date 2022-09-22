@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.TestHelper
     public class PackageManager : IDisposable
     {
         private const string NuGetOrgFeed = "https://api.nuget.org/v3/index.json";
-        private static readonly SemaphoreSlim s_semaphore = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim Semaphore = new SemaphoreSlim(1, 1);
         private readonly string _packageLocation = TestUtils.CreateTemporaryFolder("packages");
         private readonly ConcurrentDictionary<string, string> _installedPackages = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             try
             {
                 logger.LogDebug($"[NuGet Package Manager] Trying to get semaphore.");
-                await s_semaphore.WaitAsync().ConfigureAwait(false);
+                await Semaphore.WaitAsync().ConfigureAwait(false);
                 logger.LogDebug($"[NuGet Package Manager] Semaphore acquired.");
                 if (_installedPackages.TryGetValue(templatePackName, out string? packagePath))
                 {
@@ -67,7 +67,7 @@ namespace Microsoft.TemplateEngine.TestHelper
             finally
             {
                 logger.LogDebug($"[NuGet Package Manager] Releasing semaphore.");
-                s_semaphore.Release();
+                Semaphore.Release();
                 logger.LogDebug($"[NuGet Package Manager] Semaphore released.");
             }
         }

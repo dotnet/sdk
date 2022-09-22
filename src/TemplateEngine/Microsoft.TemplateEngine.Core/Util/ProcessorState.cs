@@ -76,8 +76,8 @@ namespace Microsoft.TemplateEngine.Core.Util
             WriteToTarget(bom, 0, _bomSize);
 
             bool explicitOnConfigurationRequired = false;
-            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = s_trieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
-            List<string> turnOnByDefault = s_operationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
+            Dictionary<Encoding, Trie<OperationTerminal>> byEncoding = TrieLookup.GetOrAdd(operationProviders, x => new Dictionary<Encoding, Trie<OperationTerminal>>());
+            List<string> turnOnByDefault = OperationsToExplicitlySetOnByDefault.GetOrAdd(operationProviders, x =>
             {
                 explicitOnConfigurationRequired = true;
                 return new List<string>();
@@ -502,8 +502,7 @@ namespace Microsoft.TemplateEngine.Core.Util
                         return;
                     }
 
-                    int token;
-                    if (!trie.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out token))
+                    if (!trie.GetOperation(CurrentBuffer, bufferLength, ref currentBufferPosition, out _))
                     {
                         return;
                     }

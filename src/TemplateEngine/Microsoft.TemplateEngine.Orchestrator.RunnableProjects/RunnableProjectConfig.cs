@@ -33,9 +33,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     internal partial class RunnableProjectConfig : IRunnableProjectConfig
     {
         private const string AdditionalConfigFilesIndicator = "AdditionalConfigFiles";
-        private static readonly string[] s_includePatternDefaults = new[] { "**/*" };
+        private static readonly string[] IncludePatternDefaults = new[] { "**/*" };
 
-        private static readonly string[] s_excludePatternDefaults = new[]
+        private static readonly string[] ExcludePatternDefaults = new[]
         {
             "**/[Bb]in/**",
             "**/[Oo]bj/**",
@@ -45,8 +45,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             "**/*.lock.json"
         };
 
-        private static readonly string[] s_copyOnlyPatternDefaults = new[] { "**/node_modules/**" };
-        private static readonly string[] s_defaultPlaceholderFilenames = new[] { "-.-", "_._" };
+        private static readonly string[] CopyOnlyPatternDefaults = new[] { "**/node_modules/**" };
+        private static readonly string[] DefaultPlaceholderFilenames = new[] { "-.-", "_._" };
         private readonly IEngineEnvironmentSettings _settings;
         private readonly ILogger<RunnableProjectConfig> _logger;
 
@@ -132,7 +132,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IDirectory? TemplateSourceRoot => SourceFile.Parent?.Parent;
 
-        public IReadOnlyList<string> IgnoreFileNames => !string.IsNullOrWhiteSpace(_configuration.PlaceholderFilename) ? new[] { _configuration.PlaceholderFilename! } : s_defaultPlaceholderFilenames;
+        public IReadOnlyList<string> IgnoreFileNames => !string.IsNullOrWhiteSpace(_configuration.PlaceholderFilename) ? new[] { _configuration.PlaceholderFilename! } : DefaultPlaceholderFilenames;
 
         public IReadOnlyList<FileSourceMatchInfo> Sources
         {
@@ -148,9 +148,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     foreach (ExtendedFileSource source in _configuration.Sources)
                     {
-                        IReadOnlyList<string> includePattern = TryReadConfigFromFile(source.Include, SourceFile, s_includePatternDefaults);
-                        IReadOnlyList<string> excludePattern = TryReadConfigFromFile(source.Exclude, SourceFile, s_excludePatternDefaults);
-                        IReadOnlyList<string> copyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, SourceFile, s_copyOnlyPatternDefaults);
+                        IReadOnlyList<string> includePattern = TryReadConfigFromFile(source.Include, SourceFile, IncludePatternDefaults);
+                        IReadOnlyList<string> excludePattern = TryReadConfigFromFile(source.Exclude, SourceFile, ExcludePatternDefaults);
+                        IReadOnlyList<string> copyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
                         FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
                         IReadOnlyDictionary<string, string> renamePatterns = source.Rename;
                         FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
@@ -164,9 +164,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                     if (sources.Count == 0)
                     {
-                        IReadOnlyList<string> includePattern = s_includePatternDefaults;
-                        IReadOnlyList<string> excludePattern = s_excludePatternDefaults;
-                        IReadOnlyList<string> copyOnlyPattern = s_copyOnlyPatternDefaults;
+                        IReadOnlyList<string> includePattern = IncludePatternDefaults;
+                        IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
+                        IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
                         FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
                         FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
@@ -897,9 +897,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     continue;
                 }
 
-                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, SourceFile, s_includePatternDefaults).ToList();
-                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, SourceFile, s_excludePatternDefaults).ToList();
-                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, SourceFile, s_copyOnlyPatternDefaults).ToList();
+                IReadOnlyList<string> topIncludePattern = TryReadConfigFromFile(source.Include, SourceFile, IncludePatternDefaults).ToList();
+                IReadOnlyList<string> topExcludePattern = TryReadConfigFromFile(source.Exclude, SourceFile, ExcludePatternDefaults).ToList();
+                IReadOnlyList<string> topCopyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults).ToList();
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(topIncludePattern, topExcludePattern, topCopyOnlyPattern);
 
                 Dictionary<string, string> fileRenamesFromSource = source.Rename.ToDictionary(x => x.Key, x => x.Value);
@@ -943,9 +943,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             if (_configuration.Sources.Count == 0)
             {
-                IReadOnlyList<string> includePattern = s_includePatternDefaults;
-                IReadOnlyList<string> excludePattern = s_excludePatternDefaults;
-                IReadOnlyList<string> copyOnlyPattern = s_copyOnlyPatternDefaults;
+                IReadOnlyList<string> includePattern = IncludePatternDefaults;
+                IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
+                IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
                 FileSourceEvaluable topLevelPatterns = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
 
                 string targetDirectory = string.Empty;
@@ -1044,8 +1044,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         string.Join(
                             ", ",
                             p.Choices.Where(c => !c.Key.IsValidMultiValueParameterValue())
-                                .Select(c => $"{{{c.Key}}}"))))
-            );
+                                .Select(c => $"{{{c.Key}}}")))));
 
             errorMessages.AddRange(ValidateTemplateSourcePaths());
             #endregion
@@ -1163,8 +1162,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private class SpecialOperationConfigParams
         {
-            private static readonly SpecialOperationConfigParams s_defaults = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
-
             internal SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
             {
                 EvaluatorName = evaluatorName;
@@ -1173,7 +1170,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 ConditionalStyle = type;
             }
 
-            internal static SpecialOperationConfigParams Defaults => s_defaults;
+            internal static SpecialOperationConfigParams Defaults { get; } = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
 
             internal string Glob { get; }
 

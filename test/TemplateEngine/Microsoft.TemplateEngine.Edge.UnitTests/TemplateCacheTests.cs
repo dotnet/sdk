@@ -52,7 +52,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 }
                 else
                 {
-                    currentCulture = "";
+                    currentCulture = string.Empty;
                     CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
                 }
                 string[] availableLocales = new[] { "cs", "de", "en", "es", "fr", "it", "ja", "ko", "pl", "pt-BR", "ru", "tr", "zh-Hans", "zh-Hant" };
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 Assert.Equal(currentCulture, templateCache.Locale);
                 Assert.Equal("testIdentity", templateCache.TemplateInfo.Single().Identity);
-                Assert.Equal(string.IsNullOrEmpty(expectedLocator) ? "" : expectedLocator + " name", templateCache.TemplateInfo.Single().Name);
+                Assert.Equal(string.IsNullOrEmpty(expectedLocator) ? string.Empty : expectedLocator + " name", templateCache.TemplateInfo.Single().Name);
             }
             finally
             {

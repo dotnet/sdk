@@ -32,7 +32,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
                                 r =>
                                 {
                                     PackToTemplateEntry packToTemplateEntry = new PackToTemplateEntry(
-                                            r.Version ?? "",
+                                            r.Version ?? string.Empty,
                                             r.Templates.Select(t => new TemplateIdentificationEntry(t.Identity, t.GroupIdentity)).ToList())
                                     {
                                         TotalDownloads = r.TotalDownloads,

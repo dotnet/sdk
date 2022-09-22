@@ -86,8 +86,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Commands.Export
                 ExportOptions exportOptions = new(args.DryRun, targetDirectory: null, args.Languages);
                 runningExportTasks.Add(
                     (templateJsonPath,
-                    new Core.TemplateLocalizer(LoggerFactory).ExportLocalizationFilesAsync(templateJsonPath, exportOptions, cancellationToken))
-                );
+                    new Core.TemplateLocalizer(LoggerFactory).ExportLocalizationFilesAsync(templateJsonPath, exportOptions, cancellationToken)));
             }
 
             try

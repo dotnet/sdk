@@ -9,18 +9,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
     internal class ConditionalKeywords
     {
         private const string DefaultPrefix = "#";
-        private static readonly IReadOnlyList<string> s_defaultIfKeywords = new[] { "if" };
-        private static readonly IReadOnlyList<string> s_defaultElseIfKeywords = new[] { "elseif", "elif" };
-        private static readonly IReadOnlyList<string> s_defaultElseKeywords = new[] { "else" };
-        private static readonly IReadOnlyList<string> s_defaultEndIfKeywords = new[] { "endif" };
+        private static readonly IReadOnlyList<string> DefaultIfKeywords = new[] { "if" };
+        private static readonly IReadOnlyList<string> DefaultElseIfKeywords = new[] { "elseif", "elif" };
+        private static readonly IReadOnlyList<string> DefaultElseKeywords = new[] { "else" };
+        private static readonly IReadOnlyList<string> DefaultEndIfKeywords = new[] { "endif" };
 
         internal ConditionalKeywords()
         {
             KeywordPrefix = DefaultPrefix;
-            IfKeywords = s_defaultIfKeywords;
-            ElseIfKeywords = s_defaultElseIfKeywords;
-            ElseKeywords = s_defaultElseKeywords;
-            EndIfKeywords = s_defaultEndIfKeywords;
+            IfKeywords = DefaultIfKeywords;
+            ElseIfKeywords = DefaultElseIfKeywords;
+            ElseKeywords = DefaultElseKeywords;
+            EndIfKeywords = DefaultEndIfKeywords;
         }
 
         internal string KeywordPrefix { get; set; }

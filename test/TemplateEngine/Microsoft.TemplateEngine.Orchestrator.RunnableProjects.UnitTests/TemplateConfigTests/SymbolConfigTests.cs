@@ -605,8 +605,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
             Assert.NotNull(paramSymbol);
             Assert.Single(paramSymbol!.Forms.GlobalForms.ToList()
-                                                .Where(x => string.Equals(x, IdentityValueFormFactory.FormIdentifier, StringComparison.OrdinalIgnoreCase))
-);
+                                                .Where(x => string.Equals(x, IdentityValueFormFactory.FormIdentifier, StringComparison.OrdinalIgnoreCase)));
             Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueFormFactory.FormIdentifier));
         }
 
@@ -912,7 +911,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             }
             else
             {
-                Assert.Equal(1, configModel.Symbols.Count());
+                Assert.Single(configModel.Symbols);
             }
         }
 
