@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Serialization;
 using Microsoft.TemplateEngine.TestHelper;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -108,7 +109,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemHelper.DefaultConfigRelativePath, config.ToJObject().ToString() }
+                { TestFileSystemUtils.DefaultConfigRelativePath, config.ToJsonString() }
             };
 
             //content
@@ -124,13 +125,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = environment.GetTempVirtualizedPath();
+            string targetDir = environment.GetTempVirtualizedPath();
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
 
-            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            TestFileSystemUtils.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
 
             if (expectedToBeValid)
             {

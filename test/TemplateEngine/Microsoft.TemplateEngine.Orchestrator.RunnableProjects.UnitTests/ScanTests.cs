@@ -43,14 +43,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
             };
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            string sourceBasePath = environmentSettings.GetNewVirtualizedPath();
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
 
             string templateConfigDir = Path.Combine(sourceBasePath, RunnableProjectGenerator.TemplateConfigDirectoryName);
             string filePath = Path.Combine(templateConfigDir, RunnableProjectGenerator.TemplateConfigFileName);
             environmentSettings.Host.FileSystem.CreateDirectory(templateConfigDir);
             environmentSettings.Host.FileSystem.WriteAllText(filePath, JsonConvert.SerializeObject(jsonToBe));
 
-            IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
+            using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
             var templates = (generator as IGenerator).GetTemplatesAndLangpacksFromDir(mountPoint, out _);
 

@@ -19,7 +19,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public TemplateRootTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         private static string TemplateConfigWithSourcePlaceholder
@@ -75,18 +75,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public void CheckTemplateRootRelativeToInstallPath(string pathToTemplateJson, bool shouldAllPathsBeValid)
         {
             TemplateConfigModel baseConfig = TemplateConfigModel.FromJObject(JObject.Parse(BasicTemplateConfig));
-            RunnableProjectGenerator generator = new RunnableProjectGenerator();
+            RunnableProjectGenerator generator = new();
 
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 { pathToTemplateJson, BasicTemplateConfig }
             };
-            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
-            setup.WriteSource();
+            _engineEnvironmentSettings.WriteTemplateSource(sourcePath, templateSourceFiles);
 
-            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateJson);
-            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
+            using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
+            IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateJson);
+            Assert.NotNull(templateConfigFile);
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateConfigFile);
 
             if (shouldAllPathsBeValid)
             {
@@ -112,18 +113,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
 
             const string pathToTemplateConfig = ".template.config/template.json";
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 { pathToTemplateConfig, templateConfig },
-                // directories under the root - valid source locations.
-                { "things/stuff/_._", string.Empty }
+                { "things/stuff/_._", string.Empty } // directories under the root - valid source locations.
             };
-            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
-            setup.WriteSource();
-            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
+            _engineEnvironmentSettings.WriteTemplateSource(sourcePath, templateSourceFiles);
 
-            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
+            using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
+            IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateConfig);
+            Assert.NotNull(templateConfigFile);
+
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateConfigFile);
 
             if (shouldAllPathsBeValid)
             {
@@ -159,21 +161,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             const string pathFromMountPointRootToTemplateRoot = "MountRoot/Stuff/TemplateRoot/";
             string pathToTemplateConfig = pathFromMountPointRootToTemplateRoot + ".template.config/template.json";
 
-            string sourcePath = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
-            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
-            {
-                { pathToTemplateConfig, templateConfig }
-            };
+            string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
             string sampleContentDir = pathFromMountPointRootToTemplateRoot + "things/stuff/_._";
-            templateSourceFiles.Add(sampleContentDir, string.Empty);    // directories under the template root - valid source locations.
-            templateSourceFiles.Add("ExistingDir/_._", string.Empty);
-            templateSourceFiles.Add("MountRoot/Subdir/_._", string.Empty);
-            TestTemplateSetup setup = new TestTemplateSetup(_engineEnvironmentSettings, sourcePath, templateSourceFiles);
-            setup.WriteSource();
 
-            IFile? templateFile = setup.FileInfoForSourceFile(pathToTemplateConfig);
-            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateFile);
+            IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
+            {
+                { pathToTemplateConfig, templateConfig },
+                { sampleContentDir, string.Empty },    // directories under the template root - valid source locations.
+                { "ExistingDir/_._", string.Empty },
+                { "MountRoot/Subdir/_._", string.Empty }
+            };
+
+            _engineEnvironmentSettings.WriteTemplateSource(sourcePath, templateSourceFiles);
+
+            using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
+            IFile? templateConfigFile = mountPoint.FileInfo(pathToTemplateConfig);
+            Assert.NotNull(templateConfigFile);
+
+            RunnableProjectConfig templateModel = new RunnableProjectConfig(_engineEnvironmentSettings, generator, baseConfig, templateConfigFile);
 
             if (shouldAllPathsBeValid)
             {

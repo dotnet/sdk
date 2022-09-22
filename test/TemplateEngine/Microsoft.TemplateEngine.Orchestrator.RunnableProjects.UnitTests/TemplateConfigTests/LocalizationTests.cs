@@ -39,9 +39,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -62,9 +62,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -86,9 +86,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -126,9 +126,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -188,9 +188,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -261,9 +261,9 @@ false,
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), fileContent, environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -314,9 +314,9 @@ false,
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/description\": \"localizedDescription\" }", environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/description\": \"localizedDescription\" }");
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
             TemplateConfigModel baseConfig = new TemplateConfigModel()
             {
@@ -371,9 +371,9 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
-            WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/manualInstructions/default/text\": \"localized\" }", environmentSettings);
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/manualInstructions/default/text\": \"localized\" }");
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
             var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -411,12 +411,11 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFilename = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
-            WriteFile(
+            environmentSettings.WriteFile(
                 Path.Combine(tempFolder, localizationFilename),
-                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa0/manualInstructions/extra/text\": \"extraLoc\" }",
-                environmentSettings);
+                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa0/manualInstructions/extra/text\": \"extraLoc\" }");
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
             var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationFile = mountPoint.FileInfo(localizationFilename);
@@ -458,12 +457,11 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
-            WriteFile(
+            environmentSettings.WriteFile(
                 Path.Combine(tempFolder, localizationFile),
-                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa1/manualInstructions/extra/text\": \"extraLoc\" }",
-                environmentSettings);
+                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa1/manualInstructions/extra/text\": \"extraLoc\" }");
 
-            using IMountPoint mountPoint = GetMountPointForPath(tempFolder, environmentSettings);
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
             var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
@@ -478,25 +476,5 @@ false,
         }
 
         #endregion
-
-        internal static void WriteFile(string path, string fileContent, IEngineEnvironmentSettings engineEnvironmentSettings)
-        {
-            string fullPathDir = Path.GetDirectoryName(path) ?? throw new ArgumentException(nameof(path));
-            engineEnvironmentSettings.Host.FileSystem.CreateDirectory(fullPathDir);
-            engineEnvironmentSettings.Host.FileSystem.WriteAllText(path, fileContent ?? string.Empty);
-        }
-
-        internal static IMountPoint GetMountPointForPath(string path, IEngineEnvironmentSettings engineEnvironmentSettings)
-        {
-            foreach (var factory in engineEnvironmentSettings.Components.OfType<IMountPointFactory>())
-            {
-                if (factory.TryMount(engineEnvironmentSettings, null, path, out IMountPoint? myMountPoint))
-                {
-                    return myMountPoint!;
-                }
-            }
-            throw new Exception($"Failed to mount the location {path}");
-        }
-
     }
 }

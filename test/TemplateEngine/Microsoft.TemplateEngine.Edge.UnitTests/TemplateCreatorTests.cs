@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         public TemplateCreatorTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
         private const string TemplateConfigBooleanParam = @"
@@ -465,7 +465,7 @@ C
 #endif
 ";
 
-            List<InputDataBag> parameters = new List<InputDataBag>(
+            List<InputDataBag> parameters = new(
                 new[]
                 {
                     new InputDataBag("parA", a_val, a_enabled, a_required),
@@ -499,7 +499,7 @@ C
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
                 // template.json
-                { TestFileSystemHelper.DefaultConfigRelativePath, templateSnippet }
+                { TestFileSystemUtils.DefaultConfigRelativePath, templateSnippet }
             };
 
             string sourceFileName = "sourceFile" + sourceExtension;
@@ -511,19 +511,18 @@ C
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environment = _engineEnvironmentSettings;
-            string sourceBasePath = FileSystemHelpers.GetNewVirtualizedPath(environment);
+            string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            TestFileSystemHelper.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
-            IMountPoint? sourceMountPoint = TestFileSystemHelper.CreateMountPoint(environment, sourceBasePath);
-            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
+            TestFileSystemUtils.WriteTemplateSource(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles);
+            using IMountPoint sourceMountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
+            RunnableProjectGenerator rpg = new();
             // cannot use SimpleConfigModel dirrectly - due to missing easy way of creating ParameterSymbols
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateSnippet));
-            var runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemHelper.DefaultConfigRelativePath));
+            var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
 
             TemplateCreator creator = new TemplateCreator(_engineEnvironmentSettings);
 
-            string targetDir = FileSystemHelpers.GetNewVirtualizedPath(_engineEnvironmentSettings);
+            string targetDir = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
             ITemplateCreationResult res;
             if (parameters1 != null)
@@ -537,7 +536,7 @@ C
             }
             else
             {
-                var parameters = runnableConfig.ParameterDefinitions;
+                IParameterDefinitionSet parameters = runnableConfig.ParameterDefinitions;
 
                 InputDataSet data;
                 try
