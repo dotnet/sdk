@@ -10,6 +10,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class SwitchMacroConfig : BaseMacroConfig<SwitchMacro, SwitchMacroConfig>
     {
+        private const string CasesPropertyName = "cases";
+        private const string CasesConditionPropertyName = "condition";
+        private const string CasesValuePropertyName = "value";
         private const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
 
         internal SwitchMacroConfig(SwitchMacro macro, string variableName, string evaluator, string dataType, IReadOnlyList<(string?, string)> cases)
@@ -28,19 +31,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 Evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(evaluator, DefaultEvaluator));
             }
             List<(string? Condition, string Value)> cases = new();
-            JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, nameof(Cases));
+            JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, CasesPropertyName);
 
             foreach (JToken entry in jArray)
             {
                 if (entry is not JObject jobj)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': array '{nameof(Cases)}' should contain JSON objects.", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, CasesPropertyName), generatedSymbolConfig.VariableName);
                 }
-                string? condition = jobj.ToString("condition");
-                string? value = jobj.ToString("value");
+                string? condition = jobj.ToString(CasesConditionPropertyName);
+                string? value = jobj.ToString(CasesValuePropertyName);
                 if (value == null)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': array '{nameof(Cases)}' should contain JSON objects with property 'value'.", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingValueProperty, generatedSymbolConfig.VariableName, CasesPropertyName, CasesValuePropertyName), generatedSymbolConfig.VariableName);
                 }
                 cases.Add((condition, value));
             }

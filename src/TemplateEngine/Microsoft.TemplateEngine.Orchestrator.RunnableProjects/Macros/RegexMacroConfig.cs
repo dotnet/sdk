@@ -11,6 +11,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class RegexMacroConfig : BaseMacroConfig<RegexMacro, RegexMacroConfig>
     {
+        private const string StepsPropertyName = "steps";
+        private const string StepsRegexPropertyName = "regex";
+        private const string StepsReplacementPropertyName = "replacement";
+
         internal RegexMacroConfig(RegexMacro macro, string variableName, string? dataType, string sourceVariable, IReadOnlyList<(string, string)> steps)
              : base(macro, variableName, dataType)
         {
@@ -29,26 +33,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             Source = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Source));
 
             List<(string Type, string Value)> steps = new();
-            JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, nameof(Steps));
+            JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, StepsPropertyName);
 
             foreach (JToken entry in jArray)
             {
                 if (entry is not JObject jobj)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': array '{nameof(Steps)}' should contain JSON objects.", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, StepsPropertyName), generatedSymbolConfig.VariableName);
                 }
-                string? regex = jobj.ToString("regex");
-                string? replacement = jobj.ToString("replacement");
+                string? regex = jobj.ToString(StepsRegexPropertyName);
+                string? replacement = jobj.ToString(StepsReplacementPropertyName);
 
                 if (string.IsNullOrEmpty(regex))
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': array '{nameof(Steps)}' should contain JSON objects with property 'regex'", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingValueProperty, generatedSymbolConfig.VariableName, StepsPropertyName, StepsRegexPropertyName), generatedSymbolConfig.VariableName);
                 }
                 IsValidRegex(regex!, generatedSymbolConfig);
 
                 if (replacement == null)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': array '{nameof(Steps)}' should contain JSON objects with property 'replacement'", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingValueProperty, generatedSymbolConfig.VariableName, StepsPropertyName, StepsReplacementPropertyName), generatedSymbolConfig.VariableName);
                 }
 
                 steps.Add((regex!, replacement));

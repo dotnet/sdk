@@ -78,7 +78,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 "C++" => EvaluatorType.CPP,
                 "MSBUILD" => EvaluatorType.MSBuild,
                 "VB" => EvaluatorType.VB,
-                _ => throw new TemplateAuthoringException($"Unrecognized evaluator: '{evaluatorName}'.", evaluatorName),
+                _ => throw new TemplateAuthoringException(string.Format(LocalizableStrings.EvaluatorSelector_Exception_UnknownEvaluator, evaluatorName)),
             };
             return evaluator;
         }

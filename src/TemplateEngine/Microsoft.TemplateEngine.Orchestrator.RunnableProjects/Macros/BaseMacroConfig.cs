@@ -78,13 +78,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 var jToken = JToken.Parse(token);
                 if (jToken.Type is not JTokenType.Boolean and not JTokenType.String)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be a boolean value.", config.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeBoolean, config.VariableName, parameterName), config.VariableName);
                 }
                 if (bool.TryParse(jToken.ToString(), out bool result))
                 {
                     return result;
                 }
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be a boolean value.", config.VariableName);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeBoolean, config.VariableName, parameterName), config.VariableName);
             }
             catch (TemplateAuthoringException)
             {
@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             catch (Exception ex)
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' is not a valid JSON.", config.VariableName, ex);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
         }
 
@@ -103,13 +103,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 var jToken = JToken.Parse(token);
                 if (jToken.Type is not JTokenType.Integer and not JTokenType.String)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be an integer.", config.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeInteger, config.VariableName, parameterName), config.VariableName);
                 }
                 if (int.TryParse(jToken.ToString(), out int result))
                 {
                     return result;
                 }
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be an integer.", config.VariableName);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeInteger, config.VariableName, parameterName), config.VariableName);
             }
             catch (TemplateAuthoringException)
             {
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             catch (Exception ex)
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' is not a valid JSON.", config.VariableName, ex);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 var jToken = JToken.Parse(token);
                 if (jToken.Type != JTokenType.String)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be a string.", config.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeString, config.VariableName, parameterName), config.VariableName);
                 }
                 return jToken.ToString();
             }
@@ -138,7 +138,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             catch (Exception ex)
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' is not a valid JSON.", config.VariableName, ex);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 var jToken = JToken.Parse(token);
                 if (jToken.Type != JTokenType.Array)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' should be a JSON array.", config.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeArray, config.VariableName, parameterName), config.VariableName);
                 }
                 return (JArray)jToken;
             }
@@ -159,7 +159,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             }
             catch (Exception ex)
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}': '{parameterName}' is not a valid JSON.", config.VariableName, ex);
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
         }
 
@@ -173,7 +173,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             {
                 if (generatedSymbolConfig is not null)
                 {
-                    throw new TemplateAuthoringException($"Generated symbol '{generatedSymbolConfig.VariableName}': the pattern '{regex}' is invalid.", generatedSymbolConfig.VariableName);
+                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidRegex, generatedSymbolConfig.VariableName, regex), generatedSymbolConfig.VariableName);
                 }
                 else
                 {
@@ -186,7 +186,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             if (!config.Parameters.TryGetValue(parameterName, out string token))
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}' of type '{Type}' should have '{parameterName}' property defined.");
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingMandatoryProperty, config.VariableName, Type, parameterName), config.VariableName);
             }
             return ConvertJTokenToString(token, config, parameterName);
         }
@@ -195,7 +195,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             if (!config.Parameters.TryGetValue(parameterName, out string token))
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}' of type '{Type}' should have '{parameterName}' property defined.");
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingMandatoryProperty, config.VariableName, Type, parameterName), config.VariableName);
             }
             return converter(token, config, parameterName);
         }
@@ -204,7 +204,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             if (!config.Parameters.TryGetValue(parameterName, out string token))
             {
-                throw new TemplateAuthoringException($"Generated symbol '{config.VariableName}' of type '{Type}' should have '{parameterName}' property defined.");
+                throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_MissingMandatoryProperty, config.VariableName, Type, parameterName), config.VariableName);
             }
             return ConvertJTokenToJArray(token, config, parameterName);
         }

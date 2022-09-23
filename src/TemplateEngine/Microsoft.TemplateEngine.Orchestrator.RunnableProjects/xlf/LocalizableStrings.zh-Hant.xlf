@@ -110,6 +110,16 @@ Details: {1}</source>
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</note>
       </trans-unit>
+      <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
+        <source>Unrecognized evaluator: '{0}'.</source>
+        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <note>{0} - invalid evaluator value</note>
+      </trans-unit>
+      <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
+        <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
+        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
+      </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
         <target state="translated">無法讀取剖析當地語系化檔案 {0}，將略過進一步處理。</target>

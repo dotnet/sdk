@@ -110,6 +110,16 @@ Details: {1}</source>
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</note>
       </trans-unit>
+      <trans-unit id="EvaluatorSelector_Exception_UnknownEvaluator">
+        <source>Unrecognized evaluator: '{0}'.</source>
+        <target state="new">Unrecognized evaluator: '{0}'.</target>
+        <note>{0} - invalid evaluator value</note>
+      </trans-unit>
+      <trans-unit id="JoinMacroConfig_Exception_ValuePropertyIsEmpty">
+        <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</source>
+        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
+      </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
         <target state="translated">구문 분석 지역화 파일 {0}을(를) 읽지 못했습니다. 해당 파일을 추가 처리에서 건너뜁니다.</target>
@@ -119,6 +129,51 @@ Details: {1}</source>
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
         <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
         <note>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_ArrayShouldContainObjects">
+        <source>Generated symbol '{0}': array '{1}' should contain JSON objects.</source>
+        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_InvalidJSON">
+        <source>Generated symbol '{0}': '{1}' is not a valid JSON.</source>
+        <target state="new">Generated symbol '{0}': '{1}' is not a valid JSON.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_InvalidRegex">
+        <source>Generated symbol '{0}': the pattern '{1}' is invalid.</source>
+        <target state="new">Generated symbol '{0}': the pattern '{1}' is invalid.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">
+        <source>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</source>
+        <target state="new">Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</target>
+        <note>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_MissingValueProperty">
+        <source>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</source>
+        <target state="new">Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_ValueShouldBeArray">
+        <source>Generated symbol '{0}': '{1}' should be a valid JSON array.</source>
+        <target state="new">Generated symbol '{0}': '{1}' should be a valid JSON array.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_ValueShouldBeBoolean">
+        <source>Generated symbol '{0}': '{1}' should be a boolean value.</source>
+        <target state="new">Generated symbol '{0}': '{1}' should be a boolean value.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_ValueShouldBeInteger">
+        <source>Generated symbol '{0}': '{1}' should be an integer value.</source>
+        <target state="new">Generated symbol '{0}': '{1}' should be an integer value.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
+      </trans-unit>
+      <trans-unit id="MacroConfig_Exception_ValueShouldBeString">
+        <source>Generated symbol '{0}': '{1}' should be a string value.</source>
+        <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
+        <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>

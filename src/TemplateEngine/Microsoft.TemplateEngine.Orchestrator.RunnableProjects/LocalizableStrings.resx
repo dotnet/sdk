@@ -195,8 +195,52 @@ Details: {1}</value>
 {1} - the comma separated list of sources (localized values) which define the binding
 {2} - the comma separated list of prefixes that can be used to define the source of the value</comment>
   </data>
+  <data name="EvaluatorSelector_Exception_UnknownEvaluator" xml:space="preserve">
+    <value>Unrecognized evaluator: '{0}'.</value>
+    <comment>{0} - invalid evaluator value</comment>
+  </data>
+  <data name="JoinMacroConfig_Exception_ValuePropertyIsEmpty" xml:space="preserve">
+    <value>Generated symbol '{0}': array '{1}' should contain JSON objects with property non-empty '{2}' when '{3}' is '{4}'.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</comment>
+  </data>
   <data name="LocalizationModelDeserializer_Error_FailedToParse" xml:space="preserve">
     <value>Failed to read parse localization file {0}, it will be skipped from further processing.</value>
+  </data>
+  <data name="MacroConfig_Exception_ArrayShouldContainObjects" xml:space="preserve">
+    <value>Generated symbol '{0}': array '{1}' should contain JSON objects.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
+  </data>
+  <data name="MacroConfig_Exception_InvalidJSON" xml:space="preserve">
+    <value>Generated symbol '{0}': '{1}' is not a valid JSON.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
+  </data>
+  <data name="MacroConfig_Exception_InvalidRegex" xml:space="preserve">
+    <value>Generated symbol '{0}': the pattern '{1}' is invalid.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid regex pattern</comment>
+  </data>
+  <data name="MacroConfig_Exception_MissingMandatoryProperty" xml:space="preserve">
+    <value>Generated symbol '{0}' of type '{1}' should have '{2}' property defined.</value>
+    <comment>{0} - name of generated symbol, {1} - the generated symbol type, {2} - the missing property.</comment>
+  </data>
+  <data name="MacroConfig_Exception_MissingValueProperty" xml:space="preserve">
+    <value>Generated symbol '{0}': array '{1}' should contain JSON objects with property '{2}'.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name; {2} - the missing property.</comment>
+  </data>
+  <data name="MacroConfig_Exception_ValueShouldBeArray" xml:space="preserve">
+    <value>Generated symbol '{0}': '{1}' should be a valid JSON array.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
+  </data>
+  <data name="MacroConfig_Exception_ValueShouldBeBoolean" xml:space="preserve">
+    <value>Generated symbol '{0}': '{1}' should be a boolean value.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
+  </data>
+  <data name="MacroConfig_Exception_ValueShouldBeInteger" xml:space="preserve">
+    <value>Generated symbol '{0}': '{1}' should be an integer value.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
+  </data>
+  <data name="MacroConfig_Exception_ValueShouldBeString" xml:space="preserve">
+    <value>Generated symbol '{0}': '{1}' should be a string value.</value>
+    <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
   </data>
   <data name="RunnableProjectConfig_OperationSetup_UnknownForm" xml:space="preserve">
     <value>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</value>
