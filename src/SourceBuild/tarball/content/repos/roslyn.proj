@@ -28,10 +28,10 @@
          repository. This must be lower than MicrosoftNetCompilersToolsetVersion,
          but not higher than our minimum dogfoodable Visual Studio version, or else
          the generators we build would load on the command line but not load in IDEs.
-      In source-build these don't need to be pinned and can use the source-built versions since it doesn't
-      need to support VS.
+
+      In source-build we use ref-only package from SBRP.
     -->
-    <ExtraPackageVersionPropsPackageInfo Include="SourceGeneratorMicrosoftCodeAnalysisVersion" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
+    <ExtraPackageVersionPropsPackageInfo Include="SourceGeneratorMicrosoftCodeAnalysisVersion" Version="$(RefOnlyMicrosoftCodeAnalysisCommonVersion)" />
   </ItemGroup>
 
   <ItemGroup>

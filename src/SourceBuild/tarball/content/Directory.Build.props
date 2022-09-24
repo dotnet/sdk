@@ -211,6 +211,11 @@
     <CliInternalBuildVersion>30000001-1</CliInternalBuildVersion>
   </PropertyGroup>
 
+  <!-- Ref-only package versions -->
+  <PropertyGroup>
+    <RefOnlyMicrosoftCodeAnalysisCommonVersion>4.0.1</RefOnlyMicrosoftCodeAnalysisCommonVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <ExtraPackageVersionPropsPackageInfo Include="DotnetCliInternalVersion" Version="3.0.100-$(CliInternalReleaseTag)-$(CliInternalBuildVersion)" />
   </ItemGroup>
