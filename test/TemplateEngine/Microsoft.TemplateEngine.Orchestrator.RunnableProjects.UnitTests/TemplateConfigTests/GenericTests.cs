@@ -11,7 +11,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 {
     public class GenericTests
     {
-        private static readonly string TestTemplate = "{\r\n  \"author\": \"Test Asset\",\r\n  \"classifications\": [ \"Test Asset\" ],\r\n  \"name\": \"TemplateWithSourceName\",\r\n  \"generatorVersions\": \"[1.0.0.0-*)\",\r\n  \"groupIdentity\": \"TestAssets.TemplateWithSourceName\",\r\n  \"precedence\": \"100\",\r\n  \"identity\": \"TestAssets.TemplateWithSourceName\",\r\n  \"shortName\": \"TestAssets.TemplateWithSourceName\",\r\n  \"sourceName\": \"bar\",\r\n  \"primaryOutputs\": [\r\n    {\r\n      \"path\": \"bar.cs\"\r\n    },\r\n    {\r\n      \"path\": \"bar/bar.cs\"\r\n    },\r\n  ]\r\n}";
+        private static readonly string TestTemplate = /*lang=json*/ """
+            {
+              "author": "Test Asset",
+              "classifications": [ "Test Asset" ],
+              "name": "TemplateWithSourceName",
+              "generatorVersions": "[1.0.0.0-*)",
+              "groupIdentity": "TestAssets.TemplateWithSourceName",
+              "precedence": "100",
+              "identity": "TestAssets.TemplateWithSourceName",
+              "shortName": "TestAssets.TemplateWithSourceName",
+              "sourceName": "bar",
+              "primaryOutputs": [
+                {
+                  "path": "bar.cs"
+                },
+                {
+                  "path": "bar/bar.cs"
+                },
+              ]
+            }
+            """;
 
         [Fact]
         public void CanReadTemplateFromString()

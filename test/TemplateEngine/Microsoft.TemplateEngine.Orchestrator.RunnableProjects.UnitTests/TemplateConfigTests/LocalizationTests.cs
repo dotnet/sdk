@@ -52,9 +52,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         [Theory]
-        [InlineData("{ name: \"localizedName\"}", false, "localizedName")]
-        [InlineData("{ name: \"\"}", false, "")]
-        [InlineData("{ notName: \"localizedName\"}", false, null)]
+        [InlineData(/*lang=json*/ """{ name: "localizedName"}""", false, "localizedName")]
+        [InlineData(/*lang=json*/ """{ name: ""}""", false, "")]
+        [InlineData(/*lang=json*/ """{ notName: "localizedName"}""", false, null)]
         public void CanReadName(string fileContent, bool errorExpected, string? expectedName)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -76,9 +76,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         [Theory]
-        [InlineData("{ description: \"localizedDescription\"}", false, "localizedDescription")]
-        [InlineData("{ description: \"\"}", false, "")]
-        [InlineData("{ notdescription: \"localizedDescription\"}", false, null)]
+        [InlineData(/*lang=json*/ """{ description: "localizedDescription"}""", false, "localizedDescription")]
+        [InlineData(/*lang=json*/ """{ description: ""}""", false, "")]
+        [InlineData(/*lang=json*/ """{ notdescription: "localizedDescription"}""", false, null)]
         public void CanReadDescription(string fileContent, bool errorExpected, string? expectedDescription)
         {
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -111,9 +111,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             "someSymbol|anotherSymbol",
             "localizedSymbol1|localizedSymbol2",
             "localizedSymbolDescription1|localizedSymbolDescription2")]
-        [InlineData("{ \"symbols/someSymbol/displayName\": \"localizedSymbol\" }", false, "someSymbol", "localizedSymbol", "(null)")]
-        [InlineData("{ \"symbols/someSymbol/description\": \"localizedSymbolDescription\" }", false, "someSymbol", "(null)", "localizedSymbolDescription")]
-        [InlineData("{ description: \"\"}", false, null, null, null)]
+        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)")]
+        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription")]
+        [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
         public void CanReadNonChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -171,10 +171,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     "localizedSymbol|localizedSymbol",
     "localizedSymbolDescription|localizedSymbolDescription",
     "one*one-localized*(null)%two*two-localized*(null)|foo*foo-localized*(null)%bar*bar-localized*(null)")]
-        [InlineData("{ \"symbols/someSymbol/displayName\": \"localizedSymbol\" }", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
-        [InlineData("{ \"symbols/someSymbol/description\": \"localizedSymbolDescription\" }", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
-        [InlineData("{ \"symbols/someSymbol/choices/one/displayName\": \"one-localized\"}", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
-        [InlineData("{ description: \"\"}", false, null, null, null, null)]
+        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
+        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
+        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/choices/one/displayName": "one-localized"}""", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
+        [InlineData(/*lang=json*/ "{ description: \"\"}", false, null, null, null, null)]
         public void CanReadChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -246,9 +246,9 @@ false,
 "pa0|pa1",
 "localizedDescription|localizedDescription",
 "first*firstLocalized%second*secondLocalized|first*firstLocalized")]
-        [InlineData("{ description: \"\"}", false, null, null, null)]
-        [InlineData("{ \"postActions/pa0/description\": \"localizedDescription\" }", false, "pa0", "localizedDescription", "(null)")]
-        [InlineData("{ \"postActions/pa0/manualInstructions/first/text\": \"localizedDescription\" }", false, "pa0", "(null)", "first*localizedDescription")]
+        [InlineData(/*lang=json*/ """{ description: ""}""", false, null, null, null)]
+        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""", false, "pa0", "localizedDescription", "(null)")]
+        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/first/text": "localizedDescription" }""", false, "pa0", "(null)", "first*localizedDescription")]
         public void CanReadPostAction(
     string fileContent,
     bool errorExpected,
@@ -312,7 +312,7 @@ false,
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
-            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/description\": \"localizedDescription\" }");
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), /*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""");
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
@@ -369,7 +369,7 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
-            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), "{ \"postActions/pa0/manualInstructions/default/text\": \"localized\" }");
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), /*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/default/text": "localized" }""");
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
@@ -409,9 +409,16 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFilename = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
+            const string locContent = /*lang=json,strict*/
+            """
+            {
+                "postActions/pa0/manualInstructions/first/text": "localized",
+                "postActions/pa0/manualInstructions/extra/text": "extraLoc"
+            }
+            """;
             environmentSettings.WriteFile(
                 Path.Combine(tempFolder, localizationFilename),
-                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa0/manualInstructions/extra/text\": \"extraLoc\" }");
+                locContent);
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
@@ -455,9 +462,17 @@ false,
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
+            const string locContent = /*lang=json,strict*/
+            """
+            {
+                "postActions/pa0/manualInstructions/first/text": "localized",
+                "postActions/pa1/manualInstructions/extra/text": "extraLoc"
+            }
+            """;
+
             environmentSettings.WriteFile(
                 Path.Combine(tempFolder, localizationFile),
-                "{ \"postActions/pa0/manualInstructions/first/text\": \"localized\", \"postActions/pa1/manualInstructions/extra/text\": \"extraLoc\" }");
+                locContent);
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 

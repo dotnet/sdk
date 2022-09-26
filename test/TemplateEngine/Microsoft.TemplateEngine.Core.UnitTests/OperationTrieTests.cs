@@ -77,6 +77,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [Fact(DisplayName = nameof(VerifyLastInWinsForIdenticalMatching))]
         public void VerifyLastInWinsForIdenticalMatching()
         {
+#pragma warning disable IDE0230 // Use UTF-8 string literal
             OperationTrie trie = OperationTrie.Create(new IOperation[]
             {
                 new MockOperation("TestOp1", null, true, TokenConfig.LiteralToken(new byte[] { 5, 5, 5 })),
@@ -84,6 +85,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                 new MockOperation("TestOp3", null, true, TokenConfig.LiteralToken(new byte[] { 7, 7, 7 })),
                 new MockOperation("TestOp4", null, true, TokenConfig.LiteralToken(new byte[] { 9, 9, 9, 9 }), TokenConfig.LiteralToken(new byte[] { 2, 3, 4, 5 })),
             });
+#pragma warning restore IDE0230 // Use UTF-8 string literal
 
             byte[] buffer = { 9, 8, 9, 8, 7, 2, 3, 4, 5 };
             int currentBufferPosition = 0;

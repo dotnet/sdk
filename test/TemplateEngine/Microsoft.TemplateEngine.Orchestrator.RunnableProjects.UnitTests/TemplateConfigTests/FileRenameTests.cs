@@ -139,36 +139,36 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(CanReadFilenameReplacementConfig))]
         public void CanReadFilenameReplacementConfig()
         {
-            string configContent = @"
-{
-  ""identity"": ""test"",
-  ""symbols"": {
-	""testparam"": {
-      ""type"": ""parameter"",
-      ""datatype"": ""string"",
-	  ""fileRename"": ""testparamfilereplacement""
-    },
-    ""testgenerated"": {
-      ""type"": ""generated"",
-      ""generator"": ""casing"",
-      ""parameters"": {
-        ""source"": ""name"",
-        ""toLower"": true
-      },
-	  ""fileRename"": ""testgeneratedfilereplacement""
-    },
-    ""testgenerated2"": {
-      ""type"": ""generated"",
-      ""generator"": ""casing"",
-      ""parameters"": {
-        ""source"": ""name"",
-        ""toLower"": true
-      },
-	  ""replace"": ""testgeneratedreplacement""
-    },
-  }
-}
-";
+            string configContent = /*lang=json*/ """
+            {
+              "identity": "test",
+              "symbols": {
+                "testparam": {
+                  "type": "parameter",
+                  "datatype": "string",
+                  "fileRename": "testparamfilereplacement"
+                },
+                "testgenerated": {
+                  "type": "generated",
+                  "generator": "casing",
+                  "parameters": {
+                    "source": "name",
+                    "toLower": true
+                  },
+                  "fileRename": "testgeneratedfilereplacement"
+                },
+                "testgenerated2": {
+                  "type": "generated",
+                  "generator": "casing",
+                  "parameters": {
+                    "source": "name",
+                    "toLower": true
+                  },
+                  "replace": "testgeneratedreplacement"
+                },
+              }
+            }
+            """;
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =
@@ -182,46 +182,47 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact(DisplayName = nameof(CanReadFilenameReplacementConfigWithForms))]
         public void CanReadFilenameReplacementConfigWithForms()
         {
-            string configContent = @"
-{
-  ""identity"": ""test"",
-  ""symbols"": {
-	""testparam"": {
-      ""type"": ""parameter"",
-      ""datatype"": ""string"",
-	  ""fileRename"": ""TestParamFileReplacement"",
-      ""forms"": {
-        ""global"" : [ ""identity"", ""lc"", ""uc""]
-      }
-    },
-    ""testgenerated"": {
-      ""type"": ""generated"",
-      ""generator"": ""casing"",
-      ""parameters"": {
-        ""source"": ""name"",
-        ""toLower"": true
-      },
-	  ""fileRename"": ""testgeneratedfilereplacement""
-    },
-    ""testgenerated2"": {
-      ""type"": ""generated"",
-      ""generator"": ""casing"",
-      ""parameters"": {
-        ""source"": ""name"",
-        ""toLower"": true
-      },
-	  ""replace"": ""testgeneratedreplacement""
-    },
-  },
-  ""forms"": {
-    ""lc"": {
-        ""identifier"": ""lowercase""
-    },
-    ""uc"": {
-        ""identifier"": ""uppercase""
-    }
-  }
-}";
+            string configContent = /*lang=json*/ """
+            {
+              "identity": "test",
+              "symbols": {
+                "testparam": {
+                  "type": "parameter",
+                  "datatype": "string",
+                  "fileRename": "TestParamFileReplacement",
+                  "forms": {
+                    "global" : [ "identity", "lc", "uc"]
+                  }
+                },
+                "testgenerated": {
+                  "type": "generated",
+                  "generator": "casing",
+                  "parameters": {
+                    "source": "name",
+                    "toLower": true
+                  },
+                  "fileRename": "testgeneratedfilereplacement"
+                },
+                "testgenerated2": {
+                  "type": "generated",
+                  "generator": "casing",
+                  "parameters": {
+                    "source": "name",
+                    "toLower": true
+                  },
+                  "replace": "testgeneratedreplacement"
+                },
+              },
+              "forms": {
+                "lc": {
+                    "identifier": "lowercase"
+                },
+                "uc": {
+                    "identifier": "uppercase"
+                }
+              }
+            }
+            """;
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =

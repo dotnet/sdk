@@ -24,23 +24,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string templateJsonString = @"
-{{
-  ""author"": ""Microsoft"",
-  ""classifications"": [""Test""],
-  ""name"": ""Test Template"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""Testing.TemplateRoot"",
-  ""identity"": ""Testing.Template.Root.CSharp"",
-  ""shortName"": ""templateRootTest"",
-  ""sourceName"": ""Company.ConsoleApplication1"",
-  ""preferNameDirectory"": true,
-  ""sources"": [
-      {{
-        ""source"": ""{0}""
-      }}
-  ]
-}}";
+                string templateJsonString = """
+                {{
+                  "author": "Microsoft",
+                  "classifications": ["Test"],
+                  "name": "Test Template",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "Testing.TemplateRoot",
+                  "identity": "Testing.Template.Root.CSharp",
+                  "shortName": "templateRootTest",
+                  "sourceName": "Company.ConsoleApplication1",
+                  "preferNameDirectory": true,
+                  "sources": [
+                      {{
+                        "source": "{0}"
+                      }}
+                  ]
+                }}
+                """;
                 return templateJsonString;
             }
         }
@@ -49,18 +50,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string templateJsonString = @"
-{
-  ""author"": ""Microsoft"",
-  ""classifications"": [""Test""],
-  ""name"": ""Test Template"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""Testing.TemplateRoot"",
-  ""identity"": ""Testing.Template.Root.CSharp"",
-  ""shortName"": ""templateRootTest"",
-  ""sourceName"": ""Company.ConsoleApplication1"",
-  ""preferNameDirectory"": true,
-}";
+                string templateJsonString = /*lang=json*/ """
+                {
+                  "author": "Microsoft",
+                  "classifications": ["Test"],
+                  "name": "Test Template",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "Testing.TemplateRoot",
+                  "identity": "Testing.Template.Root.CSharp",
+                  "shortName": "templateRootTest",
+                  "sourceName": "Company.ConsoleApplication1",
+                  "preferNameDirectory": true,
+                }
+                """;
                 return templateJsonString;
             }
         }

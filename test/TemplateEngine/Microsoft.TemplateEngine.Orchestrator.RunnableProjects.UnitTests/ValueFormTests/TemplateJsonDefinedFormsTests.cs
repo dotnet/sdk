@@ -24,21 +24,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [Fact(DisplayName = nameof(UnknownFormNameOnParameterSymbolDoesNotThrow))]
         public void UnknownFormNameOnParameterSymbolDoesNotThrow()
         {
-            string templateJson = @"
-{
-  ""name"": ""TestTemplate"",
-  ""identity"": ""TestTemplate"",
-  ""symbols"": {
-    ""mySymbol"": {
-      ""type"": ""parameter"",
-      ""replaces"": ""whatever"",
-      ""forms"": {
-        ""global"": [ ""fakeName"" ],
-      }
-    }
-  }
-}
-";
+            string templateJson = /*lang=json*/ """
+                {
+                  "name": "TestTemplate",
+                  "identity": "TestTemplate",
+                  "symbols": {
+                    "mySymbol": {
+                      "type": "parameter",
+                      "replaces": "whatever",
+                      "forms": {
+                        "global": [ "fakeName" ],
+                      }
+                    }
+                  }
+                }
+                """;
             JObject configObj = JObject.Parse(templateJson);
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
             IGlobalRunConfig? runConfig = null;
@@ -65,24 +65,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [Fact(DisplayName = nameof(UnknownFormNameForDerivedSymbolValueDoesNotThrow))]
         public void UnknownFormNameForDerivedSymbolValueDoesNotThrow()
         {
-            string templateJson = @"
-{
-  ""name"": ""TestTemplate"",
-  ""identity"": ""TestTemplate"",
-  ""symbols"": {
-    ""original"": {
-      ""type"": ""parameter"",
-      ""replaces"": ""whatever"",
-    },
-    ""myDerivedSym"": {
-      ""type"": ""derived"",
-      ""valueSource"": ""original"",
-      ""valueTransform"": ""fakeForm"",
-      ""replaces"": ""something""
-    }
-  }
-}
-";
+            string templateJson = /*lang=json*/ """
+                {
+                  "name": "TestTemplate",
+                  "identity": "TestTemplate",
+                  "symbols": {
+                    "original": {
+                      "type": "parameter",
+                      "replaces": "whatever",
+                    },
+                    "myDerivedSym": {
+                      "type": "derived",
+                      "valueSource": "original",
+                      "valueTransform": "fakeForm",
+                      "replaces": "something"
+                    }
+                  }
+                }
+                """;
             JObject configObj = JObject.Parse(templateJson);
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(configObj);
             IGlobalRunConfig? runConfig = null;

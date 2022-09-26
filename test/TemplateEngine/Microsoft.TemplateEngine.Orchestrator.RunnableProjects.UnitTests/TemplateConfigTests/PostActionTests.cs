@@ -25,72 +25,73 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""Author"": ""Microsoft"",
-  ""Classifications"": ""UnitTest"",
-  ""name"": ""Dotnet Unit Test Template"",
-  ""groupIdentity"": ""Dotnet.Testing"",
-  ""identity"": ""Dotnet.UnitTest.Template"",
-  ""shortName"": ""test"",
-  ""PostActions"": [
-    {
-      ""Condition"": ""(ActionOneCondition)"",
-      ""Description"": ""Action1"",
-      ""ActionId"": ""7F0CDCFC-839A-4625-88F6-27590E6299EF"",
-      ""ContinueOnError"": ""false"",
-      ""Args"": {
-        ""Foo"": ""Bar"",
-        ""Baz"": ""Blah""
-      },
-      ""ManualInstructions"": [
-        {
-          ""Text"": ""Windows instructions (action 1)"",
-          ""condition"": ""(OperatingSystemKind == \""Windows\"")""
-        },
-        {
-          ""Text"": ""Linux instructions (action 1)"",
-          ""condition"": ""(OperatingSystemKind == \""Linux\"")""
-        },
-        {
-          ""Text"": ""Mac instructions (action 1)"",
-          ""condition"": ""(OperatingSystemKind == \""Mac\"")""
-        },
-        {
-          ""Text"": ""Default instructions (action 1)""
-        }
-      ]
-    },
-    {
-      ""Condition"": ""(ActionTwoCondition)"",
-      ""Description"": ""Action2"",
-      ""ActionId"": ""95858732-757E-42AD-8D63-8A4D8C35B829"",
-      ""ContinueOnError"": ""false"",
-      ""Args"": {
-        ""Bar"": ""Foo"",
-        ""Blah"": ""Baz"",
-        ""X"": ""Y""
-      },
-      ""ManualInstructions"": [
-        {
-          ""Text"": ""Mac instructions (action 2)"",
-          ""condition"": ""(OperatingSystemKind == \""Mac\"")""
-        },
-        {
-          ""Text"": ""Linux instructions (action 2)"",
-          ""condition"": ""(OperatingSystemKind == \""Linux\"")""
-        },
-        {
-          ""Text"": ""Windows instructions (action 2)"",
-          ""condition"": ""(OperatingSystemKind == \""Windows\"")""
-        },
-        {
-          ""Text"": ""Default instructions (action 2)""
-        }
-      ]
-    },
-  ]
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "Author": "Microsoft",
+                  "Classifications": "UnitTest",
+                  "name": "Dotnet Unit Test Template",
+                  "groupIdentity": "Dotnet.Testing",
+                  "identity": "Dotnet.UnitTest.Template",
+                  "shortName": "test",
+                  "PostActions": [
+                    {
+                      "Condition": "(ActionOneCondition)",
+                      "Description": "Action1",
+                      "ActionId": "7F0CDCFC-839A-4625-88F6-27590E6299EF",
+                      "ContinueOnError": "false",
+                      "Args": {
+                        "Foo": "Bar",
+                        "Baz": "Blah"
+                      },
+                      "ManualInstructions": [
+                        {
+                          "Text": "Windows instructions (action 1)",
+                          "condition": "(OperatingSystemKind == \"Windows\")"
+                        },
+                        {
+                          "Text": "Linux instructions (action 1)",
+                          "condition": "(OperatingSystemKind == \"Linux\")"
+                        },
+                        {
+                          "Text": "Mac instructions (action 1)",
+                          "condition": "(OperatingSystemKind == \"Mac\")"
+                        },
+                        {
+                          "Text": "Default instructions (action 1)"
+                        }
+                      ]
+                    },
+                    {
+                      "Condition": "(ActionTwoCondition)",
+                      "Description": "Action2",
+                      "ActionId": "95858732-757E-42AD-8D63-8A4D8C35B829",
+                      "ContinueOnError": "false",
+                      "Args": {
+                        "Bar": "Foo",
+                        "Blah": "Baz",
+                        "X": "Y"
+                      },
+                      "ManualInstructions": [
+                        {
+                          "Text": "Mac instructions (action 2)",
+                          "condition": "(OperatingSystemKind == \"Mac\")"
+                        },
+                        {
+                          "Text": "Linux instructions (action 2)",
+                          "condition": "(OperatingSystemKind == \"Linux\")"
+                        },
+                        {
+                          "Text": "Windows instructions (action 2)",
+                          "condition": "(OperatingSystemKind == \"Windows\")"
+                        },
+                        {
+                          "Text": "Default instructions (action 2)"
+                        }
+                      ]
+                    },
+                  ]
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }

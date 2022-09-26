@@ -26,57 +26,57 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             _environmentSettingsHelper = environmentSettingsHelper;
         }
 
-        private const string InvalidMultiChoiceDefinition = @"
-{
-    ""type"": ""parameter"",
-    ""description"": ""sample switch"",
-    ""datatype"": ""choice"",
-    ""allowMultipleValues"": true,
-    ""choices"": [
-    {
-        ""choice"": ""First|Choice"",
-        ""description"": ""First Sample Choice""
+        private const string InvalidMultiChoiceDefinition = /*lang=json,strict*/ """
+            {
+                "type": "parameter",
+                "description": "sample switch",
+                "datatype": "choice",
+                "allowMultipleValues": true,
+                "choices": [
+                {
+                    "choice": "First|Choice",
+                    "description": "First Sample Choice"
 
-    },
-    {
-        ""choice"": ""SecondChoice"",
-        ""description"": ""Second Sample Choice""
-    },
-    {
-        ""choice"": ""ThirdChoice"",
-        ""description"": ""Third Sample Choice""
+                },
+                {
+                    "choice": "SecondChoice",
+                    "description": "Second Sample Choice"
+                },
+                {
+                    "choice": "ThirdChoice",
+                    "description": "Third Sample Choice"
 
-    }
-    ],
-    ""defaultValue "": ""ThirdChoice ""
-}
-";
+                }
+                ],
+                "defaultValue ": "ThirdChoice "
+            }
+            """;
 
-        private const string ValidChoiceDefinition = @"
-{
-    ""type"": ""parameter"",
-    ""description"": ""sample switch"",
-    ""datatype"": ""choice"",
-    ""allowMultipleValues"": true,
-    ""choices"": [
-    {
-        ""choice"": ""FirstChoice"",
-        ""description"": ""First Sample Choice""
+        private const string ValidChoiceDefinition = /*lang=json,strict*/ """
+            {
+                "type": "parameter",
+                "description": "sample switch",
+                "datatype": "choice",
+                "allowMultipleValues": true,
+                "choices": [
+                {
+                    "choice": "FirstChoice",
+                    "description": "First Sample Choice"
 
-    },
-    {
-        ""choice"": ""SecondChoice"",
-        ""description"": ""Second Sample Choice""
-    },
-    {
-        ""choice"": ""ThirdChoice"",
-        ""description"": ""Third Sample Choice""
+                },
+                {
+                    "choice": "SecondChoice",
+                    "description": "Second Sample Choice"
+                },
+                {
+                    "choice": "ThirdChoice",
+                    "description": "Third Sample Choice"
 
-    }
-    ],
-    ""defaultValue "": ""ThirdChoice ""
-}
-";
+                }
+                ],
+                "defaultValue ": "ThirdChoice "
+            }
+            """;
 
         [Theory]
         [InlineData(ValidChoiceDefinition, false, true)]

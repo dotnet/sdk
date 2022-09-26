@@ -59,8 +59,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.Equal("con4", model.Constraints[3].Type);
 
             Assert.Equal("\"arg\"", model.Constraints[0].Args);
-            Assert.Equal("[\"one\",\"two\",\"three\"]", model.Constraints[1].Args);
-            Assert.Equal("{\"one\":\"one\",\"two\":\"two\"}", model.Constraints[2].Args);
+            Assert.Equal("""["one","two","three"]""", model.Constraints[1].Args);
+            Assert.Equal(/*lang=json,strict*/ """{"one":"one","two":"two"}""", model.Constraints[2].Args);
             Assert.Null(model.Constraints[3].Args);
         }
 

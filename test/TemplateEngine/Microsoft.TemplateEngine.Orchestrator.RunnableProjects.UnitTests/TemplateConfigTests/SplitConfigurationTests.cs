@@ -23,42 +23,42 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string templateJsonString = @"
-{
-  ""author"": ""Microsoft"",
-  ""classifications"": [""Common"", ""Console""],
-  ""name"": ""Test Split Config Console App"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""Testing.Split.Config.Console"",
-  ""identity"": ""Testing.Framework.Versioned.Console.CSharp"",
-  ""shortName"": ""splitconfigtest"",
-  ""sourceName"": ""Company.ConsoleApplication1"",
-  ""preferNameDirectory"": true,
-  ""additionalConfigFiles"": [
-    ""symbols.template.json""
-  ],
-  ""symbols"": {
-    ""type"": {
-      ""type"": ""parameter"",
-      ""datatype"": ""choice"",
-      ""choices"": [
-        {
-          ""choice"": ""project""
-        }
-      ]
-    },
-    ""language"": {
-      ""type"": ""parameter"",
-      ""datatype"": ""choice"",
-      ""choices"": [
-        {
-          ""choice"": ""C#""
-        }
-      ]
-    }
-  }
-}
-";
+                string templateJsonString = /*lang=json,strict*/ """
+                {
+                  "author": "Microsoft",
+                  "classifications": ["Common", "Console"],
+                  "name": "Test Split Config Console App",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "Testing.Split.Config.Console",
+                  "identity": "Testing.Framework.Versioned.Console.CSharp",
+                  "shortName": "splitconfigtest",
+                  "sourceName": "Company.ConsoleApplication1",
+                  "preferNameDirectory": true,
+                  "additionalConfigFiles": [
+                    "symbols.template.json"
+                  ],
+                  "symbols": {
+                    "type": {
+                      "type": "parameter",
+                      "datatype": "choice",
+                      "choices": [
+                        {
+                          "choice": "project"
+                        }
+                      ]
+                    },
+                    "language": {
+                      "type": "parameter",
+                      "datatype": "choice",
+                      "choices": [
+                        {
+                          "choice": "C#"
+                        }
+                      ]
+                    }
+                  }
+                }
+                """;
                 return templateJsonString;
             }
         }
@@ -67,51 +67,51 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string symbolsTemplateJsonString = @"
-{
-  ""symbols"": {
-    ""RuntimeFrameworkVersion"": {
-      ""type"": ""parameter"",
-      ""replaces"": ""2.0.0-beta-xyz""
-    },
-    ""Framework"": {
-                ""type"": ""parameter"",
-      ""datatype"": ""choice"",
-      ""choices"": [
-        {
-          ""choice"": ""1.0"",
-          ""description"": ""Target netcoreapp1.0""
-        },
-        {
-          ""choice"": ""1.1"",
-          ""description"": ""Target netcoreapp1.1""
-        },
-        {
-          ""choice"": ""2.0"",
-          ""description"": ""Target netcoreapp2.0 build specified by RuntimeFrameworkVersion""
-        }
-      ],
-      ""defaultValue"": ""1.0""
-    },
-    ""MyThing"": {
-      ""type"": ""parameter"",
-      ""datatype"": ""choice"",
-      ""choices"": [
-        {
-          ""choice"": ""foo""
-        },
-        {
-          ""choice"": ""bar""
-        },
-        {
-          ""choice"": ""baz""
-        }
-      ],
-      ""defaultValue"": ""foo""
-    }
-  }
-}
-";
+                string symbolsTemplateJsonString = /*lang=json,strict*/ """
+                {
+                  "symbols": {
+                    "RuntimeFrameworkVersion": {
+                      "type": "parameter",
+                      "replaces": "2.0.0-beta-xyz"
+                    },
+                    "Framework": {
+                                "type": "parameter",
+                      "datatype": "choice",
+                      "choices": [
+                        {
+                          "choice": "1.0",
+                          "description": "Target netcoreapp1.0"
+                        },
+                        {
+                          "choice": "1.1",
+                          "description": "Target netcoreapp1.1"
+                        },
+                        {
+                          "choice": "2.0",
+                          "description": "Target netcoreapp2.0 build specified by RuntimeFrameworkVersion"
+                        }
+                      ],
+                      "defaultValue": "1.0"
+                    },
+                    "MyThing": {
+                      "type": "parameter",
+                      "datatype": "choice",
+                      "choices": [
+                        {
+                          "choice": "foo"
+                        },
+                        {
+                          "choice": "bar"
+                        },
+                        {
+                          "choice": "baz"
+                        }
+                      ],
+                      "defaultValue": "foo"
+                    }
+                  }
+                }
+                """;
                 return symbolsTemplateJsonString;
             }
         }
@@ -120,13 +120,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string templateJsonString = @"
-{
-  ""additionalConfigFiles"": [
-    ""../../improper.template.json""
-  ]
-}
-";
+                string templateJsonString = /*lang=json,strict*/ """
+                {
+                  "additionalConfigFiles": [
+                    "../../improper.template.json"
+                  ]
+                }
+                """;
                 return templateJsonString;
             }
         }

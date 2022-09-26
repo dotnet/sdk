@@ -70,19 +70,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
                 }
             };
 
-            string sourceSnippet = @"
-%R1%
-%R2%
-%R3%
-%R4%
-";
+            string sourceSnippet = """
+            %R1%
+            %R2%
+            %R3%
+            %R4%
+            """;
 
-            string expectedSnippet = @"
-TestHost
-MyValue
-TestHost
-MyValue
-";
+            string expectedSnippet = """
+            TestHost
+            MyValue
+            TestHost
+            MyValue
+            """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -469,17 +469,17 @@ MyValue
                 }
             };
 
-            string sourceSnippet = @"
-%R1%
-%R2%
-%R3%
-";
+            string sourceSnippet = """
+            %R1%
+            %R2%
+            %R3%
+            """;
 
-            string expectedSnippet = @"
-TestHost
-MyValue
-expectedDefValue
-";
+            string expectedSnippet = """
+            TestHost
+            MyValue
+            expectedDefValue
+            """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {

@@ -271,12 +271,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         private void AssertMountPointsWereOpened(IEnumerable<string> mountPoints, IEngineEnvironmentSettings environmentSettings)
         {
             string[] expectedScannedDirectories = mountPoints
-                .Select(f => Path.GetFullPath(f))
+                .Select(Path.GetFullPath)
                 .OrderBy(x => x)
                 .ToArray();
             string[] actualScannedDirectories = ((MonitoredFileSystem)environmentSettings.Host.FileSystem).FilesOpened
                 .Where((f) => Path.GetExtension(f) == ".nupkg") // Filter to only check for .nupkgs, and ignore templatecache.json and others...
-                .Select(f => Path.GetFullPath(f))
+                .Select(Path.GetFullPath)
                 .OrderBy(x => x)
                 .ToArray();
 

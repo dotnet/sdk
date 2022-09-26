@@ -59,12 +59,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "source", sourceVariable }
             };
 
-            string jsonSteps = @"[
-                { 
-                    'regex': 'A',
-                    'replacement': 'Z'
-                }
-            ]";
+            string jsonSteps = /*lang=json*/ """
+                [
+                    { 
+                        'regex': 'A',
+                        'replacement': 'Z'
+                    }
+                ]
+                """;
             jsonParameters.Add("steps", JArray.Parse(jsonSteps));
 
             GeneratedSymbolDeferredMacroConfig deferredConfig = new GeneratedSymbolDeferredMacroConfig("RegexMacro", "string", variableName, jsonParameters);

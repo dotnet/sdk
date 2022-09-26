@@ -102,7 +102,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery
             AddOption(_diffOverrideNonPackagesOption);
 
             this.TreatUnmatchedTokensAsErrors = true;
-            this.SetHandler((CommandArgs args) => ExecuteAsync(args), new CommandArgsBinder(this));
+            this.SetHandler(ExecuteAsync, new CommandArgsBinder(this));
         }
 
         private static async Task<int> ExecuteAsync(CommandArgs config)

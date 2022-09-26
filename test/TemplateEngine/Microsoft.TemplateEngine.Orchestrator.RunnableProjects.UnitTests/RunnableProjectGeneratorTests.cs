@@ -104,62 +104,64 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Assert.NotEqual(inputTestGuid, expectedResultGuid);
         }
 
-        private const string TemplateConfigQuotelessLiteralsNotEnabled = @"
-{
-    ""identity"": ""test.template"",
-    ""symbols"": {
-	    ""ChoiceParam"": {
-	      ""type"": ""parameter"",
-	      ""description"": ""sample switch"",
-	      ""datatype"": ""choice"",
-	      ""choices"": [
-		    {
-		      ""choice"": ""FirstChoice"",
-		      ""description"": ""First Sample Choice""
-		    },
-		    {
-		      ""choice"": ""SecondChoice"",
-		      ""description"": ""Second Sample Choice""
-		    },
-		    {
-		      ""choice"": ""ThirdChoice"",
-		      ""description"": ""Third Sample Choice""
-		    }
-	      ],
-          ""defaultValue"": ""ThirdChoice"",
-	    }
-    }
-}
-";
+        private const string TemplateConfigQuotelessLiteralsNotEnabled = /*lang=json*/ """
+        {
+            "identity": "test.template",
+            "symbols": {
+                "ChoiceParam": {
+                  "type": "parameter",
+                  "description": "sample switch",
+                  "datatype": "choice",
+                  "choices": [
+                    {
+                      "choice": "FirstChoice",
+                      "description": "First Sample Choice"
+                    },
+                    {
+                      "choice": "SecondChoice",
+                      "description": "Second Sample Choice"
+                    },
+                    {
+                      "choice": "ThirdChoice",
+                      "description": "Third Sample Choice"
+                    }
+                  ],
+                  "defaultValue": "ThirdChoice",
+                }
+            }
+        }
+        """;
 
-        private const string TemplateConfigQuotelessLiteralsEnabled = @"
-{
-    ""identity"": ""test.template"",
-    ""symbols"": {
-	    ""ChoiceParam"": {
-	      ""type"": ""parameter"",
-	      ""description"": ""sample switch"",
-	      ""datatype"": ""choice"",
-          ""enableQuotelessLiterals"": true,
-	      ""choices"": [
-		    {
-		      ""choice"": ""FirstChoice"",
-		      ""description"": ""First Sample Choice""
-		    },
-		    {
-		      ""choice"": ""SecondChoice"",
-		      ""description"": ""Second Sample Choice""
-		    },
-		    {
-		      ""choice"": ""ThirdChoice"",
-		      ""description"": ""Third Sample Choice""
-		    }
-	      ],
-          ""defaultValue"": ""ThirdChoice"",
-	    }
-    }
-}
-";
+        private const string TemplateConfigQuotelessLiteralsEnabled = /*lang=json*/ """
+
+            {
+                "identity": "test.template",
+                "symbols": {
+                    "ChoiceParam": {
+                      "type": "parameter",
+                      "description": "sample switch",
+                      "datatype": "choice",
+                      "enableQuotelessLiterals": true,
+                      "choices": [
+                        {
+                          "choice": "FirstChoice",
+                          "description": "First Sample Choice"
+                        },
+                        {
+                          "choice": "SecondChoice",
+                          "description": "Second Sample Choice"
+                        },
+                        {
+                          "choice": "ThirdChoice",
+                          "description": "Third Sample Choice"
+                        }
+                      ],
+                      "defaultValue": "ThirdChoice",
+                    }
+                }
+            }
+
+            """;
 
         [Theory]
         [InlineData(TemplateConfigQuotelessLiteralsNotEnabled, "UNKNOWN")]
@@ -170,17 +172,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Template content preparation
             //
 
-            string sourceSnippet = @"
-//#if( ChoiceParam == FirstChoice )
-FIRST
-//#elseif (ChoiceParam == SecondChoice )
-SECOND
-//#elseif (ChoiceParam == ThirdChoice )
-THIRD
-//#else
-UNKNOWN
-//#endif
-";
+            string sourceSnippet = """
+                //#if( ChoiceParam == FirstChoice )
+                FIRST
+                //#elseif (ChoiceParam == SecondChoice )
+                SECOND
+                //#elseif (ChoiceParam == ThirdChoice )
+                THIRD
+                //#else
+                UNKNOWN
+                //#endif
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -229,55 +231,56 @@ UNKNOWN
             // Template content preparation
             //
 
-            string templateConfig = @"
-{
-    ""identity"": ""test.template"",
-    ""symbols"": {	
-	    ""ChoiceParam"": {
-	      ""type"": ""parameter"",
-	      ""description"": ""sample switch"",
-	      ""datatype"": ""choice"",
-          ""allowMultipleValues"": true,
-          ""enableQuotelessLiterals"": true,
-	      ""choices"": [
-		    {
-		      ""choice"": ""FirstChoice"",
-		      ""description"": ""First Sample Choice""
-		    },
-		    {
-		      ""choice"": ""SecondChoice"",
-		      ""description"": ""Second Sample Choice""
-		    },
-		    {
-		      ""choice"": ""ThirdChoice"",
-		      ""description"": ""Third Sample Choice""
-		    }
-	      ],
-          ""defaultValue"": ""ThirdChoice"",
-          ""replaces"": ""REPLACE_VALUE""
-        }
-    }
-}
-";
+            string templateConfig = /*lang=json*/ """
+                {
+                    "identity": "test.template",
+                    "symbols": {    
+                        "ChoiceParam": {
+                          "type": "parameter",
+                          "description": "sample switch",
+                          "datatype": "choice",
+                          "allowMultipleValues": true,
+                          "enableQuotelessLiterals": true,
+                          "choices": [
+                            {
+                              "choice": "FirstChoice",
+                              "description": "First Sample Choice"
+                            },
+                            {
+                              "choice": "SecondChoice",
+                              "description": "Second Sample Choice"
+                            },
+                            {
+                              "choice": "ThirdChoice",
+                              "description": "Third Sample Choice"
+                            }
+                          ],
+                          "defaultValue": "ThirdChoice",
+                          "replaces": "REPLACE_VALUE"
+                        }
+                    }
+                }
+                """;
 
-            string sourceSnippet = @"
-MultiChoiceValue: REPLACE_VALUE
-//#if( ChoiceParam == FirstChoice )
-FIRST
-//#endif
-//#if (ChoiceParam == SecondChoice )
-SECOND
-//#endif
-//#if (ChoiceParam == ThirdChoice )
-THIRD
-//#endif
-";
+            string sourceSnippet = """
+                MultiChoiceValue: REPLACE_VALUE
+                //#if( ChoiceParam == FirstChoice )
+                FIRST
+                //#endif
+                //#if (ChoiceParam == SecondChoice )
+                SECOND
+                //#endif
+                //#if (ChoiceParam == ThirdChoice )
+                THIRD
+                //#endif
+                """;
 
-            string expectedSnippet = @"
-MultiChoiceValue: SecondChoice|ThirdChoice
-SECOND
-THIRD
-";
+            string expectedSnippet = """
+                MultiChoiceValue: SecondChoice|ThirdChoice
+                SECOND
+                THIRD
+
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -326,105 +329,105 @@ THIRD
             // Template content preparation
             //
 
-            string templateConfig = @"
-{
-  ""$schema"": ""https://json.schemastore.org/template.json"",
-  ""author"": ""Test Asset"",
-  ""classifications"": [
-    ""Test Asset""
-  ],
-  ""name"": ""MultiSelect.Template"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""tags"": {
-    ""type"": ""project"",
-    ""language"": ""C#""
-  },
-  ""groupIdentity"": ""MultiSelect.Template"",
-  ""precedence"": ""100"",
-  ""identity"": ""MultiSelect.Template"",
-  ""shortName"": ""MultiSelect.Template"",
-  ""sourceName"": ""bar"",
-  ""symbols"": {
-    ""Platform"": {
-      ""type"": ""parameter"",
-      ""description"": ""The target platform for the project."",
-      ""datatype"": ""choice"",
-      ""allowMultipleValues"": true,
-      ""enableQuotelessLiterals"": true,
-      ""choices"": [
-        {
-          ""choice"": ""Windows"",
-          ""description"": ""Windows Desktop""
-        },
-        {
-          ""choice"": ""WindowsPhone"",
-          ""description"": ""Windows Phone""
-        },
-        {
-          ""choice"": ""MacOS"",
-          ""description"": ""Macintosh computers""
-        },
-        {
-          ""choice"": ""iOS"",
-          ""description"": ""iOS mobile""
-        },
-        {
-          ""choice"": ""android"",
-          ""description"": ""android mobile""
-        },
-        {
-          ""choice"": ""nix"",
-          ""description"": ""Linux distributions""
-        }
-      ],
-      ""defaultValue"": ""MacOS|iOS""
-    },
-    ""IsMobile"": {
-      ""type"": ""computed"",
-      ""value"": ""((Platform == android || Platform == iOS || Platform == WindowsPhone) && Platform != Windows && Platform != MacOS && Platform != nix)""
-    },
-    ""IsAndroidOnly"": {
-      ""type"": ""computed"",
-      ""value"": ""(Platform == android && Platform != iOS && Platform != WindowsPhone && Platform != Windows && Platform != MacOS && Platform != nix)""
-    },
-    ""joinedRename"": {
-      ""type"": ""generated"",
-      ""generator"": ""join"",
-      ""replaces"": ""SupportedPlatforms"",
-      ""parameters"": {
-        ""symbols"": [
-          {
-            ""type"": ""ref"",
-            ""value"": ""Platform""
-          }
-        ],
-        ""separator"": "", "",
-        ""removeEmptyValues"": true
-      }
-    }
-  }
-}
-";
+            string templateConfig = /*lang=json,strict*/ """
+                {
+                  "$schema": "https://json.schemastore.org/template.json",
+                  "author": "Test Asset",
+                  "classifications": [
+                    "Test Asset"
+                  ],
+                  "name": "MultiSelect.Template",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "tags": {
+                    "type": "project",
+                    "language": "C#"
+                  },
+                  "groupIdentity": "MultiSelect.Template",
+                  "precedence": "100",
+                  "identity": "MultiSelect.Template",
+                  "shortName": "MultiSelect.Template",
+                  "sourceName": "bar",
+                  "symbols": {
+                    "Platform": {
+                      "type": "parameter",
+                      "description": "The target platform for the project.",
+                      "datatype": "choice",
+                      "allowMultipleValues": true,
+                      "enableQuotelessLiterals": true,
+                      "choices": [
+                        {
+                          "choice": "Windows",
+                          "description": "Windows Desktop"
+                        },
+                        {
+                          "choice": "WindowsPhone",
+                          "description": "Windows Phone"
+                        },
+                        {
+                          "choice": "MacOS",
+                          "description": "Macintosh computers"
+                        },
+                        {
+                          "choice": "iOS",
+                          "description": "iOS mobile"
+                        },
+                        {
+                          "choice": "android",
+                          "description": "android mobile"
+                        },
+                        {
+                          "choice": "nix",
+                          "description": "Linux distributions"
+                        }
+                      ],
+                      "defaultValue": "MacOS|iOS"
+                    },
+                    "IsMobile": {
+                      "type": "computed",
+                      "value": "((Platform == android || Platform == iOS || Platform == WindowsPhone) && Platform != Windows && Platform != MacOS && Platform != nix)"
+                    },
+                    "IsAndroidOnly": {
+                      "type": "computed",
+                      "value": "(Platform == android && Platform != iOS && Platform != WindowsPhone && Platform != Windows && Platform != MacOS && Platform != nix)"
+                    },
+                    "joinedRename": {
+                      "type": "generated",
+                      "generator": "join",
+                      "replaces": "SupportedPlatforms",
+                      "parameters": {
+                        "symbols": [
+                          {
+                            "type": "ref",
+                            "value": "Platform"
+                          }
+                        ],
+                        "separator": ", ",
+                        "removeEmptyValues": true
+                      }
+                    }
+                  }
+                }
+                """;
 
-            string sourceSnippet = @"
-//#if IsAndroidOnly
-This renders for android only
-//#elseif IsMobile
-This renders for rest of mobile platforms
-//#else
-This renders for desktop platforms
-//#endif
-Console.WriteLine(""Hello, World!"");
+            string sourceSnippet = """
+                //#if IsAndroidOnly
+                This renders for android only
+                //#elseif IsMobile
+                This renders for rest of mobile platforms
+                //#else
+                This renders for desktop platforms
+                //#endif
+                Console.WriteLine("Hello, World!");
 
-// Plats: SupportedPlatforms
-";
+                // Plats: SupportedPlatforms
+                """;
 
-            string expectedSnippet = @"
-This renders for rest of mobile platforms
-Console.WriteLine(""Hello, World!"");
+            string expectedSnippet = """
+                This renders for rest of mobile platforms
+                Console.WriteLine("Hello, World!");
 
-// Plats: android, iOS
-";
+                // Plats: android, iOS
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -473,69 +476,69 @@ Console.WriteLine(""Hello, World!"");
             // Template content preparation
             //
 
-            string templateConfig = @"
-{
-  ""identity"": ""test.template"",
-  ""symbols"": {
-    ""Platform"": {
-      ""type"": ""parameter"",
-      ""description"": ""The target framework for the project."",
-      ""datatype"": ""choice"",
-      ""allowMultipleValues"": true,
-      ""choices"": [
-        {
-          ""choice"": ""Windows"",
-          ""description"": ""Windows Desktop""
-        },
-        {
-          ""choice"": ""WindowsPhone"",
-          ""description"": ""Windows Phone""
-        },
-        {
-          ""choice"": ""MacOS"",
-          ""description"": ""Macintosh computers""
-        },
-        {
-          ""choice"": ""iOS"",
-          ""description"": ""iOS mobile""
-        },
-        {
-          ""choice"": ""android"",
-          ""description"": ""android mobile""
-        },
-        {
-          ""choice"": ""nix"",
-          ""description"": ""Linux distributions""
-        }
-      ],
-      ""defaultValue"": ""MacOS|iOS""
-    },
-    ""joinedRename"": {
-      ""type"": ""generated"",
-      ""generator"": ""join"",
-      ""replaces"": ""SupportedPlatforms"",
-      ""parameters"": {
-        ""symbols"": [
-          {
-            ""type"": ""ref"",
-            ""value"": ""Platform""
-          }
-        ],
-        ""separator"": "", "",
-        ""removeEmptyValues"": true,
-      }
-    }
-  }
-}
-";
+            string templateConfig = /*lang=json*/ """
+                {
+                  "identity": "test.template",
+                  "symbols": {
+                    "Platform": {
+                      "type": "parameter",
+                      "description": "The target framework for the project.",
+                      "datatype": "choice",
+                      "allowMultipleValues": true,
+                      "choices": [
+                        {
+                          "choice": "Windows",
+                          "description": "Windows Desktop"
+                        },
+                        {
+                          "choice": "WindowsPhone",
+                          "description": "Windows Phone"
+                        },
+                        {
+                          "choice": "MacOS",
+                          "description": "Macintosh computers"
+                        },
+                        {
+                          "choice": "iOS",
+                          "description": "iOS mobile"
+                        },
+                        {
+                          "choice": "android",
+                          "description": "android mobile"
+                        },
+                        {
+                          "choice": "nix",
+                          "description": "Linux distributions"
+                        }
+                      ],
+                      "defaultValue": "MacOS|iOS"
+                    },
+                    "joinedRename": {
+                      "type": "generated",
+                      "generator": "join",
+                      "replaces": "SupportedPlatforms",
+                      "parameters": {
+                        "symbols": [
+                          {
+                            "type": "ref",
+                            "value": "Platform"
+                          }
+                        ],
+                        "separator": ", ",
+                        "removeEmptyValues": true,
+                      }
+                    }
+                  }
+                }
+                """;
 
-            string sourceSnippet = @"
-// This file is generated for platfrom: SupportedPlatforms
-";
+            string sourceSnippet = """
+                // This file is generated for platfrom: SupportedPlatforms
+                """;
 
-            string expectedSnippet = @"
-// This file is generated for platfrom: MacOS, iOS
-";
+            string expectedSnippet = """
+                // This file is generated for platfrom: MacOS, iOS
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -603,13 +606,13 @@ Console.WriteLine(""Hello, World!"");
                 }
             };
 
-            string sourceSnippet = @"
-%R1%
-";
+            string sourceSnippet = """
+                %R1%
+                """;
 
-            string expectedSnippet = @"
-%R1%
-";
+            string expectedSnippet = """
+                %R1%
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -677,22 +680,22 @@ Console.WriteLine(""Hello, World!"");
                 }
             };
 
-            string sourceSnippet = @"
-<!--#if (A) -->
-<!-- comment foo -->
-foo
-<!--#endif -->
-<!--#if (B) -->
-This text should not be generated, just to make file content longer to prove the bug.
-If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
-This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
-<!--#endif -->
-";
+            string sourceSnippet = """
+                <!--#if (A) -->
+                <!-- comment foo -->
+                foo
+                <!--#endif -->
+                <!--#if (B) -->
+                This text should not be generated, just to make file content longer to prove the bug.
+                If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
+                This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
+                <!--#endif -->
+                """;
 
-            string expectedSnippet = @"
-<!-- comment foo -->
-foo
-";
+            string expectedSnippet = """
+                <!-- comment foo -->
+                foo
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {
@@ -763,22 +766,22 @@ foo
                 }
             };
 
-            string sourceSnippet = @"
-#if (A)
-# comment foo
-foo
-#endif
-##if (B)
-This text should not be generated, just to make file content longer to prove the bug.
-If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
-This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
-#endif
-";
+            string sourceSnippet = """
+                #if (A)
+                # comment foo
+                foo
+                #endif
+                ##if (B)
+                This text should not be generated, just to make file content longer to prove the bug.
+                If the buffer is advanced when evaluating condition, the bug won't be reproduced. 
+                This text ensures that buffer is long enough even considering very-very-long env variable names available on CI machine.
+                #endif
+                """;
 
-            string expectedSnippet = @"
-# comment foo
-foo
-";
+            string expectedSnippet = """
+                # comment foo
+                foo
+                """;
 
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
             {

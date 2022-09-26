@@ -20,16 +20,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-             ""actionableIf"": [ ""<!--#if"" ],
-             ""actionableElse"": [ ""#else"", ""<!--#else"" ],
-             ""actionableElseif"": [ ""#elseif"", ""<!--#elseif"" ],
-             ""endif"": [ ""#endif"", ""<!--#endif"" ],
-             ""trim"" : ""true"",
-             ""wholeLine"": ""true"",
-}
-";
+                string configString = /*lang=json*/ """
+                {
+                             "actionableIf": [ "<!--#if" ],
+                             "actionableElse": [ "#else", "<!--#else" ],
+                             "actionableElseif": [ "#elseif", "<!--#elseif" ],
+                             "endif": [ "#endif", "<!--#endif" ],
+                             "trim" : "true",
+                             "wholeLine": "true",
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -38,16 +38,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-             ""style"": ""custom"",
-             ""actionableIf"": [ ""<!--#if"" ],
-             ""actionableElse"": [ ""#else"", ""<!--#else"" ],
-             ""actionableElseif"": [ ""#elseif"", ""<!--#elseif"" ],
-             ""endif"": [ ""#endif"", ""<!--#endif"" ],
-             ""trim"" : ""true"",
-             ""wholeLine"": ""true"",
-}";
+                string configString = /*lang=json*/ """
+                {
+                             "style": "custom",
+                             "actionableIf": [ "<!--#if" ],
+                             "actionableElse": [ "#else", "<!--#else" ],
+                             "actionableElseif": [ "#elseif", "<!--#elseif" ],
+                             "endif": [ "#endif", "<!--#endif" ],
+                             "trim" : "true",
+                             "wholeLine": "true",
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -56,12 +57,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-        ""style"": ""line"",
-        ""token"": ""//""
-}
-";
+                string configString = /*lang=json,strict*/ """
+                {
+                        "style": "line",
+                        "token": "//"
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -70,13 +71,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-        ""style"": ""block"",
-        ""startToken"": ""/*"",
-        ""endToken"": ""*/"",
-        ""pseudoEndToken"": ""* /""
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                        "style": "block",
+                        "startToken": "/*",
+                        "endToken": "*/",
+                        "pseudoEndToken": "* /"
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }

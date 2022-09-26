@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 throw new ArgumentException($"'{nameof(shortNames)}' should contain at least one entry.", nameof(shortNames));
             }
-            if (shortNames.Any(name => string.IsNullOrWhiteSpace(name)))
+            if (shortNames.Any(string.IsNullOrWhiteSpace))
             {
                 throw new ArgumentException($"'{nameof(shortNames)}' should not contain empty values.", nameof(shortNames));
             }

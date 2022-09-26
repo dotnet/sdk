@@ -18,26 +18,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": [ ""foo"", ""bar"", ""baz"" ]
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": [ "foo", "bar", "baz" ]
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -46,26 +47,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": [ ""foo"", ""bar"", ""baz"" ]
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": [ "foo", "bar", "baz" ]
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -74,23 +76,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithNameSymbolWithoutBinding"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
-  ""shortName"": ""TestAssets.TemplateWithNameSymbolWithoutBinding"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithNameSymbolWithoutBinding",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithNameSymbolWithoutBinding",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithNameSymbolWithoutBinding",
+                  "shortName": "TestAssets.TemplateWithNameSymbolWithoutBinding",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -99,24 +102,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""ConfigWithNameSymbolWithCustomBinding"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
-  ""shortName"": ""TestAssets.ConfigWithNameSymbolWithCustomBinding"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""binding"": ""customBinding"",
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "ConfigWithNameSymbolWithCustomBinding",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
+                  "precedence": "100",
+                  "identity": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
+                  "shortName": "TestAssets.ConfigWithNameSymbolWithCustomBinding",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "binding": "customBinding",
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -125,26 +129,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": [ ""foo"", ""bar"", ""baz"", ""identity"" ]
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": [ "foo", "bar", "baz", "identity" ]
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -153,29 +158,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
-            ""addIdentity"": ""false""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "identity", "baz" ],
+                            "addIdentity": "false"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -184,29 +190,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
-            ""addIdentity"": ""true""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "identity", "baz" ],
+                            "addIdentity": "true"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -215,29 +222,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""false""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                            "addIdentity": "false"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -246,29 +254,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""true""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                            "addIdentity": "true"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -277,29 +286,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""false""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                            "addIdentity": "false"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -308,28 +318,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -338,28 +349,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""name"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"", ""identity"" ],
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "name": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz", "identity" ],
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -368,23 +380,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string""
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string"
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -393,26 +406,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": [ ""foo"", ""bar"", ""baz"", ""identity"" ]
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": [ "foo", "bar", "baz", "identity" ]
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -421,29 +435,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-            ""addIdentity"": ""true""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                            "addIdentity": "true"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -452,29 +467,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
-            ""addIdentity"": ""false""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "identity", "baz" ],
+                            "addIdentity": "false"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -483,29 +499,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""identity"", ""baz"" ],
-            ""addIdentity"": ""true""
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json,strict*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "identity", "baz" ],
+                            "addIdentity": "true"
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -514,28 +531,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"", ""identity"" ],
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz", "identity" ],
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
@@ -544,28 +562,29 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             get
             {
-                string configString = @"
-{
-  ""author"": ""Test Asset"",
-  ""classifications"": [ ""Test Asset"" ],
-  ""name"": ""TemplateWithValueForms"",
-  ""generatorVersions"": ""[1.0.0.0-*)"",
-  ""groupIdentity"": ""TestAssets.TemplateWithValueForms"",
-  ""precedence"": ""100"",
-  ""identity"": ""TestAssets.TemplateWithValueForms"",
-  ""shortName"": ""TestAssets.TemplateWithValueForms"",
-  ""symbols"": {
-    ""testSymbol"": {
-      ""type"": ""parameter"",
-      ""dataType"": ""string"",
-      ""forms"": {
-        ""global"": {
-            ""forms"": [ ""foo"", ""bar"", ""baz"" ],
-        }
-      }
-    }
-  }
-}";
+                string configString = /*lang=json*/ """
+                {
+                  "author": "Test Asset",
+                  "classifications": [ "Test Asset" ],
+                  "name": "TemplateWithValueForms",
+                  "generatorVersions": "[1.0.0.0-*)",
+                  "groupIdentity": "TestAssets.TemplateWithValueForms",
+                  "precedence": "100",
+                  "identity": "TestAssets.TemplateWithValueForms",
+                  "shortName": "TestAssets.TemplateWithValueForms",
+                  "symbols": {
+                    "testSymbol": {
+                      "type": "parameter",
+                      "dataType": "string",
+                      "forms": {
+                        "global": {
+                            "forms": [ "foo", "bar", "baz" ],
+                        }
+                      }
+                    }
+                  }
+                }
+                """;
                 return JObject.Parse(configString);
             }
         }
