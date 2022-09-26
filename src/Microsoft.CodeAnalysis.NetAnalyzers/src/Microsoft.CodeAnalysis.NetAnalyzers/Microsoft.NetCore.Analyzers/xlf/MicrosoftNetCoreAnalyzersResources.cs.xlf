@@ -2109,27 +2109,27 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Počínaje rozhraním .NET 7 se explicitní převod {0} při přetečení v nezaškrtnutém kontextu nevyvolá. Pokud chcete obnovit chování rozhraní .NET 6, zabalte výraz příkazem checked.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Počínaje rozhraním .NET 7 se explicitní převod {0} vyvolá při přetečení v zaškrtnutém kontextu. Pokud chcete obnovit chování rozhraní .NET 6, zabalte výraz příkazem unchecked.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="new">Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</target>
+        <target state="translated">Někteří předdefinovaní operátoři přidaní v rozhraní .NET 7 se chovají jinak než uživatelsky definované operátory v rozhraní .NET 6 a nižších. Někteří operátoři, kteří se použili k vyvolání v nezaškrtnutém kontextu při přetečení, se už nevyvolají, pokud nejsou zabalené v zaškrtnutém kontextu, a někteří operátoři, kteří se teď nepoužívají k vyvolání v zaškrtnutém kontextu, by se vyvolali, pokud by nebyli zabaleni do nezaškrtnutého kontextu.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
         <source>Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Počínaje rozhraním .NET 7 se při přetečení v zaškrtnutém kontextu vyvolá operátor{0}. Pokud chcete obnovit chování rozhraní .NET 6, zabalte výraz příkazem unchecked.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent from behavioral change</source>
-        <target state="new">Prevent from behavioral change</target>
+        <target state="translated">Zabránit změnám chování</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">

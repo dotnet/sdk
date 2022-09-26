@@ -2109,27 +2109,27 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Начиная с .NET 7 явное преобразование "{0}" не будет вызываться при переполнении в непроверенном контексте. Чтобы восстановить поведение .NET 6, оберните выражение оператором "checked".</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Начиная с .NET 7 явное преобразование "{0}" будет вызываться при переполнении в проверенном контексте. Чтобы восстановить поведение .NET 6, оберните выражение оператором "unchecked".</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="new">Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</target>
+        <target state="translated">Некоторые встроенные операторы, добавленные в .NET 7, ведут себя иначе, чем операторы, определенные пользователем в .NET 6 и ниже. Некоторые операторы, вызывавшие исключение в непроверенном контексте при переполнении, больше не будут вызывать исключение, если они не обернуты в проверенный контекст, а некоторые операторы, которые раньше не вызывали исключение в проверенном контексте, теперь будут вызывать исключение, если они не обернуты непроверенным контекстом.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
         <source>Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Начиная с .NET 7 оператор "{0}" будет вызывать исключение при переполнении в проверенном контексте. Чтобы восстановить поведение .NET 6, оберните выражение оператором "unchecked".</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent from behavioral change</source>
-        <target state="new">Prevent from behavioral change</target>
+        <target state="translated">Предотвращать изменение поведения</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">

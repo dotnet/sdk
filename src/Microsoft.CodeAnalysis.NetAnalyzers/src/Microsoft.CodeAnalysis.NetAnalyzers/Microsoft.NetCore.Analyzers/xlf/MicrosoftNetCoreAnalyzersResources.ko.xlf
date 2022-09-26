@@ -2109,27 +2109,27 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">.NET 7부터는 확인되지 않은 컨텍스트에서 오버플로할 때 명시적 변환 '{0}'이(가) throw되지 않습니다. .NET 6 동작을 복원하려면 식을 'checked' 문으로 래핑합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">.NET 7부터 명시적 변환 '{0}'은(는) 확인된 컨텍스트에서 오버플로할 때 throw됩니다. .NET 6 동작을 복원하려면 'unchecked' 문으로 식을 래핑합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="new">Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</target>
+        <target state="translated">.NET 7에 추가된 일부 기본 제공 연산자는 .NET 6 이하의 사용자 정의 연산자와 다르게 작동합니다. 오버플로하는 동안 검사되지 않은 컨텍스트를 throw하는 데 사용된 일부 연산자는 검사된 컨텍스트 내에서 래핑되지 않는 한 더 이상 throw되지 않으며, 이제 검사된 컨텍스트에서 throw하는 데 사용되지 않는 일부 연산자는 검사되지 않은 컨텍스트 내에서 래핑되지 않는 한 throw됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
         <source>Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">.NET 7부터 연산자 '{0}'은(는) 확인된 컨텍스트에서 오버플로할 때 throw됩니다. .NET 6 동작을 복원하려면 'unchecked' 문으로 식을 래핑합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent from behavioral change</source>
-        <target state="new">Prevent from behavioral change</target>
+        <target state="translated">동작 변경 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
