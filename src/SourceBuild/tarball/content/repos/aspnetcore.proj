@@ -7,7 +7,7 @@
     <!-- The arch flag (defaults to x64) overrides any value of TargetArchitecture that we might set -->
     <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:BuildNodeJs=false</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltAspNetCoreRuntime)</BuildCommandArgs>
     <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
          included by Arcade -->
