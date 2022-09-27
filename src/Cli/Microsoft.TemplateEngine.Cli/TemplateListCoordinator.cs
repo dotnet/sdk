@@ -1,5 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
 using System.Text;
 using Microsoft.DotNet.Cli.Utils;
@@ -51,10 +52,7 @@ namespace Microsoft.TemplateEngine.Cli
             //IReadOnlyDictionary<string, string?>? appliedParameterMatches = resolutionResult.GetAllMatchedParametersList();
             if (resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters.Any())
             {
-                Reporter.Output.WriteLine(
-                    string.Format(
-                        LocalizableStrings.TemplatesFoundMatchingInputParameters,
-                       GetInputParametersString(args/*, appliedParameterMatches*/)));
+                Reporter.Output.WriteLine(LocalizableStrings.TemplatesFoundMatchingInputParameters, GetInputParametersString(args));
                 Reporter.Output.WriteLine();
 
                 TabularOutputSettings settings = new TabularOutputSettings(_engineEnvironmentSettings.Environment, args);
@@ -76,7 +74,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Output.WriteLine(LocalizableStrings.NoTemplatesFound);
                     Reporter.Output.WriteLine();
                     // To search for the templates on NuGet.org, run:
-                    Reporter.Output.WriteLine(LocalizableStrings.SearchTemplatesCommand);
+                    Reporter.Output.WriteLine(LocalizableStrings.Generic_CommandHints_Search);
                     Reporter.Output.WriteCommand(
                        Example
                            .For<NewCommand>(args.ParseResult)
@@ -90,7 +88,7 @@ namespace Microsoft.TemplateEngine.Cli
                 // No templates found matching the following input parameter(s): {0}.
                 Reporter.Error.WriteLine(
                     string.Format(
-                        LocalizableStrings.NoTemplatesMatchingInputParameters,
+                        LocalizableStrings.Generic_Info_NoMatchingTemplates,
                         GetInputParametersString(args/*, appliedParameterMatches*/))
                     .Bold().Red());
 
@@ -119,7 +117,7 @@ namespace Microsoft.TemplateEngine.Cli
 
                 Reporter.Error.WriteLine();
                 // To search for the templates on NuGet.org, run:
-                Reporter.Error.WriteLine(LocalizableStrings.SearchTemplatesCommand);
+                Reporter.Error.WriteLine(LocalizableStrings.Generic_CommandHints_Search);
                 if (string.IsNullOrWhiteSpace(args.ListNameCriteria))
                 {
                     Reporter.Error.WriteCommand(
@@ -153,15 +151,11 @@ namespace Microsoft.TemplateEngine.Cli
         {
             IEnumerable<ITemplateInfo> curatedTemplates = await GetCuratedListAsync(cancellationToken).ConfigureAwait(false);
 
-            Reporter.Output.WriteLine(string.Format(
-                LocalizableStrings.TemplateInformationCoordinator_DotnetNew_Description,
-                Example.For<NewCommand>(args.ParseResult)));
+            Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_Description, Example.For<NewCommand>(args.ParseResult));
 
             Reporter.Output.WriteLine();
 
-            Reporter.Output.WriteLine(string.Format(
-              LocalizableStrings.TemplateInformationCoordinator_DotnetNew_TemplatesHeader,
-              Example.For<NewCommand>(args.ParseResult)));
+            Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_TemplatesHeader, Example.For<NewCommand>(args.ParseResult));
             TemplateGroupDisplay.DisplayTemplateList(
                 _engineEnvironmentSettings,
                 curatedTemplates,

@@ -1,10 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+//
 
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
@@ -22,7 +22,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             //it is important that legacy commands are built before non-legacy, as non legacy commands are building validators that rely on legacy stuff
             BuildLegacySymbols(hostBuilder);
 
-            this.Add(new InstantiateCommand(hostBuilder));
+            this.Add(new InstantiateCommand(this, hostBuilder));
             this.Add(new InstallCommand(this, hostBuilder));
             this.Add(new UninstallCommand(this, hostBuilder));
             this.Add(new UpdateCommand(this, hostBuilder));
@@ -36,6 +36,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             this.AddGlobalOption(DebugReinitOption);
             this.AddGlobalOption(DebugRebuildCacheOption);
             this.AddGlobalOption(DebugShowConfigOption);
+
+            this.AddOption(SharedOptions.OutputOption);
+            this.AddOption(SharedOptions.NameOption);
+            this.AddOption(SharedOptions.DryRunOption);
+            this.AddOption(SharedOptions.ForceOption);
+            this.AddOption(SharedOptions.NoUpdateCheckOption);
+            this.AddOption(SharedOptions.ProjectPathOption);
         }
 
         internal static Option<string?> DebugCustomSettingsLocationOption { get; } = new("--debug:custom-hive")
@@ -88,11 +95,19 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             IsHidden = true
         };
 
-        protected internal override IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings)
+        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
+        {
+            SharedOptions.ForceOption,
+            SharedOptions.NameOption,
+            SharedOptions.DryRunOption,
+            SharedOptions.NoUpdateCheckOption
+        };
+
+        protected internal override IEnumerable<CompletionItem> GetCompletions(CompletionContext context, IEngineEnvironmentSettings environmentSettings, TemplatePackageManager templatePackageManager)
         {
             if (context is not TextCompletionContext textCompletionContext)
             {
-                foreach (CompletionItem completion in base.GetCompletions(context, environmentSettings))
+                foreach (CompletionItem completion in base.GetCompletions(context, environmentSettings, templatePackageManager))
                 {
                     yield return completion;
                 }
@@ -100,9 +115,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(ParseContext(context.ParseResult));
-
-            using TemplatePackageManager templatePackageManager = new TemplatePackageManager(environmentSettings);
-            HostSpecificDataLoader? hostSpecificDataLoader = new HostSpecificDataLoader(environmentSettings);
+            HostSpecificDataLoader? hostSpecificDataLoader = new(environmentSettings);
 
             //TODO: consider new API to get templates only from cache (non async)
             IReadOnlyList<ITemplateInfo> templates =
@@ -123,7 +136,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 yield return completion;
             }
-            foreach (CompletionItem completion in base.GetCompletions(context, environmentSettings))
+            foreach (CompletionItem completion in base.GetCompletions(context, environmentSettings, templatePackageManager))
             {
                 yield return completion;
             }
@@ -132,9 +145,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         protected override Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
+            TemplatePackageManager templatePackageManager,
             InvocationContext context)
         {
-            return InstantiateCommand.ExecuteAsync(args, environmentSettings, context);
+            return InstantiateCommand.ExecuteAsync(args, environmentSettings, templatePackageManager, context);
         }
 
         protected override NewCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);

@@ -7,6 +7,11 @@
         <target state="translated">Nieprawidłowe wyrażenie, pozycja: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Diagnostics_OptionDescription">
+        <source>Enables diagnostic output.</source>
+        <target state="translated">Włącza dane wyjściowe diagnostyki.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
         <source>Disables evaluating project context using MSBuild.</source>
         <target state="translated">Wyłącza ocenianie kontekstu projektu przy użyciu programu MSBuild.</target>
@@ -233,11 +238,6 @@
         <target state="translated">Kontekst projektu</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectPath_OptionDescription">
-        <source>The project that should be used for context evaluation.</source>
-        <target state="translated">Projekt, który powinien być używany do oceny kontekstu.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SdkInfoProvider_Message_InstallSdk">
         <source>Go to aka.ms/get-dotnet and install any of the supported SDK versions: '{0}'.</source>
         <target state="translated">Przejdź do aka.ms/get-dotnet i zainstaluj dowolną z obsługiwanych wersji zestawu SDK: „{0}”.</target>
@@ -247,6 +247,11 @@
         <source>You have other SDK version(s) installed that can be used to run this template. Switch to any of the following SDK(s) on your system to run this template: '{0}'. Details on selecting SDK version to run: https://docs.microsoft.com/dotnet/core/tools/global-json.</source>
         <target state="translated">Masz zainstalowane inne wersje zestawów SDK, których można użyć do uruchomienia tego szablonu. Przełącz się do dowolnego z następujących zestawów SDK w systemie, aby uruchomić ten szablon: „{0}”. Szczegóły dotyczące wybierania wersji zestawu SDK do uruchomienia: https://docs.microsoft.com/dotnet/core/tools/global-json.</target>
         <note>{0} is the list of installed and supported versions.</note>
+      </trans-unit>
+      <trans-unit id="Verbosity_OptionDescription">
+        <source>Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].</source>
+        <target state="translated">Ustawia poziom szczegółowości. Dozwolone wartości to q[uiet], m[inimal], n[ormal] i diag[nostic].</target>
+        <note />
       </trans-unit>
       <trans-unit id="WorkloadInfoProvider_Message_AddWorkloads">
         <source>Run 'dotnet workload search' to search workloads available to be installed on your SDK.</source>
