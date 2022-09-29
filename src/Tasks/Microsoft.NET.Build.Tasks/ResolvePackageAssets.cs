@@ -759,20 +759,20 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     _projectFileDependencies = _lockFile.GetProjectFileDependencySet(frameworkAlias);
                 }
-            }
 
-            private Dictionary<string, string> CreateTargetNameToAlisMap() => _lockFile.Targets.ToDictionary(t => t.Name, t =>
-            {
-                var alias = _lockFile.GetLockFileTargetAlias(t);
-                if (string.IsNullOrEmpty(t.RuntimeIdentifier))
+                Dictionary<string, string> CreateTargetNameToAlisMap() => _lockFile.Targets.ToDictionary(t => t.Name, t =>
                 {
-                    return alias;
-                }
-                else
-                {
-                    return alias + "/" + t.RuntimeIdentifier;
-                }
-            });
+                    var alias = _lockFile.GetLockFileTargetAlias(t);
+                    if (string.IsNullOrEmpty(t.RuntimeIdentifier))
+                    {
+                        return alias;
+                    }
+                    else
+                    {
+                        return alias + "/" + t.RuntimeIdentifier;
+                    }
+                });
+            }
 
             public void WriteToCacheFile()
             {
@@ -1495,7 +1495,7 @@ namespace Microsoft.NET.Build.Tasks
                                         return alias ?? tg;
                                     }).Contains(target));
 
-                    if (!messages.Any())
+                    if (messages.Count() == 0)
                     {
                         return string.Empty;
                     }
@@ -1537,10 +1537,9 @@ namespace Microsoft.NET.Build.Tasks
 
                     foreach (var package in target.Libraries)
                     {
-                        string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
-
                         if (_projectFileDependencies.Contains(package.Name))
                         {
+                            string packageId = GetPackageId(package);
                             WriteItem(packageId);
                             WriteMetadata(MetadataKeys.ParentTarget, frameworkAlias); // Foreign Key
                             WriteMetadata(MetadataKeys.ParentPackage, string.Empty); // Foreign Key
@@ -1557,7 +1556,7 @@ namespace Microsoft.NET.Build.Tasks
                     Dictionary<string, string> resolvedPackageVersions,
                     HashSet<string> transitiveProjectRefs)
                 {
-                    string packageId = $"{package.Name}/{package.Version.ToNormalizedString()}";
+                    string packageId = GetPackageId(package);
                     string frameworkAlias = _targetNameToAliasMap[targetName];
                     foreach (var deps in package.Dependencies)
                     {
@@ -1578,6 +1577,8 @@ namespace Microsoft.NET.Build.Tasks
                         }
                     }
                 }
+
+                static string GetPackageId(LockFileTargetLibrary package) => $"{package.Name}/{package.Version.ToNormalizedString()}";
             }
 
             private void WriteResourceAssemblies()
