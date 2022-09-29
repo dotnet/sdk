@@ -213,7 +213,7 @@
 
   <!-- Ref-only package versions -->
   <PropertyGroup>
-    <RefOnlyMicrosoftCodeAnalysisCommonVersion>4.0.1</RefOnlyMicrosoftCodeAnalysisCommonVersion>
+    <RefOnlyMicrosoftCodeAnalysisCommonVersion>4.1.0</RefOnlyMicrosoftCodeAnalysisCommonVersion>
   </PropertyGroup>
 
   <ItemGroup>
