@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    public class MSBuildFileSetResult
+    internal sealed class MSBuildFileSetResult
     {
         public string RunCommand { get; set; }
 
@@ -25,14 +25,14 @@ namespace Microsoft.DotNet.Watcher.Internal
         public Dictionary<string, ProjectItems> Projects { get; set; }
     }
 
-    public class ProjectItems
+    internal sealed class ProjectItems
     {
         public List<string> Files { get; set; } = new();
 
         public List<StaticFileItem> StaticFiles { get; set; } = new();
     }
 
-    public class StaticFileItem
+    internal sealed class StaticFileItem
     {
         public string FilePath { get; set; }
 

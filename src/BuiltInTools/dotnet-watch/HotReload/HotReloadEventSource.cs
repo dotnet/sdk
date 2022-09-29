@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             ScopedCssHandler
         }
 
-        public class Keywords
+        internal sealed class Keywords
         {
             public const EventKeywords Perf = (EventKeywords)1;
         }
