@@ -1,0 +1,311 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Charles Stoner <10732005+cston@users.noreply.github.com>
+Date: Tue, 20 Sep 2022 14:44:06 -0700
+Subject: [PATCH] Update compiler version
+
+Backport: https://github.com/dotnet/runtime/pull/75935
+---
+ eng/Versions.props                            |  2 +-
+ .../Reflection/RuntimeMethodInfo.CoreCLR.cs   |  2 ++
+ .../System/Reflection/DynamicInvokeInfo.cs    | 14 ++++++++---
+ .../src/System/Reflection/MethodBase.cs       |  2 ++
+ .../Reflection/RuntimeConstructorInfo.cs      |  4 ++++
+ .../System/Reflection/RuntimeMethodInfo.cs    |  2 ++
+ .../src/System/Text/Json/JsonHelpers.cs       |  2 +-
+ .../Utf8JsonWriter.WriteProperties.String.cs  | 24 +++++++++++--------
+ 8 files changed, 37 insertions(+), 15 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index fe8aac648cd..2f16902347b 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -52,7 +52,7 @@
+     <!--
+       TODO: Remove pinned version once arcade supplies a compiler that enables the repo to compile.
+     -->
+-    <MicrosoftNetCompilersToolsetVersion>4.4.0-3.22452.8</MicrosoftNetCompilersToolsetVersion>
++    <MicrosoftNetCompilersToolsetVersion>4.4.0-3.22472.1</MicrosoftNetCompilersToolsetVersion>
+     <StaticCsVersion>0.2.0</StaticCsVersion>
+     <!-- SDK dependencies -->
+     <MicrosoftDotNetApiCompatTaskVersion>7.0.100-rc.1.22402.1</MicrosoftDotNetApiCompatTaskVersion>
+diff --git a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs b/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
+index c55ee607da7..4e1246b481b 100644
+--- a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
++++ b/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
+@@ -316,7 +316,9 @@ public override MethodImplAttributes GetMethodImplementationFlags()
+                 Span<ParameterCopyBackAction> shouldCopyBackParameters = new(ref argStorage._copyBack0, 1);
+ 
+                 StackAllocatedByRefs byrefStorage = default;
++#pragma warning disable 8500
+                 IntPtr* pByRefStorage = (IntPtr*)&byrefStorage;
++#pragma warning restore 8500
+ 
+                 CheckArguments(
+                     copyOfParameters,
+diff --git a/src/coreclr/nativeaot/System.Private.CoreLib/src/System/Reflection/DynamicInvokeInfo.cs b/src/coreclr/nativeaot/System.Private.CoreLib/src/System/Reflection/DynamicInvokeInfo.cs
+index 234f8a16e9c..cc3d8c74a60 100644
+--- a/src/coreclr/nativeaot/System.Private.CoreLib/src/System/Reflection/DynamicInvokeInfo.cs
++++ b/src/coreclr/nativeaot/System.Private.CoreLib/src/System/Reflection/DynamicInvokeInfo.cs
+@@ -235,11 +235,15 @@ public DynamicInvokeInfo(MethodBase method, IntPtr invokeThunk)
+                 StackAllocedArguments argStorage = default;
+                 StackAllocatedByRefs byrefStorage = default;
+ 
++#pragma warning disable 8500
+                 CheckArguments(ref argStorage._arg0!, (ByReference*)&byrefStorage, parameters, binderBundle);
++#pragma warning restore 8500
+ 
+                 try
+                 {
++#pragma warning disable 8500
+                     ret = ref RawCalliHelper.Call(InvokeThunk, (void*)methodToCall, ref thisArg, ref ret, &byrefStorage);
++#pragma warning restore 8500
+                     DebugAnnotations.PreviousCallContainsDebuggerStepInCode();
+                 }
+                 catch (Exception e) when (wrapInTargetInvocationException)
+@@ -268,7 +272,9 @@ public DynamicInvokeInfo(MethodBase method, IntPtr invokeThunk)
+             IntPtr* pStorage = stackalloc IntPtr[2 * argCount];
+             NativeMemory.Clear(pStorage, (nuint)(2 * argCount) * (nuint)sizeof(IntPtr));
+ 
+-            ByReference* pByRefStorage = (ByReference*)(pStorage + argCount);
++#pragma warning disable 8500
++            void* pByRefStorage = (ByReference*)(pStorage + argCount);
++#pragma warning restore 8500
+ 
+             RuntimeImports.GCFrameRegistration regArgStorage = new(pStorage, (uint)argCount, areByRefs: false);
+             RuntimeImports.GCFrameRegistration regByRefStorage = new(pByRefStorage, (uint)argCount, areByRefs: true);
+@@ -326,7 +332,7 @@ public DynamicInvokeInfo(MethodBase method, IntPtr invokeThunk)
+ 
+         private unsafe void CheckArguments(
+             ref object copyOfParameters,
+-            ByReference* byrefParameters,
++            void* byrefParameters,
+             object?[] parameters,
+             BinderBundle binderBundle)
+         {
+@@ -398,8 +404,10 @@ public DynamicInvokeInfo(MethodBase method, IntPtr invokeThunk)
+ 
+                 Unsafe.Add(ref copyOfParameters, i) = arg!;
+ 
+-                byrefParameters[i] = new ByReference(ref (argumentInfo.Transform & Transform.Reference) != 0 ?
++#pragma warning disable 8500
++                ((ByReference*)byrefParameters)[i] = new ByReference(ref (argumentInfo.Transform & Transform.Reference) != 0 ?
+                     ref Unsafe.As<object, byte>(ref Unsafe.Add(ref copyOfParameters, i)) : ref arg.GetRawData());
++#pragma warning restore 8500
+             }
+         }
+ 
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Reflection/MethodBase.cs b/src/libraries/System.Private.CoreLib/src/System/Reflection/MethodBase.cs
+index 13ff9e34df9..98069a70ef5 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Reflection/MethodBase.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Reflection/MethodBase.cs
+@@ -236,6 +236,7 @@ BindingFlags invokeAttr
+                 shouldCopyBack[i] = copyBackArg;
+                 copyOfParameters[i] = arg;
+ 
++#pragma warning disable 8500
+                 if (isValueType)
+                 {
+ #if !MONO // Temporary until Mono is updated.
+@@ -254,6 +255,7 @@ BindingFlags invokeAttr
+                     ByReference objRef = ByReference.Create(ref copyOfParameters[i]);
+                     *(ByReference*)(byrefParameters + i) = objRef;
+                 }
++#pragma warning restore 8500
+             }
+         }
+ 
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeConstructorInfo.cs b/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeConstructorInfo.cs
+index b1f3222736a..1fd9c177ddb 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeConstructorInfo.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeConstructorInfo.cs
+@@ -146,7 +146,9 @@ internal void ThrowNoInvokeException()
+                     Span<ParameterCopyBackAction> shouldCopyBackParameters = new(ref argStorage._copyBack0, argCount);
+ 
+                     StackAllocatedByRefs byrefStorage = default;
++#pragma warning disable 8500
+                     IntPtr* pByRefStorage = (IntPtr*)&byrefStorage;
++#pragma warning restore 8500
+ 
+                     CheckArguments(
+                         copyOfParameters,
+@@ -299,7 +301,9 @@ public override object Invoke(BindingFlags invokeAttr, Binder? binder, object?[]
+                     Span<ParameterCopyBackAction> shouldCopyBackParameters = new(ref argStorage._copyBack0, argCount);
+ 
+                     StackAllocatedByRefs byrefStorage = default;
++#pragma warning disable 8500
+                     IntPtr* pByRefStorage = (IntPtr*)&byrefStorage;
++#pragma warning restore 8500
+ 
+                     CheckArguments(
+                         copyOfParameters,
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.cs b/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.cs
+index 770a59d40eb..bf534c58e70 100644
+--- a/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.cs
++++ b/src/libraries/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.cs
+@@ -143,7 +143,9 @@ private void ThrowNoInvokeException()
+                     Span<ParameterCopyBackAction> shouldCopyBackParameters = new(ref argStorage._copyBack0, argCount);
+ 
+                     StackAllocatedByRefs byrefStorage = default;
++#pragma warning disable 8500
+                     IntPtr* pByRefStorage = (IntPtr*)&byrefStorage;
++#pragma warning restore 8500
+ 
+                     CheckArguments(
+                         copyOfParameters,
+diff --git a/src/libraries/System.Text.Json/src/System/Text/Json/JsonHelpers.cs b/src/libraries/System.Text.Json/src/System/Text/Json/JsonHelpers.cs
+index 9e9adcd0a52..4706b64753c 100644
+--- a/src/libraries/System.Text.Json/src/System/Text/Json/JsonHelpers.cs
++++ b/src/libraries/System.Text.Json/src/System/Text/Json/JsonHelpers.cs
+@@ -15,7 +15,7 @@ internal static partial class JsonHelpers
+         /// Returns the span for the given reader.
+         /// </summary>
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+-        public static ReadOnlySpan<byte> GetSpan(this ref Utf8JsonReader reader)
++        public static ReadOnlySpan<byte> GetSpan(this scoped ref Utf8JsonReader reader)
+         {
+             return reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+         }
+diff --git a/src/libraries/System.Text.Json/src/System/Text/Json/Writer/Utf8JsonWriter.WriteProperties.String.cs b/src/libraries/System.Text.Json/src/System/Text/Json/Writer/Utf8JsonWriter.WriteProperties.String.cs
+index 65c6fd303c1..7cd0e3b45a4 100644
+--- a/src/libraries/System.Text.Json/src/System/Text/Json/Writer/Utf8JsonWriter.WriteProperties.String.cs
++++ b/src/libraries/System.Text.Json/src/System/Text/Json/Writer/Utf8JsonWriter.WriteProperties.String.cs
+@@ -112,12 +112,12 @@ private void WriteStringEscapeProperty(scoped ReadOnlySpan<char> propertyName, i
+             Debug.Assert(int.MaxValue / JsonConstants.MaxExpansionFactorWhileEscaping >= propertyName.Length);
+ 
+             char[]? propertyArray = null;
++            scoped Span<char> escapedPropertyName;
+ 
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(propertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<char> escapedPropertyName;
+                 if (length > JsonConstants.StackallocCharThreshold)
+                 {
+                     propertyArray = ArrayPool<char>.Shared.Rent(length);
+@@ -269,12 +269,12 @@ private void WriteStringEscapeProperty(scoped ReadOnlySpan<byte> utf8PropertyNam
+             Debug.Assert(int.MaxValue / JsonConstants.MaxExpansionFactorWhileEscaping >= utf8PropertyName.Length);
+ 
+             byte[]? propertyArray = null;
++            scoped Span<byte> escapedPropertyName;
+ 
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(utf8PropertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<byte> escapedPropertyName;
+                 if (length > JsonConstants.StackallocByteThreshold)
+                 {
+                     propertyArray = ArrayPool<byte>.Shared.Rent(length);
+@@ -1076,12 +1076,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<char> property
+ 
+             char[]? valueArray = null;
+             char[]? propertyArray = null;
++            scoped Span<char> escapedValue;
+ 
+             if (firstEscapeIndexVal != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(value.Length, firstEscapeIndexVal);
+ 
+-                scoped Span<char> escapedValue;
+                 if (length > JsonConstants.StackallocCharThreshold)
+                 {
+                     valueArray = ArrayPool<char>.Shared.Rent(length);
+@@ -1096,11 +1096,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<char> property
+                 value = escapedValue.Slice(0, written);
+             }
+ 
++            scoped Span<char> escapedPropertyName;
++
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(propertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<char> escapedPropertyName;
+                 if (length > JsonConstants.StackallocCharThreshold)
+                 {
+                     propertyArray = ArrayPool<char>.Shared.Rent(length);
+@@ -1135,12 +1136,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<byte> utf8Prop
+ 
+             byte[]? valueArray = null;
+             byte[]? propertyArray = null;
++            scoped Span<byte> escapedValue;
+ 
+             if (firstEscapeIndexVal != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(utf8Value.Length, firstEscapeIndexVal);
+ 
+-                scoped Span<byte> escapedValue;
+                 if (length > JsonConstants.StackallocByteThreshold)
+                 {
+                     valueArray = ArrayPool<byte>.Shared.Rent(length);
+@@ -1155,11 +1156,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<byte> utf8Prop
+                 utf8Value = escapedValue.Slice(0, written);
+             }
+ 
++            scoped Span<byte> escapedPropertyName;
++
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(utf8PropertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<byte> escapedPropertyName;
+                 if (length > JsonConstants.StackallocByteThreshold)
+                 {
+                     propertyArray = ArrayPool<byte>.Shared.Rent(length);
+@@ -1194,12 +1196,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<char> property
+ 
+             byte[]? valueArray = null;
+             char[]? propertyArray = null;
++            scoped Span<byte> escapedValue;
+ 
+             if (firstEscapeIndexVal != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(utf8Value.Length, firstEscapeIndexVal);
+ 
+-                scoped Span<byte> escapedValue;
+                 if (length > JsonConstants.StackallocByteThreshold)
+                 {
+                     valueArray = ArrayPool<byte>.Shared.Rent(length);
+@@ -1214,11 +1216,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<char> property
+                 utf8Value = escapedValue.Slice(0, written);
+             }
+ 
++            scoped Span<char> escapedPropertyName;
++
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(propertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<char> escapedPropertyName;
+                 if (length > JsonConstants.StackallocCharThreshold)
+                 {
+                     propertyArray = ArrayPool<char>.Shared.Rent(length);
+@@ -1253,12 +1256,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<byte> utf8Prop
+ 
+             char[]? valueArray = null;
+             byte[]? propertyArray = null;
++            scoped Span<char> escapedValue;
+ 
+             if (firstEscapeIndexVal != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(value.Length, firstEscapeIndexVal);
+ 
+-                scoped Span<char> escapedValue;
+                 if (length > JsonConstants.StackallocCharThreshold)
+                 {
+                     valueArray = ArrayPool<char>.Shared.Rent(length);
+@@ -1273,11 +1276,12 @@ private void WriteStringEscapePropertyOrValue(scoped ReadOnlySpan<byte> utf8Prop
+                 value = escapedValue.Slice(0, written);
+             }
+ 
++            scoped Span<byte> escapedPropertyName;
++
+             if (firstEscapeIndexProp != -1)
+             {
+                 int length = JsonWriterHelper.GetMaxEscapedLength(utf8PropertyName.Length, firstEscapeIndexProp);
+ 
+-                scoped Span<byte> escapedPropertyName;
+                 if (length > JsonConstants.StackallocByteThreshold)
+                 {
+                     propertyArray = ArrayPool<byte>.Shared.Rent(length);
