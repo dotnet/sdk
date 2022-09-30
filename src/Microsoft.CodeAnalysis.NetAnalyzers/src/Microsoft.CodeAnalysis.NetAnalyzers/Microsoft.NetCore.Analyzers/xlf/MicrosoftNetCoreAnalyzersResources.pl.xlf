@@ -2109,27 +2109,27 @@
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Począwszy od platformy .NET 7 jawna konwersja „{0}” nie będzie zgłaszać przepełnienia w niezaznaczonym kontekście. Opatrz wyrażenie za pomocą instrukcji „checked”, aby przywrócić zachowanie platformy .NET 6.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionThrowsMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the explicit conversion '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Począwszy od platformy .NET 7 jawna konwersja „{0}” będzie zgłaszać przepełnienie w zaznaczonym kontekście. Opatrz wyrażenie za pomocą instrukcji „unchecked”, aby przywrócić zachowanie platformy .NET 6.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesDescription">
         <source>Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</source>
-        <target state="new">Some built in operators added in .NET 7 behave differently than the user defined operatorsi in .NET 6 and below. Some operators that used to throw in unchecked context while overflowing will not throw anymore unless wrapped within checked context, and some operators that not used to throw in checked context now would throw unless wrapped within unchecked context.</target>
+        <target state="translated">Niektóre wbudowane operatory dodane na platformie .NET 7 zachowują się inaczej niż operatory zdefiniowane przez użytkownika na platformie .NET 6 i niżej. Niektóre operatory, które zgłaszały niezaznaczony kontekst podczas przepełnienia, nie będą już jego zgłaszać, chyba że zostaną opatrzone w sprawdzony kontekst, a niektóre operatory, które nie były używane do zgłaszania sprawdzonego kontekstu, będą teraz go zgłaszać, chyba że zostaną opatrzone w niezaznaczony kontekst.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesOperatorThrowsMessage">
         <source>Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</source>
-        <target state="new">Starting with .NET 7 the operator '{0}' will throw when overflowing in a checked context. Wrap the expression with an 'unchecked' statement to restore the .NET 6 behavior.</target>
+        <target state="translated">Począwszy od platformy .NET 7, operator „{0}” będzie zgłaszać przepełnienie w zaznaczonym kontekście. Opatrz wyrażenie za pomocą instrukcji „unchecked”, aby przywrócić zachowanie platformy .NET 6.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesTitle">
         <source>Prevent from behavioral change</source>
-        <target state="new">Prevent from behavioral change</target>
+        <target state="translated">Zapobiegaj zmianie zachowania</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentToEnumHasFlagDescription">
