@@ -27,7 +27,7 @@ index fe8aac648cd..2f16902347b 100644
 +    <MicrosoftNetCompilersToolsetVersion>4.4.0-3.22472.1</MicrosoftNetCompilersToolsetVersion>
      <StaticCsVersion>0.2.0</StaticCsVersion>
      <!-- SDK dependencies -->
-     <MicrosoftDotNetApiCompatTaskVersion>7.0.100-rc.1.22402.1</MicrosoftDotNetApiCompatTaskVersion>
+     <MicrosoftDotNetApiCompatTaskVersion>8.0.100-alpha.1.22462.3</MicrosoftDotNetApiCompatTaskVersion>
 diff --git a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs b/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
 index c55ee607da7..4e1246b481b 100644
 --- a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
