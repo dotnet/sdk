@@ -72,7 +72,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                    '$(PublishAot)' == 'true'
                    )
                  )">
-    <RuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="$(NETCoreSdkRuntimeIdentifier.StartsWith('linux-musl'))">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PlatformTarget)' == ''">
