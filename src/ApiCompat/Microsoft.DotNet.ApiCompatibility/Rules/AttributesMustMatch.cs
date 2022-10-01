@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                     for (int i = 0; i < rightGroup.Attributes.Count; i++)
                     {
-                        if (!rightGroup.Seen[i])
+                        if (!rightGroup.Seen[i] && _settings.StrictMode)
                         {
                             // Attribute arguments exist on right but not left.
                             // Issue "changed" diagnostic.
