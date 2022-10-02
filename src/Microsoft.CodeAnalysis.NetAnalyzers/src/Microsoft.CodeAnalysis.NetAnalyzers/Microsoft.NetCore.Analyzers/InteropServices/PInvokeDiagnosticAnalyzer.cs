@@ -121,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
 
                 // CA2101 - Specify marshalling for PInvoke string arguments
-                if (dllImportData.BestFitMapping != false ||
+                if (dllImportData.BestFitMapping != false &&
                     context.Options.GetMSBuildPropertyValue(MSBuildPropertyOptionNames.InvariantGlobalization, context.Compilation) is not "true")
                 {
                     bool appliedCA2101ToMethod = false;

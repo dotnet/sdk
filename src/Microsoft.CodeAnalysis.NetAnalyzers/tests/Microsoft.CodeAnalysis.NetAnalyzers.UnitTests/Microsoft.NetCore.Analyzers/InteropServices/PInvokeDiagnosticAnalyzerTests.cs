@@ -640,6 +640,43 @@ End Class
                 BasicResult2101(22, 30));
         }
 
+        [Fact]
+        public async Task CA2101WithoutBestFitMappingCSharpTestAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
+using System.Text;
+
+class C
+{
+
+    [DllImport(""user32.dll"", BestFitMapping = false)]
+    private static extern void Method1(string s);
+
+    [DllImport(""user32.dll"", CharSet = CharSet.Ansi, BestFitMapping = false)]
+    private static extern void Method2(string s);
+
+    [DllImport(""user32.dll"", BestFitMapping = false)]
+    private static extern void Method3(StringBuilder s);
+
+    [DllImport(""user32.dll"", CharSet = CharSet.Ansi, BestFitMapping = false)]
+    private static extern void Method4(StringBuilder s);
+
+    [DllImport(""user32.dll"", BestFitMapping = false)]
+    private static extern string Method5();
+
+    [DllImport(""user32.dll"", BestFitMapping = false)]
+    private static extern StringBuilder Method6();
+
+    [DllImport(""user32.dll"", CharSet = CharSet.Ansi, BestFitMapping = false)]
+    private static extern string Method7();
+
+    [DllImport(""user32.dll"", CharSet = CharSet.Ansi, BestFitMapping = false)]
+    private static extern StringBuilder Method8();
+}
+");
+        }
+
         #endregion
     }
 }
