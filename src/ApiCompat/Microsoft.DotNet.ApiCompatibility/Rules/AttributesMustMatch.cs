@@ -175,7 +175,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         if (!rightGroup.Seen[i] && _settings.StrictMode)
                         {
                             // Attribute arguments exist on right but not left.
-                            // Issue "changed" diagnostic.
+                            // Left
+                            //   [Foo("a")]
+                            //   void F()
+                            // Right
+                            //   [Foo("a")]
+                            //   [Foo("b")]
+                            //   void F()
+                            // Issue "changed" diagnostic when not in strict mode.
                             AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, rightGroup.Attributes[i]);
                         }
                     }
