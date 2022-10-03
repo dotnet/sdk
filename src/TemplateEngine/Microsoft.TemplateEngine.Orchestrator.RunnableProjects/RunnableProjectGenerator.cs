@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 #pragma warning restore CS0618 // Type or member is obsolete
             }
 
-            return new CreationEffects2(changes, GetCreationResult(environmentSettings.Host.Logger, templateConfig, variables));
+            return new CreationEffects2(changes, GetCreationResult(templateConfig));
         }
 
         [Obsolete("Replaced by ParameterSetBuilder.CreateWithDefaults", true)]
@@ -335,7 +335,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 orchestrator.Run(runSpec, sourceDirectory, target);
             }
 
-            return GetCreationResult(environmentSettings.Host.Logger, runnableProjectConfig, variables);
+            return GetCreationResult(runnableProjectConfig);
         }
 
         private static IVariableCollection SetupVariables(IParameterSetData parameters, IVariableConfig variableConfig)
@@ -383,11 +383,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        private static ICreationResult GetCreationResult(ILogger logger, IRunnableProjectConfig runnableProjectConfig, IVariableCollection variables)
+        private static ICreationResult GetCreationResult(IRunnableProjectConfig runnableProjectConfig)
         {
-            return new CreationResult(
-                postActions: PostAction.ListFromModel(logger, runnableProjectConfig.PostActionModels, variables),
-                primaryOutputs: CreationPath.ListFromModel(logger, runnableProjectConfig.PrimaryOutputs, variables));
+            return new CreationResult(runnableProjectConfig.PostActions, runnableProjectConfig.PrimaryOutputs);
         }
 
         private IFile? FindBestHostTemplateConfigFile(IEngineEnvironmentSettings engineEnvironment, IFile config)

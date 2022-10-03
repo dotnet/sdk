@@ -32,9 +32,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyDictionary<string, string> Args { get; } = new Dictionary<string, string>();
 
-        internal static List<IPostAction> ListFromModel(ILogger logger, IReadOnlyList<PostActionModel> modelList, IVariableCollection rootVariableCollection)
+        internal static List<IPostAction> Evaluate(ILogger logger, IReadOnlyList<PostActionModel> modelList, IVariableCollection rootVariableCollection)
         {
-            List<IPostAction> actionList = new List<IPostAction>();
+            List<IPostAction> actionList = new();
 
             rootVariableCollection ??= new VariableCollection();
 

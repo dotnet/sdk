@@ -342,8 +342,8 @@ false,
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
             runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
-            runnableProjectConfig.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
-            runnableProjectConfig.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
+            runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
+            runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
         }
 
         [Fact]
@@ -378,7 +378,7 @@ false,
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
             runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
-            runnableProjectConfig.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
+            runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
         }
 
         [Fact]
