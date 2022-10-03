@@ -31,8 +31,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         private string? _description;
         private string? _sourceName;
 
-        internal TemplateConfigModel()
+        internal TemplateConfigModel(string identity)
         {
+            if (string.IsNullOrWhiteSpace(identity))
+            {
+                throw new ArgumentException($"'{nameof(identity)}' cannot be null or whitespace.", nameof(identity));
+            }
+
+            Identity = identity;
             Symbols = Array.Empty<BaseSymbol>();
         }
 
@@ -40,8 +46,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         {
             _logger = logger;
 
-            //TODO: improve validation not to allow null values here
-            Identity = source.ToString(nameof(Identity));
+            string? identity = source.ToString(nameof(Identity));
+            if (string.IsNullOrWhiteSpace(identity))
+            {
+                throw new TemplateAuthoringException($"'identity' is missing or is an empty string.", "identity");
+            }
+
+            Identity = identity!;
             Name = source.ToString(nameof(Name));
 
             Author = source.ToString(nameof(Author));
@@ -282,7 +293,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the template identity ("identity" JSON property) - a unique name for this template.
         /// </summary>
-        public string? Identity { get; internal init; }
+        public string Identity { get; }
 
         /// <summary>
         /// Gets the list of classifications of the template ("classifications" JSON property).
@@ -389,8 +400,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         {
             if (string.IsNullOrWhiteSpace(content))
             {
-                return new TemplateConfigModel();
+                throw new ArgumentException($"'{nameof(content)}' cannot be null or whitespace.", nameof(content));
             }
+
             using (TextReader tr = new StringReader(content))
             {
                 return FromTextReader(tr, logger, filename);

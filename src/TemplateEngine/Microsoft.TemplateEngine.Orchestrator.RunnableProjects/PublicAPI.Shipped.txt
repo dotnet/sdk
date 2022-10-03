@@ -102,7 +102,6 @@ Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfi
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.GlobalCustomOperations.get -> Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.CustomFileGlobModel?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.GroupIdentity.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Guids.get -> System.Collections.Generic.IReadOnlyList<System.Guid>!
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Identity.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Name.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PlaceholderFilename.get -> string?
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PostActionModels.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel!>!

@@ -316,9 +316,8 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            TemplateConfigModel baseConfig = new TemplateConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
-                Identity = "Test",
                 PostActionModels = new List<PostActionModel>
                 {
                     new PostActionModel()
@@ -348,9 +347,8 @@ false,
         [Fact]
         public void CanValidatePostActionWithDefaultInstructionLocalization()
         {
-            TemplateConfigModel baseConfig = new TemplateConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
-                Identity = "Test",
                 PostActionModels = new List<PostActionModel>
                 {
                     new PostActionModel()
@@ -384,9 +382,8 @@ false,
         [Fact]
         public void CannotValidatePostActionWithExtraInstructionLocalization()
         {
-            TemplateConfigModel baseConfig = new TemplateConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
-                Identity = "Test",
                 PostActionModels = new List<PostActionModel>
                 {
                     new PostActionModel()
@@ -438,9 +435,8 @@ false,
         [Fact]
         public void CannotValidateExtraPostActionLocalization()
         {
-            TemplateConfigModel baseConfig = new TemplateConfigModel()
+            TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
             {
-                Identity = "Test",
                 PostActionModels = new List<PostActionModel>
                 {
                     new PostActionModel()

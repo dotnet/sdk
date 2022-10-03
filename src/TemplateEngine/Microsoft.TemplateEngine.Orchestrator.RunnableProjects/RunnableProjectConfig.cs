@@ -79,7 +79,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             CheckGeneratorVersionRequiredByTemplate();
             PerformTemplateValidation();
-            Identity = _configuration.Identity!;
             _parameters = ExtractParameters(_configuration);
 
             if (_localeConfigFile != null)
@@ -110,12 +109,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _logger = _settings.Host.LoggerFactory.CreateLogger<RunnableProjectConfig>();
             _generator = generator;
             _configuration = configuration;
-            Identity = configuration.Identity ?? throw new ArgumentException($"{nameof(configuration)} should have identity set.");
             _sourceFile = configurationFile;
             _parameters = ExtractParameters(configuration);
         }
-
-        public string Identity { get; }
 
         public IReadOnlyList<PostActionModel> PostActionModels => _configuration.PostActionModels;
 

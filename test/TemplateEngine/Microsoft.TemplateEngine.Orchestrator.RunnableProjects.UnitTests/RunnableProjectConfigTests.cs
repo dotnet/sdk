@@ -93,9 +93,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             string contentFileNamePrefix = "content - ";
             JObject choiceParam = JObject.Parse(paramDefintion);
             choiceParam["AllowMultipleValues"] = isMultichoice;
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Name = "name",
                 ShortNameList = new[] { "shortName" },
                 Symbols = new[]

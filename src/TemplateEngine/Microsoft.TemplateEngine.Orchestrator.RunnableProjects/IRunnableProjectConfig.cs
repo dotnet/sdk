@@ -18,8 +18,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         IReadOnlyList<FileSourceMatchInfo> Sources { get; }
 
-        string Identity { get; }
-
         IReadOnlyList<string> IgnoreFileNames { get; }
 
         IReadOnlyList<PostActionModel> PostActionModels { get; }

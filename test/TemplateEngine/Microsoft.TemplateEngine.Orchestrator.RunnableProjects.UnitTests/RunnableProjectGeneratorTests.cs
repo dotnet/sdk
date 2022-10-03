@@ -38,9 +38,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             Guid inputTestGuid = new Guid("12aa8f4e-a4aa-4ac1-927c-94cb99485ef1");
             string contentFileNamePrefix = "content - ";
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Guids = new List<Guid>()
                 {
                     inputTestGuid

@@ -28,9 +28,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public async Task SourceConfigExcludesAreOverriddenByIncludes()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            TemplateConfigModel config = new()
+            TemplateConfigModel config = new("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()
@@ -80,9 +79,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            TemplateConfigModel config = new()
+            TemplateConfigModel config = new("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()
@@ -134,9 +132,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public async Task CopyOnlyWithParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()
@@ -185,9 +182,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public async Task CopyOnlyWithWildcardAndParentIncludeActuallyCopiesFile()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()
@@ -236,9 +232,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         public async Task IncludeModifierOverridesPreviousExcludeModifierTemplateTest()
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()
@@ -294,9 +289,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         {
             string sourceBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
-            TemplateConfigModel config = new TemplateConfigModel()
+            TemplateConfigModel config = new TemplateConfigModel("test")
             {
-                Identity = "test",
                 Name = "test",
                 ShortNameList = new[] { "test" },
                 Sources = new List<ExtendedFileSource>()

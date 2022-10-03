@@ -918,7 +918,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [Fact]
         public void DefaultSymbolsaAreSetup()
         {
-            TemplateConfigModel configModel = new TemplateConfigModel();
+            TemplateConfigModel configModel = new TemplateConfigModel("test");
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             Assert.Single(configModel.Symbols, s => s.Name == "name");
             if (isWindows)

@@ -205,7 +205,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                                     localizations.Add(new LocalizationLocator(
                                         locale,
                                         locFile.FullPath,
-                                        templateConfiguration.Identity,
+                                        templateConfiguration.ConfigurationModel.Identity,
                                         locModel.Author ?? string.Empty,
                                         locModel.Name ?? string.Empty,
                                         locModel.Description ?? string.Empty,
