@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             Symbols = Array.Empty<BaseSymbol>();
         }
 
-        private TemplateConfigModel(JObject source, ILogger? logger, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
+        private TemplateConfigModel(JObject source, ILogger? logger, string? baselineName = null, string? filename = null)
         {
             _logger = logger;
 
@@ -72,9 +72,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             IBaselineInfo? baseline = null;
             BaselineInfo = BaselineInfoFromJObject(source.PropertiesOf("baselines"));
 
-            if (!string.IsNullOrEmpty(configModifiers?.BaselineName))
+            if (!string.IsNullOrEmpty(baselineName))
             {
-                BaselineInfo.TryGetValue(configModifiers!.BaselineName, out baseline);
+                BaselineInfo.TryGetValue(baselineName!, out baseline);
             }
 
             Dictionary<string, BaseSymbol> symbols = new(StringComparer.Ordinal);
@@ -405,9 +405,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             }
         }
 
-        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, ISimpleConfigModifiers? configModifiers = null, string? filename = null)
+        internal static TemplateConfigModel FromJObject(JObject source, ILogger? logger = null, string? baselineName = null, string? filename = null)
         {
-            return new TemplateConfigModel(source, logger, configModifiers, filename);
+            return new TemplateConfigModel(source, logger, baselineName, filename);
         }
 
         /// <summary>

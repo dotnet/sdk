@@ -71,15 +71,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _hostConfigFile = hostConfigFile;
             _localeConfigFile = localeConfigFile;
 
-            ISimpleConfigModifiers? configModifiers = null;
-            if (!string.IsNullOrWhiteSpace(baselineName))
-            {
-                configModifiers = new SimpleConfigModifiers(baselineName!);
-            }
             _configuration = TemplateConfigModel.FromJObject(
                 MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile),
                 _settings.Host.LoggerFactory.CreateLogger<TemplateConfigModel>(),
-                configModifiers,
+                baselineName,
                 templateFile.GetDisplayPath());
 
             CheckGeneratorVersionRequiredByTemplate();
