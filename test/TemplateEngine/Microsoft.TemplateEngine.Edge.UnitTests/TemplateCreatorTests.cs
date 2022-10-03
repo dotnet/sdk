@@ -8,9 +8,7 @@ using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
@@ -24,76 +22,76 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        private const string TemplateConfigBooleanParam = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""paramA"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    }
-    }
-}
-";
+        private const string TemplateConfigBooleanParam = /*lang=json,strict*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "paramA": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    }
+                }
+            }
+            """;
 
-        private const string? XmlConditionWithinMsBuildConditionSource = @"
-<Project>
-    <ItemGroup Condition=""'$(paramA)' == 'True'"">
-        <!-- X -->
-        <!--#if (paramA)-->
-        <Item name=""a"" />
-        <!--#endif-->
-        <!--#if (!paramA)-->
-        <Item name=""b"" />
-        <!--#endif-->
-    </ItemGroup>
-</Project>
-";
+        private const string? XmlConditionWithinMsBuildConditionSource = """
+            <Project>
+                <ItemGroup Condition="'$(paramA)' == 'True'">
+                    <!-- X -->
+                    <!--#if (paramA)-->
+                    <Item name="a" />
+                    <!--#endif-->
+                    <!--#if (!paramA)-->
+                    <Item name="b" />
+                    <!--#endif-->
+                </ItemGroup>
+            </Project>
+            """;
 
-        private const string XmlConditionWithinMsBuildConditionOutputOnFalse = @"
-<Project>
-</Project>
-";
+        private const string XmlConditionWithinMsBuildConditionOutputOnFalse = """
+            <Project>
+            </Project>
+            """;
 
-        private const string XmlConditionWithinMsBuildConditionOutputOnTrue = @"
-<Project>
-    <ItemGroup>
-        <!-- X -->
-        <Item name=""a"" />
-    </ItemGroup>
-</Project>
-";
+        private const string XmlConditionWithinMsBuildConditionOutputOnTrue = """
+            <Project>
+                <ItemGroup>
+                    <!-- X -->
+                    <Item name="a" />
+                </ItemGroup>
+            </Project>
+            """;
 
-        private const string? MsBuildConditionWithinXmlConditionSource = @"
-<Project>
-    <!-- X -->
-    <!--#if (paramA)-->
-    <ItemGroup Condition=""'$(paramA)' == 'True'"">
-        <Item name=""a"" />
-    </ItemGroup>
-    <ItemGroup Condition=""'$(paramA)' == 'False'"">
-        <Item name=""b"" />
-    </ItemGroup>
-    <!--#endif-->
-</Project>
-";
+        private const string? MsBuildConditionWithinXmlConditionSource = """
+            <Project>
+                <!-- X -->
+                <!--#if (paramA)-->
+                <ItemGroup Condition="'$(paramA)' == 'True'">
+                    <Item name="a" />
+                </ItemGroup>
+                <ItemGroup Condition="'$(paramA)' == 'False'">
+                    <Item name="b" />
+                </ItemGroup>
+                <!--#endif-->
+            </Project>
+            """;
 
-        private const string MsBuildConditionWithinXmlConditionOutputOnFalse = @"
-<Project>
-    <!-- X -->
-</Project>
-";
+        private const string MsBuildConditionWithinXmlConditionOutputOnFalse = """
+            <Project>
+                <!-- X -->
+            </Project>
+            """;
 
-        private const string MsBuildConditionWithinXmlConditionOutputOnTrue = @"
-<Project>
-    <!-- X -->
-    <ItemGroup>
-        <Item name=""a"" />
-    </ItemGroup>
-</Project>
-";
+        private const string MsBuildConditionWithinXmlConditionOutputOnTrue = """
+            <Project>
+                <!-- X -->
+                <ItemGroup>
+                    <Item name="a" />
+                </ItemGroup>
+            </Project>
+            """;
 
         [Theory]
         [InlineData(false, XmlConditionWithinMsBuildConditionSource, XmlConditionWithinMsBuildConditionOutputOnFalse)]
@@ -117,37 +115,37 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 parameters1: parameters);
         }
 
-        private const string TemplateConfigQuotelessLiteralsEnabled = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""ChoiceParam"": {
-	      ""type"": ""parameter"",
-	      ""description"": ""sample switch"",
-	      ""datatype"": ""choice"",
-          ""enableQuotelessLiterals"": true,
-	      ""choices"": [
-		    {
-		      ""choice"": ""FirstChoice"",
-		      ""description"": ""First Sample Choice""
-		    },
-		    {
-		      ""choice"": ""SecondChoice"",
-		      ""description"": ""Second Sample Choice""
-		    },
-		    {
-		      ""choice"": ""ThirdChoice"",
-		      ""description"": ""Third Sample Choice""
-		    }
-	      ],
-          ""defaultValue"": ""ThirdChoice"",
-          ""defaultIfOptionWithoutValue"": ""SecondChoice""
-	    }
-    }
-}
-";
+        private const string TemplateConfigQuotelessLiteralsEnabled = /*lang=json,strict*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "ChoiceParam": {
+                      "type": "parameter",
+                      "description": "sample switch",
+                      "datatype": "choice",
+                      "enableQuotelessLiterals": true,
+                      "choices": [
+                        {
+                          "choice": "FirstChoice",
+                          "description": "First Sample Choice"
+                        },
+                        {
+                          "choice": "SecondChoice",
+                          "description": "Second Sample Choice"
+                        },
+                        {
+                          "choice": "ThirdChoice",
+                          "description": "Third Sample Choice"
+                        }
+                      ],
+                      "defaultValue": "ThirdChoice",
+                      "defaultIfOptionWithoutValue": "SecondChoice"
+                    }
+                }
+            }
+            """;
 
         [Theory]
         // basic choice
@@ -160,17 +158,17 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("", "UNKNOWN", false)]
         public async void InstantiateAsync_ParamsProperlyHonored(string? parameterValue, string expectedOutput, bool instantiateShouldFail)
         {
-            string sourceSnippet = @"
-#if( ChoiceParam == FirstChoice )
-FIRST
-#elseif (ChoiceParam == SecondChoice )
-SECOND
-#elseif (ChoiceParam == ThirdChoice )
-THIRD
-#else
-UNKNOWN
-#endif
-";
+            string sourceSnippet = """
+                #if( ChoiceParam == FirstChoice )
+                FIRST
+                #elseif (ChoiceParam == SecondChoice )
+                SECOND
+                #elseif (ChoiceParam == ThirdChoice )
+                THIRD
+                #else
+                UNKNOWN
+                #endif
+                """;
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
                 { "ChoiceParam", parameterValue }
@@ -185,29 +183,29 @@ UNKNOWN
                 parameters1: parameters);
         }
 
-        private const string TemplateConfigCyclicParamsDependency = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""A"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool"",
-          ""isEnabled"": ""!C && B != false"",
-	    },
-        ""B"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool"",
-          ""isEnabled"": ""A != true || C"",
-	    },
-        ""C"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-    }
-}
-";
+        private const string TemplateConfigCyclicParamsDependency = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "A": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "isEnabled": "!C && B != false",
+                    },
+                    "B": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "isEnabled": "A != true || C",
+                    },
+                    "C": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                }
+            }
+            """;
 
         [Theory]
         [InlineData(false, true, false, "B,", false)]
@@ -220,19 +218,19 @@ UNKNOWN
             // Template content preparation
             //
 
-            string sourceSnippet = @"
-#if( A )
-A,
-#endif
+            string sourceSnippet = """
+                #if( A )
+                A,
+                #endif
 
-#if( B )
-B,
-#endif
+                #if( B )
+                B,
+                #endif
 
-#if( C )
-C
-#endif
-";
+                #if( C )
+                C
+                #endif
+                """;
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
                 { "A", a_val.ToString() },
@@ -250,32 +248,32 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 parameters1: parameters);
         }
 
-        private const string TemplateConfigIsRequiredCondition = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""A"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool"",
-          ""isRequired"": ""!C && B != false"",
-          ""defaultValue"": ""false"",
-	    },
-        ""B"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool"",
-          ""isRequired"": ""A != true || C"",
-          ""defaultValue"": ""true"",
-	    },
-        ""C"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool"",
-          ""defaultValue"": ""false"",
-	    },
-    }
-}
-";
+        private const string TemplateConfigIsRequiredCondition = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "A": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "isRequired": "!C && B != false",
+                      "defaultValue": "false",
+                    },
+                    "B": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "isRequired": "A != true || C",
+                      "defaultValue": "true",
+                    },
+                    "C": {
+                      "type": "parameter",
+                      "datatype": "bool",
+                      "defaultValue": "false",
+                    },
+                }
+            }
+            """;
 
         [Theory]
         [InlineData(false, true, false, "B,", false, null)]
@@ -294,19 +292,19 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             // Template content preparation
             //
 
-            string sourceSnippet = @"
-#if( A )
-A,
-#endif
+            string sourceSnippet = """
+                #if( A )
+                A,
+                #endif
 
-#if( B )
-B,
-#endif
+                #if( B )
+                B,
+                #endif
 
-#if( C )
-C
-#endif
-";
+                #if( C )
+                C
+                #endif
+                """;
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
                 { "A", a_val?.ToString() },
@@ -326,35 +324,35 @@ C
                 parameters1: parameters);
         }
 
-        private const string TemplateConfigEnabledAndRequiredConditionsTogether = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""A"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""string"",
-          ""isEnabled"": ""A_enable"",
-          ""isRequired"": ""true"",
-	    },
-        ""B"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""string"",
-          ""isEnabled"": ""B_enable"",
-          ""isRequired"": true
-	    },
-        ""A_enable"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-        ""B_enable"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-    }
-}
-";
+        private const string TemplateConfigEnabledAndRequiredConditionsTogether = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "A": {
+                      "type": "parameter",
+                      "datatype": "string",
+                      "isEnabled": "A_enable",
+                      "isRequired": "true",
+                    },
+                    "B": {
+                      "type": "parameter",
+                      "datatype": "string",
+                      "isEnabled": "B_enable",
+                      "isRequired": true
+                    },
+                    "A_enable": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                    "B_enable": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                }
+            }
+            """;
 
         [Theory]
         [InlineData(false, false, "", false, null)]
@@ -367,19 +365,19 @@ C
             // Template content preparation
             //
 
-            string sourceSnippet = @"
-#if( A )
-A,
-#endif
+            string sourceSnippet = """
+                #if( A )
+                A,
+                #endif
 
-#if( B )
-B,
-#endif
+                #if( B )
+                B,
+                #endif
 
-#if( C )
-C
-#endif
-";
+                #if( C )
+                C
+                #endif
+                """;
             IReadOnlyDictionary<string, string?> parameters = new Dictionary<string, string?>()
             {
                 { "A_enable", a_enable_val.ToString() },
@@ -395,39 +393,39 @@ C
                 parameters1: parameters);
         }
 
-        private const string TemplateConfigForExternalConditionsEvaluation = @"
-{
-    ""identity"": ""test.template"",
-    ""name"": ""tst"",
-    ""shortName"": ""tst"",
-    ""symbols"": {
-	    ""parA"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""string"",
-          ""isEnabled"": ""A_enable"",
-          ""isRequired"": ""true || true"",
-	    },
-        ""parB"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""string"",
-          ""isEnabled"": ""B_enable"",
-          ""isRequired"": true
-	    },
-        ""C"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-        ""A_enable"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-        ""B_enable"": {
-	      ""type"": ""parameter"",
-	      ""datatype"": ""bool""
-	    },
-    }
-}
-";
+        private const string TemplateConfigForExternalConditionsEvaluation = /*lang=json*/ """
+            {
+                "identity": "test.template",
+                "name": "tst",
+                "shortName": "tst",
+                "symbols": {
+                    "parA": {
+                      "type": "parameter",
+                      "datatype": "string",
+                      "isEnabled": "A_enable",
+                      "isRequired": "true || true",
+                    },
+                    "parB": {
+                      "type": "parameter",
+                      "datatype": "string",
+                      "isEnabled": "B_enable",
+                      "isRequired": true
+                    },
+                    "C": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                    "A_enable": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                    "B_enable": {
+                      "type": "parameter",
+                      "datatype": "bool"
+                    },
+                }
+            }
+            """;
 
         [Theory]
         [InlineData(null, true, false, null, false, null, /*c_val*/ true, "C", false, "")]
@@ -451,19 +449,19 @@ C
             // Template content preparation
             //
 
-            string sourceSnippet = @"
-#if( parA )
-parA,
-#endif
+            string sourceSnippet = """
+                #if( parA )
+                parA,
+                #endif
 
-#if( parB )
-parB,
-#endif
+                #if( parB )
+                parB,
+                #endif
 
-#if( C )
-C
-#endif
-";
+                #if( C )
+                C
+                #endif
+                """;
 
             List<InputDataBag> parameters = new(
                 new[]

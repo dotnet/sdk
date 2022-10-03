@@ -72,7 +72,6 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
         /// <param name="logger"></param>
         /// <param name="text">The string to be inspected and turned into expression.</param>
         /// <param name="variables">Variables to be substituted within the expression.</param>
-        /// <param name="referencedVariablesKeys">If passed (if not null) it will be populated with references to variables used within the inspected expression.</param>
         /// <returns></returns>
         public static bool EvaluateFromString(ILogger logger, string text, IVariableCollection variables)
         {
