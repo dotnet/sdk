@@ -59,7 +59,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
         private IGlobalRunConfig? _operationConfig;
-        private IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>>? _specialOperationConfig;
+        private IReadOnlyList<(string Glob, IGlobalRunConfig RunConfig)>? _specialOperationConfig;
         private IReadOnlyList<IReplacementTokens>? _symbolFilenameReplacements;
 
         internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, IFile templateFile, IFile? hostConfigFile = null, IFile? localeConfigFile = null, string? baselineName = null)
@@ -174,7 +174,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IGlobalRunConfig OperationConfig
+        public IGlobalRunConfig GlobalOperationConfig
         {
             get
             {
@@ -188,14 +188,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> SpecialOperationConfig
+        public IReadOnlyList<(string Glob, IGlobalRunConfig RunConfig)> SpecialOperationConfig
         {
             get
             {
                 if (_specialOperationConfig == null)
                 {
                     IReadOnlyList<OperationConfigDefault> defaultSpecials = OperationConfigDefault.DefaultSpecialConfig;
-                    List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
+                    List<(string Glob, IGlobalRunConfig RunConfig)> specialOperationConfig = new();
 
                     // put the custom configs first in the list
                     HashSet<string> processedGlobs = new HashSet<string>();
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             defaultParams ??= OperationConfigDefault.Default;
 
                             IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
-                            specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
+                            specialOperationConfig.Add((customGlobModel.Glob, runConfig));
                         }
 
                         // mark this special as already processed, so it doesn't get included with the defaults
@@ -228,7 +228,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         }
 
                         IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, null);
-                        specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(defaultParams.Glob, runConfig));
+                        specialOperationConfig.Add((defaultParams.Glob, runConfig));
                     }
 
                     _specialOperationConfig = specialOperationConfig;

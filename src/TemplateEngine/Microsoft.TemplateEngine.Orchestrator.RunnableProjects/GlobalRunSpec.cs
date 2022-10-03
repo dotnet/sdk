@@ -24,9 +24,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IDirectory templateRoot,
             IComponentManager componentManager,
             IVariableCollection variables,
-            IGlobalRunConfig globalConfig,
-            IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> fileGlobConfigs,
-            IReadOnlyList<string> ignoreFileNames)
+            IRunnableProjectConfig configuration)
         {
             List<IOperationConfig> operationConfigReaders = new List<IOperationConfig>(componentManager.OfType<IOperationConfig>());
             Dictionary<string, IOperationConfig> operationConfigLookup = new Dictionary<string, IOperationConfig>();
@@ -39,23 +37,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _operationConfigLookup = operationConfigLookup;
 
             RootVariableCollection = variables;
-            IgnoreFileNames = ignoreFileNames;
-            Operations = ResolveOperations(globalConfig, templateRoot, variables);
+            IgnoreFileNames = configuration.IgnoreFileNames;
+            Operations = ResolveOperations(configuration.GlobalOperationConfig, templateRoot, variables);
             List<KeyValuePair<IPathMatcher, IRunSpec>> specials = new List<KeyValuePair<IPathMatcher, IRunSpec>>();
 
-            if (fileGlobConfigs != null)
+            if (configuration.SpecialOperationConfig != null)
             {
-                foreach (KeyValuePair<string, IGlobalRunConfig> specialEntry in fileGlobConfigs)
+                foreach ((string glob, IGlobalRunConfig runConfig) in configuration.SpecialOperationConfig)
                 {
                     IReadOnlyList<IOperationProvider> specialOps = Array.Empty<IOperationProvider>();
 
-                    if (specialEntry.Value != null)
+                    if (runConfig != null)
                     {
-                        specialOps = ResolveOperations(specialEntry.Value, templateRoot, variables);
+                        specialOps = ResolveOperations(runConfig, templateRoot, variables);
                     }
 
-                    RunSpec spec = new RunSpec(specialOps, specialEntry.Value?.VariableSetup.FallbackFormat);
-                    specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(specialEntry.Key), spec));
+                    RunSpec spec = new(specialOps, runConfig?.VariableSetup.FallbackFormat);
+                    specials.Add(new KeyValuePair<IPathMatcher, IRunSpec>(new GlobbingPatternMatcher(glob), spec));
                 }
             }
 

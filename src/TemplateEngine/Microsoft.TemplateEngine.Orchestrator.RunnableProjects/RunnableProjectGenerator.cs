@@ -114,16 +114,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 throw new InvalidOperationException($"{nameof(templateData.TemplateSourceRoot)} cannot be null to continue.");
             }
 
-            IVariableCollection variables = SetupVariables(parameters, templateConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(parameters, templateConfig.GlobalOperationConfig.VariableSetup);
             await templateConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            ProcessMacros(environmentSettings, templateConfig.OperationConfig, variables);
+            ProcessMacros(environmentSettings, templateConfig.GlobalOperationConfig, variables);
             templateConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, variables, templateConfig.OperationConfig, templateConfig.SpecialOperationConfig, templateConfig.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, variables, templateConfig);
             List<IFileChange2> changes = new List<IFileChange2>();
 
             foreach (FileSourceMatchInfo source in templateConfig.Sources)
@@ -310,17 +310,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            IVariableCollection variables = SetupVariables(parameters, runnableProjectConfig.OperationConfig.VariableSetup);
+            IVariableCollection variables = SetupVariables(parameters, runnableProjectConfig.GlobalOperationConfig.VariableSetup);
             await runnableProjectConfig.EvaluateBindSymbolsAsync(environmentSettings, variables, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            ProcessMacros(environmentSettings, runnableProjectConfig.OperationConfig, variables);
+            ProcessMacros(environmentSettings, runnableProjectConfig.GlobalOperationConfig, variables);
             runnableProjectConfig.Evaluate(variables);
 
             IOrchestrator basicOrchestrator = new Core.Util.Orchestrator(environmentSettings.Host.Logger, environmentSettings.Host.FileSystem);
             RunnableProjectOrchestrator orchestrator = new RunnableProjectOrchestrator(basicOrchestrator);
 
-            GlobalRunSpec runSpec = new GlobalRunSpec(templateSourceRoot, environmentSettings.Components, variables, runnableProjectConfig.OperationConfig, runnableProjectConfig.SpecialOperationConfig, runnableProjectConfig.IgnoreFileNames);
+            GlobalRunSpec runSpec = new GlobalRunSpec(templateSourceRoot, environmentSettings.Components, variables, runnableProjectConfig);
 
             foreach (FileSourceMatchInfo source in runnableProjectConfig.Sources)
             {

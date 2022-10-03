@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
             try
             {
-                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).OperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).GlobalOperationConfig;
             }
             catch
             {
@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
             try
             {
-                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).OperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).GlobalOperationConfig;
             }
             catch
             {

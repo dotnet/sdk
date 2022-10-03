@@ -12,9 +12,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal interface IRunnableProjectConfig
     {
-        IReadOnlyList<KeyValuePair<string, IGlobalRunConfig>> SpecialOperationConfig { get; }
+        /// <summary>
+        /// Gets the list of <see cref="IGlobalRunConfig"/> to be applied to specific files included in glob.
+        /// </summary>
+        IReadOnlyList<(string Glob, IGlobalRunConfig RunConfig)> SpecialOperationConfig { get; }
 
-        IGlobalRunConfig OperationConfig { get; }
+        /// <summary>
+        /// Gets the <see cref="IGlobalRunConfig"/> to be applied to all template files.
+        /// </summary>
+        IGlobalRunConfig GlobalOperationConfig { get; }
 
         IReadOnlyList<FileSourceMatchInfo> Sources { get; }
 
