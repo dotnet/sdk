@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             GlobalRunSpec runSpec = new GlobalRunSpec(templateData.TemplateSourceRoot, environmentSettings.Components, variables, templateConfig);
             List<IFileChange2> changes = new List<IFileChange2>();
 
-            foreach (FileSourceMatchInfo source in templateConfig.Sources)
+            foreach (FileSourceMatchInfo source in templateConfig.EvaluatedSources)
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);
@@ -322,7 +322,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             GlobalRunSpec runSpec = new GlobalRunSpec(templateSourceRoot, environmentSettings.Components, variables, runnableProjectConfig);
 
-            foreach (FileSourceMatchInfo source in runnableProjectConfig.Sources)
+            foreach (FileSourceMatchInfo source in runnableProjectConfig.EvaluatedSources)
             {
                 runSpec.SetupFileSource(source);
                 string target = Path.Combine(targetDirectory, source.Target);

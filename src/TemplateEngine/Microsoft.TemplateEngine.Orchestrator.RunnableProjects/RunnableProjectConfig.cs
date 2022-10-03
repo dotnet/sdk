@@ -123,56 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public IReadOnlyList<string> IgnoreFileNames => !string.IsNullOrWhiteSpace(_configuration.PlaceholderFilename) ? new[] { _configuration.PlaceholderFilename! } : DefaultPlaceholderFilenames;
 
-        public IReadOnlyList<FileSourceMatchInfo> Sources
-        {
-            get
-            {
-                if (_sources == null)
-                {
-                    if (SourceFile == null)
-                    {
-                        throw new NotSupportedException($"{nameof(SourceFile)} should be set for sources processing.");
-                    }
-                    List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
-
-                    foreach (ExtendedFileSource source in _configuration.Sources)
-                    {
-                        IReadOnlyList<string> includePattern = TryReadConfigFromFile(source.Include, SourceFile, IncludePatternDefaults);
-                        IReadOnlyList<string> excludePattern = TryReadConfigFromFile(source.Exclude, SourceFile, ExcludePatternDefaults);
-                        IReadOnlyList<string> copyOnlyPattern = TryReadConfigFromFile(source.CopyOnly, SourceFile, CopyOnlyPatternDefaults);
-                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-                        IReadOnlyDictionary<string, string> renamePatterns = source.Rename;
-                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
-                            source.Source,
-                            source.Target,
-                            topLevelEvaluable,
-                            renamePatterns,
-                            new List<FileSourceEvaluable>());
-                        sources.Add(matchInfo);
-                    }
-
-                    if (sources.Count == 0)
-                    {
-                        IReadOnlyList<string> includePattern = IncludePatternDefaults;
-                        IReadOnlyList<string> excludePattern = ExcludePatternDefaults;
-                        IReadOnlyList<string> copyOnlyPattern = CopyOnlyPatternDefaults;
-                        FileSourceEvaluable topLevelEvaluable = new FileSourceEvaluable(includePattern, excludePattern, copyOnlyPattern);
-
-                        FileSourceMatchInfo matchInfo = new FileSourceMatchInfo(
-                            "./",
-                            "./",
-                            topLevelEvaluable,
-                            new Dictionary<string, string>(StringComparer.Ordinal),
-                            new List<FileSourceEvaluable>());
-                        sources.Add(matchInfo);
-                    }
-
-                    _sources = sources;
-                }
-
-                return _sources;
-            }
-        }
+        public IReadOnlyList<FileSourceMatchInfo> EvaluatedSources => _sources ?? throw new InvalidOperationException($"{nameof(Evaluate)} should be called before accessing the property.");
 
         public IGlobalRunConfig GlobalOperationConfig
         {
@@ -1028,7 +979,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 errors.Add(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource);
             }
             // check if any sources get out of the mount point
-            foreach (FileSourceMatchInfo source in Sources)
+            foreach (ExtendedFileSource source in ConfigurationModel.Sources)
             {
                 try
                 {

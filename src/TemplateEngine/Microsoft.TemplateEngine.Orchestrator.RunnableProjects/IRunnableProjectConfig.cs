@@ -22,7 +22,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// </summary>
         IGlobalRunConfig GlobalOperationConfig { get; }
 
-        IReadOnlyList<FileSourceMatchInfo> Sources { get; }
+        /// <summary>
+        /// Gets the list of evaluated sources based on configuration. <see cref="Evaluate(IVariableCollection)"/> method should be called first before accessing it.
+        /// </summary>
+        IReadOnlyList<FileSourceMatchInfo> EvaluatedSources { get; }
 
         IReadOnlyList<string> IgnoreFileNames { get; }
 
