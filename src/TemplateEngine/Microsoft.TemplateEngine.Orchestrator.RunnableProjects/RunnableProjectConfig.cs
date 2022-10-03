@@ -55,7 +55,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private readonly IFile? _sourceFile;
         private readonly IFile? _localeConfigFile;
         private readonly IFile? _hostConfigFile;
-        private readonly IReadOnlyDictionary<string, Parameter> _parameters;
 
         private IReadOnlyList<FileSourceMatchInfo>? _sources;
         private IGlobalRunConfig? _operationConfig;
@@ -79,7 +78,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
             CheckGeneratorVersionRequiredByTemplate();
             PerformTemplateValidation();
-            _parameters = ExtractParameters(_configuration);
 
             if (_localeConfigFile != null)
             {
@@ -89,7 +87,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     if (VerifyLocalizationModel(locModel))
                     {
                         _configuration.Localize(locModel);
-                        _parameters = LocalizeParameters(locModel, _parameters);
                     }
                 }
                 catch (Exception ex)
@@ -110,7 +107,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _generator = generator;
             _configuration = configuration;
             _sourceFile = configurationFile;
-            _parameters = ExtractParameters(configuration);
         }
 
         public IReadOnlyList<PostActionModel> PostActionModels => _configuration.PostActionModels;
@@ -189,8 +185,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        internal Parameter NameParameter => _parameters.Values.First(p => p.IsName);
-
         internal IReadOnlyList<IReplacementTokens> SymbolFilenameReplacements
         {
             get
@@ -226,7 +220,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 fileGlobModel.EvaluateCondition(_settings.Host.Logger, rootVariableCollection);
             }
 
-            rootVariableCollection.TryGetValue(NameParameter.Name, out object? resolvedNameParamValue);
+            rootVariableCollection.TryGetValue(ConfigurationModel.NameSymbol.Name, out object? resolvedNameParamValue);
 
             _sources = EvaluateSources(rootVariableCollection, resolvedNameParamValue);
 
@@ -334,89 +328,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 _logger.LogWarning(stringBuilder.ToString());
             }
             return validModel;
-        }
-
-        private static IReadOnlyDictionary<string, Parameter> ExtractParameters(TemplateConfigModel configuration)
-        {
-            Dictionary<string, Parameter> parameters = new Dictionary<string, Parameter>();
-            foreach (BaseValueSymbol baseSymbol in configuration.Symbols.OfType<BaseValueSymbol>())
-            {
-                bool isName = baseSymbol == configuration.NameSymbol;
-
-                Parameter parameter = new Parameter(baseSymbol.Name, baseSymbol.Type, baseSymbol.DataType!)
-                {
-                    DefaultValue = baseSymbol.DefaultValue ?? (!baseSymbol.IsRequired ? baseSymbol.Replaces : null),
-                    IsName = isName,
-                    IsVariable = true,
-                    Name = baseSymbol.Name,
-                    Precedence = new TemplateParameterPrecedence(baseSymbol.IsRequired ? PrecedenceDefinition.Required : isName ? PrecedenceDefinition.Implicit : PrecedenceDefinition.Optional),
-                };
-
-                if (baseSymbol is ParameterSymbol parameterSymbol)
-                {
-                    parameter.Precedence = parameterSymbol.Precedence;
-                    parameter.Description = parameterSymbol.Description;
-                    parameter.Choices = parameterSymbol.Choices;
-                    parameter.DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue;
-                    parameter.DisplayName = parameterSymbol.DisplayName;
-                    parameter.EnableQuotelessLiterals = parameterSymbol.EnableQuotelessLiterals;
-                    parameter.AllowMultipleValues = parameterSymbol.AllowMultipleValues;
-                }
-
-                parameters[baseSymbol.Name] = parameter;
-            }
-
-            return parameters;
-        }
-
-        private static IReadOnlyDictionary<string, Parameter> LocalizeParameters(ILocalizationModel localizationModel, IReadOnlyDictionary<string, Parameter> parameters)
-        {
-            Dictionary<string, Parameter> localizedParameters = new();
-
-            foreach (var parameterPair in parameters)
-            {
-                Dictionary<string, ParameterChoice>? localizedChoices = null;
-
-                Parameter parameter = parameterPair.Value;
-                if (!localizationModel.ParameterSymbols.TryGetValue(parameter.Name, out IParameterSymbolLocalizationModel? localization))
-                {
-                    // There is no localization for this parameter. Use the parameter as is.
-                    localizedParameters.Add(parameterPair.Key, parameter);
-                    continue;
-                }
-                if (parameter.IsChoice() && parameter.Choices != null)
-                {
-                    localizedChoices = new Dictionary<string, ParameterChoice>();
-                    foreach (KeyValuePair<string, ParameterChoice> templateChoice in parameter.Choices)
-                    {
-                        ParameterChoice localizedChoice = new ParameterChoice(
-                            templateChoice.Value.DisplayName,
-                            templateChoice.Value.Description);
-
-                        if (localization.Choices.TryGetValue(templateChoice.Key, out ParameterChoiceLocalizationModel locModel))
-                        {
-                            localizedChoice.Localize(locModel);
-                        }
-                        localizedChoices.Add(templateChoice.Key, localizedChoice);
-                    }
-                }
-
-                Parameter localizedParameter = new Parameter(parameter.Name, parameter.Type, parameter.DataType)
-                {
-                    DisplayName = localization?.DisplayName ?? parameter.DisplayName,
-                    Description = localization?.Description ?? parameter.Description,
-                    DefaultValue = parameter.DefaultValue,
-                    DefaultIfOptionWithoutValue = parameter.DefaultIfOptionWithoutValue,
-                    Precedence = parameter.Precedence,
-                    AllowMultipleValues = parameter.AllowMultipleValues,
-                    EnableQuotelessLiterals = parameter.EnableQuotelessLiterals,
-                    Choices = localizedChoices ?? parameter.Choices,
-                };
-
-                localizedParameters.Add(parameterPair.Key, localizedParameter);
-            }
-
-            return localizedParameters;
         }
 
         /// <summary>

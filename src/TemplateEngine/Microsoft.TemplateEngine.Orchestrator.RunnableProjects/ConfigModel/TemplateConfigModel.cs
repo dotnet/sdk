@@ -435,6 +435,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             _name = locModel.Name ?? Name;
             _description = locModel.Description ?? Description;
 
+            foreach (ParameterSymbol symbol in Symbols.OfType<ParameterSymbol>())
+            {
+                if (locModel.ParameterSymbols.TryGetValue(symbol.Name, out IParameterSymbolLocalizationModel symbolLocModel))
+                {
+                    symbol.Localize(symbolLocModel);
+                }
+            }
+
             foreach (PostActionModel postAction in _postActions)
             {
                 if (postAction.Id != null && locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
@@ -442,6 +450,34 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                     postAction.Localize(postActionLocModel);
                 }
             }
+        }
+
+        /// <summary>
+        /// Extracts parameters from the model.
+        /// </summary>
+        internal IEnumerable<Parameter> ExtractParameters()
+        {
+            Dictionary<string, Parameter> parameters = new();
+            foreach (ParameterSymbol parameterSymbol in Symbols.OfType<ParameterSymbol>())
+            {
+                bool isName = parameterSymbol == NameSymbol;
+                Parameter parameter = new(parameterSymbol.Name, type: parameterSymbol.Type, parameterSymbol.DataType!)
+                {
+                    DefaultValue = parameterSymbol.DefaultValue ?? (!parameterSymbol.IsRequired ? parameterSymbol.Replaces : null),
+                    IsName = isName,
+                    Name = parameterSymbol.Name,
+                    Precedence = parameterSymbol.Precedence,
+                    Description = parameterSymbol.Description,
+                    Choices = parameterSymbol.Choices,
+                    DefaultIfOptionWithoutValue = parameterSymbol.DefaultIfOptionWithoutValue,
+                    DisplayName = parameterSymbol.DisplayName,
+                    EnableQuotelessLiterals = parameterSymbol.EnableQuotelessLiterals,
+                    AllowMultipleValues = parameterSymbol.AllowMultipleValues,
+                };
+                parameters[parameterSymbol.Name] = parameter;
+            }
+
+            return parameters.Values;
         }
 
         private static BaseSymbol SetupDefaultNameSymbol(string? sourceName)

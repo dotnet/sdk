@@ -57,8 +57,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         public bool EnableQuotelessLiterals { get; internal set; }
 
-        internal bool IsVariable { get; set; }
-
         public override string ToString()
         {
             return $"{Name} ({Type})";

@@ -17,6 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         internal const string TypeName = "parameter";
 
         private IReadOnlyDictionary<string, ParameterChoice>? _choices;
+        private string? _description;
+        private string? _displayName;
 
         /// <summary>
         /// Creates an instance of <see cref="ParameterSymbol"/> using
@@ -97,12 +99,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// <summary>
         /// Gets the friendly name of the symbol to be displayed to the user.
         /// </summary>
-        public string? DisplayName { get; private set; }
+        public string? DisplayName
+        {
+            get => _displayName;
+            internal init => _displayName = value;
+        }
 
         /// <summary>
         /// Gets the description of the parameter.
         /// </summary>
-        public string? Description { get; internal init; }
+        public string? Description
+        {
+            get => _description;
+            internal init => _description = value;
+        }
 
         /// <summary>
         /// If this is set, the option can be provided without a value. It will be given this value.
@@ -153,6 +163,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             };
 
             return symbol;
+        }
+
+        internal void Localize(IParameterSymbolLocalizationModel locModel)
+        {
+            _displayName = locModel.DisplayName ?? _displayName;
+            _description = locModel.Description ?? _description;
+            if (Choices == null)
+            {
+                return;
+            }
+
+            foreach (KeyValuePair<string, ParameterChoice> choice in Choices)
+            {
+                if (locModel.Choices.TryGetValue(choice.Key, out ParameterChoiceLocalizationModel? locChoiceModel))
+                {
+                    choice.Value.Localize(locChoiceModel);
+                }
+            }
+
         }
 
         private static TemplateParameterPrecedence GetPrecedence(bool isRequired, JObject jObject)

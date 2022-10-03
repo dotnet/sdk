@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -312,6 +313,7 @@ false,
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
+
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), /*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""");
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
@@ -485,5 +487,59 @@ false,
         }
 
         #endregion
+
+        [Fact]
+        public void CanLocalizeParameters()
+        {
+            TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
+            {
+                Symbols = new[]
+                {
+                    new ParameterSymbol("test")
+                    {
+                        Description = "not localized",
+                        DisplayName = "not localized",
+                        Choices = new Dictionary<string, ParameterChoice>
+                        {
+                            { "choiceOne", new ParameterChoice("notLocalizedName", "notLocalizedDesc") }
+                        }
+                    }
+                }
+            };
+
+            const string locContent = /*lang=json,strict*/
+            """
+            {
+                "symbols/test/description": "localized description",
+                "symbols/test/displayName": "localized displayName",
+                "symbols/test/choices/choiceOne/displayName": "localized choiceOne displayName",
+                "symbols/test/choices/choiceOne/description": "localized choiceOne description"
+            }
+            """;
+
+            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
+            string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
+
+            environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), locContent);
+
+            using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
+
+            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
+            LocalizationModel localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
+            Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
+
+            runnableProjectConfig.ConfigurationModel.Localize(localizationModel);
+            ParameterSymbol actualSymbol = runnableProjectConfig.ConfigurationModel.Symbols.OfType<ParameterSymbol>().Single(s => s.Name == "test");
+
+            Assert.Equal("localized displayName", actualSymbol.DisplayName);
+            Assert.Equal("localized description", actualSymbol.Description);
+
+            ParameterChoice? actualChoice = actualSymbol.Choices?["choiceOne"];
+            Assert.NotNull(actualChoice);
+
+            Assert.Equal("localized choiceOne displayName", actualChoice.DisplayName);
+            Assert.Equal("localized choiceOne description", actualChoice.Description);
+        }
     }
 }
