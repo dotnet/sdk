@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                             //   [Foo("a")]
                             //   [Foo("b")]
                             //   void F()
-                            // Issue "changed" diagnostic when not in strict mode.
+                            // Issue "changed" diagnostic when in strict mode.
                             AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, rightGroup.Attributes[i]);
                         }
                     }
