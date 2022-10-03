@@ -69,6 +69,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             _sourceFile = templateFile;
             _hostConfigFile = hostConfigFile;
             _localeConfigFile = localeConfigFile;
+            if (_sourceFile.Parent?.Parent == null)
+            {
+                throw new TemplateAuthoringException(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource, string.Empty);
+            }
+            TemplateSourceRoot = _sourceFile.Parent!.Parent!;
 
             ConfigurationModel = TemplateConfigModel.FromJObject(
                 MergeAdditionalConfiguration(templateFile.ReadJObjectFromIFile(), templateFile),
@@ -100,22 +105,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Test constructor.
         /// </summary>
-        internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, TemplateConfigModel configuration, IFile? configurationFile = null)
+        internal RunnableProjectConfig(IEngineEnvironmentSettings settings, IGenerator generator, TemplateConfigModel configuration, IDirectory templateSource)
         {
             _settings = settings;
             _logger = _settings.Host.LoggerFactory.CreateLogger<RunnableProjectConfig>();
             _generator = generator;
             ConfigurationModel = configuration;
-            _sourceFile = configurationFile;
+            TemplateSourceRoot = templateSource;
         }
 
         public IReadOnlyList<IPostAction> PostActions => _evaluatedPostActions ?? throw new InvalidOperationException($"{nameof(Evaluate)} should be called before accessing the property.");
 
         public IReadOnlyList<ICreationPath> PrimaryOutputs => _evaluatedPrimaryOutputs ?? throw new InvalidOperationException($"{nameof(Evaluate)} should be called before accessing the property.");
 
-        public IFile SourceFile => _sourceFile ?? throw new InvalidOperationException("Source file is not initialized, are you using test constructor?");
+        public IFile? SourceFile => _sourceFile;
 
-        public IDirectory? TemplateSourceRoot => SourceFile.Parent?.Parent;
+        public IDirectory TemplateSourceRoot { get; }
 
         public IReadOnlyList<string> IgnoreFileNames => !string.IsNullOrWhiteSpace(ConfigurationModel.PlaceholderFilename) ? new[] { ConfigurationModel.PlaceholderFilename! } : DefaultPlaceholderFilenames;
 
@@ -367,7 +372,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         //          If so, read that files content as the exclude list.
         //          Otherwise returns an array containing the string value as its only entry.
         // Otherwise, interpret the token as an array and return the content.
-        private static IReadOnlyList<string> TryReadConfigFromFile(IReadOnlyList<string> configs, IFile sourceFile, string[] defaultSet)
+        private static IReadOnlyList<string> TryReadConfigFromFile(IReadOnlyList<string> configs, IFile? sourceFile, string[] defaultSet)
         {
             if (configs == null || !configs.Any())
             {
@@ -377,13 +382,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 string singleConfig = configs[0];
                 if ((singleConfig.IndexOfAny(Path.GetInvalidPathChars()) != -1)
-                    || (!sourceFile.Parent?.FileInfo(singleConfig)?.Exists ?? true))
+                    || (!sourceFile?.Parent?.FileInfo(singleConfig)?.Exists ?? true))
                 {
                     return configs;
                 }
                 else
                 {
-                    using (Stream excludeList = sourceFile.Parent!.FileInfo(singleConfig)!.OpenRead())
+                    using (Stream excludeList = sourceFile!.Parent!.FileInfo(singleConfig)!.OpenRead())
                     using (TextReader reader = new StreamReader(excludeList, Encoding.UTF8, true, 4096, true))
                     {
                         return reader.ReadToEnd().Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -639,12 +644,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         private List<FileSourceMatchInfo> EvaluateSources(IVariableCollection rootVariableCollection, object? resolvedNameParamValue)
         {
-            if (SourceFile == null)
-            {
-                throw new NotSupportedException($"{nameof(SourceFile)} should be set for sources processing.");
-            }
-
-            List<FileSourceMatchInfo> sources = new List<FileSourceMatchInfo>();
+            List<FileSourceMatchInfo> sources = new();
 
             foreach (ExtendedFileSource source in ConfigurationModel.Sources)
             {
@@ -686,7 +686,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string sourceDirectory = source.Source;
                 string targetDirectory = source.Target;
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(sourceDirectory, ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     sourceDirectory,
@@ -706,7 +706,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                 string targetDirectory = string.Empty;
                 Dictionary<string, string> fileRenamesFromSource = new Dictionary<string, string>(StringComparer.Ordinal);
-                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames(SourceFile, "./", ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
+                IReadOnlyDictionary<string, string> allRenamesForSource = AugmentRenames("./", ref targetDirectory, resolvedNameParamValue, rootVariableCollection, fileRenamesFromSource);
 
                 FileSourceMatchInfo sourceMatcher = new FileSourceMatchInfo(
                     "./",
@@ -721,14 +721,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         }
 
         private IReadOnlyDictionary<string, string> AugmentRenames(
-            IFileSystemInfo configFile,
             string sourceDirectory,
             ref string targetDirectory,
             object? resolvedNameParamValue,
             IVariableCollection variables,
             Dictionary<string, string> fileRenames)
         {
-            return FileRenameGenerator.AugmentFileRenames(_settings, ConfigurationModel.SourceName, configFile, sourceDirectory, ref targetDirectory, resolvedNameParamValue, variables, fileRenames, SymbolFilenameReplacements);
+            return FileRenameGenerator.AugmentFileRenames(
+                _settings,
+                ConfigurationModel.SourceName,
+                TemplateSourceRoot,
+                sourceDirectory,
+                ref targetDirectory,
+                resolvedNameParamValue,
+                variables,
+                fileRenames,
+                SymbolFilenameReplacements);
         }
 
         private void CheckGeneratorVersionRequiredByTemplate()
@@ -847,7 +855,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             if (warningMessages.Count > 0)
             {
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, SourceFile.GetDisplayPath()));
+                stringBuilder.AppendLine(string.Format(LocalizableStrings.Authoring_TemplateMissingCommonInformation, SourceFile?.GetDisplayPath()));
                 foreach (string message in warningMessages)
                 {
                     stringBuilder.AppendLine("  " + message);
@@ -858,13 +866,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             if (errorMessages.Count > 0)
             {
                 StringBuilder stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, SourceFile.GetDisplayPath()));
+                stringBuilder.AppendLine(string.Format(LocalizableStrings.Authoring_TemplateNotInstalled, SourceFile?.GetDisplayPath()));
                 foreach (string message in errorMessages)
                 {
                     stringBuilder.AppendLine("  " + message);
                 }
                 _logger.LogError(stringBuilder.ToString());
-                throw new TemplateValidationException(string.Format(LocalizableStrings.RunnableProjectGenerator_Exception_TemplateValidationFailed, SourceFile.GetDisplayPath()));
+                throw new TemplateValidationException(string.Format(LocalizableStrings.RunnableProjectGenerator_Exception_TemplateValidationFailed, SourceFile?.GetDisplayPath()));
             }
         }
 
@@ -873,21 +881,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// Example: the source directory should exist, should not be a file, should be accessible via mount point.
         /// </summary>
         /// <returns>list of found errors.</returns>
-#pragma warning disable SA1202 // Elements should be ordered by access
         internal IEnumerable<string> ValidateTemplateSourcePaths()
-#pragma warning restore SA1202 // Elements should be ordered by access
         {
-            List<string> errors = new List<string>();
-            if (TemplateSourceRoot == null)
-            {
-                errors.Add(LocalizableStrings.Authoring_TemplateRootOutsideInstallSource);
-            }
+            List<string> errors = new();
             // check if any sources get out of the mount point
             foreach (ExtendedFileSource source in ConfigurationModel.Sources)
             {
                 try
                 {
-                    IFile? file = TemplateSourceRoot?.FileInfo(source.Source);
+                    IFile? file = TemplateSourceRoot.FileInfo(source.Source);
                     //template source root should not be a file
                     if (file?.Exists ?? false)
                     {
@@ -895,7 +897,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
                     else
                     {
-                        IDirectory? sourceRoot = TemplateSourceRoot?.DirectoryInfo(source.Source);
+                        IDirectory? sourceRoot = TemplateSourceRoot.DirectoryInfo(source.Source);
                         if (sourceRoot is null)
                         {
                             errors.Add(string.Format(LocalizableStrings.Authoring_SourceIsOutsideInstallSource, source.Source));

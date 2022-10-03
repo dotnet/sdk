@@ -517,8 +517,9 @@ C
             using IMountPoint sourceMountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new();
             // cannot use SimpleConfigModel dirrectly - due to missing easy way of creating ParameterSymbols
-            TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(templateSnippet));
-            var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            IFile? templateConfig = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
+            Assert.NotNull(templateConfig);
+            var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, templateConfig);
 
             TemplateCreator creator = new TemplateCreator(_engineEnvironmentSettings);
 

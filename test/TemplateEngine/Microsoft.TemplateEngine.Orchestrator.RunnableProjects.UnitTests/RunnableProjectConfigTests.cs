@@ -128,7 +128,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             TestFileSystemUtils.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root);
 
             if (expectedToBeValid)
             {

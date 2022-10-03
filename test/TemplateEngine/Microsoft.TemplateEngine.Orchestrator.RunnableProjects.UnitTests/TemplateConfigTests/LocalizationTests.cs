@@ -337,7 +337,7 @@ false,
                 }
             };
 
-            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
@@ -373,7 +373,7 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.True(runnableProjectConfig.VerifyLocalizationModel(localizationModel));
 
@@ -421,7 +421,7 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
             var localizationFile = mountPoint.FileInfo(localizationFilename);
             var localizationModel = LocalizationModelDeserializer.Deserialize(localizationFile!);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel, localizationFile));
@@ -474,7 +474,7 @@ false,
 
             using IMountPoint mountPoint = environmentSettings.MountPath(tempFolder);
 
-            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig);
+            var templateConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), baseConfig, A.Fake<IDirectory>());
             var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
             Assert.False(templateConfig.VerifyLocalizationModel(localizationModel));
 

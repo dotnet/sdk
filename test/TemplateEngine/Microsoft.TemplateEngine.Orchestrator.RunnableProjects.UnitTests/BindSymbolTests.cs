@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -259,7 +259,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -343,7 +343,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -414,7 +414,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -505,7 +505,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 

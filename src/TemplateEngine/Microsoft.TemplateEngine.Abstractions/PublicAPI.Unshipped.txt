@@ -1,1 +1,1 @@
-﻿
+﻿Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory!

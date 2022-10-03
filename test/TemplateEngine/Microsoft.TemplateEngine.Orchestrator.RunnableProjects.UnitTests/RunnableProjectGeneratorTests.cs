@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             TestFileSystemUtils.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -203,7 +203,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
                 new Dictionary<string, string?>() { { "ChoiceParam", "SecondChoice" } });
@@ -301,7 +301,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
                 new Dictionary<string, object?>() { { "ChoiceParam", new MultiValueParameter(new[] { "SecondChoice", "ThirdChoice" }) } });
@@ -448,7 +448,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
                 new Dictionary<string, object?>() { { "Platform", new MultiValueParameter(new[] { "android", "iOS" }) } });
@@ -559,7 +559,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromString(templateConfig);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(
                 runnableConfig,
                 new Dictionary<string, object?>() { { "Platform", new MultiValueParameter(new[] { "MacOS", "iOS" }) } });
@@ -632,7 +632,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new RunnableProjectGenerator();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parametersData = new ParameterSetData(runnableConfig);
             IDirectory sourceDir = sourceMountPoint!.DirectoryInfo("/")!;
 
@@ -717,7 +717,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             RunnableProjectGenerator rpg = new();
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parameters = new(
                 runnableConfig,
                 new Dictionary<string, object?>() { { "A", true } });
@@ -802,7 +802,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using IMountPoint sourceMountPoint = settings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new();
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.FromObject(templateConfig));
-            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath));
+            RunnableProjectConfig runnableConfig = new(settings, rpg, configModel, sourceMountPoint.Root);
             ParameterSetData parameters = new(
                 runnableConfig,
                 new Dictionary<string, object?>() { { "A", true } });

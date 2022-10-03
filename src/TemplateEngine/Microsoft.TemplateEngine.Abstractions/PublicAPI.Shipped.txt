@@ -437,7 +437,6 @@ Microsoft.TemplateEngine.Abstractions.ISimpleConfigModifiers.BaselineName.get ->
 Microsoft.TemplateEngine.Abstractions.ITemplate.Configuration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo!
 Microsoft.TemplateEngine.Abstractions.ITemplate.Generator.get -> Microsoft.TemplateEngine.Abstractions.IGenerator!
 Microsoft.TemplateEngine.Abstractions.ITemplate.LocaleConfiguration.get -> Microsoft.TemplateEngine.Abstractions.Mount.IFileSystemInfo?
-Microsoft.TemplateEngine.Abstractions.ITemplate.TemplateSourceRoot.get -> Microsoft.TemplateEngine.Abstractions.Mount.IDirectory?
 Microsoft.TemplateEngine.Abstractions.ITemplateEngineHost.OnParameterError(Microsoft.TemplateEngine.Abstractions.ITemplateParameter! parameter, string! receivedValue, string! message, out string? newValue) -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateParameter.AllowMultipleValues.get -> bool
 Microsoft.TemplateEngine.Abstractions.ITemplateInfo.Constraints.get -> System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Abstractions.Constraints.TemplateConstraintInfo!>!

@@ -109,7 +109,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 ["ActionOneCondition"] = condition1,
                 ["ActionTwoCondition"] = condition2
             };
-            List<IPostAction> postActions = PostAction.ListFromModel(_logger, configModel.PostActionModels, vc);
+            List<IPostAction> postActions = PostAction.Evaluate(_logger, configModel.PostActionModels, vc);
 
             Assert.Equal(expectedActionCount, postActions.Count);
             if (firstResult != null && firstResult.Length > 0)
@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 ["OperatingSystemKind"] = operatingSystemValue
             };
 
-            List<IPostAction> postActions = PostAction.ListFromModel(_logger, configModel.PostActionModels, vc);
+            List<IPostAction> postActions = PostAction.Evaluate(_logger, configModel.PostActionModels, vc);
             Assert.Equal(expectedActionCount, postActions.Count);
 
             if (!string.IsNullOrEmpty(firstInstruction))

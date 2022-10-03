@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         internal static IReadOnlyDictionary<string, string> AugmentFileRenames(
             IEngineEnvironmentSettings environmentSettings,
             string? sourceName,
-            IFileSystemInfo configFile,
+            IDirectory templateSourceDir,
             string sourceDirectory,
             ref string targetDirectory,
             object? resolvedNameParamValue,
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             IProcessor sourceRenameProcessor = SetupRenameProcessor(environmentSettings, fileRenames);
             IProcessor symbolRenameProcessor = SetupSymbolBasedRenameProcessor(environmentSettings, sourceName, ref targetDirectory, resolvedNameParamValue, variables, symbolBasedFileRenames);
 
-            IDirectory? sourceBaseDirectoryInfo = configFile.Parent?.Parent?.DirectoryInfo(sourceDirectory.TrimEnd('/'));
+            IDirectory? sourceBaseDirectoryInfo = templateSourceDir.DirectoryInfo(sourceDirectory.TrimEnd('/'));
 
             if (sourceBaseDirectoryInfo is null)
             {

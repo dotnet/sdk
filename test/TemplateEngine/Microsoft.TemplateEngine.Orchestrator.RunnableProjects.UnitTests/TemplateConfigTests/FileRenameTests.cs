@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =
-                new(environment, A.Fake<IGenerator>(), configModel);
+                new(environment, A.Fake<IGenerator>(), configModel, A.Fake<IDirectory>());
 
             Assert.Equal(2, runnableConfig.SymbolFilenameReplacements.Count);
             Assert.Equal("testparamfilereplacement", runnableConfig.SymbolFilenameReplacements.Single(x => x.VariableName.Contains("testparam")).OriginalValue.Value);
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configContent));
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment();
             RunnableProjectConfig runnableConfig =
-                new(environment, A.Fake<IGenerator>(), configModel);
+                new(environment, A.Fake<IGenerator>(), configModel, A.Fake<IDirectory>());
 
             Assert.Equal(4, runnableConfig.SymbolFilenameReplacements.Count);
             Assert.Equal(3, runnableConfig.SymbolFilenameReplacements.Count(x => x.VariableName.Contains("testparam")));
@@ -280,7 +280,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],
@@ -340,7 +340,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],
@@ -404,7 +404,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],
@@ -465,7 +465,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],
@@ -523,7 +523,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],
@@ -580,7 +580,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IReadOnlyDictionary<string, string> allChanges = FileRenameGenerator.AugmentFileRenames(
                 environment,
                 sourceBasePath,
-                templateConfigFile,
+                mountPoint.Root,
                 sourceDirectory: "./",
                 targetDirectory: ref targetDir,
                 resolvedNameParamValue: variables["name"],

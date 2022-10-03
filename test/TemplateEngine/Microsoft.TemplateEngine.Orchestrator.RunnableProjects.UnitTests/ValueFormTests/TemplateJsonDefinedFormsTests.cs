@@ -4,6 +4,7 @@
 using System.Linq;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
@@ -45,7 +46,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
             try
             {
-                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).GlobalOperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel, A.Fake<IDirectory>()).GlobalOperationConfig;
             }
             catch
             {
@@ -89,7 +90,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
 
             try
             {
-                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel).GlobalOperationConfig;
+                runConfig = new RunnableProjectConfig(_engineEnvironmentSettings, A.Fake<IGenerator>(), configModel, A.Fake<IDirectory>()).GlobalOperationConfig;
             }
             catch
             {
