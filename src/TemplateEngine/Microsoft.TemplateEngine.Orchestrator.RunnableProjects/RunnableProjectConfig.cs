@@ -184,7 +184,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_operationConfig == null)
                 {
-                    SpecialOperationConfigParams defaultOperationParams = new SpecialOperationConfigParams(string.Empty, "//", "C++", ConditionalType.CLineComments);
+                    OperationConfigDefault defaultOperationParams = OperationConfigDefault.DefaultGlobalConfig;
                     _operationConfig = ProduceOperationSetup(defaultOperationParams, true, _configuration.GlobalCustomOperations);
                 }
 
@@ -198,95 +198,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 if (_specialOperationConfig == null)
                 {
-                    List<SpecialOperationConfigParams> defaultSpecials = new List<SpecialOperationConfigParams>
-                    {
-                        new SpecialOperationConfigParams("**/*.js", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.es", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.es6", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.ts", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.json", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.jsonld", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.hjson", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.json5", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.geojson", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.topojson", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.bowerrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.npmrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.job", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.postcssrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.babelrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.csslintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.eslintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.jade-lintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.pug-lintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.jshintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.stylelintrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.yarnrc", "//", "C++", ConditionalType.CLineComments),
-                        new SpecialOperationConfigParams("**/*.css.min", "/*", "C++", ConditionalType.CBlockComments),
-                        new SpecialOperationConfigParams("**/*.css", "/*", "C++", ConditionalType.CBlockComments),
-                        new SpecialOperationConfigParams("**/*.cshtml", "@*", "C++", ConditionalType.Razor),
-                        new SpecialOperationConfigParams("**/*.razor", "@*", "C++", ConditionalType.Razor),
-                        new SpecialOperationConfigParams("**/*.vbhtml", "@*", "VB", ConditionalType.Razor),
-                        new SpecialOperationConfigParams("**/*.cs", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.fs", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.c", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.cpp", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.cxx", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.h", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.hpp", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.hxx", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.cake", "//", "C++", ConditionalType.CNoComments),
-                        new SpecialOperationConfigParams("**/*.*proj", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.*proj.user", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.pubxml", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.pubxml.user", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.msbuild", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.targets", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.props", "<!--/", "MSBUILD", ConditionalType.MSBuild),
-                        new SpecialOperationConfigParams("**/*.svg", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.*htm", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.*html", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.md", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.jsp", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.asp", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.aspx", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/app.config", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/web.config", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/web.*.config", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/packages.config", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/nuget.config", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.nuspec", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.xslt", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.xsd", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.vsixmanifest", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.vsct", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.storyboard", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.axml", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.plist", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.xib", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.strings", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.bat", "rem --:", "C++", ConditionalType.RemLineComment),
-                        new SpecialOperationConfigParams("**/*.cmd", "rem --:", "C++", ConditionalType.RemLineComment),
-                        new SpecialOperationConfigParams("**/nginx.conf", "#--", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/robots.txt", "#--", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/*.sh", "#--", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/*.haml", "-#", "C++", ConditionalType.HamlLineComment),
-                        new SpecialOperationConfigParams("**/*.jsx", "{/*", "C++", ConditionalType.JsxBlockComment),
-                        new SpecialOperationConfigParams("**/*.tsx", "{/*", "C++", ConditionalType.JsxBlockComment),
-                        new SpecialOperationConfigParams("**/*.xml", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.resx", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.bas", "'", "VB", ConditionalType.VB),
-                        new SpecialOperationConfigParams("**/*.vb", "'", "VB", ConditionalType.VB),
-                        new SpecialOperationConfigParams("**/*.xaml", "<!--", "C++", ConditionalType.Xml),
-                        new SpecialOperationConfigParams("**/*.sln", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/*.yaml", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/*.yml", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/Dockerfile", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/.editorconfig", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/.gitattributes", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/.gitignore", "#-", "C++", ConditionalType.HashSignLineComment),
-                        new SpecialOperationConfigParams("**/.dockerignore", "#-", "C++", ConditionalType.HashSignLineComment)
-                    };
+                    IReadOnlyList<OperationConfigDefault> defaultSpecials = OperationConfigDefault.DefaultSpecialConfig;
                     List<KeyValuePair<string, IGlobalRunConfig>> specialOperationConfig = new List<KeyValuePair<string, IGlobalRunConfig>>();
 
                     // put the custom configs first in the list
@@ -297,9 +209,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                         if (customGlobModel.ConditionResult)
                         {
                             // only add the special if the condition is true
-                            SpecialOperationConfigParams defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
+                            OperationConfigDefault defaultParams = defaultSpecials.FirstOrDefault(x => x.Glob == customGlobModel.Glob);
 
-                            defaultParams ??= SpecialOperationConfigParams.Defaults;
+                            defaultParams ??= OperationConfigDefault.Default;
 
                             IGlobalRunConfig runConfig = ProduceOperationSetup(defaultParams, false, customGlobModel);
                             specialOperationConfig.Add(new KeyValuePair<string, IGlobalRunConfig>(customGlobModel.Glob, runConfig));
@@ -311,7 +223,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     }
 
                     // add the remaining default configs in the order specified above
-                    foreach (SpecialOperationConfigParams defaultParams in defaultSpecials)
+                    foreach (OperationConfigDefault defaultParams in defaultSpecials)
                     {
                         if (processedGlobs.Contains(defaultParams.Glob))
                         {
@@ -673,14 +585,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return filenameReplacements;
         }
 
-        private IGlobalRunConfig ProduceOperationSetup(SpecialOperationConfigParams defaultModel, bool generateMacros, CustomFileGlobModel? customGlobModel = null)
+        private IGlobalRunConfig ProduceOperationSetup(OperationConfigDefault defaultModel, bool generateMacros, CustomFileGlobModel? customGlobModel = null)
         {
             List<IOperationProvider> operations = new List<IOperationProvider>();
 
             // TODO: if we allow custom config to specify a built-in conditional type, decide what to do.
             if (defaultModel.ConditionalStyle != ConditionalType.None)
             {
-                operations.AddRange(ConditionalConfig.ConditionalSetup(defaultModel.ConditionalStyle, defaultModel.EvaluatorName, true, true, null));
+                operations.AddRange(ConditionalConfig.ConditionalSetup(defaultModel.ConditionalStyle, defaultModel.Evaluator, true, true, null));
             }
 
             if (customGlobModel == null || string.IsNullOrEmpty(customGlobModel.FlagPrefix))
@@ -1151,27 +1063,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 }
             }
             return errors;
-        }
-
-        private class SpecialOperationConfigParams
-        {
-            internal SpecialOperationConfigParams(string glob, string flagPrefix, string evaluatorName, ConditionalType type)
-            {
-                EvaluatorName = evaluatorName;
-                Glob = glob;
-                FlagPrefix = flagPrefix;
-                ConditionalStyle = type;
-            }
-
-            internal static SpecialOperationConfigParams Defaults { get; } = new SpecialOperationConfigParams(string.Empty, string.Empty, "C++", ConditionalType.None);
-
-            internal string Glob { get; }
-
-            internal string EvaluatorName { get; }
-
-            internal string FlagPrefix { get; }
-
-            internal ConditionalType ConditionalStyle { get; }
         }
     }
 }

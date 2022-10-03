@@ -187,19 +187,6 @@ Microsoft.TemplateEngine.Core.Operations.Conditional.TrimWhitespace.get -> bool
 Microsoft.TemplateEngine.Core.Operations.Conditional.WholeLine.get -> bool
 Microsoft.TemplateEngine.Core.Operations.ConditionalTokens
 Microsoft.TemplateEngine.Core.Operations.ConditionalTokens.ConditionalTokens() -> void
-Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.CBlockComments = 5 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.CLineComments = 4 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.CNoComments = 3 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.HamlLineComment = 9 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.HashSignLineComment = 6 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.JsxBlockComment = 10 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.MSBuild = 8 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.None = 0 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.Razor = 2 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.RemLineComment = 7 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.VB = 11 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
-Microsoft.TemplateEngine.Core.Operations.ConditionalType.Xml = 1 -> Microsoft.TemplateEngine.Core.Operations.ConditionalType
 Microsoft.TemplateEngine.Core.Operations.ConditionEvaluator
 Microsoft.TemplateEngine.Core.Operations.ExpandVariables
 Microsoft.TemplateEngine.Core.Operations.Include

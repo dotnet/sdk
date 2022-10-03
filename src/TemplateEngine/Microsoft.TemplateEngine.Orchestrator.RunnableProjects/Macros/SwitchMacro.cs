@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Newtonsoft.Json.Linq;
@@ -27,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as SwitchMacroConfig");
             }
 
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, Cpp2StyleEvaluatorDefinition.EvaluateFromString);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, EvaluatorType.CPP2);
             string result = string.Empty;   // default if no condition assigns a value
 
             foreach (KeyValuePair<string?, string?> switchInfo in config.Switches)

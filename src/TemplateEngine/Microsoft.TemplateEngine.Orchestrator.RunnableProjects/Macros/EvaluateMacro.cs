@@ -4,7 +4,6 @@
 using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
@@ -26,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
             }
 
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, Cpp2StyleEvaluatorDefinition.EvaluateFromString);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, EvaluatorType.CPP2);
             bool result = evaluator(environmentSettings.Host.Logger, config.Value, variableCollection);
 
             variableCollection[config.VariableName] = result;

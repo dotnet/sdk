@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
 {
     internal class ConditionalOperationOptions
     {
-        private const string DefaultEvaluatorType = "C++";
+        private const EvaluatorType DefaultEvaluatorType = EvaluatorType.CPP;
         private const bool DefaultWholeLine = true;
         private const bool DefaultTrimWhitespace = true;
 
@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             TrimWhitespace = DefaultTrimWhitespace;
         }
 
-        internal string EvaluatorType { get; set; }
+        internal EvaluatorType EvaluatorType { get; set; }
 
         internal bool WholeLine { get; set; }
 
@@ -33,13 +33,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             ConditionalOperationOptions options = new ConditionalOperationOptions();
 
             string? evaluatorType = rawConfiguration.ToString("evaluator");
-            if (!string.IsNullOrWhiteSpace(evaluatorType))
-            {
-                options.EvaluatorType = evaluatorType!;
-            }
-
-            options.TrimWhitespace = rawConfiguration.ToBool("trim", true);
-            options.WholeLine = rawConfiguration.ToBool("wholeLine", true);
+            options.EvaluatorType = EvaluatorSelector.ParseEvaluatorName(evaluatorType, DefaultEvaluatorType);
+            options.TrimWhitespace = rawConfiguration.ToBool("trim", DefaultTrimWhitespace);
+            options.WholeLine = rawConfiguration.ToBool("wholeLine", DefaultWholeLine);
             options.OnByDefault = rawConfiguration.ToBool("onByDefault");
 
             string? id = rawConfiguration.ToString("id");

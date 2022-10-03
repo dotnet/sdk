@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
             bool onByDefault = rawConfiguration.ToBool("onByDefault");
 
             string? evaluatorName = rawConfiguration.ToString("evaluator");
-            ConditionEvaluator evaluator = EvaluatorSelector.Select(evaluatorName);
+            ConditionEvaluator evaluator = EvaluatorSelector.Select(EvaluatorSelector.ParseEvaluatorName(evaluatorName));
 
             ConditionalTokens tokenVariants = new ConditionalTokens
             {
