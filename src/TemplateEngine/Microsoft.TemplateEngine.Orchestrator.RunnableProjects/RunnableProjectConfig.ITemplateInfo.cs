@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
     {
         IDirectory? ITemplate.TemplateSourceRoot => TemplateSourceRoot;
 
-        string ITemplateInfo.Identity => _configuration.Identity ?? _configuration.Name ?? throw new TemplateValidationException("Template configuration should have name defined");
+        string ITemplateInfo.Identity => _configuration.Identity;
 
         Guid ITemplateInfo.GeneratorId => _generator.Id;
 
@@ -34,7 +34,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         int ITemplateInfo.Precedence => _configuration.Precedence;
 
-        string ITemplateInfo.Name => _configuration.Name ?? throw new TemplateValidationException("Template configuration should have name defined");
+        string ITemplateInfo.Name => _configuration.Name ?? throw new TemplateAuthoringException("Template configuration should have 'name' defined.", "name");
 
         [Obsolete]
         string ITemplateInfo.ShortName
