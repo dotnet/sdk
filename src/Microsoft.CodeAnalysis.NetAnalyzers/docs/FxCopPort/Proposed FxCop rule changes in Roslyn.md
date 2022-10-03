@@ -15,11 +15,11 @@ In addition to implementation details of the analyzers we have decided to port, 
 
 ## CA1034: Nested types should not be visible
 
-The .NET Framework Design Guidelines for [nested types](https://docs.microsoft.com/dotnet/standard/design-guidelines/nested-types) specifically mentions enumerations:
+The .NET Framework Design Guidelines for [nested types](https://learn.microsoft.com/dotnet/standard/design-guidelines/nested-types) specifically mentions enumerations:
 
 > For example, an enum passed to a method defined on a class should not be defined as a nested type in the class.
 
-But the [documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1034-nested-types-should-not-be-visible) for this rule says:
+But the [documentation](https://learn.microsoft.com/visualstudio/code-quality/ca1034-nested-types-should-not-be-visible) for this rule says:
 
 > Nested enumerations ... are exempt from this rule
 
@@ -47,7 +47,7 @@ and will discourage others from emulating it.
 
 These are good suggestions.
 
-With regard to item #2, the [documentation](https://docs.microsoft.com/visualstudio/code-quality/ca1716-identifiers-should-not-match-keywords) for the rule actually does define the set of languages to which it applies:
+With regard to item #2, the [documentation](https://learn.microsoft.com/visualstudio/code-quality/ca1716-identifiers-should-not-match-keywords) for the rule actually does define the set of languages to which it applies:
 
 > This rule checks against keywords in the following languages:
 >

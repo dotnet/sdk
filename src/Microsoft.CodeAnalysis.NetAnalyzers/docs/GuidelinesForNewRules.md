@@ -16,16 +16,16 @@
       1. Choose `CA1830` as the rule ID for your rule.
       2. Update the range for `Performance` in [DiagnosticCategoryAndIdRanges.txt](.//src//Utilities//Compiler//DiagnosticCategoryAndIdRanges.txt) to `CA1800-CA1830`
 
-   You can refer to the [official documentation](https://docs.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for all released CA rules by rule category.
+   You can refer to the [official documentation](https://learn.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for all released CA rules by rule category.
 
 4. Documentation requirements:
-   1. **New CA rule must be documented**: Each rule ID `CAxxxx` is automatically assigned the help link `https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/caxxxx`. The documentation for this page is populated from `caxxxx.md` file at [dotnet/docs quality-rules folder](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules). For example, `CA1000` is documented at [ca1000.md](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules/ca1000.md) file. Documenting a new rule is primarily ensuring a PR is sent to `dotnet/docs` repo to add `caxxxx.md` file for the new rule. Detailed steps are given below.
+   1. **New CA rule must be documented**: Each rule ID `CAxxxx` is automatically assigned the help link `https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/caxxxx`. The documentation for this page is populated from `caxxxx.md` file at [dotnet/docs quality-rules folder](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules). For example, `CA1000` is documented at [ca1000.md](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules/ca1000.md) file. Documenting a new rule is primarily ensuring a PR is sent to `dotnet/docs` repo to add `caxxxx.md` file for the new rule. Detailed steps are given below.
    2. **Documentation PR must be submitted within ONE WEEK of the rule implementation being merged**. Note that we will communicate this requirement on each PR contributing a new CA rule. We reserve the right to revert the rule implementation PR if this documentation requirement is not met.
 
 ## Guidelines for creating documentation PR
 
 1. Documentation PR must be submitted to the [dotnet/docs](https://github.com/dotnet/docs) repo:
 
-   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
+   Please review [Contribute docs for .NET code analysis rules to the .NET docs repository](https://learn.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis) for guidelines.
 
 If for some exceptional reason you are unable to submit a PR, please [file a documentation issue](https://github.com/dotnet/docs/issues) to add documentation for the rule in future. Please include all relevant information in the issue to allow the documentation experts to easily author the documentation.

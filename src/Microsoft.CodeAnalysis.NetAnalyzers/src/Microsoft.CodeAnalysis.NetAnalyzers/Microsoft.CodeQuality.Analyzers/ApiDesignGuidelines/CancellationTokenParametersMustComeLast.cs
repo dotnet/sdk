@@ -87,7 +87,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
 
                     // Ignore parameters that have any of these attributes.
-                    // C# reserved attributes: https://docs.microsoft.com/dotnet/csharp/language-reference/attributes/caller-information
+                    // C# reserved attributes: https://learn.microsoft.com/dotnet/csharp/language-reference/attributes/caller-information
                     while (last >= 0
                         && HasCallerInformationAttribute(methodSymbol.Parameters[last], callerInformationAttributes))
                     {

@@ -1,7 +1,7 @@
 # Getting started with .NetCore/.NetStandard Analyzers
 
-1. Read through the [.NET Compiler Platform SDK](https://docs.microsoft.com/dotnet/csharp/roslyn-sdk/) for understanding the different Roslyn elements `(Syntax Nodes, Tokens, Trivia)`. The factory methods and APIs are super useful.  
-2. Learning this [tutorial](https://docs.microsoft.com/dotnet/csharp/roslyn-sdk/tutorials/how-to-write-csharp-analyzer-code-fix) for custom analyzer and trying it some level is very useful to get started. It is pretty easy step by step tutorial, it is time saving as it has a template generated for us (with analyzer, fixer and unit test), has good explanation, would give you pretty good understanding on how Roslyn analyzers work.
+1. Read through the [.NET Compiler Platform SDK](https://learn.microsoft.com/dotnet/csharp/roslyn-sdk/) for understanding the different Roslyn elements `(Syntax Nodes, Tokens, Trivia)`. The factory methods and APIs are super useful.  
+2. Learning this [tutorial](https://learn.microsoft.com/dotnet/csharp/roslyn-sdk/tutorials/how-to-write-csharp-analyzer-code-fix) for custom analyzer and trying it some level is very useful to get started. It is pretty easy step by step tutorial, it is time saving as it has a template generated for us (with analyzer, fixer and unit test), has good explanation, would give you pretty good understanding on how Roslyn analyzers work.
 3. Clone the `dotnet/roslyn-analyzers` repo, install all required dependencies and build the repo by the [instructions](https://github.com/dotnet/roslyn-analyzers#getting-started).
 4. Follow the coding style of the `dotnet/roslyn-analyzers` repo. [Guidelines about new rule id and doc](https://github.com/dotnet/roslyn-analyzers/blob/main/GuidelinesForNewRules.md).
 5. Open `RoslynAnalyzers.sln` and open the package where you are creating your analyzer. In our case, it is mostly `Microsoft.CodeAnalysis.NetAnalyzers`->`Microsoft.NetCore.Analyzers`. Create your analyzer and/or fixer class in the corresponding folder.  
@@ -42,7 +42,7 @@
   - All warnings and errors in these repos are addressed (to prevent build failures)
     - `Info` level diagnostics do not need to be fully resolved or suppressed as they do not cause build failures
 - Document for review: severity, default, categorization, numbering, titles, messages, and descriptions.
-- Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://docs.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
+- Create the appropriate documentation for [docs.microsoft.com](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules) within **ONE WEEK**, instructions available on [Contribute docs for .NET code analysis rules to the .NET docs repository](https://learn.microsoft.com/contribute/dotnet/dotnet-contribute-code-analysis).
 - PR merged into `dotnet/roslyn-analyzers`.
 - Validate the analyzer's behavior with end-to-end testing using the command-line and Visual Studio:
   - Use `dotnet new console` and `dotnet build` from the command-line, updating the code to introduce diagnostics and ensuring warnings/errors are reported at the command-line

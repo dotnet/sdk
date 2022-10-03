@@ -57,7 +57,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 }
 
                 // This dictionary is populated by this thread and then read concurrently.
-                // https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=net-5.0#thread-safety
+                // https://learn.microsoft.com/en-us/dotnet/api/system.collections.generic.dictionary-2?view=net-5.0#thread-safety
                 var membersByValue = PooledDictionary<object, IFieldSymbol>.GetInstance();
                 var duplicates = PooledConcurrentSet<IFieldSymbol>.GetInstance(SymbolEqualityComparer.Default);
                 foreach (var member in enumSymbol.GetMembers())

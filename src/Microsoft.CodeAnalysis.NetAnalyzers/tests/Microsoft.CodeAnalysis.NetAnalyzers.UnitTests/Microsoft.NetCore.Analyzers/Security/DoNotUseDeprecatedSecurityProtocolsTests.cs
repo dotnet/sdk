@@ -99,7 +99,7 @@ public class TestClass
     public void TestMethod()
     {
         // Let the operating system decide what TLS protocol version to use.
-        // See https://docs.microsoft.com/dotnet/framework/network-programming/tls
+        // See https://learn.microsoft.com/dotnet/framework/network-programming/tls
     }
 }");
         }
@@ -114,7 +114,7 @@ Imports System.Net
 Public Class TestClass
     Public Sub ExampleMethod()
         ' Let the operating system decide what TLS protocol version to use.
-        ' See https://docs.microsoft.com/dotnet/framework/network-programming/tls
+        ' See https://learn.microsoft.com/dotnet/framework/network-programming/tls
     End Sub
 End Class
 ");
