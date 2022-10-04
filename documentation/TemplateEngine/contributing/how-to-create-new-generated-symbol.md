@@ -89,7 +89,7 @@ The very basic implementation may be:
 ```
 
 `IGeneratedSymbolConfig` config already contains the pre-parsed JSON from template.json. It has properties for: symbol name, data type (if specified) and parameters collection. 
-Parameters collection contains parameter key-value pairs from JSON. Note that value is in JSON format, i.e. if the parameter value is string, the it contains `"\"string-value\""`.
+Parameters collection contains parameter key-value pairs from JSON. Note that value is in JSON format, i.e. if the parameter value is string, then it contains `"\"string-value\""`.
 It is recommend to get `JToken` using `JToken.Parse` on this value when parsing the value or use helper methods available in `BaseMacroConfig` that can parse the data.
 
 2. Once the macro is implemented, add it to [components collection](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Components.cs).
