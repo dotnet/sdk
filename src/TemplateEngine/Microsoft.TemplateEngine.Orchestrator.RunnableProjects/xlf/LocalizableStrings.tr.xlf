@@ -175,6 +175,16 @@ Ayrıntılar: {1}</target>
         <target state="new">Generated symbol '{0}': '{1}' should be a string value.</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
+      <trans-unit id="MacroProcessingException_Message">
+        <source>Failed to process macro '{0}' of type '{1}'.</source>
+        <target state="new">Failed to process macro '{0}' of type '{1}'.</target>
+        <note>{0} - macro variable name, {1} - macro type (not localized).</note>
+      </trans-unit>
+      <trans-unit id="MacroProcessor_Warning_UnknownMacro">
+        <source>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</source>
+        <target state="new">Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</target>
+        <note>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</note>
+      </trans-unit>
       <trans-unit id="RunnableProjectGenerator_CannotAddImplicitChoice">
         <source>Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self.</source>
         <target state="translated">[{0}] değişkeni [{1}] değeriyle zaten eklendi. Kendi değeriyle örtük bir değişken olarak eklenemez.</target>

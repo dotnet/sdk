@@ -242,6 +242,14 @@ Details: {1}</value>
     <value>Generated symbol '{0}': '{1}' should be a string value.</value>
     <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
   </data>
+  <data name="MacroProcessingException_Message" xml:space="preserve">
+    <value>Failed to process macro '{0}' of type '{1}'.</value>
+    <comment>{0} - macro variable name, {1} - macro type (not localized).</comment>
+  </data>
+  <data name="MacroProcessor_Warning_UnknownMacro" xml:space="preserve">
+    <value>Generated symbol '{0}': type '{1}' is unknown, processing is skipped.</value>
+    <comment>{0} - macro (generated symbol) variable name, {1} - macro type (not localized).</comment>
+  </data>
   <data name="RunnableProjectConfig_OperationSetup_UnknownForm" xml:space="preserve">
     <value>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</value>
     <comment>{0} - the name of the symbol in configuration, {1} - the name of the form in configuration.</comment>

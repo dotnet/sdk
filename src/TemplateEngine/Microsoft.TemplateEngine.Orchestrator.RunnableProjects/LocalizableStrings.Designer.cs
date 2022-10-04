@@ -360,6 +360,24 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to process macro &apos;{0}&apos; of type &apos;{1}&apos;..
+        /// </summary>
+        internal static string MacroProcessingException_Message {
+            get {
+                return ResourceManager.GetString("MacroProcessingException_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Generated symbol &apos;{0}&apos;: type &apos;{1}&apos; is unknown, processing is skipped..
+        /// </summary>
+        internal static string MacroProcessor_Warning_UnknownMacro {
+            get {
+                return ResourceManager.GetString("MacroProcessor_Warning_UnknownMacro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Variable [{0}] already added with value [{1}]. Cannot add it as implicit variable with value of self..
         /// </summary>
         internal static string RunnableProjectGenerator_CannotAddImplicitChoice {
