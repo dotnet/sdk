@@ -13,7 +13,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class SwitchMacro : IMacro, IDeferredMacro
     {
-        internal const string DefaultEvaluator = "C++";
+        internal const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
 
         public Guid Id => new Guid("B57D64E0-9B4F-4ABE-9366-711170FD5294");
 
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as SwitchMacroConfig");
             }
 
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, EvaluatorType.CPP2);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(config.Evaluator, DefaultEvaluator));
             string result = string.Empty;   // default if no condition assigns a value
 
             foreach (KeyValuePair<string?, string?> switchInfo in config.Switches)

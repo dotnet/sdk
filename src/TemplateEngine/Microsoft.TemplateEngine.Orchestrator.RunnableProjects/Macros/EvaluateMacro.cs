@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     // Symbol.type = "computed" is the only thing that becomes an evaluate macro.
     internal class EvaluateMacro : IMacro
     {
-        internal const string DefaultEvaluator = "C++";
+        internal const EvaluatorType DefaultEvaluator = EvaluatorType.CPP2;
 
         public Guid Id => new Guid("BB625F71-6404-4550-98AF-B2E546F46C5F");
 
@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 throw new InvalidCastException("Couldn't cast the rawConfig as EvaluateMacroConfig");
             }
 
-            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(config.Evaluator, EvaluatorType.CPP2);
+            ConditionStringEvaluator evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(config.Evaluator, DefaultEvaluator));
             bool result = evaluator(environmentSettings.Host.Logger, config.Value, variableCollection);
 
             variableCollection[config.VariableName] = result;
