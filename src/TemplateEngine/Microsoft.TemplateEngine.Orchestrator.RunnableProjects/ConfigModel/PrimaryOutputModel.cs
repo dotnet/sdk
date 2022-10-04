@@ -28,8 +28,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         public string Path { get; }
 
-        internal string? PathResolved { get; set; }
-
         internal static IReadOnlyList<PrimaryOutputModel> ListFromJArray(JArray? jsonData)
         {
             List<PrimaryOutputModel> modelList = new List<PrimaryOutputModel>();
