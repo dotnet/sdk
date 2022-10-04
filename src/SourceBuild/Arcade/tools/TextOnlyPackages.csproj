@@ -17,10 +17,11 @@
     <PackageDownload Include="Microsoft.NET.Sdk.macOS.Manifest-$(MauiFeatureBand)" Version="[$(XamarinMacOSWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Maui.Manifest-$(MauiFeatureBand)" Version="[$(MauiWorkloadManifestVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.tvOS.Manifest-$(MauiFeatureBand)" Version="[$(XamarinTvOSWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net6.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net7.Manifest-7.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net6.Manifest-7.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net7.Manifest-7.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.Manifest-8.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net6.Manifest-8.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net7.Manifest-8.0.100" Version="[$(EmscriptenWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net6.Manifest-8.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
+    <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net7.Manifest-8.0.100" Version="[$(MonoWorkloadManifestVersion)]" />
   </ItemGroup>
 
   <!--
