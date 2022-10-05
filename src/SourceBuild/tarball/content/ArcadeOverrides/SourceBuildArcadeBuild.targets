@@ -86,9 +86,9 @@
       <InnerBuildArgs>$(InnerBuildArgs) /p:SourceBuiltBlobFeedDir=$(SourceBuiltBlobFeedDir)</InnerBuildArgs>
 
       <!-- Work around issue where local clone may cause failure using non-origin remote fallback: https://github.com/dotnet/sourcelink/issues/629 -->
-      <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceControlManagerQueries=false</InnerBuildArgs>
-      <InnerBuildArgs>$(InnerBuildArgs) /p:EnableSourceLink=false</InnerBuildArgs>
-      <InnerBuildArgs>$(InnerBuildArgs) /p:DeterministicSourcePaths=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DisableSourceLink)' == 'true'">$(InnerBuildArgs) /p:EnableSourceControlManagerQueries=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DisableSourceLink)' == 'true'">$(InnerBuildArgs) /p:EnableSourceLink=false</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DisableSourceLink)' == 'true'">$(InnerBuildArgs) /p:DeterministicSourcePaths=false</InnerBuildArgs>
       <InnerBuildArgs >$(InnerBuildArgs) /p:DotNetBuildOffline=true</InnerBuildArgs>
       <InnerBuildArgs Condition=" '$(DotNetPackageVersionPropsPath)' != '' ">$(InnerBuildArgs) /p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)</InnerBuildArgs>
     </PropertyGroup>
