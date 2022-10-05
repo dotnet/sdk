@@ -32,10 +32,10 @@ stages:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCore-Svc-Public
-          demands: ImageOverride -equals build.server.amd64.vs2019.open
+          demands: ImageOverride -equals windows.vs2019.amd64.open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCore1ESPool-Svc-Internal
-          demands: ImageOverride -equals build.windows.10.amd64.vs2017
+          demands: ImageOverride -equals windows.VS2017.amd64
       strategy:
         matrix:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
@@ -61,7 +61,7 @@ stages:
         agentOs: Windows_NT_FullFramework
         pool:
           name: NetCore-Svc-Public
-          demands: ImageOverride -equals build.server.amd64.vs2019.open
+          demands: ImageOverride -equals windows.VS2019.amd64.open
         strategy:
           matrix:
             Build_Debug:
@@ -78,7 +78,7 @@ stages:
         agentOs: Windows_NT_TestAsTools
         pool:
           name: NetCore-Svc-Public
-          demands: ImageOverride -equals build.server.amd64.vs2019.open
+          demands: ImageOverride -equals windows.VS2019.amd64.open
         strategy:
           matrix:
             Build_Debug:
