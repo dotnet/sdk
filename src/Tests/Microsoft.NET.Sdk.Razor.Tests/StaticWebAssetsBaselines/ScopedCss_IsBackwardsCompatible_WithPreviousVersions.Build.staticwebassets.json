@@ -198,23 +198,6 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\[[CustomPackageVersion]]\\staticwebassets\\js\\pkg-direct-dep.js"
-    },
-    {
-      "Identity": "${RestorePath}\\packagelibrarytransitivedependency\\[[CustomPackageVersion]]\\staticwebassets\\js\\pkg-transitive-dep.js",
-      "SourceId": "PackageLibraryTransitiveDependency",
-      "SourceType": "Package",
-      "ContentRoot": "${RestorePath}\\packagelibrarytransitivedependency\\[[CustomPackageVersion]]\\staticwebassets\\",
-      "BasePath": "_content/PackageLibraryTransitiveDependency",
-      "RelativePath": "js/pkg-transitive-dep.js",
-      "AssetKind": "All",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "RelatedAsset": "",
-      "AssetTraitName": "",
-      "AssetTraitValue": "",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\[[CustomPackageVersion]]\\staticwebassets\\js\\pkg-transitive-dep.js"
     }
   ]
 }

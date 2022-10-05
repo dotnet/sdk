@@ -8,6 +8,5 @@
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css",
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryDirectDependency\\css\\site.css",
   "${OutputPath}\\wwwroot\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js",
-  "${OutputPath}\\wwwroot\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js",
   "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
 ]
