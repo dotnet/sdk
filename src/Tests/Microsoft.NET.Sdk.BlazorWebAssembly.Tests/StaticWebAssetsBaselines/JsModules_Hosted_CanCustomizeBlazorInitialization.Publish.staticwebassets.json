@@ -98,12 +98,12 @@
       "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\[[CustomPackageVersion]]\\build\\net5.0\\blazor.webassembly.js"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js",
+      "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.${RuntimeVersion}.[[hash]].js",
+      "RelativePath": "_framework/dotnet.6.0.8.[[hash]].js",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -112,7 +112,7 @@
       "AssetTraitValue": "native",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js"
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.timezones.blat",
@@ -285,21 +285,21 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/blazorwasm.pdb.gz]]"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.[[hash]].js.gz]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.6.0.8.[[hash]].js.gz]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.${RuntimeVersion}.[[hash]].js.gz",
+      "RelativePath": "_framework/dotnet.6.0.8.[[hash]].js.gz",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
-      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js",
+      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.${RuntimeVersion}.[[hash]].js.gz]]"
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.6.0.8.[[hash]].js.gz]]"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.wasm.gz]]",
@@ -2614,21 +2614,21 @@
       "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\linked\\blazorwasm.dll"
     },
     {
-      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\compress\\[[_framework/dotnet.${RuntimeVersion}.[[hash]].js.br]]",
+      "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\compress\\[[_framework/dotnet.6.0.8.[[hash]].js.br]]",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.${RuntimeVersion}.[[hash]].js.br",
+      "RelativePath": "_framework/dotnet.6.0.8.[[hash]].js.br",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
-      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js",
+      "RelatedAsset": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.${RuntimeVersion}.[[hash]].js"
+      "OriginalItemSpec": "${ProjectRoot}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js"
     },
     {
       "Identity": "${ProjectRoot}\\blazorwasm\\obj\\Debug\\${Tfm}\\compress\\[[_framework/dotnet.timezones.blat.br]]",
