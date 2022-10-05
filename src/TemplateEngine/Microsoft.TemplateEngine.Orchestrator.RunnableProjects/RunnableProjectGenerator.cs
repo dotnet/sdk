@@ -14,6 +14,7 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 using Microsoft.TemplateEngine.Utils;
 
@@ -199,7 +200,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
                             try
                             {
-                                ILocalizationModel locModel = LocalizationModelDeserializer.Deserialize(locFile);
+                                LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(locFile);
                                 if (templateConfiguration.VerifyLocalizationModel(locModel, locFile))
                                 {
                                     localizations.Add(new LocalizationLocator(

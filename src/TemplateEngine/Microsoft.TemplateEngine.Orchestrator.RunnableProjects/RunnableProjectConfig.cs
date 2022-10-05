@@ -17,6 +17,7 @@ using Microsoft.TemplateEngine.Core.Expressions.Cpp2;
 using Microsoft.TemplateEngine.Core.Operations;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
@@ -88,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             {
                 try
                 {
-                    ILocalizationModel locModel = LocalizationModelDeserializer.Deserialize(_localeConfigFile);
+                    LocalizationModel locModel = LocalizationModelDeserializer.Deserialize(_localeConfigFile);
                     if (VerifyLocalizationModel(locModel))
                     {
                         ConfigurationModel.Localize(locModel);
@@ -260,7 +261,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <param name="localeFile">localization file (optional), needed to get file name for logging.</param>
         /// <returns>True if the verification succeeds. False otherwise.
         /// Check logs for details in case of a failed verification.</returns>
-        internal bool VerifyLocalizationModel(ILocalizationModel locModel, IFile? localeFile = null)
+        internal bool VerifyLocalizationModel(LocalizationModel locModel, IFile? localeFile = null)
         {
             bool validModel = true;
             localeFile ??= _localeConfigFile;
@@ -268,7 +269,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             int unusedPostActionLocs = locModel.PostActions.Count;
             foreach (var postAction in ConfigurationModel.PostActionModels)
             {
-                if (postAction.Id == null || !locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
+                if (postAction.Id == null || !locModel.PostActions.TryGetValue(postAction.Id, out PostActionLocalizationModel postActionLocModel))
                 {
                     // Post action with no localization model.
                     continue;

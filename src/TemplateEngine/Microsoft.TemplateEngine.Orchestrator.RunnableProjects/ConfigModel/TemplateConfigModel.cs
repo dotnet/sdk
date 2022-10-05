@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -427,9 +428,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         /// <param name="locModel">Localization model containing the localized strings.</param>
         /// <remarks>This method works on a best-effort basis. If the given model is invalid or incompatible,
-        /// erroneous data will be skipped. No errors will be logged. Use <see cref="Localize(ILocalizationModel)"/>
+        /// erroneous data will be skipped. No errors will be logged. Use <see cref="Localize(LocalizationModel)"/>
         /// to validate localization models before calling this method.</remarks>
-        internal void Localize(ILocalizationModel locModel)
+        internal void Localize(LocalizationModel locModel)
         {
             _author = locModel.Author ?? Author;
             _name = locModel.Name ?? Name;
@@ -445,7 +446,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             foreach (PostActionModel postAction in _postActions)
             {
-                if (postAction.Id != null && locModel.PostActions.TryGetValue(postAction.Id, out IPostActionLocalizationModel postActionLocModel))
+                if (postAction.Id != null && locModel.PostActions.TryGetValue(postAction.Id, out PostActionLocalizationModel postActionLocModel))
                 {
                     postAction.Localize(postActionLocModel);
                 }

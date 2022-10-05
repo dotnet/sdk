@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
@@ -121,7 +122,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
             return localizedPostActions;
         }
 
-        internal void Localize(IPostActionLocalizationModel locModel)
+        internal void Localize(PostActionLocalizationModel locModel)
         {
             _description = locModel.Description ?? Description;
 

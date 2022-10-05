@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    internal class PostActionLocalizationModel : IPostActionLocalizationModel
+    internal class PostActionLocalizationModel
     {
         /// <summary>
         /// Localized description of the post action.

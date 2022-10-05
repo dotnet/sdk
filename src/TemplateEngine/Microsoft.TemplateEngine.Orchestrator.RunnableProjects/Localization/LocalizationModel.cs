@@ -7,14 +7,17 @@ using Microsoft.TemplateEngine.Abstractions;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
 {
-    internal class LocalizationModel : ILocalizationModel
+    /// <summary>
+    /// Represents the data model that contains the localized strings for a template.
+    /// </summary>
+    internal class LocalizationModel
     {
         public LocalizationModel(
             string? name,
             string? description,
             string? author,
             IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> parameterSymbols,
-            IReadOnlyDictionary<string, IPostActionLocalizationModel> postActions)
+            IReadOnlyDictionary<string, PostActionLocalizationModel> postActions)
         {
             Name = name;
             Description = description;
@@ -23,19 +26,30 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Localization
             PostActions = postActions ?? throw new ArgumentNullException(nameof(postActions));
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the localized author name.
+        /// </summary>
         public string? Author { get; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the localized template name.
+        /// </summary>
         public string? Name { get; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the localized template description.
+        /// </summary>
         public string? Description { get; }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the localization models for the parameter symbols defined in this template.
+        /// </summary>
         public IReadOnlyDictionary<string, IParameterSymbolLocalizationModel> ParameterSymbols { get; }
 
-        /// <inheritdoc/>
-        public IReadOnlyDictionary<string, IPostActionLocalizationModel> PostActions { get; }
+        /// <summary>
+        /// Gets the localization models for the post actions defined in this template.
+        /// The keys represent the id of the post actions.
+        /// </summary>
+        public IReadOnlyDictionary<string, PostActionLocalizationModel> PostActions { get; }
     }
 }

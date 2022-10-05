@@ -19,13 +19,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         private const char KeySeparator = '/';
 
         /// <summary>
-        /// Deserializes the given localization file into an <see cref="ILocalizationModel"/>.
+        /// Deserializes the given localization file into an <see cref="LocalizationModel"/>.
         /// </summary>
         /// <param name="file">File to be deserialized.</param>
         /// <returns>loaded localization model.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="file"/> is null.</exception>
         /// <exception cref="Exception">The file does not contain valid JSON data, JSON data contains element other than strings.</exception>
-        public static ILocalizationModel Deserialize(IFile file)
+        public static LocalizationModel Deserialize(IFile file)
         {
             _ = file ?? throw new ArgumentNullException(nameof(file));
 
@@ -123,9 +123,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         /// <summary>
         /// Generates post action localization models from the given localized strings.
         /// </summary>
-        private static IReadOnlyDictionary<string, IPostActionLocalizationModel> LoadPostActionModels(List<(string Key, string Value)> localizedStrings)
+        private static IReadOnlyDictionary<string, PostActionLocalizationModel> LoadPostActionModels(List<(string Key, string Value)> localizedStrings)
         {
-            var results = new Dictionary<string, IPostActionLocalizationModel>();
+            var results = new Dictionary<string, PostActionLocalizationModel>();
 
             // Property names are in format: postActions/actionId/manualInstructions/instructionId/description
             // Split them using '/' and store together with the localized string.
