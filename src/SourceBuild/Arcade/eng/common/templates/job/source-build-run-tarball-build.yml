@@ -42,13 +42,13 @@ jobs:
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _RunOnline: true
-      CentOSStream8-Offline:
-        _BootstrapPrep: false
-        _Container: ${{ parameters.centOSStream8Container }}
-        _EnablePoison: false
-        _ExcludeOmniSharpTests: true
-        _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+        CentOSStream8-Offline:
+          _BootstrapPrep: false
+          _Container: ${{ parameters.centOSStream8Container }}
+          _EnablePoison: false
+          _ExcludeOmniSharpTests: true
+          _RunOnline: false
         CentOSStream9-Offline:
           _BootstrapPrep: false
           _Container: ${{ parameters.centOSStream9Container }}
