@@ -296,6 +296,46 @@ new CompatDifference[] {
             }
         };
 
+        public static TheoryData<string, string, CompatDifference[]> NoInternals => new()
+        {
+            // Expand visibility of type
+            {
+                @"
+namespace CompatTests
+{
+  internal class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  public class First {}
+}
+",
+new CompatDifference[] {}
+            },
+            // Expand visibility of member
+            {
+                @"
+namespace CompatTests
+{
+  public class First {
+    protected int F;
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  public class First {
+    protected internal int F;
+  }
+}
+",
+new CompatDifference[] {}
+            },
+        };
+
         [Theory]
         [MemberData(nameof(TestCases))]
         public void EnsureDiagnosticIsReported(string leftSyntax, string rightSyntax, CompatDifference[] expected)
@@ -317,6 +357,21 @@ new CompatDifference[] {
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(
                 includeInternalSymbols: true,
+                strictMode: true));
+
+            IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [MemberData(nameof(NoInternals))]
+        public void EnsureReportedInStrictModeWithoutInternalSymbols(string leftSyntax, string rightSyntax, CompatDifference[] expected)
+        {
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(
+                includeInternalSymbols: false,
                 strictMode: true));
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);

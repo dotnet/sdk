@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System;
 using System.Collections.Generic;
 using System.Runtime;
 using Microsoft.CodeAnalysis;
@@ -24,6 +25,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
+        private Accessibility normalizeAccessibility(Accessibility a) =>
+            (_settings.IncludeInternalSymbols, a) switch
+            {
+                (false, Accessibility.ProtectedAndInternal
+                        or Accessibility.Internal
+                        or Accessibility.ProtectedOrInternal) => Accessibility.Protected,
+                _ => a,
+            };
+
         private void RunOnSymbol(
             ISymbol? left,
             ISymbol? right,
@@ -37,8 +47,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 return;
             }
 
-            Accessibility leftAccess = left.DeclaredAccessibility;
-            Accessibility rightAccess = right.DeclaredAccessibility;
+            Accessibility leftAccess = normalizeAccessibility(left.DeclaredAccessibility);
+            Accessibility rightAccess = normalizeAccessibility(right.DeclaredAccessibility);
 
             if (leftAccess > rightAccess)
             {
