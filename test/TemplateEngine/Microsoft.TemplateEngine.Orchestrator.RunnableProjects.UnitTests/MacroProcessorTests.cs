@@ -84,13 +84,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             Assert.Equal("Generated symbol 's': type 'fail' is unknown, processing is skipped.", loggedMessages.Single(m => m.Item1 == LogLevel.Warning).Item2);
         }
 
-        private class FailMacro : IMacro<FailMacroConfig>, IGeneratedSymbolMacro<FailMacroConfig>
+        private class FailMacro : IMacro<FailMacroConfig>, IGeneratedSymbolMacro
         {
             public string Type => "fail";
 
             public Guid Id { get; } = new Guid("{3DBC6AAB-5D13-40E9-9EC8-0467A7AA7335}");
-
-            public FailMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig) => throw new TemplateAuthoringException("bad config");
 
             public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, FailMacroConfig config) => throw new Exception("Failed to evaluate");
 
@@ -99,13 +97,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IMacroConfig config) => throw new Exception("Failed to evaluate");
         }
 
-        private class FailConfigMacro : IMacro<FailMacroConfig>, IGeneratedSymbolMacro<FailMacroConfig>
+        private class FailConfigMacro : IMacro<FailMacroConfig>, IGeneratedSymbolMacro
         {
             public string Type => "fail";
 
             public Guid Id { get; } = new Guid("{3DBC6AAB-5D13-40E9-9EC8-0467A7AA7335}");
-
-            public FailMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig generatedSymbolConfig) => throw new TemplateAuthoringException("bad config");
 
             public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, FailMacroConfig config) => throw new Exception("Failed to evaluate");
 

@@ -9,16 +9,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
     /// <summary>
     /// An interface for macros created that can create the config from other config (deffered config).
     /// </summary>
-    [Obsolete("Use IGeneratedSymbolConfig{T} instead.")]
+    [Obsolete("Use IGeneratedSymbolConfig instead.")]
     public interface IDeferredMacro : IMacro
     {
         /// <summary>
         /// Creates <see cref="IMacroConfig"/> from <paramref name="rawConfig"/>.
         /// </summary>
         /// <remarks>
-        /// Deprecated as <see cref="IMacro"/> can process only own configuration. Use generic version of interface and <see cref="IGeneratedSymbolMacro{T}.CreateConfig(IEngineEnvironmentSettings, IGeneratedSymbolConfig)"/> instead.
+        /// Deprecated as <see cref="IMacro"/> can process only own configuration.
         /// </remarks>
-        [Obsolete("Use IGeneratedSymbolConfig{T}.Evaluate or IGeneratedSymbolConfig{T}.CreateConfig instead")]
+        [Obsolete("Use IMacro{T}.Evaluate or IGeneratedSymbolConfig.Evaluate instead for generated symbol instead.")]
         IMacroConfig CreateConfig(IEngineEnvironmentSettings environmentSettings, IMacroConfig rawConfig);
     }
 }

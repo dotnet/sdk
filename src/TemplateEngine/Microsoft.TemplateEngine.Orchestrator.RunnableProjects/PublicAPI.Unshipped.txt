@@ -2,9 +2,6 @@
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig.DataType.get -> string!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro.Evaluate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig! generatedSymbolConfig) -> void
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro<T>
-Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro<T>.CreateConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig! generatedSymbolConfig) -> T
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro<T>
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro<T>.Evaluate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Core.Contracts.IVariableCollection! variables, T config) -> void
 Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Identity.get -> string!

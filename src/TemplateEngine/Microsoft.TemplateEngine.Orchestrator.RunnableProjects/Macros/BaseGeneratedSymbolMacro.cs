@@ -25,8 +25,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             return CreateConfig(deferredConfig);
         }
 
-        public T CreateConfig(IEngineEnvironmentSettings environmentSettings, IGeneratedSymbolConfig deferredConfig) => CreateConfig(deferredConfig);
-
         public void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, IGeneratedSymbolConfig deferredConfig)
         {
             Evaluate(environmentSettings, vars, CreateConfig(deferredConfig));

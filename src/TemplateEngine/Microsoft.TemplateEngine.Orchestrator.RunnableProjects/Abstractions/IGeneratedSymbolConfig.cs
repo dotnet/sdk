@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions
 {
     /// <summary>
-    /// Represents the configuration of <see cref="IGeneratedSymbolMacro"/> and <see cref="IGeneratedSymbolMacro{T}"/>.
+    /// Represents the configuration of <see cref="IGeneratedSymbolMacro"/>.
     /// </summary>
     public interface IGeneratedSymbolConfig : IMacroConfig
     {
