@@ -36,8 +36,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         {
             if (!_settings.IncludeInternalSymbols)
             {
-                a = CannotChangeVisibility.NormalizeInternals(a);
-                b = CannotChangeVisibility.NormalizeInternals(b);
+                a = NormalizeInternals(a);
+                b = NormalizeInternals(b);
             }
 
             if (a == b)
