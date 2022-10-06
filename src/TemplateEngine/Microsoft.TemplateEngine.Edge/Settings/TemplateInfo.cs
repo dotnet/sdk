@@ -3,12 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
-using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json;
@@ -19,7 +16,6 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     internal partial class TemplateInfo : ITemplateInfo, ITemplateInfoHostJsonCache
     {
         internal const string CurrentVersion = "1.0.0.7";
-        private static readonly Guid RunnableProjectGeneratorId = new("0C434DF7-E2CB-4DEE-B216-D7C58C8EB4B3");
 
 #pragma warning disable CS0618 // Type or member is obsolete
         private IReadOnlyDictionary<string, ICacheTag>? _tags;
@@ -73,8 +69,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// </summary>
         /// <param name="template">unlocalized template.</param>
         /// <param name="localizationInfo">localization information.</param>
-        /// <param name="logger"></param>
-        internal TemplateInfo(ITemplate template, ILocalizationLocator? localizationInfo, ILogger logger)
+        /// <param name="hostConfig">host config information.</param>
+        internal TemplateInfo(IScanTemplateInfo template, ILocalizationLocator? localizationInfo, (string Path, JObject? Content)? hostConfig)
         {
             if (template is null)
             {
@@ -90,7 +86,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             Identity = template.Identity;
             DefaultName = template.DefaultName;
             PreferDefaultName = template.PreferDefaultName;
-            HostConfigPlace = template.HostConfigPlace;
+            HostConfigPlace = hostConfig?.Path;
             ThirdPartyNotices = template.ThirdPartyNotices;
             BaselineInfo = template.BaselineInfo;
             ShortNameList = template.ShortNameList;
@@ -104,33 +100,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             Name = localizationInfo?.Name ?? template.Name;
             ParameterDefinitions = LocalizeParameters(template, localizationInfo);
-
-            if (template.GeneratorId == RunnableProjectGeneratorId && HostConfigPlace != null)
-            {
-                logger.LogDebug($"Start loading host config {HostConfigPlace}");
-                try
-                {
-                    IFile? hostFile = template.TemplateSourceRoot?.FileInfo(HostConfigPlace);
-                    if (hostFile == null || !hostFile.Exists)
-                    {
-                        throw new FileNotFoundException($"Host file {hostFile?.GetDisplayPath()} does not exist.");
-                    }
-                    using (var sr = new StreamReader(hostFile.OpenRead()))
-                    using (var jsonTextReader = new JsonTextReader(sr))
-                    {
-                        HostData = JObject.Load(jsonTextReader).ToString(Formatting.None);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(
-                        ex,
-                        LocalizableStrings.TemplateInfo_Warning_FailedToReadHostData,
-                        template.MountPointUri,
-                        template.HostConfigPlace);
-                }
-                logger.LogDebug($"End loading host config {HostConfigPlace}");
-            }
+            HostData = hostConfig?.Content?.ToString(Formatting.None);
         }
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -277,7 +247,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return TemplateInfoReader.FromJObject(entry);
         }
 
-        private static IParameterDefinitionSet LocalizeParameters(ITemplateInfo template, ILocalizationLocator? localizationInfo)
+        private static IParameterDefinitionSet LocalizeParameters(IScanTemplateInfo template, ILocalizationLocator? localizationInfo)
         {
             //we would like to copy the parameters to format supported for serialization as we cannot be sure that ITemplateInfo supports serialization in needed format.
             List<ITemplateParameter> localizedParameters = new List<ITemplateParameter>();

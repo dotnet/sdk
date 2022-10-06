@@ -761,10 +761,11 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             TestFileSystemUtils.WriteTemplateSource(_engineEnvironmentSettings, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = _engineEnvironmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator rpg = new();
-            // cannot use SimpleConfigModel dirrectly - due to missing easy way of creating ParameterSymbols
-            IFile? templateConfig = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfig);
-            var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, templateConfig);
+
+            IFile? templateConfigFile = sourceMountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
+            Assert.NotNull(templateConfigFile);
+
+            using var runnableConfig = new RunnableProjectConfig(_engineEnvironmentSettings, rpg, templateConfigFile);
 
             TemplateCreator creator = new TemplateCreator(_engineEnvironmentSettings);
 

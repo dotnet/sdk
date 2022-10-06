@@ -13,15 +13,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
     /// </summary>
     public class ScanResult : IDisposable
     {
-        public ScanResult(
+        internal ScanResult(
             IMountPoint mountPoint,
-            IReadOnlyList<ITemplate> templates,
+            IReadOnlyList<IScanTemplateInfo> templates,
             IReadOnlyList<ILocalizationLocator> localizations,
             IReadOnlyList<(string AssemblyPath, Type InterfaceType, IIdentifiedComponent Instance)> components)
         {
             MountPoint = mountPoint;
             Templates = templates;
+#pragma warning disable CS0618 // Type or member is obsolete
             Localizations = localizations;
+#pragma warning restore CS0618 // Type or member is obsolete
             Components = components;
         }
 
@@ -32,7 +34,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         /// <summary>
         /// All components found inside mountpoint.
-        /// AssemblyPath is full path inside <see cref="Abstractions.Mount.IMountPoint"/>.
+        /// AssemblyPath is full path inside <see cref="IMountPoint"/>.
         /// InterfaceType is type of interface that is implemented by component.
         /// Instance is object that implements InterfaceType.
         /// </summary>
@@ -41,16 +43,20 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <summary>
         /// All template localizations found inside mountpoint.
         /// </summary>
+        [Obsolete("Use IScanTemplateInfo.Localizations instead.")]
         public IReadOnlyList<ILocalizationLocator> Localizations { get; }
 
         /// <summary>
         /// All templates found inside mountpoint.
         /// </summary>
-        public IReadOnlyList<ITemplate> Templates { get; }
+        public IReadOnlyList<IScanTemplateInfo> Templates { get; }
 
         /// <summary>
         /// Disposes <see cref="MountPoint"/> that was scanned.
         /// </summary>
-        public void Dispose() => MountPoint.Dispose();
+        public void Dispose()
+        {
+            MountPoint.Dispose();
+        }
     }
 }

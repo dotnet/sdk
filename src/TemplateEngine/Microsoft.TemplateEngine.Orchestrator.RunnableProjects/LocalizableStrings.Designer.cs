@@ -305,11 +305,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Failed to read parse localization file {0}, it will be skipped from further processing..
+        ///   Looks up a localized string similar to Failed to read or parse localization file {0}, it will be skipped from further processing..
         /// </summary>
         internal static string LocalizationModelDeserializer_Error_FailedToParse {
             get {
                 return ResourceManager.GetString("LocalizationModelDeserializer_Error_FailedToParse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Locale &apos;{0}&apos; does not match any known cultures..
+        /// </summary>
+        internal static string LocalizationModelDeserializer_Error_UnknownLocale {
+            get {
+                return ResourceManager.GetString("LocalizationModelDeserializer_Error_UnknownLocale", resourceCulture);
             }
         }
         

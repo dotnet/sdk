@@ -1,4 +1,6 @@
 ﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
+Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions
+static Microsoft.TemplateEngine.Utils.IScanTemplateInfoExtensions.ToITemplateInfo(this Microsoft.TemplateEngine.Abstractions.IScanTemplateInfo! templateInfo, string? locFilePath = null, string? hostFilePath = null) -> Microsoft.TemplateEngine.Abstractions.ITemplateInfo!
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.ConfigItem.get -> string?
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message) -> void
 Microsoft.TemplateEngine.Utils.TemplateAuthoringException.TemplateAuthoringException(string! message, string? configItem, System.Exception! innerException) -> void

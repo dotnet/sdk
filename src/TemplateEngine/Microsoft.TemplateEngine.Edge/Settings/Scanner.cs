@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 #if !NETFULL
 using System.Runtime.Loader;
 #endif
@@ -39,6 +41,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <remarks>
         /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
         /// </remarks>
+        [Obsolete("Use ScanAsync instead.")]
         public ScanResult Scan(string mountPointUri)
         {
             return Scan(mountPointUri, scanForComponents: true);
@@ -50,6 +53,8 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         /// <remarks>
         /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
         /// </remarks>
+        ///
+        [Obsolete("Use ScanAsync instead.")]
         public ScanResult Scan(string mountPointUri, bool scanForComponents)
         {
             if (string.IsNullOrWhiteSpace(mountPointUri))
@@ -62,7 +67,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 ScanForComponents(source);
             }
-            return ScanMountPointForTemplatesAndLangpacks(source);
+            return Task.Run(async () => await ScanMountPointForTemplatesAsync(source, default).ConfigureAwait(false)).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Scans mount point for templates.
+        /// </summary>
+        /// <remarks>
+        /// The mount point will not be disposed by the <see cref="Scanner"/>. Use <see cref="ScanResult.Dispose"/> to dispose mount point.
+        /// </remarks>
+        public Task<ScanResult> ScanAsync(string mountPointUri, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(mountPointUri))
+            {
+                throw new ArgumentException($"{nameof(mountPointUri)} should not be null or empty");
+            }
+            MountPointScanSource source = GetOrCreateMountPointScanInfoForInstallSource(mountPointUri);
+            cancellationToken.ThrowIfCancellationRequested();
+            return ScanMountPointForTemplatesAsync(source, cancellationToken);
         }
 
         private MountPointScanSource GetOrCreateMountPointScanInfoForInstallSource(string sourceLocation)
@@ -184,31 +206,24 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             return true;
         }
 
-        private ScanResult ScanMountPointForTemplatesAndLangpacks(MountPointScanSource source)
+        private async Task<ScanResult> ScanMountPointForTemplatesAsync(MountPointScanSource source, CancellationToken cancellationToken)
         {
             _ = source ?? throw new ArgumentNullException(nameof(source));
-            // look for things to install
 
-            var templates = new List<ITemplate>();
-            var localizationLocators = new List<ILocalizationLocator>();
-
+            var templates = new List<IScanTemplateInfo>();
             foreach (IGenerator generator in _environmentSettings.Components.OfType<IGenerator>())
             {
-                IList<ITemplate> templateList = generator.GetTemplatesAndLangpacksFromDir(source.MountPoint, out IList<ILocalizationLocator> localizationInfo);
-
-                foreach (ILocalizationLocator locator in localizationInfo)
-                {
-                    localizationLocators.Add(locator);
-                }
-
-                foreach (ITemplate template in templateList)
+                IReadOnlyList<IScanTemplateInfo> templateList = await generator.GetTemplatesFromMountPointAsync(source.MountPoint, cancellationToken).ConfigureAwait(false);
+                foreach (IScanTemplateInfo template in templateList)
                 {
                     templates.Add(template);
                 }
 
-                source.FoundTemplates |= templateList.Count > 0 || localizationInfo.Count > 0;
+                source.FoundTemplates |= templateList.Count > 0;
             }
 
+            //backward compatibility
+            var localizationLocators = templates.SelectMany(t => t.Localizations.Values).ToList();
             return new ScanResult(source.MountPoint, templates, localizationLocators, Array.Empty<(string, Type, IIdentifiedComponent)>());
         }
 

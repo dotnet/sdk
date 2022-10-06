@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Utils;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
 
@@ -11,6 +12,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
     internal class CliHostDataProducer : IAdditionalDataProducer
     {
         private const string CliHostDataName = "cliHostData";
+        private const string CliHostIdentifier = "dotnetcli";
 
         private readonly Dictionary<string, CliHostTemplateData> _hostDataForPackByTemplate = new(StringComparer.OrdinalIgnoreCase);
 
@@ -25,10 +27,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
 
         public object? Data => _hostDataForPackByTemplate;
 
-        public object? CreateDataForTemplate(ITemplateInfo template, IEngineEnvironmentSettings environment)
+        public object? CreateDataForTemplate(IScanTemplateInfo template, IEngineEnvironmentSettings environment)
         {
+            _ = template.HostConfigFiles.TryGetValue(CliHostIdentifier, out string? cliHostConfig);
             CliHostTemplateDataLoader hostDataLoader = new CliHostTemplateDataLoader(environment);
-            CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
+            CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template.ToITemplateInfo(hostFilePath: cliHostConfig));
             // store the host data if it has any info that could affect searching for this template.
             if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)
             {
@@ -37,14 +40,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             return null;
         }
 
-        public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<ITemplateInfo> templateList, IEngineEnvironmentSettings environment)
+        public void CreateDataForTemplatePack(IDownloadedPackInfo packInfo, IReadOnlyList<IScanTemplateInfo> templateList, IEngineEnvironmentSettings environment)
         {
             CliHostTemplateDataLoader hostDataLoader = new CliHostTemplateDataLoader(environment);
             Dictionary<string, CliHostTemplateData> dataForPack = new Dictionary<string, CliHostTemplateData>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (ITemplateInfo template in templateList)
+            foreach (IScanTemplateInfo template in templateList)
             {
-                CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template);
+                _ = template.HostConfigFiles.TryGetValue(CliHostIdentifier, out string? cliHostConfig);
+                CliHostTemplateData hostData = hostDataLoader.ReadHostSpecificTemplateData(template.ToITemplateInfo(hostFilePath: cliHostConfig));
 
                 // store the host data if it has any info that could affect searching for this template.
                 if (hostData.IsHidden || hostData.SymbolInfo.Count > 0)

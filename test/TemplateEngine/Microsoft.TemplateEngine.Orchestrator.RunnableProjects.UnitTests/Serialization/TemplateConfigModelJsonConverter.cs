@@ -305,6 +305,69 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Seria
                 writer.WriteEndArray();
             }
 
+            if (value.PostActionModels.Any())
+            {
+                writer.WritePropertyName("postActions");
+                writer.WriteStartArray();
+                foreach (PostActionModel model in value.PostActionModels)
+                {
+                    writer.WriteStartObject();
+                    if (!string.IsNullOrEmpty(model.Id))
+                    {
+                        writer.WritePropertyName("id");
+                        writer.WriteValue(model.Id);
+                    }
+                    writer.WritePropertyName("actionId");
+                    writer.WriteValue(model.ActionId);
+                    if (!string.IsNullOrEmpty(model.Description))
+                    {
+                        writer.WritePropertyName("description");
+                        writer.WriteValue(model.Description);
+                    }
+                    writer.WritePropertyName("continueOnError");
+                    writer.WriteValue(model.ContinueOnError);
+
+                    if (model.Args.Any())
+                    {
+                        writer.WritePropertyName("args");
+                        writer.WriteStartObject();
+                        foreach (KeyValuePair<string, string> arg in model.Args)
+                        {
+                            writer.WritePropertyName(arg.Key);
+                            writer.WriteValue(arg.Value);
+                        }
+                        writer.WriteEndObject();
+                    }
+
+                    if (model.ManualInstructionInfo.Any())
+                    {
+                        writer.WritePropertyName("manualInstructions");
+                        writer.WriteStartArray();
+                        foreach (ManualInstructionModel mi in model.ManualInstructionInfo)
+                        {
+                            writer.WriteStartObject();
+                            writer.WritePropertyName("text");
+                            writer.WriteValue(mi.Text);
+                            if (!string.IsNullOrEmpty(mi.Condition))
+                            {
+                                writer.WritePropertyName("condition");
+                                writer.WriteValue(mi.Condition);
+                            }
+                            if (!string.IsNullOrEmpty(mi.Id))
+                            {
+                                writer.WritePropertyName("id");
+                                writer.WriteValue(mi.Id);
+                            }
+                            writer.WriteEndObject();
+                        }
+                        writer.WriteEndArray();
+                    }
+                    writer.WriteEndObject();
+                }
+
+                writer.WriteEndArray();
+            }
+
             //not implemented
             if (value.Forms.Values.Any(f => !f.IsDefault))
             {

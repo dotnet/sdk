@@ -4,6 +4,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Utils;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
 using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
@@ -85,12 +86,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
         {
             foreach (IPackProvider packProvider in _packProviders)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 int count = -1;
                 Console.WriteLine($"Processing pack provider {packProvider.Name}:");
                 Console.WriteLine($"{await packProvider.GetPackageCountAsync(cancellationToken).ConfigureAwait(false)} packs discovered, starting processing");
 
                 await foreach (ITemplatePackageInfo sourceInfo in packProvider.GetCandidatePacksAsync(cancellationToken).ConfigureAwait(false))
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
                     count = ProcessCount(count);
                     if (newCache.ContainsKey(sourceInfo.Name) || filteredPackages.ContainsKey(sourceInfo.Name))
                     {
@@ -116,7 +119,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     {
                         continue;
                     }
-                    ProcessTemplatePackage(packInfo, newCache, filteredPackages, scanningStats, oldTemplateVersion, oldNonTemplateVersion);
+                    await ProcessTemplatePackageAsync(packInfo, newCache, filteredPackages, scanningStats, oldTemplateVersion, oldNonTemplateVersion, cancellationToken).ConfigureAwait(false);
                 }
                 ProcessCount(count);
                 Console.WriteLine($"All packs from pack provider {packProvider.Name} are processed");
@@ -149,6 +152,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             Console.WriteLine("Checking template packages via API: ");
             foreach (var package in removedTemplatePacks)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var packageInfo = await provider.GetPackageInfoAsync(package.Name, cancellationToken).ConfigureAwait(false);
                 if (packageInfo == default)
                 {
@@ -173,13 +177,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     {
                         continue;
                     }
-                    ProcessTemplatePackage(packInfo, newCache, filteredPackages, scanningStats, oldVersion, null);
+                    await ProcessTemplatePackageAsync(packInfo, newCache, filteredPackages, scanningStats, oldVersion, null, cancellationToken).ConfigureAwait(false);
                 }
             }
 
             Verbose.WriteLine("Checking non template packages via API: ");
             foreach (var package in removedNonTemplatePacks)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var packageInfo = await provider.GetPackageInfoAsync(package.Name, cancellationToken).ConfigureAwait(false);
                 if (packageInfo == default)
                 {
@@ -211,7 +216,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                     {
                         continue;
                     }
-                    ProcessTemplatePackage(packInfo, newCache, filteredPackages, scanningStats, null, oldNonTemplateVersion);
+                    await ProcessTemplatePackageAsync(packInfo, newCache, filteredPackages, scanningStats, null, oldNonTemplateVersion, cancellationToken).ConfigureAwait(false);
                 }
             }
 
@@ -281,15 +286,16 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             return preFilterResult.ShouldBeFiltered;
         }
 
-        private void ProcessTemplatePackage(
+        private async Task ProcessTemplatePackageAsync(
             IDownloadedPackInfo sourceInfo,
             Dictionary<string, TemplatePackageSearchData> newCache,
             Dictionary<string, FilteredPackageInfo> filteredPackages,
             ScanningStats scanningStats,
             string? oldTemplatePackageVersion,
-            string? oldNonTemplatePackageVersion)
+            string? oldNonTemplatePackageVersion,
+            CancellationToken cancellationToken)
         {
-            IEnumerable<TemplateSearchData> foundTemplates = TryGetTemplatesInPack(sourceInfo, _additionalDataProducers);
+            IEnumerable<TemplateSearchData> foundTemplates = await TryGetTemplatesInPackAsync(sourceInfo, _additionalDataProducers, cancellationToken).ConfigureAwait(false);
             Verbose.WriteLine($"{sourceInfo.Name}::{sourceInfo.Version} is processed");
             if (foundTemplates.Any())
             {
@@ -362,14 +368,15 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
             }
         }
 
-        private IEnumerable<TemplateSearchData> TryGetTemplatesInPack(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers)
+        private async Task<IEnumerable<TemplateSearchData>> TryGetTemplatesInPackAsync(IDownloadedPackInfo packInfo, IReadOnlyList<IAdditionalDataProducer> additionalDataProducers, CancellationToken cancellationToken)
         {
             ITemplateEngineHost host = TemplateEngineHostHelper.CreateHost(HostIdentifierBase + packInfo.Name);
             using EngineEnvironmentSettings environmentSettings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
             Scanner scanner = new Scanner(environmentSettings);
             try
             {
-                using var scanResult = scanner.Scan(packInfo.Path, scanForComponents: false);
+                using var scanResult = await scanner.ScanAsync(packInfo.Path, cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (scanResult.Templates.Any())
                 {
                     foreach (IAdditionalDataProducer dataProducer in additionalDataProducers)
@@ -379,7 +386,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 #pragma warning restore CS0612 // Type or member is obsolete
                     }
 
-                    return scanResult.Templates.Select(t => new TemplateSearchData(t, t.ProduceAdditionalData(additionalDataProducers, environmentSettings)));
+                    return scanResult.Templates.Select(t => new TemplateSearchData(t.ToITemplateInfo(), t.ProduceAdditionalData(additionalDataProducers, environmentSettings)));
                 }
                 return Array.Empty<TemplateSearchData>();
             }

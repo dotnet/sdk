@@ -10,6 +10,7 @@ using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Edge.Template;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 using ITemplateMatchInfo = Microsoft.TemplateEngine.Abstractions.TemplateFiltering.ITemplateMatchInfo;
 using WellKnownSearchFilters = Microsoft.TemplateEngine.Utils.WellKnownSearchFilters;
@@ -106,6 +107,25 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 return new List<ITemplate>() { new Template(this, source) };
             }
 
+            public Task<IReadOnlyList<IScanTemplateInfo>> GetTemplatesFromMountPointAsync(IMountPoint source, CancellationToken cancellationToken)
+            {
+                return Task.FromResult((IReadOnlyList<IScanTemplateInfo>)new List<IScanTemplateInfo>() { new Template(this, source) });
+            }
+
+            public Task<ITemplate?> LoadTemplateAsync(IEngineEnvironmentSettings settings, ITemplateLocator config, string? baselineName = null, CancellationToken cancellationToken = default)
+            {
+                if (!settings.TryGetMountPoint(config.MountPointUri, out IMountPoint? mountPoint))
+                {
+                    return Task.FromResult((ITemplate?)null);
+                }
+                if (mountPoint == null)
+                {
+                    throw new InvalidOperationException($"{nameof(mountPoint)} is null after {nameof(EngineEnvironmentSettingsExtensions.TryGetMountPoint)} returned true.");
+                }
+
+                return Task.FromResult((ITemplate?)new Template(this, mountPoint));
+            }
+
             public bool TryEvaluateFromString(ILogger logger, string text, IDictionary<string, object> variables, out bool result, out string evaluationError, HashSet<string>? referencedVariablesKeys = null) => throw new NotImplementedException();
 
             public bool TryGetTemplateFromConfigInfo(IFileSystemInfo config, out ITemplate? template, IFileSystemInfo? localeConfig, IFile? hostTemplateConfigFile, string? baselineName = null)
@@ -114,7 +134,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 return true;
             }
 
-            internal class Template : ITemplate
+            internal class Template : ITemplate, IScanTemplateInfo
             {
                 private readonly IMountPoint _mountPoint;
 
@@ -187,6 +207,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 public IReadOnlyList<Guid> PostActions => Array.Empty<Guid>();
 
                 public IReadOnlyList<TemplateConstraintInfo> Constraints => Array.Empty<TemplateConstraintInfo>();
+
+                public IFileSystemInfo? HostSpecificConfiguration => null;
+
+                public IReadOnlyList<IValidationEntry> ValidationErrors => Array.Empty<IValidationEntry>();
+
+                public IReadOnlyDictionary<string, ILocalizationLocator> Localizations { get; } = new Dictionary<string, ILocalizationLocator>();
+
+                public IReadOnlyDictionary<string, string> HostConfigFiles { get; } = new Dictionary<string, string>();
+
+                public void Dispose()
+                {
+                    _mountPoint.Dispose();
+                }
             }
 
             internal class CreationEffects : ICreationEffects2, ICreationEffects

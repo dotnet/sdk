@@ -245,17 +245,17 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             {
                 try
                 {
-                    _userTemplateCache = cache = new TemplateCache(_environmentSettings.Host.FileSystem.ReadObject(_paths.TemplateCacheFile), _logger);
+                    _userTemplateCache = cache = new TemplateCache(_environmentSettings.Host.FileSystem.ReadObject(_paths.TemplateCacheFile));
                 }
                 catch (FileNotFoundException)
                 {
                     // Don't log this, it's expected, we just don't want to do File.Exists...
-                    cache = new TemplateCache(null, _logger);
+                    cache = new TemplateCache(null);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogDebug(ex, "Failed to load templatecache.json.");
-                    cache = new TemplateCache(null, _logger);
+                    cache = new TemplateCache(null);
                 }
             }
 
@@ -316,11 +316,11 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             }
 
             var scanResults = new ScanResult?[allTemplatePackages.Count];
-            Parallel.For(0, allTemplatePackages.Count, (int index) =>
+            Parallel.For(0, allTemplatePackages.Count, async (int index) =>
             {
                 try
                 {
-                    var scanResult = _installScanner.Scan(allTemplatePackages[index].MountPointUri);
+                    var scanResult = await _installScanner.ScanAsync(allTemplatePackages[index].MountPointUri, cancellationToken).ConfigureAwait(false);
                     scanResults[index] = scanResult;
                 }
                 catch (Exception ex)
@@ -330,7 +330,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 }
             });
             cancellationToken.ThrowIfCancellationRequested();
-            cache = new TemplateCache(allTemplatePackages, scanResults, mountPoints, _logger);
+            cache = new TemplateCache(allTemplatePackages, scanResults, mountPoints, _environmentSettings);
             foreach (var scanResult in scanResults)
             {
                 scanResult?.Dispose();

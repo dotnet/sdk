@@ -342,9 +342,9 @@ namespace Microsoft.TemplateEngine
 
         internal static JObject ReadJObjectFromIFile(this IFile file)
         {
-            using (Stream s = file.OpenRead())
-            using (TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true))
-            using (JsonReader r = new JsonTextReader(tr))
+            using Stream s = file.OpenRead();
+            using TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true);
+            using JsonReader r = new JsonTextReader(tr);
             {
                 return JObject.Load(r);
             }
@@ -352,9 +352,9 @@ namespace Microsoft.TemplateEngine
 
         internal static JObject ReadObject(this IPhysicalFileSystem fileSystem, string path)
         {
-            using (var fileStream = fileSystem.OpenRead(path))
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
+            using Stream fileStream = fileSystem.OpenRead(path);
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
             {
                 return JObject.Load(jsonReader);
             }
@@ -362,9 +362,9 @@ namespace Microsoft.TemplateEngine
 
         internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
         {
-            using (var fileStream = fileSystem.CreateFile(path))
-            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
-            using (var jsonWriter = new JsonTextWriter(textWriter))
+            using Stream fileStream = fileSystem.CreateFile(path);
+            using var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8);
+            using var jsonWriter = new JsonTextWriter(textWriter);
             {
                 var serializer = new JsonSerializer();
                 serializer.Serialize(jsonWriter, obj);

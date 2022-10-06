@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
-using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
@@ -33,6 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             TemplateConfigModel model = new("TestTemplate")
             {
                 Name = "TestTemplate",
+                ShortNameList = new[] { "TestTemplate" },
                 Symbols = new List<BaseSymbol>()
                 {
                     new ParameterSymbol("mySymbol", "whatever")
@@ -41,12 +39,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
                     }
                 }
             };
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+            using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
+            using RunnableProjectConfig runConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), model, mountPoint.Root);
 
-            GlobalRunConfig? runConfig = null;
-
+            GlobalRunConfig? globalRunConfig = null;
             try
             {
-                runConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), model, A.Fake<IDirectory>()).GlobalOperationConfig;
+                globalRunConfig = runConfig.GlobalOperationConfig;
             }
             catch
             {
@@ -54,8 +54,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
 
             Assert.NotNull(runConfig);
-            Assert.Equal(1, runConfig.ComputedMacros.Count(m => m.VariableName.StartsWith("mySymbol")));
-            BaseMacroConfig mySymbolMacro = runConfig.ComputedMacros.Single(m => m.VariableName.StartsWith("mySymbol"));
+            Assert.Equal(1, globalRunConfig.ComputedMacros.Count(m => m.VariableName.StartsWith("mySymbol")));
+            BaseMacroConfig mySymbolMacro = globalRunConfig.ComputedMacros.Single(m => m.VariableName.StartsWith("mySymbol"));
 
             Assert.True(mySymbolMacro is ProcessValueFormMacroConfig);
             ProcessValueFormMacroConfig? identityFormConfig = mySymbolMacro as ProcessValueFormMacroConfig;
@@ -75,6 +75,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             TemplateConfigModel model = new("TestTemplate")
             {
                 Name = "TestTemplate",
+                ShortNameList = new[] { "TestTemplate" },
                 Symbols = new List<BaseSymbol>()
                 {
                     new ParameterSymbol("original", "whatever"),
@@ -82,11 +83,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
                 }
             };
 
-            GlobalRunConfig? runConfig = null;
+            string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
+            using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
+            using RunnableProjectConfig runConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), model, mountPoint.Root);
 
+            GlobalRunConfig? globalRunConfig = null;
             try
             {
-                runConfig = new RunnableProjectConfig(environmentSettings, A.Fake<IGenerator>(), model, A.Fake<IDirectory>()).GlobalOperationConfig;
+                globalRunConfig = runConfig.GlobalOperationConfig;
             }
             catch
             {

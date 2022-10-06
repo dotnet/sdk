@@ -89,7 +89,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Template content preparation
             //
 
-            Guid inputTestGuid = new Guid("12aa8f4e-a4aa-4ac1-927c-94cb99485ef1");
+            Guid inputTestGuid = new("12aa8f4e-a4aa-4ac1-927c-94cb99485ef1");
             string contentFileNamePrefix = "content - ";
             JObject choiceParam = JObject.Parse(paramDefintion);
             choiceParam["AllowMultipleValues"] = isMultichoice;
@@ -119,28 +119,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
-            InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
+            List<(LogLevel, string)> loggedMessages = new();
+            InMemoryLoggerProvider loggerProvider = new(loggedMessages);
             IEngineEnvironmentSettings environment = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = environment.GetTempVirtualizedPath();
-            string targetDir = environment.GetTempVirtualizedPath();
-            RunnableProjectGenerator rpg = new RunnableProjectGenerator();
 
             TestFileSystemUtils.WriteTemplateSource(environment, sourceBasePath, templateSourceFiles);
             using IMountPoint sourceMountPoint = environment.MountPath(sourceBasePath);
-            RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root);
+            RunnableProjectGenerator rpg = new();
 
             if (expectedToBeValid)
             {
-                runnableConfig.PerformTemplateValidation();
+                using RunnableProjectConfig runnableConfig = new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root);
                 Assert.Empty(loggedMessages.Where(l => l.Item1 >= LogLevel.Warning));
             }
             else
             {
-                var exc = Assert.Throws<TemplateValidationException>(runnableConfig.PerformTemplateValidation);
+                TemplateValidationException exc = Assert.Throws<TemplateValidationException>(() => new RunnableProjectConfig(environment, rpg, config, sourceMountPoint.Root));
                 Assert.Contains("The template configuration ", exc.Message);
                 Assert.Contains(" is not valid.", exc.Message);
-                Assert.Single(loggedMessages.Where(l => l.Item1 >= LogLevel.Warning));
+                _ = Assert.Single(loggedMessages.Where(l => l.Item1 >= LogLevel.Warning));
                 string errorMessage = loggedMessages.First(l => l.Item1 >= LogLevel.Warning).Item2;
                 Assert.Contains(
                     "Choice parameter  is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ('|', ','). Invalid choices: {First|Choice}",

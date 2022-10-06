@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
@@ -145,12 +148,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IGenerator generator = new RunnableProjectGenerator();
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
-            IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
 
-            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFile, out ITemplate? template, null, null);
-            Assert.False(result, "Template config should not be readable - additional file is outside the base path.");
-            Assert.Null(template);
+            IFile? templateConfigFileInfo = mountPoint.FileInfo(".template.config/template.json");
+            Assert.NotNull(templateConfigFileInfo);
+
+            Exception e = Assert.Throws<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
+            Assert.Equal("Failed to load additional configuration file ../../improper.template.json, the file does not exist.", e.Message);
         }
 
         [Fact(DisplayName = nameof(SplitConfigReadFailsIfAReferencedFileIsMissing))]
@@ -166,16 +169,16 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IGenerator generator = new RunnableProjectGenerator();
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
-            IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
 
-            bool result = generator.TryGetTemplateFromConfigInfo(templateConfigFile, out ITemplate? template, null, null);
-            Assert.False(result, "Template config should not be readable - missing additional file.");
-            Assert.Null(template);
+            IFile? templateConfigFileInfo = mountPoint.FileInfo(".template.config/template.json");
+            Assert.NotNull(templateConfigFileInfo);
+
+            Exception e = Assert.Throws<TemplateAuthoringException>(() => new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFileInfo));
+            Assert.Equal("Failed to load additional configuration file symbols.template.json, the file does not exist.", e.Message);
         }
 
-        [Fact(DisplayName = nameof(SplitConfigTest))]
-        public void SplitConfigTest()
+        [Fact]
+        public async Task SplitConfigTest()
         {
             string sourcePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
             IDictionary<string, string?> templateSourceFiles = new Dictionary<string, string?>
@@ -188,10 +191,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IGenerator generator = new RunnableProjectGenerator();
 
             using IMountPoint mountPoint = _engineEnvironmentSettings.MountPath(sourcePath);
-            IFile? templateConfigFile = mountPoint.FileInfo("templateSource/.template.config/template.json");
-            Assert.NotNull(templateConfigFile);
 
-            generator.TryGetTemplateFromConfigInfo(templateConfigFile, out ITemplate? template, null, null);
+            IFile? templateConfigFileInfo = mountPoint.FileInfo("templateSource/.template.config/template.json");
+            Assert.NotNull(templateConfigFileInfo);
+
+            ScannedTemplateInfo config = new ScannedTemplateInfo(_engineEnvironmentSettings, generator, templateConfigFileInfo);
+            ITemplate? template = await generator.LoadTemplateAsync(_engineEnvironmentSettings, config, baselineName: null, cancellationToken: default).ConfigureAwait(false);
+
             Assert.NotNull(template);
 
             IDictionary<string, ITemplateParameter> parameters = template!.ParameterDefinitions.ToDictionary(p => p.Name, p => p);

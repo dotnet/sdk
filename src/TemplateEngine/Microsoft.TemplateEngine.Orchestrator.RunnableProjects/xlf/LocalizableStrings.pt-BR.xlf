@@ -146,8 +146,13 @@ Detalhes: {1}</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name; {2}, {3}, {4} - the property names and values.</note>
       </trans-unit>
       <trans-unit id="LocalizationModelDeserializer_Error_FailedToParse">
-        <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
-        <target state="translated">Falha ao ler o arquivo de localização {0}, ele será ignorado do processamento posterior.</target>
+        <source>Failed to read or parse localization file {0}, it will be skipped from further processing.</source>
+        <target state="needs-review-translation">Falha ao ler o arquivo de localização {0}, ele será ignorado do processamento posterior.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LocalizationModelDeserializer_Error_UnknownLocale">
+        <source>Locale '{0}' does not match any known cultures.</source>
+        <target state="new">Locale '{0}' does not match any known cultures.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">

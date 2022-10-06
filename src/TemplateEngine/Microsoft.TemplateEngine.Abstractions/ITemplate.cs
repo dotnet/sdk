@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -8,7 +9,7 @@ namespace Microsoft.TemplateEngine.Abstractions
     /// <summary>
     /// Defines the template that can be run by <see cref="IGenerator"/>.
     /// </summary>
-    public interface ITemplate : ITemplateInfo
+    public interface ITemplate : ITemplateInfo, IValidationInfo, IDisposable
     {
         /// <summary>
         /// Gets generator that runs the template.
@@ -24,6 +25,11 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// Gets localization file system entry.
         /// </summary>
         IFileSystemInfo? LocaleConfiguration { get; }
+
+        /// <summary>
+        /// Gets host configuration file system entry.
+        /// </summary>
+        IFileSystemInfo? HostSpecificConfiguration { get; }
 
         /// <summary>
         /// Gets directory with template source files.

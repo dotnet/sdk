@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
         public SourceConfigTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: false);
+            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: false);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationResult result = await (generator as IGenerator).CreateAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);
@@ -105,7 +105,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 { "something.txt", null },
                 { "copy.me", null }
             };
-
             _engineEnvironmentSettings.WriteTemplateSource(sourceBasePath, templateSourceFiles);
             string targetDir = _engineEnvironmentSettings.GetTempVirtualizedPath();
 
@@ -115,7 +114,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);
@@ -166,7 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);
@@ -216,7 +215,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);
@@ -262,7 +261,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 { "include.xyz", null },
                 { "exclude.xyz", null }
             };
-
             _engineEnvironmentSettings.WriteTemplateSource(sourceBasePath, templateSourceFiles);
 
             string targetDir = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -272,7 +270,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);
@@ -319,7 +317,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 { "include.xyz", null },
                 { "exclude.xyz", null }
             };
-
             _engineEnvironmentSettings.WriteTemplateSource(sourceBasePath, templateSourceFiles);
 
             string targetDir = _engineEnvironmentSettings.GetTempVirtualizedPath();
@@ -329,7 +326,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
             Assert.NotNull(templateConfigFile);
 
-            ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
+            using ITemplate template = new RunnableProjectConfig(_engineEnvironmentSettings, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
             ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(_engineEnvironmentSettings, template, parameters, targetDir, default).ConfigureAwait(false);

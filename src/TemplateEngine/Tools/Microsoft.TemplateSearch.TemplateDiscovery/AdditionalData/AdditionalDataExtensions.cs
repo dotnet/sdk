@@ -37,7 +37,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
             return null;
         }
 
-        internal static IDictionary<string, object>? ProduceAdditionalData(this ITemplateInfo template, IReadOnlyList<IAdditionalDataProducer> producers, IEngineEnvironmentSettings environmentSettings)
+        internal static IDictionary<string, object>? ProduceAdditionalData(this IScanTemplateInfo template, IReadOnlyList<IAdditionalDataProducer> producers, IEngineEnvironmentSettings environmentSettings)
         {
             Dictionary<string, object>? additionalData = new Dictionary<string, object>();
             foreach (var producer in producers)

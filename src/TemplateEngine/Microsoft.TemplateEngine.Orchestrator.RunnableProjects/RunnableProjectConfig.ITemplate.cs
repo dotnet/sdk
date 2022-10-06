@@ -14,11 +14,27 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal partial class RunnableProjectConfig : ITemplate
     {
+        IGenerator ITemplate.Generator => Generator;
+
+        IFileSystemInfo ITemplate.Configuration => ConfigFile ?? throw new InvalidOperationException("Configuration file is not initialized, are you using test constructor?");
+
+        string ITemplateInfo.MountPointUri => ConfigFile?.MountPoint.MountPointUri ?? throw new InvalidOperationException("Configuration file is not initialized, are you using test constructor?");
+
+        string ITemplateInfo.ConfigPlace => ConfigFile?.FullPath ?? throw new InvalidOperationException("Configuration file is not initialized, are you using test constructor?");
+
+        IFileSystemInfo? ITemplate.LocaleConfiguration => _localeConfigFile;
+
+        IFileSystemInfo? ITemplate.HostSpecificConfiguration => _hostConfigFile;
+
+        string? ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
+
+        string? ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
+
+        bool ITemplate.IsNameAgreementWithFolderPreferred => ConfigurationModel.PreferNameDirectory;
+
         IDirectory ITemplate.TemplateSourceRoot => TemplateSourceRoot;
 
-        string ITemplateInfo.Identity => ConfigurationModel.Identity;
-
-        Guid ITemplateInfo.GeneratorId => _generator.Id;
+        IReadOnlyList<IValidationEntry> IValidationInfo.ValidationErrors => throw new NotImplementedException();
 
         string? ITemplateInfo.Author => ConfigurationModel.Author;
 
@@ -28,13 +44,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 
         string? ITemplateInfo.DefaultName => ConfigurationModel.DefaultName;
 
-        IGenerator ITemplate.Generator => _generator;
+        string ITemplateInfo.Identity => ConfigurationModel.Identity;
+
+        Guid ITemplateInfo.GeneratorId => Generator.Id;
 
         string? ITemplateInfo.GroupIdentity => ConfigurationModel.GroupIdentity;
 
         int ITemplateInfo.Precedence => ConfigurationModel.Precedence;
 
         string ITemplateInfo.Name => ConfigurationModel.Name ?? throw new TemplateAuthoringException("Template configuration should have 'name' defined.", "name");
+
+        IReadOnlyList<string> ITemplateInfo.ShortNameList => ConfigurationModel.ShortNameList ?? new List<string>();
+
+        IParameterDefinitionSet ITemplateInfo.ParameterDefinitions => new ParameterDefinitionSet(ConfigurationModel.ExtractParameters());
+
+        string? ITemplateInfo.ThirdPartyNotices => ConfigurationModel.ThirdPartyNotices;
+
+        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => ConfigurationModel.BaselineInfo;
+
+        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => ConfigurationModel.Tags;
+
+        IReadOnlyList<Guid> ITemplateInfo.PostActions => ConfigurationModel.PostActionModels.Select(pam => pam.ActionId).ToArray();
+
+        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => ConfigurationModel.Constraints;
+
+        #region Obsolete implementation
 
         [Obsolete]
         string ITemplateInfo.ShortName
@@ -49,8 +83,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 return string.Empty;
             }
         }
-
-        IReadOnlyList<string> ITemplateInfo.ShortNameList => ConfigurationModel.ShortNameList ?? new List<string>();
 
         bool ITemplateInfo.PreferDefaultName => ConfigurationModel.PreferDefaultName;
 
@@ -95,37 +127,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             }
         }
 
-        public IParameterDefinitionSet ParameterDefinitions => new ParameterDefinitionSet(ConfigurationModel.ExtractParameters());
-
         [Obsolete("Use ParameterDefinitionSet instead.")]
-        public IReadOnlyList<ITemplateParameter> Parameters => ParameterDefinitions;
+        IReadOnlyList<ITemplateParameter> ITemplateInfo.Parameters => ParameterDefinitions;
 
-        IFileSystemInfo ITemplate.Configuration => SourceFile ?? throw new InvalidOperationException("Source file is not initialized, are you using test constructor?");
-
-        string ITemplateInfo.MountPointUri => SourceFile?.MountPoint.MountPointUri ?? throw new InvalidOperationException("Source file is not initialized, are you using test constructor?");
-
-        string ITemplateInfo.ConfigPlace => SourceFile?.FullPath ?? throw new InvalidOperationException("Source file is not initialized, are you using test constructor?");
-
-        IFileSystemInfo? ITemplate.LocaleConfiguration => _localeConfigFile;
-
-        string? ITemplateInfo.LocaleConfigPlace => _localeConfigFile?.FullPath;
-
-        //read in simple template model instead
-        bool ITemplate.IsNameAgreementWithFolderPreferred => ConfigurationModel.PreferNameDirectory;
-
-        string? ITemplateInfo.HostConfigPlace => _hostConfigFile?.FullPath;
-
-        //read in simple template model instead
-        string? ITemplateInfo.ThirdPartyNotices => ConfigurationModel.ThirdPartyNotices;
-
-        IReadOnlyDictionary<string, IBaselineInfo> ITemplateInfo.BaselineInfo => ConfigurationModel.BaselineInfo;
-
-        IReadOnlyDictionary<string, string> ITemplateInfo.TagsCollection => ConfigurationModel.Tags;
-
+        [Obsolete]
         bool ITemplateInfo.HasScriptRunningPostActions { get; set; }
 
-        IReadOnlyList<Guid> ITemplateInfo.PostActions => ConfigurationModel.PostActionModels.Select(pam => pam.ActionId).ToArray();
+        #endregion
 
-        IReadOnlyList<TemplateConstraintInfo> ITemplateInfo.Constraints => ConfigurationModel.Constraints;
+        void IDisposable.Dispose() => SourceMountPoint.Dispose();
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.TemplateEngine.Abstractions
@@ -23,22 +24,23 @@ namespace Microsoft.TemplateEngine.Abstractions
         /// <summary>
         /// Gets the identity of the template that the localizations in this object belong to.
         /// </summary>
+        [Obsolete("ILocalizationLocator is available form IScanTemplateInfo now, so get the identity via IScanTemplateInfo.Identity.")]
         string Identity { get; }
 
         /// <summary>
         /// Gets the localized author name.
         /// </summary>
-        string Author { get; }
+        string? Author { get; }
 
         /// <summary>
         /// Gets the localized template name.
         /// </summary>
-        string Name { get; }
+        string? Name { get; }
 
         /// <summary>
         /// Gets the localized template description.
         /// </summary>
-        string Description { get; }
+        string? Description { get; }
 
         /// <summary>
         /// Gets the localization models for the parameter symbols defined in this template.

@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         {
             var environmentSettings = LoadHostWithLocalizationTemplates(locale, out _, out ITemplateInfo localizationTemplate);
             var templateCreator = new TemplateCreator(environmentSettings);
-            ITemplate? template = templateCreator.LoadTemplate(localizationTemplate, null);
+            ITemplate? template = await templateCreator.LoadTemplateAsync(localizationTemplate, null, default).ConfigureAwait(false);
             Assert.NotNull(template);
             Assert.NotNull(template!.Generator);
 
