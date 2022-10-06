@@ -25,19 +25,19 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
         }
 
-        private static Accessibility normalizeInternals(Accessibility a) => a switch
+        private static Accessibility NormalizeInternals(Accessibility a) => a switch
         {
             Accessibility.ProtectedOrInternal => Accessibility.Protected,
             Accessibility.ProtectedAndInternal or Accessibility.Internal => Accessibility.Private,
             _ => a,
         };
 
-        private int compareAccessibility(Accessibility a, Accessibility b)
+        private int CompareAccessibility(Accessibility a, Accessibility b)
         {
             if (!_settings.IncludeInternalSymbols)
             {
-                a = CannotChangeVisibility.normalizeInternals(a);
-                b = CannotChangeVisibility.normalizeInternals(b);
+                a = CannotChangeVisibility.NormalizeInternals(a);
+                b = CannotChangeVisibility.NormalizeInternals(b);
             }
 
             if (a == b)
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             Accessibility leftAccess = left.DeclaredAccessibility;
             Accessibility rightAccess = right.DeclaredAccessibility;
-            int accessComparison = compareAccessibility(leftAccess, rightAccess);
+            int accessComparison = CompareAccessibility(leftAccess, rightAccess);
 
             if (accessComparison > 0)
             {
