@@ -44,6 +44,50 @@ new CompatDifference[] {
     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "T:CompatTests.First")
 }
             },
+            // Reducing visibility of internal type to protected
+            {
+                @"
+namespace CompatTests
+{
+  public class First {
+    internal int F = 0;
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  public class First {
+    protected int F = 0;
+  }
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "F:CompatTests.First.F")
+}
+            },
+            // Reducing visibility of protected type to internal
+            {
+                @"
+namespace CompatTests
+{
+  public class First {
+    protected int F = 0;
+  }
+}
+",
+                @"
+namespace CompatTests
+{
+  public class First {
+    internal int F = 0;
+  }
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotReduceVisibility, string.Empty, DifferenceType.Changed, "F:CompatTests.First.F")
+}
+            },
             // Expand visibility of type
             {
                 @"
@@ -298,7 +342,7 @@ new CompatDifference[] {
 
         public static TheoryData<string, string, CompatDifference[]> NoInternals => new()
         {
-            // Expand visibility of type
+            // No diagnostic on expanding visibility of type from internal to public
             {
                 @"
 namespace CompatTests
@@ -314,7 +358,7 @@ namespace CompatTests
 ",
 new CompatDifference[] {}
             },
-            // Expand visibility of member
+            // No diagnostic on expanding visibility of member from protected to protected internal
             {
                 @"
 namespace CompatTests
