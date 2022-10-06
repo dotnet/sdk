@@ -3264,12 +3264,12 @@
       "OriginalItemSpec": "obj\\Debug\\${Tfm}\\blazorwasm-minimal.pdb"
     },
     {
-      "Identity": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js",
+      "Identity": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.9.[[hash]].js",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.8.[[hash]].js",
+      "RelativePath": "_framework/dotnet.6.0.9.[[hash]].js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -6647,21 +6647,21 @@
       "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.pdb"
     },
     {
-      "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.6.0.8.[[hash]].js.gz]]",
+      "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.6.0.9.[[hash]].js.gz]]",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.6.0.8.[[hash]].js.gz",
+      "RelativePath": "_framework/dotnet.6.0.9.[[hash]].js.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
-      "RelatedAsset": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js",
+      "RelatedAsset": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.9.[[hash]].js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.8.[[hash]].js"
+      "OriginalItemSpec": "${ProjectRoot}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.6.0.9.[[hash]].js"
     },
     {
       "Identity": "${ProjectRoot}\\obj\\Debug\\${Tfm}\\build-gz\\[[_framework/dotnet.timezones.blat.gz]]",
