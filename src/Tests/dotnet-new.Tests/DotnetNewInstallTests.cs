@@ -571,8 +571,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining($"Error: Failed to load template from {invalidTemplatePath}")
-                .And.HaveStdOutContaining($"  The template root is outside the specified install source location.")
-                .And.HaveStdOutContaining($"  Source location './' is outside the specified install source location.")
+                .And.HaveStdOutContaining($"The template root is outside the specified install source location.")
                 .And.HaveStdOutContaining($"No templates were found in the package {invalidTemplatePath}.");
         }
 
