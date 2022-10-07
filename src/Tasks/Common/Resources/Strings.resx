@@ -871,4 +871,8 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</value>
       <comment>{StrBegin="NETSDK1191: "}</comment>
   </data>
+  <data name="RuntimeIdentifierWillNoLongerImplySelfContained" xml:space="preserve">
+    <value>NETSDK1192: In projects with TargetFrameworks >= 8.0, RuntimeIdentifier no longer automatically implies SelfContained. To preserve a project's current behavior after upgrading to 8.0, consider setting SelfContained explicitly.</value>
+    <comment>{StrBegin="NETSDK1192: "}</comment>
+  </data>
 </root>
