@@ -18,6 +18,19 @@ containing method.
  .../Utf8JsonWriter.WriteProperties.String.cs  | 24 +++++++++++--------
  7 files changed, 36 insertions(+), 14 deletions(-)
 
+diff --git a/eng/Versions.props b/eng/Versions.props
+index fe8aac648cd..2f16902347b 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -52,7 +52,7 @@
+     <!--
+       TODO: Remove pinned version once arcade supplies a compiler that enables the repo to compile.
+     -->
+-    <MicrosoftNetCompilersToolsetVersion>4.4.0-3.22452.8</MicrosoftNetCompilersToolsetVersion>
++    <MicrosoftNetCompilersToolsetVersion>4.4.0-3.22472.1</MicrosoftNetCompilersToolsetVersion>
+     <StaticCsVersion>0.2.0</StaticCsVersion>
+     <!-- SDK dependencies -->
+     <MicrosoftDotNetApiCompatTaskVersion>8.0.100-alpha.1.22462.3</MicrosoftDotNetApiCompatTaskVersion>
 diff --git a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs b/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs
 index c55ee607da773..4e1246b481b10 100644
 --- a/src/coreclr/System.Private.CoreLib/src/System/Reflection/RuntimeMethodInfo.CoreCLR.cs

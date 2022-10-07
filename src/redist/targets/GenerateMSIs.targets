@@ -318,8 +318,11 @@
 
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
+      <!-- While we don't have 8.0 templates available (need SDK update, choose the 7.0 templates -->
+      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+                                         Condition="'%(TemplatesMajorMinorVersion)' == '7.0'"/>
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
