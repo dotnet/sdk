@@ -270,7 +270,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData("net7.0")]
+        [InlineData("net8.0")]
         public void RuntimeIdentifiersDisablesRuntimeSpecificFDDBehavior(string targetFramework)
         {
             var expectedRuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
