@@ -143,7 +143,15 @@ namespace Microsoft.NET.Build.Tasks
 
             bool version5 = crossgen2PackVersion.Major < 6;
             bool isSupportedTarget = ExtractTargetPlatformAndArchitecture(_targetRuntimeIdentifier, out _targetPlatform, out _targetArchitecture);
-            string targetOS = _targetPlatform switch
+
+            var runtimeGraph = new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath);
+            string portablePlatform = NuGetUtils.GetBestMatchingRid(
+                    runtimeGraph,
+                    _targetPlatform,
+                    new[] { "linux", "linux-musl", "osx", "win" },
+                    out _);
+
+            string targetOS = portablePlatform switch
             {
                 "linux" => "linux",
                 "linux-musl" => "linux",
