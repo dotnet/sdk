@@ -8,6 +8,8 @@ variables:
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
     value: .NETCoreValidation
+  - name: Codeql.Enabled
+    value: true​
 
 # Branches that trigger a build on commit
 trigger:
