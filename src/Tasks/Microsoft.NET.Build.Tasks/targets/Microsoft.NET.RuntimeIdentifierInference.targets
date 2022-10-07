@@ -61,7 +61,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(_TargetFrameworkVersionWithoutV)' >= '8.0' and '$(RuntimeSpecific)' == ''">
+  <PropertyGroup Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and '$(_TargetFrameworkVersionWithoutV)' >= '8.0' and '$(RuntimeSpecific)' == ''">
     <RuntimeSpecific>true</RuntimeSpecific>
   </PropertyGroup>
 
@@ -133,7 +133,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_SelfContainedWasSpecified Condition="'$(SelfContained)' != ''">true</_SelfContainedWasSpecified>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
-    <SelfContained Condition="'$(SelfContained)' == '' and '$(RuntimeIdentifier)' != '' and '$(_RuntimeIdentifierInferredFromRuntimeSpecific) != 'true'">true</SelfContained>
+    <SelfContained Condition="'$(SelfContained)' == '' and '$(RuntimeIdentifier)' != '' and '$(_RuntimeIdentifierInferredFromRuntimeSpecific)' != 'true'">true</SelfContained>
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
@@ -231,7 +231,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                     ResourceName="Prefer32BitIgnoredForNetCoreApp" />
 
     <PropertyGroup>
-          <Prefer32Bit>false</Prefer32Bit>
+      <Prefer32Bit>false</Prefer32Bit>
     </PropertyGroup>
 
   </Target>
@@ -243,7 +243,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(PlatformTarget)' != 'AnyCPU' and !$(RuntimeIdentifier.ToUpperInvariant().Contains($(PlatformTarget.ToUpperInvariant())))"
                  ResourceName="CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget"
                  FormatArguments="$(RuntimeIdentifier);$(PlatformTarget)" />
-    
+
   </Target>
 
   <Target Name="_CheckForLanguageAndFeatureCombinationSupport"
