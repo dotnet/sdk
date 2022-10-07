@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
@@ -12,8 +14,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
     {
         internal const int LowPortDefault = 1024;
         internal const int HighPortDefault = 65535;
-
-        private static readonly object LockObj = new();
 
         private static readonly HashSet<int> UnsafePorts = new()
         {
@@ -27,8 +27,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                     6668, // Alternate IRC [Apple addition]
                     6669, // Alternate IRC [Apple addition]
         };
-
-        private static readonly HashSet<int> AllocatedPorts = new();
 
         internal GeneratePortNumberConfig(GeneratePortNumberMacro macro, string variableName, string? dataType, int fallback, int low, int high)
              : base(macro, variableName, dataType)
@@ -76,77 +74,63 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         internal int Fallback { get; }
 
+        private static ConcurrentDictionary<int, int> UnavailablePorts { get; } = new(UnsafePorts.ToDictionary(p => p));
+
         private static int AllocatePort(int low, int high, int fallback = 0)
         {
             int startPort = CryptoRandom.NextInt(low, high);
 
             for (int testPort = startPort; testPort <= high; testPort++)
             {
-                if (TryAllocatePort(testPort, out int port))
+                if (TryAllocatePort(testPort))
                 {
-                    return port;
+                    return testPort;
                 }
             }
 
             for (int testPort = low; testPort < startPort; testPort++)
             {
-                if (TryAllocatePort(testPort, out int port))
+                if (TryAllocatePort(testPort))
                 {
-                    return port;
+                    return testPort;
                 }
             }
             return fallback;
         }
 
-        private static bool TryAllocatePort(int testPort, out int finalPort)
+        private static bool TryAllocatePort(int testPort)
         {
             Socket? testSocket = null;
-            finalPort = 0;
-
-            if (UnsafePorts.Contains(testPort))
+            if (!UnavailablePorts.TryAdd(testPort, testPort))
             {
                 return false;
             }
-            lock (LockObj)
+            try
             {
-                if (AllocatedPorts.Contains(testPort))
+                if (Socket.OSSupportsIPv4)
+                {
+                    testSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                }
+                else if (Socket.OSSupportsIPv6)
+                {
+                    testSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
+                }
+
+                if (testSocket is null)
                 {
                     return false;
                 }
-
-                try
-                {
-                    if (Socket.OSSupportsIPv4)
-                    {
-                        testSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    }
-                    else if (Socket.OSSupportsIPv6)
-                    {
-                        testSocket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp);
-                    }
-
-                    if (testSocket is null)
-                    {
-                        return false;
-                    }
-                    IPEndPoint endPoint = new(testSocket.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, testPort);
-                    testSocket.Bind(endPoint);
-                    finalPort = ((IPEndPoint)testSocket.LocalEndPoint).Port;
-                    if (testPort != finalPort)
-                    {
-                        return false;
-                    }
-                    AllocatedPorts.Add(testPort);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-                finally
-                {
-                    testSocket?.Dispose();
-                }
+                IPEndPoint endPoint = new(testSocket.AddressFamily == AddressFamily.InterNetworkV6 ? IPAddress.IPv6Any : IPAddress.Any, testPort);
+                testSocket.Bind(endPoint);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                testSocket?.Dispose();
             }
         }
     }
