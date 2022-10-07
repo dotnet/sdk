@@ -426,7 +426,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                             }
                             else
                             {
-                                _settings.Host.Logger.LogDebug($"Unable to find a form called '{formName}'");
+                                _settings.Host.Logger.LogWarning(LocalizableStrings.RunnableProjectConfig_OperationSetup_UnknownForm, p.Name, formName);
                             }
                         }
                     }
@@ -470,7 +470,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             if (generateMacros)
             {
                 generatedSymbolMacros = ProduceGeneratedSymbolsMacroConfig();
-                computedMacros = ProduceMacroConfig();
+                computedMacros = ProduceComputedMacroConfig();
             }
 
             foreach (BaseSymbol symbol in ConfigurationModel.Symbols)
@@ -602,7 +602,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             return ConfigurationModel.Symbols.OfType<IGeneratedSymbolConfig>().ToList();
         }
 
-        private List<BaseMacroConfig> ProduceMacroConfig()
+        private List<BaseMacroConfig> ProduceComputedMacroConfig()
         {
             List<BaseMacroConfig> computedMacroConfigs = new();
             foreach (ComputedSymbol symbol in ConfigurationModel.Symbols.OfType<ComputedSymbol>())
@@ -623,19 +623,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     _guidToGuidPrefixMap[guid] = replacementId;
                 }
             }
-            return computedMacroConfigs;
-        }
-
-        private List<IMacroConfig> ProduceComputedMacroConfig()
-        {
-            List<IMacroConfig> computedMacroConfigs = new List<IMacroConfig>();
-            foreach (ComputedSymbol symbol in ConfigurationModel.Symbols.OfType<ComputedSymbol>())
-            {
-                string value = symbol.Value;
-                string? evaluator = symbol.Evaluator;
-                computedMacroConfigs.Add(new EvaluateMacroConfig(symbol.Name, "bool", value, evaluator));
-            }
-
             return computedMacroConfigs;
         }
 

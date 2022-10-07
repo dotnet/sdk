@@ -15,9 +15,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal static class MacroProcessor
     {
-        // Warning: if there are unknown macro "types", they are quietly ignored here.
-        // This applies to both the regular and deferred macros.
-
         /// <summary>
         /// Processes the macros defined in <paramref name="runConfig"/>.
         /// </summary>
