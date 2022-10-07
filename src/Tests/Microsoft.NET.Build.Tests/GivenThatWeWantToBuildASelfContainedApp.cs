@@ -416,6 +416,7 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("net7.0", true)]
         [InlineData("net7.0", false)]
+        [InlineData("net8.0", false)]
         public void It_does_or_doesnt_warn_based_on_SelfContained_and_TargetFramework_breaking_RID_change(string targetFramework, bool defineSelfContained)
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
