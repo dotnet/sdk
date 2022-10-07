@@ -269,10 +269,10 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
-        public void RuntimeIdentifiersDisablesRuntimeSpecificFDDBehavior()
+        [Theory]
+        [InlineData("net7.0")]
+        public void RuntimeIdentifiersDisablesRuntimeSpecificFDDBehavior(string targetFramework)
         {
-            string targetFramework = "net8.0";
             var expectedRuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
             TestAsset testAsset = _testAssetsManager.CreateTestProject(_testProject, identifier: $"RuntimeIdentifierS_{targetFramework}") // the S is intentional to call atention to it
                 .WithTargetFramework(targetFramework)
