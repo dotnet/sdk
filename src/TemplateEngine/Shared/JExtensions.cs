@@ -87,6 +87,14 @@ namespace Microsoft.TemplateEngine
             return result;
         }
 
+        internal static bool TryParseInt(this JToken token, out int result)
+        {
+            result = default;
+            return (token.Type == JTokenType.Integer || token.Type == JTokenType.String)
+                   &&
+                   int.TryParse(token.ToString(), out result);
+        }
+
         internal static int ToInt32(this JToken? token, string? key = null, int defaultValue = 0)
         {
             int value;

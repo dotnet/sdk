@@ -90,21 +90,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             try
             {
                 var jToken = JToken.Parse(token);
-                if (jToken.Type is not JTokenType.Boolean and not JTokenType.String)
-                {
-                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeBoolean, config.VariableName, parameterName), config.VariableName);
-                }
-                if (bool.TryParse(jToken.ToString(), out bool result))
+                if (jToken.TryParseBool(out bool result))
                 {
                     return result;
                 }
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeBoolean, config.VariableName, parameterName), config.VariableName);
             }
-            catch (TemplateAuthoringException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
@@ -115,21 +107,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             try
             {
                 var jToken = JToken.Parse(token);
-                if (jToken.Type is not JTokenType.Integer and not JTokenType.String)
-                {
-                    throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeInteger, config.VariableName, parameterName), config.VariableName);
-                }
-                if (int.TryParse(jToken.ToString(), out int result))
+                if (jToken.TryParseInt(out int result))
                 {
                     return result;
                 }
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ValueShouldBeInteger, config.VariableName, parameterName), config.VariableName);
             }
-            catch (TemplateAuthoringException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
@@ -146,11 +130,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
                 return jToken.ToString();
             }
-            catch (TemplateAuthoringException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
@@ -167,11 +147,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
                 }
                 return (JArray)jToken;
             }
-            catch (TemplateAuthoringException)
-            {
-                throw;
-            }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not TemplateAuthoringException)
             {
                 throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_InvalidJSON, config.VariableName, parameterName), config.VariableName, ex);
             }
