@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Formats.Asn1;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
@@ -14,13 +16,24 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.ProjectConstruction;
 using Xunit;
 using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.NET.Publish.Tests
 {
     public class RuntimeIdentifiersTests : SdkTest
     {
+
+        TestProject _testProject;
+
         public RuntimeIdentifiersTests(ITestOutputHelper log) : base(log)
         {
+            _testProject = new TestProject("TestProject")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            _testProject.RecordProperties("RuntimeIdentifier", "SelfContained", "RuntimeIdentifiers");
         }
 
         //  Run on core MSBuild only as using a local packages folder hits long path issues on full MSBuild
@@ -217,6 +230,67 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
+        }
+
+        [Theory]
+        [InlineData("net7.0", "true")]
+        [InlineData("net7.0", "")]
+        [InlineData("net8.0", "")]
+        [InlineData("net8.0", "true")]
+        [InlineData("net8.0", "false")]
+        public void RuntimeSpecificEnablesOrDisablesRuntimeIdentifierByDefaultBasedOnValueAndTargetFramework(string targetFramework, string runtimeSpecific)
+        {
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(_testProject, identifier: $"{targetFramework}_{runtimeSpecific}")
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "RuntimeSpecific", runtimeSpecific));
+                });
+
+            var expectedRuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            new DotnetBuildCommand(testAsset)
+                .Execute($"/p:NETCoreSdkRuntimeIdentifier={expectedRuntimeIdentifier}")
+                .Should()
+                .Pass();
+
+            if ((runtimeSpecific != "false" && targetFramework == "net8.0") || runtimeSpecific == "true" && targetFramework == "net7.0")
+            {
+                var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, runtimeIdentifier: expectedRuntimeIdentifier);
+                var resolvedRid = properties["RuntimeIdentifier"];
+                Assert.True(resolvedRid == expectedRuntimeIdentifier);
+            }
+            else
+            {
+                var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework);
+                var resolvedRid = properties["RuntimeIdentifier"];
+                Assert.True(resolvedRid == "");
+            }
+        }
+
+        [Fact]
+        public void RuntimeIdentifiersDisablesRuntimeSpecificFDDBehavior()
+        {
+            string targetFramework = "net8.0";
+            var expectedRuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
+            TestAsset testAsset = _testAssetsManager.CreateTestProject(_testProject, identifier: $"RuntimeIdentifierS_{targetFramework}") // the S is intentional to call atention to it
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifiers", $"{expectedRuntimeIdentifier};{expectedRuntimeIdentifier}"));
+                });
+
+            new DotnetBuildCommand(testAsset)
+                .Execute($"/p:NETCoreSdkRuntimeIdentifier={expectedRuntimeIdentifier}")
+                .Should()
+                .Pass();
+
+            var properties = _testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: targetFramework, runtimeIdentifier: expectedRuntimeIdentifier);
+            var resolvedRid = properties["RuntimeIdentifier"];
+            Assert.True(resolvedRid == "");
         }
     }
 }
