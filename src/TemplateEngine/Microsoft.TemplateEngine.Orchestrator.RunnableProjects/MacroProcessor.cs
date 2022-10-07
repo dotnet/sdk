@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
+using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
@@ -28,11 +28,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             GlobalRunConfig runConfig,
             IVariableCollection variables)
         {
+            bool deterministicMode = IsDeterministicModeEnabled(environmentSettings);
+
             foreach (BaseMacroConfig config in runConfig.ComputedMacros)
             {
                 try
                 {
-                    config.Evaluate(environmentSettings, variables);
+                    if (deterministicMode)
+                    {
+                        config.EvaluateDeterministically(environmentSettings, variables);
+                    }
+                    else
+                    {
+                        config.Evaluate(environmentSettings, variables);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -48,11 +57,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
             Dictionary<string, IGeneratedSymbolMacro> generatedSymbolMacros = environmentSettings.Components.OfType<IGeneratedSymbolMacro>().ToDictionary(m => m.Type, m => m);
             foreach (IGeneratedSymbolConfig config in runConfig.GeneratedSymbolMacros)
             {
-                if (generatedSymbolMacros.TryGetValue(config.Type, out IGeneratedSymbolMacro deferredMacroObject))
+                if (generatedSymbolMacros.TryGetValue(config.Type, out IGeneratedSymbolMacro generatedSymbolMacro))
                 {
                     try
                     {
-                        deferredMacroObject.Evaluate(environmentSettings, variables, config);
+                        if (deterministicMode && generatedSymbolMacro is IDeterministicModeMacro<IGeneratedSymbolConfig> deterministicMacro)
+                        {
+                            deterministicMacro.EvaluateDeterministically(environmentSettings, variables, config);
+                        }
+                        else
+                        {
+                            generatedSymbolMacro.Evaluate(environmentSettings, variables, config);
+                        }
                     }
                     //TemplateAuthoringException means that config was invalid, just pass it.
                     catch (Exception ex) when (ex is not TemplateAuthoringException)
@@ -65,6 +81,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                     environmentSettings.Host.Logger.LogWarning(LocalizableStrings.MacroProcessor_Warning_UnknownMacro, config.VariableName, config.Type);
                 }
             }
+        }
+
+        private static bool IsDeterministicModeEnabled(IEngineEnvironmentSettings environmentSettings)
+        {
+            string? unparsedValue = environmentSettings.Environment.GetEnvironmentVariable("TEMPLATE_ENGINE_ENABLE_DETERMINISTIC_MODE");
+            return bool.TryParse(unparsedValue, out bool result) && result;
         }
     }
 }

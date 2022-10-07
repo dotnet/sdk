@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class GeneratePortNumberMacro : BaseGeneratedSymbolMacro<GeneratePortNumberConfig>
+    internal class GeneratePortNumberMacro : BaseNondeterministicGenSymMacro<GeneratePortNumberConfig>
     {
         public override Guid Id { get; } = new Guid("D49B3690-B1E5-410F-A260-E1D7E873D8B2");
 
@@ -20,6 +19,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         {
             vars[config.VariableName] = config.Port;
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(GeneratePortNumberMacro), config.VariableName, config.Port);
+        }
+
+        public override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, GeneratePortNumberConfig config)
+        {
+            variables[config.VariableName] = config.Low;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}' in deterministic mode.", nameof(GeneratePortNumberMacro), config.VariableName, config.Low);
         }
 
         protected override GeneratePortNumberConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);

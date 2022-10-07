@@ -6,12 +6,12 @@ using System.Net;
 using System.Net.Sockets;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 
-namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
+namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
     internal class GeneratePortNumberConfig : BaseMacroConfig<GeneratePortNumberMacro, GeneratePortNumberConfig>
     {
-        private const int LowPortDefault = 1024;
-        private const int HighPortDefault = 65535;
+        internal const int LowPortDefault = 1024;
+        internal const int HighPortDefault = 65535;
 
         private static readonly object LockObj = new();
 
@@ -33,6 +33,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         internal GeneratePortNumberConfig(GeneratePortNumberMacro macro, string variableName, string? dataType, int fallback, int low, int high)
              : base(macro, variableName, dataType)
         {
+            Fallback = fallback;
+            Low = low;
+            High = high;
             Port = AllocatePort(low, high, fallback);
         }
 
@@ -59,6 +62,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
 
             int fallback = GetOptionalParameterValue(generatedSymbolConfig, "fallback", ConvertJTokenToInt, 0);
 
+            Fallback = fallback;
+            Low = low;
+            High = high;
             Port = AllocatePort(low, high, fallback);
         }
 
@@ -67,6 +73,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config
         internal int Low { get; }
 
         internal int High { get; }
+
+        internal int Fallback { get; }
 
         private static int AllocatePort(int low, int high, int fallback = 0)
         {

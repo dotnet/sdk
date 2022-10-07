@@ -6,22 +6,31 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class GuidMacro : BaseGeneratedSymbolMacro<GuidMacroConfig>
+    internal class GuidMacro : BaseNondeterministicGenSymMacro<GuidMacroConfig>
     {
         internal const string MacroType = "guid";
+        private static readonly Guid DeterministicModeValue = new("12345678-1234-1234-1234-1234567890AB");
 
         public override Guid Id { get; } = new Guid("10919008-4E13-4FA8-825C-3B4DA855578E");
 
         public override string Type => MacroType;
 
         public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, GuidMacroConfig config)
-        {
-            Guid g = Guid.NewGuid();
+            => EvaluateInternal(Guid.NewGuid(), environmentSettings, vars, config);
 
+        public override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, GuidMacroConfig config)
+        {
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: deterministic mode enabled.", nameof(GuidMacro));
+            EvaluateInternal(DeterministicModeValue, environmentSettings, variables, config);
+        }
+
+        protected override GuidMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
+
+        private void EvaluateInternal(Guid g, IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, GuidMacroConfig config)
+        {
             for (int i = 0; i < config.Format.Length; ++i)
             {
                 bool isUpperCase = char.IsUpper(config.Format[i]);
@@ -50,7 +59,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             vars[config.VariableName] = defaultValue;
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(GuidMacro), config.VariableName, defaultValue);
         }
-
-        protected override GuidMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);
     }
 }

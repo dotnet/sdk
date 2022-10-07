@@ -10,7 +10,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -110,5 +109,26 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 Assert.True(char.IsUpper(c) || char.IsDigit(c));
             });
         }
+
+        [Fact]
+        public void TestDeterministicMode()
+        {
+            Guid deterministicModeValue = new("12345678-1234-1234-1234-1234567890AB");
+            string variableName = "TestGuid";
+            GuidMacroConfig macroConfig = new GuidMacroConfig(variableName, "string", "Nn", "n");
+
+            IVariableCollection variables = new VariableCollection();
+
+            GuidMacro guidMacro = new();
+            guidMacro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macroConfig);
+
+            Assert.Equal(5, variables.Count);
+            Assert.Equal(deterministicModeValue.ToString("n"), variables["TestGuid-n"].ToString());
+            Assert.Equal(deterministicModeValue.ToString("n"), variables["TestGuid-lc-n"].ToString());
+            Assert.Equal(deterministicModeValue.ToString("n").ToUpperInvariant(), variables["TestGuid-N"].ToString());
+            Assert.Equal(deterministicModeValue.ToString("n").ToUpperInvariant(), variables["TestGuid-uc-N"].ToString());
+            Assert.Equal(deterministicModeValue.ToString("n"), variables["TestGuid"].ToString());
+        }
+
     }
 }

@@ -38,6 +38,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal string DataType { get; } = "string";
 
         internal abstract void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars);
+
+        internal virtual void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars) => Evaluate(environmentSettings, vars);
     }
 
     internal abstract class BaseMacroConfig<TMacro, TMacroConfig> : BaseMacroConfig, IMacroConfig
@@ -55,6 +57,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars)
         {
             Macro.Evaluate(environmentSettings, vars, (TMacroConfig)this);
+        }
+
+        internal override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars)
+        {
+            if (Macro is IDeterministicModeMacro<TMacroConfig> deterministicMacro)
+            {
+                deterministicMacro.EvaluateDeterministically(environmentSettings, vars, (TMacroConfig)this);
+            }
+            else
+            {
+                Evaluate(environmentSettings, vars);
+            }
         }
 
         protected static string? GetOptionalParameterValue(IGeneratedSymbolConfig config, string parameterName, string? defaultValue = default)

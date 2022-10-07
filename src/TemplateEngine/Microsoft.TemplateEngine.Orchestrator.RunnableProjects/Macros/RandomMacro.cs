@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class RandomMacro : BaseGeneratedSymbolMacro<RandomMacroConfig>
+    internal class RandomMacro : BaseNondeterministicGenSymMacro<RandomMacroConfig>
     {
         public override Guid Id { get; } = new Guid("011E8DC1-8544-4360-9B40-65FD916049B7");
 
@@ -21,6 +20,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             int value = CryptoRandom.NextInt(config.Low, config.High);
             vars[config.VariableName] = value;
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(RandomMacro), config.VariableName, value);
+        }
+
+        public override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, RandomMacroConfig config)
+        {
+            variables[config.VariableName] = config.Low;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}' in deterministic mode.", nameof(RandomMacro), config.VariableName, config.Low);
         }
 
         protected override RandomMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);

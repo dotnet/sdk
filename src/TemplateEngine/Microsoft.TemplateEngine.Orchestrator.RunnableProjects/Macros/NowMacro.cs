@@ -6,11 +6,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 {
-    internal class NowMacro : BaseGeneratedSymbolMacro<NowMacroConfig>
+    internal class NowMacro : BaseNondeterministicGenSymMacro<NowMacroConfig>
     {
         public override Guid Id { get; } = new Guid("F2B423D7-3C23-4489-816A-41D8D2A98596");
 
@@ -22,6 +21,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
             string value = time.ToString(config.Format);
             variableCollection[config.VariableName] = value;
             environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}'.", nameof(NowMacro), config.VariableName, value);
+        }
+
+        public override void EvaluateDeterministically(IEngineEnvironmentSettings environmentSettings, IVariableCollection variables, NowMacroConfig config)
+        {
+            DateTime time = new DateTime(1900, 01, 01);
+            string value = time.ToString(config.Format);
+            variables[config.VariableName] = value;
+            environmentSettings.Host.Logger.LogDebug("[{macro}]: Variable '{var}' was assigned to value '{value}' in deterministic mode.", nameof(NowMacro), config.VariableName, value);
         }
 
         protected override NowMacroConfig CreateConfig(IGeneratedSymbolConfig deferredConfig) => new(this, deferredConfig);

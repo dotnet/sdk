@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.Core.Contracts;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros.Config;
 using Microsoft.TemplateEngine.TestHelper;
 using Xunit;
 
@@ -80,6 +79,38 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             {
                 Assert.True(randomValue <= high);
             }
+        }
+
+        [Fact]
+        public void TestDeterministicMode()
+        {
+            IVariableCollection variables = new VariableCollection();
+            RandomMacro macro = new();
+            RandomMacroConfig config = new(macro, "test", "integer", 10, 100);
+            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
+
+            Assert.Equal(1, variables.Count);
+            Assert.Equal(10, variables["test"]);
+        }
+
+        [Fact]
+        public void TestDeterministicMode_GenSymbol()
+        {
+            string variableName = "test";
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "low", JExtensions.ToJsonString(10) },
+                { "high", JExtensions.ToJsonString(100) }
+            };
+            GeneratedSymbol deferredConfig = new(variableName, "random", jsonParameters, "integer");
+
+            IVariableCollection variables = new VariableCollection();
+            RandomMacro macro = new();
+
+            macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, deferredConfig);
+
+            Assert.Equal(1, variables.Count);
+            Assert.Equal(10, variables["test"]);
         }
     }
 }
