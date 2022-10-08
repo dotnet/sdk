@@ -564,6 +564,27 @@ public static class Program
         }
 
         [Fact]
+        public void It_publishes_correctly_in_PublishRelease_evaluation_despite_option_forwarded_format()
+        {
+            var helloWorldAsset = _testAssetsManager
+               .CopyTestAsset("HelloWorld", $"PublishesWithProperyFormats")
+               .WithSource()
+               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+
+            new BuildCommand(helloWorldAsset)
+           .Execute()
+           .Should()
+           .Pass();
+
+            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
+
+            publishCommand
+            .Execute("-f", "net7.0")
+            .Should()
+            .Pass().And.NotHaveStdErr();
+        }
+
+        [Fact]
         public void It_publishes_on_release_if_PublishRelease_property_set_in_csproj()
         {
             var helloWorldAsset = _testAssetsManager
@@ -661,11 +682,16 @@ public static class Program
             Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.       
         }
 
-        [Fact]
-        public void PublishRelease_does_not_override_Configuration_property()
+        [Theory]
+        [InlineData("-p:Configuration=Debug")]
+        [InlineData("-property:Configuration=Debug")]
+        [InlineData("--property:Configuration=Debug")]
+        [InlineData("/p:Configuration=Debug")]
+        [InlineData("/property:Configuration=Debug")]
+        public void PublishRelease_does_not_override_Configuration_property_across_formats(string configOpt)
         {
             var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjConfigPropOverride")
+               .CopyTestAsset("HelloWorld", $"PublishReleaseHelloWorldCsProjConfigPropOverride{configOpt}")
                .WithSource()
                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                .WithProjectChanges(project =>
@@ -676,16 +702,16 @@ public static class Program
                });
 
             new BuildCommand(helloWorldAsset)
-           .Execute("-p:Configuration=Debug")
+           .Execute(configOpt)
            .Should()
            .Pass();
 
             var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
 
             publishCommand
-            .Execute("-p:Configuration=Debug")
+            .Execute(configOpt)
             .Should()
-            .Pass();
+            .Pass().And.NotHaveStdErr();
 
             var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
             Assert.True(File.Exists(expectedAssetPath));
@@ -734,7 +760,7 @@ public static class Program
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
 
             var helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjPublishProfile")
+                .CopyTestAsset("HelloWorld", $"PublishReleaseHelloWorldCsProjPublishProfile{config}")
                 .WithSource()
                 .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                 .WithProjectChanges(project =>
@@ -1049,6 +1075,29 @@ public static class Program
                 )
                 .Should()
                 .Pass();
+        }
+
+        [Theory]
+        [InlineData("--p:PublishReadyToRun=true")]
+        [InlineData("-p:PublishSingleFile=true")]
+        [InlineData("")]
+        public void It_publishes_with_implicit_rid_with_rid_specific_properties(string executeOptionsAndProperties)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "PublishImplicitRid",
+                TargetFrameworks = $"net472;{ToolsetInfo.CurrentTargetFramework}",
+            };
+            testProject.AdditionalProperties.Add("IsPublishable", "false");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: executeOptionsAndProperties);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand
+               .Execute(executeOptionsAndProperties)
+               .Should()
+               .Pass()
+               .And
+               .NotHaveStdErrContaining("NETSDK1191"); // Publish Properties Requiring RID Checks 
         }
 
         [Fact]
