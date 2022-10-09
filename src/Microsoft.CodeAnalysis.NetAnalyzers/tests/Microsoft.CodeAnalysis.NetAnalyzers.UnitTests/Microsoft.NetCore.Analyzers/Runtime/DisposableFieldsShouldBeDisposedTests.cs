@@ -3553,6 +3553,27 @@ class SubSub : Sub
             }.RunAsync();
         }
 
+        [Fact]
+        public async Task FieldDisposableThatDoNotRequireToBeDisposed()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class BaseClass : IDisposable
+{
+    private readonly MemoryStream _stream = new MemoryStream();
+    private readonly StringReader _stringReader = new StringReader(""something"");
+    private readonly Task _task = new Task(() => {});
+
+    public void Dispose()
+    {
+    }
+}
+");
+        }
+
         [Fact, WorkItem(6172, "https://github.com/dotnet/roslyn-analyzers/issues/6172")]
         public async Task FieldIsDisposedInSubClassFollowingDisposePattern()
         {
