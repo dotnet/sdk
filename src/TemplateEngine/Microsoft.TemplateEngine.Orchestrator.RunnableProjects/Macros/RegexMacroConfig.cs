@@ -30,7 +30,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal RegexMacroConfig(RegexMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Source = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Source));
+            Source = GetMandatoryParameterValue(generatedSymbolConfig, "source");
 
             List<(string Type, string Value)> steps = new();
             JArray jArray = GetMandatoryParameterArray(generatedSymbolConfig, StepsPropertyName);

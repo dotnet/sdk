@@ -3,13 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -42,14 +44,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             IVariableCollection variables = new VariableCollection();
 
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string resultValue = (string)variables[variableName];
             Assert.Equal(resultValue, expectedValue);
         }
 
-        [Fact(DisplayName = nameof(TestSwitchDeferredConfig))]
-        public void TestSwitchDeferredConfig()
+        [Fact]
+        public void GeneratedSymbolTest()
         {
             string variableName = "mySwitchVar";
             string evaluator = "C++";
@@ -81,16 +83,105 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "cases", switchCases }
             };
 
-            GeneratedSymbol deferredConfig = new(variableName, "SwitchMacro", jsonParameters, dataType);
+            GeneratedSymbol symbol = new(variableName, "switch", jsonParameters, dataType);
 
             IVariableCollection variables = new VariableCollection();
 
             SwitchMacro macro = new();
-            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
             string resultValue = (string)variables[variableName];
             Assert.Equal(resultValue, expectedValue);
+        }
+
+        [Theory]
+        [InlineData("A", "condition")]
+        [InlineData("B", "default")]
+        [InlineData(null, "default")]
+        public void DependantConditionTest(string? varValue, string expectedResult)
+        {
+            string variableName = "mySwitchVar";
+            string evaluator = "C++";
+            string dataType = "string";
+            List<(string?, string)> switches = new()
+            {
+                ("(testVar == \"A\")", "condition"),
+                (null, "default")
+            };
+            SwitchMacro macro = new();
+            SwitchMacroConfig macroConfig = new(macro, variableName, evaluator, dataType, switches);
+
+            VariableCollection variables = new();
+            if (varValue is not null)
+            {
+                variables["testVar"] = varValue;
+            }
+
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
+
+            string resultValue = (string)variables[variableName];
+            Assert.Equal(expectedResult, resultValue);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingCases()
+        {
+            SwitchMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
+            Assert.Equal("Generated symbol 'test' of type 'switch' should have 'cases' property defined.", ex.Message);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingSymbolValue()
+        {
+            SwitchMacro macro = new();
+
+            string switchCases = /*lang=json*/ @"[
+                {
+                    'condition': '(3 > 10)',
+                },
+                {
+                    'value': 'default'
+                }
+            ]";
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cases", switchCases }
+            };
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
+            Assert.Equal("Generated symbol 'test': array 'cases' should contain JSON objects with property 'value'.", ex.Message);
+        }
+
+        [Fact]
+        public void DefaultConfigurationTest()
+        {
+            SwitchMacro macro = new();
+
+            string switchCases = /*lang=json*/ @"[
+                {
+                    'condition': '(3 > 10)',
+                    'value': 'v'
+                },
+                {
+                    'value': 'default'
+                }
+            ]";
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "cases", switchCases }
+            };
+
+            SwitchMacroConfig config = new(macro, new GeneratedSymbol("test", "switch", jsonParameters));
+
+            Assert.Equal(EvaluatorSelector.SelectStringEvaluator(EvaluatorType.CPP2), config.Evaluator);
         }
     }
 }

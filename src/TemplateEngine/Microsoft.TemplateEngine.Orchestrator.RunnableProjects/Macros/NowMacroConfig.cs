@@ -17,8 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal NowMacroConfig(NowMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Format = GetOptionalParameterValue(generatedSymbolConfig, nameof(Format));
-            Utc = GetOptionalParameterValue(generatedSymbolConfig, nameof(Utc), ConvertJTokenToBool);
+            Format = GetOptionalParameterValue(generatedSymbolConfig, "format");
+            Utc = GetOptionalParameterValue(generatedSymbolConfig, "utc", ConvertJTokenToBool);
         }
 
         internal string? Format { get; private set; }

@@ -24,31 +24,43 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestGuidConfig))]
-        public void TestGuidConfig()
+        [Fact]
+        public void Test_SimpleMacro()
         {
             string variableName = "TestGuid";
-            IMacroConfig macroConfig = new GuidMacroConfig(variableName, "string", string.Empty, null);
+            GuidMacroConfig macroConfig = new GuidMacroConfig(variableName, "string", string.Empty, null);
 
             IVariableCollection variables = new VariableCollection();
 
             GuidMacro guidMacro = new();
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            guidMacro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
         }
 
-        [Fact(DisplayName = nameof(TestDeferredGuidConfig))]
-        public void TestDeferredGuidConfig()
+        [Fact]
+        public void GeneratedSymbolTest()
         {
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
             string variableName = "myGuid1";
-            GeneratedSymbol deferredConfig = new(variableName, "GuidMacro", jsonParameters);
+            GeneratedSymbol symbol = new(variableName, "GuidMacro", jsonParameters);
 
             GuidMacro guidMacro = new();
             IVariableCollection variables = new VariableCollection();
+            guidMacro.Evaluate(_engineEnvironmentSettings, variables, symbol);
+            ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
+        }
 
-            IMacroConfig realConfig = guidMacro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+        [Fact]
+        [Obsolete("IMacro.EvaluateConfig is obsolete")]
+        public void ObsoleteEvaluateConfigTest()
+        {
+            string variableName = "TestGuid";
+            GuidMacroConfig macroConfig = new GuidMacroConfig(variableName, "string", string.Empty, null);
+
+            IVariableCollection variables = new VariableCollection();
+
+            GuidMacro guidMacro = new();
+            guidMacro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
             ValidateGuidMacroCreatedParametersWithResolvedValues(variableName, variables);
         }
 
@@ -85,15 +97,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         public void TestDefaultFormatIsCaseSensetive()
         {
             string paramNameLower = "TestGuidLower";
-            IMacroConfig macroConfigLower = new GuidMacroConfig(paramNameLower, "string", string.Empty, "n");
+            GuidMacroConfig macroConfigLower = new GuidMacroConfig(paramNameLower, "string", string.Empty, "n");
             string paramNameUpper = "TestGuidUPPER";
-            IMacroConfig macroConfigUpper = new GuidMacroConfig(paramNameUpper, "string", string.Empty, "N");
+            GuidMacroConfig macroConfigUpper = new GuidMacroConfig(paramNameUpper, "string", string.Empty, "N");
 
             IVariableCollection variables = new VariableCollection();
 
             GuidMacro guidMacro = new();
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigLower);
-            guidMacro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfigUpper);
+            guidMacro.Evaluate(_engineEnvironmentSettings, variables, macroConfigLower);
+            guidMacro.Evaluate(_engineEnvironmentSettings, variables, macroConfigUpper);
 
             Assert.True(variables.ContainsKey(paramNameLower));
             Assert.NotNull(variables[paramNameLower]);
@@ -130,5 +142,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Assert.Equal(deterministicModeValue.ToString("n"), variables["TestGuid"].ToString());
         }
 
+        [Fact]
+        public void DefaultConfigurationTest()
+        {
+            string variableName = "test";
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
+            GuidMacro macro = new();
+            GeneratedSymbol symbol = new(variableName, "guid", jsonParameters, "string");
+            GuidMacroConfig config = new(macro, symbol);
+
+            Assert.Equal("ndbpxNDPBX", config.Format);
+            Assert.Equal("D", config.DefaultFormat);
+        }
     }
 }

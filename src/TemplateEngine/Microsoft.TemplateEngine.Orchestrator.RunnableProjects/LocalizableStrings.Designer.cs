@@ -267,16 +267,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
                 return ResourceManager.GetString("LocalizationModelDeserializer_Error_FailedToParse", resourceCulture);
             }
         }
-
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The symbol &apos;{0}&apos;: unable to find a form &apos;{1}&apos;, the further processing of the symbol will be skipped..
-        /// </summary>
-        internal static string RunnableProjectConfig_OperationSetup_UnknownForm {
-            get {
-                return ResourceManager.GetString("RunnableProjectConfig_OperationSetup_UnknownForm", resourceCulture);
-            }
-        }
         
         /// <summary>
         ///   Looks up a localized string similar to Generated symbol &apos;{0}&apos;: array &apos;{1}&apos; should contain JSON objects..
@@ -297,7 +287,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Generated symbol &apos;{0}&apos;: the pattern &apos;{1}&apos; is invalid..
+        ///   Looks up a localized string similar to Generated symbol &apos;{0}&apos;: the regex pattern &apos;{1}&apos; is invalid..
         /// </summary>
         internal static string MacroConfig_Exception_InvalidRegex {
             get {
@@ -374,6 +364,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         internal static string MacroProcessor_Warning_UnknownMacro {
             get {
                 return ResourceManager.GetString("MacroProcessor_Warning_UnknownMacro", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The symbol &apos;{0}&apos;: unable to find a form &apos;{1}&apos;, the further processing of the symbol will be skipped..
+        /// </summary>
+        internal static string RunnableProjectConfig_OperationSetup_UnknownForm {
+            get {
+                return ResourceManager.GetString("RunnableProjectConfig_OperationSetup_UnknownForm", resourceCulture);
             }
         }
         

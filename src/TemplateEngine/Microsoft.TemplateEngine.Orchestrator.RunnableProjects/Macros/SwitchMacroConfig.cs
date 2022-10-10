@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal SwitchMacroConfig(SwitchMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            string? evaluator = GetOptionalParameterValue(generatedSymbolConfig, nameof(Evaluator));
+            string? evaluator = GetOptionalParameterValue(generatedSymbolConfig, "evaluator");
             if (!string.IsNullOrWhiteSpace(evaluator))
             {
                 Evaluator = EvaluatorSelector.SelectStringEvaluator(EvaluatorSelector.ParseEvaluatorName(evaluator, DefaultEvaluator));

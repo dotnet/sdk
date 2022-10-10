@@ -215,7 +215,7 @@ Details: {1}</value>
     <comment>{0} - name of generated symbol, {1} - the invalid property name.</comment>
   </data>
   <data name="MacroConfig_Exception_InvalidRegex" xml:space="preserve">
-    <value>Generated symbol '{0}': the pattern '{1}' is invalid.</value>
+    <value>Generated symbol '{0}': the regex pattern '{1}' is invalid.</value>
     <comment>{0} - name of generated symbol, {1} - the invalid regex pattern</comment>
   </data>
   <data name="MacroConfig_Exception_MissingMandatoryProperty" xml:space="preserve">

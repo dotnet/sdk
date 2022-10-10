@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -37,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             IVariableCollection variables = new VariableCollection();
 
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             long randomValue = (int)variables[variableName];
             Assert.True(randomValue >= low);
@@ -48,13 +49,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             }
         }
 
-        [Theory(DisplayName = nameof(TestRandomDeferredConfig))]
+        [Theory]
         [InlineData(1, 10)]
         [InlineData(0, null)]
         [InlineData(-1, 1)]
         [InlineData(10000, null)]
         [InlineData(123, 123)]
-        public void TestRandomDeferredConfig(int low, int? high)
+        public void GeneratedSymbolTest(int low, int? high)
         {
             string variableName = "myRnd";
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
@@ -66,12 +67,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 jsonParameters.Add("high", JExtensions.ToJsonString(high));
             }
 
-            GeneratedSymbol deferredConfig = new(variableName, "RandomMacro", jsonParameters);
+            GeneratedSymbol symbol = new(variableName, "random", jsonParameters);
             IVariableCollection variables = new VariableCollection();
 
             RandomMacro macro = new();
-            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
             long randomValue = (int)variables[variableName];
             Assert.True(randomValue >= low);
 
@@ -111,6 +111,31 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             Assert.Equal(1, variables.Count);
             Assert.Equal(10, variables["test"]);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest()
+        {
+            RandomMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "random", jsonParameters)));
+            Assert.Equal("Generated symbol 'test' of type 'random' should have 'low' property defined.", ex.Message);
+        }
+
+        [Fact]
+        public void DefaultConfigurationTest()
+        {
+            RandomMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "low", JExtensions.ToJsonString(0) }
+            };
+            RandomMacroConfig config = new(macro, new GeneratedSymbol("test", "random", jsonParameters));
+            Assert.Equal(int.MaxValue, config.High);
         }
     }
 }

@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -33,13 +33,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             IVariableCollection variables = new VariableCollection();
 
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             Assert.Equal(value, variables[variableName]);
         }
 
-        [Fact(DisplayName = nameof(TestConstantDeferredConfig))]
-        public void TestConstantDeferredConfig()
+        [Fact]
+        public void GeneratedSymbolTest()
         {
             string variableName = "myConstant";
             string value = "1048576";
@@ -47,14 +47,40 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             {
                 { "value", JExtensions.ToJsonString(value) }
             };
-            GeneratedSymbol deferredConfig = new(variableName, "ConstantMacro", jsonParameters);
+
+            ConstantMacro macro = new();
+            GeneratedSymbol symbol = new(variableName, macro.Type, jsonParameters);
 
             IVariableCollection variables = new VariableCollection();
 
-            ConstantMacro macro = new();
-            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
             Assert.Equal(value, variables[variableName]);
+        }
+
+        [Fact]
+        [Obsolete("EvaluateConfig is deprecated")]
+        public void ObsoleteEvaluateConfigTest()
+        {
+            string variableName = "myConstant";
+            string value = "1048576";
+            ConstantMacro macro = new();
+            ConstantMacroConfig macroConfig = new(macro, null, variableName, value);
+
+            IVariableCollection variables = new VariableCollection();
+
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+
+            Assert.Equal(value, variables[variableName]);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest()
+        {
+            ConstantMacro macro = new();
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "constant", jsonParameters)));
+            Assert.Equal("Generated symbol 'test' of type 'constant' should have 'value' property defined.", ex.Message);
         }
     }
 }

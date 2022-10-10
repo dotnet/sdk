@@ -34,9 +34,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal CoalesceMacroConfig(CoalesceMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            SourceVariableName = GetMandatoryParameterValue(generatedSymbolConfig, nameof(SourceVariableName));
-            FallbackVariableName = GetMandatoryParameterValue(generatedSymbolConfig, nameof(FallbackVariableName));
-            DefaultValue = GetOptionalParameterValue(generatedSymbolConfig, nameof(DefaultValue));
+            SourceVariableName = GetMandatoryParameterValue(generatedSymbolConfig, "sourceVariableName");
+            FallbackVariableName = GetMandatoryParameterValue(generatedSymbolConfig, "fallbackVariableName");
+            DefaultValue = GetOptionalParameterValue(generatedSymbolConfig, "defaultValue");
         }
 
         internal string SourceVariableName { get; }

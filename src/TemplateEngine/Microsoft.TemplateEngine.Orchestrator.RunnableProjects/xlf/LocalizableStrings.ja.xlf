@@ -124,7 +124,7 @@ Details: {1}</source>
         <source>Failed to read parse localization file {0}, it will be skipped from further processing.</source>
         <target state="translated">{0} 解析ローカライズ ファイルを読み取ることができませんでした。それ以降の処理からはスキップされます。</target>
         <note />
-      </trans-unit>      
+      </trans-unit>
       <trans-unit id="RunnableProjectConfig_OperationSetup_UnknownForm">
         <source>The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</source>
         <target state="new">The symbol '{0}': unable to find a form '{1}', the further processing of the symbol will be skipped.</target>
@@ -141,8 +141,8 @@ Details: {1}</source>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
-        <source>Generated symbol '{0}': the pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the pattern '{1}' is invalid.</target>
+        <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
+        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">

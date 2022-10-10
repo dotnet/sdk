@@ -17,8 +17,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal RandomMacroConfig(RandomMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Low = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Low), ConvertJTokenToInt);
-            High = GetOptionalParameterValue(generatedSymbolConfig, nameof(High), ConvertJTokenToInt, int.MaxValue);
+            Low = GetMandatoryParameterValue(generatedSymbolConfig, "low", ConvertJTokenToInt);
+            High = GetOptionalParameterValue(generatedSymbolConfig, "high", ConvertJTokenToInt, int.MaxValue);
         }
 
         internal int Low { get; private set; }

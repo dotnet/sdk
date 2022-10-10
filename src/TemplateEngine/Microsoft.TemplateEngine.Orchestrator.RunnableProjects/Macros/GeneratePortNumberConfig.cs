@@ -40,8 +40,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal GeneratePortNumberConfig(GeneratePortNumberMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            int low = GetOptionalParameterValue(generatedSymbolConfig, nameof(Low), ConvertJTokenToInt, LowPortDefault);
-            int high = GetOptionalParameterValue(generatedSymbolConfig, nameof(High), ConvertJTokenToInt, HighPortDefault);
+            int low = GetOptionalParameterValue(generatedSymbolConfig, "low", ConvertJTokenToInt, LowPortDefault);
+            int high = GetOptionalParameterValue(generatedSymbolConfig, "high", ConvertJTokenToInt, HighPortDefault);
             if (low < LowPortDefault)
             {
                 low = LowPortDefault;

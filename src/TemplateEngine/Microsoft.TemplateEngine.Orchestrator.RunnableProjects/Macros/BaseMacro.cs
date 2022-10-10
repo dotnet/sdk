@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public abstract void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, T config);
 
+        [Obsolete]
         public void EvaluateConfig(IEngineEnvironmentSettings environmentSettings, IVariableCollection variableCollection, IMacroConfig config)
         {
             if (config is not T castConfig)

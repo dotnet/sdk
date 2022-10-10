@@ -29,8 +29,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal RegexMatchMacroConfig(RegexMatchMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Source = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Source));
-            Pattern = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Pattern));
+            Source = GetMandatoryParameterValue(generatedSymbolConfig, "source");
+            Pattern = GetMandatoryParameterValue(generatedSymbolConfig, "pattern");
             IsValidRegex(Pattern!, generatedSymbolConfig);
         }
 

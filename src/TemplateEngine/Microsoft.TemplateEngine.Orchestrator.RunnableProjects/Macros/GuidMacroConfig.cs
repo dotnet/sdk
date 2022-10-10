@@ -29,12 +29,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal GuidMacroConfig(GuidMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            string? configuredFormat = GetOptionalParameterValue(generatedSymbolConfig, nameof(Format));
+            string? configuredFormat = GetOptionalParameterValue(generatedSymbolConfig, "format");
             if (!string.IsNullOrEmpty(configuredFormat))
             {
                 Format = configuredFormat!;
             }
-            string? configuredDefaultFormat = GetOptionalParameterValue(generatedSymbolConfig, nameof(DefaultFormat));
+            string? configuredDefaultFormat = GetOptionalParameterValue(generatedSymbolConfig, "defaultFormat");
             if (!string.IsNullOrEmpty(configuredDefaultFormat))
             {
                 DefaultFormat = configuredDefaultFormat!;

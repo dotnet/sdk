@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal ConstantMacroConfig(ConstantMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
                 : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Value = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Value));
+            Value = GetMandatoryParameterValue(generatedSymbolConfig, "value");
         }
 
         internal string Value { get; private set; }

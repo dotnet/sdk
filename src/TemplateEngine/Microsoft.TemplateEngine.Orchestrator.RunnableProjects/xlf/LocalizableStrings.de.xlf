@@ -141,8 +141,8 @@ Details: {1}</target>
         <note>{0} - name of generated symbol, {1} - the invalid property name.</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_InvalidRegex">
-        <source>Generated symbol '{0}': the pattern '{1}' is invalid.</source>
-        <target state="new">Generated symbol '{0}': the pattern '{1}' is invalid.</target>
+        <source>Generated symbol '{0}': the regex pattern '{1}' is invalid.</source>
+        <target state="new">Generated symbol '{0}': the regex pattern '{1}' is invalid.</target>
         <note>{0} - name of generated symbol, {1} - the invalid regex pattern</note>
       </trans-unit>
       <trans-unit id="MacroConfig_Exception_MissingMandatoryProperty">

@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.TemplateEngine.Utils;
 using Xunit;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
@@ -44,14 +45,14 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             variables[sourceVariable] = sourceValue;
 
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string newValue = (string)variables[variableName];
             Assert.Equal(newValue, expectedValue);
         }
 
-        [Fact(DisplayName = nameof(TestRegexDeferredConfig))]
-        public void TestRegexDeferredConfig()
+        [Fact]
+        public void GeneratedSymbolTest()
         {
             string variableName = "myRegex";
             string sourceVariable = "originalValue";
@@ -60,15 +61,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
                 { "source", JExtensions.ToJsonString(sourceVariable) }
             };
 
-            string jsonSteps = @"[
-                {
-                    'regex': 'A',
-                    'replacement': 'Z'
-                }
-            ]";
+            string jsonSteps = /*lang=json*/ """
+                [
+                    {
+                        "regex": "A",
+                        "replacement": "Z"
+                    }
+                ]
+                """;
             jsonParameters.Add("steps", jsonSteps);
 
-            GeneratedSymbol deferredConfig = new(variableName, "RegexMacro", jsonParameters, "string");
+            GeneratedSymbol symbol = new(variableName, "regex", jsonParameters, "string");
 
             IVariableCollection variables = new VariableCollection();
 
@@ -78,10 +81,120 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             variables[sourceVariable] = sourceValue;
 
             RegexMacro macro = new();
-            IMacroConfig realConfig = macro.CreateConfig(_engineEnvironmentSettings, deferredConfig);
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, realConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
             string newValue = (string)variables[variableName];
             Assert.Equal(newValue, expectedValue);
+        }
+
+        [Fact]
+        public void MissingSourceVariableTest()
+        {
+            string variableName = "myRegex";
+            string sourceVariable = "originalValue";
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "source", JExtensions.ToJsonString(sourceVariable) }
+            };
+
+            string jsonSteps = /*lang=json*/ """
+                [
+                    {
+                        "regex": "A",
+                        "replacement": "Z"
+                    }
+                ]
+                """;
+            jsonParameters.Add("steps", jsonSteps);
+
+            GeneratedSymbol symbol = new(variableName, "regex", jsonParameters, "string");
+            IVariableCollection variables = new VariableCollection();
+
+            RegexMacro macro = new();
+            macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
+
+            Assert.False(variables.ContainsKey(variableName));
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingSource()
+        {
+            RegexMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
+            string jsonSteps = /*lang=json*/ """
+                [
+                    {
+                        "regex": "A",
+                        "replacement": "Z"
+                    }
+                ]
+                """;
+            jsonParameters.Add("steps", jsonSteps);
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.Equal("Generated symbol 'test' of type 'regex' should have 'source' property defined.", ex.Message);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingSteps()
+        {
+            RegexMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "source", JExtensions.ToJsonString("src") }
+            };
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.Equal("Generated symbol 'test' of type 'regex' should have 'steps' property defined.", ex.Message);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingRegex()
+        {
+            RegexMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "source", JExtensions.ToJsonString("src") }
+            };
+            string jsonSteps = /*lang=json*/ """
+                [
+                    {
+                        "replacement": "Z"
+                    }
+                ]
+                """;
+            jsonParameters.Add("steps", jsonSteps);
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.Equal("Generated symbol 'test': array 'steps' should contain JSON objects with property 'regex'.", ex.Message);
+        }
+
+        [Fact]
+        public void InvalidConfigurationTest_MissingReplacement()
+        {
+            RegexMacro macro = new();
+
+            Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase)
+            {
+                { "source", JExtensions.ToJsonString("src") }
+            };
+            string jsonSteps = /*lang=json*/ """
+                [
+                    {
+                        "regex": "A"
+                    }
+                ]
+                """;
+            jsonParameters.Add("steps", jsonSteps);
+
+            VariableCollection variables = new();
+            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "regex", jsonParameters)));
+            Assert.Equal("Generated symbol 'test': array 'steps' should contain JSON objects with property 'replacement'.", ex.Message);
         }
     }
 }

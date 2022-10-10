@@ -22,8 +22,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal CaseChangeMacroConfig(CaseChangeMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
             : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Source = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Source));
-            ToLower = GetOptionalParameterValue(generatedSymbolConfig, nameof(ToLower), ConvertJTokenToBool, defaultValue: true);
+            Source = GetMandatoryParameterValue(generatedSymbolConfig, "source");
+            ToLower = GetOptionalParameterValue(generatedSymbolConfig, "toLower", ConvertJTokenToBool, defaultValue: true);
         }
 
         public string Source { get; }

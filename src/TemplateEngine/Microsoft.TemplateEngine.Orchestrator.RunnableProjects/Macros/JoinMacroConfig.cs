@@ -26,8 +26,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         internal JoinMacroConfig(JoinMacro macro, IGeneratedSymbolConfig generatedSymbolConfig)
         : base(macro, generatedSymbolConfig.VariableName, generatedSymbolConfig.DataType)
         {
-            Separator = GetMandatoryParameterValue(generatedSymbolConfig, nameof(Separator));
-            RemoveEmptyValues = GetOptionalParameterValue(generatedSymbolConfig, nameof(RemoveEmptyValues), ConvertJTokenToBool);
+            Separator = GetMandatoryParameterValue(generatedSymbolConfig, "separator");
+            RemoveEmptyValues = GetOptionalParameterValue(generatedSymbolConfig, "removeEmptyValues", ConvertJTokenToBool);
 
             List<(JoinType Type, string Value)> symbolsList = new();
 

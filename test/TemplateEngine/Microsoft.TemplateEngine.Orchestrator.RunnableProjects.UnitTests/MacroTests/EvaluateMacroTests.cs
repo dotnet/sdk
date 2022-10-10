@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core;
 using Microsoft.TemplateEngine.Core.Contracts;
@@ -32,7 +33,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             IVariableCollection variables = new VariableCollection();
 
             EvaluateMacro macro = new();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
             Assert.Equal(variables[variableName], expectedResult);
         }
 
@@ -63,8 +64,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             EvaluateMacro macro = new();
-            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
             Assert.Equal(variables[variableName], expectedResult);
+        }
+
+        [Fact]
+        [Obsolete("IMacro.EvaluateConfig is obsolete")]
+        public void ObsoleteEvaluateConfigTest()
+        {
+            string variableName = "myPredicate";
+            string evaluator = "C++";
+            EvaluateMacroConfig macroConfig = new(variableName, "bool", "(7 > 3)", evaluator);
+
+            IVariableCollection variables = new VariableCollection();
+
+            EvaluateMacro macro = new();
+            macro.EvaluateConfig(_engineEnvironmentSettings, variables, macroConfig);
+            Assert.Equal(variables[variableName], true);
         }
     }
 }
