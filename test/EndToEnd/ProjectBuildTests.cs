@@ -401,7 +401,6 @@ namespace EndToEnd.Tests
                     || template.StartsWith("nunit")
                     || template.StartsWith("xunit")
                     || template.StartsWith("xunit")
-                    || template.StartsWith("wpf")
                     || template.StartsWith("mvc")
                     || template.StartsWith("web")
                     || template.StartsWith("worker")
