@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
     /// <summary>
     /// Represents a string in template.json file that needs to be localized.
     /// </summary>
-    internal struct TemplateString : IEquatable<TemplateString>
+    internal readonly struct TemplateString : IEquatable<TemplateString>
     {
         /// <summary>
         /// Creates an instance of <see cref="TemplateString"/>.

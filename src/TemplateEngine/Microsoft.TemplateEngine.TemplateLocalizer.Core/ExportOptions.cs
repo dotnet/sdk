@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
 {
-    public struct ExportOptions : IEquatable<ExportOptions>
+    public readonly struct ExportOptions : IEquatable<ExportOptions>
     {
         /// <summary>
         /// Creates an instance of <see cref="ExportOptions"/>.
