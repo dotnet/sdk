@@ -18,7 +18,6 @@
       <RepositoryReference Include="arcade" />
       <RepositoryReference Include="symreader" />
       <RepositoryReference Include="linker" />
-      <RepositoryReference Include="llvm-project" />
       <RepositoryReference Include="source-build-externals" />
       <RepositoryReference Include="roslyn" />
       <RepositoryReference Include="runtime-portable" />
