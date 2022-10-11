@@ -1,7 +1,7 @@
 <Project>
-  <!-- Crossgen is currently not supported on the s390x architecture. -->
+  <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x'"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
