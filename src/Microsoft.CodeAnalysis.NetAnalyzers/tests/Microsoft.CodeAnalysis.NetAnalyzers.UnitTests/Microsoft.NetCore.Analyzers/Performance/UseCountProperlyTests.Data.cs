@@ -72,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     }
 
 #pragma warning disable CA1815 // Override equals and operator equals on value types
-    public struct OperatorKind
+    public readonly struct OperatorKind
     {
         public int BasicOperatorLength { get; }
         public int CSharpOperatorLength { get; }
