@@ -176,6 +176,7 @@
           linux-bionic-arm64;
           linux-bionic-x64;
           linux-bionic-x86;
+          linux-ppc64le;
           "/>
 
       <Net70RuntimePackRids Include="
@@ -184,6 +185,7 @@
           linux-bionic-arm64;
           linux-bionic-x64;
           linux-bionic-x86;
+          linux-ppc64le;
           " />
 
       <NetCoreAppHostRids Include="
@@ -262,7 +264,9 @@
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
+      <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
+      <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
+      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
@@ -452,7 +456,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(MicrosoftAspNetCoreAppRefPackageVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore80RuntimePackRids, '%3B')"
                               RuntimePackExcludedRuntimeIdentifiers="android"
                               />
 
@@ -584,7 +588,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet70TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore70RuntimePackRids, '%3B')"
                               RuntimePackExcludedRuntimeIdentifiers="android"
                               />
 
@@ -709,7 +713,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet60TargetingPackVersion)"
                               RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
-                              RuntimePackRuntimeIdentifiers="@(AspNetCoreRuntimePackRids, '%3B')"
+                              RuntimePackRuntimeIdentifiers="@(AspNetCore60RuntimePackRids, '%3B')"
                               />
 
     <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
