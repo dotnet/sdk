@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             // Security owness of custom temp path is on the user.
             _tempPackagesDir = new DirectoryPath(tempDirPath ?? FileUtilities.CreateTempPath());
-            ILogger logger = verbosity.VerbosityIsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
+            ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
             _restoreActionConfig = restoreActionConfig;
             _nugetPackageDownloader = nugetPackageDownloader ??
                                       new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
