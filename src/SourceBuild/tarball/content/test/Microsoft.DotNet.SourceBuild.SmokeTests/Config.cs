@@ -15,6 +15,7 @@ internal static class Config
     public const string PoisonReportPathEnv = "SMOKE_TESTS_POISON_REPORT_PATH";
     public const string PortableRidEnv = "SMOKE_TESTS_PORTABLE_RID";
     public const string PrereqsPathEnv = "SMOKE_TESTS_PREREQS_PATH";
+    public const string CustomPackagesPathEnv = "SMOKE_TESTS_CUSTOM_PACKAGES_PATH";
     public const string SdkTarballPathEnv = "SMOKE_TESTS_SDK_TARBALL_PATH";
     public const string TargetRidEnv = "SMOKE_TESTS_TARGET_RID";
     public const string WarnPoisonDiffsEnv = "SMOKE_TESTS_WARN_POISON_DIFFS";
@@ -27,6 +28,7 @@ internal static class Config
     public static string PortableRid { get; } = Environment.GetEnvironmentVariable(PortableRidEnv) ??
         throw new InvalidOperationException($"'{Config.PortableRidEnv}' must be specified");
     public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
+    public static string? CustomPackagesPath { get; } = Environment.GetEnvironmentVariable(CustomPackagesPathEnv);
     public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
     public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
         throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
