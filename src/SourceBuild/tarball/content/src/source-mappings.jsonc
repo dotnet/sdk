@@ -1,7 +1,18 @@
+// This file configures where the VMR synchronizes the sources from.
+// Each individual repository has its own mapping which says where the remote repo is,
+// what files are excluded from the sync, etc.
+// More details can be found at: {{ TODO: https://github.com/dotnet/arcade/issues/11226 }}
 {
+    // Location withing the VMR where the source-build patches are stored
+    // These patches are applied on top of the code synchronized into the VMR
     "patchesPath": "src/installer/src/SourceBuild/tarball/patches",
+
+    // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
+    // When no "include" filter is specified, "**/*" is used
     "defaults": {
         "defaultRef": "main",
+        // The default filters do not apply to submodules
+        // Only filters which start with submodule's path are applied when syncing submodules
         "exclude": [
             "**/*.dll",
             "**/*.Dll",
@@ -12,25 +23,21 @@
             "**/*.nupkg"
         ]
     },
+
+    // Each of these mappings has a corresponding folder in the src/ directory
     "mappings": [
         {
             "name": "arcade",
-            "defaultRemote": "https://github.com/dotnet/arcade",
-            "include": [
-                "*.*",
-                ".*",
-                "eng/**/*",
-                "src/**/*",
-                "scripts/**/*"
-            ],
-            "exclude": [
-                "**/tests/**/*",
-                "**/*.Tests/**/*"
-            ]
+            "defaultRemote": "https://github.com/dotnet/arcade"
         },
         {
             "name": "aspnetcore",
-            "defaultRemote": "https://github.com/dotnet/aspnetcore"
+            "defaultRemote": "https://github.com/dotnet/aspnetcore",
+            "exclude": [
+                "src/submodules/MessagePack-CSharp/**/*.dll",
+                "**/samples/**/jquery-validation-unobtrusive/.bower.json",
+                "**/samples/**/jquery-validation-unobtrusive/*.js"
+            ]
         },
         {
             "name": "clicommandlineparser",
@@ -60,12 +67,19 @@
             "name": "installer",
             "defaultRemote": "https://github.com/dotnet/installer",
             "exclude": [
+                // We don't need the tarball content in the VMR again, it's already copied in the root
                 "src/SourceBuild/tarball/content/**/*"
             ]
         },
         {
             "name": "linker",
-            "defaultRemote": "https://github.com/dotnet/linker"
+            "defaultRemote": "https://github.com/dotnet/linker",
+            "exclude": [
+                "external/cecil/**/*.dll",
+                "external/cecil/**/*.exe",
+                "external/cecil/**/*.pdb",
+                "external/cecil/**/*.mdb"
+            ]
         },
         {
             "name": "llvm-project",
@@ -109,7 +123,10 @@
             "name": "source-build-externals",
             "defaultRemote": "https://github.com/dotnet/source-build-externals",
             "exclude": [
-                "**/humanizer/samples/**/*.js"
+                "src/humanizer/samples/**/*.js",
+                "src/application-insights/**/*.exe",
+                "src/application-insights/**/*.dll",
+                "src/application-insights/**/*.zip"
             ]
         },
         {
