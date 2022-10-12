@@ -58,6 +58,6 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
     private IServiceProvider CreateServiceProvider() => new ServiceCollection()
         .AddLogging(b => b.AddConsole().AddFilter(l => l >= LogLevel.Information))
         .AddSingleton<IRemoteFactory>(sp => ActivatorUtilities.CreateInstance<RemoteFactory>(sp, TmpPath))
-        .AddVmrManagers("git", sp => new VmrManagerConfiguration(VmrPath, TmpPath))
+        .AddVmrManagers("git", sp => new VmrInfo(VmrPath, TmpPath))
         .BuildServiceProvider();
 }
