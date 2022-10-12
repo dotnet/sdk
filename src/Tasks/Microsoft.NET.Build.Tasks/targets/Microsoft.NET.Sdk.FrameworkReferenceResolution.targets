@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <KnownFrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref" />
     </ItemGroup>
-    
+
     <!-- Generate KnownFrameworkReference items for the Windows SDK pack -->
     <CreateWindowsSdkKnownFrameworkReferences
       UseWindowsSDKPreview="$(UseWindowsSDKPreview)"
@@ -42,7 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       WindowsSdkSupportedTargetPlatformVersions="@(WindowsSdkSupportedTargetPlatformVersion)">
 
       <Output TaskParameter="KnownFrameworkReferences" ItemName="KnownFrameworkReference" />
-      
+
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
 
@@ -99,7 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                AotEnabled="$(PublishAot)"
+                                AotEnabled="$(PublishAot) and $(_IsPublishing)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
