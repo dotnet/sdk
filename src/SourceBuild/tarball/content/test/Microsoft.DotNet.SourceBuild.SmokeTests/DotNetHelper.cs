@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
@@ -66,6 +67,8 @@ internal class DotNetHelper
 
         if (useLocalPackages)
         {
+            // When using local packages this feed is always required.  It contains packages that are
+            // not produced by source-build but are required by the various project templates.
             if (!Directory.Exists(Config.PrereqsPath))
             {
                 throw new InvalidOperationException(
@@ -74,6 +77,21 @@ internal class DotNetHelper
 
             string nugetConfig = File.ReadAllText(nugetConfigPath);
             nugetConfig = nugetConfig.Replace("SMOKE_TEST_PACKAGE_FEED", Config.PrereqsPath);
+
+            // This package feed is optional.  You can use an additional feed of source-built packages to run the
+            // smoke-tests as offline as possible.
+            if (Config.CustomPackagesPath != null)
+            {
+                if (!Directory.Exists(Config.CustomPackagesPath))
+                {
+                    throw new ArgumentException($"Specified --with-packages {Config.CustomPackagesPath} does not exist.");
+                }
+                nugetConfig = nugetConfig.Replace("CUSTOM_PACKAGE_FEED", Config.CustomPackagesPath);
+            }
+            else
+            {
+                nugetConfig = string.Join(Environment.NewLine, nugetConfig.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Where(s => !s.Contains("CUSTOM_PACKAGE_FEED")).ToArray());
+            }
             File.WriteAllText(nugetConfigPath, nugetConfig);
         }
     }
