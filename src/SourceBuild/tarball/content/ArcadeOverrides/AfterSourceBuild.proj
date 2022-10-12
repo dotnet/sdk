@@ -72,7 +72,8 @@
       OutputBaselineFile="$(SourceBuildSelfPrebuiltReportDir)generated-new-baseline.xml"
       OutputReportFile="$(SourceBuildSelfPrebuiltReportDir)baseline-comparison.xml"
       AllowTestProjectUsage="$(AllowTestProjectUsage)"
-      ContinueOnError="$(ContinueOnPrebuiltBaselineError)" />
+      ContinueOnError="$(ContinueOnPrebuiltBaselineError)"
+      Condition="'$(DotNetBuildFromSourceFlavor)' != 'Product'" />
   </Target>
 
   <!--

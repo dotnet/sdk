@@ -1,9 +1,6 @@
 # Builds a source-build tarball
 
 parameters:
-  # Custom condition to apply to the job
-  condition: true
-
   # Dependent jobs that must be completed before this job will run
   dependsOn:
 
@@ -12,13 +9,11 @@ parameters:
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
-  centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build-20210714125450-5d87b80
-  centOS8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-source-build-20211118190102-9355e7b
+  centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8-20220809204800-17a4aab
   centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
-  debian9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-stretch-20211001171226-047508b
-  debian9Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-arm64v8-20220405201138-a251961
-  fedora33Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
-  ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-20210924170306-047508b
+  debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8-20220812185233-b286fae
+  fedora36Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-36-20220818134137-a09384f
+  ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-20220813234344-4c008dd
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
@@ -32,46 +27,39 @@ jobs:
 - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
   parameters:
     architecture: x64
-    condition: ${{ parameters.condition }}
     dependsOn: ${{ parameters.dependsOn }}
     ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
       excludeSdkContentTests: true
     installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
     matrix:
-      CentOS7-Online:
+      CentOSStream8-Online:
         _BootstrapPrep: false
-        _Container: ${{ parameters.centOS7Container }}
+        _Container: ${{ parameters.centOSStream8Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _RunOnline: true
+      CentOSStream8-Offline:
+        _BootstrapPrep: false
+        _Container: ${{ parameters.centOSStream8Container }}
+        _EnablePoison: false
+        _ExcludeOmniSharpTests: true
+        _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        CentOS7-Offline:
-          _BootstrapPrep: false
-          _Container: ${{ parameters.centOS7Container }}
-          _EnablePoison: false
-          _ExcludeOmniSharpTests: true
-          _RunOnline: false
-        CentOS8-Offline:
-          _BootstrapPrep: false
-          _Container: ${{ parameters.centOS8Container }}
-          _EnablePoison: false
-          _ExcludeOmniSharpTests: false
-          _RunOnline: false
         CentOSStream9-Offline:
           _BootstrapPrep: false
           _Container: ${{ parameters.centOSStream9Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
-        Fedora33-Offline:
+        Fedora36-Offline:
           _BootstrapPrep: false
-          _Container: ${{ parameters.fedora33Container }}
+          _Container: ${{ parameters.fedora36Container }}
           _EnablePoison: true
           _ExcludeOmniSharpTests: false
           _RunOnline: false
-        Ubuntu1804-Offline:
+        Ubuntu2004-Offline:
           _BootstrapPrep: false
-          _Container: ${{ parameters.ubuntu1804Container }}
+          _Container: ${{ parameters.ubuntu2004Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
@@ -86,16 +74,15 @@ jobs:
   - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
     parameters:
       architecture: arm64
-      condition: ${{ parameters.condition }}
       dependsOn: ${{ parameters.dependsOn }}
       ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
         excludeSdkContentTests: true
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
         ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-          Debian9-Offline:
+          Debian11-Offline:
             _BootstrapPrep: true
-            _Container: ${{ parameters.debian9Arm64Container }}
+            _Container: ${{ parameters.debian11Arm64Container }}
             _EnablePoison: false
             _ExcludeOmniSharpTests: false
             _RunOnline: false
@@ -108,14 +95,14 @@ jobs:
       architecture: x64
       # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
       # The bootstrap build will shortcut if the stage 1 build failed.
-      condition: and(${{ parameters.condition }}, succeededOrFailed())
+      condition: succeededOrFailed()
       dependsOn: Build_Tarball_x64
       excludeSdkContentTests: true
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
-        Fedora33-Offline:
-          _PreviousSourceBuildArtifact: Build_Tarball_x64 Fedora33-Offline_Artifacts
-          _Container: ${{ parameters.fedora33Container }}
+        Fedora36-Offline:
+          _PreviousSourceBuildArtifact: Build_Tarball_x64 Fedora36-Offline_Artifacts
+          _Container: ${{ parameters.fedora36Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false

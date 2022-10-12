@@ -4,7 +4,7 @@ summary: Cross-Platform .NET Core SDK
 description: |
   .NET Core SDK. https://dot.net/core.
 
-grade: devel
+grade: stable
 confinement: classic
 
 apps:
@@ -20,12 +20,13 @@ parts:
     source-checksum: sha512/$(SOURCE_TARGZ_SHA)
     stage-packages:
       - libicu60
+      - libc6
+      - libgcc1
+      - libstdc++6
       - libssl1.0.0
       - libcurl3
       - libgssapi-krb5-2
-      - libstdc++6
       - zlib1g
-      - libgcc1
       - lldb
       - libunwind8
       - libtinfo5

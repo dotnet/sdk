@@ -11,6 +11,8 @@
     <!-- issue: https://github.com/dotnet/source-build/issues/1719 -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:RepoRoot=$(ProjectDirectory)</BuildCommandArgs>
+    <!-- Investigate how to remove this specialization for source-build: https://github.com/dotnet/source-build/issues/2889 -->
+    <BuildCommandArgs>$(BuildCommandArgs) /p:SuppressTfmSupportBuildWarnings=true</BuildCommandArgs>
 
     <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
@@ -20,26 +22,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--
-      From roslyn Versions.props:
-        The version of Roslyn we build Source Generators against that are built in this
-         repository. This must be lower than MicrosoftNetCompilersToolsetVersion,
-         but not higher than our minimum dogfoodable Visual Studio version, or else
-         the generators we build would load on the command line but not load in IDEs.
-      In source-build these don't need to be pinned and can use the source-built versions since it doesn't
-      need to support VS.
-    -->
-    <ExtraPackageVersionPropsPackageInfo Include="SourceGeneratorMicrosoftCodeAnalysisVersion" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemCollectionsImmutableVersion" Version="%24(SystemCollectionsImmutableVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemReflectionMetadataVersion" Version="%24(SystemReflectionMetadataVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemRuntimeCompilerServicesUnsafeVersion" Version="%24(SystemRuntimeCompilerServicesUnsafeVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="SourceBuildLiftedSystemTextEncodingCodePagesVersion" Version="%24(SystemTextEncodingCodePagesVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 

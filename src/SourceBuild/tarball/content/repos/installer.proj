@@ -55,15 +55,13 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="aspnetcore" />
-    <RepositoryReference Include="clicommandlineparser" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="templating" />
     <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="xliff-tasks" />
@@ -86,6 +84,7 @@
       Unable to find package dotnet-ef.
       Unable to find package dotnet-sql-cache.
       Unable to find package dotnet-user-secrets.
+      Unable to find package dotnet-user-jwts.
       Unable to find package dotnet-watch.  -->
     <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
   </ItemGroup>

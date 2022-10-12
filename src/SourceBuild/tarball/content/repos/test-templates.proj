@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="templating" />
   </ItemGroup>
 
   <ItemGroup>

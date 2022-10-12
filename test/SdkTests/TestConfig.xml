@@ -45,107 +45,22 @@
   </TestList>
   
   <SkippedTests>
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToUseVB.It_builds_a_vb_wpf_app"
-            Skip="true"
-            Issue="https://github.com/dotnet/wpf/issues/1734"
-            Reason="VB templates removed from wpf"/>
-
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run"
             Skip="true"
             Issue="https://github.com/dotnet/sdk/pull/3574"
             Reason="Test update needed (in PR)"/>
-
-    <!-- <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_targets_the_right_framework_depending_on_output_type"
-            Skip="true"
-            Issue=""
-            Reason="Test needs to be updated with new patches (along with SDK stage 0 update)"/> -->
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_RID_specific_runnable_output"
-            Skip="true"
-            Issue=""
-            Reason="Test doesn't work with newer RIDs"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_framework_dependent_RID_specific_runnable_output"
-            Skip="true"
-            Issue=""
-            Reason="Test doesn't work with newer RIDs"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_handles_mismatched_implicit_package_versions"
-            Skip="true"
-            Issue=""
-            Reason="Test doesn't work with newer RIDs"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithTransitiveProjectRefs.It_builds_the_project_successfully"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrary.It_builds_the_project_successfully"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrary.It_builds_the_project_successfully_twice"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.TestSatelliteResources"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantAllResourcesInSatellite.It_retrieves_strings_successfully"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThereAreDefaultItems.Compile_items_can_be_explicitly_specified_while_default_EmbeddedResource_items_are_used"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildASelfContainedApp.It_succeeds_when_RuntimeIdentifier_and_PlatformTarget_mismatch_but_PT_is_AnyCPU"
-            Skip="true"
-            Issue=""
-            Reason="Needs .NET Core 1.1"/>
-
-    <!-- <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildADesktopExeWithFSharp.It_builds_a_simple_desktop_app"
-            Skip="true"
-            Issue="https://github.com/dotnet/coreclr/issues/27275"
-            Reason="F# compiler is failing on .NET 5 runtime"
-            />
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildALibraryWithFSharp.It_builds_the_library_successfully"
-            Skip="true"
-            Issue="https://github.com/dotnet/coreclr/issues/27275"
-            Reason="F# compiler is failing on .NET 5 runtime"
-            /> -->
-
-    <Method Name="Microsoft.NET.Publish.Tests.PublishWpfApp.It_publishes_and_runs_self_contained_wpf_app"
-            Skip="true"
-            Issue=""
-            Reason="Assumes `dotnet new wpf`produces a netcoreapp3.1 app, will get fixed when sdk takes .NET 5 stage 0"
-            />
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_does_not_download_desktop_targeting_packs_on_unix"
-            Skip="true"
-            Issue=""
-            Reason="Assumes netcoreapp3.1 targeting pack is bundled, which it is not in 5.0 SDK. Will resolve when sdk takes newer stage 0 and hits same issue."/>
-
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_builds_on_windows_with_the_windows_desktop_sdk"
-            Skip="true"
-            Issue="https://github.com/dotnet/wpf/issues/2363"
-            Reason="Desktop SDK missing required files."/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_runs_single_file_apps"
             Skip="true"
             Issue=""
             Reason="Need all .NET core runtime"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_verify_analysis_warnings_hello_world_app"
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_RID_specific_runnable_output"
             Skip="true"
             Issue=""
-            Reason="https://github.com/dotnet/installer/pull/8966#issuecomment-721111308"/>
-
+            Reason="Test doesn't work with newer RIDs"/>
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildAnAppWithLibrariesAndRid.It_builds_a_framework_dependent_RID_specific_runnable_output"
+            Skip="true"
+            Issue=""
+            Reason="Test doesn't work with newer RIDs"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_keeps_symbols_by_default"
             Skip="true"
             Issue=""
@@ -155,10 +70,6 @@
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_does_not_include_leftover_artifacts_on_second_run"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_runs_and_creates_linked_app"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
@@ -266,23 +177,39 @@
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_ignores_host_config_settings_with_link_false"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_displays_informational_warning_when_trim_analysis_warnings_are_suppressed_on_net6plus"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_respects_feature_settings_from_host_config"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_old_defaults_keep_nonframework"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp.It_publishes_as_framework_dependent_by_default"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_dont_display_time_awareness_message_on_incremental_build"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_errors_when_enabling_compression_targeting_net5"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_IsTrimmable_metadata_can_override_attribute"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_analysis_warnings_are_disabled_by_default"
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_respects_IsTrimmable_attribute"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_displays_informational_warning_up_to_net5_by_default"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_dont_display_informational_warning_by_default_on_net6plus"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_analysis_warnings_are_enabled_by_default"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_TrimMode_applies_to_IsTrimmable_assemblies"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
@@ -290,27 +217,11 @@
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildADesktopExeWithFSharp.It_builds_a_simple_net50_app"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.It_can_include_ni_pdbs_in_single_file"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_builds_on_windows_with_the_windows_desktop_sdk_5_0_with_ProjectSdk_set"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.When_TargetPlatformVersion_is_set_higher_than_10_It_can_reference_cswinrt_api"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.Given_duplicated_ResolvedFileToPublish_It_Can_Publish"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.It_builds_on_windows_with_the_windows_desktop_sdk_5_0_without_ProjectSdk_set"
+    <Method Name="Microsoft.NET.Build.Tests.GivenWeWantToRequireWindowsForDesktopApps.WindowsFormsAppCanBuildOnNonWindows"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>

@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
   <String Id="FirstTimeWelcomeMessage">インストールが成功しました。
 
-'[DOTNETHOME]' に以下がインストールされました
+以下がインストールされました
     • .NET SDK [DOTNETSDKVERSION]
     • .NET Runtime [DOTNETRUNTIMEVERSION]
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
@@ -61,7 +61,7 @@
 リソース
     • .NET ドキュメント https://aka.ms/dotnet-docs
     • SDK ドキュメント https://aka.ms/dotnet-sdk-docs
-    • リリース ノート https://aka.ms/dotnet6-release-notes
+    • リリース ノート https://aka.ms/dotnet7-release-notes
     • チュートリアル https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -76,7 +76,10 @@
   <String Id="InstallationNoteTitle">インストール メモ</String>
   <String Id="InstallationNote">コマンドはインストール処理中に実行されるので、プロジェクトの復元速度が向上し、オフラインでアクセスできます。完了するまでに最大 1 分かかります。
   </String>
-  <String Id="VisualStudioWarning">.NET 6.0 を Visual Studio で使用する場合は、Visual Studio 2022 17.0 以降が必要です。&lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;詳細情報&lt;/A&gt;。
+  <String Id="VisualStudioWarning">.NET 7.0 を Visual Studio で使用する場合は、Visual Studio 2022 17.4 以降が必要です。&lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;詳細情報&lt;/A&gt;。
   </String>
   <String Id="LicenseAssent">[インストール] をクリックすると、次の条項に同意したものと見なされます。</String>
+  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
 </WixLocalization>

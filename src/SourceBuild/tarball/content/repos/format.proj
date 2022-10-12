@@ -12,7 +12,7 @@
   <ItemGroup>
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="roslyn-analyzers" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
   <ItemGroup>

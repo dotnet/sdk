@@ -105,7 +105,7 @@ if [ "$buildBootstrap" == "true" ]; then
     echo "  Building bootstrap previously source-built in $workingDir"
 
     # Copy bootstrap project to working dir
-    cp $SCRIPT_ROOT/scripts/bootstrap/buildBootstrapPreviouslySB.csproj $workingDir
+    cp $SCRIPT_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj $workingDir
 
     # Copy NuGet.config from the installer repo to have the right feeds
     cp $SCRIPT_ROOT/src/installer/NuGet.config $workingDir

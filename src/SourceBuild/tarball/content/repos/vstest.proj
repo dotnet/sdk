@@ -14,7 +14,7 @@
   <ItemGroup>
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
