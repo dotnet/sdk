@@ -1,1 +1,4 @@
-﻿
+﻿Microsoft.TemplateEngine.Utils.AsyncLazy<T>
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<System.Threading.Tasks.Task<T>!>! taskFactory) -> void
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.AsyncLazy(System.Func<T>! valueFactory) -> void
+Microsoft.TemplateEngine.Utils.AsyncLazy<T>.GetAwaiter() -> System.Runtime.CompilerServices.TaskAwaiter<T>

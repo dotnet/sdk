@@ -16,10 +16,10 @@
   <ItemGroup>
     <Compile Remove="**\*" />
     <Content Include="test_templates\**\*" Exclude="test_templates\**\bin\**;test_templates\**\obj\**" />
-    <None Include="test_templates\**\*" CopyToOutputDirectory="Always" />
+    <None Include="test_templates\**\*" CopyToOutputDirectory="PreserveNewest" />
 
     <Content Include="nupkg_templates\**" />
-    <None Include="nupkg_templates\**" CopyToOutputDirectory="Always" />
+    <None Include="nupkg_templates\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="test_templates\TemplateWithConditionalParameters\.template.config\template.json" />
