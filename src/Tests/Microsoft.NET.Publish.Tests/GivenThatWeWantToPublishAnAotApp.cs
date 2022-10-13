@@ -31,6 +31,22 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
+        [PlatformSpecificFact(TestPlatforms.OSX)]
+        public void Publish_fails_on_Mac()
+        {
+            var proj = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "HelloWorldMac", true);
+            proj.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(proj);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, proj.Name));
+            publishCommand
+                .Execute(RuntimeIdentifier)
+                .Should().Fail()
+                .And.HaveStdOutContaining("NETSDK1193")
+                .And.HaveStdOutContaining("error")
+                .And.HaveStdOutContaining(RuntimeInformation.RuntimeIdentifier);
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)

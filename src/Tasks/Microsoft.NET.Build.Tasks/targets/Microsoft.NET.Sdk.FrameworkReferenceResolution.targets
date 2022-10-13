@@ -81,6 +81,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <_NuGetRestoreSupported Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true')">false</_NuGetRestoreSupported>
+      <_AotEnabled Condition="('$(PublishAot)' == 'true') and ('$(_IsPublishing)' == 'true')">true</_AotEnabled>
     </PropertyGroup>
 
     <ItemGroup>
@@ -99,7 +100,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                AotEnabled="$(PublishAot) and $(_IsPublishing)"
+                                AotEnabled="$(_AotEnabled)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"

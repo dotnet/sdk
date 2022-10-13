@@ -715,6 +715,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1093: средства проекта (DotnetCliTool) поддерживают только целевую платформу .NET Core 2.2 и более ранних версий.</target>
         <note>{StrBegin="NETSDK1093: "}</note>
       </trans-unit>
+      <trans-unit id="PublishAotRidNotSupported">
+        <source>NETSDK1193: AOT publishing with RID '{0}' is not currently supported.</source>
+        <target state="new">NETSDK1193: AOT publishing with RID '{0}' is not currently supported.</target>
+        <note>{StrBegin="NETSDK1193: "}</note>
+      </trans-unit>
       <trans-unit id="PublishReadyToRunRequiresVersion30">
         <source>NETSDK1122: ReadyToRun compilation will be skipped because it is only supported for .NET Core 3.0 or higher.</source>
         <target state="translated">NETSDK1122: компиляция ReadyToRun будет пропущена, так как она поддерживается только для .NET Core 3.0 или более поздних версий.</target>
