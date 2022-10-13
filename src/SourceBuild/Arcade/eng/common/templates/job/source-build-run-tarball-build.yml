@@ -1,9 +1,6 @@
 # Builds a source-build tarball
 
 parameters:
-  # Custom condition to apply to the job
-  condition: true
-
   # Dependent jobs that must be completed before this job will run
   dependsOn:
 
@@ -32,7 +29,6 @@ jobs:
 - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
   parameters:
     architecture: x64
-    condition: ${{ parameters.condition }}
     dependsOn: ${{ parameters.dependsOn }}
     ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
       excludeSdkContentTests: true
@@ -86,7 +82,6 @@ jobs:
   - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
     parameters:
       architecture: arm64
-      condition: ${{ parameters.condition }}
       dependsOn: ${{ parameters.dependsOn }}
       ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
         excludeSdkContentTests: true
@@ -108,7 +103,7 @@ jobs:
       architecture: x64
       # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete accessment of the build status.
       # The bootstrap build will shortcut if the stage 1 build failed.
-      condition: and(${{ parameters.condition }}, succeededOrFailed())
+      condition: succeededOrFailed()
       dependsOn: Build_Tarball_x64
       excludeSdkContentTests: true
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
