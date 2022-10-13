@@ -13,19 +13,17 @@ public class DotNetWatchTests : SmokeTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    // TODO: Re-enable https://github.com/dotnet/source-build/issues/2961
-    // [Fact]
+    [Fact]
     public void WatchTests()
     {
         string projectDirectory = DotNetHelper.ExecuteNew(DotNetTemplate.Console.GetName(), nameof(DotNetWatchTests));
         bool outputChanged = false;
 
-        // We expect an exit code of 143 (128 + 15, i.e. SIGTERM) because we are killing the process manually
         DotNetHelper.ExecuteCmd(
             "watch run",
             workingDirectory: projectDirectory,
             additionalProcessConfigCallback: processConfigCallback,
-            expectedExitCode: 143,
+            expectedExitCode: null, // The exit code does not reflect whether or not dotnet watch is working properly
             millisecondTimeout: 30000);
 
         Assert.True(outputChanged);
@@ -53,7 +51,7 @@ public class DotNetWatchTests : SmokeTests
                 {
                     outputChanged = true;
                     OutputHelper.WriteLine("Successfully re-ran program after code change.");
-                    ExecuteHelper.ExecuteProcessValidateExitCode("kill", $"-s TERM {process.Id}", OutputHelper);
+                    process.Kill(true);
                 }
             });
         }
