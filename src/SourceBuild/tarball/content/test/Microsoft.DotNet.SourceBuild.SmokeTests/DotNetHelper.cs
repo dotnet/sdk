@@ -96,7 +96,7 @@ internal class DotNetHelper
         }
     }
 
-    public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? additionalProcessConfigCallback = null, int expectedExitCode = 0, int millisecondTimeout = -1)
+    public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? additionalProcessConfigCallback = null, int? expectedExitCode = 0, int millisecondTimeout = -1)
     {
         (Process Process, string StdOut, string StdErr) executeResult = ExecuteHelper.ExecuteProcess(
             DotNetPath,
@@ -105,7 +105,9 @@ internal class DotNetHelper
             configure: (process) => configureProcess(process, workingDirectory),
             millisecondTimeout: millisecondTimeout);
         
-        ExecuteHelper.ValidateExitCode(executeResult, expectedExitCode);
+        if (expectedExitCode != null) {
+            ExecuteHelper.ValidateExitCode(executeResult, (int) expectedExitCode);
+        }
 
         void configureProcess(Process process, string? workingDirectory)
         {
